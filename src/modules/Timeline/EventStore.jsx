@@ -20,6 +20,21 @@ class EventStore {
             "events": this.getEvents("SPECIMEN", []),
             "color": "blue"
         };
+        let _self=this;
+        for(let patient in this.clinicalEvents){
+            let deceased=this.patientAttributes.filter(function (d,i) {
+                return d.patient===patient;
+            });
+            if(deceased[0].OS_STATUS==="DECEASED") {
+                _self.clinicalEvents[patient].push({
+                    eventType: "STATUS",
+                    key: "DECEASED",
+                    patientId: patient,
+                    startNumberOfDaysSinceDiagnosis: (deceased[0].OS_MONTHS * 30.4),
+                    attributes:[{key: "STATUS", value:"DECEASED"}]
+                })
+            }
+        }
     }
 
     setPatientAttributes(patientData) {
@@ -109,7 +124,6 @@ class EventStore {
                 })
             })
         }
-        console.log(attributes);
         this.attributes = attributes;
     }
 

@@ -22,8 +22,8 @@ class RootStore {
         const _self=this;
         this.cbioAPI.getAllData(studyID, function () {
             _self.buildPatientStructure();
-            _self.eventStore.setClinicalEvents(_self.cbioAPI.clinicalEvents);
             _self.eventStore.setPatientAttributes(_self.cbioAPI.clinicalPatientData);
+            _self.eventStore.setClinicalEvents(_self.cbioAPI.clinicalEvents);
             _self.eventStore.computeAttributes();
             _self.sankeyStore.createSankeyData();
             _self.stackedBarChartStore.setClinicalPatientData(_self.cbioAPI.allClinicalPatientData);
