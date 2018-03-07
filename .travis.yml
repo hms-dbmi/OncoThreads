@@ -5,4 +5,5 @@ install:
 # https://github.com/travis-ci/travis-ci/issues/4653#issuecomment-276949979
 - nvm install "$(jq -r '.engines.node' package.json)"
 script:
-- npm install
+- npm install --dev
+- npm test
