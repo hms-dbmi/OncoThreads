@@ -16,6 +16,7 @@ retry() {
         sleep 1
     done
 }
+npm test
 npm start &
 retry
 killall node
