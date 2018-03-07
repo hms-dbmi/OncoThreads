@@ -2,7 +2,7 @@
   "name": "sankey-react-app",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node" : ">=9.5.0" },
+  "engines": { "node" : ">=8.0.0" },
   "dependencies": {
     "axios": "^0.17.1",
     "cbioportal-api-client": "^0.3.4",
