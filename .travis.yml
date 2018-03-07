@@ -2,3 +2,4 @@ language: node_js
 script:
 - npm install --dev
 - npm test
+- ./server_up_test.sh
