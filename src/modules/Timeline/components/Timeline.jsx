@@ -99,7 +99,7 @@ const Timeline = observer(class Timeline extends React.Component {
                         <rect opacity={opacity} key={data.type + d.patient + "" + i}
                               x={x(f.startNumberOfDaysSinceDiagnosis)} y={y(d.patient) - 5}
                               height="10" width={x(f.endNumberOfDaysSinceDiagnosis - f.startNumberOfDaysSinceDiagnosis)}
-                              fill={data.color} onMouseEnter={(e) => {
+                              stroke={"black"} fill={data.color} onMouseEnter={(e) => {
                             _self.showToolTip(e, f, "rect")
                         }} onMouseLeave={_self.hideToolTip}/>
                     )
@@ -108,7 +108,7 @@ const Timeline = observer(class Timeline extends React.Component {
                     dates.push(
                         <circle opacity={opacity} key={data.type + d.patient + "" + i}
                                 cx={x(f.startNumberOfDaysSinceDiagnosis)} cy={y(d.patient)} r="5"
-                                fill={data.color} onMouseEnter={(e) => _self.showToolTip(e, f, "circle")}
+                                stroke={"black"} fill={data.color} onMouseEnter={(e) => _self.showToolTip(e, f, "circle")}
                                 onMouseLeave={_self.hideToolTip}/>
                     )
                 }
