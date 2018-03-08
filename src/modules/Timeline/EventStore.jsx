@@ -3,7 +3,7 @@ import {extendObservable} from "mobx";
 class EventStore {
     constructor() {
         this.clinicalEvents = {};
-        this.previousSortKey = {key: "AGE", order: "ascending"};
+        this.sortKeys = [];
         extendObservable(this, {
             sampleEvents: [],
             currentEvents: [],
@@ -20,18 +20,18 @@ class EventStore {
             "events": this.getEvents("SPECIMEN", []),
             "color": "blue"
         };
-        let _self=this;
-        for(let patient in this.clinicalEvents){
-            let deceased=this.patientAttributes.filter(function (d,i) {
-                return d.patient===patient;
+        let _self = this;
+        for (let patient in this.clinicalEvents) {
+            let deceased = this.patientAttributes.filter(function (d, i) {
+                return d.patient === patient;
             });
-            if(deceased[0].OS_STATUS==="DECEASED") {
+            if (deceased[0].OS_STATUS === "DECEASED") {
                 _self.clinicalEvents[patient].push({
                     eventType: "STATUS",
                     key: "DECEASED",
                     patientId: patient,
                     startNumberOfDaysSinceDiagnosis: (deceased[0].OS_MONTHS * 30.4),
-                    attributes:[{key: "STATUS", value:"DECEASED"}]
+                    attributes: [{key: "STATUS", value: "DECEASED"}]
                 })
             }
         }
@@ -40,7 +40,6 @@ class EventStore {
     setPatientAttributes(patientData) {
         let patientAttributes = [];
         let patientAttributeCategories = [];
-        console.log(patientData);
         patientData.forEach(function (attributes, i) {
             let helper = {};
             attributes.forEach(function (attribute) {
@@ -153,26 +152,38 @@ class EventStore {
     }
 
     sortEvents(sortKey, order) {
-        const _self = this;
-        let firstOrder = order === "ascending" ? 1 : -1;
-        let secondOrder = this.previousSortKey.order === "ascending" ? 1 : -1;
-        this.patientAttributes = this.patientAttributes.sort(function (a, b) {
-            if (a[sortKey] < b[sortKey])
-                return -firstOrder;
-            if (a[sortKey] > b[sortKey])
-                return firstOrder;
-            else {
-                if (a[_self.previousSortKey.key] < b[_self.previousSortKey.key]) {
-                    return -secondOrder;
-                }
-                if (a[_self.previousSortKey.key] > b[_self.previousSortKey.key]) {
-                    return secondOrder;
-                }
-                return 0;
+        let deleteIndex = -1;
+        this.sortKeys.forEach(function (d, i) {
+            if (d.key === sortKey) {
+                deleteIndex = i;
             }
         });
-        this.previousSortKey = {key: sortKey, order: order};
+        if (deleteIndex !== -1) {
+            this.sortKeys.splice(deleteIndex, 1);
+        }
+        this.sortKeys.push({key: sortKey, order: order});
+        const _self = this;
+        this.patientAttributes = this.patientAttributes.sort(function (a, b) {
+            return (_self.sortRecursive(_self.sortKeys.length - 1, a, b))
+        });
 
     }
+
+    sortRecursive(index, a, b) {
+        if (index === -1) {
+            return 0
+        }
+        else {
+            let firstOrder = this.sortKeys[index].order === "ascending" ? 1 : -1;
+            if (a[this.sortKeys[index].key] < b[this.sortKeys[index].key])
+                return -firstOrder;
+            if (a[this.sortKeys[index].key] > b[this.sortKeys[index].key])
+                return firstOrder;
+            else {
+                return (this.sortRecursive(index - 1, a, b));
+            }
+        }
+    }
 }
+
 export default EventStore;

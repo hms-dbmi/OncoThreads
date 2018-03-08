@@ -19,8 +19,8 @@ const Timeline = observer(class Timeline extends React.Component {
         let pos = {};
         if (type === "rect") {
             pos = {
-                x: e.target.getAttribute("x"),
-                y: e.target.getAttribute("y")
+                x: (Number(e.target.getAttribute("x"))+Number(e.target.getAttribute("width"))/2),
+                y: Number(e.target.getAttribute("y"))+5
             }
         }
         else {

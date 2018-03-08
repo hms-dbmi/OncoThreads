@@ -30,8 +30,6 @@ class cBioAPI {
                 let _self = this;
                 let clinicalEventRequests = [];
                 let patientDataRequests = [];
-
-
                 /**
                  * get clinical events for all the patients
                  */
