@@ -48,7 +48,6 @@ class SankeyStore {
         });
         this.countsPerTP = counts;
         this.setCurrentSankeyData(this.clinicalCategories[0]);
-        console.log(counts);
     }
 
     /**

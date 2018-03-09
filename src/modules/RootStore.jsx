@@ -22,8 +22,8 @@ class RootStore {
         const _self=this;
         this.cbioAPI.getAllData(studyID, function () {
             _self.buildPatientStructure();
-            _self.eventStore.setClinicalEvents(_self.cbioAPI.clinicalEvents);
             _self.eventStore.setPatientAttributes(_self.cbioAPI.clinicalPatientData);
+            _self.eventStore.setClinicalEvents(_self.cbioAPI.clinicalEvents);
             _self.eventStore.computeAttributes();
             _self.sankeyStore.createSankeyData();
             _self.stackedBarChartStore.setClinicalPatientData(_self.cbioAPI.allClinicalPatientData);
@@ -51,7 +51,6 @@ class RootStore {
             let currTP = 0;
             _self.cbioAPI.clinicalEvents[d.patientId].forEach(function (e, i) {
                 if (e.eventType === "SPECIMEN" && e.attributes.length === 2) {
-                    numberOfTimepoints += 1;
                     if (e.startNumberOfDaysSinceDiagnosis === 0) {
                         PriHistogramData.push(RootStore.getSampleMutationCounts(_self.cbioAPI.mutationCounts, e.attributes[1].value));
                     }
@@ -70,6 +69,7 @@ class RootStore {
                         sampleStructure[d.patientId].timepoints[currTP] = [];
                         sampleStructure[d.patientId].timepoints[currTP].push(sampleInfo);
                         currTP += 1;
+                        numberOfTimepoints += 1;
                     }
                     else {
                         sampleStructure[d.patientId].timepoints[currTP - 1].push(sampleInfo);

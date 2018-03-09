@@ -1,3 +1,9 @@
 language: node_js
+install:
+- nvm ls-remote # TODO: remove; just for debugging
+# Install the node version specified in package.json: 
+# https://github.com/travis-ci/travis-ci/issues/4653#issuecomment-276949979
+- nvm install "$(jq -r '.engines.node' package.json)"
 script:
 - npm install --dev
+- ./tests.sh

@@ -17,14 +17,19 @@ class cBioAPI {
         /**
          * get patient information first
          */
+        this.patients = [];
+        this.clinicalEvents = {};
+        this.allClinicalEvents=[];
+        this.allClinicalPatientData=[];
+        this.clinicalPatientData=[];
+        this.clinicalSampleData=[];
+        this.mutationCounts=[];
         axios.get("http://www.cbioportal.org/api/studies/" + studyID + "/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
                 this.patients = response.data;
                 let _self = this;
                 let clinicalEventRequests = [];
                 let patientDataRequests = [];
-
-
                 /**
                  * get clinical events for all the patients
                  */
@@ -32,8 +37,6 @@ class cBioAPI {
                     clinicalEventRequests.push(axios.get("http://www.cbioportal.org/api/studies/" + studyID + "/patients/" + patient.patientId + "/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC"));
                     patientDataRequests.push(axios.get("http://www.cbioportal.org/api/studies/" + studyID + "/patients/" + patient.patientId + "/clinical-data?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC"));
                 });
-                _self.allClinicalData = [];
-                _self.allClinicalEvents = [];
                 axios.all(clinicalEventRequests)
                     .then(function (eventResults) {
                         eventResults.forEach(function (response2, i) {
@@ -44,6 +47,7 @@ class cBioAPI {
                             .then(function (patientDataResults) {
                                 patientDataResults.forEach(function (response3, i) {
                                     _self.clinicalPatientData.push(response3.data);
+
                                     _self.allClinicalPatientData=_self.allClinicalPatientData.concat(response3.data);
                                 });
 
