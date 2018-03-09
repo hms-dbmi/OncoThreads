@@ -117,7 +117,7 @@ const StackedBarChart = observer(class StackedBarChart extends React.Component {
 
         patientsList.forEach(function(k) {
             var  pi=k.patientId,                
-            xd2= data.filter(s=>s.Status=="DECEASED");
+            xd2= data; //.filter(s=>s.Status=="DECEASED");
             var xd=xd2.filter(s=>s.patientId==pi);
 
             if(xd.length) {
@@ -291,7 +291,7 @@ const StackedBarChart = observer(class StackedBarChart extends React.Component {
         const transformRight = 'translate(' + (margin.left + 0.5 * w) + ',' + margin.top + ')';
         const xDomain=[0,d3.max(this.props.data[0])];*/
 
-        var selectInterval = [90, 120, 180];
+        var selectInterval = ["90 days", "120 days", "180 days"];
         
         return (
             <div className="svg-div">
@@ -299,7 +299,7 @@ const StackedBarChart = observer(class StackedBarChart extends React.Component {
                     <g ref="anchor2" />
                 </svg>
                 <div>
-                  <select className="select" onChange={event => {this.updateTimeRange(event.target.value)}}>
+                  <select className="select" onChange={event => {this.updateTimeRange(parseInt(event.target.value))}}>
                     {selectInterval.map(sel => {
                       return (<option key={sel}>{sel}</option>);
                     })}

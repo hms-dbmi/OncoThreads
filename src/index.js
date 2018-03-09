@@ -16,7 +16,7 @@ import FirstChart from "./modules/Timeline/components/FirstChart.jsx";
 import MultipleHist from "./modules/Histogram/components/MultipleHist.jsx"
 import Summary from "./modules/Summary/components/Summary.jsx";
 import StackedBarChart from "./modules/StackedBar/components/StackedBarChart";
-
+//import StackedBarChart from "./modules/Demographics/components/StackedBarChart";
 
 
 const cbioAPI = new cBioAPI();
