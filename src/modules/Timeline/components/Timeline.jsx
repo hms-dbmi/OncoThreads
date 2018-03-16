@@ -99,7 +99,7 @@ const Timeline = observer(class Timeline extends React.Component {
                         <rect opacity={opacity} key={data.type + d.patient + "" + i}
                               x={x(f.startNumberOfDaysSinceDiagnosis)} y={y(d.patient) - 5}
                               height="10" width={x(f.endNumberOfDaysSinceDiagnosis - f.startNumberOfDaysSinceDiagnosis)}
-                              stroke={"black"} fill={data.color} onMouseEnter={(e) => {
+                              stroke={"white"} fill={data.color} onMouseEnter={(e) => {
                             _self.showToolTip(e, f, "rect")
                         }} onMouseLeave={_self.hideToolTip}/>
                     )
@@ -108,7 +108,7 @@ const Timeline = observer(class Timeline extends React.Component {
                     dates.push(
                         <circle opacity={opacity} key={data.type + d.patient + "" + i}
                                 cx={x(f.startNumberOfDaysSinceDiagnosis)} cy={y(d.patient)} r="5"
-                                stroke={"black"} fill={data.color} onMouseEnter={(e) => _self.showToolTip(e, f, "circle")}
+                                fill={data.color} onMouseEnter={(e) => _self.showToolTip(e, f, "circle")}
                                 onMouseLeave={_self.hideToolTip}/>
                     )
                 }
@@ -147,8 +147,8 @@ const Timeline = observer(class Timeline extends React.Component {
             .scale(this.props.y);
         return (
             <g transform={this.props.transform}>
-                <Axis h={this.props.height} axis={yAxis} axisType="y"/>
-                <Axis h={this.props.height} axis={xAxis} axisType="x"/>
+                <Axis h={this.props.height} w={this.props.width} label="Patients" axis={yAxis} axisType="y"/>
+                <Axis h={this.props.height}  w={this.props.width} label="Number of Days since Diagnosis" axis={xAxis} axisType="x"/>
                 {this.createLines(x, this.props.y)}
                 {this.createDots(x, this.props.y, this.props.sampleEvents, 1)}
                 {this.createAllDots(x, this.props.y)}

@@ -43,6 +43,7 @@ class cBioAPI {
                             _self.clinicalEvents[_self.patients[i].patientId] = response2.data;
                             _self.allClinicalEvents=_self.allClinicalEvents.concat(response2.data);
                         });
+                        console.log(_self.clinicalEvents);
                         axios.all(patientDataRequests)
                             .then(function (patientDataResults) {
                                 patientDataResults.forEach(function (response3, i) {

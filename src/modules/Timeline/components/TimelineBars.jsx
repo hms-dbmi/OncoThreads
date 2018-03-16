@@ -22,15 +22,18 @@ const TimelineBars = observer(class TimelineBars extends React.Component {
             .domain([0, this.getMax(this.props.patientAttributes, this.props.attribute)])
             .range([0, this.props.width]);
         const xAxis = d3.axisBottom()
-            .scale(x);
+            .scale(x)
+            .ticks(3);
         let bars = [];
         this.props.patientAttributes.forEach(function (d, i) {
-            bars.push(<rect key={_self.props.attribute+"_"+d.patient} height={10} width={x(d[_self.props.attribute])} y={_self.props.y(d.patient) - 5}
+            bars.push(<rect stroke="white" key={_self.props.attribute+"_"+d.patient} height={10} width={x(d[_self.props.attribute])} y={_self.props.y(d.patient) - 5}
                             fill="blue"/>)
         });
         return (
             <g transform={this.props.transform}>
                 {bars}
+                <Axis h={this.props.height}  w={this.props.width} label="" axis={xAxis} axisType="x"/>
+
             </g>
         )
     }

@@ -18,7 +18,7 @@ class EventStore {
         this.sampleEvents = {
             "type": "SPECIMEN",
             "events": this.getEvents("SPECIMEN", []),
-            "color": "blue"
+            "color": "gray"
         };
         let _self = this;
         for (let patient in this.clinicalEvents) {
@@ -56,6 +56,7 @@ class EventStore {
             });
             patientAttributes.push(helper);
         });
+        console.log(patientAttributeCategories);
         this.patientAttributes = patientAttributes;
         this.patientAttributeCategories = patientAttributeCategories;
     }

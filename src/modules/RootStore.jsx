@@ -2,6 +2,7 @@ import SummaryStore from "./Summary/SummaryStore.jsx";
 import MutationCountStore from "./Histogram/MutationCountStore.jsx";
 import EventStore from "./Timeline/EventStore.jsx";
 import SankeyStore from "./Sankey/SankeyStore.jsx";
+import TemporalHeatMapStore from "./TemporalHeatmap/TemporalHeatMapStore.jsx"
 import {extendObservable} from "mobx";
 import StackedBarChartStore from "./StackedBar/StackedBarChartStore";
 
@@ -13,6 +14,9 @@ class RootStore {
         this.eventStore = new EventStore();
         this.sankeyStore = new SankeyStore();
         this.stackedBarChartStore=new StackedBarChartStore();
+        this.temporalHeatMapStore=new TemporalHeatMapStore();
+
+        this.clinicalSampleCategories=[];
         extendObservable(this,{
             parsed:false
         })
@@ -44,47 +48,45 @@ class RootStore {
         let numberOfTimepoints = 0;
         let PriHistogramData = [];
         let RecHistogramData = [];
+        let numberOfSamples=0;
+        let sampleClinicalMap={};
 
         this.cbioAPI.patients.forEach(function (d) {
             sampleStructure[d.patientId] = {"timepoints": {}};
             let previousDate = -1;
             let currTP = 0;
             _self.cbioAPI.clinicalEvents[d.patientId].forEach(function (e, i) {
-                if (e.eventType === "SPECIMEN" && e.attributes.length === 2) {
+                if (e.eventType === "SPECIMEN") {
+                    numberOfSamples+=1;
+                    sampleClinicalMap[e.attributes[1].value]=_self.getSampleClinicalData(_self.cbioAPI.clinicalSampleData,e.attributes[1].value);
                     if (e.startNumberOfDaysSinceDiagnosis === 0) {
                         PriHistogramData.push(RootStore.getSampleMutationCounts(_self.cbioAPI.mutationCounts, e.attributes[1].value));
                     }
                     else {
                         RecHistogramData.push(RootStore.getSampleMutationCounts(_self.cbioAPI.mutationCounts, e.attributes[1].value));
                     }
-                    let sampleInfo = {"clinicalData": {}, "name": e.attributes[1].value};
-                    let sampleClinicalData = _self.getSampleClinicalData(_self.cbioAPI.clinicalSampleData, e.attributes[1].value);
-                    sampleClinicalData.forEach(function (f, i) {
-                        if (clinicalCat.indexOf(f.clinicalAttributeId) === -1) {
-                            clinicalCat.push(f.clinicalAttributeId);
-                        }
-                        sampleInfo.clinicalData[f.clinicalAttributeId] = f.value;
-                    });
                     if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
                         sampleStructure[d.patientId].timepoints[currTP] = [];
-                        sampleStructure[d.patientId].timepoints[currTP].push(sampleInfo);
+                        sampleStructure[d.patientId].timepoints[currTP].push(e.attributes[1].value);
                         currTP += 1;
                         numberOfTimepoints += 1;
                     }
                     else {
-                        sampleStructure[d.patientId].timepoints[currTP - 1].push(sampleInfo);
+                        sampleStructure[d.patientId].timepoints[currTP - 1].push(e.attributes[1].value);
                     }
                     previousDate = e.startNumberOfDaysSinceDiagnosis;
                 }
             })
         });
+        this.temporalHeatMapStore.setSampleClinicalMap(sampleClinicalMap);
+        this.temporalHeatMapStore.setClinicalEvents(this.cbioAPI.clinicalEvents);
         this.sankeyStore.setSampleStructure(sampleStructure);
-        this.sankeyStore.setClinicalCategories(clinicalCat);
+        this.sankeyStore.setSampleClinicalMap(sampleClinicalMap);
+        this.sankeyStore.setClinicalCategories(_self.clinicalSampleCategories);
         this.summaryStore.setNumberOfPatients(this.cbioAPI.patients.length);
-        this.summaryStore.setNumberOfSamples(this.cbioAPI.mutationCounts.length);
+        this.summaryStore.setNumberOfSamples(numberOfSamples);
         this.summaryStore.setNumberOfTimepoints(numberOfTimepoints);
         this.mutationCountStore.setHistogramData(PriHistogramData, RecHistogramData);
-
     }
 
 
@@ -94,9 +96,18 @@ class RootStore {
      * @param sampleId
      */
     getSampleClinicalData(clinicalData, sampleId) {
-        return clinicalData.filter(function (d, i) {
+        let _self=this;
+        let sampleClinicalDict={};
+        let sampleClinicalArray= clinicalData.filter(function (d, i) {
             return d.sampleId === sampleId;
-        })
+        });
+        sampleClinicalArray.forEach(function (d,i) {
+            if(!_self.clinicalSampleCategories.includes(d.clinicalAttributeId)){
+                _self.clinicalSampleCategories.push(d.clinicalAttributeId);
+            }
+            sampleClinicalDict[d.clinicalAttributeId]=d.value;
+        });
+        return sampleClinicalDict;
     }
 
     /**

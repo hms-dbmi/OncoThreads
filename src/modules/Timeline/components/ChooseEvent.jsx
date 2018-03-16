@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from 'react-modal';
 import {observer} from "mobx-react";
+import * as d3 from "d3";
 
 const customStyles = {
     content: {
@@ -9,7 +10,9 @@ const customStyles = {
         right: 'auto',
         bottom: 'auto',
         marginRight: '-50%',
-        transform: 'translate(-50%, -50%)'
+                height: '500px', // <-- This sets the height
+        transform: 'translate(-50%, -50%)',
+                overlfow: 'scroll' // <-- This tells the modal to scrol
     }
 };
 const ChooseEvent = observer(class ChooseEvent extends React.Component {
@@ -19,8 +22,9 @@ const ChooseEvent = observer(class ChooseEvent extends React.Component {
             modalIsOpen: false,
             buttonClicked: "",
             selected: [],
-            activeEvents:[]
+            activeEvents: []
         };
+        this.color =d3.scaleOrdinal().range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33']);
 
         this.openModal = this.openModal.bind(this);
         this.afterOpenModal = this.afterOpenModal.bind(this);
@@ -47,22 +51,25 @@ const ChooseEvent = observer(class ChooseEvent extends React.Component {
 
         }
     }
-    isSelected(key,value){
-        let selected=false;
+
+    isSelected(key, value) {
+        let selected = false;
         this.state.selected.forEach(function (d, i) {
-            if(d.key===key && d.value ===value){
-                selected=true;
+            if (d.key === key && d.value === value) {
+                selected = true;
             }
         });
         return selected;
     }
-    isChecked(value){
-        let isChecked=false;
-        if(this.state.activeEvents.includes(value)){
-            isChecked=true
+
+    isChecked(value) {
+        let isChecked = false;
+        if (this.state.activeEvents.includes(value)) {
+            isChecked = true
         }
         return isChecked;
     }
+
     getAttributes(event) {
         let elements = [];
         const _self = this;
@@ -76,70 +83,60 @@ const ChooseEvent = observer(class ChooseEvent extends React.Component {
         return elements;
     }
 
+    getEventSelection() {
+        let eventSelectors = [];
+        for (let event in this.props.eventStore.attributes) {
+            if(event!=="SPECIMEN") {
+                eventSelectors.push(<g><label style={{backgroundColor: this.color(event)}}>{event}<input type="checkbox"
+                                                                                                    checked={this.isChecked(event)}
+                                                                                                    className="checkBox"
+                                                                                                    value={event}
+                                                                                                    onChange={this.handleCheckBoxClick}/></label>
+                    <button value={event} onClick={this.openModal}>Filter</button>
+                </g>)
+            }
+        }
+        return(eventSelectors);
+    }
+
     afterOpenModal() {
         // references are now sync'd and can be accessed.
         this.subtitle.style.color = '#f00';
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false, buttonClicked: "", selected:[]});
+        this.setState({modalIsOpen: false, buttonClicked: "", selected: []});
     }
 
-    static getColor(value) {
-        let color = "";
-        switch (value) {
-            case "SURGERY":
-                color = "green";
-                break;
-            case "STATUS":
-                color = "grey";
-                break;
-            case "TREATMENT":
-                color = "red";
-                break;
-            default:
-                color = "black";
-        }
-        return color;
-    }
 
     handleCheckBoxClick(event) {
-        const color = ChooseEvent.getColor(event.target.value);
+        const color = this.color(event.target.value);
         if (event.target.checked) {
-            this.setState({activeEvents:[...this.state.activeEvents,event.target.value]});
+            this.setState({activeEvents: [...this.state.activeEvents, event.target.value]});
             this.props.eventStore.addEvents(event.target.value, [], color);
         }
         else {
-            let activeEvents=this.state.activeEvents.slice();
-            activeEvents=activeEvents.filter(function (d,i) {
-                return d!==event.target.value;
+            let activeEvents = this.state.activeEvents.slice();
+            activeEvents = activeEvents.filter(function (d, i) {
+                return d !== event.target.value;
             });
-            this.setState({activeEvents:activeEvents});
+            this.setState({activeEvents: activeEvents});
             this.props.eventStore.removeEvents(event.target.value);
         }
     }
+
     changeEvents() {
-        this.setState({activeEvents:[...this.state.activeEvents,this.state.buttonClicked]});
+        this.setState({activeEvents: [...this.state.activeEvents, this.state.buttonClicked]});
         this.props.eventStore.removeEvents(this.state.buttonClicked);
-        this.props.eventStore.addEvents(this.state.buttonClicked, this.state.selected, ChooseEvent.getColor(this.state.buttonClicked));
+        this.props.eventStore.addEvents(this.state.buttonClicked, this.state.selected, this.color(this.state.buttonClicked));
         this.closeModal();
     }
+
     render() {
         Modal.setAppElement('body');
         return (
             <div>
-                <label style={{backgroundColor: "lightgreen"}}>Surgery<input type="checkbox" checked={this.isChecked("SURGERY")} className="checkBox"
-                                                                             value="SURGERY"
-                                                                             onChange={this.handleCheckBoxClick}/></label>
-                <button value="SURGERY" onClick={this.openModal}>Filter</button>
-                <label style={{backgroundColor: "lightgrey"}}>Status<input type="checkbox" checked={this.isChecked("STATUS")} className="checkBox"
-                                                                           value="STATUS"
-                                                                           onChange={this.handleCheckBoxClick}/></label>
-                <button value="STATUS" onClick={this.openModal}>Filter</button>
-                <label style={{backgroundColor: "lightcoral"}}>Treatment<input type="checkbox" checked={this.isChecked("TREATMENT")} className="checkBox"
-                                                                               value="TREATMENT"
-                                                                               onChange={this.handleCheckBoxClick}/></label>
-                <button value="TREATMENT" onClick={this.openModal}>Filter</button>
+                {this.getEventSelection()}
                 <br/>
                 <Modal
                     isOpen={this.state.modalIsOpen}

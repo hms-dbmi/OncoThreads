@@ -4,28 +4,37 @@ class SankeyStore {
     constructor() {
         this.sampleStructure = {};
         this.countsPerTP = {};
+        this.sampleClinicalMap = {};
         extendObservable(this, {
             clinicalCategories: [],
             currentSankeyData: {}
         })
     }
-    setSampleStructure(sampleStructure){
-        this.sampleStructure=sampleStructure;
+
+    setSampleStructure(sampleStructure) {
+        this.sampleStructure = sampleStructure;
     }
-    setClinicalCategories(clinicalCategories){
-        this.clinicalCategories=clinicalCategories;
+
+    setSampleClinicalMap(sampleClinicalMap) {
+        this.sampleClinicalMap = sampleClinicalMap;
     }
+
+    setClinicalCategories(clinicalCategories) {
+        this.clinicalCategories = clinicalCategories;
+    }
+
     createSankeyData() {
         let counts = {};
         const _self = this;
+        console.log(this.sampleStructure);
         this.clinicalCategories.forEach(function (category) {
             let links = [];
             let nodes = [];
             for (let patient in _self.sampleStructure) {
                 let counter = 0;
                 while (counter + 1 < Object.keys(_self.sampleStructure[patient].timepoints).length) {
-                    const current_state = _self.sampleStructure[patient].timepoints[counter][0].clinicalData[category] + " (timepoint " + String(counter) + ")";
-                    const next_state = _self.sampleStructure[patient].timepoints[counter + 1][0].clinicalData[category] + " (timepoint " + String(counter + 1) + ")";
+                    const current_state = _self.sampleClinicalMap[_self.sampleStructure[patient].timepoints[counter][0]][category] + " (timepoint " + String(counter) + ")";
+                    const next_state = _self.sampleClinicalMap[_self.sampleStructure[patient].timepoints[counter + 1][0]][category] + " (timepoint " + String(counter + 1) + ")";
                     if (SankeyStore.nodesIndex(current_state, nodes) === -1) {
                         nodes.push({"name": current_state});
                     }
@@ -46,6 +55,7 @@ class SankeyStore {
             }
             counts[category] = {"nodes": nodes, "links": links};
         });
+        console.log(this.countsPerTP);
         this.countsPerTP = counts;
         this.setCurrentSankeyData(this.clinicalCategories[0]);
     }
@@ -93,4 +103,5 @@ class SankeyStore {
         this.currentSankeyData = this.countsPerTP[category];
     }
 }
+
 export default SankeyStore;
