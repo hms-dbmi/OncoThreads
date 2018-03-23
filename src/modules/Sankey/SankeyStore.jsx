@@ -26,7 +26,6 @@ class SankeyStore {
     createSankeyData() {
         let counts = {};
         const _self = this;
-        console.log(this.sampleStructure);
         this.clinicalCategories.forEach(function (category) {
             let links = [];
             let nodes = [];
@@ -55,7 +54,6 @@ class SankeyStore {
             }
             counts[category] = {"nodes": nodes, "links": links};
         });
-        console.log(this.countsPerTP);
         this.countsPerTP = counts;
         this.setCurrentSankeyData(this.clinicalCategories[0]);
     }

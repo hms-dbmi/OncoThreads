@@ -25,7 +25,6 @@ h3 {
     height: 300px;
     box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
 }
-
 .middle {
     margin-bottom: 10px;
     background-color: white;
@@ -183,4 +182,33 @@ h3 {
     padding: 5px;
     border: solid black;
     color: black
+}
+
+
+.heatmap{
+     margin-bottom: 10px;
+    background-color: white;
+    border-radius: 4px;
+    height: 800px;
+    box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
+}
+
+.btn-group button {
+    background-color: #4CAF50; /* Green background */
+    border: 1px solid green; /* Green border */
+    color: white; /* White text */
+    font-size: 8px;
+    padding: 5px 5px; /* Some padding */
+    width:100%;
+    cursor: pointer; /* Pointer/hand icon */
+    display: block; /* Make the buttons appear below each other */
+}
+
+.btn-group button:not(:last-child) {
+    border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+    background-color: #3e8e41;
 }

@@ -87,7 +87,7 @@ const ChooseEvent = observer(class ChooseEvent extends React.Component {
         let eventSelectors = [];
         for (let event in this.props.eventStore.attributes) {
             if(event!=="SPECIMEN") {
-                eventSelectors.push(<g><label style={{backgroundColor: this.color(event)}}>{event}<input type="checkbox"
+                eventSelectors.push(<g key={"choose"+event}><label  style={{backgroundColor: this.color(event)}}>{event}<input type="checkbox"
                                                                                                     checked={this.isChecked(event)}
                                                                                                     className="checkBox"
                                                                                                     value={event}

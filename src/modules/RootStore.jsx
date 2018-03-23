@@ -44,21 +44,28 @@ class RootStore {
     buildPatientStructure() {
         const _self = this;
         let sampleStructure = {};
-        let clinicalCat = [];
         let numberOfTimepoints = 0;
         let PriHistogramData = [];
         let RecHistogramData = [];
         let numberOfSamples=0;
         let sampleClinicalMap={};
+        let sampleTimelineMap={};
+        let eventCategories=[];
+        let maxTP=0;
+        let patientsPerTimepoint=[0];
 
         this.cbioAPI.patients.forEach(function (d) {
             sampleStructure[d.patientId] = {"timepoints": {}};
             let previousDate = -1;
             let currTP = 0;
             _self.cbioAPI.clinicalEvents[d.patientId].forEach(function (e, i) {
+                if(!eventCategories.includes(e.eventType)){
+                    eventCategories.push(e.eventType);
+                }
                 if (e.eventType === "SPECIMEN") {
                     numberOfSamples+=1;
                     sampleClinicalMap[e.attributes[1].value]=_self.getSampleClinicalData(_self.cbioAPI.clinicalSampleData,e.attributes[1].value);
+                    sampleTimelineMap[e.attributes[1].value]={"method":e.attributes[0].key,"method_name":e.attributes[0].value,"startNumberOfDaysSinceDiagnosis":e.startNumberOfDaysSinceDiagnosis};
                     if (e.startNumberOfDaysSinceDiagnosis === 0) {
                         PriHistogramData.push(RootStore.getSampleMutationCounts(_self.cbioAPI.mutationCounts, e.attributes[1].value));
                     }
@@ -68,8 +75,16 @@ class RootStore {
                     if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
                         sampleStructure[d.patientId].timepoints[currTP] = [];
                         sampleStructure[d.patientId].timepoints[currTP].push(e.attributes[1].value);
+                        if(patientsPerTimepoint.length<=currTP){
+                            patientsPerTimepoint.push(0);
+                        }
+                        patientsPerTimepoint[currTP]+=1;
                         currTP += 1;
+
                         numberOfTimepoints += 1;
+                        if(currTP>maxTP){
+                            maxTP=currTP;
+                        }
                     }
                     else {
                         sampleStructure[d.patientId].timepoints[currTP - 1].push(e.attributes[1].value);
@@ -78,11 +93,21 @@ class RootStore {
                 }
             })
         });
+        console.log(patientsPerTimepoint);
         this.temporalHeatMapStore.setSampleClinicalMap(sampleClinicalMap);
+        this.temporalHeatMapStore.setSampleTimelineMap(sampleTimelineMap);
         this.temporalHeatMapStore.setClinicalEvents(this.cbioAPI.clinicalEvents);
+        this.temporalHeatMapStore.setSampleStructure(sampleStructure);
+        this.temporalHeatMapStore.setClinicalSampleCategories(this.clinicalSampleCategories);
+        this.temporalHeatMapStore.setEventCategories(eventCategories);
+        this.temporalHeatMapStore.setNumberOfTimepoints(maxTP);
+        this.temporalHeatMapStore.setNumberOfPatients(this.cbioAPI.patients.length);
+        this.temporalHeatMapStore.setPatientsPerTimepoint(patientsPerTimepoint);
+
         this.sankeyStore.setSampleStructure(sampleStructure);
         this.sankeyStore.setSampleClinicalMap(sampleClinicalMap);
         this.sankeyStore.setClinicalCategories(_self.clinicalSampleCategories);
+
         this.summaryStore.setNumberOfPatients(this.cbioAPI.patients.length);
         this.summaryStore.setNumberOfSamples(numberOfSamples);
         this.summaryStore.setNumberOfTimepoints(numberOfTimepoints);

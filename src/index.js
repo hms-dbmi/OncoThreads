@@ -16,6 +16,8 @@ import FirstChart from "./modules/Timeline/components/FirstChart.jsx";
 import MultipleHist from "./modules/Histogram/components/MultipleHist.jsx"
 import Summary from "./modules/Summary/components/Summary.jsx";
 import StackedBarChart from "./modules/StackedBar/components/StackedBarChart";
+import VariableSelector from "./modules/TemporalHeatmap/components/VariableSelector"
+import TemporalHeatmap from "./modules/TemporalHeatmap/components/FlowHeatmap"
 //import StackedBarChart from "./modules/Demographics/components/StackedBarChart";
 
 
@@ -128,6 +130,46 @@ const StackedBars = observer(class StackedBars extends React.Component {
     }
 
 });
+const HeatmapSelector=observer(class HeatmapSelector extends React.Component{
+    render() {
+        if(rootStore.parsed) {
+            return (
+                <div>
+                    <h3>Select Variables</h3>
+                    <div className="bottom-right-svg">
+                        <VariableSelector
+                            clinicalSampleCategories={rootStore.temporalHeatMapStore.clinicalSampleCategories}
+                            eventCategories={rootStore.temporalHeatMapStore.eventCategories}
+                            store={rootStore.temporalHeatMapStore}
+                        />
+                    </div>
+                </div>
+            )
+        }
+        else return null;
+    }
+});
+const Heatmap=observer(class Heatmap extends React.Component{
+    render() {
+        if(rootStore.parsed) {
+            return (
+                <div>
+                    <div className="bottom-right-svg">
+                        <TemporalHeatmap
+                            patients={rootStore.temporalHeatMapStore.patients}
+                            sampleData={rootStore.temporalHeatMapStore.sampleData}
+                            primaryVariables={rootStore.temporalHeatMapStore.primaryVariables}
+                            isGrouped={rootStore.temporalHeatMapStore.isGrouped}
+                            currentVariables={rootStore.temporalHeatMapStore.currentVariables}
+                            store={rootStore.temporalHeatMapStore}
+                        />
+                    </div>
+                </div>
+            )
+        }
+        else return null;
+    }
+});
 
 ReactDOM.render(<StackedBars/>, document.getElementById("stacked-bar-chart"));
 ReactDOM.render(<StudySelection/>, document.getElementById("choosedata"));
@@ -135,3 +177,6 @@ ReactDOM.render(<SummarizeData/>, document.getElementById("summary"));
 ReactDOM.render(<Tl/>, document.getElementById("timeline"));
 ReactDOM.render(<Sk/>, document.getElementById("top-line-chart"));
 ReactDOM.render(<Histograms/>, document.getElementById("hist"));
+ReactDOM.render(<HeatmapSelector/>, document.getElementById("heatmapSelector"));
+ReactDOM.render(<Heatmap/>, document.getElementById("heatmap"));
+

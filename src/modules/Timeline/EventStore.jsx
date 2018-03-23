@@ -56,7 +56,6 @@ class EventStore {
             });
             patientAttributes.push(helper);
         });
-        console.log(patientAttributeCategories);
         this.patientAttributes = patientAttributes;
         this.patientAttributeCategories = patientAttributeCategories;
     }
