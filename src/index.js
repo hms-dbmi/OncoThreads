@@ -157,11 +157,14 @@ const Heatmap=observer(class Heatmap extends React.Component{
                     <div className="bottom-right-svg">
                         <TemporalHeatmap
                             patients={rootStore.temporalHeatMapStore.patients}
-                            sampleData={rootStore.temporalHeatMapStore.sampleData}
+                            patientOrderPerTimepoint={rootStore.temporalHeatMapStore.patientOrderPerTimepoint}
+                            timepointData={rootStore.temporalHeatMapStore.timepointData}
+                            transitionData={rootStore.temporalHeatMapStore.transitionData}
                             primaryVariables={rootStore.temporalHeatMapStore.primaryVariables}
                             isGrouped={rootStore.temporalHeatMapStore.isGrouped}
                             currentVariables={rootStore.temporalHeatMapStore.currentVariables}
                             store={rootStore.temporalHeatMapStore}
+                            visMap={rootStore.visStore}
                         />
                     </div>
                 </div>

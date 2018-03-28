@@ -5,15 +5,15 @@ import {observer} from 'mobx-react';
 const FlowTimepoint = observer(class FlowTimepoint extends React.Component {
     constructor() {
         super();
-        this.colorPrimary = d3.scaleOrdinal().range(['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e']);
-        this.colorSecondary = d3.scaleOrdinal().range(['#f7f7f7', '#cccccc', '#969696', '#636363', '#252525']);
     }
 
-    createRow(row, xScale, height, color) {
+    createRow(row, xScale, height, opacity) {
         let rects = [];
         let currCounts = 0;
+        const _self = this;
         row.forEach(function (f, j) {
-            rects.push(<rect width={xScale(f.value)} x={xScale(currCounts)} height={height} fill={color(f.key)}/>);
+            rects.push(<rect width={xScale(f.value)} x={xScale(currCounts)} height={height}
+                             fill={_self.props.color(f.key)} opacity={opacity}/>);
             currCounts += f.value
         });
         return rects
@@ -24,28 +24,27 @@ const FlowTimepoint = observer(class FlowTimepoint extends React.Component {
         let previousYposition = 0;
         let rows = [];
         partition.rows.forEach(function (d, i) {
-            let height=0;
-            let color;
+            let height = 0;
+            let opacity = 1;
             const transform = "translate(0," + previousYposition + ")";
             if (_self.props.primaryVariable === d.variable) {
-                height=_self.props.primaryHeight;
-                color=_self.colorPrimary;
+                height = _self.props.primaryHeight;
             }
             else {
-                height=_self.props.secondaryHeight;
-                color=_self.colorSecondary
+                height = _self.props.secondaryHeight;
+                opacity = 0.5;
             }
-            if(partitionIndex===0){
+            if (partitionIndex === 0) {
                 let label = <text key={"label" + d.variable} y={height / 2 + _self.props.gap}
                                   fontSize={8}
                                   x={-200}>{d.variable}</text>;
                 rows.push(<g
-                    transform={transform}>{label}{_self.createRow(d.counts, xScale, height, color)}</g>);
+                    transform={transform}>{label}{_self.createRow(d.counts, xScale, height, opacity)}</g>);
                 previousYposition += height + _self.props.gap;
             }
-            else{
+            else {
                 rows.push(<g
-                    transform={transform}>{_self.createRow(d.counts, xScale, height, color)}</g>);
+                    transform={transform}>{_self.createRow(d.counts, xScale, height, opacity)}</g>);
                 previousYposition += height + _self.props.gap;
             }
 
@@ -54,16 +53,17 @@ const FlowTimepoint = observer(class FlowTimepoint extends React.Component {
     }
 
     render() {
-        const xScale = d3.scaleLinear().domain([0, this.props.store.numberOfPatients + (this.props.timepoint.length - 1)]).range([0, this.props.width]);
+        const xScale = d3.scaleLinear().domain([0, this.props.store.numberOfPatients]).range([0, this.props.width - +(this.props.timepoint.length - 1) * 10]);
         const _self = this;
         let previousXPosition = 0;
         const partitions = [];
         this.props.timepoint.forEach(function (d, i) {
-            const transform = "translate(" + (xScale(previousXPosition)) + ",0)";
+            const transform = "translate(" + previousXPosition + ",0)";
             partitions.push(<g transform={transform}>{_self.createPartition(d, xScale, i)}</g>);
             for (let j = 0; j < d.rows.length; j++) {
                 if (d.rows[j].variable === _self.props.primaryVariable) {
-                    previousXPosition += d.rows[j].counts[0].value + 1;
+                    _self.props.visMap.setxPosition(_self.props.index, d.partition, previousXPosition, previousXPosition + xScale(d.rows[j].counts[0].value));
+                    previousXPosition += xScale(d.rows[j].counts[0].value) + 10;
                 }
             }
         });

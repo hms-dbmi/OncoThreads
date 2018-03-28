@@ -2,7 +2,8 @@ import SummaryStore from "./Summary/SummaryStore.jsx";
 import MutationCountStore from "./Histogram/MutationCountStore.jsx";
 import EventStore from "./Timeline/EventStore.jsx";
 import SankeyStore from "./Sankey/SankeyStore.jsx";
-import TemporalHeatMapStore from "./TemporalHeatmap/TemporalHeatMapStore.jsx"
+import TemporalHeatMapStore from "./TemporalHeatmap/DataStore.jsx"
+import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
 import StackedBarChartStore from "./StackedBar/StackedBarChartStore";
 
@@ -15,6 +16,7 @@ class RootStore {
         this.sankeyStore = new SankeyStore();
         this.stackedBarChartStore=new StackedBarChartStore();
         this.temporalHeatMapStore=new TemporalHeatMapStore();
+        this.visStore=new VisStore();
 
         this.clinicalSampleCategories=[];
         extendObservable(this,{
@@ -52,10 +54,12 @@ class RootStore {
         let sampleTimelineMap={};
         let eventCategories=[];
         let maxTP=0;
-        let patientsPerTimepoint=[0];
+        let patientsPerTimepoint=[];
+        let allPatients=[];
 
         this.cbioAPI.patients.forEach(function (d) {
             sampleStructure[d.patientId] = {"timepoints": {}};
+            allPatients.push(d.patientId);
             let previousDate = -1;
             let currTP = 0;
             _self.cbioAPI.clinicalEvents[d.patientId].forEach(function (e, i) {
@@ -76,9 +80,9 @@ class RootStore {
                         sampleStructure[d.patientId].timepoints[currTP] = [];
                         sampleStructure[d.patientId].timepoints[currTP].push(e.attributes[1].value);
                         if(patientsPerTimepoint.length<=currTP){
-                            patientsPerTimepoint.push(0);
+                            patientsPerTimepoint.push([]);
                         }
-                        patientsPerTimepoint[currTP]+=1;
+                        patientsPerTimepoint[currTP].push(d.patientId);
                         currTP += 1;
 
                         numberOfTimepoints += 1;
@@ -103,6 +107,8 @@ class RootStore {
         this.temporalHeatMapStore.setNumberOfTimepoints(maxTP);
         this.temporalHeatMapStore.setNumberOfPatients(this.cbioAPI.patients.length);
         this.temporalHeatMapStore.setPatientsPerTimepoint(patientsPerTimepoint);
+        this.temporalHeatMapStore.setPatientOrderPerTimepoint(Array(maxTP).fill(allPatients));
+        this.visStore.setNumberOfTimepoints(maxTP);
 
         this.sankeyStore.setSampleStructure(sampleStructure);
         this.sankeyStore.setSampleClinicalMap(sampleClinicalMap);

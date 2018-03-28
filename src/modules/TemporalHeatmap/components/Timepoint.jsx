@@ -5,11 +5,12 @@ import HeatmapTimepoint from './HeatmapTimepoint'
 
 const Timepoint = observer(class Timepoint extends React.Component {
     getTimepoint() {
-        if(this.props.isGrouped){
-            return(<FlowTimepoint {...this.props} timepoint={this.props.timepoint.group}/>)
+        if(this.props.store.isGrouped[this.props.index]){
+            return(<FlowTimepoint {...this.props} timepoint={this.props.timepoint.group} primaryVariable={this.props.store.primaryVariables[this.props.index]}/>)
         }
         else{
-            return(<HeatmapTimepoint {...this.props} timepoint={this.props.timepoint.heatmap}/>);
+            return(<HeatmapTimepoint {...this.props} timepoint={this.props.timepoint.heatmap} patientOrder={this.props.store.patientOrderPerTimepoint[this.props.index]}
+            primaryVariable={this.props.store.primaryVariables[this.props.index]}/>);
         }
 
     }

@@ -20,7 +20,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
 
     handleSampleCategoryClick(category) {
         if (!this.state.selectedVariables.includes(category)) {
-            if (this.props.store.sampleData.length === 0) {
+            if (this.props.store.timepointData.length === 0) {
                 this.props.store.initialize(category);
             }
             this.props.store.addVariable(category);
@@ -35,7 +35,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
                     let rowIndex = -1;
                     let _self = this;
                     tps.forEach(function (f) {
-                        _self.props.store.sampleData[f].heatmap.forEach(function (d, i) {
+                        _self.props.store.timepointData[f].heatmap.forEach(function (d, i) {
                             if (d.variable === category) {
                                 rowIndex = i;
                             }
@@ -58,7 +58,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
             }
             //case:
             else{
-                this.props.store.sampleData=[];
+                this.props.store.timepointData=[];
                 this.props.store.primaryVariables=[];
                 this.setState({selectedVariables: []})
 
