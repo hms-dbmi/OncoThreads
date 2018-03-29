@@ -2,28 +2,31 @@ import React from 'react';
 import * as d3 from 'd3';
 import {observer} from 'mobx-react';
 
+import GroupRowOperators from './GroupRowOperators'
+
 const FlowTimepoint = observer(class FlowTimepoint extends React.Component {
     constructor() {
         super();
     }
 
-    createRow(row, xScale, height, opacity) {
+    createRow(row, height, opacity,color) {
         let rects = [];
         let currCounts = 0;
         const _self = this;
         row.forEach(function (f, j) {
-            rects.push(<rect width={xScale(f.value)} x={xScale(currCounts)} height={height}
-                             fill={_self.props.color(f.key)} opacity={opacity}/>);
+            rects.push(<rect key={f.key + j} width={_self.props.groupScale(f.value)} x={_self.props.groupScale(currCounts)} height={height}
+                             fill={color(f.key)} opacity={opacity}/>);
             currCounts += f.value
         });
         return rects
     }
 
-    createPartition(partition, xScale, partitionIndex) {
+    createPartition(partition, partitionIndex) {
         const _self = this;
         let previousYposition = 0;
         let rows = [];
         partition.rows.forEach(function (d, i) {
+            const color=_self.props.visMap.getColorScale(d.variable);
             let height = 0;
             let opacity = 1;
             const transform = "translate(0," + previousYposition + ")";
@@ -38,13 +41,17 @@ const FlowTimepoint = observer(class FlowTimepoint extends React.Component {
                 let label = <text key={"label" + d.variable} y={height / 2 + _self.props.gap}
                                   fontSize={8}
                                   x={-200}>{d.variable}</text>;
-                rows.push(<g
-                    transform={transform}>{label}{_self.createRow(d.counts, xScale, height, opacity)}</g>);
+                rows.push(<g key={d.variable}
+                    transform={transform}>
+                    {label}
+                    <GroupRowOperators key={"operators" + d.variable} y={height / 2 + _self.props.gap} x={-20} timepoint={_self.props.index} variable={d.variable} store={_self.props.store}/>
+                    {_self.createRow(d.counts, height, opacity,color)}
+                    </g>);
                 previousYposition += height + _self.props.gap;
             }
             else {
-                rows.push(<g
-                    transform={transform}>{_self.createRow(d.counts, xScale, height, opacity)}</g>);
+                rows.push(<g key={d.variable}
+                    transform={transform}>{_self.createRow(d.counts, height, opacity,color)}</g>);
                 previousYposition += height + _self.props.gap;
             }
 
@@ -53,17 +60,15 @@ const FlowTimepoint = observer(class FlowTimepoint extends React.Component {
     }
 
     render() {
-        const xScale = d3.scaleLinear().domain([0, this.props.store.numberOfPatients]).range([0, this.props.width - +(this.props.timepoint.length - 1) * 10]);
         const _self = this;
         let previousXPosition = 0;
         const partitions = [];
         this.props.timepoint.forEach(function (d, i) {
             const transform = "translate(" + previousXPosition + ",0)";
-            partitions.push(<g transform={transform}>{_self.createPartition(d, xScale, i)}</g>);
+            partitions.push(<g key={d.partition} transform={transform}>{_self.createPartition(d, i)}</g>);
             for (let j = 0; j < d.rows.length; j++) {
                 if (d.rows[j].variable === _self.props.primaryVariable) {
-                    _self.props.visMap.setxPosition(_self.props.index, d.partition, previousXPosition, previousXPosition + xScale(d.rows[j].counts[0].value));
-                    previousXPosition += xScale(d.rows[j].counts[0].value) + 10;
+                    previousXPosition += _self.props.groupScale(d.rows[j].counts[0].value) + 10;
                 }
             }
         });

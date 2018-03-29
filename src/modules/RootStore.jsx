@@ -97,7 +97,6 @@ class RootStore {
                 }
             })
         });
-        console.log(patientsPerTimepoint);
         this.temporalHeatMapStore.setSampleClinicalMap(sampleClinicalMap);
         this.temporalHeatMapStore.setSampleTimelineMap(sampleTimelineMap);
         this.temporalHeatMapStore.setClinicalEvents(this.cbioAPI.clinicalEvents);

@@ -16,6 +16,20 @@ const FlowHeatmap = observer(class FlowHeatmap extends React.Component {
         ReactMixins.call(this);
     }
 
+    createHeatMapScales(w, rectWidth){
+        const _self = this;
+        return this.props.patientOrderPerTimepoint.map(function (d, i) {
+            return d3.scalePoint()
+                .domain(d)
+                .range([0, w - rectWidth]);
+        })
+    }
+
+    createGroupScale(w) {
+        return (d3.scaleLinear().domain([0, this.props.store.numberOfPatients]).range([0, w - 100]));
+
+    }
+
     render() {
         const margin = {top: 10, right: 10, bottom: 10, left: 200},
             w = this.state.width - (margin.left + margin.right);
@@ -26,8 +40,9 @@ const FlowHeatmap = observer(class FlowHeatmap extends React.Component {
         const gap = 2;
         const transitionSpace = 100;
         const tpHeight = primaryHeight + gap + (this.props.currentVariables.length - 1) * (secondaryHeight + gap);
+        const groupScale = this.createGroupScale(w);
+        const heatmapScales = this.createHeatMapScales(w, rectWidth);
         this.props.visMap.computeYpositions(tpHeight, transitionSpace);
-        this.props.visMap.resetxPositions();
 
         return (
             <div>
@@ -35,10 +50,17 @@ const FlowHeatmap = observer(class FlowHeatmap extends React.Component {
                     <g transform={transform}>
                         <Timepoints timepointData={this.props.timepointData} yPositions={this.props.visMap.timepointY}
                                     primaryHeight={primaryHeight} secondaryHeight={secondaryHeight} gap={gap}
-                                    rectWidth={rectWidth} width={w} color={this.colorCategorical}
-                                    store={this.props.store} visMap={this.props.visMap}/>
-                        <Transitions transitionData={this.props.transitionData} yPositions={this.props.visMap.transY}
-                                     xPositions={this.props.visMap.xPositions} height={this.props.visMap.transHeight}/>
+                                    rectWidth={rectWidth} width={w}
+                                    store={this.props.store} visMap={this.props.visMap}
+                                    groupScale={groupScale} heatmapScales={heatmapScales}/>
+                        <Transitions transitionData={this.props.transitionData} timepointData={this.props.timepointData}
+                                     yPositions={this.props.visMap.transY}
+                                     xPositions={this.props.visMap.xPositions}
+                                     primaryVariables={this.props.primaryVariables}
+                                     height={this.props.visMap.transHeight}
+                                     rectWidth={rectWidth}
+                                     visMap={this.props.visMap}
+                                     groupScale={groupScale} heatmapScales={heatmapScales}/>
 
                     </g>
                 </svg>

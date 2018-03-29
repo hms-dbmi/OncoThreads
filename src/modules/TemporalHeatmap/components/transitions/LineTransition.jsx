@@ -7,11 +7,11 @@ const LineTransition = observer(class LineTransition extends React.Component {
         super();
     }
 
-    drawLine(x0, x1, y0, y1) {
+    static drawLine(x0, x1, y0, y1,key) {
         const line = d3.path();
         line.moveTo(x0, y0);
         line.lineTo(x1, y1);
-        return (<path d={line.toString()} stroke={"lightgray"}/>)
+        return (<path key={key} d={line.toString()} stroke={"lightgray"}/>)
     }
 
     drawLines() {
@@ -19,7 +19,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
         const _self = this;
         this.props.transition.data.from.forEach(function (d) {
             if (_self.props.transition.data.to.includes(d)) {
-                lines.push(_self.drawLine((_self.props.firstPositions[d].start + _self.props.firstPositions[d].end) / 2, (_self.props.secondPositions[d].start + _self.props.secondPositions[d].end) / 2, 0, _self.props.height))
+                lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d)+_self.props.rectWidth/2, _self.props.secondHeatmapScale(d)+10, 0 , _self.props.height,d));
             }
         });
         return lines;

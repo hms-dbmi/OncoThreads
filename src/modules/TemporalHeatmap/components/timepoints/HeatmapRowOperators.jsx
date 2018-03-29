@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 
-const RowOperators=observer(class RowOperators extends React.Component{
+const HeatmapRowOperators=observer(class HeatmapRowOperators extends React.Component{
     constructor(){
         super();
         this.sort=this.sort.bind(this);
@@ -25,4 +25,4 @@ const RowOperators=observer(class RowOperators extends React.Component{
         )
     }
 });
-export default RowOperators;
+export default HeatmapRowOperators;

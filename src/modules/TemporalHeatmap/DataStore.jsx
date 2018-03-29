@@ -18,7 +18,6 @@ class DataStore {
             numberOfpatients: 0,
             patientOrderPerTimepoint: [],
             patientsPerTimepoint: [],
-            allPatients: []
         })
     }
 
@@ -46,9 +45,6 @@ class DataStore {
         this.sampleStructure = sampleStructure;
     }
 
-    setAllPatients(patients) {
-        this.allPatients = patients;
-    }
 
     setNumberOfTimepoints(noTP) {
         this.numberOfTimepoints = noTP;
@@ -75,7 +71,6 @@ class DataStore {
                 data: {"from": this.patientsPerTimepoint[i], "to": this.patientsPerTimepoint[i + 1]}
             })
         }
-        console.log(this.transitionData);
     }
 
     setIsGrouped(timepoint, boolean) {
@@ -210,7 +205,6 @@ class DataStore {
         this.sortGroups(timepoint);
         this.setIsGrouped(timepoint, true);
         this.adaptTransitions(timepoint);
-        console.log(this.transitionData);
     }
 
     /**
@@ -236,6 +230,11 @@ class DataStore {
         else {
             this.timepointData[timepoint].group[partitionIndex].rows[rowIndex].counts[keyIndex].value += 1;
         }
+    }
+    unGroupTimepoint(timepoint,variable){
+        this.setIsGrouped(timepoint,false);
+        this.setPrimaryVariable(timepoint,variable);
+        this.adaptTransitions(timepoint);
     }
 
     sortGroups(timepoint) {
@@ -307,29 +306,46 @@ class DataStore {
     adaptTransitions(timepoint) {
         let previousTimepoint = timepoint - 1;
         let nextTimepoint = timepoint + 1;
-        if (previousTimepoint !== -1) {
-            if (this.isGrouped[previousTimepoint]) {
-                this.computeSankeyTransition(previousTimepoint, timepoint)
+        if(this.isGrouped[timepoint]) {
+            if (previousTimepoint !== -1) {
+                if (this.isGrouped[previousTimepoint]) {
+                    this.computeSankeyTransition(previousTimepoint, timepoint)
+                }
+                else {
+                    this.computeGroupToPatientsTransition(previousTimepoint, timepoint)
+                }
             }
-            else {
-                this.computeGroupToPatientsTransition(previousTimepoint, timepoint)
+            if (nextTimepoint !== this.numberOfTimepoints) {
+                if (this.isGrouped[nextTimepoint]) {
+                    this.computeSankeyTransition(timepoint, nextTimepoint)
+                }
+                else {
+                    this.computeGroupToPatientsTransition(timepoint, nextTimepoint)
+                }
             }
         }
-        if (nextTimepoint !== this.numberOfTimepoints) {
-            if (this.isGrouped[nextTimepoint]) {
-                this.computeSankeyTransition(timepoint, nextTimepoint)
+        else {
+            if (previousTimepoint !== -1) {
+                if (this.isGrouped[previousTimepoint]) {
+                    this.computeGroupToPatientsTransition(previousTimepoint, timepoint)
+                }
+                else {
+                    this.computLineTransition(previousTimepoint, timepoint)
+                }
             }
-            else {
-                this.computeGroupToPatientsTransition(timepoint, nextTimepoint)
+            if (nextTimepoint !== this.numberOfTimepoints) {
+                if (this.isGrouped[nextTimepoint]) {
+                    this.computeGroupToPatientsTransition(timepoint, nextTimepoint)
+                }
+                else {
+                    this.computLineTransition(timepoint, nextTimepoint)
+                }
             }
         }
-        console.log(this.transitionData);
-
     }
 
     computeSankeyTransition(firstTP, secondTP) {
         let transitions = [];
-        let transitionIndex = -1;
         const _self = this;
         this.timepointData[firstTP].group.forEach(function (d) {
             _self.timepointData[secondTP].group.forEach(function (f) {
@@ -399,6 +415,10 @@ class DataStore {
         }).map(function (d) {
             return d.patient;
         }));
+    }
+    computLineTransition(firstTP,secondTP){
+        this.transitionData[firstTP].type="line";
+        this.transitionData[firstTP].data={"from": this.patientsPerTimepoint[firstTP], "to": this.patientsPerTimepoint[secondTP]}
     }
 }
 
