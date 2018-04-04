@@ -3,10 +3,6 @@ import * as d3 from 'd3';
 import {observer} from 'mobx-react';
 
 const SankeyTransition = observer(class SankeyTransition extends React.Component {
-    constructor() {
-        super();
-    }
-
     /**
      * draws a single transition
      * @param x0: start point on source partition
@@ -15,14 +11,27 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      * @param key: unique transition key
      * @returns transition path
      */
-    drawTransition(x0, x1, width, key) {
-        const line = d3.path();
-        line.moveTo(x0, 0);
-        line.lineTo(x1, this.props.height-2);
-        line.lineTo(x1 + width, this.props.height-2);
-        line.lineTo(x0 + width, 0);
-        line.closePath();
-        return (<path key={key} d={line.toString()} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
+    drawTransition(x0, x1, width, key,rectWidth) {
+        const curvature = .5;
+        const y0=0-this.props.gap*3+rectWidth,
+            y1=this.props.height-this.props.gap*2-rectWidth;
+        const yi = d3.interpolateNumber(y0, y1),
+            y2 = yi(curvature),
+            y3 = yi(1- curvature);
+
+        let path = "M" + x0 + "," + y0
+            + "C" + x0 + "," + y2
+            + " " + x1 + "," + y3
+            + " " + x1 + "," + y1
+            + "L" + (x1 + width) + "," + y1
+            + "C" + (x1+width) + "," + y3
+            + " " + (x0+width) + "," + y2
+            + " " + (x0+width) + "," + y0
+            + "L" + x0 + "," + y0;
+        return (<path key={key} d={path} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
+    }
+    static drawHelperRect(x, y, width, height, color){
+        return(<rect x={x} y={y} width={width} height={height} fill={color}/>)
     }
 
     /**
@@ -31,29 +40,33 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      */
     drawTransitions() {
         let transitions = [];
+        let rects=[];
+        const rectWidth=5;
         let currXtarget = {};
         const _self = this;
         let sourcePartitionPos = 0;
-        this.props.firstTimepoint.group.forEach(function (d){
-            let currXsource=sourcePartitionPos;
-            const firstParLength=_self.getPartitionLength(d,_self.props.firstPrimary);
-            let targetPartitionPos=0;
+        this.props.firstTimepoint.group.forEach(function (d) {
+            let currXsource = sourcePartitionPos;
+            const firstParLength = _self.getPartitionLength(d, _self.props.firstPrimary);
+            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos,_self.props.gap,_self.props.groupScale(firstParLength),5,_self.props.visMap.getColorScale(_self.props.firstPrimary)(d.partition)));
+            let targetPartitionPos = 0;
             _self.props.secondTimepoint.group.forEach(function (f) {
+                rects.push(SankeyTransition.drawHelperRect(targetPartitionPos,_self.props.height-5-_self.props.gap*2,_self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary)),5,_self.props.visMap.getColorScale(_self.props.secondPrimary)(f.partition)));
                 let transition = _self.getTransition(d.partition, f.partition);
                 if (!(f.partition in currXtarget)) {
                     currXtarget[f.partition] = targetPartitionPos
                 }
                 if (transition.value !== 0) {
                     const transitionWidth = transition.value * (_self.props.groupScale(firstParLength) / firstParLength);
-                    transitions.push(_self.drawTransition(currXsource, currXtarget[f.partition], transitionWidth, d.partition + "" + f.partition));
+                    transitions.push(_self.drawTransition(currXsource, currXtarget[f.partition], transitionWidth, d.partition + "" + f.partition,rectWidth));
                     currXsource += transitionWidth;
                     currXtarget[f.partition] += transitionWidth;
                 }
-                targetPartitionPos+=_self.props.groupScale(_self.getPartitionLength(f,_self.props.secondPrimary)) +10;
+                targetPartitionPos += _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary)) + 10;
             });
             sourcePartitionPos += _self.props.groupScale(firstParLength) + 10;
         });
-        return transitions;
+        return [transitions,rects];
     }
 
     /**
@@ -61,11 +74,10 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      * @param partition
      * @param primaryVariable
      */
-    getPartitionLength(partition,primaryVariable){
-        const _self=this;
+    getPartitionLength(partition, primaryVariable) {
         return partition.rows.filter(function (e) {
-                return e.variable === primaryVariable;
-            })[0].counts[0].value;
+            return e.variable === primaryVariable;
+        })[0].counts[0].value;
     }
 
     /**

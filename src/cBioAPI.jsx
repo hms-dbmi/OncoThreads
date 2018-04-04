@@ -70,7 +70,7 @@ class cBioAPI {
      * @returns {AxiosPromise<any>}
      */
     static getClinicalData(studyID) {
-        return axios.get("http://www.cbioportal.org/api/studies/" + studyID + "/clinical-data?clinicalDataType=SAMPLE&projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC");
+        return axios.get("http://www.cbioportal.org/api/studies/" + studyID + "/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC");
     }
 
     /**

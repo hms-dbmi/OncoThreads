@@ -97,6 +97,7 @@ class RootStore {
                 }
             })
         });
+
         this.temporalHeatMapStore.setSampleClinicalMap(sampleClinicalMap);
         this.temporalHeatMapStore.setSampleTimelineMap(sampleTimelineMap);
         this.temporalHeatMapStore.setClinicalEvents(this.cbioAPI.clinicalEvents);
@@ -107,7 +108,6 @@ class RootStore {
         this.temporalHeatMapStore.setNumberOfPatients(this.cbioAPI.patients.length);
         this.temporalHeatMapStore.setPatientsPerTimepoint(patientsPerTimepoint);
         this.temporalHeatMapStore.setPatientOrderPerTimepoint(Array(maxTP).fill(allPatients));
-        this.visStore.setNumberOfTimepoints(maxTP);
 
         this.sankeyStore.setSampleStructure(sampleStructure);
         this.sankeyStore.setSampleClinicalMap(sampleClinicalMap);
@@ -132,14 +132,20 @@ class RootStore {
             return d.sampleId === sampleId;
         });
         sampleClinicalArray.forEach(function (d,i) {
-            if(!_self.clinicalSampleCategories.includes(d.clinicalAttributeId)){
-                _self.clinicalSampleCategories.push(d.clinicalAttributeId);
+            if(!_self.clinicalSampleCategories.includes(d.clinicalAttribute.displayName)){
+                _self.clinicalSampleCategories.push(d.clinicalAttribute.displayName);
             }
-            sampleClinicalDict[d.clinicalAttributeId]=d.value;
+            sampleClinicalDict[d.clinicalAttribute.displayName]=d.value;
         });
         return sampleClinicalDict;
     }
-
+    createMutationCountsMapping(mutationCounts){
+        let mapper={};
+        mutationCounts.forEach(function (d) {
+            mapper[d.sampleId]=d.mutationCount;
+        });
+        return mapper;
+    }
     /**
      * get tha mutation counts for a sample
      * @param mutationCounts

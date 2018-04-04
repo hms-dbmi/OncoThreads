@@ -18,15 +18,17 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         return indexes;
     }
 
-    handleSampleCategoryClick(category) {
+    handleSampleCategoryClick(event,category) {
         if (!this.state.selectedVariables.includes(category)) {
             if (this.props.store.timepointData.length === 0) {
                 this.props.store.initialize(category);
             }
             this.props.store.addVariable(category);
+            event.target.className="selected";
             this.setState({selectedVariables: [...this.state.selectedVariables, category]})
         }
         else {
+            event.target.className="notSelected";
             //case the row removed was not the only row
             if(this.props.store.currentVariables.length>1) {
                 if (this.props.store.primaryVariables.includes(category)) {
@@ -74,7 +76,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<button key={d} onClick={() => _self.handleSampleCategoryClick(d)}>{d}</button>)
+            buttons.push(<button className="notSelected" key={d} onClick={(e) => _self.handleSampleCategoryClick(e,d)}>{d}</button>)
         });
         return buttons;
     }
@@ -83,7 +85,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         let buttons = [];
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<button key={d}>{d}</button>)
+                buttons.push(<button className="notSelected" key={d}>{d}</button>)
             }
         });
         return buttons;

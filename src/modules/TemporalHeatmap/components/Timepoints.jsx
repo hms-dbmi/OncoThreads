@@ -1,7 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import Timepoint from "./timepoints/Timepoint"
-import * as d3 from "d3";
 
 const Timepoints = observer(class Timepoints extends React.Component {
 

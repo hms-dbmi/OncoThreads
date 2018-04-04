@@ -29,12 +29,13 @@ const StudySelection = observer(class StudySelection extends React.Component {
     render() {
         return (
             <div>
-                <h1> Test Visualizations</h1>
+                <h1>OncoTracer</h1>
                 <GetStudy rootStore={rootStore}/>
             </div>
         )
     }
 });
+/*
 const SummarizeData = observer(class SummarizeData extends React.Component {
     render() {
         if (rootStore.parsed) {
@@ -53,6 +54,7 @@ const SummarizeData = observer(class SummarizeData extends React.Component {
 
 
 });
+
 const Sk = observer(class Sk extends React.Component {
     render() {
         if (rootStore.parsed) {
@@ -130,12 +132,12 @@ const StackedBars = observer(class StackedBars extends React.Component {
     }
 
 });
+*/
 const HeatmapSelector=observer(class HeatmapSelector extends React.Component{
     render() {
         if(rootStore.parsed) {
             return (
                 <div>
-                    <h3>Select Variables</h3>
                     <div className="bottom-right-svg">
                         <VariableSelector
                             clinicalSampleCategories={rootStore.temporalHeatMapStore.clinicalSampleCategories}
@@ -156,7 +158,7 @@ const Heatmap=observer(class Heatmap extends React.Component{
                 <div>
                     <div className="bottom-right-svg">
                         <TemporalHeatmap
-                            patients={rootStore.temporalHeatMapStore.patients}
+                            numberOfPatients={rootStore.temporalHeatMapStore.numberOfPatients}
                             patientOrderPerTimepoint={rootStore.temporalHeatMapStore.patientOrderPerTimepoint}
                             timepointData={rootStore.temporalHeatMapStore.timepointData}
                             transitionData={rootStore.temporalHeatMapStore.transitionData}
@@ -174,12 +176,7 @@ const Heatmap=observer(class Heatmap extends React.Component{
     }
 });
 
-ReactDOM.render(<StackedBars/>, document.getElementById("stacked-bar-chart"));
 ReactDOM.render(<StudySelection/>, document.getElementById("choosedata"));
-ReactDOM.render(<SummarizeData/>, document.getElementById("summary"));
-ReactDOM.render(<Tl/>, document.getElementById("timeline"));
-ReactDOM.render(<Sk/>, document.getElementById("top-line-chart"));
-ReactDOM.render(<Histograms/>, document.getElementById("hist"));
 ReactDOM.render(<HeatmapSelector/>, document.getElementById("heatmapSelector"));
 ReactDOM.render(<Heatmap/>, document.getElementById("heatmap"));
 

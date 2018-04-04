@@ -4,6 +4,7 @@ class DataStore {
     constructor() {
         this.clinicalEvents = {};
         this.sampleClinicalMap = {};
+        this.sampleMutationCountMap = {};
         this.sampleStructure = {};
         this.numberOfTimepoints = 0;
         extendObservable(this, {
@@ -27,6 +28,10 @@ class DataStore {
 
     setSampleClinicalMap(map) {
         this.sampleClinicalMap = map;
+    }
+
+    setSampleMutationCountMap(map) {
+        this.sampleMutationCountMap = map;
     }
 
     setSampleTimelineMap(map) {
@@ -202,7 +207,7 @@ class DataStore {
                 }
             }
         }
-        this.sortGroups(timepoint);
+        this.sortGroups(timepoint, 1);
         this.setIsGrouped(timepoint, true);
         this.adaptTransitions(timepoint);
     }
@@ -231,19 +236,20 @@ class DataStore {
             this.timepointData[timepoint].group[partitionIndex].rows[rowIndex].counts[keyIndex].value += 1;
         }
     }
-    unGroupTimepoint(timepoint,variable){
-        this.setIsGrouped(timepoint,false);
-        this.setPrimaryVariable(timepoint,variable);
+
+    unGroupTimepoint(timepoint, variable) {
+        this.setIsGrouped(timepoint, false);
+        this.setPrimaryVariable(timepoint, variable);
         this.adaptTransitions(timepoint);
     }
 
-    sortGroups(timepoint) {
+    sortGroups(timepoint, order) {
         this.timepointData[timepoint].group = this.timepointData[timepoint].group.sort(function (a, b) {
             if (a.partition < b.partition) {
-                return -1;
+                return -1 * order;
             }
             if (a.partition > b.partition) {
-                return 1;
+                return 1 * order;
             }
             else return 0;
         });
@@ -251,10 +257,10 @@ class DataStore {
             d.rows.forEach(function (f, j) {
                 f.counts = f.counts.sort(function (a, b) {
                     if (a.key < b.key) {
-                        return -1;
+                        return -1 * order;
                     }
                     if (a.key > b.key) {
-                        return 1
+                        return 1 * order
                     }
                     else return 0;
                 })
@@ -306,7 +312,7 @@ class DataStore {
     adaptTransitions(timepoint) {
         let previousTimepoint = timepoint - 1;
         let nextTimepoint = timepoint + 1;
-        if(this.isGrouped[timepoint]) {
+        if (this.isGrouped[timepoint]) {
             if (previousTimepoint !== -1) {
                 if (this.isGrouped[previousTimepoint]) {
                     this.computeSankeyTransition(previousTimepoint, timepoint)
@@ -405,7 +411,6 @@ class DataStore {
     }
 
     getPatientsInPartition(groupedIndex, ungroupedIndex, partition) {
-        let patients = [];
         const _self = this;
         let TP = this.timepointData[groupedIndex].heatmap.filter(function (d) {
             return d.variable === _self.primaryVariables[groupedIndex]
@@ -416,9 +421,13 @@ class DataStore {
             return d.patient;
         }));
     }
-    computLineTransition(firstTP,secondTP){
-        this.transitionData[firstTP].type="line";
-        this.transitionData[firstTP].data={"from": this.patientsPerTimepoint[firstTP], "to": this.patientsPerTimepoint[secondTP]}
+
+    computLineTransition(firstTP, secondTP) {
+        this.transitionData[firstTP].type = "line";
+        this.transitionData[firstTP].data = {
+            "from": this.patientsPerTimepoint[firstTP],
+            "to": this.patientsPerTimepoint[secondTP]
+        }
     }
 }
 
