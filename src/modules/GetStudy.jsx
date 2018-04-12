@@ -11,7 +11,7 @@ const GetStudy = observer(class GetStudy extends React.Component {
     static getStudy(event) {
         if (event.key === "Enter") {
             event.preventDefault();
-            this.props.rootStore.setStudyID(event.target.value);
+            this.props.rootStore.createStores(event.target.value);
         }
     }
 

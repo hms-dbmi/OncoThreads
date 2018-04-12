@@ -14,7 +14,6 @@ const Transition = observer(class Transition extends React.Component {
                 return <GroupToPatientsTransition {...this.props}/>
             }
             else {
-                //case lines
                 return <LineTransition {...this.props}/>
             }
         }
@@ -23,9 +22,7 @@ const Transition = observer(class Transition extends React.Component {
 
     render() {
         return (
-            <g>
-                {this.getTransition()}
-            </g>
+            this.getTransition()
         )
     }
 });

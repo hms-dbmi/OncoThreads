@@ -19,8 +19,6 @@ class cBioAPI {
          */
         this.patients = [];
         this.clinicalEvents = {};
-        this.allClinicalEvents=[];
-        this.allClinicalPatientData=[];
         this.clinicalPatientData=[];
         this.clinicalSampleData=[];
         this.mutationCounts=[];
@@ -41,14 +39,11 @@ class cBioAPI {
                     .then(function (eventResults) {
                         eventResults.forEach(function (response2, i) {
                             _self.clinicalEvents[_self.patients[i].patientId] = response2.data;
-                            _self.allClinicalEvents=_self.allClinicalEvents.concat(response2.data);
                         });
                         axios.all(patientDataRequests)
                             .then(function (patientDataResults) {
                                 patientDataResults.forEach(function (response3, i) {
                                     _self.clinicalPatientData.push(response3.data);
-
-                                    _self.allClinicalPatientData=_self.allClinicalPatientData.concat(response3.data);
                                 });
 
                                 /**

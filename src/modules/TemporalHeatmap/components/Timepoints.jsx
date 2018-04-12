@@ -7,20 +7,38 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
     getTimepoints() {
         const _self = this;
-        return (this.props.timepointData.map(function (d, i) {
+        let timepoints = [];
+        this.props.store.timepointData.forEach(function (d, i) {
+            let currentVariables = [];
+            let rectWidth, primaryHeight, secondaryHeight;
+            if (_self.props.store.timepointData[i].type==="between") {
+                currentVariables = _self.props.currentBetweenVariables;
+                rectWidth = _self.props.visMap.betweenRectWidth;
+
+
+            }
+            else {
+                currentVariables = _self.props.currentSampleVariables;
+                rectWidth = _self.props.visMap.sampleRectWidth;
+            }
             const transform = "translate(0," + _self.props.yPositions[i] + ")";
-            return (<g key={i + "timepoint"} transform={transform}><Timepoint timepoint={d} index={i}
-                                                                              primaryHeight={_self.props.primaryHeight}
-                                                                              secondaryHeight={_self.props.secondaryHeight}
-                                                                              rectWidth={_self.props.rectWidth}
-                                                                              gap={_self.props.gap}
-                                                                              width={_self.props.width}
-                                                                              store={_self.props.store}
-                                                                              visMap={_self.props.visMap}
-                                                                              groupScale={_self.props.groupScale}
-                                                                              heatmapScale={_self.props.heatmapScales[i]}/>
-            </g>);
-        }))
+            if (d.heatmap.length > 0) {
+                timepoints.push(<g key={i + "timepoint"} transform={transform}><Timepoint timepoint={d} index={i}
+                                                                                          currentVariables={currentVariables}
+                                                                                          primaryHeight={_self.props.visMap.primaryHeight}
+                                                                                          groupOrder={_self.props.groupOrder[i]}
+                                                                                          secondaryHeight={_self.props.visMap.secondaryHeight}
+                                                                                          rectWidth={rectWidth}
+                                                                                          gap={_self.props.visMap.gap}
+                                                                                          width={_self.props.heatmapWidth}
+                                                                                          store={_self.props.store}
+                                                                                          visMap={_self.props.visMap}
+                                                                                          groupScale={_self.props.groupScale}
+                                                                                          heatmapScale={_self.props.heatmapScales[i]}/>
+                </g>);
+            }
+        });
+        return timepoints;
     }
 
     render() {

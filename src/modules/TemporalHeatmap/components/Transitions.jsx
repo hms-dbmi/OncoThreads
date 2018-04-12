@@ -5,7 +5,8 @@ import Transition from './transitions/Transition'
 const Transitions = observer(class Transitions extends React.Component {
     getTransitions() {
         const _self = this;
-        return (this.props.transitionData.map(function (d, i) {
+        console.log(this.props.transitionData);
+        return (_self.props.transitionData.map(function (d, i) {
             const transform = "translate(0," + _self.props.yPositions[i] + ")";
             return (<g key={i + "transition"} transform={transform}><Transition transition={d}
                                                                                 index={i}
@@ -13,9 +14,9 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                 secondTimepoint={_self.props.timepointData[i + 1]}
                                                                                 firstPrimary={_self.props.primaryVariables[i]}
                                                                                 secondPrimary={_self.props.primaryVariables[i + 1]}
-                                                                                height={_self.props.height}
-                                                                                rectWidth={_self.props.rectWidth}
-                                                                                gap={_self.props.gap}
+                                                                                height={_self.props.visMap.transitionSpace}
+                                                                                rectWidth={_self.props.visMap.sampleRectWidth}
+                                                                                gap={_self.props.visMap.gap}
                                                                                 groupScale={_self.props.groupScale}
                                                                                 firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                                 secondHeatmapScale={_self.props.heatmapScales[i + 1]}

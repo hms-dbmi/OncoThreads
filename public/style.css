@@ -82,18 +82,23 @@ h3 {
 }
 
 .rowOperators {
+    vertical-align: top;
     text-align: left;
-    display: inline;
+    display: inline-block;
 }
 .view {
+    vertical-align: top;
+    width:750px;
     overflow-x: scroll;
-    display: inline;
+    overflow-y: hidden;
+    display: inline-block;
 
 }
 
 .legend {
+    vertical-align: top;
      text-align: left;
-    display: inline;
+    display: inline-block;
 }
 
 

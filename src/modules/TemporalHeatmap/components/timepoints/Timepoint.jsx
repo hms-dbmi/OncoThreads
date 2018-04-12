@@ -6,8 +6,8 @@ import HeatmapTimepoint from './Heatmap/HeatmapTimepoint'
 const Timepoint = observer(class Timepoint extends React.Component {
 
     getTimepoint() {
-        if (this.props.store.isGrouped[this.props.index]) {
-            return (<FlowTimepoint {...this.props} timepoint={this.props.timepoint.group}
+        if (this.props.groupOrder.isGrouped) {
+            return (<FlowTimepoint {...this.props} timepoint={this.props.timepoint.group.data}
                                    primaryVariable={this.props.store.primaryVariables[this.props.index]}/>)
         }
         else {
@@ -20,9 +20,7 @@ const Timepoint = observer(class Timepoint extends React.Component {
 
     render() {
         return (
-            <g>
-                {this.getTimepoint()}
-            </g>
+            this.getTimepoint()
         )
     }
 });

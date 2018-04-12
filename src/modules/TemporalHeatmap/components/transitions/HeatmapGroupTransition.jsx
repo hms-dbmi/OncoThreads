@@ -1,6 +1,8 @@
 import React from 'react';
 import * as d3 from 'd3';
 import {observer} from 'mobx-react';
+import {isObservableArray} from 'mobx';
+
 
 const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends React.Component {
     /**
@@ -13,11 +15,11 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
      * @param key: unique transition key
      * @returns transition path
      */
-    static drawTransition(x0, x1,x2,y0,y1, key) {
+    static drawTransition(x0, x1, x2, y0, y1, key) {
         const curvature = .5;
         const yi = d3.interpolateNumber(y0, y1),
             y2 = yi(curvature),
-            y3 = yi(1- curvature);
+            y3 = yi(1 - curvature);
 
         let path = "M" + x0 + "," + y0
             + "C" + x0 + "," + y2
@@ -25,17 +27,18 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
             + " " + x2 + "," + y1
             + "C" + (x2) + "," + y3
             + " " + (x1) + "," + y2
-            + " " + (x1) + "," + y0
+            + " " + (x1) + "," + y0;
 
         const line = d3.path();
         line.moveTo(x0, y0);
-        line.lineTo(x1,y0);
+        line.lineTo(x1, y0);
         line.lineTo(x2, y1);
         line.closePath();
         return (<path key={key} d={path} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
     }
-    static drawHelperRect(x, y, width, height, color){
-        return(<rect x={x} y={y} width={width} height={height} fill={color}/>)
+
+    static drawHelperRect(x, y, width, height, color,key) {
+        return (<rect key={key} x={x} y={y} width={width} height={height} fill={color}/>)
     }
 
     /**
@@ -43,47 +46,48 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
      * @returns {Array}
      */
     drawTransitions() {
-        let reverse=this.isReverse();
-        const rectHeight=5;
+        let reverse = this.isReverse();
+        const rectHeight = 5;
         let grouped, scale, y0, y1, primary, recty;
         if (reverse) {
             grouped = this.props.secondTimepoint;
-            scale=this.props.firstHeatmapScale;
-            y0 = this.props.height-rectHeight-2*this.props.gap;
-            y1 = 0-this.props.gap;
-            recty=y0;
-            primary=this.props.secondPrimary
+            scale = this.props.firstHeatmapScale;
+            y0 = this.props.height - rectHeight - 2 * this.props.gap;
+            y1 = 0 - this.props.gap;
+            recty = y0;
+            primary = this.props.secondPrimary
         }
         else {
             grouped = this.props.firstTimepoint;
-            scale=this.props.secondHeatmapScale;
-            y0 = 0+this.props.gap+rectHeight;
+            scale = this.props.secondHeatmapScale;
+            y0 = 0 + this.props.gap + rectHeight;
             y1 = this.props.height;
-            recty=0+this.props.gap;
-            primary=this.props.firstPrimary
+            recty = 0 + this.props.gap;
+            primary = this.props.firstPrimary
         }
         let transitions = [];
-        let rects=[];
+        let rects = [];
         const _self = this;
         let sourcePartitionPos = 0;
-        grouped.group.forEach(function (d) {
+        grouped.group.data.forEach(function (d) {
             let currXsource = sourcePartitionPos;
             const partitionLength = _self.getPartitionLength(d, primary);
-            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos,recty,_self.props.groupScale(partitionLength),rectHeight,_self.props.visMap.getColorScale(primary)(d.partition)));
-                let transitionPatients = _self.getTransitionPatients(d.partition,reverse);
-                if (transitionPatients.length !== 0) {
-                    const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
-                    transitionPatients.forEach(function (f) {
-                        transitions.push(HeatmapGroupTransition.drawTransition(currXsource,currXsource+transitionWidth, scale(f)+0.5*_self.props.rectWidth,y0,y1, d.partition + "" + f));
-                        currXsource += transitionWidth;
-                    });
-                }
-                sourcePartitionPos += _self.props.groupScale(partitionLength) + 10;
-            });
-        return [transitions,rects];
+            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, _self.props.visMap.getColorScale(primary,"categorical")(d.partition),d.partition));
+            let transitionPatients = _self.getTransitionPatients(d.partition, reverse);
+            if (transitionPatients.length !== 0) {
+                const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
+                transitionPatients.forEach(function (f) {
+                    transitions.push(HeatmapGroupTransition.drawTransition(currXsource, currXsource + transitionWidth, scale(f) + 0.5 * _self.props.rectWidth, y0, y1, f));
+                    currXsource += transitionWidth;
+                });
+            }
+            sourcePartitionPos += _self.props.groupScale(partitionLength) + 10;
+        });
+        return [transitions, rects];
     }
-    isReverse(){
-        return (!(typeof this.props.transition.data[0].from==="string"))
+
+    isReverse() {
+        return (isObservableArray(this.props.transition.data[0].from))
     }
 
     /**
@@ -97,11 +101,11 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         })[0].counts[0].value;
     }
 
-    getTransitionPatients(partition,reverse) {
-        if(!reverse)
-        return this.props.transition.data.filter(function (d, i) {
-            return d.from === partition
-        })[0].to;
+    getTransitionPatients(partition, reverse) {
+        if (!reverse)
+            return this.props.transition.data.filter(function (d, i) {
+                return d.from === partition
+            })[0].to;
         else return this.props.transition.data.filter(function (d, i) {
             return d.to === partition
         })[0].from;
