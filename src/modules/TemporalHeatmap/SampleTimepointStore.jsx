@@ -1,5 +1,7 @@
 import {extendObservable} from "mobx";
-
+/*
+stores information about sample timepoints
+ */
 class SampleTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
@@ -44,7 +46,7 @@ class SampleTimepointStore {
     }
 
     /**
-     * initialize variables, used after the fist variable is added.
+     * initialize fields, used after the fist variable is added.
      * @param variable
      */
     initialize(variable) {
@@ -61,7 +63,7 @@ class SampleTimepointStore {
     }
 
     /**
-     * adds variable to heatmap sample data
+     * adds variable to heatmap  timepointData
      * @param variable: variable to add
      * @param type
      */

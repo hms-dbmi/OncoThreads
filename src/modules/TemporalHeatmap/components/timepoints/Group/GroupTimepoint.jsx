@@ -2,8 +2,14 @@ import React from 'react';
 import {observer} from 'mobx-react';
 
 import GroupPartition from './GroupPartition'
-
+/*
+creates a grouped timepoint
+ */
 const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
+    /**
+     * gets the different partitions in the grouped timepoint
+     * @returns partitions
+     */
     getPartitions(){
         let partitions=[];
          const _self = this;

@@ -1,5 +1,3 @@
-//import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore.jsx"
-//import BetweenTimepointStore from "./TemporalHeatmap/BetweenTimepointStore.jsx"
 import TransitionStore from "./TemporalHeatmap/TransitionStore.jsx"
 import TimepointStore from "./TemporalHeatmap/TimepointStore"
 import BetweenTimepointStore from "./TemporalHeatmap/BetweenTimepointStore"
@@ -8,7 +6,10 @@ import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
-
+/*
+gets the data with the cBioAPI and gives it to the other stores
+TODO: make prettier
+ */
 class RootStore {
     constructor(cbioAPI) {
         this.cbioAPI = cbioAPI;
@@ -28,8 +29,10 @@ class RootStore {
             parsed: false
         })
     }
-
-    createStores(studyID) {
+    /*
+    gets data from cBio and sets parameters in other stores
+     */
+    parseCBio(studyID) {
         const _self = this;
         this.cbioAPI.getAllData(studyID, function () {
             _self.buildPatientStructure();
@@ -46,6 +49,7 @@ class RootStore {
 
     /**
      * combines clinical events of sort "SPECIMEN" and clinical data in one datastructure,
+     * sets some variables in the other stores
      */
     buildPatientStructure() {
         const _self = this;
@@ -89,11 +93,6 @@ class RootStore {
                 }
             })
         });
-        let pperT=[];
-        patientsPerTimepoint.forEach(function (d,i) {
-            pperT.push(d);
-            pperT.push(d);
-        });
         const timepointStructure = this.buildTimepointStructure(sampleStructure, maxTP);
         this.timepointStore.setNumberOfTimepoints(maxTP);
         this.timepointStore.setNumberOfPatients(allPatients.length);
@@ -112,6 +111,12 @@ class RootStore {
         this.eventCategories = eventCategories;
     }
 
+    /**
+     * builds a simple timepoint structure
+     * @param sampleStructure
+     * @param numberOfTimepoints
+     * @returns {Array} timepointStructure
+     */
     buildTimepointStructure(sampleStructure, numberOfTimepoints) {
         let timepointStructure = [];
         for (let i = 0; i < numberOfTimepoints; i++) {
@@ -126,6 +131,10 @@ class RootStore {
         return timepointStructure;
     }
 
+    /**
+     * creates a dictionary mapping sample IDs onto clinical data
+     * @returns {{}}
+     */
     createClinicalDataMapping() {
         const _self = this;
         let sampleClinicalMap = {};
@@ -141,6 +150,10 @@ class RootStore {
         return sampleClinicalMap;
     }
 
+    /**
+     * creates a dictionary mapping sample IDs onto mutation counts
+     * @returns {{}}
+     */
     createMutationCountsMapping() {
         let mapper = {};
         this.cbioAPI.mutationCounts.forEach(function (d) {
@@ -149,6 +162,9 @@ class RootStore {
         return mapper;
     }
 
+    /**
+     * gets all the different attributes an event can have
+     */
     getEventAttributes() {
         let attributes = {};
         for (let patient in this.cbioAPI.clinicalEvents) {

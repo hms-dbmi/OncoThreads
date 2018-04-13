@@ -1,6 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-
+/*
+creats a row in the heatmap
+ */
 const HeatmapRow = observer(class HeatmapRow extends React.Component {
     getRow() {
         let rects = [];

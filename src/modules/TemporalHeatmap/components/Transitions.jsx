@@ -1,11 +1,12 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import Transition from './transitions/Transition'
-
+/*
+creates the transitions between timepoints
+ */
 const Transitions = observer(class Transitions extends React.Component {
     getTransitions() {
         const _self = this;
-        console.log(this.props.transitionData);
         return (_self.props.transitionData.map(function (d, i) {
             const transform = "translate(0," + _self.props.yPositions[i] + ")";
             return (<g key={i + "transition"} transform={transform}><Transition transition={d}

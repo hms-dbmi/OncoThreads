@@ -3,10 +3,15 @@ import * as d3 from 'd3';
 import {observer} from 'mobx-react';
 import {isObservableArray} from 'mobx';
 
-
+/*
+Creates a HeatmapGroupTransition (between GroupTimepoint and HeatmapTimepoint
+ */
+/*
+TODO: make prettier, maybe make to classes: HeatmapGroupTransition and GroupHeatmapTransition
+ */
 const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends React.Component {
     /**
-     * draws a single transition
+     * draws a single HeatmapGroupTransition
      * @param x0: start point on source partition
      * @param x1: start point on target partition
      * @param x2
@@ -37,15 +42,26 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         return (<path key={key} d={path} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
     }
 
+    /**
+     * draws a small rectangle to repeat the color of a partition with the primary Variable
+     * @param x position
+     * @param y position
+     * @param width of rect
+     * @param height of rect
+     * @param color color of rect
+     * @param key (unique)
+     * @returns rectangle
+     */
     static drawHelperRect(x, y, width, height, color,key) {
         return (<rect key={key} x={x} y={y} width={width} height={height} fill={color}/>)
     }
 
     /**
-     * draws all transitons
+     * draws all transitons between the partitions of the grouped timepoint and the patients of the heatmap timepoint
      * @returns {Array}
      */
     drawTransitions() {
+        // reverse: the second timepoint is the grouped timepoint, the first timepoint is ungrouped
         let reverse = this.isReverse();
         const rectHeight = 5;
         let grouped, scale, y0, y1, primary, recty;
@@ -73,7 +89,7 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
             let currXsource = sourcePartitionPos;
             const partitionLength = _self.getPartitionLength(d, primary);
             rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, _self.props.visMap.getColorScale(primary,"categorical")(d.partition),d.partition));
-            let transitionPatients = _self.getTransitionPatients(d.partition, reverse);
+            let transitionPatients = _self.getPartitionPatients(d.partition, reverse);
             if (transitionPatients.length !== 0) {
                 const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
                 transitionPatients.forEach(function (f) {
@@ -86,6 +102,10 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         return [transitions, rects];
     }
 
+    /**
+     * checks if the transition is going from an ungrouped timepoint to a grouped timepoint
+     * @returns boolean
+     */
     isReverse() {
         return (isObservableArray(this.props.transition.data[0].from))
     }
@@ -101,7 +121,12 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         })[0].counts[0].value;
     }
 
-    getTransitionPatients(partition, reverse) {
+    /**
+     * gets the patients in a partition
+     * @param partition: current partition
+     * @param reverse: boolean indicating if the first or the second timepoint is grouped
+     */
+    getPartitionPatients(partition, reverse) {
         if (!reverse)
             return this.props.transition.data.filter(function (d, i) {
                 return d.from === partition
@@ -113,7 +138,6 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
 
 
     render() {
-
         return (
             this.drawTransitions()
         )

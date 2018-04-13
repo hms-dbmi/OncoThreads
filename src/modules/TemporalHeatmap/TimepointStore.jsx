@@ -1,6 +1,8 @@
 import {autorun, extendObservable} from "mobx";
 
-
+/*
+stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
+ */
 class TimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
@@ -18,11 +20,19 @@ class TimepointStore {
             this.combineData();
         });
     }
+
+    /**
+     * combines the data of sampleTimepoints and betweenTimepoints
+     */
     combineData(){
         this.timepointData=TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepointData,this.rootStore.sampleTimepointStore.timepointData);
         this.currentSampleVariables=this.rootStore.sampleTimepointStore.currentVariables;
         this.currentBetweenVariables=this.rootStore.betweenTimepointStore.currentVariables;
     }
+
+    /**
+     * initializes the datastructures
+     */
     initialize(){
         this.primaryVariables=TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.primaryVariables,this.rootStore.sampleTimepointStore.primaryVariables);
         this.groupOrder=TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.groupOrder,this.rootStore.sampleTimepointStore.groupOrder);
@@ -30,6 +40,13 @@ class TimepointStore {
         this.patientOrderPerTimepoint=TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.patientOrderPerTimepoint,this.rootStore.sampleTimepointStore.patientOrderPerTimepoint);
         this.rootStore.transitionStore.initializeTransitions(this.timepointData.length-1,this.patientsPerTimepoint);
     }
+
+    /**
+     * combines two arrays. If one of them is empty, returns the non-empty one
+     * @param arr1
+     * @param arr2
+     * @returns {*}
+     */
     static combineArrays(arr1, arr2) {
         if(arr1.length===0){
             return(arr2);
@@ -60,7 +77,9 @@ class TimepointStore {
         this.groupOrder = isGrouped;
     }
 
-
+    /**
+     * regroups the timepoints. Used after something is changed (variable is removed/added/declared primary)
+     */
     regroupTimepoints() {
         const _self = this;
         this.groupOrder.forEach(function (d, i) {
@@ -72,11 +91,21 @@ class TimepointStore {
         })
     }
 
-    setPrimaryVariable(timepoint, variable) {
-        this.primaryVariables[timepoint] = variable
+    /**
+     * declares a variable the primary variable of a timepoint
+     * @param timepointIndex
+     * @param variable
+     */
+    setPrimaryVariable(timepointIndex, variable) {
+        this.primaryVariables[timepointIndex] = variable
     }
 
-    getCurrentVariables(timepoint) {
+    /**
+     * gets the current variables (of a sampleTimepoint or a betweenTimepoint
+     * @param timepointIndex
+     * @returns {*}
+     */
+    getCurrentVariables(timepointIndex) {
         let currentVariables;
         if(this.currentBetweenVariables.length===0){
             return this.currentSampleVariables;
@@ -84,7 +113,7 @@ class TimepointStore {
         else if(this.currentSampleVariables.length===0){
             return this.currentBetweenVariables;
         }
-        if (timepoint % 2 === 0) {
+        if (timepointIndex % 2 === 0) {
             currentVariables = this.currentBetweenVariables;
         }
         else {
@@ -95,84 +124,84 @@ class TimepointStore {
 
     /**
      * computes grouping of variables
-     * @param timepoint
+     * @param timepointIndex
      * @param variable
      */
-    groupTimepoint(timepoint, variable) {
-        let currentVariables = this.getCurrentVariables(timepoint);
-        this.timepointData[timepoint].group.data = [];
+    groupTimepoint(timepointIndex, variable) {
+        let currentVariables = this.getCurrentVariables(timepointIndex);
+        this.timepointData[timepointIndex].group.data = [];
         const variableIndex = currentVariables.map(function (d) {
             return d.variable
         }).indexOf(variable);
         let currPartitionCount = 0;
-        for (let i = 0; i < this.timepointData[timepoint].heatmap[variableIndex].data.length; i++) {
-            const currPartitionKey = this.timepointData[timepoint].heatmap[variableIndex].data[i].value;
-            let partitionIndex = this.timepointData[timepoint].group.data.map(function (e) {
+        for (let i = 0; i < this.timepointData[timepointIndex].heatmap[variableIndex].data.length; i++) {
+            const currPartitionKey = this.timepointData[timepointIndex].heatmap[variableIndex].data[i].value;
+            let partitionIndex = this.timepointData[timepointIndex].group.data.map(function (e) {
                 return e.partition;
             }).indexOf(currPartitionKey);
             if (partitionIndex === -1) {
                 let rows = currentVariables.map(function (d) {
                     return {variable: d.variable, type: d.type, counts: []}
                 });
-                this.timepointData[timepoint].group.data.push({partition: currPartitionKey, rows: rows});
+                this.timepointData[timepointIndex].group.data.push({partition: currPartitionKey, rows: rows});
                 partitionIndex = currPartitionCount;
                 currPartitionCount += 1;
             }
-            this.addInstance(partitionIndex, currPartitionKey, timepoint, variableIndex);
-            for (let row = 0; row < this.timepointData[timepoint].heatmap.length; row++) {
-                if (this.timepointData[timepoint].heatmap[row].variable !== variable) {
-                    let currSecondary = this.timepointData[timepoint].heatmap[row].data[i].value;
-                    this.addInstance(partitionIndex, currSecondary, timepoint, row);
+            this.addInstance(partitionIndex, currPartitionKey, timepointIndex, variableIndex);
+            for (let row = 0; row < this.timepointData[timepointIndex].heatmap.length; row++) {
+                if (this.timepointData[timepointIndex].heatmap[row].variable !== variable) {
+                    let currSecondary = this.timepointData[timepointIndex].heatmap[row].data[i].value;
+                    this.addInstance(partitionIndex, currSecondary, timepointIndex, row);
                 }
             }
         }
-        this.setIsGrouped(timepoint, true);
+        this.setIsGrouped(timepointIndex, true);
     }
 
     /**
      * Adds counts to a partition or creates partition if it does not exist yet
      * @param partitionIndex: Index of partition to add to
      * @param currKey: Key of partition
-     * @param timepoint: current timepoint
+     * @param timepointIndex: current timepoint
      * @param row: current row
      */
-    addInstance(partitionIndex, currKey, timepoint, row) {
-        let rowIndex = this.timepointData[timepoint].group.data[partitionIndex].rows.map(function (e) {
+    addInstance(partitionIndex, currKey, timepointIndex, row) {
+        let rowIndex = this.timepointData[timepointIndex].group.data[partitionIndex].rows.map(function (e) {
             return e.variable;
-        }).indexOf(this.timepointData[timepoint].heatmap[row].variable);
-        let keyIndex = this.timepointData[timepoint].group.data[partitionIndex].rows[rowIndex].counts.map(function (e) {
+        }).indexOf(this.timepointData[timepointIndex].heatmap[row].variable);
+        let keyIndex = this.timepointData[timepointIndex].group.data[partitionIndex].rows[rowIndex].counts.map(function (e) {
             return e.key
         }).indexOf(currKey);
         if (keyIndex === -1) {
-            this.timepointData[timepoint].group.data[partitionIndex].rows[rowIndex].counts.push({
+            this.timepointData[timepointIndex].group.data[partitionIndex].rows[rowIndex].counts.push({
                 "key": currKey,
                 "value": 1
             })
         }
         else {
-            this.timepointData[timepoint].group.data[partitionIndex].rows[rowIndex].counts[keyIndex].value += 1;
+            this.timepointData[timepointIndex].group.data[partitionIndex].rows[rowIndex].counts[keyIndex].value += 1;
         }
     }
 
     /**
      * ungroupes a timepoint by swapping to the heatmap representation
-     * @param timepoint
+     * @param timepointIndex
      * @param variable
      */
-    unGroupTimepoint(timepoint, variable) {
-        this.setIsGrouped(timepoint, false);
-        this.setPrimaryVariable(timepoint, variable);
-        this.rootStore.transitionStore.adaptTransitions(timepoint);
+    unGroupTimepoint(timepointIndex, variable) {
+        this.setIsGrouped(timepointIndex, false);
+        this.setPrimaryVariable(timepointIndex, variable);
+        this.rootStore.transitionStore.adaptTransitions(timepointIndex);
     }
 
     /**
      * sorts groups
-     * @param timepoint
-     * @param order
+     * @param timepointIndex
+     * @param order: 1 ascending, -1 descending
      */
-    sortGroups(timepoint, order) {
-        this.groupOrder[timepoint].order = order;
-        this.timepointData[timepoint].group.data = this.timepointData[timepoint].group.data.sort(function (a, b) {
+    sortGroups(timepointIndex, order) {
+        this.groupOrder[timepointIndex].order = order;
+        this.timepointData[timepointIndex].group.data = this.timepointData[timepointIndex].group.data.sort(function (a, b) {
             if (a.partition < b.partition) {
                 return -order;
             }
@@ -187,7 +216,7 @@ class TimepointStore {
             }
             else return 0;
         });
-        this.timepointData[timepoint].group.data.forEach(function (d) {
+        this.timepointData[timepointIndex].group.data.forEach(function (d) {
             d.rows.forEach(function (f, j) {
                 f.counts = f.counts.sort(function (a, b) {
                     if (a.key < b.key) {
@@ -200,22 +229,22 @@ class TimepointStore {
                 })
             })
         });
-        this.rootStore.transitionStore.adaptTransitions(timepoint);
+        this.rootStore.transitionStore.adaptTransitions(timepointIndex);
 
     }
 
     /**
      * sorts a heatmap timepoint
-     * @param timepoint
+     * @param timepointIndex
      * @param variable
      */
-    sortHeatmapTimepoint(timepoint, variable) {
-        let currentVariables = this.getCurrentVariables(timepoint);
+    sortHeatmapTimepoint(timepointIndex, variable) {
+        let currentVariables = this.getCurrentVariables(timepointIndex);
         const variableIndex = currentVariables.map(function (d) {
             return d.variable
         }).indexOf(variable);
-        const rowToSort = this.timepointData[timepoint].heatmap[variableIndex];
-        let helper = this.patientOrderPerTimepoint[timepoint].map(function (d) {
+        const rowToSort = this.timepointData[timepointIndex].heatmap[variableIndex];
+        let helper = this.patientOrderPerTimepoint[timepointIndex].map(function (d) {
             return ({"patient": d, "value": undefined})
         });
         rowToSort.data.forEach(function (d) {
@@ -234,8 +263,8 @@ class TimepointStore {
             sortOrder = rowToSort.sorting * (-1);
             rowToSort.sorting = rowToSort.sorting * (-1);
         }
-        this.timepointData[timepoint].heatmap[variableIndex] = rowToSort;
-        this.patientOrderPerTimepoint[timepoint] = helper.sort(function (a, b) {
+        this.timepointData[timepointIndex].heatmap[variableIndex] = rowToSort;
+        this.patientOrderPerTimepoint[timepointIndex] = helper.sort(function (a, b) {
             if (a.value < b.value)
                 return -sortOrder;
             if (a.value > b.value)

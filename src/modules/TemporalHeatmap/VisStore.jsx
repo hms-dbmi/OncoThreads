@@ -1,17 +1,25 @@
 import * as d3 from 'd3';
 import {extendObservable} from "mobx";
 
-
+/*
+stores information about current visual parameters
+ */
 class VisStore{
     constructor(){
         this.categoricalColor={};
         this.continousColor={};
         this.binaryColor=d3.scaleOrdinal().range(['#f7f7f7','#8da0cb','#f7f7f7']).domain([undefined,true,false]);
+        //width of rects in sampleTomepoints
         this.sampleRectWidth=0;
+        //width of rects in betweenTimepoints
         this.betweenRectWidth=0;
+        //height of rects in a row which is primary
         this.primaryHeight=0;
+        //gap between rows in heatmap
         this.gap=0;
+        //space for transitions
         this.transitionSpace=0;
+        //gap between partitions in grouped timepoints
         this.partitionGap=0;
         extendObservable(this,{
             timepointY:[],
@@ -44,6 +52,12 @@ class VisStore{
     setSecondaryHeight(height){
         this.secondaryHeight=height;
     }
+
+    /**
+     * computes the height of a timepoint
+     * @param numVar
+     * @returns {*}
+     */
     getTimepointHeight(numVar){
         if(numVar===0){
             return 0;

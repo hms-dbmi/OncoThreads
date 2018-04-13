@@ -1,10 +1,12 @@
 import React from 'react';
 import * as d3 from 'd3';
 import {observer} from 'mobx-react';
-
+/*
+implements a Sankey Transition (GroupTimepoint to GroupTimepoint)
+ */
 const SankeyTransition = observer(class SankeyTransition extends React.Component {
     /**
-     * draws a single transition
+     * draws a single SankeyTransition
      * @param x0: start point on source partition
      * @param x1: start point on target partition
      * @param width: of transition
@@ -32,13 +34,23 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
         return (<path key={key} d={path} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
     }
 
+    /**
+     * draws a small rectangle to repeat the color of a partition with the primary Variable
+     * @param x position
+     * @param y position
+     * @param width of rect
+     * @param height of rect
+     * @param color color of rect
+     * @param key (unique)
+     * @returns rectangle
+     */
     static drawHelperRect(x, y, width, height, color,key) {
         return (<rect key={key} x={x} y={y} width={width} height={height} fill={color}/>)
     }
 
     /**
-     * draws all transitons
-     * @returns {Array}
+     * draws transitions between all partitions of the first and the second timepoint
+     * @returns []: transitions
      */
     drawTransitions() {
         const _self = this;

@@ -15,6 +15,9 @@ const customStyles = {
         overlfow: 'scroll' // <-- This tells the modal to scrol
     }
 };
+/*
+creates the selector for between variables (left side of main view, bottom)
+ */
 const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelector extends React.Component {
     constructor() {
         super();
@@ -33,12 +36,23 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     openModal(event) {
         this.setState({modalIsOpen: true, buttonClicked: event.target.value});
     }
+
+    /**
+     * adds a variable to the view
+     */
     addVariable() {
         if (this.props.currentVariables.length === 0) {
             this.props.store.initialize(this.state.name);
         }
         this.props.store.addVariable(this.state.buttonClicked,this.state.selectedValues,this.state.selectedKey,this.state.name);
     }
+
+    /**
+     * handles the click on one of the checkboxes
+     * @param event
+     * @param type
+     * @param value
+     */
     handleCheckBoxClick(event,type,value){
         let selected = this.state.selectedValues.slice();
         if(event.target.checked) {
@@ -53,6 +67,12 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
              selectedKey:type
             });
     }
+
+    /**
+     * creates checkboxes for the different event types in modal window
+     * @param event
+     * @returns {Array}
+     */
     createCheckboxes(event) {
         let elements = [];
         const _self = this;
@@ -66,7 +86,11 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         return elements;
     }
 
-    createTransitionsList() {
+    /**
+     * creates the buttons for the variables for the betweenTimepoints
+     * @returns {Array}
+     */
+    createBetweenVariablesList() {
         let buttons = [];
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
@@ -76,6 +100,11 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         });
         return buttons;
     }
+
+    /**
+     * updates state when the name of the textfield is changed
+     * @param event
+     */
     handleNameChange(event){
         this.setState({
             name:event.target.value
@@ -83,7 +112,6 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     afterOpenModal() {
-        // references are now sync'd and can be accessed.
         this.subtitle.style.color = '#f00';
     }
 
@@ -96,7 +124,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             <div>
                 <h4>Transition variables</h4>
                 <div className={"btn-group"}>
-                    {this.createTransitionsList()}
+                    {this.createBetweenVariablesList()}
                 </div>
                 <Modal
                     isOpen={this.state.modalIsOpen}

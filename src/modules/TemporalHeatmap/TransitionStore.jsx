@@ -1,5 +1,7 @@
 import {extendObservable} from "mobx";
-
+/*
+stores information about transitions
+ */
 class TransitionStore {
     constructor(rootStore) {
         this.rootStore=rootStore;
@@ -15,6 +17,12 @@ class TransitionStore {
     setPatientsPerTimepoint(patientsPerTimepoint){
         this.patientsPerTimepoint=patientsPerTimepoint;
     }
+
+    /**
+     * initializes fields and sets line transitions
+     * @param numberOfTransitions
+     * @param patientsPerTimepoint
+     */
     initializeTransitions(numberOfTransitions,patientsPerTimepoint){
         this.transitionData=[];
         this.setNumberOfTransitions(numberOfTransitions);

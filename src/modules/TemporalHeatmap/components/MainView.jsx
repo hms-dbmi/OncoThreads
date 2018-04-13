@@ -4,7 +4,16 @@ import RowOperators from "./RowOperators/RowOperators"
 import Legend from "./Legend"
 import Plot from "./Plot";
 
+/*
+Main View
+Creates the Row operators, the Plot and the Legend
+Sets the basic parameters, e.g. the dimensions of the rectangles or the height of the transitions ("transision space")
+ */
 const MainView = observer(class MainView extends React.Component {
+    /**
+     * get the maximum number of partitions in grouped timepoints
+     * @returns maximum number of partitions
+     */
     getMaxPartitions() {
         let max = 0;
         const _self = this;
@@ -22,6 +31,8 @@ const MainView = observer(class MainView extends React.Component {
         this.props.visMap.setGap(1);
         this.props.visMap.setPartitionGap(10);
         this.props.visMap.setTransitionSpace(70);
+
+        //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;
         if (this.props.store.numberOfPatients < 50) {
             rectWidth = this.props.width / this.props.store.numberOfPatients - 1;
@@ -34,8 +45,10 @@ const MainView = observer(class MainView extends React.Component {
         let heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
         const sampleTPHeight = this.props.visMap.getTimepointHeight(this.props.currentSampleVariables.length);
         const betweenTPHeight = this.props.visMap.getTimepointHeight(this.props.currentBetweenVariables.length);
-        let timepointY = [];
-        let transY = [];
+
+        //compute the positions for the timepoints and store them in an array
+        let sampleTimepointY = [];
+        let betweenTimepointY = [];
         let prevY=0;
         for (let i = 0; i < this.props.store.timepointData.length; i++) {
             let tpHeight;
@@ -45,14 +58,13 @@ const MainView = observer(class MainView extends React.Component {
             else{
                 tpHeight=sampleTPHeight;
             }
-            timepointY.push(prevY);
-            transY.push(timepointY[i]+tpHeight);
+            sampleTimepointY.push(prevY);
+            betweenTimepointY.push(sampleTimepointY[i]+tpHeight);
             prevY+=this.props.visMap.transitionSpace+tpHeight;
         }
 
         const svgWidth = heatmapWidth + (this.getMaxPartitions() - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
         const svgHeight = this.props.store.numberOfTransitions*2 * ((sampleTPHeight+betweenTPHeight)/2 + this.props.visMap.transitionSpace);
-        console.log(this.props.transitionStore.transitionData);
         return (
             <div className="heatmapContainer">
                 <div className="rowOperators">
@@ -64,18 +76,18 @@ const MainView = observer(class MainView extends React.Component {
                                       store={this.props.store} height={svgHeight}
                                       svgHeight={svgHeight} svgWidth={200}
                                       visMap={this.props.visMap}
-                                      posY={timepointY}/>
+                                      posY={sampleTimepointY}/>
                     </svg>
 
                 </div>
                 <div className="view">
                     <Plot {...this.props} width={svgWidth} height={svgHeight} heatmapWidth={heatmapWidth}
-                          timepointY={timepointY}
-                          transY={transY}/>
+                          timepointY={sampleTimepointY}
+                          transY={betweenTimepointY}/>
                 </div>
                 <div className="legend">
                     <Legend {...this.props} height={svgHeight}
-                            posY={timepointY}/>
+                            posY={sampleTimepointY}/>
                 </div>
             </div>
         )

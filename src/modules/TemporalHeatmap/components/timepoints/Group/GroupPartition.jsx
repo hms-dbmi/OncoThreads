@@ -2,7 +2,9 @@ import React from 'react';
 import {observer} from 'mobx-react';
 
 import PartitionRow from './PartitionRow'
-
+/*
+creates a partition in the grouped timepoint
+ */
 const GroupPartition = observer(class GroupPartition extends React.Component {
     createPartition() {
         const _self = this;

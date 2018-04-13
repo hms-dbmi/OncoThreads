@@ -1,14 +1,19 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import FlowTimepoint from './Group/GroupTimepoint'
+import GroupTimepoint from './Group/GroupTimepoint'
 import HeatmapTimepoint from './Heatmap/HeatmapTimepoint'
-
+/*
+basic timepoint class
+ */
 const Timepoint = observer(class Timepoint extends React.Component {
-
+    /**
+     * gets the timepoint. Creates a GroupTimepoint or a HeatmapTimepoint.
+     * @returns Timepoint
+     */
     getTimepoint() {
         if (this.props.groupOrder.isGrouped) {
-            return (<FlowTimepoint {...this.props} timepoint={this.props.timepoint.group.data}
-                                   primaryVariable={this.props.store.primaryVariables[this.props.index]}/>)
+            return (<GroupTimepoint {...this.props} timepoint={this.props.timepoint.group.data}
+                                    primaryVariable={this.props.store.primaryVariables[this.props.index]}/>)
         }
         else {
             return (<HeatmapTimepoint {...this.props} timepoint={this.props.timepoint.heatmap}

@@ -3,8 +3,16 @@ import {observer} from 'mobx-react';
 import Timepoints from "./Timepoints"
 import Transitions from "./Transitions"
 import * as d3 from "d3";
-
+/*
+creates the plot with timepoints and transitions
+ */
 const Plot = observer(class Plot extends React.Component {
+    /**
+     * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
+     * @param w: width of the plot
+     * @param rectWidth: width of a heatmap cell
+     * @returns heatmap scales
+     */
     createSampleHeatMapScales(w, rectWidth) {
         return this.props.patientOrderPerTimepoint.map(function (d, i) {
             return d3.scalePoint()
@@ -13,6 +21,10 @@ const Plot = observer(class Plot extends React.Component {
         })
     }
 
+    /**
+     * creates scales for computing the length of the partitions in grouped timepoints
+     * @param w: width of the plot
+     */
     createGroupScale(w) {
         return (d3.scaleLinear().domain([0, this.props.store.numberOfPatients]).range([0, w]));
 
@@ -20,7 +32,6 @@ const Plot = observer(class Plot extends React.Component {
 
     render() {
         const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.heatmapWidth, this.props.visMap.sampleRectWidth);
-        console.log(sampleHeatmapScales.length);
         const groupScale = this.createGroupScale(this.props.heatmapWidth);
         let transform = "translate(0," + 20 + ")";
         return (

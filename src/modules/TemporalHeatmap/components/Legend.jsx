@@ -1,7 +1,20 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-
+/*
+implements the legend on the right side of the main view
+ */
 const Legend = observer(class Legend extends React.Component {
+    /**
+     * gets a single entry of the legend
+     * @param value: text to display
+     * @param opacity: 1 if primary, lower for secondary
+     * @param rectWidth
+     * @param textHeight
+     * @param currX: current x position
+     * @param lineheight
+     * @param color
+     * @returns [] legendEntry
+     */
     static getLegendEntry(value, opacity, rectWidth, textHeight, currX, lineheight, color) {
         let legendEntry = [];
         legendEntry.push(<rect key={"rect" + value} opacity={opacity} width={rectWidth - 5} height={textHeight + 2}
@@ -12,6 +25,15 @@ const Legend = observer(class Legend extends React.Component {
         return legendEntry;
     }
 
+    /**
+     * gets a legend for a continous variable
+     * @param opacity
+     * @param rectWidth
+     * @param textHeight
+     * @param lineheight
+     * @param color
+     * @returns {Array}
+     */
     static getContinousLegend(opacity, rectWidth, textHeight, lineheight, color) {
         let legendEntries = [];
         const min = color.domain()[0];
@@ -27,6 +49,16 @@ const Legend = observer(class Legend extends React.Component {
         return legendEntries;
     }
 
+    /**
+     * gets a legend for a categorical variable
+     * @param row
+     * @param opacity
+     * @param rectWidth
+     * @param textHeight
+     * @param lineheight
+     * @param color
+     * @returns {Array}
+     */
     getCategoricalLegend(row, opacity, rectWidth, textHeight, lineheight, color) {
         let currX = 0;
         let currKeys = [];
@@ -41,6 +73,33 @@ const Legend = observer(class Legend extends React.Component {
         return (legendEntries);
     }
 
+    /**
+     * gets a legend for a binary variable
+     * @param row
+     * @param opacity
+     * @param rectWidth
+     * @param textHeight
+     * @param lineheight
+     * @param color
+     * @returns {Array}
+     */
+    static getBinaryLegend(row, opacity, rectWidth, textHeight, lineheight, color) {
+        let legendEntries = [];
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, rectWidth, textHeight, 0, lineheight, color(true)));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, rectWidth, textHeight, rectWidth, lineheight, color(false)));
+        return (legendEntries);
+    }
+
+
+    /**
+     * gets the legend
+     * @param data
+     * @param primary
+     * @param rectWidth
+     * @param textHeight
+     * @param currentVariables
+     * @returns {Array}
+     */
     getLegend(data, primary, rectWidth, textHeight,currentVariables) {
         const _self = this;
         let legend = [];
@@ -63,7 +122,7 @@ const Legend = observer(class Legend extends React.Component {
                     legendEntries = _self.getCategoricalLegend(d, opacity, rectWidth, textHeight, lineheight, color);
                 }
                 else if (currentVariables[i].type === "binary") {
-                    legendEntries = _self.getCategoricalLegend(d, opacity, rectWidth, textHeight, lineheight, color);
+                    legendEntries = Legend.getBinaryLegend(d, opacity, rectWidth, textHeight, lineheight, color);
                 }
                 else {
                     legendEntries = Legend.getContinousLegend(opacity, rectWidth, textHeight, lineheight, color);

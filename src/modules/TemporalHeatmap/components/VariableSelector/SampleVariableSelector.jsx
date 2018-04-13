@@ -1,17 +1,24 @@
 import React from "react";
 import {observer} from "mobx-react";
-
+/*
+creates the selector for sample variables (left side of main view, top)
+ */
 const SampleVariableSelector = observer(class SampleVariableSelector extends React.Component {
     constructor() {
         super();
         this.state = {
             buttonClicked: "",
         };
-        this.handleSampleVariableClick = this.handleSampleVariableClick.bind(this);
+        this.handleCategoricalClick = this.handleCategoricalClick.bind(this);
     }
 
-
-    static getAllIndexes(arr, val) {
+    /**
+     * method to the indices of all occurences of val in arr
+     * @param arr
+     * @param val
+     * @returns {Array}
+     */
+    static getAllIndeces(arr, val) {
         let indexes = [], i;
         for (i = 0; i < arr.length; i++)
             if (arr[i] === val)
@@ -19,6 +26,12 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         return indexes;
     }
 
+    /**
+     * adds a variable to the view
+     * @param variable
+     * @param type
+     * @param event
+     */
     addVariable(variable, type, event) {
         if (this.props.currentVariables.length === 0) {
             this.props.store.initialize(variable);
@@ -27,6 +40,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         event.target.className = "selected";
     }
 
+    /**
+     * removes a variable from the view
+     * @param variable
+     * @param event
+     */
     removeVariable(variable, event) {
         event.target.className = "notSelected";
         //case the row removed was not the only row
@@ -45,7 +63,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         }
     }
 
-    handleSampleVariableClick(event, variable, type) {
+    /**
+     * handles a click on one of the categorical Variables
+     * @param event
+     * @param variable
+     * @param type
+     */
+    handleCategoricalClick(event, variable, type) {
         if (!(this.props.currentVariables.map(function (d) {
                 return d.variable
             }).includes(variable))) {
@@ -56,22 +80,36 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         }
     }
 
+    /**
+     * TODO: generalize
+     * handles a click on one of the continous Variables
+     * @param event
+     * @param category
+     */
     handleContinousClick(event, category) {
         this.props.store.computeMaxMutationCount();
         this.props.visMap.setContinousColorScale(category, 0, this.props.store.maxMutationCount);
-        this.handleSampleVariableClick(event, category, "continous")
+        this.handleCategoricalClick(event, category, "continous")
     }
 
-
+    /**
+     * creates a list of the clinical Variables
+     * @returns {Array}
+     */
     createClinicalAttributesList() {
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
             buttons.push(<button className="notSelected" key={d}
-                                 onClick={(e) => _self.handleSampleVariableClick(e, d, "categorical")}>{d}</button>)
+                                 onClick={(e) => _self.handleCategoricalClick(e, d, "categorical")}>{d}</button>)
         });
         return buttons;
     }
+
+    /**
+     * creates a list of the genomic variables
+     * @returns {Array}
+     */
     createGenomicAttributesList(){
          let buttons = [];
         const _self = this;

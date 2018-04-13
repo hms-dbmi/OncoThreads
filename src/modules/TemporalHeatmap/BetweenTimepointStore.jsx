@@ -1,5 +1,7 @@
 import {extendObservable} from "mobx";
-
+/*
+stores information about betweenTimepoint
+ */
 class BetweenTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
@@ -35,7 +37,7 @@ class BetweenTimepointStore {
 
 
     /**
-     * adds variable to heatmap sample data
+     * adds variable to heatmap timepointData
      * @param type
      * @param selectedValues
      * @param selectedKey
@@ -80,6 +82,12 @@ class BetweenTimepointStore {
         this.timepointData = betweenTimepointData;
     }
 
+    /**
+     * checks if an event has happend before a specific date
+     * @param event
+     * @param currMaxDate
+     * @returns {boolean}
+     */
     static isInCurrentRange(event, currMaxDate) {
         let isInRange = false;
         if (event.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
@@ -94,12 +102,20 @@ class BetweenTimepointStore {
         return isInRange;
     }
 
-    hasAttribute(type, selectedValues, selectedKey, event) {
+    /**
+     * check if an event has a specific attribute (key-value pair)
+     * @param type: type of the event (Status/Treatment/Surgery)
+     * @param values
+     * @param key
+     * @param event
+     * @returns {boolean}
+     */
+    hasAttribute(type, values, key, event) {
         let hasAttribute = false;
         if (type === event.eventType) {
-            selectedValues.forEach(function (d, i) {
+            values.forEach(function (d, i) {
                 event.attributes.forEach(function (f, j) {
-                    if (f.key === selectedKey && f.value === d) {
+                    if (f.key === key && f.value === d) {
                         hasAttribute = true;
                     }
                 })

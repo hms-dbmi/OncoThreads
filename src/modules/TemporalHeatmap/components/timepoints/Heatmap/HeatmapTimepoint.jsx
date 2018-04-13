@@ -2,6 +2,9 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import HeatmapRow from './HeatmapRow'
 
+/*
+creates a heatmap timepoint
+ */
 const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component {
 
 
@@ -10,6 +13,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
         let rows = [];
         let previousYposition = 0;
         this.props.timepoint.forEach(function (row, i) {
+            //get the correct color scale depending on the type of the variable (categorical, continous or binary)
             let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].type);
             const transform = "translate(0," + previousYposition + ")";
             if (row.variable === _self.props.primaryVariable) {

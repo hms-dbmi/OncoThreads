@@ -1,16 +1,18 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import Timepoint from "./timepoints/Timepoint"
-
+/*
+creates the timepoints (either sampleTimepoints or betweenTimepoints)
+ */
 const Timepoints = observer(class Timepoints extends React.Component {
-
 
     getTimepoints() {
         const _self = this;
         let timepoints = [];
         this.props.store.timepointData.forEach(function (d, i) {
             let currentVariables = [];
-            let rectWidth, primaryHeight, secondaryHeight;
+            let rectWidth;
+            //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.store.timepointData[i].type==="between") {
                 currentVariables = _self.props.currentBetweenVariables;
                 rectWidth = _self.props.visMap.betweenRectWidth;
