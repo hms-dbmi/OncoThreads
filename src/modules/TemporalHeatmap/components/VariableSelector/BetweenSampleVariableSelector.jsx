@@ -1,6 +1,8 @@
 import React from "react";
 import {observer} from "mobx-react";
 import Modal from 'react-modal';
+import ReactDOM from 'react-dom';
+
 
 const customStyles = {
     content: {
@@ -17,6 +19,7 @@ const customStyles = {
 };
 /*
 creates the selector for between variables (left side of main view, bottom)
+TODO: implement removing variables
  */
 const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelector extends React.Component {
     constructor() {
@@ -78,9 +81,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         const attributes = this.props.eventAttributes[event];
         for (let key in attributes) {
-            elements.push(<h4>{key}</h4>);
+            elements.push(<h4 key={key}>{key}</h4>);
             attributes[key].forEach(function (d, i) {
-                elements.push(<p><input type="checkbox" onClick={(e)=>_self.handleCheckBoxClick(e,key,d)}/>{d}</p>)
+                elements.push(<p key={d}><input type="checkbox" onClick={(e)=>_self.handleCheckBoxClick(e,key,d)}/>{d}</p>)
             })
         }
         return elements;
@@ -118,7 +121,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     closeModal() {
         this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: []});
     }
-
+    componentDidMount(){
+        Modal.setAppElement(ReactDOM.findDOMNode(this));
+    }
     render() {
         return (
             <div>

@@ -87,8 +87,8 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         let sourcePartitionPos = 0;
         grouped.group.data.forEach(function (d) {
             let currXsource = sourcePartitionPos;
-            const partitionLength = _self.getPartitionLength(d, primary);
-            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, _self.props.visMap.getColorScale(primary,"categorical")(d.partition),d.partition));
+            const partitionLength = _self.getPartitionLength(d, primary.variable);
+            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, _self.props.visMap.getColorScale(primary.variable,primary.type)(d.partition),d.partition));
             let transitionPatients = _self.getPartitionPatients(d.partition, reverse);
             if (transitionPatients.length !== 0) {
                 const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
