@@ -112,7 +112,7 @@ class SampleTimepointStore {
      */
     removeVariable(variable) {
         if (this.currentVariables.length !== 1) {
-            if (this.primaryVariables.includes(variable)) {
+            if (this.rootStore.timepointStore.primaryVariables.includes(variable)) {
                 this.rootStore.timepointStore.adaptPrimaryVariables(variable, "sample");
             }
             const index = this.currentVariables.map(function (d) {

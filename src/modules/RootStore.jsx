@@ -64,7 +64,7 @@ class RootStore {
     }
 
     /**
-     * combines clinical events of sortTimepoint "SPECIMEN" and clinical data in one datastructure,
+     * combines clinical events of sort "SPECIMEN" and clinical data in one datastructure,
      * sets some variables in the other stores
      */
     buildPatientStructure() {
