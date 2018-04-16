@@ -48,6 +48,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             this.props.store.initialize(this.state.name);
         }
         this.props.store.addVariable(this.state.buttonClicked,this.state.selectedValues,this.state.selectedKey,this.state.name);
+        this.closeModal();
     }
 
     /**
