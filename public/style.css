@@ -1,7 +1,9 @@
 body {
-    background-color: #2c313b;
-
+    background-color: white;
+    padding-left: 100px;
+    padding-right: 50px;
     font-family: 'Roboto', sans-serif !important;
+
 }
 
 h3 {
@@ -13,174 +15,98 @@ h3 {
     font-size: 20px;
 }
 
-.menu {
-    width: 500px;
-    text-align: left;
+
+.variableMenu {
+    height: 100%; /* Full-height: remove this if you want "auto" height */
+    width: 200px; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: white; /* Black */
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 10%;
+    padding-left: 2%;
 }
 
 .top {
-    margin-bottom: 10px;
-    background-color: white;
-    border-radius: 4px;
-    height: 300px;
-    box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
-}
-
-.middle {
-    margin-bottom: 10px;
-    background-color: white;
-    border-radius: 4px;
-    height: 400px;
-    box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
-}
-.timeline{
-    margin-bottom: 10px;
-    background-color: white;
-    border-radius: 4px;
-    height: 430px;
-    box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
-}
-.summary {
-    margin-bottom: 10px;
-    background-color: white;
-    border-radius: 4px;
-    height: 200px;
-    box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
-}
-
-.bottom-left {
-    background-color: white;
-    border-radius: 4px;
-    height: 400px;
-    box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
-}
-
-.bottom-right {
-    background-color: white;
-    border-radius: 4px;
-    height: 400px;
-
-    box-shadow: 1px 1px 1px 0px rgba(37, 41, 51, 1);
-}
-
-.shadow {
-    -webkit-filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, .3));
-    filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, .3));
-}
-
-.pad {
-    padding: 20px;
-}
-
-.browser-legend {
-    font-size: 14px;
-    opacity: .8;
-}
-
-.bottom-left-svg {
-    padding-top: 40px;
-    text-align: center;
-}
-
-.bottom-right-svg {
-    text-align: center;
-}
-
-.line {
-    fill: none;
-    stroke: #7dc7f4;
-    stroke-width: 5px;
-
-}
-
-.axis {
-    fill: #bbc7d9;
-    opacity: 1;
-}
-
-.axis path,
-.axis line {
-    fill: none;
-    stroke: black;
-    shape-rendering: crispEdges;
-}
-
-.axis text {
-    font-family: sans-serif;
-    font-size: 11px;
-}
-
-.grid path,
-.grid line {
-    fill: none;
-    stroke: #3f5175;
-    pointer-events: none;
-}
-
-.grid .tick {
-    stroke: #3f5175;
-    opacity: 1;
-}
-
-.node circle {
-    fill: #fff;
-    stroke: steelblue;
-    stroke-width: 3px;
-}
-
-.node text {
-    font: 12px sans-serif;
-}
-
-.link {
-    fill: none;
-    stroke: #ccc;
-    stroke-width: 2px;
-}
-
-.default-svg {
-
-}
-
-.svg-container {
-    display: inline-block;
-    position: relative;
-    width: 100%;
-    padding-bottom: 100%;
-    vertical-align: middle;
-    overflow: hidden;
-}
-
-.svg-content {
-    display: inline-block;
-    position: absolute;
-    top: 0;
+    width: 100%; /* Full-height: remove this if you want "auto" height */
+    height: 220px; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
     left: 0;
-}
-
-.fontSize {
-    font-size: .8em;
-    height: auto;
     text-align: center;
+    background-color: white; /* Black */
+    overflow-y: hidden; /* Disable horizontal scroll */
+    padding-bottom: 20px;
 }
 
-.page-header {
-    height: 35px;
-    text-align: center;
-}
-
-.page-h4 {
-    line-height: 35px;
-    color: rgb(125, 199, 244);
-
-}
-
-.customToolTip {
-    position: absolute;
+.heatmap {
+    margin-left:200px;
+    margin-bottom: 10px;
     background-color: white;
-    font-size: 80%;
-    pointer-events: none;
-    padding: 5px;
-    border: solid black;
-    color: black
 }
+
+.mainView {
+    top:200px;
+    position: absolute;
+    white-space: nowrap;
+}
+
+.btn-group button {
+    border: 1px solid black; /* Green border */
+    color: black; /* White text */
+    font-size: 8px;
+    padding: 5px 5px; /* Some padding */
+    width: 100%;
+    cursor: pointer; /* Pointer/hand icon */
+    display: block; /* Make the buttons appear below each other */
+}
+
+.btn-group button:not(:last-child) {
+    border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+    background-color: darkgray;
+}
+
+.selected {
+    background-color: darkgray;
+}
+
+.notSelected {
+    background-color: lightgray; /* Green background */
+}
+
+.rowOperators {
+    vertical-align: top;
+    text-align: left;
+    display: inline-block;
+}
+.view {
+    vertical-align: top;
+    width:750px;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    display: inline-block;
+
+}
+
+.legend {
+    vertical-align: top;
+     text-align: left;
+    display: inline-block;
+}
+
+
+.heatmapContainer {
+    white-space: nowrap;
+}
+
+.clickable:hover {
+    cursor: pointer;
+}
+

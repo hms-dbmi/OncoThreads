@@ -2,20 +2,19 @@
   "name": "sankey-react-app",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node" : "9.5.0" },
+  "engines": {
+    "node": "9.5.0"
+  },
   "dependencies": {
     "axios": "^0.17.1",
-    "cbioportal-api-client": "^0.3.4",
     "d3": "^4.13.0",
-    "d3-timeline": "^1.0.1",
     "jquery": "^3.3.1",
     "mobx": "^3.4.1",
     "mobx-react": "^4.3.5",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-modal": "^3.3.1",
-    "react-scripts": "1.1.0",
-    "react-vis": "^1.8.2"
+    "react-scripts": "1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

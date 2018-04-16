@@ -11,19 +11,25 @@ const GetStudy = observer(class GetStudy extends React.Component {
     static getStudy(event) {
         if (event.key === "Enter") {
             event.preventDefault();
-            this.props.rootStore.setStudyID(event.target.value);
+            if(this.props.rootStore.parsed) {
+                this.props.cbioAPI.constructor();
+                this.props.rootStore.constructor(this.props.cbioAPI);
+            }
+            this.props.rootStore.parseCBio(event.target.value);
         }
     }
 
     render() {
         return (
             <div>
+                <div>
                 <label className="menu">
                     Enter study name:
                     <input type="text" defaultValue="lgg_ucsf_2014" style={{horizontalAlign: "middle"}} onKeyUp={GetStudy.getStudy}/>
                 </label>
+                </div>
             </div>
-        );
+        )
     }
 });
 export default GetStudy;

@@ -5,8 +5,13 @@ class cBioAPI {
     constructor() {
         this.patients = [];
         this.clinicalEvents = {};
-        this.allClinicalEvents=[];
-        this.allClinicalPatientData=[];
+        this.clinicalPatientData=[];
+        this.clinicalSampleData=[];
+        this.mutationCounts=[];
+    }
+    initialize(){
+         this.patients = [];
+        this.clinicalEvents = {};
         this.clinicalPatientData=[];
         this.clinicalSampleData=[];
         this.mutationCounts=[];
@@ -19,8 +24,6 @@ class cBioAPI {
          */
         this.patients = [];
         this.clinicalEvents = {};
-        this.allClinicalEvents=[];
-        this.allClinicalPatientData=[];
         this.clinicalPatientData=[];
         this.clinicalSampleData=[];
         this.mutationCounts=[];
@@ -41,15 +44,11 @@ class cBioAPI {
                     .then(function (eventResults) {
                         eventResults.forEach(function (response2, i) {
                             _self.clinicalEvents[_self.patients[i].patientId] = response2.data;
-                            _self.allClinicalEvents=_self.allClinicalEvents.concat(response2.data);
                         });
-                        console.log(_self.clinicalEvents);
                         axios.all(patientDataRequests)
                             .then(function (patientDataResults) {
                                 patientDataResults.forEach(function (response3, i) {
                                     _self.clinicalPatientData.push(response3.data);
-
-                                    _self.allClinicalPatientData=_self.allClinicalPatientData.concat(response3.data);
                                 });
 
                                 /**
@@ -71,7 +70,7 @@ class cBioAPI {
      * @returns {AxiosPromise<any>}
      */
     static getClinicalData(studyID) {
-        return axios.get("http://www.cbioportal.org/api/studies/" + studyID + "/clinical-data?clinicalDataType=SAMPLE&projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC");
+        return axios.get("http://www.cbioportal.org/api/studies/" + studyID + "/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC");
     }
 
     /**
