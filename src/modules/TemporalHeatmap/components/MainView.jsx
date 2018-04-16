@@ -30,7 +30,7 @@ const MainView = observer(class MainView extends React.Component {
     render() {
         this.props.visMap.setGap(1);
         this.props.visMap.setPartitionGap(10);
-        this.props.visMap.setTransitionSpace(70);
+        this.props.visMap.setTransitionSpace(150);
 
         //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;

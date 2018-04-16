@@ -29,6 +29,22 @@ class RootStore {
             parsed: false
         })
     }
+    initialize(cbioAPI){
+        this.cbioAPI = cbioAPI;
+        this.sampleTimepointStore = new SampleTimepointStore(this);
+        this.betweenTimepointStore = new BetweenTimepointStore(this);
+        this.timepointStore=new TimepointStore(this);
+        this.transitionStore = new TransitionStore(this);
+        this.visStore = new VisStore();
+
+        this.clinicalSampleCategories = [];
+        this.eventCategories = [];
+        this.eventAttributes=[];
+        this.patientsPerTimepoint=[];
+        this.patientOrderPerTimepoint=[];
+
+            this.parsed= false;
+    }
     /*
     gets data from cBio and sets parameters in other stores
      */
@@ -48,7 +64,7 @@ class RootStore {
     }
 
     /**
-     * combines clinical events of sort "SPECIMEN" and clinical data in one datastructure,
+     * combines clinical events of sortTimepoint "SPECIMEN" and clinical data in one datastructure,
      * sets some variables in the other stores
      */
     buildPatientStructure() {
@@ -142,8 +158,8 @@ class RootStore {
             if (!(d.sampleId in sampleClinicalMap)) {
                 sampleClinicalMap[d.sampleId] = {};
             }
-            if (!_self.clinicalSampleCategories.includes(d.clinicalAttribute.displayName)) {
-                _self.clinicalSampleCategories.push(d.clinicalAttribute.displayName);
+            if (!_self.clinicalSampleCategories.map(function(d,i){return d.variable}).includes(d.clinicalAttribute.displayName)) {
+                _self.clinicalSampleCategories.push({variable: d.clinicalAttribute.displayName, datatype:d.clinicalAttribute.datatype});
             }
             sampleClinicalMap[d.sampleId][d.clinicalAttribute.displayName] = d.value;
         });

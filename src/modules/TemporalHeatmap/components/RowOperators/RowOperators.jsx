@@ -6,7 +6,7 @@ implements the icons and their functionality on the right side of the plot
 const RowOperators = observer(class RowOperators extends React.Component {
     constructor() {
         super();
-        this.sort = this.sort.bind(this);
+        this.sortTimepoint = this.sortTimepoint.bind(this);
         this.group = this.group.bind(this);
         this.unGroup = this.unGroup.bind(this);
         this.promote = this.promote.bind(this);
@@ -18,9 +18,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: Variable with which the timepoint will be grouped
      */
     group(timepointIndex, variable) {
-        this.props.store.setPrimaryVariable(timepointIndex, variable);
-        this.props.store.groupTimepoint(timepointIndex, variable);
-        this.props.store.sortGroups(timepointIndex, 1);
+        this.props.store.group(timepointIndex, variable);
     }
 
     /**
@@ -29,20 +27,8 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param timepointIndex: Index of the timepoint to be sorted
      * @param variable: Variable with which the timepoint should be sorted
      */
-    sort(timepointIndex, variable) {
-        //case: the timepoint is grouped
-        if (this.props.groupOrder[timepointIndex].isGrouped) {
-            if (this.props.store.primaryVariables[timepointIndex] !== variable) {
-                this.props.store.setPrimaryVariable(timepointIndex, variable);
-                this.props.store.groupTimepoint(timepointIndex, variable);
-            }
-            this.props.store.sortGroups(timepointIndex, -this.props.groupOrder[timepointIndex].order);
-        }
-        //case: the timepoint is not grouped
-        else {
-            this.props.store.setPrimaryVariable(timepointIndex, variable);
-            this.props.store.sortHeatmapTimepoint(timepointIndex, variable);
-        }
+    sortTimepoint(timepointIndex, variable) {
+        this.props.store.sortTimepoint(timepointIndex,variable);
     }
 
     /**
@@ -51,7 +37,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: variable which will be the future primary variable
      */
     unGroup(timepointIndex, variable) {
-        this.props.store.unGroupTimepoint(timepointIndex, variable);
+        this.props.store.unGroup(timepointIndex, variable);
     }
 
     /**
@@ -60,11 +46,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: variable to be the primary variable
      */
     promote(timepointIndex, variable) {
-        this.props.store.setPrimaryVariable(timepointIndex, variable);
-        if (this.props.groupOrder[timepointIndex].isGrouped) {
-            this.props.store.groupTimepoint(timepointIndex, variable);
-            this.props.store.sortGroups(timepointIndex, this.props.groupOrder[timepointIndex].order);
-        }
+        this.props.store.promote(timepointIndex, variable);
     }
 
     /**
@@ -142,11 +124,11 @@ const RowOperators = observer(class RowOperators extends React.Component {
             //Different icons and functions for grouped and ungrouped timepoints
             if (!d.isGrouped) {
                 headers.push(<g key={"Operator" + i}
-                                transform={transform}>{_self.getRowOperator(i, sort, group, _self.sort, _self.group)}</g>)
+                                transform={transform}>{_self.getRowOperator(i, sort, group, _self.sortTimepoint, _self.group)}</g>)
             }
             else {
                 headers.push(<g key={"Operator" + i}
-                                transform={transform}>{_self.getRowOperator(i, sort, ungroup, _self.sort, _self.unGroup)}</g>)
+                                transform={transform}>{_self.getRowOperator(i, sort, ungroup,  _self.sortTimepoint, _self.unGroup)}</g>)
             }
         });
         let transform = "translate(0," + 20 + ")";

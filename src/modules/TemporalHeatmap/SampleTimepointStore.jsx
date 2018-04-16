@@ -1,4 +1,5 @@
 import {extendObservable} from "mobx";
+
 /*
 stores information about sample timepoints
  */
@@ -58,7 +59,7 @@ class SampleTimepointStore {
         });
         this.groupOrder = Array(this.timepointStructure.length).fill({isGrouped: false, order: 1});
         this.patientsPerTimepoint = this.rootStore.patientsPerTimepoint;
-        this.patientOrderPerTimepoint=this.rootStore.patientOrderPerTimepoint;
+        this.patientOrderPerTimepoint = this.rootStore.patientOrderPerTimepoint;
         this.rootStore.timepointStore.initialize();
     }
 
@@ -66,17 +67,18 @@ class SampleTimepointStore {
      * adds variable to heatmap  timepointData
      * @param variable: variable to add
      * @param type
+     * @param dataset
      */
-    addHeatmapVariable(variable, type) {
+    addHeatmapVariable(variable, type, dataset) {
         const _self = this;
         this.timepointStructure.forEach(function (d, i) {
             let variableData = [];
-            d.forEach(function (f, j) {
+            d.forEach(function (f) {
                 let value;
-                if (type === "categorical") {
+                if (dataset === "clinical") {
                     value = _self.sampleClinicalMap[f.sample][variable]
                 }
-                else {
+                else if (dataset === "mutationCount") {
                     value = _self.sampleMutationCountMap[f.sample]
                 }
                 variableData.push({
@@ -95,9 +97,10 @@ class SampleTimepointStore {
      * 2. Regroup data at timepoints which are grouped
      * @param variable
      * @param type
+     * @param dataset
      */
-    addVariable(variable, type) {
-        this.addHeatmapVariable(variable, type);
+    addVariable(variable, type, dataset) {
+        this.addHeatmapVariable(variable, type, dataset);
         this.currentVariables.push({variable: variable, type: type});
         this.rootStore.timepointStore.regroupTimepoints();
     }
@@ -108,33 +111,29 @@ class SampleTimepointStore {
      * @param variable
      */
     removeVariable(variable) {
-        if (this.primaryVariables.includes(variable)) {
-            this.adaptPrimaryVariables(variable);
-        }
-        const index = this.currentVariables.map(function (d, i) {
-            return d.variable
-        }).indexOf(variable);
-        for (let i = 0; i < this.timepointData.length; i++) {
-            this.timepointData[i].heatmap.splice(index, 1);
-        }
-        this.currentVariables.splice(index, 1);
-        this.rootStore.timepointStore.regroupTimepoints();
-    }
-
-    adaptPrimaryVariables(variable) {
-        const _self = this;
-        let newVariableIndex = 0;
-        if (this.currentVariables.map(function (d) {
-                return d.variable
-            }).indexOf(variable) === 0) {
-            newVariableIndex = 1
-        }
-        this.primaryVariables = this.primaryVariables.map(function (d) {
-            if (d === variable) {
-                return _self.currentVariables[newVariableIndex].variable;
+        if (this.currentVariables.length !== 1) {
+            if (this.primaryVariables.includes(variable)) {
+                this.rootStore.timepointStore.adaptPrimaryVariables(variable, "sample");
             }
-            else return d;
-        });
+            const index = this.currentVariables.map(function (d) {
+                return d.variable
+            }).indexOf(variable);
+            for (let i = 0; i < this.timepointData.length; i++) {
+                this.timepointData[i].heatmap.splice(index, 1);
+            }
+            this.currentVariables.splice(index, 1);
+            this.rootStore.timepointStore.regroupTimepoints();
+        }
+        //case: last timepoint variable was removed
+        else {
+            this.timepointData = [];
+            this.currentVariables = [];
+            this.primaryVariables = [];
+            this.groupOrder = [];
+            this.patientsPerTimepoint = [];
+            this.patientOrderPerTimepoint = [];
+            this.rootStore.timepointStore.initialize();
+        }
     }
 
 

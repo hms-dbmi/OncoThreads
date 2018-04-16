@@ -118,7 +118,7 @@ const Legend = observer(class Legend extends React.Component {
                 let color = _self.props.visMap.getColorScale(d.variable, currentVariables[i].type);
 
                 let legendEntries = [];
-                if (currentVariables[i].type === "categorical") {
+                if (currentVariables[i].type === "STRING") {
                     legendEntries = _self.getCategoricalLegend(d, opacity, rectWidth, textHeight, lineheight, color);
                 }
                 else if (currentVariables[i].type === "binary") {

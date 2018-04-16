@@ -16,22 +16,21 @@ import MainView from "./modules/TemporalHeatmap/components/MainView"
 
 
 const cbioAPI = new cBioAPI();
-const rootStore = new RootStore(cbioAPI);
-
+let rootStore = new RootStore(cbioAPI);
 
 const StudySelection = observer(class StudySelection extends React.Component {
     render() {
         return (
             <div>
                 <h1>OncoTracer</h1>
-                <GetStudy rootStore={rootStore}/>
+                <GetStudy rootStore={rootStore} cbioAPI={cbioAPI}/>
             </div>
         )
     }
 });
-const HeatmapSelector=observer(class HeatmapSelector extends React.Component{
+const HeatmapSelector = observer(class HeatmapSelector extends React.Component {
     render() {
-        if(rootStore.parsed) {
+        if (rootStore.parsed) {
             return (
                 <div>
                     <div className="bottom-right-svg">
@@ -56,9 +55,9 @@ const HeatmapSelector=observer(class HeatmapSelector extends React.Component{
         else return null;
     }
 });
-const Heatmap=observer(class Heatmap extends React.Component{
+const Heatmap = observer(class Heatmap extends React.Component {
     render() {
-        if(rootStore.parsed) {
+        if (rootStore.parsed) {
             return (
                 <div>
                     <div className="bottom-right-svg">

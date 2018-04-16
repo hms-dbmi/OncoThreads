@@ -41,6 +41,7 @@ class TransitionStore {
     adaptTransitions(timepoint) {
         let previousTimepoint = timepoint - 1;
         let nextTimepoint = timepoint + 1;
+        console.log(nextTimepoint,this.numberOfTransitions);
         if (this.rootStore.timepointStore.groupOrder[timepoint].isGrouped) {
             if (previousTimepoint !== -1) {
                 if (this.rootStore.timepointStore.groupOrder[previousTimepoint].isGrouped) {
@@ -50,7 +51,7 @@ class TransitionStore {
                     this.computeGroupToPatientsTransition(previousTimepoint, timepoint)
                 }
             }
-            if (nextTimepoint !== this.numberOfTransitions) {
+            if (nextTimepoint !== this.numberOfTransitions+1) {
                 if (this.rootStore.timepointStore.groupOrder[nextTimepoint].isGrouped) {
                     this.computeSankeyTransition(timepoint, nextTimepoint)
                 }

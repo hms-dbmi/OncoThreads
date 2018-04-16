@@ -5,8 +5,13 @@ class cBioAPI {
     constructor() {
         this.patients = [];
         this.clinicalEvents = {};
-        this.allClinicalEvents=[];
-        this.allClinicalPatientData=[];
+        this.clinicalPatientData=[];
+        this.clinicalSampleData=[];
+        this.mutationCounts=[];
+    }
+    initialize(){
+         this.patients = [];
+        this.clinicalEvents = {};
         this.clinicalPatientData=[];
         this.clinicalSampleData=[];
         this.mutationCounts=[];

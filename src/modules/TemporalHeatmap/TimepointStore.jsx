@@ -76,6 +76,43 @@ class TimepointStore {
         isGrouped[timepoint].isGrouped = boolean;
         this.groupOrder = isGrouped;
     }
+    sortTimepoint(timepointIndex,variable){
+        //case: the timepoint is grouped
+        if (this.groupOrder[timepointIndex].isGrouped) {
+            if (this.primaryVariables[timepointIndex] !== variable) {
+                this.setPrimaryVariable(timepointIndex, variable);
+                this.groupTimepoint(timepointIndex, variable);
+            }
+            this.sortGroups(timepointIndex, -this.groupOrder[timepointIndex].order);
+        }
+        //case: the timepoint is not grouped
+        else {
+            this.setPrimaryVariable(timepointIndex, variable);
+            this.sortHeatmapTimepoint(timepointIndex, variable);
+        }
+    }
+    group(timepointIndex,variable){
+        this.setPrimaryVariable(timepointIndex, variable);
+        this.groupTimepoint(timepointIndex, variable);
+        this.sortGroups(timepointIndex, 1);
+    }
+      /**
+     * ungroupes a timepoint by swapping to the heatmap representation
+     * @param timepointIndex
+     * @param variable
+     */
+    unGroup(timepointIndex, variable) {
+        this.setIsGrouped(timepointIndex, false);
+        this.setPrimaryVariable(timepointIndex, variable);
+        this.rootStore.transitionStore.adaptTransitions(timepointIndex);
+    }
+    promote(timepointIndex,variable){
+         this.setPrimaryVariable(timepointIndex, variable);
+        if (this.groupOrder[timepointIndex].isGrouped) {
+            this.groupTimepoint(timepointIndex, variable);
+            this.sortGroups(timepointIndex, this.groupOrder[timepointIndex].order);
+        }
+    }
 
     /**
      * regroups the timepoints. Used after something is changed (variable is removed/added/declared primary)
@@ -183,16 +220,7 @@ class TimepointStore {
         }
     }
 
-    /**
-     * ungroupes a timepoint by swapping to the heatmap representation
-     * @param timepointIndex
-     * @param variable
-     */
-    unGroupTimepoint(timepointIndex, variable) {
-        this.setIsGrouped(timepointIndex, false);
-        this.setPrimaryVariable(timepointIndex, variable);
-        this.rootStore.transitionStore.adaptTransitions(timepointIndex);
-    }
+
 
     /**
      * sorts groups
@@ -217,7 +245,7 @@ class TimepointStore {
             else return 0;
         });
         this.timepointData[timepointIndex].group.data.forEach(function (d) {
-            d.rows.forEach(function (f, j) {
+            d.rows.forEach(function (f) {
                 f.counts = f.counts.sort(function (a, b) {
                     if (a.key < b.key) {
                         return -order;
@@ -286,6 +314,33 @@ class TimepointStore {
             }
         }).map(function (d) {
             return d.patient;
+        });
+    }
+
+    /**
+     * resets the primary variable if the removed variable was a primary variable
+     * @param variable
+     * @param type
+     */
+     adaptPrimaryVariables(variable,type) {
+        let currentVariables;
+        if(type==="sample"){
+            currentVariables=this.currentSampleVariables;
+        }
+        else{
+            currentVariables=this.currentBetweenVariables;
+        }
+        let newVariableIndex = 0;
+        if (currentVariables.map(function (d) {
+                return d.variable
+            }).indexOf(variable) === 0) {
+            newVariableIndex = 1
+        }
+        this.primaryVariables = this.primaryVariables.map(function (d) {
+            if (d === variable) {
+                return currentVariables[newVariableIndex].variable;
+            }
+            else return d;
         });
     }
 

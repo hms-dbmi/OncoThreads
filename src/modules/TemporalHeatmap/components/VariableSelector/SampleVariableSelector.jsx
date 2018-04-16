@@ -9,7 +9,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.state = {
             buttonClicked: "",
         };
-        this.handleCategoricalClick = this.handleCategoricalClick.bind(this);
+        this.handleVariableClick = this.handleVariableClick.bind(this);
     }
 
     /**
@@ -30,13 +30,14 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * adds a variable to the view
      * @param variable
      * @param type
+     * @param dataset
      * @param event
      */
-    addVariable(variable, type, event) {
+    addVariable(variable, type, dataset, event) {
         if (this.props.currentVariables.length === 0) {
             this.props.store.initialize(variable);
         }
-        this.props.store.addVariable(variable, type);
+        this.props.store.addVariable(variable, type, dataset);
         event.target.className = "selected";
     }
 
@@ -47,20 +48,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      */
     removeVariable(variable, event) {
         event.target.className = "notSelected";
-        //case the row removed was not the only row
-        if (this.props.currentVariables.length > 1) {
-
-
-            this.props.store.removeVariable(variable);
-        }
-        //case: last row removed
-        else {
-            this.props.store.timepointData = [];
-            this.props.store.primaryVariables = [];
-            this.props.store.currentVariables = [];
-            this.props.store.groupOrder = [];
-
-        }
+        this.props.store.removeVariable(variable);
     }
 
     /**
@@ -68,12 +56,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param event
      * @param variable
      * @param type
+     * @param dataset
      */
-    handleCategoricalClick(event, variable, type) {
+    handleVariableClick(event, variable, type, dataset) {
         if (!(this.props.currentVariables.map(function (d) {
                 return d.variable
             }).includes(variable))) {
-            this.addVariable(variable, type, event);
+            this.addVariable(variable, type, dataset, event);
         }
         else {
             this.removeVariable(variable, event)
@@ -82,14 +71,15 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
     /**
      * TODO: generalize
-     * handles a click on one of the continous Variables
+     * handles a click on one of the continuous Variables
      * @param event
      * @param category
+     * @param dataset
      */
-    handleContinousClick(event, category) {
+    handleContinousClick(event, category, dataset) {
         this.props.store.computeMaxMutationCount();
         this.props.visMap.setContinousColorScale(category, 0, this.props.store.maxMutationCount);
-        this.handleCategoricalClick(event, category, "continous")
+        this.handleVariableClick(event, category, "continuous", dataset)
     }
 
     /**
@@ -100,8 +90,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<button className="notSelected" key={d}
-                                 onClick={(e) => _self.handleCategoricalClick(e, d, "categorical")}>{d}</button>)
+            buttons.push(<button className="notSelected" key={d.variable}
+                                 onClick={(e) => _self.handleVariableClick(e, d.variable, d.datatype, "clinical")}>{d.variable}</button>)
         });
         return buttons;
     }
@@ -110,11 +100,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * creates a list of the genomic variables
      * @returns {Array}
      */
-    createGenomicAttributesList(){
-         let buttons = [];
+    createGenomicAttributesList() {
+        let buttons = [];
         const _self = this;
         buttons.push(<button className={"notSeleced"}
-                             onClick={(e) => _self.handleContinousClick(e, this.props.mutationCount)}
+                             onClick={(e) => _self.handleContinousClick(e, this.props.mutationCount, "mutationCount")}
                              key={this.props.mutationCount}>{this.props.mutationCount}</button>);
         return buttons;
     }

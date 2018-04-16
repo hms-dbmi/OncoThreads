@@ -7,8 +7,8 @@ stores information about current visual parameters
 class VisStore{
     constructor(){
         this.categoricalColor={};
-        this.continousColor={};
-        this.binaryColor=d3.scaleOrdinal().range(['#e8e8e8','#8da0cb','#e8e8e8']).domain([undefined,true,false]);
+        this.continuousColor={};
+        this.binaryColor=d3.scaleOrdinal().range(['#f7f7f7','#8da0cb','#f7f7f7']).domain([undefined,true,false]);
         //width of rects in sampleTomepoints
         this.sampleRectWidth=0;
         //width of rects in betweenTimepoints
@@ -29,7 +29,7 @@ class VisStore{
         })
     }
     setContinousColorScale(variable,min,max){
-        this.continousColor[variable]=d3.scaleLinear().range(['#e6e6e6','#000000']).domain([min,max])
+        this.continuousColor[variable]=d3.scaleLinear().range(['#e6e6e6','#000000']).domain([min,max])
     }
     setGap(gap){
         this.gap=gap;
@@ -68,10 +68,9 @@ class VisStore{
     }
 
     getColorScale(variable,type){
-        if(type==="categorical") {
+        if(type==="STRING") {
             if (!(variable in this.categoricalColor)) {
-                this.categoricalColor[variable] = d3.scaleOrdinal().range(['#e8e8e8','#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']).domain([undefined]);
-
+                this.categoricalColor[variable] = d3.scaleOrdinal().range(['#f7f7f7','#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']).domain([undefined]);
             }
             return this.categoricalColor[variable];
         }
@@ -79,7 +78,7 @@ class VisStore{
             return this.binaryColor;
         }
         else{
-            return this.continousColor[variable];
+            return this.continuousColor[variable];
         }
     }
 }
