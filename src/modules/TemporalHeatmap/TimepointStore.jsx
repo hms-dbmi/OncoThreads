@@ -342,6 +342,7 @@ class TimepointStore {
             }
             else return d;
         });
+        console.log(this.primaryVariables);
     }
 
 
