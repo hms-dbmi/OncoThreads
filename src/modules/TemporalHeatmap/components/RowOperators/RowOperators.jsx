@@ -6,6 +6,12 @@ implements the icons and their functionality on the right side of the plot
 const RowOperators = observer(class RowOperators extends React.Component {
     constructor() {
         super();
+        this.state = ({
+            showContextMenu: "hidden",
+            contextX: 0,
+            contextY: 0,
+            clickedTimepoint:-1
+        });
         this.sortTimepoint = this.sortTimepoint.bind(this);
         this.group = this.group.bind(this);
         this.unGroup = this.unGroup.bind(this);
@@ -28,7 +34,19 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: Variable with which the timepoint should be sorted
      */
     sortTimepoint(timepointIndex, variable) {
-        this.props.store.sortTimepoint(timepointIndex,variable);
+        this.props.store.sortTimepoint(timepointIndex, variable);
+    }
+    sortAllEqual(){
+        this.props.store.applySortingToAll(this.state.clickedTimepoint);
+        this.setState({showContextMenu: "hidden"});
+    }
+    applySortToPrevious(){
+        this.props.store.applySortingToPrevious(this.state.clickedTimepoint);
+        this.setState({showContextMenu: "hidden"});
+    }
+    applySortToNext(){
+        this.props.store.applySortingToNext(this.state.clickedTimepoint);
+        this.setState({showContextMenu: "hidden"});
     }
 
     /**
@@ -49,6 +67,11 @@ const RowOperators = observer(class RowOperators extends React.Component {
         this.props.store.promote(timepointIndex, variable);
     }
 
+    getContextMenu(e,timepointIndex) {
+        this.setState({showContextMenu: "visible", contextX: e.pageX-105, contextY: e.pageY-200, clickedTimepoint:timepointIndex});
+        e.preventDefault();
+    }
+
     /**
      * Creates the Row operator for a timepoint
      * @param timepointIndex
@@ -61,12 +84,12 @@ const RowOperators = observer(class RowOperators extends React.Component {
     getRowOperator(timepointIndex, icon1, icon2, function1, function2) {
         const _self = this;
         let pos = 0;
-        let currentVariables=[];
-        if(this.props.store.timepointData[timepointIndex].type==="between"){
-            currentVariables=this.props.currentBetweenVariables;
+        let currentVariables = [];
+        if (this.props.store.timepointData[timepointIndex].type === "between") {
+            currentVariables = this.props.currentBetweenVariables;
         }
-        else{
-            currentVariables=this.props.currentSampleVariables;
+        else {
+            currentVariables = this.props.currentSampleVariables;
         }
         return currentVariables.map(function (d, i) {
             let lineHeight;
@@ -89,23 +112,24 @@ const RowOperators = observer(class RowOperators extends React.Component {
                       transform={"translate(0," + (lineHeight / 2 + 0.5 * fontSize) + ")"}
                       fontSize={fontSize}
                       onClick={(e) => _self.promote(timepointIndex, d.variable, e)}>{d.variable}</text>
-                <rect key={"text1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
+                <path key={"path1" + d.variable}
+                      transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
+                      fill="gray"
+                      d={icon1}/>
+                 <rect key={"rect1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
+                      onContextMenu={(e) => _self.getContextMenu(e,timepointIndex)}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       width={iconScale * 24} height={24}
                       fill="none"
                       pointerEvents="visible"/>
-                <path key={"rect1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
-                      transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
-                      fill="gray"
-                      d={icon1}/>
-                <rect key={"text2" + d.variable} onClick={() => function2(timepointIndex, d.variable)}
-                      transform={"translate(" + (_self.props.svgWidth - iconScale * 48) + "," + yIcons + ")scale(" + iconScale + ")"}
-                      width={24} height={24}
-                      fill="none" pointerEvents="visible"/>
-                <path key={"rect2" + d.variable} onClick={() => function2(timepointIndex, d.variable)}
+                <path key={"path2" + d.variable}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 48) + "," + yIcons + ")scale(" + iconScale + ")"}
                       fill="gray"
                       d={icon2}/>
+                <rect key={"rect2" + d.variable} onClick={() => function2(timepointIndex, d.variable)}
+                      transform={"translate(" + (_self.props.svgWidth - iconScale * 48) + "," + yIcons + ")scale(" + iconScale + ")"}
+                      width={24} height={24}
+                      fill="none" pointerEvents="visible"/>
             </g>
         });
 
@@ -128,14 +152,23 @@ const RowOperators = observer(class RowOperators extends React.Component {
             }
             else {
                 headers.push(<g key={"Operator" + i}
-                                transform={transform}>{_self.getRowOperator(i, sort, ungroup,  _self.sortTimepoint, _self.unGroup)}</g>)
+                                transform={transform}>{_self.getRowOperator(i, sort, ungroup, _self.sortTimepoint, _self.unGroup)}</g>)
             }
         });
         let transform = "translate(0," + 20 + ")";
         return (
-            <g transform={transform}>
-                {headers}
-            </g>
+            <div className="rowOperators">
+                <svg width={200} height={this.props.svgHeight}>
+                    <g transform={transform}>
+                        {headers}
+                    </g>
+                </svg>
+                <div className="btn-group" style={{visibility:this.state.showContextMenu, position:"absolute", top:this.state.contextY, left:this.state.contextX, backgroundColor:"white"}}>
+                    <button onClick={()=>this.applySortToPrevious()}>Apply sorting to previous timepoint</button>
+                    <button onClick={()=>this.applySortToNext()}>Apply sorting to next timepoint</button>
+                    <button onClick={()=>this.sortAllEqual()}>Apply sorting to all timepoints</button>
+                </div>
+            </div>
         )
     }
 });

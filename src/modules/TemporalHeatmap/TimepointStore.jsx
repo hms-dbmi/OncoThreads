@@ -96,6 +96,27 @@ class TimepointStore {
         this.groupTimepoint(timepointIndex, variable);
         this.sortGroups(timepointIndex, 1);
     }
+    applySortingToPrevious(timepointIndex){
+        if(timepointIndex-1>=0){
+            this.patientOrderPerTimepoint[timepointIndex-1]=this.patientOrderPerTimepoint[timepointIndex];
+        }
+    }
+    applySortingToNext(timepointIndex){
+         if(timepointIndex+1<this.timepointData.length){
+            this.patientOrderPerTimepoint[timepointIndex+1]=this.patientOrderPerTimepoint[timepointIndex];
+        }
+    }
+    applySortingToAll(timepointIndex){
+        let sorting=this.patientOrderPerTimepoint[timepointIndex];
+        this.patientOrderPerTimepoint=this.patientOrderPerTimepoint.map(function (d, i) {
+            if (i !== timepointIndex) {
+                return sorting;
+            }
+            else {
+                return d
+            }
+        });
+    }
       /**
      * ungroupes a timepoint by swapping to the heatmap representation
      * @param timepointIndex

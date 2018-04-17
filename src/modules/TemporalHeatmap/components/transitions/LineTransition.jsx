@@ -12,9 +12,10 @@ const LineTransition = observer(class LineTransition extends React.Component {
      * @param y0: y pos
      * @param y1: y pos + height
      * @param key (unique)
+     * @param strokeColor
      * @returns Line
      */
-    static drawLine(x0, x1, y0, y1, key) {
+    static drawLine(x0, x1, y0, y1, key, strokeColor) {
         const curvature = .5;
         const yi = d3.interpolateNumber(y0, y1),
             y2 = yi(curvature),
@@ -28,14 +29,18 @@ const LineTransition = observer(class LineTransition extends React.Component {
         const line = d3.path();
         line.moveTo(x0, y0);
         line.lineTo(x1, y1);
-        return (<path key={key} d={path} stroke={"lightgray"} fill="none"/>)
+        return (<path key={key} d={path} stroke={strokeColor} fill="none"/>)
     }
     drawLines() {
         let lines = [];
         const _self = this;
         this.props.transition.data.from.forEach(function (d) {
             if (_self.props.transition.data.to.includes(d)) {
-                lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 0 - _self.props.visMap.gap, _self.props.visMap.transitionSpace, d));
+                let strokeColor="lightgray";
+                if(_self.props.selectedPatients.includes(d)){
+                    strokeColor="black"
+                }
+                lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 0 - _self.props.visMap.gap, _self.props.visMap.transitionSpace, d,strokeColor));
             }
         });
         return lines;
