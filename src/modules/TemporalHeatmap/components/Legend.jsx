@@ -17,24 +17,39 @@ const Legend = observer(class Legend extends React.Component {
      */
     static getLegendEntry(value, opacity, rectWidth, textHeight, currX, lineheight, color) {
         let legendEntry = [];
-        legendEntry.push(<rect key={"rect" + value} opacity={opacity} width={rectWidth - 5} height={textHeight + 2}
+        legendEntry.push(<rect key={"rect" + value} opacity={opacity} width={rectWidth} height={textHeight + 2}
                                x={currX} y={lineheight / 2 - textHeight / 2}
                                fill={color}/>);
-        legendEntry.push(<text key={"text" + value} fontSize={textHeight} x={currX + 2}
+        legendEntry.push(<text  key={"text" + value} fontSize={textHeight} x={currX+2}
                                y={lineheight / 2 + textHeight / 2}>{value}</text>);
         return legendEntry;
     }
 
     /**
+     * computes the width of a text. Returns 30 if the text width would be shorter than 30
+     * @param text
+     * @returns {number}
+     */
+    static getTextWidth(text){
+        const minWidth=30;
+          const context = document.createElement("canvas").getContext("2d");
+          const width= context.measureText(text).width;
+          if(width>minWidth){
+              return width;
+          }
+          else return minWidth;
+    }
+
+    /**
      * gets a legend for a continous variable
      * @param opacity
-     * @param rectWidth
      * @param textHeight
      * @param lineheight
      * @param color
      * @returns {Array}
      */
-    static getContinousLegend(opacity, rectWidth, textHeight, lineheight, color) {
+    static getContinuousLegend(opacity, textHeight, lineheight, color) {
+        const _self=this;
         let legendEntries = [];
         const min = color.domain()[0];
         const max = color.domain()[1];
@@ -42,9 +57,10 @@ const Legend = observer(class Legend extends React.Component {
         let step = (max - min) / 2;
         let currX = 0;
         for (let i = 0; i < 3; i++) {
+            const rectWidth=_self.getTextWidth(value)+4;
             legendEntries = legendEntries.concat(this.getLegendEntry(value, opacity, rectWidth, textHeight, currX, lineheight, color(value)));
             value += step;
-            currX += rectWidth
+            currX += rectWidth+2
         }
         return legendEntries;
     }
@@ -53,21 +69,22 @@ const Legend = observer(class Legend extends React.Component {
      * gets a legend for a categorical variable
      * @param row
      * @param opacity
-     * @param rectWidth
      * @param textHeight
      * @param lineheight
      * @param color
      * @returns {Array}
      */
-    getCategoricalLegend(row, opacity, rectWidth, textHeight, lineheight, color) {
+    getCategoricalLegend(row, opacity, textHeight, lineheight, color) {
+        const _self=this;
         let currX = 0;
         let currKeys = [];
         let legendEntries = [];
         row.data.forEach(function (f) {
             if (!currKeys.includes(f.value) && f.value !== undefined) {
+                const rectWidth=Legend.getTextWidth(f.value)+4;
                 currKeys.push(f.value);
                 legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, textHeight, currX, lineheight, color(f.value)));
-                currX += rectWidth;
+                currX += (rectWidth+2);
             }
         });
         return (legendEntries);
@@ -77,16 +94,16 @@ const Legend = observer(class Legend extends React.Component {
      * gets a legend for a binary variable
      * @param row
      * @param opacity
-     * @param rectWidth
      * @param textHeight
      * @param lineheight
      * @param color
      * @returns {Array}
      */
-    static getBinaryLegend(row, opacity, rectWidth, textHeight, lineheight, color) {
+    static getBinaryLegend(row, opacity, textHeight, lineheight, color) {
         let legendEntries = [];
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, rectWidth, textHeight, 0, lineheight, color(true)));
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, rectWidth, textHeight, rectWidth, lineheight, color(false)));
+
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity,Legend.getTextWidth("true")+4, textHeight, 0, lineheight, color(true)));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth("false")+4, textHeight, Legend.getTextWidth("true")+6, lineheight, color(false)));
         return (legendEntries);
     }
 
@@ -95,12 +112,11 @@ const Legend = observer(class Legend extends React.Component {
      * gets the legend
      * @param data
      * @param primary
-     * @param rectWidth
      * @param textHeight
      * @param currentVariables
      * @returns {Array}
      */
-    getLegend(data, primary, rectWidth, textHeight,currentVariables) {
+    getLegend(data, primary, textHeight,currentVariables) {
         const _self = this;
         let legend = [];
         let currPos = 0;
@@ -119,13 +135,13 @@ const Legend = observer(class Legend extends React.Component {
 
                 let legendEntries = [];
                 if (currentVariables[i].type === "STRING") {
-                    legendEntries = _self.getCategoricalLegend(d, opacity, rectWidth, textHeight, lineheight, color);
+                    legendEntries = _self.getCategoricalLegend(d, opacity, textHeight, lineheight, color);
                 }
                 else if (currentVariables[i].type === "binary") {
-                    legendEntries = Legend.getBinaryLegend(d, opacity, rectWidth, textHeight, lineheight, color);
+                    legendEntries = Legend.getBinaryLegend(d, opacity, textHeight, lineheight, color);
                 }
                 else {
-                    legendEntries = Legend.getContinousLegend(opacity, rectWidth, textHeight, lineheight, color);
+                    legendEntries = Legend.getContinuousLegend(opacity, textHeight, lineheight, color);
                 }
                 const transform = "translate(0," + currPos + ")";
                 currPos += lineheight + _self.props.visMap.gap;
@@ -136,7 +152,6 @@ const Legend = observer(class Legend extends React.Component {
     }
 
     render() {
-        const rectWidth = 50;
         const textHeight = 10;
         const _self = this;
         const legends = [];
@@ -150,7 +165,7 @@ const Legend = observer(class Legend extends React.Component {
             }
             let transform = "translate(10," + _self.props.posY[i] + ")";
             legends.push(<g key={i + d}
-                            transform={transform}>{_self.getLegend(_self.props.store.timepointData[i].heatmap, d, rectWidth, textHeight,currentVariables)}</g>);
+                            transform={transform}>{_self.getLegend(_self.props.store.timepointData[i].heatmap, d, textHeight,currentVariables)}</g>);
 
         });
         let transform = "translate(0," + 20 + ")";

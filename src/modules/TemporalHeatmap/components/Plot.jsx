@@ -14,7 +14,9 @@ const Plot = observer(class Plot extends React.Component {
      * @returns heatmap scales
      */
     createSampleHeatMapScales(w, rectWidth) {
+        console.log(this.props.patientOrderPerTimepoint);
         return this.props.patientOrderPerTimepoint.map(function (d, i) {
+            console.log(d);
             return d3.scalePoint()
                 .domain(d)
                 .range([0, w - rectWidth]);

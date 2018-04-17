@@ -190,6 +190,16 @@ class TransitionStore {
         }
     }
 
+    /**
+     * creates an empty transition
+     * @param firstTP
+     * @param secondTP
+     */
+    computeEmptyTransition(firstTP,secondTP){
+        this.transitionData[firstTP].type = "empty";
+        this.transitionData[firstTP].data = [];
+    }
+
 
 }
 

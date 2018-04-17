@@ -57,7 +57,7 @@ h3 {
 .btn-group button {
     border: 1px solid black; /* Green border */
     color: black; /* White text */
-    font-size: 8px;
+    font-size: 10px;
     padding: 5px 5px; /* Some padding */
     width: 100%;
     cursor: pointer; /* Pointer/hand icon */
@@ -108,5 +108,8 @@ h3 {
 
 .clickable:hover {
     cursor: pointer;
+}
+text{
+    font: 10px sans-serif;
 }
 

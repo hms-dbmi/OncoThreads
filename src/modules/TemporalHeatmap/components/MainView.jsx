@@ -67,8 +67,6 @@ const MainView = observer(class MainView extends React.Component {
         const svgHeight = this.props.store.numberOfTransitions*2 * ((sampleTPHeight+betweenTPHeight)/2 + this.props.visMap.transitionSpace);
         return (
             <div className="heatmapContainer">
-                <div className="rowOperators">
-                    <svg width={200} height={svgHeight}>
                         <RowOperators primaryVariables={this.props.primaryVariables}
                                       groupOrder={this.props.groupOrder}
                                       currentSampleVariables={this.props.currentSampleVariables}
@@ -77,9 +75,7 @@ const MainView = observer(class MainView extends React.Component {
                                       svgHeight={svgHeight} svgWidth={200}
                                       visMap={this.props.visMap}
                                       posY={sampleTimepointY}/>
-                    </svg>
 
-                </div>
                 <div className="view">
                     <Plot {...this.props} width={svgWidth} height={svgHeight} heatmapWidth={heatmapWidth}
                           timepointY={sampleTimepointY}
