@@ -156,7 +156,6 @@ const RowOperators = observer(class RowOperators extends React.Component {
             }
         });
         let transform = "translate(0," + 20 + ")";
-        let transformContext = "translate(" + this.state.contextX + "," + this.state.contextY + ")";
         return (
             <div className="rowOperators">
                 <svg width={200} height={this.props.svgHeight}>

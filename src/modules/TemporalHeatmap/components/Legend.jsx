@@ -20,7 +20,7 @@ const Legend = observer(class Legend extends React.Component {
         legendEntry.push(<rect key={"rect" + value} opacity={opacity} width={rectWidth} height={textHeight + 2}
                                x={currX} y={lineheight / 2 - textHeight / 2}
                                fill={color}/>);
-        legendEntry.push(<text  key={"text" + value} fontSize={textHeight} x={currX+2}
+        legendEntry.push(<text key={"text" + value} fontSize={textHeight} x={currX + 2}
                                y={lineheight / 2 + textHeight / 2}>{value}</text>);
         return legendEntry;
     }
@@ -30,14 +30,14 @@ const Legend = observer(class Legend extends React.Component {
      * @param text
      * @returns {number}
      */
-    static getTextWidth(text){
-        const minWidth=30;
-          const context = document.createElement("canvas").getContext("2d");
-          const width= context.measureText(text).width;
-          if(width>minWidth){
-              return width;
-          }
-          else return minWidth;
+    static getTextWidth(text) {
+        const minWidth = 30;
+        const context = document.createElement("canvas").getContext("2d");
+        const width = context.measureText(text).width;
+        if (width > minWidth) {
+            return width;
+        }
+        else return minWidth;
     }
 
     /**
@@ -49,7 +49,6 @@ const Legend = observer(class Legend extends React.Component {
      * @returns {Array}
      */
     static getContinuousLegend(opacity, textHeight, lineheight, color) {
-        const _self=this;
         let legendEntries = [];
         const min = color.domain()[0];
         const max = color.domain()[1];
@@ -57,10 +56,10 @@ const Legend = observer(class Legend extends React.Component {
         let step = (max - min) / 2;
         let currX = 0;
         for (let i = 0; i < 3; i++) {
-            const rectWidth=_self.getTextWidth(value)+4;
+            const rectWidth = Legend.getTextWidth(value) + 4;
             legendEntries = legendEntries.concat(this.getLegendEntry(value, opacity, rectWidth, textHeight, currX, lineheight, color(value)));
             value += step;
-            currX += rectWidth+2
+            currX += rectWidth + 2
         }
         return legendEntries;
     }
@@ -75,16 +74,15 @@ const Legend = observer(class Legend extends React.Component {
      * @returns {Array}
      */
     getCategoricalLegend(row, opacity, textHeight, lineheight, color) {
-        const _self=this;
         let currX = 0;
         let currKeys = [];
         let legendEntries = [];
         row.data.forEach(function (f) {
             if (!currKeys.includes(f.value) && f.value !== undefined) {
-                const rectWidth=Legend.getTextWidth(f.value)+4;
+                const rectWidth = Legend.getTextWidth(f.value) + 4;
                 currKeys.push(f.value);
                 legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, textHeight, currX, lineheight, color(f.value)));
-                currX += (rectWidth+2);
+                currX += (rectWidth + 2);
             }
         });
         return (legendEntries);
@@ -101,9 +99,8 @@ const Legend = observer(class Legend extends React.Component {
      */
     static getBinaryLegend(row, opacity, textHeight, lineheight, color) {
         let legendEntries = [];
-
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity,Legend.getTextWidth("true")+4, textHeight, 0, lineheight, color(true)));
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth("false")+4, textHeight, Legend.getTextWidth("true")+6, lineheight, color(false)));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, Legend.getTextWidth("true") + 4, textHeight, 0, lineheight, color(true)));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth("false") + 4, textHeight, Legend.getTextWidth("true") + 6, lineheight, color(false)));
         return (legendEntries);
     }
 
@@ -116,11 +113,11 @@ const Legend = observer(class Legend extends React.Component {
      * @param currentVariables
      * @returns {Array}
      */
-    getLegend(data, primary, textHeight,currentVariables) {
+    getLegend(data, primary, textHeight, currentVariables) {
         const _self = this;
         let legend = [];
         let currPos = 0;
-        if(data.length!==undefined) {
+        if (data.length !== undefined) {
             data.forEach(function (d, i) {
                 let lineheight;
                 let opacity = 1;
@@ -156,25 +153,27 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         const legends = [];
         this.props.primaryVariables.forEach(function (d, i) {
-            let currentVariables=[];
-            if(_self.props.store.timepointData[i].type==="between"){
-               currentVariables=_self.props.currentBetweenVariables;
+            let currentVariables = [];
+            if (_self.props.store.timepointData[i].type === "between") {
+                currentVariables = _self.props.currentBetweenVariables;
             }
-            else{
-                currentVariables=_self.props.currentSampleVariables;
+            else {
+                currentVariables = _self.props.currentSampleVariables;
             }
             let transform = "translate(10," + _self.props.posY[i] + ")";
             legends.push(<g key={i + d}
-                            transform={transform}>{_self.getLegend(_self.props.store.timepointData[i].heatmap, d, textHeight,currentVariables)}</g>);
+                            transform={transform}>{_self.getLegend(_self.props.store.timepointData[i].heatmap, d, textHeight, currentVariables)}</g>);
 
         });
         let transform = "translate(0," + 20 + ")";
         return (
-            <svg width={200} height={this.props.height}>
-                <g transform={transform}>
-                    {legends}
-                </g>
-            </svg>
+            <div className="legend">
+                <svg width={200} height={this.props.height}>
+                    <g transform={transform}>
+                        {legends}
+                    </g>
+                </svg>
+            </div>
         )
     }
 });

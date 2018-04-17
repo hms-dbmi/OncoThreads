@@ -40,7 +40,8 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                 groupScale={_self.props.groupScale}
                                                                                 firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                                 secondHeatmapScale={_self.props.heatmapScales[i + 1]}
-                                                                                visMap={_self.props.visMap}/>
+                                                                                visMap={_self.props.visMap}
+                                                                                selectedPatients={_self.props.selectedPatients}/>
             </g>);
         }))
     }

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {observer} from 'mobx-react';
 import Timepoint from "./timepoints/Timepoint"
@@ -36,7 +37,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
                                                                                           store={_self.props.store}
                                                                                           visMap={_self.props.visMap}
                                                                                           groupScale={_self.props.groupScale}
-                                                                                          heatmapScale={_self.props.heatmapScales[i]}/>
+                                                                                          heatmapScale={_self.props.heatmapScales[i]}
+                                                                                          onDrag={_self.props.onDrag}
+                                                                                        selectedPatients={_self.props.selectedPatients}/>
                 </g>);
             }
         });

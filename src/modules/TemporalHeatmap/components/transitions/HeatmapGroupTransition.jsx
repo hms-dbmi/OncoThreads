@@ -18,9 +18,10 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
      * @param y0
      * @param y1
      * @param key: unique transition key
+     * @param strokeColor
      * @returns transition path
      */
-    static drawTransition(x0, x1, x2, y0, y1, key) {
+    static drawTransition(x0, x1, x2, y0, y1, key,strokeColor) {
         const curvature = .5;
         const yi = d3.interpolateNumber(y0, y1),
             y2 = yi(curvature),
@@ -39,7 +40,7 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         line.lineTo(x1, y0);
         line.lineTo(x2, y1);
         line.closePath();
-        return (<path key={key} d={path} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
+        return (<path key={key} d={path} stroke={strokeColor} fill={strokeColor} opacity={0.5}/>)
     }
 
     /**
@@ -93,7 +94,11 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
             if (transitionPatients.length !== 0) {
                 const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
                 transitionPatients.forEach(function (f) {
-                    transitions.push(HeatmapGroupTransition.drawTransition(currXsource, currXsource + transitionWidth, scale(f) + 0.5 * _self.props.rectWidth, y0, y1, f));
+                let strokeColor="lightgray";
+                if(_self.props.selectedPatients.includes(f)){
+                    strokeColor="#737373"
+                }
+                    transitions.push(HeatmapGroupTransition.drawTransition(currXsource, currXsource + transitionWidth, scale(f) + 0.5 * _self.props.rectWidth, y0, y1, f,strokeColor));
                     currXsource += transitionWidth;
                 });
             }
