@@ -36,18 +36,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
     sortTimepoint(timepointIndex, variable) {
         this.props.store.sortTimepoint(timepointIndex, variable);
     }
-    sortAllEqual(){
-        this.props.store.applySortingToAll(this.state.clickedTimepoint);
-        this.setState({showContextMenu: "hidden"});
-    }
-    applySortToPrevious(){
-        this.props.store.applySortingToPrevious(this.state.clickedTimepoint);
-        this.setState({showContextMenu: "hidden"});
-    }
-    applySortToNext(){
-        this.props.store.applySortingToNext(this.state.clickedTimepoint);
-        this.setState({showContextMenu: "hidden"});
-    }
+
 
     /**
      * ungoups a grouped timepoint
@@ -67,10 +56,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
         this.props.store.promote(timepointIndex, variable);
     }
 
-    getContextMenu(e,timepointIndex) {
-        this.setState({showContextMenu: "visible", contextX: e.pageX-105, contextY: e.pageY-200, clickedTimepoint:timepointIndex});
-        e.preventDefault();
-    }
+
 
     /**
      * Creates the Row operator for a timepoint
@@ -117,7 +103,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
                       fill="gray"
                       d={icon1}/>
                  <rect key={"rect1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
-                      onContextMenu={(e) => _self.getContextMenu(e,timepointIndex)}
+                      onContextMenu={(e) => _self.props.openMenu(e,timepointIndex)}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       width={iconScale * 24} height={24}
                       fill="none"
@@ -163,11 +149,6 @@ const RowOperators = observer(class RowOperators extends React.Component {
                         {headers}
                     </g>
                 </svg>
-                <div className="btn-group" style={{visibility:this.state.showContextMenu, position:"absolute", top:this.state.contextY, left:this.state.contextX, backgroundColor:"white"}}>
-                    <button onClick={()=>this.applySortToPrevious()}>Apply sorting to previous timepoint</button>
-                    <button onClick={()=>this.applySortToNext()}>Apply sorting to next timepoint</button>
-                    <button onClick={()=>this.sortAllEqual()}>Apply sorting to all timepoints</button>
-                </div>
             </div>
         )
     }

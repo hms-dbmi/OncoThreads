@@ -22,8 +22,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                 height = _self.props.secondaryHeight;
                 opacity = 0.5;
             }
-            rows.push(<g key={d.variable}
-                         transform={transform}><PartitionRow row={d.counts} height={height} opacity={opacity} color={color}
+            rows.push(<g key={d.variable} transform={transform}><PartitionRow key={d.variable} row={d.counts} height={height} opacity={opacity} color={color}
                                     groupScale={_self.props.groupScale}/></g>);
             previousYposition += height + _self.props.gap;
 
