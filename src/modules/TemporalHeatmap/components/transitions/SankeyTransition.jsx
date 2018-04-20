@@ -10,11 +10,13 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      * @param x0: start point on source partition
      * @param x1: start point on target partition
      * @param width: of transition
-     * @param key: unique transition key
      * @param rectWidth
+     * @param source
+     * @param target
+     * @param count
      * @returns transition path
      */
-    drawTransition(x0, x1, width, key, rectWidth) {
+    drawTransition(x0, x1, width, rectWidth,source,target,count) {
         const curvature = .5;
         const y0 = 0 - this.props.gap * 3 + rectWidth,
             y1 = this.props.height - this.props.gap * 2 - rectWidth;
@@ -31,7 +33,7 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
             + " " + (x0 + width) + "," + y2
             + " " + (x0 + width) + "," + y0
             + "L" + x0 + "," + y0;
-        return (<path key={key} d={path} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
+        return (<path onMouseEnter={(e)=>this.props.showTooltip(e,source,target,count)} onMouseLeave={this.props.hideTooltip} key={source+"->"+target} d={path} stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>)
     }
 
     /**
@@ -76,7 +78,7 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
                 }
                 if (transition.value !== 0) {
                     const transitionWidth = transition.value * (_self.props.groupScale(firstParLength) / firstParLength);
-                    transitions.push(_self.drawTransition(currXsource, currXtarget[f.partition], transitionWidth, d.partition + "" + f.partition, rectWidth));
+                    transitions.push(_self.drawTransition(currXsource, currXtarget[f.partition], transitionWidth, rectWidth,d.partition,f.partition,transition.value));
                     currXsource += transitionWidth;
                     currXtarget[f.partition] += transitionWidth;
                 }
@@ -104,7 +106,7 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      * @param target
      */
     getTransition(source, target) {
-        return this.props.transition.data.filter(function (d, i) {
+        return this.props.transition.data.filter(function (d) {
             return d.from === source && d.to === target
         })[0]
     }

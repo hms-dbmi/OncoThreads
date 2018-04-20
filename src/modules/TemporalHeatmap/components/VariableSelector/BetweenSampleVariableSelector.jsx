@@ -37,7 +37,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     openModal(event) {
-        this.setState({modalIsOpen: true, buttonClicked: event.target.value});
+        this.setState({modalIsOpen: true, buttonClicked: event.target.value,selectedKey:"",selectedValues:[]});
     }
 
     /**
@@ -83,7 +83,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const attributes = this.props.eventAttributes[event];
         for (let key in attributes) {
             elements.push(<h4 key={key}>{key}</h4>);
-            attributes[key].forEach(function (d, i) {
+            attributes[key].forEach(function (d) {
                 elements.push(<p key={d}><input type="checkbox" onClick={(e)=>_self.handleCheckBoxClick(e,key,d)}/>{d}</p>)
             })
         }

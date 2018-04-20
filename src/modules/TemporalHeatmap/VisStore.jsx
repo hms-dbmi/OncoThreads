@@ -8,7 +8,7 @@ class VisStore{
     constructor(){
         this.categoricalColor={};
         this.continuousColor={};
-        this.binaryColor=d3.scaleOrdinal().range(['#f7f7f7','#fff2ae','#f7f7f7']).domain([undefined,true,false]);
+        this.binaryColor=d3.scaleOrdinal().range(['#f7f7f7','#ffd92f','#f7f7f7']).domain([undefined,true,false]);
         //width of rects in sampleTomepoints
         this.sampleRectWidth=0;
         //width of rects in betweenTimepoints

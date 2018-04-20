@@ -3,6 +3,7 @@ import {observer} from 'mobx-react';
 import RowOperators from "./RowOperators/RowOperators"
 import Legend from "./Legend"
 import Plot from "./Plot";
+import ContextMenu from "./ContextMenu"
 
 /*
 Main View
@@ -10,6 +11,18 @@ Creates the Row operators, the Plot and the Legend
 Sets the basic parameters, e.g. the dimensions of the rectangles or the height of the transitions ("transision space")
  */
 const MainView = observer(class MainView extends React.Component {
+    constructor() {
+        super();
+        this.state = ({
+            showContextMenu: "hidden",
+            contextX: 0,
+            contextY: 0,
+            clickedTimepoint: -1
+        });
+        this.closeContextMenu = this.closeContextMenu.bind(this);
+        this.openContextMenu = this.openContextMenu.bind(this);
+    }
+
     /**
      * get the maximum number of partitions in grouped timepoints
      * @returns maximum number of partitions
@@ -25,6 +38,22 @@ const MainView = observer(class MainView extends React.Component {
             }
         });
         return max;
+    }
+
+    openContextMenu(e, timepointIndex) {
+        this.setState({
+            showContextMenu: "visible",
+            contextX: e.pageX - 105,
+            contextY: e.pageY - 200,
+            clickedTimepoint: timepointIndex
+        });
+        e.preventDefault();
+    }
+
+    closeContextMenu() {
+        if(this.state.showContextMenu==="visible") {
+            this.setState({showContextMenu: "hidden"})
+        }
     }
 
     render() {
@@ -66,7 +95,7 @@ const MainView = observer(class MainView extends React.Component {
         const svgWidth = heatmapWidth + (this.getMaxPartitions() - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
         const svgHeight = this.props.store.numberOfTransitions * 2 * ((sampleTPHeight + betweenTPHeight) / 2 + this.props.visMap.transitionSpace);
         return (
-            <div className="heatmapContainer">
+            <div onClick={this.closeContextMenu} className="heatmapContainer">
                 <RowOperators primaryVariables={this.props.primaryVariables}
                               groupOrder={this.props.groupOrder}
                               currentSampleVariables={this.props.currentSampleVariables}
@@ -74,12 +103,16 @@ const MainView = observer(class MainView extends React.Component {
                               store={this.props.store} height={svgHeight}
                               svgHeight={svgHeight} svgWidth={200}
                               visMap={this.props.visMap}
-                              posY={sampleTimepointY}/>
+                              posY={sampleTimepointY}
+                              openMenu={this.openContextMenu}/>
                 <Plot {...this.props} width={svgWidth} height={svgHeight} heatmapWidth={heatmapWidth}
                       timepointY={sampleTimepointY}
                       transY={betweenTimepointY}/>
                 <Legend {...this.props} height={svgHeight}
                         posY={sampleTimepointY}/>
+                <ContextMenu showContextMenu={this.state.showContextMenu} contextX={this.state.contextX}
+                             contextY={this.state.contextY} clickedTimepoint={this.state.clickedTimepoint}
+                             store={this.props.store}/>
             </div>
         )
     }

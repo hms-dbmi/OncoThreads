@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import Timepoints from "./Timepoints"
 import Transitions from "./Transitions"
+import SankeyTransitionTooltip from "./SankeyTransitionTooltip"
 import * as d3 from "d3";
 /*
 creates the plot with timepoints and transitions
@@ -10,9 +11,15 @@ const Plot = observer(class Plot extends React.Component {
     constructor() {
         super();
         this.state = ({
-            selectedPatients: []
+            selectedPatients: [],
+            showTooltip: "hidden",
+            tooltipX: 0,
+            tooltipY:0,
+            tooltipContent: ""
         });
         this.handlePatientSelection = this.handlePatientSelection.bind(this);
+        this.showSankeyTooltip=this.showSankeyTooltip.bind(this);
+        this.hideSankeyTooltip=this.hideSankeyTooltip.bind(this)
     }
 
     /**
@@ -44,6 +51,19 @@ const Plot = observer(class Plot extends React.Component {
         this.setState({
             selectedPatients: patients
         });
+    }
+    showSankeyTooltip(e,source,target,count){
+        this.setState({
+            showTooltip: "visible",
+            tooltipX: e.pageX-105,
+            tooltipY:e.pageY-200,
+            tooltipContent:source +" -> "+target+": "+count,
+        })
+    }
+    hideSankeyTooltip(){
+         this.setState({
+            showTooltip: "hidden",
+        })
     }
 
     /**
@@ -77,10 +97,13 @@ const Plot = observer(class Plot extends React.Component {
                                  yPositions={this.props.transY}
                                  height={this.props.transitionSpace} groupScale={groupScale}
                                  heatmapScales={sampleHeatmapScales}
-                                 selectedPatients={this.state.selectedPatients}/>
+                                 selectedPatients={this.state.selectedPatients}
+                                showTooltip={this.showSankeyTooltip}
+                                hideTooltip={this.hideSankeyTooltip}/>
 
                 </g>
             </svg>
+                <SankeyTransitionTooltip visibility={this.state.showTooltip} x={this.state.tooltipX} y={this.state.tooltipY} content={this.state.tooltipContent}/>
             </div>
         )
     }

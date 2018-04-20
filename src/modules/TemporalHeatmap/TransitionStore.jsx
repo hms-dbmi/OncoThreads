@@ -68,7 +68,7 @@ class TransitionStore {
                     this.computeLineTransition(previousTimepoint, timepoint)
                 }
             }
-            if (nextTimepoint !== this.numberOfTransitions) {
+            if (nextTimepoint !== this.numberOfTransitions+1) {
                 if (this.rootStore.timepointStore.groupOrder[nextTimepoint].isGrouped) {
                     this.computeGroupToPatientsTransition(timepoint, nextTimepoint)
                 }

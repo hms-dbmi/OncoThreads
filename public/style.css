@@ -55,22 +55,41 @@ h3 {
 }
 
 .btn-group button {
-    border: 1px solid black; /* Green border */
-    color: black; /* White text */
+    border: 1px solid black;
+    color: black;
     font-size: 10px;
-    padding: 5px 5px; /* Some padding */
+    padding: 5px 5px;
     width: 100%;
-    cursor: pointer; /* Pointer/hand icon */
-    display: block; /* Make the buttons appear below each other */
+    cursor: pointer;
+    display: block;
 }
 
 .btn-group button:not(:last-child) {
-    border-bottom: none; /* Prevent double borders */
+    border-bottom: none;
 }
 
 /* Add a background color on hover */
 .btn-group button:hover {
     background-color: darkgray;
+}
+.context-menu button {
+    border: 1px solid black;
+    color: black;
+    font-size: 10px;
+    padding: 5px 5px;
+    width: 100%;
+    cursor: pointer;
+    display: block;
+    background: white;
+}
+
+.context-menu button:not(:last-child) {
+    border-bottom: none;
+}
+
+/* Add a background color on hover */
+.context-menu button:hover {
+    background-color: lightgray;
 }
 
 .selected {
@@ -99,6 +118,14 @@ h3 {
     vertical-align: top;
      text-align: left;
     display: inline-block;
+}
+.tooltip{
+    background: white;
+    opacity: 0.9;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: 1px solid black;
+    pointer-events: none;
 }
 
 
