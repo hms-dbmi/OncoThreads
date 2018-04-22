@@ -45,9 +45,10 @@ const Plot = observer(class Plot extends React.Component {
 
 
                     <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
-                                 timepointData={this.props.store.timepointData}
-                                 yPositions={this.props.transY}
-                                 height={this.props.transitionSpace} groupScale={groupScale} heatmapScales={sampleHeatmapScales}/>
+                                realTime={this.props.transitionStore.rootStore.realTime}
+                                timepointData={this.props.store.timepointData}
+                                yPositions={this.props.transY}
+                                height={this.props.transitionSpace} groupScale={groupScale} heatmapScales={sampleHeatmapScales}/>
 
                 </g>
             </svg>
