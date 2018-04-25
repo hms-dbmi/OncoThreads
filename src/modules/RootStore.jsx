@@ -188,7 +188,7 @@ class RootStore {
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
 
-                    if(i==0){
+                    if(i===0){
                         patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: 0});
                    // patientSamples2.push({patient: d.patientId, gap: sampleTimelineMap[d.patientId].startNumberOfDaysSinceDiagnosis})
                     }

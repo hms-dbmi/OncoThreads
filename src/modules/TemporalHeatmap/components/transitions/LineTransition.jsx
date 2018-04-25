@@ -92,24 +92,26 @@ const LineTransition = observer(class LineTransition extends React.Component {
         this.props.transition.data.from.forEach(function (d, i) {
 
             if (_self.props.transition.data.to.includes(d)) {
+                const frac = timeGapBetweenMap[d]/max;
+//                _self.props.firstHeatmapScale(d)*frac + _self.props.secondHeatmapScale(d)*(1-frac)
                 ind++;
                 lines.push(LineTransition.drawLine(
-                    _self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 
-                    _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 
+                    (_self.props.firstHeatmapScale(d)) + _self.props.visMap.sampleRectWidth / 2, 
+                    _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2, 
                     0 - _self.props.visMap.gap,
                     _self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max, d, true
                 ));
                 if(timeGapBetweenMap[d]<max) {
                     lines.push(LineTransition.drawLine(
-                        _self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 
+                        _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2, 
                         _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 
-                        _self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max,
+                        _self.props.visMap.transitionSpace*frac,
                         _self.props.visMap.transitionSpace, d, false
                     ));
                     const color = getColor(_self.props.colorData.data[ind].value);
                     lines.push(
                         <rect
-                            x={(_self.props.firstHeatmapScale(d) +_self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth)/2-5}
+                            x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-5}
                             y={_self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max-5}
                             width={10}
                             height={10}

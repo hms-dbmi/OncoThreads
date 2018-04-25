@@ -69,12 +69,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         }
     }
 
-    handleTimeClick(event) {
-        
-        this.props.store.rootStore.realTime=!this.props.store.rootStore.realTime;
-        event.target.className = (event.target.className==="selected")? "notSelected":"selected";
-    }
-
     /**
      * TODO: generalize
      * handles a click on one of the continuous Variables
@@ -115,23 +109,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         return buttons;
     }
 
-    /**
-     * creates a button to show actual time 
-     * 
-     */
-    createTimeButton() {
-        let buttons = [];
-        const _self = this;
-        buttons.push(<button className={"notSeleced"}
-                            onClick={(e) => 
-                            _self.handleTimeClick(e)
-                            } 
-                            key={this.props.store.rootStore.realTime}>
-                            Show real time intervals
-                        </button>);
-        return buttons;
-    }
-
 
     render() {
         return (
@@ -149,13 +126,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 </div>   
 
             </div>
-
-            <div>
-                <h4>Show Actual Timeline</h4>
-                <div className={"btn-group"}>
-                    {this.createTimeButton()}
-                </div>
-            </div>  
 
             </div>  
         )
