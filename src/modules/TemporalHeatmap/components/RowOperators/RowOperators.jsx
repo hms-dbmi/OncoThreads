@@ -1,21 +1,58 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import Modal from "react-modal";
+import ReactDOM from 'react-dom'
+import ContinuousBinner from "../Binner/ContinuousBinner"
+
+const customStyles = {
+    content: {
+        top: '50%',
+        left: '50%',
+        right: 'auto',
+        bottom: 'auto',
+        marginRight: '-50%',
+        height: '450px',
+        width: '500px',
+        transform: 'translate(-50%, -50%)',
+        overlfow: 'scroll'
+    }
+};
 /*
 implements the icons and their functionality on the right side of the plot
  */
 const RowOperators = observer(class RowOperators extends React.Component {
     constructor() {
         super();
-        this.state = ({
-            showContextMenu: "hidden",
-            contextX: 0,
-            contextY: 0,
-            clickedTimepoint:-1
-        });
+        this.state = {
+            modalIsOpen: false,
+            variable: "",
+            timepointIndex:-1,
+            followUpFunction:null,
+        };
+        this.openModal = this.openModal.bind(this);
+        this.closeModal = this.closeModal.bind(this);
         this.sortTimepoint = this.sortTimepoint.bind(this);
         this.group = this.group.bind(this);
         this.unGroup = this.unGroup.bind(this);
         this.promote = this.promote.bind(this);
+    }
+
+    /**
+     * Opens the modal window and sets the state parameters which are passed to the ContinousBinner
+     * @param timepointIndex: index of timepoint
+     * @param variable: future primary variable
+     * @param fun: Function which should be executed after the binning was applied: either group or promote
+     */
+    openModal(timepointIndex,variable,fun) {
+        this.setState({modalIsOpen: true, timepointIndex:timepointIndex,variable: variable,followUpFunction:fun});
+    }
+
+    closeModal() {
+        this.setState({modalIsOpen: false,variable:"",timepointIndex:-1,followUpFunction:null});
+    }
+
+    componentDidMount() {
+        Modal.setAppElement(ReactDOM.findDOMNode(this));
     }
 
     /**
@@ -24,7 +61,13 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: Variable with which the timepoint will be grouped
      */
     group(timepointIndex, variable) {
-        this.props.store.group(timepointIndex, variable);
+        if (this.props.store.isContinuous(timepointIndex, variable)) {
+            this.openModal(timepointIndex, variable, this.props.store.group);
+        }
+        else {
+            this.props.store.group(timepointIndex, variable);
+        }
+
     }
 
     /**
@@ -53,9 +96,15 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: variable to be the primary variable
      */
     promote(timepointIndex, variable) {
-        this.props.store.promote(timepointIndex, variable);
-    }
+        if (this.props.store.groupOrder[timepointIndex].isGrouped && this.props.store.isContinuous(timepointIndex, variable)) {
+            this.openModal(timepointIndex,variable,this.props.store.promote);
+        }
+        else {
+            this.props.store.promote(timepointIndex, variable);
+        }
 
+
+    }
 
 
     /**
@@ -102,8 +151,8 @@ const RowOperators = observer(class RowOperators extends React.Component {
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       fill="gray"
                       d={icon1}/>
-                 <rect key={"rect1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
-                      onContextMenu={(e) => _self.props.openMenu(e,timepointIndex)}
+                <rect key={"rect1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
+                      onContextMenu={(e) => _self.props.openMenu(e, timepointIndex)}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       width={iconScale * 24} height={24}
                       fill="none"
@@ -149,6 +198,16 @@ const RowOperators = observer(class RowOperators extends React.Component {
                         {headers}
                     </g>
                 </svg>
+                <Modal
+                    isOpen={this.state.modalIsOpen}
+                    onAfterOpen={this.afterOpenModal}
+                    onRequestClose={this.closeModal}
+                    style={customStyles}
+                    contentLabel="Bin data"
+                >
+                    <ContinuousBinner variable={this.state.variable} timepointIndex={this.state.timepointIndex} followUpFunction={this.state.followUpFunction}
+                                      close={this.closeModal} store={this.props.store} visMap={this.props.visMap}/>
+                </Modal>
             </div>
         )
     }

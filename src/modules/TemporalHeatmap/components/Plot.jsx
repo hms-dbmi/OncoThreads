@@ -41,6 +41,7 @@ const Plot = observer(class Plot extends React.Component {
      * @param patient
      */
     handlePatientSelection(patient) {
+        console.log(patient);
         let patients = this.state.selectedPatients.slice();
         if (patients.includes(patient)) {
             patients.splice(patients.indexOf(patient), 1)

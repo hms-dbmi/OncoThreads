@@ -27,9 +27,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.state = {
             modalIsOpen: false,
             buttonClicked: "",
-            selectedKey:"",
-            name:"",
-            selectedValues:[]
+            selectedKey: "",
+            name: "",
+            selectedValues: []
         };
         this.openModal = this.openModal.bind(this);
         this.afterOpenModal = this.afterOpenModal.bind(this);
@@ -37,7 +37,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     openModal(event) {
-        this.setState({modalIsOpen: true, buttonClicked: event.target.value,selectedKey:"",selectedValues:[]});
+        this.setState({modalIsOpen: true, buttonClicked: event.target.value, selectedKey: "", selectedValues: []});
     }
 
     /**
@@ -47,7 +47,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         if (this.props.currentVariables.length === 0) {
             this.props.store.initialize(this.state.name);
         }
-        this.props.store.addVariable(this.state.buttonClicked,this.state.selectedValues,this.state.selectedKey,this.state.name);
+        console.log(this.state.buttonClicked,this.state.selectedValues,this.state.selectedKey,this.state.name);
+        this.props.store.addVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, this.state.name);
         this.closeModal();
     }
 
@@ -57,19 +58,19 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param type
      * @param value
      */
-    handleCheckBoxClick(event,type,value){
+    handleCheckBoxClick(event, type, value) {
         let selected = this.state.selectedValues.slice();
-        if(event.target.checked) {
-                selected.push(value);
+        if (event.target.checked) {
+            selected.push(value);
         }
-        else{
-             let index=selected.indexOf(value);
-            selected.splice(index,1);
+        else {
+            let index = selected.indexOf(value);
+            selected.splice(index, 1);
         }
-         this.setState({
-             selectedValues:selected,
-             selectedKey:type
-            });
+        this.setState({
+            selectedValues: selected,
+            selectedKey: type
+        });
     }
 
     /**
@@ -84,7 +85,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         for (let key in attributes) {
             elements.push(<h4 key={key}>{key}</h4>);
             attributes[key].forEach(function (d) {
-                elements.push(<p key={d}><input type="checkbox" onClick={(e)=>_self.handleCheckBoxClick(e,key,d)}/>{d}</p>)
+                elements.push(<p key={d}><input type="checkbox"
+                                                onClick={(e) => _self.handleCheckBoxClick(e, key, d)}/>{d}</p>)
             })
         }
         return elements;
@@ -109,9 +111,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * updates state when the name of the textfield is changed
      * @param event
      */
-    handleNameChange(event){
+    handleNameChange(event) {
         this.setState({
-            name:event.target.value
+            name: event.target.value
         })
     }
 
@@ -120,11 +122,13 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: []});
+        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [],selectedKey:""});
     }
-    componentDidMount(){
+
+    componentDidMount() {
         Modal.setAppElement(ReactDOM.findDOMNode(this));
     }
+
     render() {
         return (
             <div>
@@ -144,9 +148,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                         {this.createCheckboxes(this.state.buttonClicked)}
                     </div>
                     <br/>
-                    <input type="text" onChange={(e)=>this.handleNameChange(e)} defaultValue="Name"/>
-                        <br/>
-                    <button onClick={()=>this.addVariable()}>Add</button>
+                    <input type="text" onChange={(e) => this.handleNameChange(e)} defaultValue="Name"/>
+                    <br/>
+                    <button onClick={() => this.addVariable()}>Add</button>
                     <button onClick={this.closeModal}>Close</button>
                 </Modal>
             </div>

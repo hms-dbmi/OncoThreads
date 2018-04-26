@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {observer} from 'mobx-react';
 import Timepoint from "./timepoints/Timepoint"
@@ -14,7 +13,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             let currentVariables = [];
             let rectWidth;
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-            if (_self.props.store.timepointData[i].type==="between") {
+            if (_self.props.store.timepointData[i].type === "between") {
                 currentVariables = _self.props.currentBetweenVariables;
                 rectWidth = _self.props.visMap.betweenRectWidth;
 
@@ -39,7 +38,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                                                                                           groupScale={_self.props.groupScale}
                                                                                           heatmapScale={_self.props.heatmapScales[i]}
                                                                                           onDrag={_self.props.onDrag}
-                                                                                        selectedPatients={_self.props.selectedPatients}/>
+                                                                                          selectedPatients={_self.props.selectedPatients}/>
                 </g>);
             }
         });

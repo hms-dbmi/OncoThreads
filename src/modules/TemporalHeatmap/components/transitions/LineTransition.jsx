@@ -26,9 +26,6 @@ const LineTransition = observer(class LineTransition extends React.Component {
             + " " + x1 + "," + y3
             + " " + x1 + "," + y1;
 
-        const line = d3.path();
-        line.moveTo(x0, y0);
-        line.lineTo(x1, y1);
         return (<path key={key} d={path} stroke={strokeColor} fill="none"/>)
     }
     drawLines() {

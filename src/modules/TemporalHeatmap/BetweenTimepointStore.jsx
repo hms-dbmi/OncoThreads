@@ -1,4 +1,5 @@
 import {extendObservable} from "mobx";
+
 /*
 stores information about betweenTimepoint
  */
@@ -44,11 +45,11 @@ class BetweenTimepointStore {
      * @param name
      */
     addHeatmapVariable(type, selectedValues, selectedKey, name) {
-        let betweenTimepointData = this.timepointData;
+        let timepointData = this.timepointData.slice();
         for (let j = 0; j < this.timepointStructure.length; j++) {
-            betweenTimepointData[j].heatmap.push({variable: name, sorting: 0, data: []});
+            timepointData[j].heatmap.push({variable: name, sorting: 0, data: []});
         }
-        const addIndex = betweenTimepointData[0].heatmap.length - 1;
+        const addIndex = timepointData[0].heatmap.length - 1;
         const _self = this;
         this.patients.forEach(function (f) {
             let samples = [];
@@ -60,30 +61,40 @@ class BetweenTimepointStore {
                 });
             });
             let currTimepoint = 0;
-            let attributeFound = false;
-            _self.clinicalEvents[f].forEach(function (d) {
-                if (samples[currTimepoint] !== undefined) {
-                    const currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
-                    if (!BetweenTimepointStore.isInCurrentRange(d, currMaxDate)) {
-                        betweenTimepointData[currTimepoint].heatmap[addIndex].data.push({
-                            "patient": f,
-                            "value": attributeFound
-                        });
-                        currTimepoint += 1;
-                        attributeFound = false;
+            let startAtEvent =0;
+            while (currTimepoint < samples.length) {
+                let attributeFound = false;
+                let eventCounter = startAtEvent;
+                while (eventCounter < _self.clinicalEvents[f].length) {
+                    let currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
+                    const currEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate);
+                    if (currEventInRange) {
+                        if(_self.hasAttribute(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {
+                            attributeFound = true;
+                        }
+                        if(eventCounter<_self.clinicalEvents[f].length-1) {
+                            const nextEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter+1], currMaxDate);
+                            if (!nextEventInRange) {
+                                startAtEvent = eventCounter+1;
+                                break;
+                            }
+                        }
                     }
-                    else if (_self.hasAttribute(type, selectedValues, selectedKey, d)) {
-                        attributeFound = true;
-                    }
+                    eventCounter += 1;
                 }
-            });
-
+                timepointData[currTimepoint].heatmap[addIndex].data.push({
+                    "patient": f,
+                    "value": attributeFound
+                });
+                currTimepoint += 1;
+            }
         });
-        this.timepointData = betweenTimepointData;
+
+        this.timepointData = timepointData;
     }
 
     /**
-     * checks if an event has happend before a specific date
+     * checks if an event has happened before a specific date
      * @param event
      * @param currMaxDate
      * @returns {boolean}
@@ -138,7 +149,7 @@ class BetweenTimepointStore {
         });
         this.groupOrder = Array(this.timepointStructure.length).fill({isGrouped: false, order: 1});
         this.patientsPerTimepoint = this.rootStore.patientsPerTimepoint;
-        this.patientOrderPerTimepoint=this.rootStore.patientOrderPerTimepoint;
+        this.patientOrderPerTimepoint = this.rootStore.patientOrderPerTimepoint;
         this.rootStore.timepointStore.initialize();
     }
 

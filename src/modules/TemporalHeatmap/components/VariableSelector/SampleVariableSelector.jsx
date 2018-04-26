@@ -79,7 +79,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     handleContinousClick(event, category, dataset) {
         this.props.store.computeMaxMutationCount();
         this.props.visMap.setContinousColorScale(category, 0, this.props.store.maxMutationCount);
-        this.handleVariableClick(event, category, "continuous", dataset)
+        this.handleVariableClick(event, category, "NUMBER", dataset)
     }
 
     /**
