@@ -8,6 +8,7 @@ class VisStore{
     constructor(){
         this.categoricalColor={};
         this.continuousColor={};
+        this.binnedColor={};
         this.binaryColor=d3.scaleOrdinal().range(['#f7f7f7','#ffd92f','#f7f7f7']).domain([undefined,true,false]);
         //width of rects in sampleTomepoints
         this.sampleRectWidth=0;
@@ -28,8 +29,30 @@ class VisStore{
             svgHeight:0
         })
     }
+
+    /**
+     * creates a continous color scale for a variable between min and max
+     * @param variable
+     * @param min
+     * @param max
+     */
     setContinousColorScale(variable,min,max){
         this.continuousColor[variable]=d3.scaleLinear().range(['#e6e6e6','#000000']).domain([min,max])
+    }
+
+    /**
+     * creates a binned color scale for a binned variable using its corresponding continuous scale
+     * @param variable
+     * @param binNames: domain of scale
+     * @param binValues: bins
+     */
+    setBinnedColorScale(variable,binNames,binValues){
+        const continousScale=this.continuousColor[variable];
+        let colors=[];
+        for(let i=0;i<binNames.length;i++){
+            colors.push(continousScale((binValues[i+1]+binValues[i])/2));
+        }
+        this.binnedColor[variable]=d3.scaleOrdinal().range(colors).domain(binNames);
     }
     setGap(gap){
         this.gap=gap;
@@ -67,6 +90,12 @@ class VisStore{
         }
     }
 
+    /**
+     * returns a color scale for a variable depending on its type.
+     * @param variable
+     * @param type
+     * @returns {*}
+     */
     getColorScale(variable,type){
         if(type==="STRING") {
             if (!(variable in this.categoricalColor)) {
@@ -76,6 +105,9 @@ class VisStore{
         }
         else if(type==="binary"){
             return this.binaryColor;
+        }
+        else if(type==="BINNED"){
+            return this.binnedColor[variable];
         }
         else{
             return this.continuousColor[variable];

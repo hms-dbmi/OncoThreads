@@ -58,14 +58,14 @@ const Legend = observer(class Legend extends React.Component {
         let step = (parseFloat(max) - parseFloat(min)) / 2;
         let currX = 0;
         for (let i = 0; i < 3; i++) {
-            if(i<1){
-                textValue=max;
+            if (i < 1) {
+                textValue = max;
             }
-            else{
-                textValue=min
+            else {
+                textValue = min
             }
             const rectWidth = Legend.getTextWidth(value) + 4;
-            legendEntries = legendEntries.concat(this.getLegendEntry(value, opacity, rectWidth, textHeight, currX, lineheight, color(value),color(textValue)));
+            legendEntries = legendEntries.concat(this.getLegendEntry(value, opacity, rectWidth, textHeight, currX, lineheight, color(value), color(textValue)));
             value += step;
             currX += rectWidth + 2
         }
@@ -89,13 +89,31 @@ const Legend = observer(class Legend extends React.Component {
             if (!currKeys.includes(f.value) && f.value !== undefined) {
                 const rectWidth = Legend.getTextWidth(f.value) + 4;
                 currKeys.push(f.value);
-                legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, textHeight, currX, lineheight, color(f.value),"black"));
+                legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, textHeight, currX, lineheight, color(f.value), "black"));
                 currX += (rectWidth + 2);
             }
         });
         return (legendEntries);
     }
-
+    static getBinnedLegend(opacity, textHeight, lineheight, color) {
+        let legendEntries = [];
+        const _self=this;
+        let currX = 0;
+        console.log(color.domain());
+        color.domain().forEach(function (d,i) {
+            let textValue;
+            if(i<color.domain().length/2){
+                textValue= color.domain()[color.domain().length-1]
+            }
+            else{
+                textValue=color.domain()[0]
+            }
+                const rectWidth = Legend.getTextWidth(d) + 4;
+                legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, textHeight, currX, lineheight, color(d), color(textValue)));
+                currX += (rectWidth + 2);
+        });
+        return legendEntries;
+    }
     /**
      * gets a legend for a binary variable
      * @param row
@@ -107,10 +125,11 @@ const Legend = observer(class Legend extends React.Component {
      */
     static getBinaryLegend(row, opacity, textHeight, lineheight, color) {
         let legendEntries = [];
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, Legend.getTextWidth("true") + 4, textHeight, 0, lineheight, color(true),"black"));
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth("false") + 4, textHeight, Legend.getTextWidth("true") + 6, lineheight, color(false),"black"));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, Legend.getTextWidth("true") + 4, textHeight, 0, lineheight, color(true), "black"));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth("false") + 4, textHeight, Legend.getTextWidth("true") + 6, lineheight, color(false), "black"));
         return (legendEntries);
     }
+
 
 
     /**
@@ -144,6 +163,9 @@ const Legend = observer(class Legend extends React.Component {
                 }
                 else if (currentVariables[i].type === "binary") {
                     legendEntries = Legend.getBinaryLegend(d, opacity, textHeight, lineheight, color);
+                }
+                else if(currentVariables[i].type === "BINNED"){
+                    legendEntries=Legend.getBinnedLegend(opacity,textHeight,lineheight,color);
                 }
                 else {
                     legendEntries = Legend.getContinuousLegend(opacity, textHeight, lineheight, color);

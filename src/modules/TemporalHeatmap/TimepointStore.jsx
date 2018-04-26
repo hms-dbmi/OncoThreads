@@ -19,6 +19,8 @@ class TimepointStore {
         autorun(() => {
             this.combineData();
         });
+        this.group=this.group.bind(this);
+        this.promote=this.promote.bind(this);
     }
 
     /**
@@ -39,6 +41,18 @@ class TimepointStore {
         this.patientsPerTimepoint=TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.patientsPerTimepoint,this.rootStore.sampleTimepointStore.patientsPerTimepoint);
         this.patientOrderPerTimepoint=TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.patientOrderPerTimepoint,this.rootStore.sampleTimepointStore.patientOrderPerTimepoint);
         this.rootStore.transitionStore.initializeTransitions(this.timepointData.length-1,this.patientsPerTimepoint);
+    }
+      setNumberOfTimepoints(numTP) {
+        this.numberOfTransitions = numTP;
+    }
+
+    setNumberOfPatients(numP) {
+        this.numberOfPatients = numP;
+    }
+    setIsGrouped(timepoint, boolean) {
+        let isGrouped = this.groupOrder.slice();
+        isGrouped[timepoint].isGrouped = boolean;
+        this.groupOrder = isGrouped;
     }
 
     /**
@@ -64,18 +78,80 @@ class TimepointStore {
         }
     }
 
-    setNumberOfTimepoints(numTP) {
-        this.numberOfTransitions = numTP;
+    /**
+     * gets all values of a variable, indepently of their timepoint
+     * @param variable
+     * @returns {Array}
+     */
+    getAllValues(variable){
+        let allValues=[];
+        this.timepointData.forEach(function (d) {
+            d.heatmap.forEach(function (f) {
+                if(f.variable===variable){
+                    f.data.forEach(function (g) {
+                        allValues.push(g.value)
+                    })
+                }
+            });
+        });
+        return allValues;
     }
 
-    setNumberOfPatients(numP) {
-        this.numberOfPatients = numP;
+    /**
+     * Bins a continuous variable
+     * @param variable
+     * @param bins
+     * @param binNames
+     * @param type: between or sample
+     */
+    binContinuous(variable, bins, binNames, type){
+        const _self=this;
+        if(type==="between"){
+            this.currentBetweenVariables.forEach(function (d,i) {
+                if(d.variable===variable){
+                    _self.currentBetweenVariables[i]=({variable:variable,type:"BINNED"})
+                }
+            })
+        }
+        else{
+            this.currentSampleVariables.forEach(function (d,i) {
+                if(d.variable===variable){
+                    _self.currentSampleVariables[i]=({variable:variable,type:"BINNED"})
+                }
+            })
+        }
+        this.timepointData.forEach(function (d,i) {
+            d.heatmap.forEach(function (f,j) {
+                if(f.variable===variable){
+                    let newData=[];
+                    f.data.forEach(function (g) {
+                        newData.push({patient:g.patient,value:TimepointStore.getBin(bins,binNames,g.value)})
+                    });
+                    _self.timepointData[i].heatmap[j].data=newData;
+                }
+            });
+        });
     }
-    setIsGrouped(timepoint, boolean) {
-        let isGrouped = this.groupOrder.slice();
-        isGrouped[timepoint].isGrouped = boolean;
-        this.groupOrder = isGrouped;
+    static getBin(bins, binNames, value){
+        for(let i=1;i<bins.length;i++){
+            if(value>bins[i-1]&&value<=bins[i]){
+                return binNames[i-1];
+            }
+        }
     }
+    isContinuous(timepointIndex,variable){
+        let currentVariables;
+        if (this.timepointData[timepointIndex].type === "between") {
+            currentVariables = this.currentBetweenVariables;
+        }
+        else {
+            currentVariables = this.currentSampleVariables;
+        }
+        return(currentVariables[currentVariables.map(function (d,i) {
+            return d.variable;
+        }).indexOf(variable)].type==="NUMBER");
+    }
+
     sortTimepoint(timepointIndex,variable){
         //case: the timepoint is grouped
         if (this.groupOrder[timepointIndex].isGrouped) {
@@ -363,7 +439,6 @@ class TimepointStore {
             }
             else return d;
         });
-        console.log(this.primaryVariables);
     }
 
 

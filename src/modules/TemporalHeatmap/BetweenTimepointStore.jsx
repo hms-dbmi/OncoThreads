@@ -1,4 +1,5 @@
 import {extendObservable} from "mobx";
+
 /*
 stores information about betweenTimepoint
  */
@@ -44,7 +45,7 @@ class BetweenTimepointStore {
      * @param name
      */
     addHeatmapVariable(type, selectedValues, selectedKey, name) {
-        let betweenTimepointData = this.timepointData;
+        let betweenTimepointData = this.timepointData.slice();
         for (let j = 0; j < this.timepointStructure.length; j++) {
             betweenTimepointData[j].heatmap.push({variable: name, sorting: 0, data: []});
         }
@@ -60,30 +61,30 @@ class BetweenTimepointStore {
                 });
             });
             let currTimepoint = 0;
-            let attributeFound = false;
-            _self.clinicalEvents[f].forEach(function (d) {
-                if (samples[currTimepoint] !== undefined) {
-                    const currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
-                    if (!BetweenTimepointStore.isInCurrentRange(d, currMaxDate)) {
-                        betweenTimepointData[currTimepoint].heatmap[addIndex].data.push({
-                            "patient": f,
-                            "value": attributeFound
-                        });
-                        currTimepoint += 1;
-                        attributeFound = false;
-                    }
-                    else if (_self.hasAttribute(type, selectedValues, selectedKey, d)) {
+            while (currTimepoint < samples.length) {
+                let attributeFound = false;
+                let eventCounter = 0;
+                while (eventCounter < _self.clinicalEvents[f].length) {
+                    let currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
+                    if (BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate) && _self.hasAttribute(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {
                         attributeFound = true;
+                        break;
                     }
+                    eventCounter += 1;
                 }
-            });
-
+                betweenTimepointData[currTimepoint].heatmap[addIndex].data.push({
+                    "patient": f,
+                    "value": attributeFound
+                });
+                currTimepoint += 1;
+            }
         });
+
         this.timepointData = betweenTimepointData;
     }
 
     /**
-     * checks if an event has happend before a specific date
+     * checks if an event has happened before a specific date
      * @param event
      * @param currMaxDate
      * @returns {boolean}
@@ -138,7 +139,7 @@ class BetweenTimepointStore {
         });
         this.groupOrder = Array(this.timepointStructure.length).fill({isGrouped: false, order: 1});
         this.patientsPerTimepoint = this.rootStore.patientsPerTimepoint;
-        this.patientOrderPerTimepoint=this.rootStore.patientOrderPerTimepoint;
+        this.patientOrderPerTimepoint = this.rootStore.patientOrderPerTimepoint;
         this.rootStore.timepointStore.initialize();
     }
 

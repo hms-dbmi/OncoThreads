@@ -35,11 +35,6 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
             + " " + (x1) + "," + y2
             + " " + (x1) + "," + y0;
 
-        const line = d3.path();
-        line.moveTo(x0, y0);
-        line.lineTo(x1, y0);
-        line.lineTo(x2, y1);
-        line.closePath();
         return (<path key={key} d={path} stroke={strokeColor} fill={strokeColor} opacity={0.5}/>)
     }
 
