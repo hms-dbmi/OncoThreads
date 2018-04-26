@@ -45,11 +45,11 @@ class BetweenTimepointStore {
      * @param name
      */
     addHeatmapVariable(type, selectedValues, selectedKey, name) {
-        let betweenTimepointData = this.timepointData.slice();
+        let timepointData = this.timepointData.slice();
         for (let j = 0; j < this.timepointStructure.length; j++) {
-            betweenTimepointData[j].heatmap.push({variable: name, sorting: 0, data: []});
+            timepointData[j].heatmap.push({variable: name, sorting: 0, data: []});
         }
-        const addIndex = betweenTimepointData[0].heatmap.length - 1;
+        const addIndex = timepointData[0].heatmap.length - 1;
         const _self = this;
         this.patients.forEach(function (f) {
             let samples = [];
@@ -61,18 +61,28 @@ class BetweenTimepointStore {
                 });
             });
             let currTimepoint = 0;
+            let startAtEvent =0;
             while (currTimepoint < samples.length) {
                 let attributeFound = false;
-                let eventCounter = 0;
+                let eventCounter = startAtEvent;
                 while (eventCounter < _self.clinicalEvents[f].length) {
                     let currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
-                    if (BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate) && _self.hasAttribute(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {
-                        attributeFound = true;
-                        break;
+                    const currEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate);
+                    if (currEventInRange) {
+                        if(_self.hasAttribute(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {
+                            attributeFound = true;
+                        }
+                        if(eventCounter<_self.clinicalEvents[f].length-1) {
+                            const nextEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter+1], currMaxDate);
+                            if (!nextEventInRange) {
+                                startAtEvent = eventCounter+1;
+                                break;
+                            }
+                        }
                     }
                     eventCounter += 1;
                 }
-                betweenTimepointData[currTimepoint].heatmap[addIndex].data.push({
+                timepointData[currTimepoint].heatmap[addIndex].data.push({
                     "patient": f,
                     "value": attributeFound
                 });
@@ -80,7 +90,7 @@ class BetweenTimepointStore {
             }
         });
 
-        this.timepointData = betweenTimepointData;
+        this.timepointData = timepointData;
     }
 
     /**

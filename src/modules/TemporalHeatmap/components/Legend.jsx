@@ -99,7 +99,6 @@ const Legend = observer(class Legend extends React.Component {
         let legendEntries = [];
         const _self=this;
         let currX = 0;
-        console.log(color.domain());
         color.domain().forEach(function (d,i) {
             let textValue;
             if(i<color.domain().length/2){
