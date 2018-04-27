@@ -56,6 +56,28 @@ const MainView = observer(class MainView extends React.Component {
         }
     }
 
+    handleTimeClick(event) {
+        
+        this.props.store.rootStore.realTime=!this.props.store.rootStore.realTime;
+        event.target.className = (this.props.store.rootStore.realTime)? "selected":"notSelected";
+    }
+
+    createTimeButton() {
+        const _self = this;
+        if(this.props.primaryVariables.length===0) {
+            return (<div></div>)
+        } else {
+            return (
+                <div>
+                    <button className={"notSeleced"} onClick={(e) => _self.handleTimeClick(e)}
+                        key={this.props.store.rootStore.realTime}>
+                        {(this.props.store.rootStore.realTime)? "Hide actual timeline": "Show actual timeline"}
+                    </button>
+                </div>  
+            )
+        }
+    }
+
     render() {
         this.props.visMap.setGap(1);
         this.props.visMap.setPartitionGap(10);
@@ -93,9 +115,11 @@ const MainView = observer(class MainView extends React.Component {
         }
 
         const svgWidth = heatmapWidth + (this.getMaxPartitions() - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
+
         const svgHeight = this.props.store.numberOfTransitions * 2 * ((sampleTPHeight + betweenTPHeight) / 2 + this.props.visMap.transitionSpace);
         return (
             <div onClick={this.closeContextMenu} className="heatmapContainer">
+                {this.createTimeButton()}
                 <RowOperators primaryVariables={this.props.primaryVariables}
                               groupOrder={this.props.groupOrder}
                               currentSampleVariables={this.props.currentSampleVariables}
@@ -115,6 +139,42 @@ const MainView = observer(class MainView extends React.Component {
                              store={this.props.store}/>
             </div>
         )
+
+/*        const svgHeight = this.props.store.numberOfTransitions * 2 * ((sampleTPHeight+betweenTPHeight)/2 + this.props.visMap.transitionSpace);
+
+        return (
+            <div onClick={this.closeContextMenu} className="heatmapContainer">
+                {this.createTimeButton()}
+                <div className="rowOperators">
+                    <svg width={200} height={svgHeight}>
+                        <RowOperators primaryVariables={this.props.primaryVariables}
+                                      groupOrder={this.props.groupOrder}
+                                      currentSampleVariables={this.props.currentSampleVariables}
+                                      currentBetweenVariables={this.props.currentBetweenVariables}
+                                      store={this.props.store} height={svgHeight}
+                                      svgHeight={svgHeight} svgWidth={200}
+                                      visMap={this.props.visMap}
+                                      posY={sampleTimepointY}
+                                      openMenu={this.openContextMenu}/>
+                    </svg>
+
+                </div>
+                <div className="view">
+                    <Plot {...this.props} width={svgWidth} height={svgHeight} heatmapWidth={heatmapWidth}
+                          timepointY={sampleTimepointY}
+                          transY={betweenTimepointY}/>
+                </div>
+                <div className="legend">
+                    <Legend {...this.props} height={svgHeight}
+                            posY={sampleTimepointY}/>
+                </div>
+                <div className="contextMenu">
+                    <ContextMenu showContextMenu={this.state.showContextMenu} contextX={this.state.contextX}
+                             contextY={this.state.contextY} clickedTimepoint={this.state.clickedTimepoint}
+                             store={this.props.store}/>
+                </div>
+            </div>
+        )*/
     }
 });
 MainView.defaultProps = {

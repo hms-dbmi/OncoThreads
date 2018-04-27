@@ -7,6 +7,8 @@ class TransitionStore {
         this.rootStore=rootStore;
         this.numberOfTransitions=0;
         this.patientsPerTimepoint=[];
+        this.timeGapStructure=[];
+
         extendObservable(this, {
             transitionData: [],
         })
@@ -27,10 +29,15 @@ class TransitionStore {
         this.transitionData=[];
         this.setNumberOfTransitions(numberOfTransitions);
         this.setPatientsPerTimepoint(patientsPerTimepoint);
+        this.timeGapStructure = this.rootStore.timeGapStructure;
+
+        console.log(this.timeGapStructure);
+
          for (let i = 0; i < this.numberOfTransitions; i++) {
             this.transitionData.push({
                 type: "line",
-                data: {"from": this.patientsPerTimepoint[i], "to": this.patientsPerTimepoint[i + 1]}
+                data: {"from": this.patientsPerTimepoint[i], "to": this.patientsPerTimepoint[i + 1]},
+                timeGapStructure: this.timeGapStructure[i+1]
             })
         }
     }
@@ -197,8 +204,6 @@ class TransitionStore {
         this.transitionData[firstTP].type = "empty";
         this.transitionData[firstTP].data = [];
     }
-
-
 }
 
 
