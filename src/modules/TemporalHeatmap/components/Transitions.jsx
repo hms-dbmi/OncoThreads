@@ -25,9 +25,9 @@ const Transitions = observer(class Transitions extends React.Component {
     //TODO: find better solution to get the type of the primary variables
     getTransitions() {
         const _self = this;
-        const colorDatas = this.props.timepointData
-            .map((d, i) => ({index: i, type: d.type, heatmap: d.heatmap})).filter(d => d.type==="sample")
-            .map(d => d.heatmap.map((h,i) => ({index: i, heatmap: h})).filter(r => r.heatmap.variable === this.props.store.primaryVariables[d.index])[0])
+        //const colorDatas = this.props.timepointData
+        //    .map((d, i) => ({index: i, type: d.type, heatmap: d.heatmap})).filter(d => d.type==="sample")
+        //    .map(d => d.heatmap.map((h,i) => ({index: i, heatmap: h})).filter(r => r.heatmap.variable === this.props.store.primaryVariables[d.index])[0])
         return (_self.props.transitionData.map(function (d, i) {
 
             console.log(d);
@@ -45,8 +45,8 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                 height={_self.props.visMap.transitionSpace}
                                                                                 rectWidth={_self.props.visMap.sampleRectWidth}
                                                                                 gap={_self.props.visMap.gap}
-                                                                                colorData={colorDatas[i+1].heatmap}
-                                                                                variableType={_self.props.currentSampleVariables[colorDatas[i+1].index].type}
+                                                                                colorData={_self.props.timepointData[i + 1].heatmap[0]}
+                                                                                variableType={secondPrimary.type}
                                                                                 groupScale={_self.props.groupScale}
                                                                                 firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                                 secondHeatmapScale={_self.props.heatmapScales[i + 1]}
