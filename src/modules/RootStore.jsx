@@ -115,8 +115,7 @@ class RootStore {
             })
         });
         const timepointStructure = this.buildTimepointStructure(sampleStructure, maxTP);
-        const timeGapStructure = this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
-        this.timeGapStructure=timeGapStructure;
+        this.timeGapStructure=this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
         this.timepointStore.setNumberOfPatients(allPatients.length);
         this.patientOrderPerTimepoint =allPatients;
         this.patientsPerTimepoint = patientsPerTimepoint;
@@ -156,33 +155,21 @@ class RootStore {
 
      */
     getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, numberOfTimepoints) {
-
         let timeGaps = [];
-
-       console.log(sampleTimelineMap);
-
         for (let i = 0; i < numberOfTimepoints; i++) {
-
             let patientSamples2 = [];
-
-
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
 
                     if(i===0){
                         patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: 0});
-                   // patientSamples2.push({patient: d.patientId, gap: sampleTimelineMap[d.patientId].startNumberOfDaysSinceDiagnosis})
                     }
                     else{
                         patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis-sampleTimelineMap[sampleStructure[d.patientId][i-1][0]].startNumberOfDaysSinceDiagnosis});
                     }
-
                }
             });
             timeGaps.push(patientSamples2);
-
-            //timepointStructure2.push();
-
         }
         return timeGaps;
     }

@@ -1,16 +1,15 @@
-import {extendObservable,reaction} from "mobx";
+import {extendObservable} from "mobx";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
  */
 class SingleTimepoint {
-    constructor(rootStore, variable, patients, type,id,localIndex) {
+    constructor(rootStore, variable, patients, type, localIndex) {
         this.rootStore = rootStore;
         this.type = type;
         this.patients = patients;
         this.globalIndex = -1;
-        this.localIndex=localIndex;
-        this.id=id;
+        this.localIndex = localIndex;
         extendObservable(this, {
             heatmap: [],
             grouped: [],

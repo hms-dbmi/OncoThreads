@@ -34,7 +34,7 @@ const MainView = observer(class MainView extends React.Component {
 
     createTimeButton() {
         const _self = this;
-        if(this.props.primaryVariables.length===0) {
+        if(this.props.timepoints.length===0) {
             return (<div></div>)
         } else {
             return (

@@ -26,14 +26,15 @@ class TransitionStore {
         this.transitionData = [];
         this.setNumberOfTransitions(numberOfTransitions);
         this.timeGapStructure = this.rootStore.timeGapStructure;
+        console.log(this.timeGapStructure);
         for (let i = 0; i < this.numberOfTransitions; i++) {
             this.transitionData.push({
                 type: "line",
                 data: {
-                    "from": this.rootStore.timepointStore.timepoints[i].patients,
-                    "to": this.rootStore.timepointStore.timepoints[i + 1].patients,
-                    timeGapStructure: this.timeGapStructure[i+1]
-                }
+                    from: this.rootStore.timepointStore.timepoints[i].patients,
+                    to: this.rootStore.timepointStore.timepoints[i + 1].patients,
+                },
+                timeGapStructure: this.timeGapStructure[i+1]
             })
         }
     }

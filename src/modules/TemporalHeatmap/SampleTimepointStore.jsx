@@ -93,7 +93,6 @@ class SampleTimepointStore {
         this.addHeatmapVariable(variable, dataset);
         this.currentVariables.push({variable: variable, type: type});
         this.rootStore.timepointStore.regroupTimepoints();
-        console.log(this.timepointData);
     }
 
 
