@@ -26,7 +26,6 @@ class TransitionStore {
         this.transitionData = [];
         this.setNumberOfTransitions(numberOfTransitions);
         this.timeGapStructure = this.rootStore.timeGapStructure;
-        console.log(this.timeGapStructure);
         for (let i = 0; i < this.numberOfTransitions; i++) {
             this.transitionData.push({
                 type: "line",

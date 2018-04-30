@@ -29,7 +29,6 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                 secondTimepoint={_self.props.timepoints[i + 1]}
                                                                                 firstPrimary={firstPrimary}
                                                                                 secondPrimary={secondPrimary}
-                                                                                colorData={_self.props.timepointData[i + 1].heatmap[0]}
                                                                                 groupScale={_self.props.groupScale}
                                                                                 firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                                 secondHeatmapScale={_self.props.heatmapScales[i + 1]}
