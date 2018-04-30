@@ -4,7 +4,7 @@ import {observer} from 'mobx-react';
 import {isObservableArray} from 'mobx';
 
 /*
-Creates a HeatmapGroupTransition (between GroupTimepoint and HeatmapTimepoint
+Creates a HeatmapGroupTransition (between GroupTimepoint and HeatmapTimepoint)
  */
 /*
 TODO: make prettier, maybe make to classes: HeatmapGroupTransition and GroupHeatmapTransition
@@ -64,24 +64,24 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         if (reverse) {
             grouped = this.props.secondTimepoint;
             scale = this.props.firstHeatmapScale;
-            y0 = this.props.height - rectHeight - 2 * this.props.gap;
-            y1 = 0 - this.props.gap;
+            y0 = this.props.visMap.transitionSpace - rectHeight - 2 * this.props.visMap.gap;
+            y1 = 0 - this.props.visMap.gap;
             recty = y0;
             primary = this.props.secondPrimary
         }
         else {
             grouped = this.props.firstTimepoint;
             scale = this.props.secondHeatmapScale;
-            y0 = 0 + this.props.gap + rectHeight;
-            y1 = this.props.height;
-            recty = 0 + this.props.gap;
+            y0 = 0 + this.props.visMap.gap + rectHeight;
+            y1 = this.props.visMap.transitionSpace;
+            recty = 0 + this.props.visMap.gap;
             primary = this.props.firstPrimary
         }
         let transitions = [];
         let rects = [];
         const _self = this;
         let sourcePartitionPos = 0;
-        grouped.group.data.forEach(function (d) {
+        grouped.grouped.forEach(function (d) {
             let currXsource = sourcePartitionPos;
             const partitionLength = _self.getPartitionLength(d, primary.variable);
             rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, _self.props.visMap.getColorScale(primary.variable,primary.type)(d.partition),d.partition));
@@ -93,7 +93,7 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
                 if(_self.props.selectedPatients.includes(f)){
                     strokeColor="#737373"
                 }
-                    transitions.push(HeatmapGroupTransition.drawTransition(currXsource, currXsource + transitionWidth, scale(f) + 0.5 * _self.props.rectWidth, y0, y1, f,strokeColor));
+                    transitions.push(HeatmapGroupTransition.drawTransition(currXsource, currXsource + transitionWidth, scale(f) + 0.5 * _self.props.visMap.sampleRectWidth, y0, y1, f,strokeColor));
                     currXsource += transitionWidth;
                 });
             }

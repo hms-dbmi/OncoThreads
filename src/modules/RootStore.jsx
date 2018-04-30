@@ -6,6 +6,7 @@ import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
+
 /*
 gets the data with the cBioAPI and gives it to the other stores
 TODO: make prettier
@@ -15,36 +16,38 @@ class RootStore {
         this.cbioAPI = cbioAPI;
         this.sampleTimepointStore = new SampleTimepointStore(this);
         this.betweenTimepointStore = new BetweenTimepointStore(this);
-        this.timepointStore=new TimepointStore(this);
+        this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore();
 
         this.clinicalSampleCategories = [];
         this.eventCategories = [];
-        this.eventAttributes=[];
-        this.patientsPerTimepoint=[];
-        this.patientOrderPerTimepoint=[];
+        this.eventAttributes = [];
+        this.patientsPerTimepoint = [];
+        this.patientOrderPerTimepoint = [];
 
         extendObservable(this, {
             parsed: false
         })
     }
-    initialize(cbioAPI){
+
+    initialize(cbioAPI) {
         this.cbioAPI = cbioAPI;
         this.sampleTimepointStore = new SampleTimepointStore(this);
         this.betweenTimepointStore = new BetweenTimepointStore(this);
-        this.timepointStore=new TimepointStore(this);
+        this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore();
 
         this.clinicalSampleCategories = [];
         this.eventCategories = [];
-        this.eventAttributes=[];
-        this.patientsPerTimepoint=[];
-        this.patientOrderPerTimepoint=[];
+        this.eventAttributes = [];
+        this.patientsPerTimepoint = [];
+        this.patientOrderPerTimepoint = [];
 
-            this.parsed= false;
+        this.parsed = false;
     }
+
     /*
     gets data from cBio and sets parameters in other stores
      */
@@ -110,18 +113,15 @@ class RootStore {
             })
         });
         const timepointStructure = this.buildTimepointStructure(sampleStructure, maxTP);
-        this.timepointStore.setNumberOfTimepoints(maxTP);
         this.timepointStore.setNumberOfPatients(allPatients.length);
-        this.patientOrderPerTimepoint=Array(maxTP).fill(allPatients);
-        this.patientsPerTimepoint=patientsPerTimepoint;
+        this.patientOrderPerTimepoint =allPatients;
+        this.patientsPerTimepoint = patientsPerTimepoint;
 
         this.sampleTimepointStore.setTimepointStructure(timepointStructure);
 
         this.betweenTimepointStore.setPatients(allPatients);
         this.betweenTimepointStore.setSampleTimelineMap(sampleTimelineMap);
         this.betweenTimepointStore.setTimepointStructure(timepointStructure);
-
-
 
 
         this.eventCategories = eventCategories;
@@ -158,8 +158,13 @@ class RootStore {
             if (!(d.sampleId in sampleClinicalMap)) {
                 sampleClinicalMap[d.sampleId] = {};
             }
-            if (!_self.clinicalSampleCategories.map(function(d,i){return d.variable}).includes(d.clinicalAttribute.displayName)) {
-                _self.clinicalSampleCategories.push({variable: d.clinicalAttribute.displayName, datatype:d.clinicalAttribute.datatype});
+            if (!_self.clinicalSampleCategories.map(function (d, i) {
+                    return d.variable
+                }).includes(d.clinicalAttribute.displayName)) {
+                _self.clinicalSampleCategories.push({
+                    variable: d.clinicalAttribute.displayName,
+                    datatype: d.clinicalAttribute.datatype
+                });
             }
             sampleClinicalMap[d.sampleId][d.clinicalAttribute.displayName] = d.value;
         });
@@ -201,7 +206,7 @@ class RootStore {
                 })
             })
         }
-        this.eventAttributes=attributes;
+        this.eventAttributes = attributes;
     }
 
 }

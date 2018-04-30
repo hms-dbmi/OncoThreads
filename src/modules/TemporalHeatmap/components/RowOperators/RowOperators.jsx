@@ -3,6 +3,7 @@ import {observer} from 'mobx-react';
 import Modal from "react-modal";
 import ReactDOM from 'react-dom'
 import ContinuousBinner from "../Binner/ContinuousBinner"
+import ContextMenus from "./ContextMenus"
 
 const customStyles = {
     content: {
@@ -18,16 +19,19 @@ const customStyles = {
     }
 };
 /*
-implements the icons and their functionality on the right side of the plot
+implements the icons and their functionality on the left side of the plot
  */
 const RowOperators = observer(class RowOperators extends React.Component {
     constructor() {
         super();
         this.state = {
             modalIsOpen: false,
-            variable: "",
-            timepointIndex:-1,
-            followUpFunction:null,
+            timepointIndex: -1,
+            followUpFunction: null,
+            contextX: 0,
+            contextY: 0,
+            clickedVariable: "",
+            clickedTimepoint: -1
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -35,7 +39,59 @@ const RowOperators = observer(class RowOperators extends React.Component {
         this.group = this.group.bind(this);
         this.unGroup = this.unGroup.bind(this);
         this.promote = this.promote.bind(this);
+        this.openSortContextMenu = this.openSortContextMenu.bind(this);
+        this.openGroupContextMenu = this.openGroupContextMenu.bind(this);
+        this.openPromoteContextMenu = this.openPromoteContextMenu.bind(this);
     }
+
+    /**
+     * Changes the state to open the sort context menu
+     * @param e: event
+     * @param timepointIndex
+     */
+    openSortContextMenu(e, timepointIndex) {
+        this.props.openContextMenu("visible", "hidden", "hidden");
+        this.setState({
+            contextX: e.pageX - 105,
+            contextY: e.pageY - 200,
+            clickedTimepoint: timepointIndex
+        });
+        e.preventDefault();
+    }
+
+    /**
+     * Changes the state to open the group context menu
+     * @param e: event
+     * @param timepointIndex
+     * @param variable
+     */
+    openGroupContextMenu(e, timepointIndex, variable) {
+        this.props.openContextMenu("hidden", "visible", "hidden");
+        this.setState({
+            contextX: e.pageX - 100,
+            contextY: e.pageY - 200,
+            clickedTimepoint: timepointIndex,
+            clickedVariable: variable
+        });
+        e.preventDefault();
+    }
+    /**
+     * Changes the state to open the promote context menu
+     * @param e: event
+     * @param timepointIndex
+     * @param variable
+     */
+    openPromoteContextMenu(e, timepointIndex, variable) {
+        this.props.openContextMenu("hidden", "hidden", "visible");
+        this.setState({
+            contextX: e.pageX - 100,
+            contextY: e.pageY - 190,
+            clickedTimepoint: timepointIndex,
+            clickedVariable: variable
+        });
+        e.preventDefault();
+    }
+
 
     /**
      * Opens the modal window and sets the state parameters which are passed to the ContinousBinner
@@ -43,12 +99,17 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: future primary variable
      * @param fun: Function which should be executed after the binning was applied: either group or promote
      */
-    openModal(timepointIndex,variable,fun) {
-        this.setState({modalIsOpen: true, timepointIndex:timepointIndex,variable: variable,followUpFunction:fun});
+    openModal(timepointIndex, variable, fun) {
+        this.setState({
+            modalIsOpen: true,
+            timepointIndex: timepointIndex,
+            clickedVariable: variable,
+            followUpFunction: fun
+        });
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false,variable:"",timepointIndex:-1,followUpFunction:null});
+        this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, followUpFunction: null});
     }
 
     componentDidMount() {
@@ -61,13 +122,12 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: Variable with which the timepoint will be grouped
      */
     group(timepointIndex, variable) {
-        if (this.props.store.isContinuous(timepointIndex, variable)) {
-            this.openModal(timepointIndex, variable, this.props.store.group);
+        if (this.props.store.isContinuous(variable, this.props.store.timepoints[timepointIndex].type)) {
+            this.openModal(timepointIndex, variable, this.props.store.groupBinnedTimepoint);
         }
         else {
-            this.props.store.group(timepointIndex, variable);
+            this.props.store.timepoints[timepointIndex].group(variable);
         }
-
     }
 
     /**
@@ -77,7 +137,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: Variable with which the timepoint should be sorted
      */
     sortTimepoint(timepointIndex, variable) {
-        this.props.store.sortTimepoint(timepointIndex, variable);
+        this.props.store.timepoints[timepointIndex].sort(variable);
     }
 
 
@@ -87,7 +147,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: variable which will be the future primary variable
      */
     unGroup(timepointIndex, variable) {
-        this.props.store.unGroup(timepointIndex, variable);
+        this.props.store.timepoints[timepointIndex].unGroup(variable);
     }
 
     /**
@@ -96,16 +156,16 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable: variable to be the primary variable
      */
     promote(timepointIndex, variable) {
-        if (this.props.store.groupOrder[timepointIndex].isGrouped && this.props.store.isContinuous(timepointIndex, variable)) {
-            this.openModal(timepointIndex,variable,this.props.store.promote);
+        if (this.props.store.timepoints[timepointIndex].isGrouped && this.props.store.isContinuous(variable, this.props.store.timepoints[timepointIndex].type)) {
+            this.openModal(timepointIndex, variable, this.props.store.promoteBinnedTimepoint);
         }
         else {
-            this.props.store.promote(timepointIndex, variable);
+
+            this.props.store.timepoints[timepointIndex].promote(variable);
         }
 
 
     }
-
 
     /**
      * Creates the Row operator for a timepoint
@@ -119,23 +179,16 @@ const RowOperators = observer(class RowOperators extends React.Component {
     getRowOperator(timepointIndex, icon1, icon2, function1, function2) {
         const _self = this;
         let pos = 0;
-        let currentVariables = [];
-        if (this.props.store.timepointData[timepointIndex].type === "between") {
-            currentVariables = this.props.currentBetweenVariables;
-        }
-        else {
-            currentVariables = this.props.currentSampleVariables;
-        }
-        return currentVariables.map(function (d, i) {
+        return this.props.store.currentVariables[this.props.timepoints[timepointIndex].type].map(function (d, i) {
             let lineHeight;
             let fontWeight;
-            if (d.variable === _self.props.primaryVariables[timepointIndex]) {
+            if (d.variable === _self.props.timepoints[timepointIndex].primaryVariable) {
                 lineHeight = _self.props.visMap.primaryHeight;
-                fontWeight = 800;
+                fontWeight = "bold";
             }
             else {
                 lineHeight = _self.props.visMap.secondaryHeight;
-                fontWeight = 0;
+                fontWeight = "normal";
             }
             const transform = "translate(0," + pos + ")";
             const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
@@ -143,16 +196,17 @@ const RowOperators = observer(class RowOperators extends React.Component {
             pos = pos + lineHeight + _self.props.visMap.gap;
             const yIcons = -(iconScale * 24 - lineHeight) / 2;
             return <g key={d.variable} className={"clickable"} transform={transform}>
-                <text key={"promote" + d.variable} fontWeight={fontWeight}
+                <text key={"promote" + d.variable} style={{fontWeight: fontWeight}}
                       transform={"translate(0," + (lineHeight / 2 + 0.5 * fontSize) + ")"}
                       fontSize={fontSize}
+                      onContextMenu={(e) => _self.openPromoteContextMenu(e, timepointIndex, d.variable)}
                       onClick={(e) => _self.promote(timepointIndex, d.variable, e)}>{d.variable}</text>
                 <path key={"path1" + d.variable}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       fill="gray"
                       d={icon1}/>
                 <rect key={"rect1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
-                      onContextMenu={(e) => _self.props.openMenu(e, timepointIndex)}
+                      onContextMenu={(e) => _self.openSortContextMenu(e, timepointIndex)}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       width={iconScale * 24} height={24}
                       fill="none"
@@ -163,6 +217,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
                       d={icon2}/>
                 <rect key={"rect2" + d.variable} onClick={() => function2(timepointIndex, d.variable)}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 48) + "," + yIcons + ")scale(" + iconScale + ")"}
+                      onContextMenu={(e) => _self.openGroupContextMenu(e, timepointIndex, d.variable)}
                       width={24} height={24}
                       fill="none" pointerEvents="visible"/>
             </g>
@@ -178,7 +233,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
         const group = "M12.5,19.5V3.47H14.53V19.5H12.5M9.5,19.5V3.47H11.53V19.5H9.5M4.5,7.5L8.53,11.5L4.5,15.47V12.47H1.5V10.5H4.5V7.5M19.5,15.47L15.5,11.5L19.5,7.5V10.5H22.5V12.47H19.5V15.47Z";
         const ungroup = "M9,11H15V8L19,12L15,16V13H9V16L5,12L9,8V11M2,20V4H4V20H2M20,20V4H22V20H20Z";
 
-        this.props.groupOrder.forEach(function (d, i) {
+        this.props.timepoints.forEach(function (d, i) {
             let transform = "translate(0," + _self.props.posY[i] + ")";
             //Different icons and functions for grouped and ungrouped timepoints
             if (!d.isGrouped) {
@@ -205,9 +260,16 @@ const RowOperators = observer(class RowOperators extends React.Component {
                     style={customStyles}
                     contentLabel="Bin data"
                 >
-                    <ContinuousBinner variable={this.state.variable} timepointIndex={this.state.timepointIndex} followUpFunction={this.state.followUpFunction}
+                    <ContinuousBinner variable={this.state.clickedVariable} timepointIndex={this.state.timepointIndex}
+                                      followUpFunction={this.state.followUpFunction}
                                       close={this.closeModal} store={this.props.store} visMap={this.props.visMap}/>
                 </Modal>
+                <ContextMenus showSortContextMenu={this.props.showSortContextMenu}
+                              showGroupContextMenu={this.props.showGroupContextMenu}
+                              showPromoteContextMenu={this.props.showPromoteContextMenu} contextX={this.state.contextX}
+                              contextY={this.state.contextY} clickedTimepoint={this.state.clickedTimepoint}
+                              clickedVariable={this.state.clickedVariable}
+                              store={this.props.store}/>
             </div>
         )
     }

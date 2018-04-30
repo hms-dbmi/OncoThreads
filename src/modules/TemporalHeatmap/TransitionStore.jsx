@@ -1,39 +1,40 @@
 import {extendObservable} from "mobx";
+
 /*
 stores information about transitions
  */
 class TransitionStore {
     constructor(rootStore) {
-        this.rootStore=rootStore;
-        this.numberOfTransitions=0;
-        this.patientsPerTimepoint=[];
+        this.rootStore = rootStore;
+        this.numberOfTransitions = 0;
+        this.patientsPerTimepoint = [];
         extendObservable(this, {
             transitionData: [],
         })
     }
-    setNumberOfTransitions(numberOfTransitions){
-        this.numberOfTransitions=numberOfTransitions;
-    }
-    setPatientsPerTimepoint(patientsPerTimepoint){
-        this.patientsPerTimepoint=patientsPerTimepoint;
+
+    setNumberOfTransitions(numberOfTransitions) {
+        this.numberOfTransitions = numberOfTransitions;
     }
 
     /**
      * initializes fields and sets line transitions
      * @param numberOfTransitions
-     * @param patientsPerTimepoint
      */
-    initializeTransitions(numberOfTransitions,patientsPerTimepoint){
-        this.transitionData=[];
+    initializeTransitions(numberOfTransitions) {
+        this.transitionData = [];
         this.setNumberOfTransitions(numberOfTransitions);
-        this.setPatientsPerTimepoint(patientsPerTimepoint);
-         for (let i = 0; i < this.numberOfTransitions; i++) {
+        for (let i = 0; i < this.numberOfTransitions; i++) {
             this.transitionData.push({
                 type: "line",
-                data: {"from": this.patientsPerTimepoint[i], "to": this.patientsPerTimepoint[i + 1]}
+                data: {
+                    "from": this.rootStore.timepointStore.timepoints[i].patients,
+                    "to": this.rootStore.timepointStore.timepoints[i + 1].patients
+                }
             })
         }
     }
+
     /**
      * adapts the transitions for a timepoint (usually used after a timepoint is grouped, ungrouped or sorted)
      * @param timepoint
@@ -41,17 +42,17 @@ class TransitionStore {
     adaptTransitions(timepoint) {
         let previousTimepoint = timepoint - 1;
         let nextTimepoint = timepoint + 1;
-        if (this.rootStore.timepointStore.groupOrder[timepoint].isGrouped) {
+        if (this.rootStore.timepointStore.timepoints[timepoint].isGrouped) {
             if (previousTimepoint !== -1) {
-                if (this.rootStore.timepointStore.groupOrder[previousTimepoint].isGrouped) {
+                if (this.rootStore.timepointStore.timepoints[previousTimepoint].isGrouped) {
                     this.computeSankeyTransition(previousTimepoint, timepoint)
                 }
                 else {
                     this.computeGroupToPatientsTransition(previousTimepoint, timepoint)
                 }
             }
-            if (nextTimepoint !== this.numberOfTransitions+1) {
-                if (this.rootStore.timepointStore.groupOrder[nextTimepoint].isGrouped) {
+            if (nextTimepoint !== this.numberOfTransitions + 1) {
+                if (this.rootStore.timepointStore.timepoints[nextTimepoint].isGrouped) {
                     this.computeSankeyTransition(timepoint, nextTimepoint)
                 }
                 else {
@@ -61,15 +62,15 @@ class TransitionStore {
         }
         else {
             if (previousTimepoint !== -1) {
-                if (this.rootStore.timepointStore.groupOrder[previousTimepoint].isGrouped) {
+                if (this.rootStore.timepointStore.timepoints[previousTimepoint].isGrouped) {
                     this.computeGroupToPatientsTransition(previousTimepoint, timepoint)
                 }
                 else {
                     this.computeLineTransition(previousTimepoint, timepoint)
                 }
             }
-            if (nextTimepoint !== this.numberOfTransitions+1) {
-                if (this.rootStore.timepointStore.groupOrder[nextTimepoint].isGrouped) {
+            if (nextTimepoint !== this.numberOfTransitions + 1) {
+                if (this.rootStore.timepointStore.timepoints[nextTimepoint].isGrouped) {
                     this.computeGroupToPatientsTransition(timepoint, nextTimepoint)
                 }
                 else {
@@ -87,8 +88,8 @@ class TransitionStore {
     computeSankeyTransition(firstTP, secondTP) {
         let transitions = [];
         const _self = this;
-        this.rootStore.timepointStore.timepointData[firstTP].group.data.forEach(function (d) {
-            _self.rootStore.timepointStore.timepointData[secondTP].group.data.forEach(function (f) {
+        this.rootStore.timepointStore.timepoints[firstTP].grouped.forEach(function (d) {
+            _self.rootStore.timepointStore.timepoints[secondTP].grouped.forEach(function (f) {
                 transitions.push({
                     from: d.partition,
                     to: f.partition,
@@ -113,11 +114,11 @@ class TransitionStore {
         let firstPatients = [];
         let secondPatients = [];
         const _self = this;
-        let firstTP = this.rootStore.timepointStore.timepointData[firstTPindex].heatmap.filter(function (d) {
-            return d.variable === _self.rootStore.timepointStore.primaryVariables[firstTPindex]
+        let firstTP = this.rootStore.timepointStore.timepoints[firstTPindex].heatmap.filter(function (d) {
+            return d.variable === _self.rootStore.timepointStore.timepoints[firstTPindex].primaryVariable
         })[0].data;
-        let secondTP = this.rootStore.timepointStore.timepointData[secondTPindex].heatmap.filter(function (d) {
-            return d.variable === _self.rootStore.timepointStore.primaryVariables[secondTPindex]
+        let secondTP = this.rootStore.timepointStore.timepoints[secondTPindex].heatmap.filter(function (d) {
+            return d.variable === _self.rootStore.timepointStore.timepoints[secondTPindex].primaryVariable
         })[0].data;
         firstTP.forEach(function (d) {
             if (d.value === firstPartition) {
@@ -143,13 +144,13 @@ class TransitionStore {
     computeGroupToPatientsTransition(firstTP, secondTP) {
         let transitions = [];
         const _self = this;
-        if (this.rootStore.timepointStore.groupOrder[firstTP].isGrouped) {
-            this.rootStore.timepointStore.timepointData[firstTP].group.data.forEach(function (d) {
+        if (this.rootStore.timepointStore.timepoints[firstTP].isGrouped) {
+            this.rootStore.timepointStore.timepoints[firstTP].grouped.forEach(function (d) {
                 transitions.push({from: d.partition, to: _self.getPatientsInPartition(firstTP, secondTP, d.partition)})
             })
         }
         else {
-            this.rootStore.timepointStore.timepointData[secondTP].group.data.forEach(function (d) {
+            this.rootStore.timepointStore.timepoints[secondTP].grouped.forEach(function (d) {
                 transitions.push({from: _self.getPatientsInPartition(secondTP, firstTP, d.partition), to: d.partition})
             })
         }
@@ -165,11 +166,11 @@ class TransitionStore {
      */
     getPatientsInPartition(groupedIndex, ungroupedIndex, partition) {
         const _self = this;
-        let TP = this.rootStore.timepointStore.timepointData[groupedIndex].heatmap.filter(function (d) {
-            return d.variable === _self.rootStore.timepointStore.primaryVariables[groupedIndex]
+        let TP = this.rootStore.timepointStore.timepoints[groupedIndex].heatmap.filter(function (d) {
+            return d.variable === _self.rootStore.timepointStore.timepoints[groupedIndex].primaryVariable
         })[0].data;
         return (TP.filter(function (d) {
-            return d.value === partition && _self.patientsPerTimepoint[ungroupedIndex].includes(d.patient)
+            return d.value === partition && _self.rootStore.timepointStore.timepoints[ungroupedIndex].patients.includes(d.patient)
         }).map(function (d) {
             return d.patient;
         }));
@@ -183,8 +184,8 @@ class TransitionStore {
     computeLineTransition(firstTP, secondTP) {
         this.transitionData[firstTP].type = "line";
         this.transitionData[firstTP].data = {
-            "from": this.patientsPerTimepoint[firstTP],
-            "to": this.patientsPerTimepoint[secondTP]
+            "from": this.rootStore.timepointStore.timepoints[firstTP].patients,
+            "to": this.rootStore.timepointStore.timepoints[secondTP].patients
         }
     }
 
@@ -193,7 +194,7 @@ class TransitionStore {
      * @param firstTP
      * @param secondTP
      */
-    computeEmptyTransition(firstTP,secondTP){
+    computeEmptyTransition(firstTP, secondTP) {
         this.transitionData[firstTP].type = "empty";
         this.transitionData[firstTP].data = [];
     }

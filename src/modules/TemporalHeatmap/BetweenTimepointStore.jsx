@@ -1,4 +1,6 @@
 import {extendObservable} from "mobx";
+import SingleTimepoint from "./SingleTimepoint";
+
 
 /*
 stores information about betweenTimepoint
@@ -11,12 +13,8 @@ class BetweenTimepointStore {
         this.timepointStructure = {};
         this.patients = [];
         extendObservable(this, {
-            timepointData: [],
-            currentVariables: [],
-            primaryVariables: [],
-            groupOrder: [],
-            patientsPerTimepoint: [],
-            patientOrderPerTimepoint: []
+            timepoints: [],
+            currentVariables: []
         });
     }
 
@@ -35,6 +33,16 @@ class BetweenTimepointStore {
     setTimepointStructure(timepointStructure) {
         this.timepointStructure = timepointStructure;
     }
+     /**
+     * initialize variables, used after the fist variable is added.
+     * @param variable
+     */
+    initialize(variable) {
+        for(let i=0;i<this.timepointStructure.length;i++){
+            this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[i],"between",i))
+        }
+        this.rootStore.timepointStore.initialize();
+    }
 
 
     /**
@@ -45,11 +53,11 @@ class BetweenTimepointStore {
      * @param name
      */
     addHeatmapVariable(type, selectedValues, selectedKey, name) {
-        let timepointData = this.timepointData.slice();
+        let timepoints = this.timepoints.slice();
         for (let j = 0; j < this.timepointStructure.length; j++) {
-            timepointData[j].heatmap.push({variable: name, sorting: 0, data: []});
+            timepoints[j].heatmap.push({variable: name, sorting: 0, data: []});
         }
-        const addIndex = timepointData[0].heatmap.length - 1;
+        const addIndex = timepoints[0].heatmap.length - 1;
         const _self = this;
         this.patients.forEach(function (f) {
             let samples = [];
@@ -63,13 +71,13 @@ class BetweenTimepointStore {
             let currTimepoint = 0;
             let startAtEvent =0;
             while (currTimepoint < samples.length) {
-                let attributeFound = false;
                 let eventCounter = startAtEvent;
+                let attributeFound = false;
                 while (eventCounter < _self.clinicalEvents[f].length) {
                     let currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
                     const currEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate);
                     if (currEventInRange) {
-                        if(_self.hasAttribute(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {
+                        if(_self.doesEventMatch(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {
                             attributeFound = true;
                         }
                         if(eventCounter<_self.clinicalEvents[f].length-1) {
@@ -82,7 +90,7 @@ class BetweenTimepointStore {
                     }
                     eventCounter += 1;
                 }
-                timepointData[currTimepoint].heatmap[addIndex].data.push({
+                timepoints[currTimepoint].heatmap[addIndex].data.push({
                     "patient": f,
                     "value": attributeFound
                 });
@@ -90,9 +98,8 @@ class BetweenTimepointStore {
             }
         });
 
-        this.timepointData = timepointData;
+        this.timepoints = timepoints;
     }
-
     /**
      * checks if an event has happened before a specific date
      * @param event
@@ -121,7 +128,7 @@ class BetweenTimepointStore {
      * @param event
      * @returns {boolean}
      */
-    hasAttribute(type, values, key, event) {
+    doesEventMatch(type, values, key, event) {
         let hasAttribute = false;
         if (type === event.eventType) {
             values.forEach(function (d, i) {
@@ -135,23 +142,6 @@ class BetweenTimepointStore {
         return hasAttribute;
     }
 
-
-    /**
-     * initialize variables, used after the fist variable is added.
-     * @param variable
-     */
-    initialize(variable) {
-        this.primaryVariables = Array(this.timepointStructure.length).fill(variable);
-        this.timepointData = Array(this.timepointStructure.length).fill({
-            type: "between",
-            heatmap: [],
-            group: {data: []}
-        });
-        this.groupOrder = Array(this.timepointStructure.length).fill({isGrouped: false, order: 1});
-        this.patientsPerTimepoint = this.rootStore.patientsPerTimepoint;
-        this.patientOrderPerTimepoint = this.rootStore.patientOrderPerTimepoint;
-        this.rootStore.timepointStore.initialize();
-    }
 
 
     /**
@@ -170,22 +160,30 @@ class BetweenTimepointStore {
     }
 
 
-    /**
+      /**
      * Removes a variable from sample data
      * @param variable
      */
     removeVariable(variable) {
-        if (this.primaryVariables.includes(variable)) {
-            this.adaptPrimaryVariables(variable);
+        if (this.currentVariables.length !== 1) {
+                this.timepoints.forEach(function (d) {
+                    d.adaptPrimaryVariable(variable);
+                });
+            const index = this.currentVariables.map(function (d) {
+                return d.variable
+            }).indexOf(variable);
+            for (let i = 0; i < this.timepoints.length; i++) {
+                this.timepoints[i].heatmap.splice(index, 1);
+            }
+            this.currentVariables.splice(index, 1);
+            this.rootStore.timepointStore.regroupTimepoints();
         }
-        const index = this.currentVariables.map(function (d, i) {
-            return d.variable
-        }).indexOf(variable);
-        for (let i = 0; i < this.timepointData.length; i++) {
-            this.timepointData[i].heatmap.splice(index, 1);
+        //case: last timepoint variable was removed
+        else {
+            this.timepoints = [];
+            this.currentVariables = [];
+            this.rootStore.timepointStore.initialize();
         }
-        this.currentVariables.splice(index, 1);
-        this.rootStore.timepointStore.regroupTimepoints();
     }
 }
 

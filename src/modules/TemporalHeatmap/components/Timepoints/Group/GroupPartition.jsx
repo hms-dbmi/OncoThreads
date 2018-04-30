@@ -16,15 +16,15 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
             let opacity = 1;
             const transform = "translate(0," + previousYposition + ")";
             if (_self.props.primaryVariable === d.variable) {
-                height = _self.props.primaryHeight;
+                height = _self.props.visMap.primaryHeight;
             }
             else {
-                height = _self.props.secondaryHeight;
+                height = _self.props.visMap.secondaryHeight;
                 opacity = 0.5;
             }
             rows.push(<g key={d.variable} transform={transform}><PartitionRow key={d.variable} row={d.counts} height={height} opacity={opacity} color={color}
                                     groupScale={_self.props.groupScale}/></g>);
-            previousYposition += height + _self.props.gap;
+            previousYposition += height + _self.props.visMap.gap;
 
         });
         return rows;

@@ -1,8 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import Timepoints from "./Timepoints"
-import Transitions from "./Transitions"
-import SankeyTransitionTooltip from "./SankeyTransitionTooltip"
+import Timepoints from "./Timepoints/Timepoints"
+import Transitions from "./Transitions/Transitions"
+import SankeyTransitionTooltip from "./Transitions/SankeyTransitionTooltip"
 import * as d3 from "d3";
 /*
 creates the plot with timepoints and transitions
@@ -14,12 +14,12 @@ const Plot = observer(class Plot extends React.Component {
             selectedPatients: [],
             showTooltip: "hidden",
             tooltipX: 0,
-            tooltipY:0,
+            tooltipY: 0,
             tooltipContent: ""
         });
         this.handlePatientSelection = this.handlePatientSelection.bind(this);
-        this.showSankeyTooltip=this.showSankeyTooltip.bind(this);
-        this.hideSankeyTooltip=this.hideSankeyTooltip.bind(this)
+        this.showSankeyTooltip = this.showSankeyTooltip.bind(this);
+        this.hideSankeyTooltip = this.hideSankeyTooltip.bind(this)
     }
 
     /**
@@ -29,9 +29,9 @@ const Plot = observer(class Plot extends React.Component {
      * @returns heatmap scales
      */
     createSampleHeatMapScales(w, rectWidth) {
-        return this.props.patientOrderPerTimepoint.map(function (d, i) {
+        return this.props.timepoints.map(function (d, i) {
             return d3.scalePoint()
-                .domain(d)
+                .domain(d.heatmapOrder)
                 .range([0, w - rectWidth]);
         })
     }
@@ -53,16 +53,18 @@ const Plot = observer(class Plot extends React.Component {
             selectedPatients: patients
         });
     }
-    showSankeyTooltip(e,source,target,count){
+
+    showSankeyTooltip(e, source, target, count) {
         this.setState({
             showTooltip: "visible",
-            tooltipX: e.pageX-105,
-            tooltipY:e.pageY-200,
-            tooltipContent:source +" -> "+target+": "+count,
+            tooltipX: e.pageX - 105,
+            tooltipY: e.pageY - 200,
+            tooltipContent: source + " -> " + target + ": " + count,
         })
     }
-    hideSankeyTooltip(){
-         this.setState({
+
+    hideSankeyTooltip() {
+        this.setState({
             showTooltip: "hidden",
         })
     }
@@ -82,29 +84,28 @@ const Plot = observer(class Plot extends React.Component {
         let transform = "translate(0," + 20 + ")";
         return (
             <div className="view">
-            <svg width={this.props.width} height={this.props.height}>
-                <g transform={transform}>
-                    <Timepoints {...this.props}
-                                yPositions={this.props.timepointY}
-                                primaryHeight={this.props.visMap.primaryHeight}
-                                groupScale={groupScale}
-                                heatmapScales={sampleHeatmapScales}
-                                onDrag={this.handlePatientSelection}
-                                selectedPatients={this.state.selectedPatients}/>
+                <svg width={this.props.width} height={this.props.height}>
+                    <g transform={transform}>
+                        <Timepoints {...this.props}
+                                    yPositions={this.props.timepointY}
+                                    groupScale={groupScale}
+                                    heatmapScales={sampleHeatmapScales}
+                                    onDrag={this.handlePatientSelection}
+                                    selectedPatients={this.state.selectedPatients}/>
 
 
-                    <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
-                                 timepointData={this.props.store.timepointData}
-                                 yPositions={this.props.transY}
-                                 height={this.props.transitionSpace} groupScale={groupScale}
-                                 heatmapScales={sampleHeatmapScales}
-                                 selectedPatients={this.state.selectedPatients}
-                                showTooltip={this.showSankeyTooltip}
-                                hideTooltip={this.hideSankeyTooltip}/>
+                        <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
+                                     yPositions={this.props.transY}
+                                     groupScale={groupScale}
+                                     heatmapScales={sampleHeatmapScales}
+                                     selectedPatients={this.state.selectedPatients}
+                                     showTooltip={this.showSankeyTooltip}
+                                     hideTooltip={this.hideSankeyTooltip}/>
 
-                </g>
-            </svg>
-                <SankeyTransitionTooltip visibility={this.state.showTooltip} x={this.state.tooltipX} y={this.state.tooltipY} content={this.state.tooltipContent}/>
+                    </g>
+                </svg>
+                <SankeyTransitionTooltip visibility={this.state.showTooltip} x={this.state.tooltipX}
+                                         y={this.state.tooltipY} content={this.state.tooltipContent}/>
             </div>
         )
     }

@@ -22,7 +22,7 @@ const StudySelection = observer(class StudySelection extends React.Component {
     render() {
         return (
             <div>
-                <h1>OncoTracer</h1>
+                <h1>OncoThreads</h1>
                 <GetStudy rootStore={rootStore} cbioAPI={cbioAPI}/>
             </div>
         )
@@ -37,14 +37,14 @@ const HeatmapSelector = observer(class HeatmapSelector extends React.Component {
                         <SampleVariableSelector
                             clinicalSampleCategories={rootStore.clinicalSampleCategories}
                             mutationCount="Mutation count"
-                            currentVariables={rootStore.timepointStore.currentSampleVariables}
+                            currentVariables={rootStore.timepointStore.currentVariables.sample}
                             store={rootStore.sampleTimepointStore}
                             visMap={rootStore.visStore}
                         />
                         <BetweenSampleVariableSelector
                             eventCategories={rootStore.eventCategories}
                             eventAttributes={rootStore.eventAttributes}
-                            currentVariables={rootStore.timepointStore.currentBetweenVariables}
+                            currentVariables={rootStore.timepointStore.currentVariables.between}
                             store={rootStore.betweenTimepointStore}
                             visMap={rootStore.visStore}
                         />
@@ -62,11 +62,8 @@ const Heatmap = observer(class Heatmap extends React.Component {
                 <div>
                     <div className="bottom-right-svg">
                         <MainView
-                            patientOrderPerTimepoint={rootStore.timepointStore.patientOrderPerTimepoint}
-                            primaryVariables={rootStore.timepointStore.primaryVariables}
-                            groupOrder={rootStore.timepointStore.groupOrder}
-                            currentSampleVariables={rootStore.timepointStore.currentSampleVariables}
-                            currentBetweenVariables={rootStore.timepointStore.currentBetweenVariables}
+                            currentVariables={rootStore.timepointStore.currentVariables}
+                            timepoints={rootStore.timepointStore.timepoints}
                             store={rootStore.timepointStore}
                             transitionStore={rootStore.transitionStore}
                             visMap={rootStore.visStore}

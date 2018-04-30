@@ -181,17 +181,10 @@ const Legend = observer(class Legend extends React.Component {
         const textHeight = 10;
         const _self = this;
         const legends = [];
-        this.props.primaryVariables.forEach(function (d, i) {
-            let currentVariables = [];
-            if (_self.props.store.timepointData[i].type === "between") {
-                currentVariables = _self.props.currentBetweenVariables;
-            }
-            else {
-                currentVariables = _self.props.currentSampleVariables;
-            }
+        this.props.timepoints.forEach(function (d, i) {
             let transform = "translate(10," + _self.props.posY[i] + ")";
             legends.push(<g key={i + d}
-                            transform={transform}>{_self.getLegend(_self.props.store.timepointData[i].heatmap, d, textHeight, currentVariables)}</g>);
+                            transform={transform}>{_self.getLegend(d.heatmap, d.primaryVariable, textHeight, _self.props.store.currentVariables[d.type])}</g>);
 
         });
         let transform = "translate(0," + 20 + ")";
