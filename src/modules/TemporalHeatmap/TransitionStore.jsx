@@ -1,5 +1,4 @@
 import {extendObservable} from "mobx";
-
 /*
 stores information about transitions
  */
@@ -8,6 +7,8 @@ class TransitionStore {
         this.rootStore = rootStore;
         this.numberOfTransitions = 0;
         this.patientsPerTimepoint = [];
+        this.timeGapStructure=[];
+
         extendObservable(this, {
             transitionData: [],
         })
@@ -24,17 +25,18 @@ class TransitionStore {
     initializeTransitions(numberOfTransitions) {
         this.transitionData = [];
         this.setNumberOfTransitions(numberOfTransitions);
+        this.timeGapStructure = this.rootStore.timeGapStructure;
         for (let i = 0; i < this.numberOfTransitions; i++) {
             this.transitionData.push({
                 type: "line",
                 data: {
                     "from": this.rootStore.timepointStore.timepoints[i].patients,
-                    "to": this.rootStore.timepointStore.timepoints[i + 1].patients
+                    "to": this.rootStore.timepointStore.timepoints[i + 1].patients,
+                    timeGapStructure: this.timeGapStructure[i+1]
                 }
             })
         }
     }
-
     /**
      * adapts the transitions for a timepoint (usually used after a timepoint is grouped, ungrouped or sorted)
      * @param timepoint
@@ -198,8 +200,6 @@ class TransitionStore {
         this.transitionData[firstTP].type = "empty";
         this.transitionData[firstTP].data = [];
     }
-
-
 }
 
 

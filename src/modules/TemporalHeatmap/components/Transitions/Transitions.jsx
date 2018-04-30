@@ -24,10 +24,12 @@ const Transitions = observer(class Transitions extends React.Component {
             const transform = "translate(0," + _self.props.yPositions[i] + ")";
             return (<g key={i + "transition"} transform={transform}><Transition transition={d}
                                                                                 index={i}
+                                                                                realTime={_self.props.realTime}
                                                                                 firstTimepoint={_self.props.timepoints[i]}
                                                                                 secondTimepoint={_self.props.timepoints[i + 1]}
                                                                                 firstPrimary={firstPrimary}
                                                                                 secondPrimary={secondPrimary}
+                                                                                colorData={_self.props.timepointData[i + 1].heatmap[0]}
                                                                                 groupScale={_self.props.groupScale}
                                                                                 firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                                 secondHeatmapScale={_self.props.heatmapScales[i + 1]}

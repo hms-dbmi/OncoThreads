@@ -95,9 +95,12 @@ const Plot = observer(class Plot extends React.Component {
 
 
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
+                                     timepointData={this.props.store.timepoints}
+                                     realTime={this.props.transitionStore.rootStore.realTime}
                                      yPositions={this.props.transY}
                                      groupScale={groupScale}
                                      heatmapScales={sampleHeatmapScales}
+                                     height={this.props.transitionSpace}
                                      selectedPatients={this.state.selectedPatients}
                                      showTooltip={this.showSankeyTooltip}
                                      hideTooltip={this.hideSankeyTooltip}/>

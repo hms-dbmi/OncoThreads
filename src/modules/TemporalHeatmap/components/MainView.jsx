@@ -27,6 +27,26 @@ const MainView = observer(class MainView extends React.Component {
         this.setState({showSortContextMenu: "hidden", showGroupContextMenu: "hidden", showPromoteContextMenu: "hidden"})
     }
 
+    handleTimeClick(event) {
+        this.props.store.rootStore.realTime=!this.props.store.rootStore.realTime;
+        event.target.className = (this.props.store.rootStore.realTime)? "selected":"notSelected";
+    }
+
+    createTimeButton() {
+        const _self = this;
+        if(this.props.primaryVariables.length===0) {
+            return (<div></div>)
+        } else {
+            return (
+                <div>
+                    <button className={"notSeleced"} onClick={(e) => _self.handleTimeClick(e)}
+                        key={this.props.store.rootStore.realTime}>
+                        {(this.props.store.rootStore.realTime)? "Hide actual timeline": "Show actual timeline"}
+                    </button>
+                </div>
+            )
+        }
+    }
     /**
      * set visual parameters
      * @param rectWidth
@@ -64,7 +84,6 @@ const MainView = observer(class MainView extends React.Component {
         }
         return timepointPositions;
     }
-
     render() {
         //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;
@@ -81,6 +100,7 @@ const MainView = observer(class MainView extends React.Component {
         const svgHeight = this.props.store.timepoints.length * 2 * ((sampleTPHeight + betweenTPHeight) / 2 + this.props.visMap.transitionSpace);
         return (
             <div onClick={this.closeContextMenu} className="heatmapContainer">
+                {this.createTimeButton()}
                 <RowOperators {...this.props} height={svgHeight}
                               svgHeight={svgHeight} svgWidth={200}
                               posY={timepointPositions.sample}

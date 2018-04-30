@@ -112,6 +112,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
     render() {
         return (
+
+            <div>
             <div>
                 <h4>Sample Variables</h4>
                 <h5>Clinical Features</h5>
@@ -121,8 +123,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 <h5>Genomic Features</h5>
                 <div className={"btn-group"}>
                     {this.createGenomicAttributesList()}
-                </div>
+                </div>   
+
             </div>
+
+            </div>  
         )
     }
 });
