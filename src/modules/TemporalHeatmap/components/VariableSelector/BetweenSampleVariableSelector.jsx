@@ -47,7 +47,6 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         if (this.props.currentVariables.length === 0) {
             this.props.store.initialize(this.state.name);
         }
-        console.log(this.state.buttonClicked,this.state.selectedValues,this.state.selectedKey,this.state.name);
         this.props.store.addVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, this.state.name);
         this.closeModal();
     }

@@ -19,22 +19,22 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
             if (row.variable === _self.props.primaryVariable) {
                 rows.push(<g key={row.variable} transform={transform}>
                     <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
-                                height={_self.props.primaryHeight}
+                                height={_self.props.visMap.primaryHeight}
                                 opacity={1}
                                 color={color}
-                    x={(_self.props.primaryHeight-_self.props.rectWidth)/2}/>;
+                    x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}/>;
                 </g>);
-                previousYposition += _self.props.primaryHeight + _self.props.gap;
+                previousYposition += _self.props.visMap.primaryHeight + _self.props.visMap.gap;
             }
             else {
                 rows.push(<g key={row.variable} transform={transform}>
                     <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
-                                height={_self.props.secondaryHeight}
+                                height={_self.props.visMap.secondaryHeight}
                                 opacity={0.5}
                                 color={color}
-                                x={(_self.props.primaryHeight-_self.props.rectWidth)/2}/>;
+                                x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}/>;
                 </g>);
-                previousYposition += _self.props.secondaryHeight + _self.props.gap;
+                previousYposition += _self.props.visMap.secondaryHeight + _self.props.visMap.gap;
             }
         });
         return (rows)

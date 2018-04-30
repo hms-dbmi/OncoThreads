@@ -1,6 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-
+/*
+tooltip for hovering over Sankey Transition
+ */
 const SankeyTransitionTooltip=observer(class SankeyTransitionTooltip extends React.Component{
 
    render(){

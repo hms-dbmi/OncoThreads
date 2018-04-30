@@ -25,25 +25,21 @@ const LineTransition = observer(class LineTransition extends React.Component {
             + "C" + x0 + "," + y2
             + " " + x1 + "," + y3
             + " " + x1 + "," + y1;
-
-        //const line = d3.path();
-        //line.moveTo(x0, y0);
-        //line.lineTo(x1, y1);
         if(mode) {
             return (<path key={key+"-solid"} d={path} stroke={strokeColor} fill="none"/>)
         } else {
-            return (<path key={key+"-dashed"} d={path} stroke={strokeColor} stroke-dasharray="5, 5" fill="none"/>)
+            return (<path key={key+"-dashed"} d={path} stroke={strokeColor} strokeDasharray="5, 5" fill="none"/>)
         }
     }
     drawLines() {
         let lines = [];
         const _self = this;
-
+        /*
         console.log(this.props.transition.timeGapStructure);
         console.log(this.props.transition.data.from);
-
+        */
         this.props.transition.data.from.forEach(function (d) {
-
+            /*
             console.log(d);
 
             console.log( _self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2);
@@ -53,7 +49,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
             console.log(0 - _self.props.visMap.gap);
 
             console.log(_self.props.visMap.transitionSpace);
-
+            */
             if (_self.props.transition.data.to.includes(d)) {
                 let strokeColor="lightgray";
                 if(_self.props.selectedPatients.includes(d)){
@@ -69,9 +65,6 @@ const LineTransition = observer(class LineTransition extends React.Component {
         let lines = [];
         const _self = this;
 
-        console.log(this.props.transition.timeGapStructure);
-        console.log(this.props.transition.data.from);
-
         var timeGapBetweenMap = {};
 
         var max = this.props.transition.timeGapStructure.map(t=> {
@@ -80,7 +73,10 @@ const LineTransition = observer(class LineTransition extends React.Component {
         }).reduce((m, cur) => m>cur? m: cur, 0);
 
 
-        const getColor = _self.props.visMap.getColorScale(_self.props.colorData.variable, _self.props.variableType);
+        const getColor = _self.props.visMap.getColorScale(_self.props.secondPrimary.variable, _self.props.secondPrimary.type);
+        const currentRow=_self.props.secondTimepoint.heatmap.filter(function (d,i) {
+            return d.variable===_self.props.secondPrimary.variable
+        })[0].data;
         var ind = -1;
 
         this.props.transition.data.from.forEach(function (d, i) {
@@ -106,7 +102,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
                         _self.props.visMap.transitionSpace*frac,
                         _self.props.visMap.transitionSpace, d, false, strokeColor
                     ));
-                    const color = getColor(_self.props.colorData.data[ind].value);
+                    const color = getColor(currentRow[ind].value);
                     lines.push(
                         <rect
                             x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-5}

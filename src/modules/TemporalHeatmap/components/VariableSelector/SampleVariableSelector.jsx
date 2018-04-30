@@ -18,7 +18,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param val
      * @returns {Array}
      */
-    static getAllIndeces(arr, val) {
+    static getAllIndices(arr, val) {
         let indexes = [], i;
         for (i = 0; i < arr.length; i++)
             if (arr[i] === val)
@@ -112,7 +112,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
     render() {
         return (
-
             <div>
             <div>
                 <h4>Sample Variables</h4>

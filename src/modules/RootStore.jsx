@@ -6,6 +6,7 @@ import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
+
 /*
 gets the data with the cBioAPI and gives it to the other stores
 TODO: make prettier
@@ -15,15 +16,15 @@ class RootStore {
         this.cbioAPI = cbioAPI;
         this.sampleTimepointStore = new SampleTimepointStore(this);
         this.betweenTimepointStore = new BetweenTimepointStore(this);
-        this.timepointStore=new TimepointStore(this);
+        this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore();
 
         this.clinicalSampleCategories = [];
         this.eventCategories = [];
-        this.eventAttributes=[];
-        this.patientsPerTimepoint=[];
-        this.patientOrderPerTimepoint=[];
+        this.eventAttributes = [];
+        this.patientsPerTimepoint = [];
+        this.patientOrderPerTimepoint = [];
         this.timeGapStructure=[];
 
         extendObservable(this, {
@@ -31,7 +32,8 @@ class RootStore {
             realTime: false
         })
     }
-    initialize(cbioAPI){
+
+    initialize(cbioAPI) {
         this.cbioAPI = cbioAPI;
         this.sampleTimepointStore = new SampleTimepointStore(this);
         this.betweenTimepointStore = new BetweenTimepointStore(this);
@@ -41,12 +43,13 @@ class RootStore {
 
         this.clinicalSampleCategories = [];
         this.eventCategories = [];
-        this.eventAttributes=[];
-        this.patientsPerTimepoint=[];
-        this.patientOrderPerTimepoint=[];
+        this.eventAttributes = [];
+        this.patientsPerTimepoint = [];
+        this.patientOrderPerTimepoint = [];
 
-            this.parsed= false;
+        this.parsed = false;
     }
+
     /*
     gets data from cBio and sets parameters in other stores
      */
@@ -88,7 +91,6 @@ class RootStore {
                     eventCategories.push(e.eventType);
                 }
                 if (e.eventType === "SPECIMEN") {
-                 //   console.log(e);
                     sampleTimelineMap[e.attributes[1].value] = {
                         "method": e.attributes[0].key,
                         "method_name": e.attributes[0].value,
@@ -112,28 +114,17 @@ class RootStore {
                 }
             })
         });
-        console.log(sampleTimelineMap);
         const timepointStructure = this.buildTimepointStructure(sampleStructure, maxTP);
-        console.log(timepointStructure);
-
-        const timeGapStructure = this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
-
-        console.log(timeGapStructure);
-
-        this.timeGapStructure=timeGapStructure;
-
-        this.timepointStore.setNumberOfTimepoints(maxTP);
+        this.timeGapStructure=this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
         this.timepointStore.setNumberOfPatients(allPatients.length);
-        this.patientOrderPerTimepoint=Array(maxTP).fill(allPatients);
-        this.patientsPerTimepoint=patientsPerTimepoint;
+        this.patientOrderPerTimepoint =allPatients;
+        this.patientsPerTimepoint = patientsPerTimepoint;
 
         this.sampleTimepointStore.setTimepointStructure(timepointStructure);
 
         this.betweenTimepointStore.setPatients(allPatients);
         this.betweenTimepointStore.setSampleTimelineMap(sampleTimelineMap);
         this.betweenTimepointStore.setTimepointStructure(timepointStructure);
-
-
 
 
         this.eventCategories = eventCategories;
@@ -147,61 +138,38 @@ class RootStore {
      */
     buildTimepointStructure(sampleStructure, numberOfTimepoints) {
         let timepointStructure = [];
-
-        //console.log(sampleStructure);
-
         for (let i = 0; i < numberOfTimepoints; i++) {
             let patientSamples = [];
-
-
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
-             
-
-                    patientSamples.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0]});
-
-
+                    patientSamples.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0]})
                 }
             });
             timepointStructure.push(patientSamples);
-
-
         }
         return timepointStructure;
     }
 
 
     /**
-    
+
      */
     getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, numberOfTimepoints) {
-      
         let timeGaps = [];
-
-       console.log(sampleTimelineMap);
-
         for (let i = 0; i < numberOfTimepoints; i++) {
-
             let patientSamples2 = [];
-
-
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
 
                     if(i===0){
                         patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: 0});
-                   // patientSamples2.push({patient: d.patientId, gap: sampleTimelineMap[d.patientId].startNumberOfDaysSinceDiagnosis})
                     }
                     else{
                         patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis-sampleTimelineMap[sampleStructure[d.patientId][i-1][0]].startNumberOfDaysSinceDiagnosis});
                     }
-
                }
             });
             timeGaps.push(patientSamples2);
-
-            //timepointStructure2.push();
-
         }
         return timeGaps;
     }
@@ -218,12 +186,16 @@ class RootStore {
             if (!(d.sampleId in sampleClinicalMap)) {
                 sampleClinicalMap[d.sampleId] = {};
             }
-            if (!_self.clinicalSampleCategories.map(function(d,i){return d.variable}).includes(d.clinicalAttribute.displayName)) {
-                _self.clinicalSampleCategories.push({variable: d.clinicalAttribute.displayName, datatype:d.clinicalAttribute.datatype});
+            if (!_self.clinicalSampleCategories.map(function (d, i) {
+                    return d.variable
+                }).includes(d.clinicalAttribute.displayName)) {
+                _self.clinicalSampleCategories.push({
+                    variable: d.clinicalAttribute.displayName,
+                    datatype: d.clinicalAttribute.datatype
+                });
             }
             sampleClinicalMap[d.sampleId][d.clinicalAttribute.displayName] = d.value;
         });
-        console.log(sampleClinicalMap);
         return sampleClinicalMap;
     }
 
@@ -236,7 +208,6 @@ class RootStore {
         this.cbioAPI.mutationCounts.forEach(function (d) {
             mapper[d.sampleId] = d.mutationCount;
         });
-        console.log(mapper);
         return mapper;
     }
 
@@ -263,7 +234,7 @@ class RootStore {
                 })
             })
         }
-        this.eventAttributes=attributes;
+        this.eventAttributes = attributes;
     }
 
 }

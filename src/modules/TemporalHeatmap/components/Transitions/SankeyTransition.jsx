@@ -18,8 +18,8 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      */
     drawTransition(x0, x1, width, rectWidth,source,target,count) {
         const curvature = .5;
-        const y0 = 0 - this.props.gap * 3 + rectWidth,
-            y1 = this.props.height - this.props.gap * 2 - rectWidth;
+        const y0 = 0 - this.props.visMap.gap * 3 + rectWidth,
+            y1 = this.props.visMap.transitionSpace - this.props.visMap.gap * 2 - rectWidth;
         const yi = d3.interpolateNumber(y0, y1),
             y2 = yi(curvature),
             y3 = yi(1 - curvature);
@@ -62,15 +62,15 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
         let rects = [];
         let currXtarget = {};
         let sourcePartitionPos = 0;
-        this.props.firstTimepoint.group.data.forEach(function (d,i) {
+        this.props.firstTimepoint.grouped.forEach(function (d,i) {
             const firstParLength = _self.getPartitionLength(d, _self.props.firstPrimary.variable);
             let currXsource = sourcePartitionPos;
-            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, _self.props.gap, _self.props.groupScale(firstParLength), 5, _self.props.visMap.getColorScale(_self.props.firstPrimary.variable,_self.props.firstPrimary.type)(d.partition),d.partition+"source"));
+            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, _self.props.visMap.gap, _self.props.groupScale(firstParLength), 5, _self.props.visMap.getColorScale(_self.props.firstPrimary.variable,_self.props.firstPrimary.type)(d.partition),d.partition+"source"));
 
             let targetPartitionPos = 0;
-            _self.props.secondTimepoint.group.data.forEach(function (f) {
+            _self.props.secondTimepoint.grouped.forEach(function (f) {
                 if(i===0) {
-                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.height - 5 - _self.props.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.variable)), 5, _self.props.visMap.getColorScale(_self.props.secondPrimary.variable,_self.props.secondPrimary.type)(f.partition), f.partition + "target"));
+                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpace - 5 - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.variable)), 5, _self.props.visMap.getColorScale(_self.props.secondPrimary.variable,_self.props.secondPrimary.type)(f.partition), f.partition + "target"));
                 }
                 let transition = _self.getTransition(d.partition, f.partition);
                 if (!(f.partition in currXtarget)) {
