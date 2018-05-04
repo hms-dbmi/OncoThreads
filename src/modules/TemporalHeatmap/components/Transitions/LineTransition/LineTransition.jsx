@@ -12,6 +12,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
      * @param y0: y pos
      * @param y1: y pos + height
      * @param key (unique)
+     * @param mode
      * @param strokeColor
      * @returns Line
      */
@@ -31,7 +32,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
             return (<path key={key+"-dashed"} d={path} stroke={strokeColor} strokeDasharray="5, 5" fill="none"/>)
         }
     }
-    drawLines() {
+    drawDefaultLines() {
         let lines = [];
         const _self = this;
         /*
@@ -61,7 +62,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
         return lines;
     }
 
-    drawLines3() {
+    drawRealtimeLines() {
         let lines = [];
         const _self = this;
 
@@ -125,14 +126,13 @@ const LineTransition = observer(class LineTransition extends React.Component {
 
 
     render() {
-
         if(this.props.realTime) {
             return (
-                this.drawLines3()
+                this.drawRealtimeLines()
             )
         } else {
             return (
-                this.drawLines()
+                this.drawDefaultLines()
             )
         }
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import Timepoints from "./Timepoints/Timepoints"
 import Transitions from "./Transitions/Transitions"
-import SankeyTransitionTooltip from "./Transitions/SankeyTransitionTooltip"
+import SankeyTransitionTooltip from "./Transitions/SankeyTransition/SankeyTransitionTooltip"
 import * as d3 from "d3";
 /*
 creates the plot with timepoints and transitions
@@ -12,12 +12,14 @@ const Plot = observer(class Plot extends React.Component {
         super();
         this.state = ({
             selectedPatients: [],
+            selectedPartitions: [],
             showTooltip: "hidden",
             tooltipX: 0,
             tooltipY: 0,
             tooltipContent: ""
         });
         this.handlePatientSelection = this.handlePatientSelection.bind(this);
+        this.handlePartitionSelection = this.handlePartitionSelection.bind(this);
         this.showSankeyTooltip = this.showSankeyTooltip.bind(this);
         this.hideSankeyTooltip = this.hideSankeyTooltip.bind(this)
     }
@@ -51,6 +53,38 @@ const Plot = observer(class Plot extends React.Component {
         }
         this.setState({
             selectedPatients: patients
+        });
+    }
+
+    /**
+     * handles the selection of patients in a partition
+     * @param patients
+     */
+    handlePartitionSelection(patients) {
+        let selectedPatients = this.state.selectedPatients.slice();
+        //isContained: true if all patients are contained
+        let isContained=true;
+        patients.forEach(function (d,i) {
+            if(!selectedPatients.includes(d)){
+                isContained=false
+            }
+        });
+        //If not all patients are contained, add the patients that are not contained to the selected patients
+        if (!isContained) {
+            patients.forEach(function (d) {
+                if (!selectedPatients.includes(d)) {
+                    selectedPatients.push(d);
+                }
+            });
+        }
+        //If all the patients are already contained, remove them from selected patients
+        else {
+            patients.forEach(function (d) {
+                    selectedPatients.splice(selectedPatients.indexOf(d), 1);
+            });
+        }
+        this.setState({
+            selectedPatients: selectedPatients,
         });
     }
 
@@ -91,6 +125,8 @@ const Plot = observer(class Plot extends React.Component {
                                     groupScale={groupScale}
                                     heatmapScales={sampleHeatmapScales}
                                     onDrag={this.handlePatientSelection}
+                                    selectPartition={this.handlePartitionSelection}
+                                    selectedPartitions={this.state.selectedPartitions}
                                     selectedPatients={this.state.selectedPatients}/>
 
 
@@ -102,6 +138,7 @@ const Plot = observer(class Plot extends React.Component {
                                      heatmapScales={sampleHeatmapScales}
                                      height={this.props.transitionSpace}
                                      selectedPatients={this.state.selectedPatients}
+                                     selectedPartitions={this.state.selectedPartitions}
                                      showTooltip={this.showSankeyTooltip}
                                      hideTooltip={this.hideSankeyTooltip}/>
 

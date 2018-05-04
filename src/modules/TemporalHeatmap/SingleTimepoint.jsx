@@ -75,7 +75,6 @@ class SingleTimepoint {
 
     /**
      * computes grouping of variables
-     * @param timepointIndex
      * @param variable
      */
     groupTimepoint(variable) {
@@ -93,7 +92,10 @@ class SingleTimepoint {
                 let rows = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
                     return {variable: d.variable, counts: []}
                 });
-                this.grouped.push({partition: currPartitionKey, rows: rows});
+                let patients=this.heatmap[variableIndex].data.filter(function (d,i) {
+                    return d.value===currPartitionKey;
+                }).map(entry =>entry.patient);
+                this.grouped.push({partition: currPartitionKey, rows: rows, patients:patients});
                 partitionIndex = currPartitionCount;
                 currPartitionCount += 1;
             }
