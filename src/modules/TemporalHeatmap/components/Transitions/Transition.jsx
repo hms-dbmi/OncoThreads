@@ -1,8 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import LineTransition from './LineTransition'
-import SankeyTransition from './SankeyTransition'
-import GroupToPatientsTransition from './HeatmapGroupTransition'
+import LineTransition from './LineTransition/LineTransition'
+import SankeyTransition from './SankeyTransition/SankeyTransition'
+import GroupToPatientsTransition from './HeatmapGroupTransition/HeatmapGroupTransition'
 /*
 creates a transition:   SankeyTransition - between two grouped timepoints
                         GroupToPatientsTransition - between a grouped and a heatmap timepoint

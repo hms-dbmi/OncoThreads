@@ -92,10 +92,12 @@ class TransitionStore {
         const _self = this;
         this.rootStore.timepointStore.timepoints[firstTP].grouped.forEach(function (d) {
             _self.rootStore.timepointStore.timepoints[secondTP].grouped.forEach(function (f) {
+                const intersection=_self.computeIntersection(firstTP, secondTP, d.partition, f.partition);
                 transitions.push({
                     from: d.partition,
                     to: f.partition,
-                    value: _self.computeIntersection(firstTP, secondTP, d.partition, f.partition)
+                    value: intersection.length,
+                    patients:intersection
                 });
 
             })
@@ -135,7 +137,7 @@ class TransitionStore {
         const intersection = firstPatients.filter(function (d) {
             return secondPatients.indexOf(d) !== -1;
         });
-        return intersection.length;
+        return intersection;
     }
 
     /**
