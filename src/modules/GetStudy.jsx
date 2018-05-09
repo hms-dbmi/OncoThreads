@@ -19,7 +19,7 @@ const GetStudy = observer(class GetStudy extends React.Component {
         let options = [];
         const _self=this;
         this.props.studies.forEach(function (d) {
-            options.push(<a className="dropdown-item" href="#" onClick={(e)=>_self.getStudy(e,d.id)} key={d.id}>{d.name}</a>)
+            options.push(<a className="dropdown-item" onClick={(e)=>_self.getStudy(e,d.id)} key={d.id}>{d.name}</a>)
         });
         return options;
     }
