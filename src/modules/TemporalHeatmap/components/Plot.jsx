@@ -41,8 +41,8 @@ const Plot = observer(class Plot extends React.Component {
         const parentOffset = $(ReactDOM.findDOMNode(this)).parent().offset();
         this.setState({
             showTooltip: "visible",
-            tooltipX: e.clientX-parentOffset.left,
-            tooltipY: e.clientY-parentOffset.top,
+            tooltipX: e.pageX-parentOffset.left,
+            tooltipY: e.pageY-parentOffset.top,
             tooltipContent: source + " -> " + target + ": " + count,
         })
     }

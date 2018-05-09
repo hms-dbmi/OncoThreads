@@ -33,10 +33,11 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param timepointIndex
      */
     openSortContextMenu(e, timepointIndex) {
+                const parentOffset= $(ReactDOM.findDOMNode(this)).parent().offset();
         this.props.openContextMenu("visible", "hidden", "hidden");
         this.setState({
-            contextX: e.clientX-this.parentOffset.left,
-            contextY: e.clientY-this.parentOffset.top,
+            contextX: e.pageX-parentOffset.left,
+            contextY: e.pageY-parentOffset.top,
             clickedTimepoint: timepointIndex
         });
         e.preventDefault();
@@ -49,10 +50,11 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable
      */
     openGroupContextMenu(e, timepointIndex, variable) {
+        const parentOffset= $(ReactDOM.findDOMNode(this)).parent().offset();
         this.props.openContextMenu("hidden", "visible", "hidden");
         this.setState({
-            contextX: e.clientX-this.parentOffset.left,
-            contextY: e.clientY-this.parentOffset.top,
+            contextX: e.pageX-parentOffset.left,
+            contextY: e.pageY-parentOffset.top,
             clickedTimepoint: timepointIndex,
             clickedVariable: variable
         });
@@ -66,10 +68,11 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * @param variable
      */
     openPromoteContextMenu(e, timepointIndex, variable) {
+                        const parentOffset= $(ReactDOM.findDOMNode(this)).parent().offset();
         this.props.openContextMenu("hidden", "hidden", "visible");
         this.setState({
-            contextX: e.clientX-this.parentOffset.left,
-            contextY: e.clientY-this.parentOffset.top,
+            contextX: e.pageX-parentOffset.left,
+            contextY: e.pageY-parentOffset.top,
             clickedTimepoint: timepointIndex,
             clickedVariable: variable
         });
@@ -132,6 +135,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
      * computes the width of a text. Returns 30 if the text width would be shorter than 30
      * @param text
      * @param fontSize
+     * @param fontweight
      * @param maxWidth
      * @returns {number}
      */
@@ -217,7 +221,6 @@ const RowOperators = observer(class RowOperators extends React.Component {
     }
 
     render() {
-        this.parentOffset= $(ReactDOM.findDOMNode(this)).parent().offset();
         let headers = [];
         const _self = this;
         //Paths for Icons

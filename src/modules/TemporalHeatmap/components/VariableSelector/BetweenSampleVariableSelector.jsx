@@ -11,8 +11,8 @@ const customStyles = {
         right: 'auto',
         bottom: 'auto',
         marginRight: '-50%',
-        height: '350px', // <-- This sets the height
-        width: '300px',
+        height: '400px', // <-- This sets the height
+        width: '400px',
         transform: 'translate(-50%, -50%)',
         overlfow: 'scroll' // <-- This tells the modal to scrol
     }
@@ -29,10 +29,10 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             buttonClicked: "",
             selectedKey: "",
             name: "",
-            selectedValues: []
+            selectedValues: [],
+            defaultValue:""
         };
         this.openModal = this.openModal.bind(this);
-        this.afterOpenModal = this.afterOpenModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
     }
 
@@ -67,6 +67,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selected.splice(index, 1);
         }
         this.setState({
+            defaultValue:value,
             selectedValues: selected,
             selectedKey: type
         });
@@ -82,10 +83,12 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         const attributes = this.props.eventAttributes[event];
         for (let key in attributes) {
-            elements.push(<h4 key={key}>{key}</h4>);
+            elements.push(<h5 key={key}>{key}</h5>);
             attributes[key].forEach(function (d) {
-                elements.push(<p key={d}><input type="checkbox"
-                                                onClick={(e) => _self.handleCheckBoxClick(e, key, d)}/>{d}</p>)
+                elements.push(<div style={{marginLeft:"20px"}} className="form-group" key={d}>
+                    <input id={d} type="checkbox" className="form-check-input" onClick={(e) => _self.handleCheckBoxClick(e, key, d)}/>
+                    <label className="form-check-label" for={d}>{d}</label>
+                </div>)
             })
         }
         return elements;
@@ -96,7 +99,6 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
     }
-
     /**
      * creates the buttons for the variables for the betweenTimepoints
      * @returns {Array}
@@ -106,8 +108,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<button value={d} onClick={_self.openModal} className="btn"
-                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)}</button>)
+                buttons.push(<button value={d} onClick={_self.openModal} className="btn btn-dark"
+                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} 🞣</button>)
             }
         });
         return buttons;
@@ -123,12 +125,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         })
     }
 
-    afterOpenModal() {
-        this.subtitle.style.color = '#f00';
-    }
-
     closeModal() {
-        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: ""});
+        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: "",name:""});
     }
 
     componentDidMount() {
@@ -138,7 +136,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     render() {
         return (
             <div>
-                <h4>Transition variables</h4>
+                <h5>Transition variables</h5>
                 <div className={"btn-group-vertical btn-block"}>
                     {this.createBetweenVariablesList()}
                 </div>
@@ -149,15 +147,15 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     style={customStyles}
                     contentLabel="Add Transition Data"
                 >
-                    <h2 ref={subtitle => this.subtitle = subtitle}>Add Transition Data</h2>
-                    <div>
+                    <div className="form-group">
                         {this.createCheckboxes(this.state.buttonClicked)}
                     </div>
                     <br/>
-                    <input type="text" onChange={(e) => this.handleNameChange(e)} defaultValue="Name"/>
+                    <label for="name">New variable name</label>
+                    <input type="text" className="form-control" id="name" onChange={(e) => this.handleNameChange(e)}/>
                     <br/>
-                    <button onClick={() => this.addVariable()}>Add</button>
-                    <button onClick={this.closeModal}>Close</button>
+                    <button type="button" className="btn btn-dark" onClick={() => this.addVariable()}>Add</button>
+                    <button type="button" className="btn btn-dark" onClick={this.closeModal}>Close</button>
                 </Modal>
             </div>
         )

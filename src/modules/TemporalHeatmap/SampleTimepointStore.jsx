@@ -18,12 +18,10 @@ class SampleTimepointStore {
     }
 
     setSampleClinicalMap(map) {
-        console.log(map);
         this.sampleClinicalMap = map;
     }
 
     setSampleMutationCountMap(map) {
-        console.log(map);
         this.sampleMutationCountMap = map;
     }
 

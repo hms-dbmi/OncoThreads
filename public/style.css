@@ -29,7 +29,6 @@
 
 .heatmapContainer {
     white-space: nowrap;
-    overflow-x: scroll;
 
 }
 
@@ -46,4 +45,32 @@
     overflow: hidden;
     text-overflow: ellipsis
 }
-
+.defaultView{
+    position: absolute;
+    left: 50%;
+    margin-top: 20%;
+    margin-left: -100px;
+    width: 300px;
+    height: 100px;
+}
+.noStyle {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 2px;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+    margin-left: 5px;
+    margin-right: 2px;
+}
+.currentVariable{
+    background-color:#efefef;
+    border: 1px solid black;
+    margin-left:2px;
+    padding: 2px;
+}
+#sidebar{
+    height: 100%;
+    position: fixed;
+}

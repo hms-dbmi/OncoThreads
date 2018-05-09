@@ -12,7 +12,7 @@ gets the data with the cBioAPI and gives it to the other stores
 TODO: make prettier
  */
 class RootStore {
-    constructor(cbioAPI) {
+    constructor(cbioAPI,firstLoad) {
         this.cbioAPI = cbioAPI;
         this.sampleTimepointStore = new SampleTimepointStore(this);
         this.betweenTimepointStore = new BetweenTimepointStore(this);
@@ -29,26 +29,11 @@ class RootStore {
 
         extendObservable(this, {
             parsed: false,
+            firstLoad:firstLoad,
             realTime: false
         })
     }
 
-    initialize(cbioAPI) {
-        this.cbioAPI = cbioAPI;
-        this.sampleTimepointStore = new SampleTimepointStore(this);
-        this.betweenTimepointStore = new BetweenTimepointStore(this);
-        this.timepointStore=new TimepointStore(this); //parent stores for the above two
-        this.transitionStore = new TransitionStore(this); //line or sankey?
-        this.visStore = new VisStore(); //info about the dimensions -- width, distance betn timepoints, colorscale
-
-        this.clinicalSampleCategories = [];
-        this.eventCategories = [];
-        this.eventAttributes = [];
-        this.patientsPerTimepoint = [];
-        this.patientOrderPerTimepoint = [];
-
-        this.parsed = false;
-    }
 
     /*
     gets data from cBio and sets parameters in other stores
@@ -62,8 +47,10 @@ class RootStore {
 
             _self.betweenTimepointStore.setClinicalEvents(_self.cbioAPI.clinicalEvents);
 
-
+            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].variable);
+            _self.sampleTimepointStore.addVariable(_self.clinicalSampleCategories[0].variable,_self.clinicalSampleCategories[0].datatype,"clinical");
             _self.parsed = true;
+
         });
     }
 

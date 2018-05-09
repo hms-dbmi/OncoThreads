@@ -3,6 +3,7 @@ import {observer} from 'mobx-react';
 import RowOperators from "./RowOperators/RowOperators"
 import Legend from "./Legend"
 import Plot from "./Plot";
+import CurrentVariables from "./CurrentVariables";
 
 /*
 Main View
@@ -29,7 +30,6 @@ const MainView = observer(class MainView extends React.Component {
      * @param patient
      */
     handlePatientSelection(patient) {
-        console.log(patient);
         let patients = this.state.selectedPatients.slice();
         if (patients.includes(patient)) {
             patients.splice(patients.indexOf(patient), 1)
@@ -94,7 +94,7 @@ const MainView = observer(class MainView extends React.Component {
         } else {
             return (
                 <div>
-                    <button className="btn btn-dark" onClick={(e) => _self.handleTimeClick(e)}
+                    <button className="btn btn-light" onClick={(e) => _self.handleTimeClick(e)}
                             key={this.props.store.rootStore.realTime}>
                         {(this.props.store.rootStore.realTime) ? "Hide actual timeline" : "Show actual timeline"}
                     </button>
@@ -158,6 +158,7 @@ const MainView = observer(class MainView extends React.Component {
         return (
             <div onClick={this.closeContextMenu}>
                 {this.createTimeButton()}
+                <CurrentVariables store={this.props.store} currentVariables={this.props.currentVariables} width={svgWidth}/>
                 <RowOperators {...this.props} height={svgHeight}
                               svgHeight={svgHeight} svgWidth={200}
                               posY={timepointPositions.sample}

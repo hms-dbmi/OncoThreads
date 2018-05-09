@@ -96,7 +96,14 @@ class TimepointStore {
         });
         return allValues;
     }
-
+    removeVariable(variable,type){
+        if(type==="sample"){
+            this.rootStore.sampleTimepointStore.removeVariable(variable);
+        }
+        else{
+            this.rootStore.betweenTimepointStore.removeVariable(variable);
+        }
+    }
     /**
      * checks if a variable is continuous
      * @param variable

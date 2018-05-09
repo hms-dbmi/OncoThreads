@@ -10,28 +10,45 @@ import RootStore from "./modules/RootStore.jsx";
 
 import GetStudy from "./modules/GetStudy.jsx";
 import Content from "./modules/TemporalHeatmap/components/Content"
+import DefaultView from "./modules/TemporalHeatmap/components/DefaultView";
 
 
 const cbioAPI = new cBioAPI();
-const studyapi=new studyAPI();
-let rootStore = new RootStore(cbioAPI);
+const studyapi = new studyAPI();
+let rootStore = new RootStore(cbioAPI, true);
 studyapi.getStudies();
 
 const StudySelection = observer(class StudySelection extends React.Component {
     render() {
-        return (
+        if (rootStore.parsed) {
+            return (
                 <GetStudy rootStore={rootStore} cbioAPI={cbioAPI} studies={studyapi.studies}/>
-        )
+            )
+        }
+        else {
+            return null;
+        }
     }
 });
 const Main = observer(class Main extends React.Component {
     render() {
         if (rootStore.parsed) {
             return (
-                    <Content rootStore={rootStore}/>
+                <Content rootStore={rootStore}/>
             )
         }
-        else return null;
+        else {
+            if (rootStore.firstLoad) {
+                return (
+                    <DefaultView rootStore={rootStore} cbioAPI={cbioAPI} studies={studyapi.studies}/>
+                )
+            }
+            else {
+                return (
+                    <h1 className="defaultView">Loading study...</h1>
+                )
+            }
+        }
     }
 });
 

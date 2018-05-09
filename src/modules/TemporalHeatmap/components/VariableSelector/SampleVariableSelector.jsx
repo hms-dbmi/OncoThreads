@@ -38,18 +38,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             this.props.store.initialize(variable);
         }
         this.props.store.addVariable(variable, type, dataset);
-        //event.target.className = "selected";
     }
 
-    /**
-     * removes a variable from the view
-     * @param variable
-     * @param event
-     */
-    removeVariable(variable, event) {
-        //event.target.className = "notSelected";
-        this.props.store.removeVariable(variable);
-    }
 
     /**
      * handles a click on one of the categorical Variables
@@ -63,9 +53,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 return d.variable
             }).includes(variable))) {
             this.addVariable(variable, type, dataset, event);
-        }
-        else {
-            this.removeVariable(variable, event)
         }
     }
 
@@ -90,7 +77,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<button className="btn" key={d.variable}
+            buttons.push(<button className={"btn"} key={d.variable}
                                  onClick={(e) => _self.handleVariableClick(e, d.variable, d.datatype, "clinical")}>{d.variable}</button>)
         });
         return buttons;
@@ -113,15 +100,27 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
-                <h4>Sample Variables</h4>
-                <h5>Clinical Features</h5>
-                <div className={"btn-group-vertical btn-block"}>
-                    {this.createClinicalAttributesList()}
+                <h5>Sample Variables</h5>
+                <div className="btn-group-vertical btn-block">
+                    <button className="btn btn-dark btn-block" data-toggle="collapse" href="#collapseClinical">Clinical
+                        Features ▼
+                    </button>
+                    <div id="collapseClinical" className="panel-collapse collapse btn-block">
+                                                <div className="btn-group-vertical btn-block">
+                        {this.createClinicalAttributesList()}
+                                                </div>
+                    </div>
+                    <button className="btn btn-dark btn-block" data-toggle="collapse" href="#collapseGenomic">Genomic
+                        Features ▼
+                    </button>
+                    <div id="collapseGenomic" className="panel-collapse collapse btn-block">
+                        <div className="btn-group-vertical btn-block">
+                        {this.createGenomicAttributesList()}
+                        </div>
+                    </div>
+
                 </div>
-                <h5>Genomic Features</h5>
-                <div className={"btn-group-vertical btn-block"}>
-                    {this.createGenomicAttributesList()}
-                </div>
+
 
             </div>
 

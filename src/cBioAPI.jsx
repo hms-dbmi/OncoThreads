@@ -3,7 +3,6 @@ import axios from 'axios';
 
 class cBioAPI {
     constructor() {
-        this.studies = [];
         this.patients = [];
         this.clinicalEvents = {};
         this.clinicalPatientData = [];
@@ -60,7 +59,6 @@ class cBioAPI {
                                     .then(axios.spread(function (clinicalData, mutationCounts) {
                                         _self.clinicalSampleData = clinicalData.data;
                                         _self.mutationCounts = mutationCounts.data;
-                                        console.log(mutationCounts.data);
                                         callback();
                                     }));
                             })

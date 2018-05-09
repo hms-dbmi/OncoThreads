@@ -40,9 +40,9 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button className="btn btn-secondary" onClick={() => this.applySortToPrevious()}>Apply sorting to previous timepoint</button>
-                <button className="btn btn-secondary" onClick={() => this.applySortToNext()}>Apply sorting to next timepoint</button>
-                <button className="btn btn-secondary" onClick={() => this.applySortToAll()}>Apply sorting to all timepoints</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applySortToPrevious()}>Apply sorting to previous timepoint</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applySortToNext()}>Apply sorting to next timepoint</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applySortToAll()}>Apply sorting to all timepoints</button>
             </div>
         )
     }

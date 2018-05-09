@@ -55,9 +55,9 @@ const PromoteContextMenu = observer(class PromoteContextMenu extends React.Compo
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button className="btn btn-secondary" onClick={() => this.applyPromoteToPrevious()}>Apply promote to previous timepoint</button>
-                <button className="btn btn-secondary" onClick={() => this.applyPromoteToNext()}>Apply promote to next timepoint</button>
-                <button className="btn btn-secondary" onClick={() => this.applyPromoteToAll()}>Apply promote to all timepoints</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applyPromoteToPrevious()}>Apply promote to previous timepoint</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applyPromoteToNext()}>Apply promote to next timepoint</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applyPromoteToAll()}>Apply promote to all timepoints</button>
             </div>
         )
     }

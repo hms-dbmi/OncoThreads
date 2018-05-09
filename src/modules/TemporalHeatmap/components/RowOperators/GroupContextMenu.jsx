@@ -55,9 +55,15 @@ const GroupContextMenu = observer(class GroupContextMenu extends React.Component
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button className="btn btn-secondary" onClick={() => this.applyGroupToPrevious()}>Apply grouping to previous timepoint</button>
-                <button className="btn btn-secondary" onClick={() => this.applyGroupToNext()}>Apply grouping to next timepoint</button>
-                <button className="btn btn-secondary" onClick={() => this.applyGroupToAll()}>Apply grouping to all timepoints</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applyGroupToPrevious()}>Apply grouping to
+                    previous timepoint
+                </button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applyGroupToNext()}>Apply grouping to next
+                    timepoint
+                </button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applyGroupToAll()}>Apply grouping to all
+                    timepoints
+                </button>
             </div>
         )
     }

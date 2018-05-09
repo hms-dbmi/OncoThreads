@@ -68,8 +68,7 @@ const Content = observer(class Content extends React.Component {
 
     render() {
         return (
-            [<nav id="sidebar" className="col-md-2 d-none d-md-block bg-light sidebar">
-                    <h3 className="sidebar-header">Available Variables</h3>
+            [<nav id="sidebar" key="sidebar" className="panel-collapse collapse col-md-2 d-none d-md-block bg-light sidebar">
                 <div className="sidebar-sticky">
                     <SampleVariableSelector
                         clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
@@ -87,7 +86,7 @@ const Content = observer(class Content extends React.Component {
                     />
                 </div>
             </nav>,
-                <main className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4" role="main">
+                <main key="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4" role="main">
                     <div className="heatmapContainer">
                         <MainView
                             currentVariables={this.props.rootStore.timepointStore.currentVariables}
@@ -100,6 +99,7 @@ const Content = observer(class Content extends React.Component {
                     </div>
                 </main>,
                 <Modal
+                    key="BinModal"
                     isOpen={this.state.modalIsOpen}
                     onAfterOpen={this.afterOpenModal}
                     onRequestClose={this.closeModal}

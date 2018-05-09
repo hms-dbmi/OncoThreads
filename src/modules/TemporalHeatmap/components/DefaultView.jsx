@@ -1,17 +1,18 @@
 import React from "react";
 import {observer} from "mobx-react";
 
-
-const GetStudy = observer(class GetStudy extends React.Component {
+/*
+ * View if no study has been loaded
+ */
+const DefaultView = observer(class DefaultView extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
     }
 
     getStudy(event,id) {
-            this.props.cbioAPI.constructor();
-            this.props.rootStore.constructor(this.props.cbioAPI,false);
         this.props.rootStore.parseCBio(id);
+                this.props.rootStore.firstLoad=false;
     }
 
 
@@ -26,8 +27,8 @@ const GetStudy = observer(class GetStudy extends React.Component {
 
     render() {
         return (
-            <div className="dropdown">
-                <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+            <div className="dropdown defaultView" >
+                <button className="btn btn-secondary dropdown-toggle btn-lg" type="button" id="dropdownMenuButton"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Select Study
                 </button>
@@ -38,4 +39,4 @@ const GetStudy = observer(class GetStudy extends React.Component {
     );
     }
     });
-    export default GetStudy;
+    export default DefaultView;
