@@ -15,34 +15,49 @@ const PromoteContextMenu = observer(class PromoteContextMenu extends React.Compo
      * applies primary variable of the clicked timepoint to all timepoints
      */
     applyPromoteToAll() {
-        this.props.store.applyPromotingToAll(this.props.clickedTimepoint, this.props.clickedVariable);
+        if (this.props.store.timepoints[this.props.clickedTimepoint].isGrouped && this.props.store.isContinuous(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type)) {
+            this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.store.applyPromotingToAll, this.props.clickedTimepoint);
+        }
+        else {
+            this.props.store.applyPromotingToAll(this.props.clickedTimepoint, this.props.clickedVariable);
+        }
     }
 
     /**
      * applies primary variable of the clicked timepoint to previous timepoint
      */
     applyPromoteToPrevious() {
-        this.props.store.applyPromotingToPrevious(this.props.clickedTimepoint, this.props.clickedVariable);
+        if (this.props.store.timepoints[this.props.clickedTimepoint].isGrouped && this.props.store.isContinuous(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type)) {
+            this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.store.applyPromotingToPrevious, this.props.clickedTimepoint);
+        }
+        else {
+            this.props.store.applyPromoteToPrevious(this.props.clickedTimepoint, this.props.clickedVariable);
+        }
     }
 
     /**
      * applies primary variable of the clicked timepoint to next timepoint
      */
     applyPromoteToNext() {
-        this.props.store.applyPromotingToNext(this.props.clickedTimepoint, this.props.clickedVariable);
+        if (this.props.store.timepoints[this.props.clickedTimepoint].isGrouped && this.props.store.isContinuous(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type)) {
+            this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.store.applyPromotingToNext, this.props.clickedTimepoint);
+        }
+        else {
+            this.props.store.applyPromotingToNext(this.props.clickedTimepoint, this.props.clickedVariable);
+        }
     }
 
     render() {
         return (
-            <div className="context-menu" style={{
+            <div className="btn-group-vertical" style={{
                 visibility: this.props.showContextMenu,
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button onClick={() => this.applyPromoteToPrevious()}>Apply promote to previous timepoint</button>
-                <button onClick={() => this.applyPromoteToNext()}>Apply promote to next timepoint</button>
-                <button onClick={() => this.applyPromoteToAll()}>Apply promote to all timepoints</button>
+                <button className="btn btn-secondary" onClick={() => this.applyPromoteToPrevious()}>Apply promote to previous timepoint</button>
+                <button className="btn btn-secondary" onClick={() => this.applyPromoteToNext()}>Apply promote to next timepoint</button>
+                <button className="btn btn-secondary" onClick={() => this.applyPromoteToAll()}>Apply promote to all timepoints</button>
             </div>
         )
     }

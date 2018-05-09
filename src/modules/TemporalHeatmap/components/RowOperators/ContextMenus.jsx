@@ -16,11 +16,13 @@ const ContextMenus = observer(class ContextMenus extends React.Component {
                 <GroupContextMenu showContextMenu={this.props.showGroupContextMenu} contextX={this.props.contextX}
                                   contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
                                   clickedVariable={this.props.clickedVariable}
-                                  store={this.props.store}/>
+                                  store={this.props.store}
+                                    openBinningModal={this.props.openBinningModal}/>
                 <PromoteContextMenu showContextMenu={this.props.showPromoteContextMenu} contextX={this.props.contextX}
                                     contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
                                     clickedVariable={this.props.clickedVariable}
-                                    store={this.props.store}/>
+                                    store={this.props.store}
+                                    openBinningModal={this.props.openBinningModal}/>
             </div>
         )
     }

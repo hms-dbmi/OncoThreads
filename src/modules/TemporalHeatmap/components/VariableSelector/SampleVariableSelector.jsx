@@ -38,7 +38,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             this.props.store.initialize(variable);
         }
         this.props.store.addVariable(variable, type, dataset);
-        event.target.className = "selected";
+        //event.target.className = "selected";
     }
 
     /**
@@ -47,7 +47,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param event
      */
     removeVariable(variable, event) {
-        event.target.className = "notSelected";
+        //event.target.className = "notSelected";
         this.props.store.removeVariable(variable);
     }
 
@@ -90,7 +90,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<button className="notSelected" key={d.variable}
+            buttons.push(<button className="btn" key={d.variable}
                                  onClick={(e) => _self.handleVariableClick(e, d.variable, d.datatype, "clinical")}>{d.variable}</button>)
         });
         return buttons;
@@ -103,7 +103,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     createGenomicAttributesList() {
         let buttons = [];
         const _self = this;
-        buttons.push(<button className={"notSeleced"}
+        buttons.push(<button className={"btn"}
                              onClick={(e) => _self.handleContinousClick(e, this.props.mutationCount, "mutationCount")}
                              key={this.props.mutationCount}>{this.props.mutationCount}</button>);
         return buttons;
@@ -113,20 +113,18 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
-            <div>
                 <h4>Sample Variables</h4>
                 <h5>Clinical Features</h5>
-                <div className={"btn-group"}>
+                <div className={"btn-group-vertical btn-block"}>
                     {this.createClinicalAttributesList()}
                 </div>
                 <h5>Genomic Features</h5>
-                <div className={"btn-group"}>
+                <div className={"btn-group-vertical btn-block"}>
                     {this.createGenomicAttributesList()}
-                </div>   
+                </div>
 
             </div>
 
-            </div>  
         )
     }
 });

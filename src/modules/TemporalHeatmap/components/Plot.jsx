@@ -1,9 +1,11 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {observer} from 'mobx-react';
 import Timepoints from "./Timepoints/Timepoints"
 import Transitions from "./Transitions/Transitions"
 import SankeyTransitionTooltip from "./Transitions/SankeyTransition/SankeyTransitionTooltip"
 import * as d3 from "d3";
+import $ from 'jquery';
 /*
 creates the plot with timepoints and transitions
  */
@@ -11,15 +13,11 @@ const Plot = observer(class Plot extends React.Component {
     constructor() {
         super();
         this.state = ({
-            selectedPatients: [],
-            selectedPartitions: [],
             showTooltip: "hidden",
             tooltipX: 0,
             tooltipY: 0,
             tooltipContent: ""
         });
-        this.handlePatientSelection = this.handlePatientSelection.bind(this);
-        this.handlePartitionSelection = this.handlePartitionSelection.bind(this);
         this.showSankeyTooltip = this.showSankeyTooltip.bind(this);
         this.hideSankeyTooltip = this.hideSankeyTooltip.bind(this)
     }
@@ -38,61 +36,13 @@ const Plot = observer(class Plot extends React.Component {
         })
     }
 
-    /**
-     * handles currently selected patients
-     * @param patient
-     */
-    handlePatientSelection(patient) {
-        console.log(patient);
-        let patients = this.state.selectedPatients.slice();
-        if (patients.includes(patient)) {
-            patients.splice(patients.indexOf(patient), 1)
-        }
-        else {
-            patients.push(patient);
-        }
-        this.setState({
-            selectedPatients: patients
-        });
-    }
-
-    /**
-     * handles the selection of patients in a partition
-     * @param patients
-     */
-    handlePartitionSelection(patients) {
-        let selectedPatients = this.state.selectedPatients.slice();
-        //isContained: true if all patients are contained
-        let isContained=true;
-        patients.forEach(function (d,i) {
-            if(!selectedPatients.includes(d)){
-                isContained=false
-            }
-        });
-        //If not all patients are contained, add the patients that are not contained to the selected patients
-        if (!isContained) {
-            patients.forEach(function (d) {
-                if (!selectedPatients.includes(d)) {
-                    selectedPatients.push(d);
-                }
-            });
-        }
-        //If all the patients are already contained, remove them from selected patients
-        else {
-            patients.forEach(function (d) {
-                    selectedPatients.splice(selectedPatients.indexOf(d), 1);
-            });
-        }
-        this.setState({
-            selectedPatients: selectedPatients,
-        });
-    }
 
     showSankeyTooltip(e, source, target, count) {
+        const parentOffset = $(ReactDOM.findDOMNode(this)).parent().offset();
         this.setState({
             showTooltip: "visible",
-            tooltipX: e.pageX - 105,
-            tooltipY: e.pageY - 200,
+            tooltipX: e.clientX-parentOffset.left,
+            tooltipY: e.clientY-parentOffset.top,
             tooltipContent: source + " -> " + target + ": " + count,
         })
     }
@@ -114,20 +64,18 @@ const Plot = observer(class Plot extends React.Component {
 
     render() {
         const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.heatmapWidth);
+        const groupScale = this.createGroupScale(this.props.viewWidth);
+        const translateGroupX=(this.props.heatmapWidth-this.props.viewWidth)/2;
         let transform = "translate(0," + 20 + ")";
         return (
             <div className="view">
-                <svg width={this.props.width} height={this.props.height}>
+                <svg width={this.props.width} height={this.props.height} viewBox={"0 0 "+this.props.width+" "+this.props.height}>
                     <g transform={transform}>
                         <Timepoints {...this.props}
                                     yPositions={this.props.timepointY}
                                     groupScale={groupScale}
                                     heatmapScales={sampleHeatmapScales}
-                                    onDrag={this.handlePatientSelection}
-                                    selectPartition={this.handlePartitionSelection}
-                                    selectedPartitions={this.state.selectedPartitions}
-                                    selectedPatients={this.state.selectedPatients}/>
+                                    translateGroupX={translateGroupX}/>
 
 
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
@@ -137,8 +85,7 @@ const Plot = observer(class Plot extends React.Component {
                                      groupScale={groupScale}
                                      heatmapScales={sampleHeatmapScales}
                                      height={this.props.transitionSpace}
-                                     selectedPatients={this.state.selectedPatients}
-                                     selectedPartitions={this.state.selectedPartitions}
+                                     translateGroupX={translateGroupX}
                                      showTooltip={this.showSankeyTooltip}
                                      hideTooltip={this.hideSankeyTooltip}/>
 

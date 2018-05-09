@@ -18,10 +18,12 @@ class SampleTimepointStore {
     }
 
     setSampleClinicalMap(map) {
+        console.log(map);
         this.sampleClinicalMap = map;
     }
 
     setSampleMutationCountMap(map) {
+        console.log(map);
         this.sampleMutationCountMap = map;
     }
 
@@ -103,7 +105,9 @@ class SampleTimepointStore {
     removeVariable(variable) {
         if (this.currentVariables.length !== 1) {
                 this.timepoints.forEach(function (d) {
-                    d.adaptPrimaryVariable(variable);
+                    if(d.primaryVariable===variable) {
+                        d.adaptPrimaryVariable(variable);
+                    }
                 });
             const index = this.currentVariables.map(function (d) {
                 return d.variable

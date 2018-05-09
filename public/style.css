@@ -1,104 +1,5 @@
-body {
-    background-color: white;
-    padding-left: 100px;
-    padding-right: 50px;
-    font-family: 'Roboto', sans-serif !important;
-
-}
-
-h3 {
-    color: #3f5175;
-    padding-left: 20px;
-    padding-top: 20px;
-    opacity: .8;
-    font-weight: 400;
-    font-size: 20px;
-}
 
 
-.variableMenu {
-    height: 100%; /* Full-height: remove this if you want "auto" height */
-    width: 200px; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 0; /* Stay at the top */
-    left: 0;
-    background-color: white; /* Black */
-    overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 10%;
-    padding-left: 2%;
-}
-
-.top {
-    width: 100%; /* Full-height: remove this if you want "auto" height */
-    height: 220px; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 0; /* Stay at the top */
-    left: 0;
-    text-align: center;
-    background-color: white; /* Black */
-    overflow-y: hidden; /* Disable horizontal scroll */
-    padding-bottom: 20px;
-}
-
-.heatmap {
-    margin-left:200px;
-    margin-bottom: 10px;
-    background-color: white;
-}
-
-.mainView {
-    top:200px;
-    position: absolute;
-    white-space: nowrap;
-}
-
-.btn-group button {
-    border: 1px solid black;
-    color: black;
-    font-size: 10px;
-    padding: 5px 5px;
-    width: 100%;
-    cursor: pointer;
-    display: block;
-}
-
-.btn-group button:not(:last-child) {
-    border-bottom: none;
-}
-
-/* Add a background color on hover */
-.btn-group button:hover {
-    background-color: darkgray;
-}
-.context-menu button {
-    border: 1px solid black;
-    color: black;
-    font-size: 10px;
-    padding: 5px 5px;
-    width: 100%;
-    cursor: pointer;
-    display: block;
-    background: white;
-}
-
-.context-menu button:not(:last-child) {
-    border-bottom: none;
-}
-
-/* Add a background color on hover */
-.context-menu button:hover {
-    background-color: lightgray;
-}
-
-.selected {
-    background-color: darkgray;
-}
-
-.notSelected {
-    background-color: lightgray; /* Green background */
-}
 
 .rowOperators {
     vertical-align: top;
@@ -106,20 +7,17 @@ h3 {
     display: inline-block;
 }
 .view {
-    vertical-align: top;
-    width:750px;
+    width: 900px;
     overflow-x: scroll;
     overflow-y: hidden;
     display: inline-block;
-
 }
-
 .legend {
     vertical-align: top;
      text-align: left;
     display: inline-block;
 }
-.tooltip{
+.customTooltip{
     background: white;
     opacity: 0.9;
     padding-left: 10px;
@@ -131,12 +29,21 @@ h3 {
 
 .heatmapContainer {
     white-space: nowrap;
+    overflow-x: scroll;
+
 }
 
 .clickable:hover {
     cursor: pointer;
 }
-text{
-    font: 10px sans-serif;
+
+.hidden{
+    display: none;
+}
+
+.btn{
+        white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
 }
 

@@ -25,7 +25,7 @@ class SingleTimepoint {
         this.isGrouped = boolean;
     }
 
-    sort(variable) {
+    sort(variable,selected) {
         //case: the timepoint is grouped
         if (this.isGrouped) {
             if (this.primaryVariable !== variable) {
@@ -37,7 +37,7 @@ class SingleTimepoint {
         //case: the timepoint is not grouped
         else {
             this.setPrimaryVariable(variable);
-            this.sortHeatmap(variable);
+            this.sortHeatmap(variable,selected);
         }
     }
 
@@ -178,7 +178,7 @@ class SingleTimepoint {
      * sorts a heatmap timepoint
      * @param variable
      */
-    sortHeatmap(variable) {
+    sortHeatmap(variable,selected) {
         const variableIndex = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
             return d.variable
         }).indexOf(variable);
@@ -215,13 +215,21 @@ class SingleTimepoint {
                 return -1;
             }
             else {
-                if (a.patient < b.patient) {
+                if(selected.includes(a.patient)&&!selected.includes(b.patient)){
                     return -1;
                 }
-                if (a.patient > b.patient) {
+                if(!selected.includes(a.patient)&&selected.includes(b.patient)){
                     return 1;
                 }
-                else return 0;
+                else {
+                    if (a.patient < b.patient) {
+                        return -1;
+                    }
+                    if (a.patient > b.patient) {
+                        return 1;
+                    }
+                    else return 0;
+                }
             }
         }).map(function (d) {
             return d.patient;

@@ -91,6 +91,12 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         return elements;
     }
 
+    static toTitleCase(str) {
+        return str.replace(/\w\S*/g, function (txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+    }
+
     /**
      * creates the buttons for the variables for the betweenTimepoints
      * @returns {Array}
@@ -100,7 +106,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<button value={d} onClick={_self.openModal} className="notSelected" key={d}>{d}</button>)
+                buttons.push(<button value={d} onClick={_self.openModal} className="btn"
+                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)}</button>)
             }
         });
         return buttons;
@@ -121,7 +128,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [],selectedKey:""});
+        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: ""});
     }
 
     componentDidMount() {
@@ -132,7 +139,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         return (
             <div>
                 <h4>Transition variables</h4>
-                <div className={"btn-group"}>
+                <div className={"btn-group-vertical btn-block"}>
                     {this.createBetweenVariablesList()}
                 </div>
                 <Modal

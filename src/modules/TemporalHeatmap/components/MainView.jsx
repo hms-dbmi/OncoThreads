@@ -15,38 +15,94 @@ const MainView = observer(class MainView extends React.Component {
         this.state = ({
             showSortContextMenu: "hidden",
             showGroupContextMenu: "hidden",
-            showPromoteContextMenu: "hidden"
+            showPromoteContextMenu: "hidden",
+            selectedPatients: [],
         });
+        this.handlePatientSelection = this.handlePatientSelection.bind(this);
+        this.handlePartitionSelection = this.handlePartitionSelection.bind(this);
         this.closeContextMenu = this.closeContextMenu.bind(this);
         this.openContextMenu = this.openContextMenu.bind(this);
     }
+
+    /**
+     * handles currently selected patients
+     * @param patient
+     */
+    handlePatientSelection(patient) {
+        console.log(patient);
+        let patients = this.state.selectedPatients.slice();
+        if (patients.includes(patient)) {
+            patients.splice(patients.indexOf(patient), 1)
+        }
+        else {
+            patients.push(patient);
+        }
+        this.setState({
+            selectedPatients: patients
+        });
+    }
+
+    /**
+     * handles the selection of patients in a partition
+     * @param patients
+     */
+    handlePartitionSelection(patients) {
+        let selectedPatients = this.state.selectedPatients.slice();
+        //isContained: true if all patients are contained
+        let isContained = true;
+        patients.forEach(function (d, i) {
+            if (!selectedPatients.includes(d)) {
+                isContained = false
+            }
+        });
+        //If not all patients are contained, add the patients that are not contained to the selected patients
+        if (!isContained) {
+            patients.forEach(function (d) {
+                if (!selectedPatients.includes(d)) {
+                    selectedPatients.push(d);
+                }
+            });
+        }
+        //If all the patients are already contained, remove them from selected patients
+        else {
+            patients.forEach(function (d) {
+                selectedPatients.splice(selectedPatients.indexOf(d), 1);
+            });
+        }
+        this.setState({
+            selectedPatients: selectedPatients,
+        });
+    }
+
     openContextMenu(sort, group, promote) {
         this.setState({showSortContextMenu: sort, showGroupContextMenu: group, showPromoteContextMenu: promote})
     }
+
     closeContextMenu() {
         this.setState({showSortContextMenu: "hidden", showGroupContextMenu: "hidden", showPromoteContextMenu: "hidden"})
     }
 
     handleTimeClick(event) {
-        this.props.store.rootStore.realTime=!this.props.store.rootStore.realTime;
-        event.target.className = (this.props.store.rootStore.realTime)? "selected":"notSelected";
+        this.props.store.rootStore.realTime = !this.props.store.rootStore.realTime;
+        event.target.className = (this.props.store.rootStore.realTime) ? "selected" : "notSelected";
     }
 
     createTimeButton() {
         const _self = this;
-        if(this.props.timepoints.length===0) {
+        if (this.props.timepoints.length === 0) {
             return (<div></div>)
         } else {
             return (
                 <div>
-                    <button className={"notSeleced"} onClick={(e) => _self.handleTimeClick(e)}
-                        key={this.props.store.rootStore.realTime}>
-                        {(this.props.store.rootStore.realTime)? "Hide actual timeline": "Show actual timeline"}
+                    <button className="btn btn-dark" onClick={(e) => _self.handleTimeClick(e)}
+                            key={this.props.store.rootStore.realTime}>
+                        {(this.props.store.rootStore.realTime) ? "Hide actual timeline" : "Show actual timeline"}
                     </button>
                 </div>
             )
         }
     }
+
     /**
      * set visual parameters
      * @param rectWidth
@@ -84,6 +140,7 @@ const MainView = observer(class MainView extends React.Component {
         }
         return timepointPositions;
     }
+
     render() {
         //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;
@@ -97,9 +154,9 @@ const MainView = observer(class MainView extends React.Component {
 
         const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
         const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
-        const svgHeight = this.props.store.timepoints.length * 2 * ((sampleTPHeight + betweenTPHeight) / 2 + this.props.visMap.transitionSpace);
+        const svgHeight = this.props.store.timepoints.length * (sampleTPHeight + betweenTPHeight + this.props.visMap.transitionSpace);
         return (
-            <div onClick={this.closeContextMenu} className="heatmapContainer">
+            <div onClick={this.closeContextMenu}>
                 {this.createTimeButton()}
                 <RowOperators {...this.props} height={svgHeight}
                               svgHeight={svgHeight} svgWidth={200}
@@ -107,10 +164,14 @@ const MainView = observer(class MainView extends React.Component {
                               openContextMenu={this.openContextMenu}
                               showSortContextMenu={this.state.showSortContextMenu}
                               showGroupContextMenu={this.state.showGroupContextMenu}
-                              showPromoteContextMenu={this.state.showPromoteContextMenu}/>
-                <Plot {...this.props} width={svgWidth} height={svgHeight} heatmapWidth={heatmapWidth}
+                              showPromoteContextMenu={this.state.showPromoteContextMenu}
+                              selectedPatients={this.state.selectedPatients}/>
+                <Plot {...this.props} viewWidth={this.props.width} width={svgWidth} height={svgHeight}
+                      heatmapWidth={heatmapWidth}
                       timepointY={timepointPositions.sample}
-                      transY={timepointPositions.between}/>
+                      transY={timepointPositions.between}
+                      selectedPatients={this.state.selectedPatients}
+                      onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
                 <Legend {...this.props} height={svgHeight}
                         posY={timepointPositions.sample}/>
             </div>
@@ -118,6 +179,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 });
 MainView.defaultProps = {
-    width: 700
+    width: 850
 };
 export default MainView;

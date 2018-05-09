@@ -35,7 +35,8 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                 selectedPatients={_self.props.selectedPatients}
                                                                                 showTooltip={_self.props.showTooltip}
                                                                                 hideTooltip={_self.props.hideTooltip}
-                                                                                visMap={_self.props.visMap}/>
+                                                                                visMap={_self.props.visMap}
+                                                                                    translateGroupX={_self.props.translateGroupX}/>
             </g>);
         }))
     }

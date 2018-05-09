@@ -7,7 +7,7 @@ const SankeyTransitionTooltip=observer(class SankeyTransitionTooltip extends Rea
 
    render(){
        return(
-            <div className="tooltip" style={{visibility:this.props.visibility, position:"absolute", top:this.props.y, left:this.props.x}}>
+            <div className="customTooltip" style={{visibility:this.props.visibility, position:"absolute", top:this.props.y, left:this.props.x}}>
                     <p>{this.props.content}</p>
                 </div>
        )

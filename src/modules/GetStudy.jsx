@@ -5,31 +5,39 @@ import {observer} from "mobx-react";
 const GetStudy = observer(class GetStudy extends React.Component {
     constructor() {
         super();
-        GetStudy.getStudy = GetStudy.getStudy.bind(this);
+        this.getStudy = this.getStudy.bind(this);
     }
 
-    static getStudy(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            if(this.props.rootStore.parsed) {
-                this.props.cbioAPI.constructor();
-                this.props.rootStore.constructor(this.props.cbioAPI);
-            }
-            this.props.rootStore.parseCBio(event.target.value);
+    getStudy(event,id) {
+        if (this.props.rootStore.parsed) {
+            this.props.cbioAPI.constructor();
+            this.props.rootStore.constructor(this.props.cbioAPI);
         }
+        this.props.rootStore.parseCBio(id);
+    }
+
+
+    setOptions() {
+        let options = [];
+        const _self=this;
+        this.props.studies.forEach(function (d) {
+            options.push(<a className="dropdown-item" href="#" onClick={(e)=>_self.getStudy(e,d.id)} key={d.id}>{d.name}</a>)
+        });
+        return options;
     }
 
     render() {
         return (
-            <div>
-                <div>
-                <label className="menu">
-                    Enter study name:
-                    <input type="text" defaultValue="lgg_ucsf_2014" style={{horizontalAlign: "middle"}} onKeyUp={GetStudy.getStudy}/>
-                </label>
+            <div className="dropdown">
+                <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Select Study
+                </button>
+                <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {this.setOptions()}
                 </div>
             </div>
-        )
+    );
     }
-});
-export default GetStudy;
+    });
+    export default GetStudy;

@@ -30,8 +30,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
                                                                                           heatmapScale={_self.props.heatmapScales[i]}
                                                                                           onDrag={_self.props.onDrag}
                                                                                           selectPartition={_self.props.selectPartition}
-                                                                                          selectedPartitions={_self.props.selectedPartitions}
-                                                                                          selectedPatients={_self.props.selectedPatients}/>
+                                                                                          selectedPatients={_self.props.selectedPatients}
+                                                                                          translateGroupX={_self.props.translateGroupX}/>
                 </g>);
             }
         });
