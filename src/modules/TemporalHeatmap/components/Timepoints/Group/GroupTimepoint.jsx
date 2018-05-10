@@ -51,7 +51,7 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
 
     render() {
         return (
-            this.getPartitions()
+                this.getPartitions()
         )
     }
 });

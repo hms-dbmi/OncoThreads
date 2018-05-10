@@ -50,7 +50,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * applies binning to data and color scales
      */
     handleApply() {
-        this.props.store.binContinuous(this.props.variable, this.state.bins, this.state.binNames, this.props.store.timepoints[this.props.timepointIndex].type);
+        this.props.store.binContinuous(this.props.variable, this.state.bins, this.state.binNames, this.props.type);
         this.props.visMap.setBinnedColorScale(this.props.variable, this.state.binNames, this.state.bins);
         this.props.followUpFunction(this.props.timepointIndex, this.props.variable);
         this.props.close();
@@ -76,8 +76,8 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
                              handleBinChange={this.handleBinChange}
                              handleNumberOfBinsChange={this.handleNumberOfBinsChange}/>
                 <BinNames binNames={this.state.binNames} handleBinNameChange={this.handleBinNameChange}/>
-                <button onClick={this.handleCancel}>Cancel</button>
-                <button onClick={this.handleApply}>Apply</button>
+                <button className={"btn btn-dark"} onClick={this.handleCancel}>Cancel</button>
+                <button className={"btn btn-dark"} onClick={this.handleApply}>Apply</button>
             </div>
         )
     }

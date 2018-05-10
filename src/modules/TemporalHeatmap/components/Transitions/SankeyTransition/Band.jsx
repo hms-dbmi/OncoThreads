@@ -44,7 +44,7 @@ const Band = observer(class Band extends React.Component {
     /**
      * gets the path for a band
      */
-    getPath(x0, x1, y0, y1, width) {
+    static getPath(x0, x1, y0, y1, width) {
         const curvature = .5;
         const yi = d3.interpolateNumber(y0, y1),
             y2 = yi(curvature),
@@ -68,10 +68,10 @@ const Band = observer(class Band extends React.Component {
             y1 = this.props.visMap.transitionSpace - this.props.visMap.gap * 2 - this.props.rectHeight;
         let selected = null;
         if (selectedWidth !== 0) {
-            selected = <path d={this.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
-                             stroke={"#737373"} fill={"#737373"} opacity={0.5}/>
+            selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
+                             stroke={"#737373"} fill={"#737373"} opacity={0.5} title=""/>
         }
-        let notSelected = <path d={this.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
+        let notSelected = <path d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
                                 stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>;
         return (
             <g onMouseEnter={(e) => this.props.showTooltip(e, source, target, this.props.count)}

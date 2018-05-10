@@ -27,6 +27,13 @@ class TimepointStore {
         this.groupBinnedTimepoint = this.groupBinnedTimepoint.bind(this);
         this.promoteBinnedTimepoint = this.promoteBinnedTimepoint.bind(this);
         this.binContinuous = this.binContinuous.bind(this);
+        this.applyGroupingToAll = this.applyGroupingToAll.bind(this);
+        this.applyGroupingToPrevious = this.applyGroupingToPrevious.bind(this);
+        this.applyGroupingToNext = this.applyGroupingToNext.bind(this);
+        this.applyPromotingToAll = this.applyPromotingToAll.bind(this);
+        this.applyPromotingToPrevious = this.applyPromotingToPrevious.bind(this);
+        this.applyPromotingToNext = this.applyPromotingToNext.bind(this);
+
     }
 
 
@@ -89,7 +96,14 @@ class TimepointStore {
         });
         return allValues;
     }
-
+    removeVariable(variable,type){
+        if(type==="sample"){
+            this.rootStore.sampleTimepointStore.removeVariable(variable);
+        }
+        else{
+            this.rootStore.betweenTimepointStore.removeVariable(variable);
+        }
+    }
     /**
      * checks if a variable is continuous
      * @param variable

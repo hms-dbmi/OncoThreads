@@ -34,15 +34,15 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
 
     render() {
         return (
-            <div className="context-menu" style={{
+            <div className="btn-group-vertical" style={{
                 visibility: this.props.showContextMenu,
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button onClick={() => this.applySortToPrevious()}>Apply sorting to previous timepoint</button>
-                <button onClick={() => this.applySortToNext()}>Apply sorting to next timepoint</button>
-                <button onClick={() => this.applySortToAll()}>Apply sorting to all timepoints</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applySortToPrevious()}>Apply sorting to previous timepoint</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applySortToNext()}>Apply sorting to next timepoint</button>
+                <button className="btn btn-light btn-sm" onClick={() => this.applySortToAll()}>Apply sorting to all timepoints</button>
             </div>
         )
     }
