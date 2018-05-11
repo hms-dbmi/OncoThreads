@@ -8,17 +8,19 @@ class creating the different sorts of context menus
  */
 const ContextMenus = observer(class ContextMenus extends React.Component {
     render() {
+        let show={sort:"hidden",group:"hidden",promote:"hidden"};
+        show[this.props.type]="visible";
         return (
             <div>
-                <SortContextMenu showContextMenu={this.props.showSortContextMenu} contextX={this.props.contextX}
+                <SortContextMenu showContextMenu={show.sort} contextX={this.props.contextX}
                                  contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
                                  store={this.props.store}/>
-                <GroupContextMenu showContextMenu={this.props.showGroupContextMenu} contextX={this.props.contextX}
+                <GroupContextMenu showContextMenu={show.group} contextX={this.props.contextX}
                                   contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
                                   clickedVariable={this.props.clickedVariable}
                                   store={this.props.store}
-                                    openBinningModal={this.props.openBinningModal}/>
-                <PromoteContextMenu showContextMenu={this.props.showPromoteContextMenu} contextX={this.props.contextX}
+                                  openBinningModal={this.props.openBinningModal}/>
+                <PromoteContextMenu showContextMenu={show.promote} contextX={this.props.contextX}
                                     contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
                                     clickedVariable={this.props.clickedVariable}
                                     store={this.props.store}

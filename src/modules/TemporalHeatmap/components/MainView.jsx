@@ -14,15 +14,10 @@ const MainView = observer(class MainView extends React.Component {
     constructor() {
         super();
         this.state = ({
-            showSortContextMenu: "hidden",
-            showGroupContextMenu: "hidden",
-            showPromoteContextMenu: "hidden",
             selectedPatients: [],
         });
         this.handlePatientSelection = this.handlePatientSelection.bind(this);
         this.handlePartitionSelection = this.handlePartitionSelection.bind(this);
-        this.closeContextMenu = this.closeContextMenu.bind(this);
-        this.openContextMenu = this.openContextMenu.bind(this);
     }
 
     /**
@@ -74,13 +69,6 @@ const MainView = observer(class MainView extends React.Component {
         });
     }
 
-    openContextMenu(sort, group, promote) {
-        this.setState({showSortContextMenu: sort, showGroupContextMenu: group, showPromoteContextMenu: promote})
-    }
-
-    closeContextMenu() {
-        this.setState({showSortContextMenu: "hidden", showGroupContextMenu: "hidden", showPromoteContextMenu: "hidden"})
-    }
 
     handleTimeClick(event) {
         this.props.store.rootStore.realTime = !this.props.store.rootStore.realTime;
@@ -94,7 +82,7 @@ const MainView = observer(class MainView extends React.Component {
         } else {
             return (
                 <div>
-                    <button className="btn btn-light" onClick={(e) => _self.handleTimeClick(e)}
+                    <button className="btn" onClick={(e) => _self.handleTimeClick(e)}
                             key={this.props.store.rootStore.realTime}>
                         {(this.props.store.rootStore.realTime) ? "Hide actual timeline" : "Show actual timeline"}
                     </button>
@@ -162,10 +150,6 @@ const MainView = observer(class MainView extends React.Component {
                 <RowOperators {...this.props} height={svgHeight}
                               svgHeight={svgHeight} svgWidth={200}
                               posY={timepointPositions.sample}
-                              openContextMenu={this.openContextMenu}
-                              showSortContextMenu={this.state.showSortContextMenu}
-                              showGroupContextMenu={this.state.showGroupContextMenu}
-                              showPromoteContextMenu={this.state.showPromoteContextMenu}
                               selectedPatients={this.state.selectedPatients}/>
                 <Plot {...this.props} viewWidth={this.props.width} width={svgWidth} height={svgHeight}
                       heatmapWidth={heatmapWidth}

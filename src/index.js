@@ -15,7 +15,7 @@ import DefaultView from "./modules/TemporalHeatmap/components/DefaultView";
 
 const cbioAPI = new cBioAPI();
 const studyapi = new studyAPI();
-let rootStore = new RootStore(cbioAPI, true);
+let rootStore = new RootStore(cbioAPI,"", true);
 studyapi.getStudies();
 
 const StudySelection = observer(class StudySelection extends React.Component {

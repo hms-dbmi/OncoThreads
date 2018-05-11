@@ -76,8 +76,8 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
                              handleBinChange={this.handleBinChange}
                              handleNumberOfBinsChange={this.handleNumberOfBinsChange}/>
                 <BinNames binNames={this.state.binNames} handleBinNameChange={this.handleBinNameChange}/>
-                <button className={"btn btn-dark"} onClick={this.handleCancel}>Cancel</button>
-                <button className={"btn btn-dark"} onClick={this.handleApply}>Apply</button>
+                <button className={"btn"} onClick={this.handleCancel}>Cancel</button>
+                <button className={"btn ml-3"} onClick={this.handleApply}>Apply</button>
             </div>
         )
     }

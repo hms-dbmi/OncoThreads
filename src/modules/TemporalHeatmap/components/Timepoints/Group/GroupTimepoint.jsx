@@ -16,13 +16,15 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
         let previousXPosition = 0;
         this.props.timepoint.forEach(function (d, i) {
             const transform = "translate(" + previousXPosition + ",0)";
-            let stroke="none";
-            if(_self.isSelected(d.patients)){
-                stroke="black";
+            let stroke = "none";
+            if (_self.isSelected(d.patients)) {
+                stroke = "black";
             }
-            partitions.push(<g style={{backgroundColor: "darkgray"}}
-                               onClick={() => _self.props.selectPartition(d.patients)} key={d.partition}
-                               transform={transform}><GroupPartition key={d.partition} {..._self.props} partition={d}
+            partitions.push(<g key={d.partition} style={{backgroundColor: "darkgray"}}
+                               onClick={() => _self.props.selectPartition(d.patients)}
+                               onMouseEnter={(e) => _self.props.showTooltip(e, "# Patients:" + d.patients.length)}
+                               onMouseLeave={_self.props.hideTooltip}
+                               transform={transform}><GroupPartition {..._self.props} partition={d}
                                                                      partitionIndex={i} stroke={stroke}/></g>);
             for (let j = 0; j < d.rows.length; j++) {
                 if (d.rows[j].variable === _self.props.primaryVariable) {
@@ -40,9 +42,9 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
      */
     isSelected(patients) {
         let isSelected = true;
-        for(let i=0;i<patients.length;i++){
-            if(!this.props.selectedPatients.includes(patients[i])){
-                isSelected=false;
+        for (let i = 0; i < patients.length; i++) {
+            if (!this.props.selectedPatients.includes(patients[i])) {
+                isSelected = false;
                 break;
             }
         }
@@ -51,7 +53,7 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
 
     render() {
         return (
-                this.getPartitions()
+            this.getPartitions()
         )
     }
 });

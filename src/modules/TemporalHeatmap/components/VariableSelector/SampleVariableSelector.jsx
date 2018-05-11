@@ -77,7 +77,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<button className={"btn"} key={d.variable}
+            buttons.push(<button className={"btn btn-light"} key={d.variable}
                                  onClick={(e) => _self.handleVariableClick(e, d.variable, d.datatype, "clinical")}>{d.variable}</button>)
         });
         return buttons;
@@ -90,7 +90,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     createGenomicAttributesList() {
         let buttons = [];
         const _self = this;
-        buttons.push(<button className={"btn"}
+        buttons.push(<button className={"btn btn-light"}
                              onClick={(e) => _self.handleContinousClick(e, this.props.mutationCount, "mutationCount")}
                              key={this.props.mutationCount}>{this.props.mutationCount}</button>);
         return buttons;
@@ -100,22 +100,25 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
-                <h5>Sample Variables</h5>
-                <div className="btn-group-vertical btn-block">
-                    <button className="btn btn-dark btn-block" data-toggle="collapse" href="#collapseClinical">Clinical
-                        Features ▼
+                <h5 className="mt-3">Sample Variables</h5>
+                <div className="card">
+                    <button className="btn btn-block" data-toggle="collapse" data-target="#collapseClinical"
+                            aria-expanded="true" aria-controls="collapseClinical">Clinical Features ▼
                     </button>
-                    <div id="collapseClinical" className="panel-collapse collapse btn-block">
-                                                <div className="btn-group-vertical btn-block">
-                        {this.createClinicalAttributesList()}
-                                                </div>
+                    <div id="collapseClinical" className="collapse show">
+                        <div className="btn-group-vertical btn-block p-1">
+                            {this.createClinicalAttributesList()}
+                        </div>
                     </div>
-                    <button className="btn btn-dark btn-block" data-toggle="collapse" href="#collapseGenomic">Genomic
+                </div>
+                <div className="card mt-2">
+                    <button className="btn btn-block" data-toggle="collapse" data-target="#collapseGenomic"
+                            aria-expanded="true" aria-controls="collapseGenomic">Genomic
                         Features ▼
                     </button>
-                    <div id="collapseGenomic" className="panel-collapse collapse btn-block">
-                        <div className="btn-group-vertical btn-block">
-                        {this.createGenomicAttributesList()}
+                    <div id="collapseGenomic" className="collapse">
+                        <div className="btn-group-vertical btn-block p-1">
+                            {this.createGenomicAttributesList()}
                         </div>
                     </div>
 

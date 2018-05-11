@@ -21,7 +21,7 @@ const CurrentVariables = observer(class CurrentVariables extends React.Component
     getTextFields(type){
         const _self=this;
         return this.props.currentVariables[type].map(function(d){
-            return(<label key={d.variable} className="currentVariable">{d.variable}<button onClick={()=>_self.removeVariable(d.variable,type)} className="noStyle">⮿</button></label>)
+            return(<label key={d.variable} className="currentVariable">{d.variable}<button onClick={()=>_self.removeVariable(d.variable,type)} className="noStyle">X</button></label>)
         })
     }
     render() {

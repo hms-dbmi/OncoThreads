@@ -10,9 +10,10 @@ const DefaultView = observer(class DefaultView extends React.Component {
         this.getStudy = this.getStudy.bind(this);
     }
 
-    getStudy(event,id) {
-        this.props.rootStore.parseCBio(id);
-                this.props.rootStore.firstLoad=false;
+    getStudy(study) {
+        this.props.rootStore.study=study;
+        this.props.rootStore.firstLoad=false;
+                this.props.rootStore.parseCBio();
     }
 
 
@@ -20,7 +21,7 @@ const DefaultView = observer(class DefaultView extends React.Component {
         let options = [];
         const _self=this;
         this.props.studies.forEach(function (d) {
-            options.push(<a className="dropdown-item" onClick={(e)=>_self.getStudy(e,d.id)} key={d.id}>{d.name}</a>)
+            options.push(<a className="dropdown-item" onClick={()=>_self.getStudy(d)} key={d.studyId}>{d.name}</a>)
         });
         return options;
     }

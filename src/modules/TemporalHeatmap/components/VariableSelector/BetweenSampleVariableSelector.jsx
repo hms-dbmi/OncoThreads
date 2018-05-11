@@ -108,8 +108,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<button value={d} onClick={_self.openModal} className="btn btn-dark"
-                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} 🞣</button>)
+                buttons.push(<button value={d} onClick={_self.openModal} className="btn"
+                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} +</button>)
             }
         });
         return buttons;
@@ -135,7 +135,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
 
     render() {
         return (
-            <div>
+            <div className="mt-2">
                 <h5>Transition variables</h5>
                 <div className={"btn-group-vertical btn-block"}>
                     {this.createBetweenVariablesList()}
@@ -154,8 +154,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     <label for="name">New variable name</label>
                     <input type="text" className="form-control" id="name" onChange={(e) => this.handleNameChange(e)}/>
                     <br/>
-                    <button type="button" className="btn btn-dark" onClick={() => this.addVariable()}>Add</button>
-                    <button type="button" className="btn btn-dark" onClick={this.closeModal}>Close</button>
+                    <button type="button" className="btn" onClick={() => this.addVariable()}>Add</button>
+                    <button type="button" className="btn ml-3" onClick={this.closeModal}>Close</button>
                 </Modal>
             </div>
         )

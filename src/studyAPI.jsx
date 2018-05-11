@@ -10,9 +10,7 @@ class StudyAPI{
     getStudies(){
         axios.get("http://www.cbiohack.org/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response=>{
-                this.studies=response.data.map(function (d,i) {
-                    return({name:d.name,id:d.studyId});
-                });
+                this.studies=response.data;
             });
     }
 }
