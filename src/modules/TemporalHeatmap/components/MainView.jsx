@@ -70,26 +70,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 
 
-    handleTimeClick(event) {
-        this.props.store.rootStore.realTime = !this.props.store.rootStore.realTime;
-        event.target.className = (this.props.store.rootStore.realTime) ? "selected" : "notSelected";
-    }
-
-    createTimeButton() {
-        const _self = this;
-        if (this.props.timepoints.length === 0) {
-            return (<div></div>)
-        } else {
-            return (
-                <div>
-                    <button className="btn" onClick={(e) => _self.handleTimeClick(e)}
-                            key={this.props.store.rootStore.realTime}>
-                        {(this.props.store.rootStore.realTime) ? "Hide actual timeline" : "Show actual timeline"}
-                    </button>
-                </div>
-            )
-        }
-    }
 
     /**
      * set visual parameters
@@ -145,7 +125,6 @@ const MainView = observer(class MainView extends React.Component {
         const svgHeight = this.props.store.timepoints.length * (sampleTPHeight + betweenTPHeight + this.props.visMap.transitionSpace);
         return (
             <div onClick={this.closeContextMenu}>
-                {this.createTimeButton()}
                 <CurrentVariables store={this.props.store} currentVariables={this.props.currentVariables} width={svgWidth}/>
                 <RowOperators {...this.props} height={svgHeight}
                               svgHeight={svgHeight} svgWidth={200}

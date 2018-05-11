@@ -5,6 +5,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {observer} from 'mobx-react';
 import Modal from "react-modal";
+import FontAwesome from 'react-fontawesome';
 
 import SampleVariableSelector from "./VariableSelector/SampleVariableSelector"
 import BetweenSampleVariableSelector from "./VariableSelector/BetweenSampleVariableSelector"
@@ -103,6 +104,26 @@ const Content = observer(class Content extends React.Component {
             contextType: "",
         })
     }
+       createTimeButton() {
+        const _self = this;
+        if (this.props.rootStore.timepointStore.timepoints.length === 0||this.props.rootStore.timepointStore.currentVariables.between.length>0) {
+            return null;
+        } else {
+            return (
+                <div>
+                    <button className="btn" onClick={(e) => _self.handleTimeClick(e)}
+                            key={this.props.rootStore.realTime}>
+                        <FontAwesome name="clock"/> {(this.props.rootStore.realTime) ? "Hide actual timeline" : "Show actual timeline"}
+                    </button>
+                </div>
+            )
+        }
+    }
+    handleTimeClick(event) {
+        this.props.rootStore.timepointStore.applySortingToAll(0);
+        this.props.rootStore.realTime = !this.props.rootStore.realTime;
+        event.target.className = (this.props.rootStore.realTime) ? "selected" : "notSelected";
+    }
 
     componentDidMount() {
         Modal.setAppElement(ReactDOM.findDOMNode(this));
@@ -137,7 +158,8 @@ const Content = observer(class Content extends React.Component {
                 </div>
             </nav>,
                 <main onMouseEnter={this.hideContextMenu} key="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4" role="main">
-                    <button className="btn" onClick={this.props.rootStore.reset}>Reset</button>
+                    <button className="btn" onClick={this.props.rootStore.reset}><FontAwesome name="undo"/> Reset</button>
+                    {this.createTimeButton()}
                     <div className="heatmapContainer">
                         <MainView
                             currentVariables={this.props.rootStore.timepointStore.currentVariables}

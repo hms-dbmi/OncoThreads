@@ -2,6 +2,8 @@ import React from "react";
 import {observer} from "mobx-react";
 import Modal from 'react-modal';
 import ReactDOM from 'react-dom';
+import FontAwesome from 'react-fontawesome';
+
 
 
 const customStyles = {
@@ -109,7 +111,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
                 buttons.push(<button value={d} onClick={_self.openModal} className="btn"
-                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} +</button>)
+                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} <FontAwesome name="plus"/></button>)
             }
         });
         return buttons;
