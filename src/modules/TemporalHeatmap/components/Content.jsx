@@ -10,6 +10,9 @@ import SampleVariableSelector from "./VariableSelector/SampleVariableSelector"
 import BetweenSampleVariableSelector from "./VariableSelector/BetweenSampleVariableSelector"
 import MainView from "./MainView"
 import ContinuousBinner from "./Binner/ContinuousBinner"
+import StudySummary from "./StudySummary";
+import Tooltip from "./Tooltip";
+import ContextMenus from "./RowOperators/ContextMenus";
 
 
 const customStyles = {
@@ -19,7 +22,7 @@ const customStyles = {
         right: 'auto',
         bottom: 'auto',
         marginRight: '-50%',
-        height: '450px',
+        height: '550px',
         width: '500px',
         transform: 'translate(-50%, -50%)',
         overlfow: 'scroll'
@@ -33,11 +36,19 @@ const Content = observer(class Content extends React.Component {
             followUpFunction: null,
             clickedVariable: "",
             clickedTimepoint: -1,
-            sideBarVisible: true
-    }
+            x:0,
+            y:0,
+            tooltipContent:"",
+            showTooltip:"hidden",
+            contextType: ""
+        }
         ;
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
+        this.showTooltip = this.showTooltip.bind(this);
+        this.hideTooltip = this.hideTooltip.bind(this);
+        this.showContextMenu=this.showContextMenu.bind(this);
+        this.hideContextMenu=this.hideContextMenu.bind(this);
     }
 
     /**
@@ -61,6 +72,38 @@ const Content = observer(class Content extends React.Component {
         this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, followUpFunction: null});
     }
 
+    showTooltip(e, content) {
+        this.setState({
+            showTooltip: "visible",
+            x: e.pageX,
+            y: e.pageY,
+            tooltipContent: content,
+        })
+    }
+
+    hideTooltip() {
+        this.setState({
+            showTooltip: "hidden",
+        })
+    }
+
+    showContextMenu(e, timepointIndex, variable, type) {
+        this.setState({
+            x: e.pageX,
+            y: e.pageY,
+            clickedTimepoint: timepointIndex,
+            clickedVariable: variable,
+            contextType: type
+        });
+        e.preventDefault();
+    }
+
+    hideContextMenu() {
+        this.setState({
+            contextType: "",
+        })
+    }
+
     componentDidMount() {
         Modal.setAppElement(ReactDOM.findDOMNode(this));
     }
@@ -68,8 +111,15 @@ const Content = observer(class Content extends React.Component {
 
     render() {
         return (
-            [<nav id="sidebar" key="sidebar" className="panel-collapse collapse col-md-2 d-none d-md-block bg-light sidebar">
+            [<nav id="sidebar" key="sidebar"
+                  className="panel-collapse collapse col-md-2 d-none d-md-block bg-light sidebar">
                 <div className="sidebar-sticky">
+                    <StudySummary studyName={this.props.rootStore.study.name}
+                                  studyDescription={this.props.rootStore.study.description}
+                                  studyCitation={this.props.rootStore.study.citation}
+                                  numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
+                                  minTP={this.props.rootStore.minTP}
+                                  maxTP={this.props.rootStore.maxTP}/>
                     <SampleVariableSelector
                         clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                         mutationCount="Mutation count"
@@ -86,7 +136,8 @@ const Content = observer(class Content extends React.Component {
                     />
                 </div>
             </nav>,
-                <main key="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4" role="main">
+                <main onMouseEnter={this.hideContextMenu} key="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4" role="main">
+                    <button className="btn" onClick={this.props.rootStore.reset}>Reset</button>
                     <div className="heatmapContainer">
                         <MainView
                             currentVariables={this.props.rootStore.timepointStore.currentVariables}
@@ -95,6 +146,10 @@ const Content = observer(class Content extends React.Component {
                             transitionStore={this.props.rootStore.transitionStore}
                             visMap={this.props.rootStore.visStore}
                             openBinningModal={this.openModal}
+                            showTooltip={this.showTooltip}
+                            hideTooltip={this.hideTooltip}
+                            showContextMenu={this.showContextMenu}
+                            hideContextMenu={this.hideContextMenu}
                         />
                     </div>
                 </main>,
@@ -111,7 +166,15 @@ const Content = observer(class Content extends React.Component {
                                       followUpFunction={this.state.followUpFunction}
                                       close={this.closeModal} store={this.props.rootStore.timepointStore}
                                       visMap={this.props.rootStore.visStore}/>
-                </Modal>]
+                </Modal>,
+                <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
+                         y={this.state.y} content={this.state.tooltipContent}/>,
+                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}
+                              contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
+                              clickedVariable={this.state.clickedVariable}
+                              type={this.state.contextType}
+                              store={this.props.rootStore.timepointStore}
+                              openBinningModal={this.openModal}/>]
         )
     }
 });

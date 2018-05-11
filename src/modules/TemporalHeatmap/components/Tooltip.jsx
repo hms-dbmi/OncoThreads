@@ -3,7 +3,7 @@ import {observer} from 'mobx-react';
 /*
 tooltip for hovering over Sankey Transition
  */
-const SankeyTransitionTooltip=observer(class SankeyTransitionTooltip extends React.Component{
+const Tooltip=observer(class SankeyTransitionTooltip extends React.Component{
 
    render(){
        return(
@@ -13,4 +13,4 @@ const SankeyTransitionTooltip=observer(class SankeyTransitionTooltip extends Rea
        )
    }
 });
-export default SankeyTransitionTooltip;
+export default Tooltip;

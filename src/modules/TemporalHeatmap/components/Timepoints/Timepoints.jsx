@@ -31,7 +31,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
                                                                                           onDrag={_self.props.onDrag}
                                                                                           selectPartition={_self.props.selectPartition}
                                                                                           selectedPatients={_self.props.selectedPatients}
-                                                                                          translateGroupX={_self.props.translateGroupX}/>
+                                                                                          translateGroupX={_self.props.translateGroupX}
+                                                                                          showTooltip={_self.props.showTooltip}
+                                                                                          hideTooltip={_self.props.hideTooltip}/>
                 </g>);
             }
         });

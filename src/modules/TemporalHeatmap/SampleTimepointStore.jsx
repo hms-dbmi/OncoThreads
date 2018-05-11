@@ -48,6 +48,8 @@ class SampleTimepointStore {
      * @param variable
      */
     initialize(variable) {
+        this.timepoints=[];
+        this.currentVariables=[];
         for(let i=0;i<this.timepointStructure.length;i++){
             this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[i],"sample",i));
         }

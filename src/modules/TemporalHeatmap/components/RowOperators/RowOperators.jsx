@@ -1,8 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom'
 import {observer} from 'mobx-react';
-import ContextMenus from "./ContextMenus"
-import $ from "jquery";
 
 /*
 implements the icons and their functionality on the left side of the plot
@@ -10,74 +7,15 @@ implements the icons and their functionality on the left side of the plot
 const RowOperators = observer(class RowOperators extends React.Component {
     constructor() {
         super();
-        this.state = {
-            contextX: 0,
-            contextY: 0,
-            clickedVariable: "",
-            clickedTimepoint: -1
-        };
-        this.parentOffset = "";
+
 
         this.sortTimepoint = this.sortTimepoint.bind(this);
         this.group = this.group.bind(this);
         this.unGroup = this.unGroup.bind(this);
         this.promote = this.promote.bind(this);
-        this.openSortContextMenu = this.openSortContextMenu.bind(this);
-        this.openGroupContextMenu = this.openGroupContextMenu.bind(this);
-        this.openPromoteContextMenu = this.openPromoteContextMenu.bind(this);
     }
 
-    /**
-     * Changes the state to open the sort context menu
-     * @param e: event
-     * @param timepointIndex
-     */
-    openSortContextMenu(e, timepointIndex) {
-                const parentOffset= $(ReactDOM.findDOMNode(this)).parent().offset();
-        this.props.openContextMenu("visible", "hidden", "hidden");
-        this.setState({
-            contextX: e.pageX-parentOffset.left,
-            contextY: e.pageY-parentOffset.top,
-            clickedTimepoint: timepointIndex
-        });
-        e.preventDefault();
-    }
 
-    /**
-     * Changes the state to open the group context menu
-     * @param e: event
-     * @param timepointIndex
-     * @param variable
-     */
-    openGroupContextMenu(e, timepointIndex, variable) {
-        const parentOffset= $(ReactDOM.findDOMNode(this)).parent().offset();
-        this.props.openContextMenu("hidden", "visible", "hidden");
-        this.setState({
-            contextX: e.pageX-parentOffset.left,
-            contextY: e.pageY-parentOffset.top,
-            clickedTimepoint: timepointIndex,
-            clickedVariable: variable
-        });
-        e.preventDefault();
-    }
-
-    /**
-     * Changes the state to open the promote context menu
-     * @param e: event
-     * @param timepointIndex
-     * @param variable
-     */
-    openPromoteContextMenu(e, timepointIndex, variable) {
-                        const parentOffset= $(ReactDOM.findDOMNode(this)).parent().offset();
-        this.props.openContextMenu("hidden", "hidden", "visible");
-        this.setState({
-            contextX: e.pageX-parentOffset.left,
-            contextY: e.pageY-parentOffset.top,
-            clickedTimepoint: timepointIndex,
-            clickedVariable: variable
-        });
-        e.preventDefault();
-    }
 
 
     /**
@@ -194,14 +132,14 @@ const RowOperators = observer(class RowOperators extends React.Component {
             return <g key={d.variable} className={"clickable"} transform={transform}>
                 <text key={"promote" + d.variable} style={{fontWeight: fontWeight, fontSize: fontSize}}
                       transform={"translate(0," + (lineHeight+fontSize)/2 + ")"}
-                      onContextMenu={(e) => _self.openPromoteContextMenu(e, timepointIndex, d.variable)}
+                      onContextMenu={(e) => _self.props.showContextMenu(e, timepointIndex, d.variable,"promote")}
                       onClick={(e) => _self.promote(timepointIndex, d.variable, e)}>{RowOperators.cropText(d.variable,fontSize,fontWeight,_self.props.svgWidth - iconScale * 48)}</text>
                 <path key={"path1" + d.variable}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       fill="gray"
                       d={icon1}/>
                 <rect key={"rect1" + d.variable} onClick={() => function1(timepointIndex, d.variable)}
-                      onContextMenu={(e) => _self.openSortContextMenu(e, timepointIndex)}
+                      onContextMenu={(e) => _self.props.showContextMenu(e, timepointIndex, d.variable,"sort")}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 24) + "," + yIcons + ")scale(" + iconScale + ")"}
                       width={iconScale * 24} height={24}
                       fill="none"
@@ -212,7 +150,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
                       d={icon2}/>
                 <rect key={"rect2" + d.variable} onClick={() => function2(timepointIndex, d.variable)}
                       transform={"translate(" + (_self.props.svgWidth - iconScale * 48) + "," + yIcons + ")scale(" + iconScale + ")"}
-                      onContextMenu={(e) => _self.openGroupContextMenu(e, timepointIndex, d.variable)}
+                      onContextMenu={(e) => _self.props.showContextMenu(e, timepointIndex, d.variable,"group")}
                       width={24} height={24}
                       fill="none" pointerEvents="visible"/>
             </g>
@@ -248,13 +186,6 @@ const RowOperators = observer(class RowOperators extends React.Component {
                         {headers}
                     </g>
                 </svg>
-                <ContextMenus showSortContextMenu={this.props.showSortContextMenu}
-                              showGroupContextMenu={this.props.showGroupContextMenu}
-                              showPromoteContextMenu={this.props.showPromoteContextMenu} contextX={this.state.contextX}
-                              contextY={this.state.contextY} clickedTimepoint={this.state.clickedTimepoint}
-                              clickedVariable={this.state.clickedVariable}
-                              store={this.props.store}
-                              openBinningModal={this.props.openBinningModal}/>
             </div>
         )
     }

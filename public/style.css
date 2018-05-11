@@ -41,9 +41,9 @@
 }
 
 .btn{
-        white-space: nowrap;
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis
+    text-overflow: ellipsis;
 }
 .defaultView{
     position: absolute;
@@ -66,11 +66,13 @@
 }
 .currentVariable{
     background-color:#efefef;
-    border: 1px solid black;
+    border: 1px solid darkgray;
+    border-radius: 2px;
     margin-left:2px;
     padding: 2px;
+    font-size: 10px;
 }
 #sidebar{
     height: 100%;
-    position: fixed;
 }
+

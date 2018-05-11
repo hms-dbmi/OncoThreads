@@ -12,35 +12,47 @@ gets the data with the cBioAPI and gives it to the other stores
 TODO: make prettier
  */
 class RootStore {
-    constructor(cbioAPI,firstLoad) {
+    constructor(cbioAPI, study, firstLoad) {
         this.cbioAPI = cbioAPI;
+        this.study = study;
         this.sampleTimepointStore = new SampleTimepointStore(this);
         this.betweenTimepointStore = new BetweenTimepointStore(this);
         this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore();
 
+        this.maxTP = 0;
+        this.minTP = 0;
         this.clinicalSampleCategories = [];
         this.eventCategories = [];
         this.eventAttributes = [];
         this.patientsPerTimepoint = [];
         this.patientOrderPerTimepoint = [];
-        this.timeGapStructure=[];
+        this.timeGapStructure = [];
+
+        this.reset = this.reset.bind(this);
 
         extendObservable(this, {
             parsed: false,
-            firstLoad:firstLoad,
+            firstLoad: firstLoad,
             realTime: false
         })
     }
 
+    reset() {
+        this.parsed = false;
+        this.betweenTimepointStore.reset();
+        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].variable);
+        this.sampleTimepointStore.addVariable(this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
+        this.parsed = true;
+    }
 
     /*
     gets data from cBio and sets parameters in other stores
      */
-    parseCBio(studyID) {
+    parseCBio() {
         const _self = this;
-        this.cbioAPI.getAllData(studyID, function () {
+        this.cbioAPI.getAllData(this.study.studyId, function () {
             _self.buildPatientStructure();
             _self.sampleTimepointStore.setSampleClinicalMap(_self.createClinicalDataMapping());
             _self.sampleTimepointStore.setSampleMutationCountMap(_self.createMutationCountsMapping());
@@ -48,7 +60,7 @@ class RootStore {
             _self.betweenTimepointStore.setClinicalEvents(_self.cbioAPI.clinicalEvents);
 
             _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].variable);
-            _self.sampleTimepointStore.addVariable(_self.clinicalSampleCategories[0].variable,_self.clinicalSampleCategories[0].datatype,"clinical");
+            _self.sampleTimepointStore.addVariable(_self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
             _self.parsed = true;
 
         });
@@ -66,11 +78,11 @@ class RootStore {
         let maxTP = 0;
         let patientsPerTimepoint = [];
         let allPatients = [];
-        let excludeDates={};
+        let excludeDates = {};
 
         this.cbioAPI.patients.forEach(function (d) {
             sampleStructure[d.patientId] = [];
-            excludeDates[d.patientId]=[];
+            excludeDates[d.patientId] = [];
             allPatients.push(d.patientId);
             let previousDate = -1;
             let currTP = 0;
@@ -103,11 +115,12 @@ class RootStore {
                 }
             })
         });
+        this.maxTP = maxTP;
         const timepointStructure = this.buildTimepointStructure(sampleStructure, maxTP);
         this.getEventAttributes(excludeDates);
-        this.timeGapStructure=this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
+        this.timeGapStructure = this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
         this.timepointStore.setNumberOfPatients(allPatients.length);
-        this.patientOrderPerTimepoint =allPatients;
+        this.patientOrderPerTimepoint = allPatients;
         this.patientsPerTimepoint = patientsPerTimepoint;
 
         this.sampleTimepointStore.setTimepointStructure(timepointStructure);
@@ -128,9 +141,18 @@ class RootStore {
      */
     buildTimepointStructure(sampleStructure, numberOfTimepoints) {
         let timepointStructure = [];
+        const _self = this;
         for (let i = 0; i < numberOfTimepoints; i++) {
             let patientSamples = [];
             this.cbioAPI.patients.forEach(function (d, j) {
+                if (_self.minTP === 0) {
+                    _self.minTP = sampleStructure[d.patientId].length;
+                }
+                else {
+                    if (sampleStructure[d.patientId].length < _self.minTP) {
+                        _self.minTP = sampleStructure[d.patientId].length;
+                    }
+                }
                 if (sampleStructure[d.patientId].length > i) {
                     patientSamples.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0]})
                 }
@@ -151,13 +173,21 @@ class RootStore {
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
 
-                    if(i===0){
-                        patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: 0});
+                    if (i === 0) {
+                        patientSamples2.push({
+                            patient: d.patientId,
+                            sample: sampleStructure[d.patientId][i][0],
+                            timeGapBetweenSample: 0
+                        });
                     }
-                    else{
-                        patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis-sampleTimelineMap[sampleStructure[d.patientId][i-1][0]].startNumberOfDaysSinceDiagnosis});
+                    else {
+                        patientSamples2.push({
+                            patient: d.patientId,
+                            sample: sampleStructure[d.patientId][i][0],
+                            timeGapBetweenSample: sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis - sampleTimelineMap[sampleStructure[d.patientId][i - 1][0]].startNumberOfDaysSinceDiagnosis
+                        });
                     }
-               }
+                }
             });
             timeGaps.push(patientSamples2);
         }
@@ -208,7 +238,7 @@ class RootStore {
         let attributes = {};
         for (let patient in this.cbioAPI.clinicalEvents) {
             this.cbioAPI.clinicalEvents[patient].forEach(function (d, i) {
-                if(!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis)) {
+                if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis)) {
                     if (!(d.eventType in attributes)) {
                         attributes[d.eventType] = {}
                     }

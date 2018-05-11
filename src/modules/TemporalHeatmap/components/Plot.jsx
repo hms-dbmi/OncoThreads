@@ -1,27 +1,12 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {observer} from 'mobx-react';
 import Timepoints from "./Timepoints/Timepoints"
 import Transitions from "./Transitions/Transitions"
-import SankeyTransitionTooltip from "./Transitions/SankeyTransition/SankeyTransitionTooltip"
 import * as d3 from "d3";
-import $ from 'jquery';
 /*
 creates the plot with timepoints and transitions
  */
 const Plot = observer(class Plot extends React.Component {
-    constructor() {
-        super();
-        this.state = ({
-            showTooltip: "hidden",
-            tooltipX: 0,
-            tooltipY: 0,
-            tooltipContent: ""
-        });
-        this.showSankeyTooltip = this.showSankeyTooltip.bind(this);
-        this.hideSankeyTooltip = this.hideSankeyTooltip.bind(this)
-    }
-
     /**
      * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
      * @param w: width of the plot
@@ -37,21 +22,6 @@ const Plot = observer(class Plot extends React.Component {
     }
 
 
-    showSankeyTooltip(e, source, target, count) {
-        const parentOffset = $(ReactDOM.findDOMNode(this)).parent().offset();
-        this.setState({
-            showTooltip: "visible",
-            tooltipX: e.pageX-parentOffset.left,
-            tooltipY: e.pageY-parentOffset.top,
-            tooltipContent: source + " -> " + target + ": " + count,
-        })
-    }
-
-    hideSankeyTooltip() {
-        this.setState({
-            showTooltip: "hidden",
-        })
-    }
 
     /**
      * creates scales for computing the length of the partitions in grouped timepoints
@@ -76,8 +46,6 @@ const Plot = observer(class Plot extends React.Component {
                                     groupScale={groupScale}
                                     heatmapScales={sampleHeatmapScales}
                                     translateGroupX={translateGroupX}/>
-
-
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
                                      timepointData={this.props.store.timepoints}
                                      realTime={this.props.store.rootStore.realTime}
@@ -85,14 +53,9 @@ const Plot = observer(class Plot extends React.Component {
                                      groupScale={groupScale}
                                      heatmapScales={sampleHeatmapScales}
                                      height={this.props.transitionSpace}
-                                     translateGroupX={translateGroupX}
-                                     showTooltip={this.showSankeyTooltip}
-                                     hideTooltip={this.hideSankeyTooltip}/>
-
+                                     translateGroupX={translateGroupX}/>
                     </g>
                 </svg>
-                <SankeyTransitionTooltip visibility={this.state.showTooltip} x={this.state.tooltipX}
-                                         y={this.state.tooltipY} content={this.state.tooltipContent}/>
             </div>
         )
     }

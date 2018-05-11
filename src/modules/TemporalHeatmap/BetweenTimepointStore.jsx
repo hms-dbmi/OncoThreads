@@ -43,6 +43,10 @@ class BetweenTimepointStore {
         }
         this.rootStore.timepointStore.initialize();
     }
+    reset(){
+        this.timepoints=[];
+        this.currentVariables=[];
+    }
 
 
     /**

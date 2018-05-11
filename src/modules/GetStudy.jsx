@@ -8,10 +8,10 @@ const GetStudy = observer(class GetStudy extends React.Component {
         this.getStudy = this.getStudy.bind(this);
     }
 
-    getStudy(event,id) {
-            this.props.cbioAPI.constructor();
-            this.props.rootStore.constructor(this.props.cbioAPI,false);
-        this.props.rootStore.parseCBio(id);
+    getStudy(event,study) {
+        this.props.cbioAPI.constructor();
+        this.props.rootStore.constructor(this.props.cbioAPI,study,false);
+        this.props.rootStore.parseCBio();
     }
 
 
@@ -19,7 +19,7 @@ const GetStudy = observer(class GetStudy extends React.Component {
         let options = [];
         const _self=this;
         this.props.studies.forEach(function (d) {
-            options.push(<a className="dropdown-item" onClick={(e)=>_self.getStudy(e,d.id)} key={d.id}>{d.name}</a>)
+            options.push(<a className="dropdown-item" onClick={(e)=>_self.getStudy(e,d)} key={d.studyId}>{d.name}</a>)
         });
         return options;
     }
@@ -27,7 +27,7 @@ const GetStudy = observer(class GetStudy extends React.Component {
     render() {
         return (
             <div className="dropdown">
-                <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                <button className="btn dropdown-toggle" type="button" id="dropdownMenuButton"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Select Study
                 </button>
