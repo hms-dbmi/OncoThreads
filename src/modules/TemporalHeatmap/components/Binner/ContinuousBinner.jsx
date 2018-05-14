@@ -3,16 +3,17 @@ import {observer} from 'mobx-react';
 import BinSelector from './BinSelector'
 import BinNames from './BinNames'
 import * as d3 from 'd3';
+import {Button,Modal} from 'react-bootstrap';
+
 
 
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        this.data = props.store.getAllValues(this.props.variable);
+        this.data = [];
         this.handleBinChange = this.handleBinChange.bind(this);
         this.handleNumberOfBinsChange = this.handleNumberOfBinsChange.bind(this);
         this.handleBinNameChange = this.handleBinNameChange.bind(this);
-        this.handleCancel = this.handleCancel.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.state = ({
             binNames: ["Bin 1", "Bin 2"],
@@ -39,12 +40,6 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         this.setState({binNames: binNames});
     }
 
-    /**
-     * handles the cancel button
-     */
-    handleCancel() {
-        this.props.close();
-    }
 
     /**
      * applies binning to data and color scales
@@ -53,7 +48,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         this.props.store.binContinuous(this.props.variable, this.state.bins, this.state.binNames, this.props.type);
         this.props.visMap.setBinnedColorScale(this.props.variable, this.state.binNames, this.state.bins);
         this.props.followUpFunction(this.props.timepointIndex, this.props.variable);
-        this.props.close();
+        this.props.closeModal();
     }
 
     /**
@@ -68,17 +63,26 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     render() {
+        this.data=this.props.store.getAllValues(this.props.variable);
         return (
-            <div>
-                <h2>Bin {this.props.variable}</h2>
-                <br/>
-                <BinSelector data={this.data} numBins={this.state.bins} width={450} height={300}
-                             handleBinChange={this.handleBinChange}
-                             handleNumberOfBinsChange={this.handleNumberOfBinsChange}/>
-                <BinNames binNames={this.state.binNames} handleBinNameChange={this.handleBinNameChange}/>
-                <button className={"btn"} onClick={this.handleCancel}>Cancel</button>
-                <button className={"btn ml-3"} onClick={this.handleApply}>Apply</button>
-            </div>
+            <Modal
+                show={this.props.modalIsOpen}
+                onHide={this.props.closeModal}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>Bin {this.props.variable}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <BinSelector data={this.data} numBins={this.state.bins} width={450} height={300}
+                                 handleBinChange={this.handleBinChange}
+                                 handleNumberOfBinsChange={this.handleNumberOfBinsChange}/>
+                    <BinNames binNames={this.state.binNames} handleBinNameChange={this.handleBinNameChange}/>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={this.handleApply}>Apply</Button>
+                    <Button onClick={this.props.closeModal}>Close</Button>
+                </Modal.Footer>
+            </Modal>
         )
     }
 });

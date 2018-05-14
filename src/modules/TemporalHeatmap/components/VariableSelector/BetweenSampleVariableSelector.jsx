@@ -1,25 +1,11 @@
 import React from "react";
 import {observer} from "mobx-react";
-import Modal from 'react-modal';
-import ReactDOM from 'react-dom';
+import FontAwesome from 'react-fontawesome';
+import {Panel,Button, ButtonGroup, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup, Modal} from 'react-bootstrap';
 
 
-const customStyles = {
-    content: {
-        top: '50%',
-        left: '50%',
-        right: 'auto',
-        bottom: 'auto',
-        marginRight: '-50%',
-        height: '400px', // <-- This sets the height
-        width: '400px',
-        transform: 'translate(-50%, -50%)',
-        overlfow: 'scroll' // <-- This tells the modal to scrol
-    }
-};
 /*
 creates the selector for between variables (left side of main view, bottom)
-TODO: implement removing variables
  */
 const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelector extends React.Component {
     constructor() {
@@ -30,7 +16,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selectedKey: "",
             name: "",
             selectedValues: [],
-            defaultValue:""
+            defaultValue: ""
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -67,7 +53,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selected.splice(index, 1);
         }
         this.setState({
-            defaultValue:value,
+            defaultValue: value,
             selectedValues: selected,
             selectedKey: type
         });
@@ -83,13 +69,20 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         const attributes = this.props.eventAttributes[event];
         for (let key in attributes) {
-            elements.push(<h5 key={key}>{key}</h5>);
+            let checkboxes=[];
             attributes[key].forEach(function (d) {
-                elements.push(<div style={{marginLeft:"20px"}} className="form-group" key={d}>
-                    <input id={d} type="checkbox" className="form-check-input" onClick={(e) => _self.handleCheckBoxClick(e, key, d)}/>
-                    <label className="form-check-label" for={d}>{d}</label>
-                </div>)
-            })
+                checkboxes.push(
+                    <Checkbox key={d}
+                              onClick={(e) => _self.handleCheckBoxClick(e, key, d)}>{d}</Checkbox>)
+            });
+            elements.push(<Panel key={key}>
+                <Panel.Heading>
+                    {key}
+                </Panel.Heading>
+                <Panel.Body>
+                    {checkboxes}
+                </Panel.Body>
+            </Panel>)
         }
         return elements;
     }
@@ -99,6 +92,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
     }
+
     /**
      * creates the buttons for the variables for the betweenTimepoints
      * @returns {Array}
@@ -108,8 +102,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<button value={d} onClick={_self.openModal} className="btn"
-                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} +</button>)
+                buttons.push(<Button value={d} onClick={_self.openModal}
+                                     key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} <FontAwesome
+                    name="plus"/></Button>)
             }
         });
         return buttons;
@@ -126,36 +121,48 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: "",name:""});
+        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: "", name: ""});
     }
 
-    componentDidMount() {
-        Modal.setAppElement(ReactDOM.findDOMNode(this));
-    }
 
     render() {
         return (
             <div className="mt-2">
-                <h5>Transition variables</h5>
-                <div className={"btn-group-vertical btn-block"}>
+                <h4>Transition variables</h4>
+                <ButtonGroup vertical block>
                     {this.createBetweenVariablesList()}
-                </div>
+                </ButtonGroup>
                 <Modal
-                    isOpen={this.state.modalIsOpen}
-                    onAfterOpen={this.afterOpenModal}
-                    onRequestClose={this.closeModal}
-                    style={customStyles}
-                    contentLabel="Add Transition Data"
+                    show={this.state.modalIsOpen}
+                    onHide={this.closeModal}
                 >
-                    <div className="form-group">
-                        {this.createCheckboxes(this.state.buttonClicked)}
-                    </div>
-                    <br/>
-                    <label for="name">New variable name</label>
-                    <input type="text" className="form-control" id="name" onChange={(e) => this.handleNameChange(e)}/>
-                    <br/>
-                    <button type="button" className="btn" onClick={() => this.addVariable()}>Add</button>
-                    <button type="button" className="btn ml-3" onClick={this.closeModal}>Close</button>
+                    <Modal.Header>
+                        <Modal.Title>
+                            Add Transition Variable
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <FormGroup>
+                            {this.createCheckboxes(this.state.buttonClicked)}
+                        </FormGroup>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Form horizontal>
+                            <FormGroup>
+                                <Col componentClass={ControlLabel} sm={4}>
+                                    New Variable name:
+                                </Col>
+                                <Col sm={5}>
+                                    <FormControl
+                                        type="text" className="form-control" id="name"
+                                        onChange={(e) => this.handleNameChange(e)}/></Col>
+                                <Col sm={3}>
+                                    <Button onClick={() => this.addVariable()}>Add</Button>
+                                    <Button onClick={this.closeModal}>Close</Button>
+                                </Col>
+                            </FormGroup>
+                        </Form>
+                    </Modal.Footer>
                 </Modal>
             </div>
         )

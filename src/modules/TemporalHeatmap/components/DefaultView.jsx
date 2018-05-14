@@ -1,5 +1,7 @@
 import React from "react";
 import {observer} from "mobx-react";
+import {DropdownButton, MenuItem} from 'react-bootstrap';
+
 
 /*
  * View if no study has been loaded
@@ -11,33 +13,33 @@ const DefaultView = observer(class DefaultView extends React.Component {
     }
 
     getStudy(study) {
-        this.props.rootStore.study=study;
-        this.props.rootStore.firstLoad=false;
-                this.props.rootStore.parseCBio();
+        this.props.setRoot(study,true);
     }
 
 
     setOptions() {
         let options = [];
-        const _self=this;
-        this.props.studies.forEach(function (d) {
-            options.push(<a className="dropdown-item" onClick={()=>_self.getStudy(d)} key={d.studyId}>{d.name}</a>)
+        const _self = this;
+        this.props.studies.forEach(function (d,i) {
+            options.push(<MenuItem eventKey={i} onClick={() => _self.getStudy(d)} key={d.studyId}>{d.name}</MenuItem>)
         });
         return options;
     }
 
     render() {
         return (
-            <div className="dropdown defaultView" >
-                <button className="btn btn-secondary dropdown-toggle btn-lg" type="button" id="dropdownMenuButton"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Select Study
-                </button>
-                <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <div className="defaultView">
+                <DropdownButton
+                    bsStyle="default"
+                    bsSize="large"
+                    title="Get Study"
+                    key="Get Study"
+                    id={`dropdown-basic-$Get Study`}
+                >
                     {this.setOptions()}
-                </div>
+                </DropdownButton>
             </div>
-    );
+        );
     }
-    });
-    export default DefaultView;
+});
+export default DefaultView;

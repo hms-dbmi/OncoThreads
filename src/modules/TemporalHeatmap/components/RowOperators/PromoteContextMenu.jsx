@@ -1,5 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import {Button,ButtonGroup} from 'react-bootstrap';
+
 /*
 promote context menu, appears after a right click on the variables name
  */
@@ -49,16 +51,16 @@ const PromoteContextMenu = observer(class PromoteContextMenu extends React.Compo
 
     render() {
         return (
-            <div className="btn-group-vertical" style={{
+            <ButtonGroup vertical style={{
                 visibility: this.props.showContextMenu,
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button className="btn btn-light btn-sm" onClick={() => this.applyPromoteToPrevious()}>Apply promote to previous timepoint</button>
-                <button className="btn btn-light btn-sm" onClick={() => this.applyPromoteToNext()}>Apply promote to next timepoint</button>
-                <button className="btn btn-light btn-sm" onClick={() => this.applyPromoteToAll()}>Apply promote to all timepoints</button>
-            </div>
+                <Button onClick={() => this.applyPromoteToPrevious()}>Apply promote to previous timepoint</Button>
+                <Button onClick={() => this.applyPromoteToNext()}>Apply promote to next timepoint</Button>
+                <Button onClick={() => this.applyPromoteToAll()}>Apply promote to all timepoints</Button>
+            </ButtonGroup>
         )
     }
 });

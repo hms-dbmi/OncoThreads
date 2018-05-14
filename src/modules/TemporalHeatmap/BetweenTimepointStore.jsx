@@ -38,6 +38,8 @@ class BetweenTimepointStore {
      * @param variable
      */
     initialize(variable) {
+        //disable realtime view if a between variable is added
+        this.rootStore.realTime=false;
         for(let i=0;i<this.timepointStructure.length;i++){
             this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[i],"between",i))
         }

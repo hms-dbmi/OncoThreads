@@ -1,5 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import {Button,ButtonGroup} from 'react-bootstrap';
+
 /*
 group context menu. Appears after a right click on the group button
  */
@@ -49,22 +51,22 @@ const GroupContextMenu = observer(class GroupContextMenu extends React.Component
 
     render() {
         return (
-            <div className="btn-group-vertical" style={{
+            <ButtonGroup vertical style={{
                 visibility: this.props.showContextMenu,
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button className="btn btn-light btn-sm" onClick={() => this.applyGroupToPrevious()}>Apply grouping to
+                <Button onClick={() => this.applyGroupToPrevious()}>Apply grouping to
                     previous timepoint
-                </button>
-                <button className="btn btn-light btn-sm" onClick={() => this.applyGroupToNext()}>Apply grouping to next
+                </Button>
+                <Button onClick={() => this.applyGroupToNext()}>Apply grouping to next
                     timepoint
-                </button>
-                <button className="btn btn-light btn-sm" onClick={() => this.applyGroupToAll()}>Apply grouping to all
+                </Button>
+                <Button onClick={() => this.applyGroupToAll()}>Apply grouping to all
                     timepoints
-                </button>
-            </div>
+                </Button>
+            </ButtonGroup>
         )
     }
 });

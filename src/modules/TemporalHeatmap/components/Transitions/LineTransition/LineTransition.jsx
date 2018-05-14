@@ -35,22 +35,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
     drawDefaultLines() {
         let lines = [];
         const _self = this;
-        /*
-        console.log(this.props.transition.timeGapStructure);
-        console.log(this.props.transition.data.from);
-        */
         this.props.transition.data.from.forEach(function (d) {
-            /*
-            console.log(d);
-
-            console.log( _self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2);
-
-            console.log(_self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2);
-
-            console.log(0 - _self.props.visMap.gap);
-
-            console.log(_self.props.visMap.transitionSpace);
-            */
             if (_self.props.transition.data.to.includes(d)) {
                 let strokeColor="lightgray";
                 if(_self.props.selectedPatients.includes(d)){
@@ -66,9 +51,9 @@ const LineTransition = observer(class LineTransition extends React.Component {
         let lines = [];
         const _self = this;
 
-        var timeGapBetweenMap = {};
+        let timeGapBetweenMap = {};
 
-        var max = this.props.transition.timeGapStructure.map(t=> {
+        const max = this.props.transition.timeGapStructure.map(t=> {
             timeGapBetweenMap[t.patient] = t.timeGapBetweenSample;
             return t.timeGapBetweenSample;
         }).reduce((m, cur) => m>cur? m: cur, 0);
@@ -78,7 +63,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
         const currentRow=_self.props.secondTimepoint.heatmap.filter(function (d,i) {
             return d.variable===_self.props.secondPrimary.variable
         })[0].data;
-        var ind = -1;
+        let ind = -1;
 
         this.props.transition.data.from.forEach(function (d, i) {
 
@@ -88,7 +73,6 @@ const LineTransition = observer(class LineTransition extends React.Component {
                     strokeColor="black"
                 }
                 const frac = timeGapBetweenMap[d]/max;
-//                _self.props.firstHeatmapScale(d)*frac + _self.props.secondHeatmapScale(d)*(1-frac)
                 ind++;
                 lines.push(LineTransition.drawLine(
                     (_self.props.firstHeatmapScale(d)) + _self.props.visMap.sampleRectWidth / 2, 
@@ -106,10 +90,10 @@ const LineTransition = observer(class LineTransition extends React.Component {
                     const color = getColor(currentRow[ind].value);
                     lines.push(
                         <rect
-                            x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-5}
+                            x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-_self.props.visMap.sampleRectWidth / 6}
                             y={_self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max-5}
-                            width={10}
-                            height={10}
+                            width={_self.props.visMap.sampleRectWidth / 3}
+                            height={_self.props.visMap.sampleRectWidth / 3}
                             fill={color}
                         />);
                 }
@@ -118,7 +102,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
         return lines;
     }
 
-    getMax(max, num) {
+    static getMax(max, num) {
         return max>num? max: num;
     }
 
