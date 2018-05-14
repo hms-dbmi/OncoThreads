@@ -22,6 +22,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             if (d.heatmap.length > 0) {
                 timepoints.push(<g key={i + "timepoint"} transform={transform}><Timepoint timepoint={d} index={i}
                                                                                           currentVariables={_self.props.store.currentVariables[d.type]}
+                                                                                          rowWidth={_self.props.viewWidth}
                                                                                           rectWidth={rectWidth}
                                                                                           width={_self.props.heatmapWidth}
                                                                                           store={_self.props.store}

@@ -4,12 +4,23 @@ import {observer} from 'mobx-react';
 creates a row in a partition of a grouped timepoint
  */
 const PartitionRow = observer(class PartitionRow extends React.Component {
+    getTooltipContent(value,numPatients){{
+        let content="";
+        if(numPatients===1){
+            content=value+": "+numPatients+" patient";
+        }
+        else{
+            content=value+": "+numPatients+" patients";
+        }
+        return content;
+    }}
     createRow() {
         let rects = [];
         let currCounts = 0;
         const _self = this;
-        this.props.row.forEach(function (f, j) {
-            rects.push(<rect key={f.key} width={_self.props.groupScale(f.value)} x={_self.props.groupScale(currCounts)} height={_self.props.height}
+        this.props.row.forEach(function (f) {
+            rects.push(<rect key={f.key} onMouseEnter={(e) => _self.props.showTooltip(e, _self.getTooltipContent(f.key,f.value))}
+                               onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.value)} x={_self.props.groupScale(currCounts)} height={_self.props.height}
                              fill={_self.props.color(f.key)} stroke={_self.props.stroke} opacity={_self.props.opacity}/>);
             currCounts += f.value
         });

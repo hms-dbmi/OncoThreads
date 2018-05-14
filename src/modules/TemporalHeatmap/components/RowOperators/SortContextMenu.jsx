@@ -1,5 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import {Button, ButtonGroup} from 'react-bootstrap';
+
 /*
 sort context menu, appears after a right click on the sort button
  */
@@ -34,16 +36,16 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
 
     render() {
         return (
-            <div className="btn-group-vertical" style={{
+            <ButtonGroup vertical style={{
                 visibility: this.props.showContextMenu,
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <button className="btn btn-light btn-sm" onClick={() => this.applySortToPrevious()}>Apply patient order to previous timepoint</button>
-                <button className="btn btn-light btn-sm" onClick={() => this.applySortToNext()}>Apply patient order to next timepoint</button>
-                <button className="btn btn-light btn-sm" onClick={() => this.applySortToAll()}>Apply patient order to all timepoints</button>
-            </div>
+                <Button onClick={() => this.applySortToPrevious()}>Apply patient order to previous timepoint</Button>
+                <Button onClick={() => this.applySortToNext()}>Apply patient order to next timepoint</Button>
+                <Button onClick={() => this.applySortToAll()}>Apply patient order to all timepoints</Button>
+            </ButtonGroup>
         )
     }
 });

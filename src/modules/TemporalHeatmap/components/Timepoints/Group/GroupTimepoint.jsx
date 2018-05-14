@@ -22,8 +22,6 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
             }
             partitions.push(<g key={d.partition} style={{backgroundColor: "darkgray"}}
                                onClick={() => _self.props.selectPartition(d.patients)}
-                               onMouseEnter={(e) => _self.props.showTooltip(e, "# Patients:" + d.patients.length)}
-                               onMouseLeave={_self.props.hideTooltip}
                                transform={transform}><GroupPartition {..._self.props} partition={d}
                                                                      partitionIndex={i} stroke={stroke}/></g>);
             for (let j = 0; j < d.rows.length; j++) {

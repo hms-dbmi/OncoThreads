@@ -1,5 +1,8 @@
 import React from "react";
 import {observer} from "mobx-react";
+import {Button,ButtonGroup,Panel} from 'react-bootstrap';
+import FontAwesome from 'react-fontawesome';
+
 /*
 creates the selector for sample variables (left side of main view, top)
  */
@@ -8,8 +11,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         super();
         this.state = {
             buttonClicked: "",
+            clinicalOpen:true,
+            clinicalIcon:"caret-down",
+            mutationIcon:"caret-right"
         };
         this.handleVariableClick = this.handleVariableClick.bind(this);
+        this.toggleClinicalIcon=this.toggleClinicalIcon.bind(this);
+        this.toggleMutationIcon=this.toggleMutationIcon.bind(this);
     }
 
     /**
@@ -77,8 +85,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<button className={"btn btn-light"} key={d.variable}
-                                 onClick={(e) => _self.handleVariableClick(e, d.variable, d.datatype, "clinical")}>{d.variable}</button>)
+            buttons.push(<Button key={d.variable} onClick={(e) => _self.handleVariableClick(e, d.variable, d.datatype, "clinical")}>{d.variable}</Button>)
         });
         return buttons;
     }
@@ -90,40 +97,58 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     createGenomicAttributesList() {
         let buttons = [];
         const _self = this;
-        buttons.push(<button className={"btn btn-light"}
-                             onClick={(e) => _self.handleContinousClick(e, this.props.mutationCount, "mutationCount")}
-                             key={this.props.mutationCount}>{this.props.mutationCount}</button>);
+        buttons.push(<Button onClick={(e) => _self.handleContinousClick(e, this.props.mutationCount, "mutationCount")}
+                             key={this.props.mutationCount}>{this.props.mutationCount}</Button>);
         return buttons;
+    }
+    static toggleIcon(icon){
+        if(icon==="caret-down"){
+            return "caret-right"
+        }
+        else{
+            return "caret-down"
+        }
+    }
+    toggleClinicalIcon(){
+        this.setState({clinicalIcon:SampleVariableSelector.toggleIcon(this.state.clinicalIcon)});
+    }
+    toggleMutationIcon(){
+        this.setState({mutationIcon:SampleVariableSelector.toggleIcon(this.state.mutationIcon)});
     }
 
 
     render() {
         return (
             <div>
-                <h5 className="mt-3">Sample Variables</h5>
-                <div className="card">
-                    <button className="btn btn-block" data-toggle="collapse" data-target="#collapseClinical"
-                            aria-expanded="true" aria-controls="collapseClinical">Clinical Features ▼
-                    </button>
-                    <div id="collapseClinical" className="collapse show">
-                        <div className="btn-group-vertical btn-block p-1">
-                            {this.createClinicalAttributesList()}
-                        </div>
-                    </div>
-                </div>
-                <div className="card mt-2">
-                    <button className="btn btn-block" data-toggle="collapse" data-target="#collapseGenomic"
-                            aria-expanded="true" aria-controls="collapseGenomic">Genomic
-                        Features ▼
-                    </button>
-                    <div id="collapseGenomic" className="collapse">
-                        <div className="btn-group-vertical btn-block p-1">
-                            {this.createGenomicAttributesList()}
-                        </div>
-                    </div>
-
-                </div>
-
+                <h4 className="mt-3">Sample Variables</h4>
+                <Panel id="clinicalPanel" defaultExpanded>
+                    <Panel.Heading>
+                        <Panel.Title toggle>
+                            <div  onClick={this.toggleClinicalIcon}> Clinical Features <FontAwesome name={this.state.clinicalIcon}/></div>
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Panel.Collapse>
+                        <Panel.Body>
+                            <ButtonGroup vertical block>
+                                {this.createClinicalAttributesList()}
+                            </ButtonGroup>
+                        </Panel.Body>
+                    </Panel.Collapse>
+                </Panel>
+                <Panel id="genomicPanel">
+                    <Panel.Heading>
+                        <Panel.Title toggle >
+                            <div onClick={this.toggleMutationIcon}> Genomic Features <FontAwesome name={this.state.mutationIcon}/> </div>
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Panel.Collapse>
+                        <Panel.Body>
+                            <ButtonGroup vertical block>
+                                {this.createGenomicAttributesList()}
+                            </ButtonGroup>
+                        </Panel.Body>
+                    </Panel.Collapse>
+                </Panel>
 
             </div>
 

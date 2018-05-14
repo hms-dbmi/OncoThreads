@@ -3,56 +3,15 @@
  */
 import React from "react";
 import ReactDOM from "react-dom";
-import {observer} from 'mobx-react';
 import cBioAPI from "./cBioAPI.jsx";
 import studyAPI from "./studyAPI.jsx";
-import RootStore from "./modules/RootStore.jsx";
 
-import GetStudy from "./modules/GetStudy.jsx";
-import Content from "./modules/TemporalHeatmap/components/Content"
-import DefaultView from "./modules/TemporalHeatmap/components/DefaultView";
+import App from "./modules/TemporalHeatmap/components/App.jsx";
 
 
-const cbioAPI = new cBioAPI();
 const studyapi = new studyAPI();
-let rootStore = new RootStore(cbioAPI,"", true);
-studyapi.getStudies();
+const cbioAPI=new cBioAPI();
 
-const StudySelection = observer(class StudySelection extends React.Component {
-    render() {
-        if (rootStore.parsed) {
-            return (
-                <GetStudy rootStore={rootStore} cbioAPI={cbioAPI} studies={studyapi.studies}/>
-            )
-        }
-        else {
-            return null;
-        }
-    }
-});
-const Main = observer(class Main extends React.Component {
-    render() {
-        if (rootStore.parsed) {
-            return (
-                <Content rootStore={rootStore}/>
-            )
-        }
-        else {
-            if (rootStore.firstLoad) {
-                return (
-                    <DefaultView rootStore={rootStore} cbioAPI={cbioAPI} studies={studyapi.studies}/>
-                )
-            }
-            else {
-                return (
-                    <h1 className="defaultView">Loading study...</h1>
-                )
-            }
-        }
-    }
-});
-
-ReactDOM.render(<StudySelection/>, document.getElementById("choosedata"));
-ReactDOM.render(<Main/>, document.getElementById("content"));
+ReactDOM.render(<App studyapi={studyapi} cbioAPI={cbioAPI} parsed="false" firstload="false"/>, document.getElementById("app"));
 
 

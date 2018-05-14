@@ -1,9 +1,12 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import {Col, Grid, Row} from 'react-bootstrap';
+
 import RowOperators from "./RowOperators/RowOperators"
 import Legend from "./Legend"
 import Plot from "./Plot";
-import CurrentVariables from "./CurrentVariables";
+//import HelperAxis from "./HelperAxis"
+//import CurrentVariables from "./CurrentVariables";
 
 /*
 Main View
@@ -70,7 +73,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 
 
-
     /**
      * set visual parameters
      * @param rectWidth
@@ -124,21 +126,42 @@ const MainView = observer(class MainView extends React.Component {
         const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
         const svgHeight = this.props.store.timepoints.length * (sampleTPHeight + betweenTPHeight + this.props.visMap.transitionSpace);
         return (
-            <div onClick={this.closeContextMenu}>
-                <CurrentVariables store={this.props.store} currentVariables={this.props.currentVariables} width={svgWidth}/>
-                <RowOperators {...this.props} height={svgHeight}
-                              svgHeight={svgHeight} svgWidth={200}
-                              posY={timepointPositions.sample}
-                              selectedPatients={this.state.selectedPatients}/>
-                <Plot {...this.props} viewWidth={this.props.width} width={svgWidth} height={svgHeight}
-                      heatmapWidth={heatmapWidth}
-                      timepointY={timepointPositions.sample}
-                      transY={timepointPositions.between}
-                      selectedPatients={this.state.selectedPatients}
-                      onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
-                <Legend {...this.props} height={svgHeight}
-                        posY={timepointPositions.sample}/>
-            </div>
+            <Grid fluid={true} onClick={this.closeContextMenu}>
+                {/*
+                <Row className>
+                    <CurrentVariables store={this.props.store} currentVariables={this.props.currentVariables}
+                                      width={svgWidth}/>
+                </Row>
+
+                <Row>
+                    <HelperAxis orientation="x" height={20} width={300} label="Patients"/>
+                </Row>
+                */}
+                <Row>
+                    <Col xs={2} md={2} style={{padding:0}}>
+                        {/*
+                            <HelperAxis orientation="y" height={300} width={15} label="Time"/>
+                        */}
+                        <RowOperators {...this.props} height={svgHeight}
+                                      svgHeight={svgHeight} svgWidth={200}
+                                      posY={timepointPositions.sample}
+                                      selectedPatients={this.state.selectedPatients}/>
+
+                    </Col>
+                    <Col xs={8} md={8} className="scrollableX" style={{padding:0}}>
+                        <Plot {...this.props} viewWidth={this.props.width} width={svgWidth} height={svgHeight}
+                              heatmapWidth={heatmapWidth}
+                              timepointY={timepointPositions.sample}
+                              transY={timepointPositions.between}
+                              selectedPatients={this.state.selectedPatients}
+                              onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
+                    </Col>
+                    <Col xs={2} md={2} className="scrollableX" style={{padding:0}}>
+                        <Legend {...this.props} height={svgHeight}
+                                posY={timepointPositions.sample}/>
+                    </Col>
+                </Row>
+            </Grid>
         )
     }
 });

@@ -38,7 +38,6 @@ const Plot = observer(class Plot extends React.Component {
         const translateGroupX=(this.props.heatmapWidth-this.props.viewWidth)/2;
         let transform = "translate(0," + 20 + ")";
         return (
-            <div className="view">
                 <svg width={this.props.width} height={this.props.height} viewBox={"0 0 "+this.props.width+" "+this.props.height}>
                     <g transform={transform}>
                         <Timepoints {...this.props}
@@ -56,7 +55,6 @@ const Plot = observer(class Plot extends React.Component {
                                      translateGroupX={translateGroupX}/>
                     </g>
                 </svg>
-            </div>
         )
     }
 });

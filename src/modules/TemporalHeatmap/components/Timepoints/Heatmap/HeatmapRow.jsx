@@ -22,7 +22,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black"
             }
-            rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e,d.patient)}
+            rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e,d.patient,d.value)}
                              onMouseLeave={_self.handleMouseLeave} onMouseDown={() => _self.handleMouseDown(d.patient)}
                              onMouseUp={_self.handleMouseUp} key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
@@ -49,12 +49,13 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         })
     }
 
-    handleMouseEnter(event,patient) {
+    handleMouseEnter(event,patient,value) {
         if (this.state.dragging) {
+            console.log(patient);
             this.props.onDrag(patient);
         }
         else {
-            this.props.showTooltip(event,patient)
+            this.props.showTooltip(event,patient+": "+value)
         }
     }
 

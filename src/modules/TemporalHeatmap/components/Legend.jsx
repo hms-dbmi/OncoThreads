@@ -131,7 +131,9 @@ const Legend = observer(class Legend extends React.Component {
         return (legendEntries);
     }
 
-
+      getHighlightRect(height,width){
+            return <rect height={height} width={width} fill="lightgray"/>
+        }
 
     /**
      * gets the legend
@@ -175,7 +177,11 @@ const Legend = observer(class Legend extends React.Component {
                 }
                 const transform = "translate(0," + currPos + ")";
                 currPos += lineheight + _self.props.visMap.gap;
-                legend.push(<g key={d.variable} transform={transform}>{legendEntries}</g>)
+                let highlightRect=null;
+                if(d.variable===_self.props.highlightedVariable){
+                    highlightRect=_self.getHighlightRect(lineheight,400)
+                }
+                legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
             });
         }
         return legend
@@ -194,7 +200,7 @@ const Legend = observer(class Legend extends React.Component {
         let transform = "translate(0," + 20 + ")";
         return (
             <div className="legend">
-                <svg width={200} height={this.props.height}>
+                <svg width={400} height={this.props.height}>
                     <g transform={transform}>
                         {legends}
                     </g>

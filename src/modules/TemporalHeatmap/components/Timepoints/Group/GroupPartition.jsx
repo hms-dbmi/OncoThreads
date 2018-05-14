@@ -23,7 +23,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                 opacity = 0.5;
             }
             rows.push(<g key={d.variable} transform={transform}><PartitionRow row={d.counts} height={height} opacity={opacity} color={color} stroke={_self.props.stroke}
-                                    groupScale={_self.props.groupScale}/></g>);
+                                    groupScale={_self.props.groupScale} showTooltip={_self.props.showTooltip} hideTooltip={_self.props.hideTooltip}/></g>);
             previousYposition += height + _self.props.visMap.gap;
 
         });
