@@ -46,12 +46,14 @@ const Content = observer(class Content extends React.Component {
      * @param fun: Function which should be executed after the binning was applied: either group or promote
      */
     openModal(variable, type, fun, timepointIndex) {
+        let data=this.props.rootStore.timepointStore.getAllValues(variable);
         this.setState({
             modalIsOpen: true,
             clickedTimepoint: timepointIndex,
             clickedVariable: variable,
             type: type,
-            followUpFunction: fun
+            followUpFunction: fun,
+            binningData: data,
         });
     }
 
@@ -167,9 +169,10 @@ const Content = observer(class Content extends React.Component {
                                   timepointIndex={this.state.clickedTimepoint} type={this.state.type}
                                   followUpFunction={this.state.followUpFunction}
                                   closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
-                                  visMap={this.props.rootStore.visStore}/>,
+                                  visMap={this.props.rootStore.visStore}
+                                    />
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
-                         y={this.state.y} content={this.state.tooltipContent}/>,
+                         y={this.state.y} content={this.state.tooltipContent}/>
                 <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}
                               contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
                               clickedVariable={this.state.clickedVariable}

@@ -1,7 +1,18 @@
 import React from "react";
 import {observer} from "mobx-react";
 import FontAwesome from 'react-fontawesome';
-import {Panel,Button, ButtonGroup, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup, Modal} from 'react-bootstrap';
+import {
+    Panel,
+    Button,
+    ButtonGroup,
+    Checkbox,
+    Col,
+    ControlLabel,
+    Form,
+    FormControl,
+    FormGroup,
+    Modal
+} from 'react-bootstrap';
 
 
 /*
@@ -22,18 +33,22 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.closeModal = this.closeModal.bind(this);
     }
 
-    openModal(event) {
-        this.setState({modalIsOpen: true, buttonClicked: event.target.value, selectedKey: "", selectedValues: []});
+    openModal(buttonClicked) {
+        this.setState({buttonClicked: buttonClicked, selectedKey: "", selectedValues: [], modalIsOpen: true});
     }
 
     /**
      * adds a variable to the view
      */
     addVariable() {
-        if (this.props.currentVariables.length === 0) {
-            this.props.store.initialize(this.state.name);
+        let name = this.state.name
+        if (this.state.name === "") {
+            name = this.state.buttonClicked;
         }
-        this.props.store.addVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, this.state.name);
+        if (this.props.currentVariables.length === 0) {
+            this.props.store.initialize(name);
+        }
+        this.props.store.addVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
         this.closeModal();
     }
 
@@ -69,7 +84,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         const attributes = this.props.eventAttributes[event];
         for (let key in attributes) {
-            let checkboxes=[];
+            let checkboxes = [];
             attributes[key].forEach(function (d) {
                 checkboxes.push(
                     <Checkbox key={d}
@@ -102,7 +117,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<Button value={d} onClick={_self.openModal}
+                buttons.push(<Button value={d} onClick={() => _self.openModal(d)}
                                      key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} <FontAwesome
                     name="plus"/></Button>)
             }
@@ -155,6 +170,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                                 <Col sm={5}>
                                     <FormControl
                                         type="text" className="form-control" id="name"
+                                        defaultValue={this.state.buttonClicked}
                                         onChange={(e) => this.handleNameChange(e)}/></Col>
                                 <Col sm={3}>
                                     <Button onClick={() => this.addVariable()}>Add</Button>
