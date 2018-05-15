@@ -108,6 +108,11 @@ const RowOperators = observer(class RowOperators extends React.Component {
              this.setState({highlightedVariable:""});
             this.props.hideTooltip();
         }
+        handleDelete(variable,timepointIndex){
+            this.setState({highlightedVariable:""});
+            this.props.hideTooltip();
+            this.props.store.removeVariable(variable,this.props.store.timepoints[timepointIndex].type)
+        }
 
         getSortIcon(timepointIndex, variable, iconScale, xPos, yPos) {
             return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
@@ -158,7 +163,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
                    onMouseLeave={this.handleDeleteLeave}>
                     <path fill="gray"
                           d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
-                    <rect onClick={() => this.props.store.removeVariable(variable,this.props.store.timepoints[timepointIndex].type)}
+                    <rect onClick={() => this.handleDelete(variable,timepointIndex) }
                           width={iconScale * 24} height={24}
                           fill="none"
                           pointerEvents="visible"/>
