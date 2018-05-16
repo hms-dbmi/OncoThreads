@@ -198,14 +198,13 @@ const Legend = observer(class Legend extends React.Component {
 
         });
         let transform = "translate(0," + 20 + ")";
+        let viewBox="0, 0, "+this.props.width+", "+this.props.height;
         return (
-            <div className="legend">
-                <svg width={400} height={this.props.height}>
+                <svg width={this.props.width} height={this.props.height} viewBox={viewBox}>
                     <g transform={transform}>
                         {legends}
                     </g>
                 </svg>
-            </div>
         )
     }
 });

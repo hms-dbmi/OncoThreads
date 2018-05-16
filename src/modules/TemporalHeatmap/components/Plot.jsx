@@ -11,16 +11,15 @@ const Plot = observer(class Plot extends React.Component {
      * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
      * @param w: width of the plot
      * @param rectWidth: width of a heatmap cell
-     * @returns heatmap scales
+     * @returns any[] scales
      */
     createSampleHeatMapScales(w, rectWidth) {
-        return this.props.timepoints.map(function (d, i) {
+        return this.props.timepoints.map(function (d) {
             return d3.scalePoint()
                 .domain(d.heatmapOrder)
                 .range([0, w - rectWidth]);
         })
     }
-
 
 
     /**
@@ -34,27 +33,26 @@ const Plot = observer(class Plot extends React.Component {
 
     render() {
         const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.viewWidth);
-        const translateGroupX=(this.props.heatmapWidth-this.props.viewWidth)/2;
+        const groupScale = this.createGroupScale(this.props.viewWidth - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
+        let viewBox = "0, 0, " + this.props.svgWidth + ", " + this.props.height;
+
         return (
-                <svg width={this.props.width} height={this.props.height} viewBox={"0 0 "+this.props.width+" "+this.props.height}>
-                    <g transform={transform}>
-                        <Timepoints {...this.props}
-                                    yPositions={this.props.timepointY}
-                                    groupScale={groupScale}
-                                    heatmapScales={sampleHeatmapScales}
-                                    translateGroupX={translateGroupX}/>
-                        <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
-                                     timepointData={this.props.store.timepoints}
-                                     realTime={this.props.store.rootStore.realTime}
-                                     yPositions={this.props.transY}
-                                     groupScale={groupScale}
-                                     heatmapScales={sampleHeatmapScales}
-                                     height={this.props.transitionSpace}
-                                     translateGroupX={translateGroupX}/>
-                    </g>
-                </svg>
+            <svg width={this.props.svgWidth} height={this.props.height} viewBox={viewBox}>
+                <g transform={transform}>
+                    <Timepoints {...this.props}
+                                yPositions={this.props.timepointY}
+                                groupScale={groupScale}
+                                heatmapScales={sampleHeatmapScales}/>
+                    <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
+                                 timepointData={this.props.store.timepoints}
+                                 realTime={this.props.store.rootStore.realTime}
+                                 yPositions={this.props.transY}
+                                 groupScale={groupScale}
+                                 heatmapScales={sampleHeatmapScales}
+                                 height={this.props.transitionSpace}/>
+                </g>
+            </svg>
         )
     }
 });
