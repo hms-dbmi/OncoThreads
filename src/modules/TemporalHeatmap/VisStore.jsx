@@ -16,6 +16,7 @@ class VisStore{
         this.betweenRectWidth=0;
         //height of rects in a row which is primary
         this.primaryHeight=0;
+        this.secondaryHeight=0;
         //gap between rows in heatmap
         this.gap=0;
         //space for transitions

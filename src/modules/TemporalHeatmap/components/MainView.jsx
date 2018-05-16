@@ -14,8 +14,8 @@ Creates the Row operators, the Plot and the Legend
 Sets the basic parameters, e.g. the dimensions of the rectangles or the height of the transitions ("transition space")
  */
 const MainView = observer(class MainView extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = ({
             selectedPatients: [],
         });
@@ -83,8 +83,8 @@ const MainView = observer(class MainView extends React.Component {
         this.props.visMap.setTransitionSpace(100);
         this.props.visMap.setSampleRectWidth(rectWidth);
         this.props.visMap.setBetweenRectWidth(rectWidth / 2);
-        this.props.visMap.setPrimaryHeight(rectWidth);
-        this.props.visMap.setSecondaryHeight(rectWidth / 2);
+        this.props.visMap.setPrimaryHeight(30);
+        this.props.visMap.setSecondaryHeight(30 / 2);
     }
 
     /**
@@ -110,7 +110,6 @@ const MainView = observer(class MainView extends React.Component {
         }
         return timepointPositions;
     }
-
     render() {
         //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;
@@ -127,29 +126,16 @@ const MainView = observer(class MainView extends React.Component {
         const svgHeight = this.props.store.timepoints.length * (sampleTPHeight + betweenTPHeight + this.props.visMap.transitionSpace);
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
-                {/*
-                <Row className>
-                    <CurrentVariables store={this.props.store} currentVariables={this.props.currentVariables}
-                                      width={svgWidth}/>
-                </Row>
-
-                <Row>
-                    <HelperAxis orientation="x" height={20} width={300} label="Patients"/>
-                </Row>
-                */}
                 <Row>
                     <Col xs={2} md={2} style={{padding:0}}>
-                        {/*
-                            <HelperAxis orientation="y" height={300} width={15} label="Time"/>
-                        */}
-                        <RowOperators {...this.props} height={svgHeight}
-                                      svgHeight={svgHeight} svgWidth={200}
+
+                        <RowOperators {...this.props} height={svgHeight} width={200}
                                       posY={timepointPositions.sample}
                                       selectedPatients={this.state.selectedPatients}/>
 
                     </Col>
                     <Col xs={8} md={8} className="scrollableX" style={{padding:0}}>
-                        <Plot {...this.props} viewWidth={this.props.width} width={svgWidth} height={svgHeight}
+                        <Plot {...this.props} viewWidth={this.props.width} svgWidth={svgWidth} height={svgHeight}
                               heatmapWidth={heatmapWidth}
                               timepointY={timepointPositions.sample}
                               transY={timepointPositions.between}
@@ -157,7 +143,7 @@ const MainView = observer(class MainView extends React.Component {
                               onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
                     </Col>
                     <Col xs={2} md={2} className="scrollableX" style={{padding:0}}>
-                        <Legend {...this.props} height={svgHeight}
+                        <Legend {...this.props} mainWidth={svgWidth} height={svgHeight} width={200}
                                 posY={timepointPositions.sample}/>
                     </Col>
                 </Row>
@@ -166,6 +152,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 });
 MainView.defaultProps = {
-    width: 850
+    width: 800
 };
 export default MainView;

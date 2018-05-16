@@ -8,12 +8,12 @@ implements the icons and their functionality on the left side of the plot
 const RowOperators = observer(class RowOperators extends React.Component {
         constructor() {
             super();
-            this.state={highlightedVariable:""};
+            this.state = {highlightedVariable: ""};
             this.sortTimepoint = this.sortTimepoint.bind(this);
             this.group = this.group.bind(this);
             this.unGroup = this.unGroup.bind(this);
             this.promote = this.promote.bind(this);
-            this.handleDeleteLeave=this.handleDeleteLeave.bind(this);
+            this.handleDeleteLeave = this.handleDeleteLeave.bind(this);
         }
 
 
@@ -39,9 +39,14 @@ const RowOperators = observer(class RowOperators extends React.Component {
          */
         sortTimepoint(timepointIndex, variable) {
             //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
-            this.props.store.timepoints[timepointIndex].sort(variable, this.props.selectedPatients);
-            if (this.props.store.rootStore.realTime) {
-                this.props.store.applySortingToAll(timepointIndex);
+            if (this.props.store.timepoints[timepointIndex].isGrouped && this.props.store.isContinuous(variable, this.props.store.timepoints[timepointIndex].type)) {
+                this.props.openBinningModal(variable, this.props.store.timepoints[timepointIndex].type, this.props.store.groupBinnedTimepoint, timepointIndex);
+            }
+            else {
+                this.props.store.timepoints[timepointIndex].sort(variable, this.props.selectedPatients);
+                if (this.props.store.rootStore.realTime) {
+                    this.props.store.applySortingToAll(timepointIndex);
+                }
             }
         }
 
@@ -100,18 +105,21 @@ const RowOperators = observer(class RowOperators extends React.Component {
             }
             return text;
         }
-        handleDeleteEnter(e,variable){
-            this.setState({highlightedVariable:variable});
+
+        handleDeleteEnter(e, variable) {
+            this.setState({highlightedVariable: variable});
             this.props.showTooltip(e, "Delete variable from all timepoints")
         }
-        handleDeleteLeave(){
-             this.setState({highlightedVariable:""});
+
+        handleDeleteLeave() {
+            this.setState({highlightedVariable: ""});
             this.props.hideTooltip();
         }
-        handleDelete(variable,timepointIndex){
-            this.setState({highlightedVariable:""});
+
+        handleDelete(variable, timepointIndex) {
+            this.setState({highlightedVariable: ""});
             this.props.hideTooltip();
-            this.props.store.removeVariable(variable,this.props.store.timepoints[timepointIndex].type)
+            this.props.store.removeVariable(variable, this.props.store.timepoints[timepointIndex].type)
         }
 
         getSortIcon(timepointIndex, variable, iconScale, xPos, yPos) {
@@ -159,11 +167,11 @@ const RowOperators = observer(class RowOperators extends React.Component {
         getDeleteIcon(timepointIndex, variable, iconScale, xPos, yPos) {
             return (
                 <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                   onMouseEnter={(e)=>this.handleDeleteEnter(e,variable)}
+                   onMouseEnter={(e) => this.handleDeleteEnter(e, variable)}
                    onMouseLeave={this.handleDeleteLeave}>
                     <path fill="gray"
                           d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
-                    <rect onClick={() => this.handleDelete(variable,timepointIndex) }
+                    <rect onClick={() => this.handleDelete(variable, timepointIndex)}
                           width={iconScale * 24} height={24}
                           fill="none"
                           pointerEvents="visible"/>
@@ -179,7 +187,8 @@ const RowOperators = observer(class RowOperators extends React.Component {
                       onClick={(e) => this.promote(timepointIndex, variable, e)}>{RowOperators.cropText(variable, fontSize, fontWeight, width)}</text>
             </g>);
         }
-        static getHighlightRect(height, width){
+
+        static getHighlightRect(height, width) {
             return <rect height={height} width={width} fill="#e8e8e8"/>
         }
 
@@ -212,22 +221,22 @@ const RowOperators = observer(class RowOperators extends React.Component {
                 const yPos = -(iconScale * 24 - lineHeight) / 2;
                 let secondIcon;
                 if (!grouped) {
-                    secondIcon = _self.getGroupIcon(timepointIndex, d.variable, iconScale, _self.props.svgWidth - iconScale * 48, yPos)
+                    secondIcon = _self.getGroupIcon(timepointIndex, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
                 }
                 else {
-                    secondIcon = _self.getUnGroupIcon(timepointIndex, d.variable, iconScale, _self.props.svgWidth - iconScale * 48, yPos)
+                    secondIcon = _self.getUnGroupIcon(timepointIndex, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
 
                 }
-                let highlightRect=null;
-                if(d.variable===_self.state.highlightedVariable){
-                    highlightRect=RowOperators.getHighlightRect(lineHeight,200);
+                let highlightRect = null;
+                if (d.variable === _self.state.highlightedVariable) {
+                    highlightRect = RowOperators.getHighlightRect(lineHeight, 200);
                 }
                 return <g key={d.variable} className={"clickable"} transform={transform}>
                     {highlightRect}
-                    {_self.getRowHeader(timepointIndex, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.svgWidth - iconScale * 72, fontWeight, fontSize)}
-                    {_self.getSortIcon(timepointIndex, d.variable, iconScale, (_self.props.svgWidth - iconScale * 72), yPos)}
+                    {_self.getRowHeader(timepointIndex, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
+                    {_self.getSortIcon(timepointIndex, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
                     {secondIcon}
-                    {_self.getDeleteIcon(timepointIndex,d.variable,iconScale, (_self.props.svgWidth - iconScale * 24), yPos)}
+                    {_self.getDeleteIcon(timepointIndex, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
                 </g>
             });
 
@@ -251,14 +260,13 @@ const RowOperators = observer(class RowOperators extends React.Component {
                 }
             });
             let transform = "translate(0," + 20 + ")";
+            let viewBox = "0, 0, " + this.props.width + ", " + this.props.height;
             return (
-                <div className="rowOperators">
-                    <svg width={this.props.svgWidth} height={this.props.svgHeight}>
-                        <g transform={transform}>
-                            {headers}
-                        </g>
-                    </svg>
-                </div>
+                <svg width={this.props.width} height={this.props.height} viewBox={viewBox}>
+                    <g transform={transform}>
+                        {headers}
+                    </g>
+                </svg>
             )
         }
     }
