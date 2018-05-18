@@ -89,7 +89,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
                     ));
                     const color = getColor(currentRow[ind].value);
                     lines.push(
-                        <rect
+                        <rect key={d}
                             x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-_self.props.visMap.sampleRectWidth / 6}
                             y={_self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max-5}
                             width={_self.props.visMap.sampleRectWidth / 3}

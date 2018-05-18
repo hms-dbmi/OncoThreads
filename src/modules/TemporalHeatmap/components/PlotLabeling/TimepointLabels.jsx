@@ -37,12 +37,12 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                     label = (i - 1) / 2
                 }
                 let pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 30;
-                labels.push(<text y={pos} x={_self.state.width / 2-TimepointLabels.getTextWidth(label,14)/2}>{label}</text>)
+                labels.push(<text key={i} y={pos} x={_self.state.width / 2-TimepointLabels.getTextWidth(label,14)/2}>{label}</text>)
             }
             else {
                 let pos = _self.props.betweenTPHeight / 2 + _self.props.posY[i] + 15;
 
-                labels.push(<line x1={_self.state.width / 2} y1={pos - 10} x2={_self.state.width / 2} y2={pos + 10}
+                labels.push(<line key={i} x1={_self.state.width / 2} y1={pos - 10} x2={_self.state.width / 2} y2={pos + 10}
                                   stroke="darkgray"
                                   markerEnd="url(#arrow)" strokeWidth="1"/>)
             }

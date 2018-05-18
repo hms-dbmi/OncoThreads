@@ -121,6 +121,7 @@ const MainView = observer(class MainView extends React.Component {
         return timepointPositions;
     }
 
+
     render() {
         //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;
@@ -134,7 +135,17 @@ const MainView = observer(class MainView extends React.Component {
 
         const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
         const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
-        const svgHeight = this.props.store.timepoints.length * ((sampleTPHeight + betweenTPHeight)/2 + this.props.visMap.transitionSpace);
+        let height=0;
+        if(sampleTPHeight===0){
+            height=betweenTPHeight;
+        }
+        else if(betweenTPHeight===0){
+            height=sampleTPHeight;
+        }
+        else{
+            height=(sampleTPHeight+betweenTPHeight)/2
+        }
+        const svgHeight = this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace);
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
                 <Row>
@@ -163,7 +174,8 @@ const MainView = observer(class MainView extends React.Component {
                     <Col xs={2} md={2} style={{padding: 0}}>
                         <RowOperators {...this.props} height={svgHeight} width={200}
                                       posY={timepointPositions.timepoint}
-                                      selectedPatients={this.state.selectedPatients}/>
+                                      selectedPatients={this.state.selectedPatients}
+                                        currentVariables={this.props.store.currentVariables}/>
 
                     </Col>
                     <Col xs={8} md={7} style={{padding: 0}}>
