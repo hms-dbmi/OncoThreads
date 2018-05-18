@@ -71,12 +71,11 @@ class TimepointStore {
         }
         else {
             let returnArr = [];
-            for (let i = 0; i < arr1.length; i++) {
+            for (let i = 0; i < arr2.length; i++) {
                 returnArr.push(arr1[i]);
-                if(arr2[i]!==undefined) {
-                    returnArr.push(arr2[i]);
-                }
+                returnArr.push(arr2[i]);
             }
+            returnArr.push(arr1[arr1.length - 1]);
             return returnArr;
         }
     }

@@ -30,10 +30,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             defaultName: "",
             disabled: {},
             selectedValues: [],
-            defaultValue: "",
             showUniqueNameAlert: false,
-            showEmptySelectionAlert:false,
-            showEmptyNameAlert:false
+            showEmptySelectionAlert: false,
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -57,6 +55,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * adds a variable to the view
      */
     addVariable() {
+        this.setState({showUniqueNameAlert: false,showEmptySelectionAlert:false});
         let name = this.state.name;
         if (this.state.name === "") {
             name = this.state.defaultName;
@@ -66,8 +65,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             }).includes(name)) {
             this.setState({showUniqueNameAlert: true});
         }
-        else if(this.state.selectedValues.length===0){
-            this.setState({showEmptySelectionAlert:true});
+        else if (this.state.selectedValues.length === 0) {
+            this.setState({showEmptySelectionAlert: true});
         }
         else {
             if (this.props.currentVariables.length === 0) {
@@ -107,7 +106,6 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             }
         }
         this.setState({
-            defaultValue: value,
             selectedValues: selected,
             selectedKey: type,
             disabled: disabled,
@@ -188,7 +186,17 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: "", name: ""});
+        this.setState({
+             modalIsOpen: false,
+            buttonClicked: "",
+            selectedKey: "",
+            name: "",
+            defaultName: "",
+            disabled: {},
+            selectedValues: [],
+            showUniqueNameAlert: false,
+            showEmptySelectionAlert: false,
+        });
     }
 
     getUniqueNameAlert() {
@@ -203,8 +211,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             return null;
         }
     }
-    getEmptySelectionAlert(){
-         if (this.state.showEmptySelectionAlert) {
+
+    getEmptySelectionAlert() {
+        if (this.state.showEmptySelectionAlert) {
             return (
                 <Alert bsStyle="warning">
                     Please select at least one transition variable
