@@ -3,10 +3,18 @@ import {observer} from 'mobx-react';
 import Timepoints from "./Timepoints/Timepoints"
 import Transitions from "./Transitions/Transitions"
 import * as d3 from "d3";
+//import ReactMixins from './../../../utils/ReactMixins';
+
 /*
 creates the plot with timepoints and transitions
  */
 const Plot = observer(class Plot extends React.Component {
+    constructor() {
+        super();
+        this.state = {width: 0};
+        //ReactMixins.call(this);
+    }
+
     /**
      * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
      * @param w: width of the plot
@@ -33,26 +41,27 @@ const Plot = observer(class Plot extends React.Component {
 
     render() {
         const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.viewWidth - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
-        let viewBox = "0, 0, " + this.props.svgWidth + ", " + this.props.height;
 
         return (
-            <svg width={this.props.svgWidth} height={this.props.height} viewBox={viewBox}>
-                <g transform={transform}>
-                    <Timepoints {...this.props}
-                                yPositions={this.props.timepointY}
-                                groupScale={groupScale}
-                                heatmapScales={sampleHeatmapScales}/>
-                    <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
-                                 timepointData={this.props.store.timepoints}
-                                 realTime={this.props.store.rootStore.realTime}
-                                 yPositions={this.props.transY}
-                                 groupScale={groupScale}
-                                 heatmapScales={sampleHeatmapScales}
-                                 height={this.props.transitionSpace}/>
-                </g>
-            </svg>
+            <div className="scrollableX">
+                <svg width={this.props.svgWidth} height={this.props.height}>
+                    <g transform={transform}>
+                        <Timepoints {...this.props}
+                                    yPositions={this.props.timepointY}
+                                    groupScale={groupScale}
+                                    heatmapScales={sampleHeatmapScales}/>
+                        <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
+                                     timepointData={this.props.store.timepoints}
+                                     realTime={this.props.store.rootStore.realTime}
+                                     yPositions={this.props.transY}
+                                     groupScale={groupScale}
+                                     heatmapScales={sampleHeatmapScales}
+                                     height={this.props.transitionSpace}/>
+                    </g>
+                </svg>
+            </div>
         )
     }
 });

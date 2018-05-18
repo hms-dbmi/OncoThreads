@@ -134,10 +134,9 @@ class TransitionStore {
                 secondPatients.push(d.patient)
             }
         });
-        const intersection = firstPatients.filter(function (d) {
+        return firstPatients.filter(function (d) {
             return secondPatients.indexOf(d) !== -1;
         });
-        return intersection;
     }
 
     /**

@@ -2,6 +2,7 @@ import React from "react";
 import {observer} from "mobx-react";
 import FontAwesome from 'react-fontawesome';
 import {
+    Alert,
     Button,
     ButtonGroup,
     Checkbox,
@@ -11,8 +12,7 @@ import {
     FormControl,
     FormGroup,
     Modal,
-    Panel,
-    Alert
+    Panel
 } from 'react-bootstrap';
 
 
@@ -27,11 +27,13 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             buttonClicked: "",
             selectedKey: "",
             name: "",
-            defaultName:"",
+            defaultName: "",
             disabled: {},
             selectedValues: [],
             defaultValue: "",
-            showAlert:false
+            showUniqueNameAlert: false,
+            showEmptySelectionAlert:false,
+            showEmptyNameAlert:false
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -59,8 +61,13 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         if (this.state.name === "") {
             name = this.state.defaultName;
         }
-        if(this.props.currentVariables.map(function(d){return d.variable}).includes(name)){
-            this.setState({showAlert:true});
+        if (this.props.currentVariables.map(function (d) {
+                return d.variable
+            }).includes(name)) {
+            this.setState({showUniqueNameAlert: true});
+        }
+        else if(this.state.selectedValues.length===0){
+            this.setState({showEmptySelectionAlert:true});
         }
         else {
             if (this.props.currentVariables.length === 0) {
@@ -104,18 +111,19 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selectedValues: selected,
             selectedKey: type,
             disabled: disabled,
-            defaultName:this.createCompositeName(selected)
+            defaultName: this.createCompositeName(selected)
         });
     }
-    createCompositeName(selectedValues){
-        let name="";
-        selectedValues.forEach(function (d,i) {
-            if(i!==0){
-                name+="/";
+
+    createCompositeName(selectedValues) {
+        let name = "";
+        selectedValues.forEach(function (d, i) {
+            if (i !== 0) {
+                name += "/";
             }
-            name+=d;
+            name += d;
         });
-        return(name);
+        return (name);
     }
 
     /**
@@ -182,15 +190,28 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     closeModal() {
         this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: "", name: ""});
     }
-    getAlert(){
-        if(this.state.showAlert){
-            return(
+
+    getUniqueNameAlert() {
+        if (this.state.showUniqueNameAlert) {
+            return (
                 <Alert bsStyle="warning">
                     Please use a unique name for your variable
                 </Alert>
             )
         }
-        else{
+        else {
+            return null;
+        }
+    }
+    getEmptySelectionAlert(){
+         if (this.state.showEmptySelectionAlert) {
+            return (
+                <Alert bsStyle="warning">
+                    Please select at least one transition variable
+                </Alert>
+            )
+        }
+        else {
             return null;
         }
     }
@@ -218,18 +239,30 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                         </FormGroup>
                     </Modal.Body>
                     <Modal.Footer>
-                        {this.getAlert()}
+                        {this.getUniqueNameAlert()}
+                        {this.getEmptySelectionAlert()}
+                        {/*
+                        <FormGroup>
+                                <Radio name="radioGroup" inline checked>
+                                    Combine
+                                </Radio>{' '}
+                                <Radio name="radioGroup" inline>
+                                    Add as separate rows
+                                </Radio>{' '}
+                            </FormGroup>
+                            */}
                         <Form horizontal>
                             <FormGroup>
                                 <Col componentClass={ControlLabel} sm={4}>
                                     New Variable name:
                                 </Col>
-                                <Col sm={5}>
+                                <Col sm={4}>
                                     <FormControl
                                         type="text" className="form-control" id="name"
                                         placeholder={this.state.defaultName}
-                                        onChange={(e) => this.handleNameChange(e)}/></Col>
-                                <Col sm={3}>
+                                        onChange={(e) => this.handleNameChange(e)}/>
+                                </Col>
+                                <Col sm={4}>
                                     <Button onClick={() => this.addVariable()}>Add</Button>
                                     <Button onClick={this.closeModal}>Close</Button>
                                 </Col>

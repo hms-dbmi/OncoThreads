@@ -12,6 +12,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
+        this.handleDoubleClick=this.handleDoubleClick.bind(this);
     }
 
     getRow() {
@@ -24,7 +25,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             }
             rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e,d.patient,d.value)}
                              onMouseLeave={_self.handleMouseLeave} onMouseDown={() => _self.handleMouseDown(d.patient)}
-                             onMouseUp={_self.handleMouseUp} key={d.patient} height={_self.props.height}
+                             onMouseUp={_self.handleMouseUp} onDoubleClick={()=>_self.handleDoubleClick(d.patient)} key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
                              x={_self.props.heatmapScale(d.patient) + _self.props.x}
                              fill={_self.props.color(d.value)} opacity={_self.props.opacity}/>);
@@ -32,7 +33,9 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         return rects;
 
     }
-
+    handleDoubleClick(patient){
+        window.open("http://www.cbiohack.org/case.do#/patient?studyId="+this.props.store.rootStore.study.studyId+"&caseId="+patient);
+    }
     handleMouseDown(patient) {
         if (!this.state.dragging) {
             this.props.onDrag(patient);
@@ -51,7 +54,6 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
     handleMouseEnter(event,patient,value) {
         if (this.state.dragging) {
-            console.log(patient);
             this.props.onDrag(patient);
         }
         else {
