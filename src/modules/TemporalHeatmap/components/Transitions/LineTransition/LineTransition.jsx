@@ -41,7 +41,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
                 if(_self.props.selectedPatients.includes(d)){
                     strokeColor="black"
                 }
-                lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 0 - _self.props.visMap.gap, _self.props.visMap.transitionSpace, d, true, strokeColor));
+                lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth/2, _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 0 - _self.props.visMap.gap, _self.props.visMap.transitionSpace, d, true, strokeColor));
             }
         });
         return lines;

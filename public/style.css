@@ -50,18 +50,24 @@
 }
 
 .sidebar{
+    display:inline-block;
+    width:15%;
     margin-left:0;
     padding: 0;
-    height: 100%;
     background-color: #efefef;
+    white-space: nowrap;
+}
+.main{
+    display:inline-block;
+    white-space: nowrap;
 }
 .helperAxis{
     float:left;
-        white-space: nowrap;
+    white-space: nowrap;
 
 }
-.rowOperators{
-    float:left;
+.noSizeChange{
+    display:inline-block;
     white-space: nowrap;
 
 }

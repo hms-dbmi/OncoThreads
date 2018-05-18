@@ -74,7 +74,7 @@ const Band = observer(class Band extends React.Component {
         let notSelected = <path d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
                                 stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>;
         return (
-            <g onMouseEnter={(e) => this.props.showTooltip(e, source+ "->"+ target+": "+ this.props.count)}
+            <g onMouseEnter={(e) => this.props.showTooltip(e, source+ " -> "+ target+": "+ this.props.count)}
                onMouseLeave={this.props.hideTooltip}>
                 {selected}
                 {notSelected}

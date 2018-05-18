@@ -92,7 +92,7 @@ class SingleTimepoint {
                 let rows = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
                     return {variable: d.variable, counts: []}
                 });
-                let patients=this.heatmap[variableIndex].data.filter(function (d,i) {
+                let patients=this.heatmap[variableIndex].data.filter(function (d) {
                     return d.value===currPartitionKey;
                 }).map(entry =>entry.patient);
                 this.grouped.push({partition: currPartitionKey, rows: rows, patients:patients});
@@ -115,7 +115,6 @@ class SingleTimepoint {
      * Adds counts to a partition or creates partition if it does not exist yet
      * @param partitionIndex: Index of partition to add to
      * @param currKey: Key of partition
-     * @param timepointIndex: current timepoint
      * @param row: current row
      */
     addInstance(partitionIndex, currKey, row) {
@@ -177,6 +176,7 @@ class SingleTimepoint {
     /**
      * sorts a heatmap timepoint
      * @param variable
+     * @param selected
      */
     sortHeatmap(variable,selected) {
         const variableIndex = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {

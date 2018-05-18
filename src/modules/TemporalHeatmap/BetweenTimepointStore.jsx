@@ -40,8 +40,10 @@ class BetweenTimepointStore {
     initialize(variable) {
         //disable realtime view if a between variable is added
         this.rootStore.realTime=false;
-        for(let i=0;i<this.timepointStructure.length;i++){
-            this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[i],"between",i))
+          //one additional timepoint for events after the last samples
+        this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[0],"between",0));
+        for(let i=1;i<this.timepointStructure.length+1;i++){
+            this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[i-1],"between",i))
         }
         this.rootStore.timepointStore.initialize();
     }
@@ -60,13 +62,14 @@ class BetweenTimepointStore {
      */
     addHeatmapVariable(type, selectedValues, selectedKey, name) {
         let timepoints = this.timepoints.slice();
-        for (let j = 0; j < this.timepointStructure.length; j++) {
+        for (let j = 0; j < timepoints.length; j++) {
             timepoints[j].heatmap.push({variable: name, sorting: 0, data: []});
         }
         const addIndex = timepoints[0].heatmap.length - 1;
         const _self = this;
         this.patients.forEach(function (f) {
             let samples = [];
+            //extract samples for current patient
             _self.timepointStructure.forEach(function (g) {
                 g.forEach(function (l) {
                     if (l.patient === f) {
@@ -76,11 +79,18 @@ class BetweenTimepointStore {
             });
             let currTimepoint = 0;
             let startAtEvent =0;
-            while (currTimepoint < samples.length) {
+            while (currTimepoint < samples.length+1) {
                 let eventCounter = startAtEvent;
                 let attributeFound = false;
                 while (eventCounter < _self.clinicalEvents[f].length) {
-                    let currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
+                    let currMaxDate;
+                    //set max date to infinity to find events after the last sample
+                    if(currTimepoint===samples.length){
+                        currMaxDate=Number.POSITIVE_INFINITY;
+                    }
+                    else {
+                        currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
+                    }
                     const currEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate);
                     if (currEventInRange) {
                         if(_self.doesEventMatch(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {

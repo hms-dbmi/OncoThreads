@@ -2,7 +2,7 @@ import React from "react";
 import {observer} from "mobx-react";
 import FontAwesome from 'react-fontawesome';
 import {
-    Panel,
+    Alert,
     Button,
     ButtonGroup,
     Checkbox,
@@ -11,7 +11,8 @@ import {
     Form,
     FormControl,
     FormGroup,
-    Modal
+    Modal,
+    Panel
 } from 'react-bootstrap';
 
 
@@ -26,30 +27,55 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             buttonClicked: "",
             selectedKey: "",
             name: "",
+            defaultName: "",
+            disabled: {},
             selectedValues: [],
-            defaultValue: ""
+            defaultValue: "",
+            showUniqueNameAlert: false,
+            showEmptySelectionAlert:false,
+            showEmptyNameAlert:false
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
     }
 
     openModal(buttonClicked) {
-        this.setState({buttonClicked: buttonClicked, selectedKey: "", selectedValues: [], modalIsOpen: true});
+        let disabled = {};
+        Object.keys(this.props.eventAttributes[buttonClicked]).forEach(function (d) {
+            disabled[d] = false;
+        });
+        this.setState({
+            buttonClicked: buttonClicked,
+            selectedKey: "",
+            selectedValues: [],
+            modalIsOpen: true,
+            disabled: disabled
+        });
     }
 
     /**
      * adds a variable to the view
      */
     addVariable() {
-        let name = this.state.name
+        let name = this.state.name;
         if (this.state.name === "") {
-            name = this.state.buttonClicked;
+            name = this.state.defaultName;
         }
-        if (this.props.currentVariables.length === 0) {
-            this.props.store.initialize(name);
+        if (this.props.currentVariables.map(function (d) {
+                return d.variable
+            }).includes(name)) {
+            this.setState({showUniqueNameAlert: true});
         }
-        this.props.store.addVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
-        this.closeModal();
+        else if(this.state.selectedValues.length===0){
+            this.setState({showEmptySelectionAlert:true});
+        }
+        else {
+            if (this.props.currentVariables.length === 0) {
+                this.props.store.initialize(name);
+            }
+            this.props.store.addVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
+            this.closeModal();
+        }
     }
 
     /**
@@ -67,11 +93,37 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             let index = selected.indexOf(value);
             selected.splice(index, 1);
         }
+        let disabled = Object.assign({}, this.state.disabled);
+        if (selected.length > 0) {
+            for (let k in disabled) {
+                if (k !== type) {
+                    disabled[k] = true;
+                }
+            }
+        }
+        else {
+            for (let k in disabled) {
+                disabled[k] = false;
+            }
+        }
         this.setState({
             defaultValue: value,
             selectedValues: selected,
-            selectedKey: type
+            selectedKey: type,
+            disabled: disabled,
+            defaultName: this.createCompositeName(selected)
         });
+    }
+
+    createCompositeName(selectedValues) {
+        let name = "";
+        selectedValues.forEach(function (d, i) {
+            if (i !== 0) {
+                name += "/";
+            }
+            name += d;
+        });
+        return (name);
     }
 
     /**
@@ -87,7 +139,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             let checkboxes = [];
             attributes[key].forEach(function (d) {
                 checkboxes.push(
-                    <Checkbox key={d}
+                    <Checkbox key={d} disabled={_self.state.disabled[key]}
                               onClick={(e) => _self.handleCheckBoxClick(e, key, d)}>{d}</Checkbox>)
             });
             elements.push(<Panel key={key}>
@@ -139,6 +191,31 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.setState({modalIsOpen: false, buttonClicked: "", selectedValues: [], selectedKey: "", name: ""});
     }
 
+    getUniqueNameAlert() {
+        if (this.state.showUniqueNameAlert) {
+            return (
+                <Alert bsStyle="warning">
+                    Please use a unique name for your variable
+                </Alert>
+            )
+        }
+        else {
+            return null;
+        }
+    }
+    getEmptySelectionAlert(){
+         if (this.state.showEmptySelectionAlert) {
+            return (
+                <Alert bsStyle="warning">
+                    Please select at least one transition variable
+                </Alert>
+            )
+        }
+        else {
+            return null;
+        }
+    }
+
 
     render() {
         return (
@@ -162,17 +239,30 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                         </FormGroup>
                     </Modal.Body>
                     <Modal.Footer>
+                        {this.getUniqueNameAlert()}
+                        {this.getEmptySelectionAlert()}
+                        {/*
+                        <FormGroup>
+                                <Radio name="radioGroup" inline checked>
+                                    Combine
+                                </Radio>{' '}
+                                <Radio name="radioGroup" inline>
+                                    Add as separate rows
+                                </Radio>{' '}
+                            </FormGroup>
+                            */}
                         <Form horizontal>
                             <FormGroup>
                                 <Col componentClass={ControlLabel} sm={4}>
                                     New Variable name:
                                 </Col>
-                                <Col sm={5}>
+                                <Col sm={4}>
                                     <FormControl
                                         type="text" className="form-control" id="name"
-                                        defaultValue={this.state.buttonClicked}
-                                        onChange={(e) => this.handleNameChange(e)}/></Col>
-                                <Col sm={3}>
+                                        placeholder={this.state.defaultName}
+                                        onChange={(e) => this.handleNameChange(e)}/>
+                                </Col>
+                                <Col sm={4}>
                                     <Button onClick={() => this.addVariable()}>Add</Button>
                                     <Button onClick={this.closeModal}>Close</Button>
                                 </Col>

@@ -16,7 +16,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
                     <Modal.Title>Bin {this.props.variable}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Alert bsStyle="warning">
+                    <Alert bsStyle="info">
                         <strong>Please bin the continuous variable before grouping</strong>
                     </Alert>
                     <BinSelector data={this.props.data} numBins={this.props.bins} width={450} height={300}

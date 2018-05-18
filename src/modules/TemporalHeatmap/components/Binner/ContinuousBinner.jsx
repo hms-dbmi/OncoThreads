@@ -7,8 +7,10 @@ import * as d3 from 'd3';
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        this.bins=[]
-        this.binNames=["Bin 1", "Bin 2"]
+        this.bins=[];
+        this.state={
+            binNames:["Bin 1", "Bin 2"]
+        };
         this.handleBinChange = this.handleBinChange.bind(this);
         this.handleNumberOfBinsChange = this.handleNumberOfBinsChange.bind(this);
         this.handleBinNameChange = this.handleBinNameChange.bind(this);
@@ -25,17 +27,20 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     handleNumberOfBinsChange(number) {
-        if (number > this.binNames.length) {
-            this.binNames.push("Bin " + number);
+        let binNames=this.state.binNames.slice();
+        if (number > this.state.binNames.length) {
+            binNames.push("Bin " + number);
         }
         else {
-            this.binNames.pop();
+            binNames.pop();
         }
+        this.setState({binNames:binNames})
     }
 
     close() {
-            this.binNames= ["Bin 1", "Bin 2"];
         this.props.closeModal();
+        this.bins=[];
+        this.setState({binNames:["Bin 1", "Bin 2"]});
     }
 
 
@@ -43,10 +48,10 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * applies binning to data and color scales
      */
     handleApply() {
-        this.props.store.binContinuous(this.props.variable, this.bins, this.binNames, this.props.type);
-        this.props.visMap.setBinnedColorScale(this.props.variable, this.binNames, this.bins);
+        this.props.store.binContinuous(this.props.variable, this.bins, this.state.binNames, this.props.type);
+        this.props.visMap.setBinnedColorScale(this.props.variable, this.state.binNames, this.bins);
         this.props.followUpFunction(this.props.timepointIndex, this.props.variable);
-        this.props.closeModal();
+        this.close();
     }
 
     /**
@@ -55,14 +60,16 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * @param index
      */
     handleBinNameChange(e, index) {
-        this.binNames[index] = e.target.value;
+        let binNames=this.state.binNames.slice();
+        binNames[index] = e.target.value;
+        this.setState({binNames:binNames})
     }
 
     render() {
-        const data=this.props.store.getAllValues(this.props.variable)
-        this.bins=[d3.min(data) - 1, Math.round((d3.max(data) + d3.min(data)) / 2), d3.max(data)]
+        const data=this.props.store.getAllValues(this.props.variable);
+        this.bins=[d3.min(data) - 1, Math.round((d3.max(data) + d3.min(data)) / 2), d3.max(data)];
         return (
-            <BinningModal data={data} binNames={this.binNames} bins={this.bins} variable={this.props.variable} handleBinChange={this.handleBinChange}
+            <BinningModal data={data} binNames={this.state.binNames} bins={this.bins} variable={this.props.variable} handleBinChange={this.handleBinChange}
                                          handleNumberOfBinsChange={this.handleNumberOfBinsChange} handleBinNameChange={this.handleBinNameChange}
                                         close={this.close} handleApply={this.handleApply} modalIsOpen={this.props.modalIsOpen}/>
         )

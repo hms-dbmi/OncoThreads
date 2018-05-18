@@ -47,7 +47,8 @@ class TimepointStore {
     initialize() {
         this.timepoints = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepoints, this.rootStore.sampleTimepointStore.timepoints);
         this.timepoints.forEach(function (d, i) {
-            d.globalIndex = i;
+                d.globalIndex = i;
+
         });
         this.currentVariables.sample = this.rootStore.sampleTimepointStore.currentVariables;
         this.currentVariables.between = this.rootStore.betweenTimepointStore.currentVariables;
@@ -72,7 +73,9 @@ class TimepointStore {
             let returnArr = [];
             for (let i = 0; i < arr1.length; i++) {
                 returnArr.push(arr1[i]);
-                returnArr.push(arr2[i]);
+                if(arr2[i]!==undefined) {
+                    returnArr.push(arr2[i]);
+                }
             }
             return returnArr;
         }
