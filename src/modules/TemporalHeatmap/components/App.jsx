@@ -31,19 +31,26 @@ const App = observer(class App extends React.Component {
         }
     }
 
+    /**
+     * get content in the main panel
+     * @returns {*}
+     */
     getMainContent() {
+        //if everything is parsed show the main view
         if (this.rootStore.parsed) {
             return (
                 <Content rootStore={this.rootStore}/>
             )
         }
         else {
+            //if there is no study loaded show the default view
             if (this.rootStore.firstLoad) {
                 return (
                     <DefaultView setRoot={this.setRootStore} cbioAPI={this.props.cbioAPI}
                                  studies={this.props.studyapi.studies}/>
                 )
             }
+            //if a study is loaded but not parsed yet display "Loading study"
             else {
                 return (
                     <h1 className="defaultView">Loading study...</h1>

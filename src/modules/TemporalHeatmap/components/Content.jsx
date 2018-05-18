@@ -3,8 +3,7 @@
  */
 import React from "react";
 import {observer} from 'mobx-react';
-import FontAwesome from 'react-fontawesome';
-import {Button, ButtonToolbar, Col, Grid, Row} from 'react-bootstrap';
+import {Col, Grid, Row} from 'react-bootstrap';
 
 import SampleVariableSelector from "./VariableSelector/SampleVariableSelector"
 import BetweenSampleVariableSelector from "./VariableSelector/BetweenSampleVariableSelector"
@@ -14,7 +13,9 @@ import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
 
-
+/*
+Creates all components except for the top navbar
+ */
 const Content = observer(class Content extends React.Component {
     constructor() {
         super();
@@ -25,6 +26,10 @@ const Content = observer(class Content extends React.Component {
             clickedTimepoint: -1,
             x: 0,
             y: 0,
+            sidebarSize: 2,
+            mainSize: 10,
+            displaySidebar: "",
+            displayShowButton: "none",
             tooltipContent: "",
             showTooltip: "hidden",
             contextType: ""
@@ -36,6 +41,8 @@ const Content = observer(class Content extends React.Component {
         this.hideTooltip = this.hideTooltip.bind(this);
         this.showContextMenu = this.showContextMenu.bind(this);
         this.hideContextMenu = this.hideContextMenu.bind(this);
+        this.showSidebar = this.showSidebar.bind(this);
+        this.hideSidebar = this.hideSidebar.bind(this);
     }
 
     /**
@@ -46,7 +53,7 @@ const Content = observer(class Content extends React.Component {
      * @param fun: Function which should be executed after the binning was applied: either group or promote
      */
     openModal(variable, type, fun, timepointIndex) {
-        let data=this.props.rootStore.timepointStore.getAllValues(variable);
+        let data = this.props.rootStore.timepointStore.getAllValues(variable);
         this.setState({
             modalIsOpen: true,
             clickedTimepoint: timepointIndex,
@@ -93,84 +100,71 @@ const Content = observer(class Content extends React.Component {
         })
     }
 
-    createTimeButton() {
-        const _self = this;
-        if (this.props.rootStore.timepointStore.timepoints.length === 0 || this.props.rootStore.timepointStore.currentVariables.between.length > 0) {
-            return null;
-        } else {
-            return (
-                <Button onClick={(e) => _self.handleTimeClick(e)}
-                        key={this.props.rootStore.realTime}>
-                    <FontAwesome
-                        name="clock"/> {(this.props.rootStore.realTime) ? "Hide actual timeline" : "Show actual timeline"}
-                </Button>
-            )
-        }
+    showSidebar() {
+        this.setState({sidebarSize: 2, mainSize: 10, displaySidebar: "", displayShowButton: "none"})
     }
 
-    handleTimeClick(event) {
-        this.props.rootStore.timepointStore.applySortingToAll(0);
-        this.props.rootStore.realTime = !this.props.rootStore.realTime;
-        event.target.className = (this.props.rootStore.realTime) ? "selected" : "notSelected";
+    hideSidebar() {
+        this.setState({sidebarSize: 0, mainSize: 12, displaySidebar: "none", displayShowButton: ""})
     }
-
 
     render() {
         return (
             <div>
-            <Grid fluid={true} style={{padding:0}}>
-                <Col sm={2} md={2} style={{backgroundColor: "lightgray",paddingTop:"10px"}}>
-                    <StudySummary studyName={this.props.rootStore.study.name}
-                                  studyDescription={this.props.rootStore.study.description}
-                                  studyCitation={this.props.rootStore.study.citation}
-                                  numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
-                                  minTP={this.props.rootStore.minTP}
-                                  maxTP={this.props.rootStore.maxTP}/>
-                    <SampleVariableSelector
-                        clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
-                        mutationCount="Mutation count"
-                        currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
-                        store={this.props.rootStore.sampleTimepointStore}
-                        visMap={this.props.rootStore.visStore}
-                    />
-                    <BetweenSampleVariableSelector
-                        eventCategories={this.props.rootStore.eventCategories}
-                        eventAttributes={this.props.rootStore.eventAttributes}
-                        currentVariables={this.props.rootStore.timepointStore.currentVariables.between}
-                        store={this.props.rootStore.betweenTimepointStore}
-                        visMap={this.props.rootStore.visStore}
-                    />
-                </Col>
-                <Col sm={10} md={10} onMouseEnter={this.hideContextMenu} style={{padding: 20}}>
-                    <Row>
-                        <ButtonToolbar>
-                            <Button onClick={this.props.rootStore.reset}><FontAwesome
-                                name="undo"/> Reset</Button>
-                            {this.createTimeButton()}
-                        </ButtonToolbar>
-                    </Row>
-                    <Row>
-                        <MainView
-                            currentVariables={this.props.rootStore.timepointStore.currentVariables}
-                            timepoints={this.props.rootStore.timepointStore.timepoints}
-                            store={this.props.rootStore.timepointStore}
-                            transitionStore={this.props.rootStore.transitionStore}
+                {/*<Button style={{display:this.state.displayShowButton}} onClick={this.showSidebar}>Show Sidebar</Button>*/}
+                <Grid fluid={true} style={{padding: 0}}>
+                    <Col sm={this.state.sidebarSize} md={this.state.sidebarSize}
+                         style={{display: this.state.displaySidebar, backgroundColor: "lightgray", paddingTop: "10px"}}>
+                        {/*
+                        <Row>
+                        <Button style={{float:"right"}} onClick={this.hideSidebar}>X</Button>
+                        </Row>
+                        */}
+                        <StudySummary studyName={this.props.rootStore.study.name}
+                                      studyDescription={this.props.rootStore.study.description}
+                                      studyCitation={this.props.rootStore.study.citation}
+                                      numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
+                                      minTP={this.props.rootStore.minTP}
+                                      maxTP={this.props.rootStore.maxTP}/>
+                        <SampleVariableSelector
+                            clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
+                            mutationCount="Mutation count"
+                            currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                            store={this.props.rootStore.sampleTimepointStore}
                             visMap={this.props.rootStore.visStore}
-                            openBinningModal={this.openModal}
-                            showTooltip={this.showTooltip}
-                            hideTooltip={this.hideTooltip}
-                            showContextMenu={this.showContextMenu}
-                            hideContextMenu={this.hideContextMenu}/>
-                    </Row>
-                </Col>
-            </Grid>
+                        />
+                        <BetweenSampleVariableSelector
+                            eventCategories={this.props.rootStore.eventCategories}
+                            eventAttributes={this.props.rootStore.eventAttributes}
+                            currentVariables={this.props.rootStore.timepointStore.currentVariables.between}
+                            store={this.props.rootStore.betweenTimepointStore}
+                            visMap={this.props.rootStore.visStore}
+                        />
+                    </Col>
+                    <Col sm={this.state.mainSize} md={this.state.mainSize} onMouseEnter={this.hideContextMenu}
+                         style={{padding: 20}}>
+                        <Row>
+                            <MainView
+                                currentVariables={this.props.rootStore.timepointStore.currentVariables}
+                                timepoints={this.props.rootStore.timepointStore.timepoints}
+                                store={this.props.rootStore.timepointStore}
+                                transitionStore={this.props.rootStore.transitionStore}
+                                visMap={this.props.rootStore.visStore}
+                                openBinningModal={this.openModal}
+                                showTooltip={this.showTooltip}
+                                hideTooltip={this.hideTooltip}
+                                showContextMenu={this.showContextMenu}
+                                hideContextMenu={this.hideContextMenu}/>
+                        </Row>
+                    </Col>
+                </Grid>
                 <ContinuousBinner modalIsOpen={this.state.modalIsOpen}
                                   variable={this.state.clickedVariable}
                                   timepointIndex={this.state.clickedTimepoint} type={this.state.type}
                                   followUpFunction={this.state.followUpFunction}
                                   closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
                                   visMap={this.props.rootStore.visStore}
-                                    />
+                />
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} content={this.state.tooltipContent}/>
                 <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}

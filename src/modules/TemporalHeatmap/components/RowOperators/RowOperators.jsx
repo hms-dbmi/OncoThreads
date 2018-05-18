@@ -1,5 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import ReactMixins from './../../../../utils/ReactMixins';
 
 
 /*
@@ -8,12 +9,13 @@ implements the icons and their functionality on the left side of the plot
 const RowOperators = observer(class RowOperators extends React.Component {
         constructor() {
             super();
-            this.state = {highlightedVariable: ""};
+            this.state = {highlightedVariable: "",width:0};
             this.sortTimepoint = this.sortTimepoint.bind(this);
             this.group = this.group.bind(this);
             this.unGroup = this.unGroup.bind(this);
             this.promote = this.promote.bind(this);
             this.handleDeleteLeave = this.handleDeleteLeave.bind(this);
+            ReactMixins.call(this);
         }
 
 
@@ -38,12 +40,13 @@ const RowOperators = observer(class RowOperators extends React.Component {
          * @param variable: Variable with which the timepoint should be sorted
          */
         sortTimepoint(timepointIndex, variable) {
-            //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
             if (this.props.store.timepoints[timepointIndex].isGrouped && this.props.store.isContinuous(variable, this.props.store.timepoints[timepointIndex].type)) {
                 this.props.openBinningModal(variable, this.props.store.timepoints[timepointIndex].type, this.props.store.groupBinnedTimepoint, timepointIndex);
             }
             else {
+                console.log(variable,timepointIndex);
                 this.props.store.timepoints[timepointIndex].sort(variable, this.props.selectedPatients);
+                            //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
                 if (this.props.store.rootStore.realTime) {
                     this.props.store.applySortingToAll(timepointIndex);
                 }
@@ -106,16 +109,28 @@ const RowOperators = observer(class RowOperators extends React.Component {
             return text;
         }
 
+        /**
+         * highlights variable for deletion and shows tooltip
+         * @param e
+         * @param variable
+         */
         handleDeleteEnter(e, variable) {
             this.setState({highlightedVariable: variable});
             this.props.showTooltip(e, "Delete variable from all timepoints")
         }
-
+        /**
+         * unhighlights variable for deletion and hides tooltip
+         */
         handleDeleteLeave() {
             this.setState({highlightedVariable: ""});
             this.props.hideTooltip();
         }
 
+        /**
+         * handle click on delete button
+         * @param variable
+         * @param timepointIndex
+         */
         handleDelete(variable, timepointIndex) {
             this.setState({highlightedVariable: ""});
             this.props.hideTooltip();
@@ -178,7 +193,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
                 </g>);
         }
 
-        getRowHeader(timepointIndex, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
+        getRowLabel(timepointIndex, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
             return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
                        onMouseLeave={this.props.hideTooltip}>
@@ -221,10 +236,10 @@ const RowOperators = observer(class RowOperators extends React.Component {
                 const yPos = -(iconScale * 24 - lineHeight) / 2;
                 let secondIcon;
                 if (!grouped) {
-                    secondIcon = _self.getGroupIcon(timepointIndex, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+                    secondIcon = _self.getGroupIcon(timepointIndex, d.variable, iconScale, _self.state.width - iconScale * 48, yPos)
                 }
                 else {
-                    secondIcon = _self.getUnGroupIcon(timepointIndex, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+                    secondIcon = _self.getUnGroupIcon(timepointIndex, d.variable, iconScale, _self.state.width - iconScale * 48, yPos)
 
                 }
                 let highlightRect = null;
@@ -233,40 +248,39 @@ const RowOperators = observer(class RowOperators extends React.Component {
                 }
                 return <g key={d.variable} className={"clickable"} transform={transform}>
                     {highlightRect}
-                    {_self.getRowHeader(timepointIndex, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
-                    {_self.getSortIcon(timepointIndex, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
+                    {_self.getRowLabel(timepointIndex, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.state.width - iconScale * 72, fontWeight, fontSize)}
+                    {_self.getSortIcon(timepointIndex, d.variable, iconScale, (_self.state.width - iconScale * 72), yPos)}
                     {secondIcon}
-                    {_self.getDeleteIcon(timepointIndex, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
+                    {_self.getDeleteIcon(timepointIndex, d.variable, iconScale, (_self.state.width - iconScale * 24), yPos)}
                 </g>
             });
 
         }
 
         render() {
-            let headers = [];
+            let rowHeader = [];
             const _self = this;
-            //Paths for Icons
-
             this.props.timepoints.forEach(function (d, i) {
                 let transform = "translate(0," + _self.props.posY[i] + ")";
                 //Different icons and functions for grouped and ungrouped timepoints
                 if (!d.isGrouped) {
-                    headers.push(<g key={"Operator" + i}
+                    rowHeader.push(<g key={"Operator" + i}
                                     transform={transform}>{_self.getRowOperators(i, false)}</g>)
                 }
                 else {
-                    headers.push(<g key={"Operator" + i}
+                    rowHeader.push(<g key={"Operator" + i}
                                     transform={transform}>{_self.getRowOperators(i, true)}</g>)
                 }
             });
             let transform = "translate(0," + 20 + ")";
-            let viewBox = "0, 0, " + this.props.width + ", " + this.props.height;
             return (
-                <svg width={this.props.width} height={this.props.height} viewBox={viewBox}>
+                <div>
+                <svg width={this.state.width} height={this.props.height} >
                     <g transform={transform}>
-                        {headers}
+                        {rowHeader}
                     </g>
                 </svg>
+                </div>
             )
         }
     }
