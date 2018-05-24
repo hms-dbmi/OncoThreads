@@ -43,17 +43,18 @@ class VisStore{
 
     /**
      * creates a binned color scale for a binned variable using its corresponding continuous scale
-     * @param variable
+     * @param newId
+     * @param oldId
      * @param binNames: domain of scale
      * @param binValues: bins
      */
-    setBinnedColorScale(variable,binNames,binValues){
-        const continousScale=this.continuousColor[variable];
+    setBinnedColorScale(newId,oldId,binNames,binValues){
+        const continousScale=this.continuousColor[oldId];
         let colors=[];
         for(let i=0;i<binNames.length;i++){
             colors.push(continousScale((binValues[i+1]+binValues[i])/2));
         }
-        this.binnedColor[variable]=d3.scaleOrdinal().range(colors).domain(binNames);
+        this.binnedColor[newId]=d3.scaleOrdinal().range(colors).domain(binNames).unknown('#f2baba');
     }
     setGap(gap){
         this.gap=gap;

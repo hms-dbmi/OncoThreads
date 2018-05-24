@@ -151,25 +151,25 @@ const Legend = observer(class Legend extends React.Component {
             data.forEach(function (d, i) {
                 let lineheight;
                 let opacity = 1;
-                if (primary === d.variable) {
+                if (primary.id === d.variable) {
                     lineheight = _self.props.visMap.primaryHeight;
                 }
                 else {
                     lineheight = _self.props.visMap.secondaryHeight;
                     opacity = 0.5
                 }
-                let color = _self.props.visMap.getColorScale(d.variable, currentVariables[i].type);
+                let color = _self.props.visMap.getColorScale(d.variable, currentVariables[i].datatype);
                 let legendEntries = [];
                 if(lineheight<fontSize){
                     fontSize=Math.round(lineheight);
                 }
-                if (currentVariables[i].type === "STRING") {
+                if (currentVariables[i].datatype === "STRING") {
                     legendEntries = _self.getCategoricalLegend(d, opacity, fontSize, lineheight, color);
                 }
-                else if (currentVariables[i].type === "binary") {
+                else if (currentVariables[i].datatype === "binary") {
                     legendEntries = Legend.getBinaryLegend(d, opacity, fontSize, lineheight, color);
                 }
-                else if(currentVariables[i].type === "BINNED"){
+                else if(currentVariables[i].datatype === "BINNED"){
                     legendEntries=Legend.getBinnedLegend(opacity,fontSize,lineheight,color);
                 }
                 else {
@@ -194,7 +194,7 @@ const Legend = observer(class Legend extends React.Component {
         this.props.timepoints.forEach(function (d, i) {
             let transform = "translate(10," + _self.props.posY[i] + ")";
             legends.push(<g key={i + d}
-                            transform={transform}>{_self.getLegend(d.heatmap, d.primaryVariable, textHeight, _self.props.store.currentVariables[d.type])}</g>);
+                            transform={transform}>{_self.getLegend(d.heatmap, d.primaryVariable, textHeight, _self.props.store.variableStore[d.type].currentVariables)}</g>);
 
         });
         let transform = "translate(0," + 20 + ")";

@@ -6,6 +6,8 @@ import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
+import uuidv4 from 'uuid/v4';
+
 
 /*
 gets the data with the cBioAPI and gives it to the other stores
@@ -24,11 +26,18 @@ class RootStore {
         this.maxTP = 0;
         this.minTP = 0;
         this.clinicalSampleCategories = [];
+        this.mutationCountId = uuidv4();
+        this.timeDistanceId = uuidv4();
         this.eventCategories = [];
         this.eventAttributes = [];
         this.patientsPerTimepoint = [];
         this.patientOrderPerTimepoint = [];
-        this.timeGapStructure=[];
+        this.timeGapStructure = [];
+        this.timepointStructure = [];
+        this.transitionStructure = [];
+        this.sampleTimelineMap = {};
+        this.timeGapMapping = [];
+        this.sampleMappers = {};
         this.actualTimeLine=[];
         this.eventDetails=[];
 
@@ -46,8 +55,7 @@ class RootStore {
     reset() {
         this.parsed = false;
         this.betweenTimepointStore.reset();
-        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].variable);
-        this.sampleTimepointStore.addVariable(this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
+        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
         this.parsed = true;
     }
 
@@ -58,13 +66,11 @@ class RootStore {
         const _self = this;
         this.cbioAPI.getAllData(this.study.studyId, function () {
             _self.buildPatientStructure();
-            _self.sampleTimepointStore.setSampleClinicalMap(_self.createClinicalDataMapping());
-            _self.sampleTimepointStore.setSampleMutationCountMap(_self.createMutationCountsMapping());
+            _self.createClinicalSampleMapping();
+            _self.createMutationCountsMapping();
 
-            _self.betweenTimepointStore.setClinicalEvents(_self.cbioAPI.clinicalEvents);
 
-            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].variable);
-            _self.sampleTimepointStore.addVariable(_self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
+            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
             _self.parsed = true;
 
         });
@@ -120,22 +126,18 @@ class RootStore {
             })
         });
         this.maxTP = maxTP;
-        const timepointStructure = this.buildTimepointStructure(sampleStructure, maxTP);
-        this.getEventAttributes(excludeDates);
-        this.timeGapStructure=this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
-        this.actualTimeLine=this.getTimeLine(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
+        this.sampleTimelineMap = sampleTimelineMap;
         this.timepointStore.setNumberOfPatients(allPatients.length);
         this.patientOrderPerTimepoint = allPatients;
         this.patientsPerTimepoint = patientsPerTimepoint;
-
-        this.sampleTimepointStore.setTimepointStructure(timepointStructure);
-
-        this.betweenTimepointStore.setPatients(allPatients);
-        this.betweenTimepointStore.setSampleTimelineMap(sampleTimelineMap);
-        this.betweenTimepointStore.setTimepointStructure(timepointStructure);
-
-
         this.eventCategories = eventCategories;
+        this.actualTimeLine=this.getTimeLine(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
+        this.buildTimepointStructure(sampleStructure, maxTP);
+        this.buildTransitionStructure();
+        this.buildTimeGapStructure(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
+        this.getEventAttributes(excludeDates);
+
+
     }
 
     /**
@@ -164,39 +166,75 @@ class RootStore {
             });
             timepointStructure.push(patientSamples);
         }
-        return timepointStructure;
+        this.timepointStructure=timepointStructure;
+    }
+
+    buildTransitionStructure() {
+        let transitionStrucutre = [];
+        this.patientsPerTimepoint.forEach(function (d, i) {
+            if (i === 0) {
+                transitionStrucutre.push(d);
+            }
+            transitionStrucutre.push(d);
+        });
+        this.transitionStructure=transitionStrucutre;
     }
 
 
     /**
 
      */
-    getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, numberOfTimepoints) {
-        let timeGaps = [];
-        for (let i = 0; i < numberOfTimepoints; i++) {
-            let patientSamples2 = [];
+    buildTimeGapStructure(sampleTimelineMap, timepointStructure, sampleStructure, numberOfTimepoints) {
+        this.timeGapMapping = new Array(numberOfTimepoints + 1).fill(null).map(Object);
+        const _self = this;
+        for (let i = 0; i < numberOfTimepoints + 1; i++) {
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
-
                     if (i === 0) {
-                        patientSamples2.push({
-                            patient: d.patientId,
-                            sample: sampleStructure[d.patientId][i][0],
-                            timeGapBetweenSample: 0
-                        });
+                        _self.timeGapMapping[i][d.patientId] = undefined;
                     }
                     else {
-                        patientSamples2.push({
-                            patient: d.patientId,
-                            sample: sampleStructure[d.patientId][i][0],
-                            timeGapBetweenSample: sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis - sampleTimelineMap[sampleStructure[d.patientId][i - 1][0]].startNumberOfDaysSinceDiagnosis
-                        });
+                        _self.timeGapMapping[i][d.patientId] = sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis - sampleTimelineMap[sampleStructure[d.patientId][i - 1][0]].startNumberOfDaysSinceDiagnosis;
+                    }
+                }
+                if (i === numberOfTimepoints && sampleStructure[d.patientId].length > i - 1) {
+                    _self.timeGapMapping[i][d.patientId] = undefined;
+                }
+
+            });
+        }
+    }
+
+    /**
+     * computes the maximum and minimum of a continuous mapper
+     */
+    static getMinMaxOfContinuous(mapper, type) {
+        let max = Number.NEGATIVE_INFINITY;
+        let min = Number.POSITIVE_INFINITY;
+        if (type === "between") {
+            mapper.forEach(function (d) {
+                for (let patient in d) {
+                    if (d[patient] > max) {
+                        max = d[patient];
+                    }
+                    if (d[patient] < min) {
+                        min = d[patient];
                     }
                 }
             });
-            timeGaps.push(patientSamples2);
         }
-        return timeGaps;
+        else {
+            for (let sample in mapper) {
+                if (mapper[sample] > max) {
+                    max = mapper[sample];
+                }
+                if (mapper[sample] < min) {
+                    min = mapper[sample];
+                }
+            }
+        }
+        return [min, max];
+
     }
 
 
@@ -227,36 +265,134 @@ class RootStore {
      * creates a dictionary mapping sample IDs onto clinical data
      * @returns {{}}
      */
-    createClinicalDataMapping() {
+    createClinicalSampleMapping() {
         const _self = this;
-        let sampleClinicalMap = {};
-        _self.cbioAPI.clinicalSampleData.forEach(function (d, i) {
-            if (!(d.sampleId in sampleClinicalMap)) {
-                sampleClinicalMap[d.sampleId] = {};
+        _self.cbioAPI.clinicalSampleData.forEach(function (d) {
+            let id;
+            let hasId = _self.clinicalSampleCategories.map(function (f) {
+                return f.originalId
+            }).includes(d.clinicalAttributeId);
+            if (hasId) {
+                id = _self.clinicalSampleCategories.filter(function (f) {
+                    return f.originalId === d.clinicalAttributeId;
+                })[0].id;
             }
-            if (!_self.clinicalSampleCategories.map(function (d, i) {
-                    return d.variable
-                }).includes(d.clinicalAttribute.displayName)) {
+            else {
+                id = uuidv4();
                 _self.clinicalSampleCategories.push({
+                    id: id,
                     variable: d.clinicalAttribute.displayName,
+                    originalId: d.clinicalAttributeId,
                     datatype: d.clinicalAttribute.datatype
                 });
             }
-            sampleClinicalMap[d.sampleId][d.clinicalAttribute.displayName] = d.value;
+            if (!(id in _self.sampleMappers)) {
+                _self.sampleMappers[id] = {}
+            }
+            _self.sampleMappers[id][d.sampleId] = d.value;
         });
-        return sampleClinicalMap;
     }
+
 
     /**
      * creates a dictionary mapping sample IDs onto mutation counts
      * @returns {{}}
      */
     createMutationCountsMapping() {
-        let mapper = {};
+        const _self = this;
+        this.sampleMappers[this.mutationCountId] = {};
         this.cbioAPI.mutationCounts.forEach(function (d) {
-            mapper[d.sampleId] = d.mutationCount;
+            _self.sampleMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
         });
+    }
+
+    getOReventMapping(eventType, selectedVariables, selectedCategory) {
+        let mapper = new Array(this.transitionStructure.length).fill(null).map(Object);
+        const _self = this;
+        for (let patient in this.cbioAPI.clinicalEvents) {
+            let samples = [];
+            //extract samples for current patient
+            this.timepointStructure.forEach(function (g) {
+                g.forEach(function (l) {
+                    if (l.patient === patient) {
+                        samples.push(l.sample);
+                    }
+                });
+            });
+            let counter = 0;
+            let isFound = false;
+            let currentStart = Number.NEGATIVE_INFINITY;
+            let currentEnd = this.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
+            this.cbioAPI.clinicalEvents[patient].forEach(function (d, i) {
+                if (RootStore.isInCurrentRange(d, currentStart, currentEnd)) {
+                    if (_self.doesEventMatch(eventType, selectedVariables, selectedCategory, d)) {
+                        isFound = true;
+                    }
+                }
+                else {
+                    mapper[counter][patient] = isFound;
+                    currentStart = _self.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
+                    if (counter + 1 < samples.length) {
+                        currentEnd = _self.sampleTimelineMap[samples[counter + 1]].startNumberOfDaysSinceDiagnosis;
+                    }
+                    else {
+                        currentEnd = Number.POSITIVE_INFINITY;
+                    }
+                    counter += 1;
+                    isFound = false;
+
+                }
+                if (i === _self.cbioAPI.clinicalEvents[patient].length - 1) {
+                    mapper[counter][patient] = isFound;
+                }
+
+            });
+        }
         return mapper;
+    }
+
+    /**
+     * checks if an event has happened in a specific timespan
+     * @param event
+     * @param currMinDate
+     * @param currMaxDate
+     * @returns {boolean}
+     */
+    static isInCurrentRange(event, currMinDate, currMaxDate) {
+        let isInRange = false;
+        if (event.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+            if (event.endNumberOfDaysSinceDiagnosis < currMaxDate && event.startNumberOfDaysSinceDiagnosis >= currMinDate) {
+                isInRange = true
+            }
+
+        }
+        else if (event.startNumberOfDaysSinceDiagnosis < currMaxDate && event.startNumberOfDaysSinceDiagnosis >= currMinDate) {
+            isInRange = true;
+        }
+        return isInRange;
+    }
+
+
+    /**
+     * check if an event has a specific attribute (key-value pair)
+     * @param type: type of the event (Status/Treatment/Surgery)
+     * @param values
+     * @param key
+     * @param event
+     * @returns {boolean}
+     */
+    doesEventMatch(type, values, key, event) {
+        let hasAttribute = false;
+        if (type === event.eventType) {
+            values.forEach(function (d, i) {
+                event.attributes.forEach(function (f) {
+                    if (f.key === key && f.value === d.name) {
+                        hasAttribute = true;
+                    }
+                })
+            })
+        }
+        return hasAttribute;
     }
 
     /**
@@ -273,11 +409,13 @@ class RootStore {
                     d.attributes.forEach(function (f, j) {
                         if (!(f.key in attributes[d.eventType])) {
                             attributes[d.eventType][f.key] = [];
-                            attributes[d.eventType][f.key].push(f.value);
+                            attributes[d.eventType][f.key].push({name: f.value, id: uuidv4()});
                         }
                         else {
-                            if (!attributes[d.eventType][f.key].includes(f.value)) {
-                                attributes[d.eventType][f.key].push(f.value);
+                            if (!attributes[d.eventType][f.key].map(function (g) {
+                                    return g.name
+                                }).includes(f.value)) {
+                                attributes[d.eventType][f.key].push({name: f.value, id: uuidv4()});
                             }
                         }
                     })

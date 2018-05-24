@@ -132,6 +132,7 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
+        console.log(this.props.currentVariables,this.props.timepoints);
         //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;
         if (this.props.store.numberOfPatients < 50) {

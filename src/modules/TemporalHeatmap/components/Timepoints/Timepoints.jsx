@@ -19,12 +19,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 rectWidth = _self.props.visMap.sampleRectWidth;
             }
             const transform = "translate(0," + _self.props.yPositions[i] + ")";
-
-            let ht = _self.props.timepoints[i].patients.map(d => _self.props.visMap.primaryHeight);
-
             if (d.heatmap.length > 0) {
                 timepoints.push(<g key={i + "timepoint"} transform={transform}><Timepoint timepoint={d} index={i}
-                                                                                          currentVariables={_self.props.store.currentVariables[d.type]}
+                                                                                          currentVariables={_self.props.store.variableStore[d.type].currentVariables}
                                                                                           eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
                                                                                           rectWidth={rectWidth}
                                                                                           ht={ht}
