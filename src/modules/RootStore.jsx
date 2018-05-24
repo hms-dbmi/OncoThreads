@@ -28,14 +28,19 @@ class RootStore {
         this.eventAttributes = [];
         this.patientsPerTimepoint = [];
         this.patientOrderPerTimepoint = [];
-        this.timeGapStructure = [];
+        this.timeGapStructure=[];
+        this.actualTimeLine=[];
+        this.eventDetails=[];
+        //this.sampleEventList=[];
 
         this.reset = this.reset.bind(this);
 
         extendObservable(this, {
             parsed: false,
             firstLoad: firstLoad,
-            realTime: false
+            realTime: false,
+            globalTime: false,
+            transitionOn: false
         })
     }
 
@@ -118,7 +123,8 @@ class RootStore {
         this.maxTP = maxTP;
         const timepointStructure = this.buildTimepointStructure(sampleStructure, maxTP);
         this.getEventAttributes(excludeDates);
-        this.timeGapStructure = this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
+        this.timeGapStructure=this.getTimeGap(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
+        this.actualTimeLine=this.getTimeLine(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
         this.timepointStore.setNumberOfPatients(allPatients.length);
         this.patientOrderPerTimepoint = allPatients;
         this.patientsPerTimepoint = patientsPerTimepoint;
@@ -193,6 +199,30 @@ class RootStore {
         }
         return timeGaps;
     }
+
+
+    getTimeLine(sampleTimelineMap, timepointStructure, sampleStructure, numberOfTimepoints) {
+        let timeLine = [];
+        for (let i = 0; i < numberOfTimepoints; i++) {
+            let patientSamples3 = [];
+            this.cbioAPI.patients.forEach(function (d, j) {
+                if (sampleStructure[d.patientId].length > i) {
+
+                   // if(i===0){
+                     //   patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: 0});
+                    //}
+                    //else{
+                        patientSamples3.push( sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis);
+                    //}
+               }
+            });
+            timeLine.push(patientSamples3);
+        }
+        return timeLine;
+    }
+
+
+
 
 
     /**

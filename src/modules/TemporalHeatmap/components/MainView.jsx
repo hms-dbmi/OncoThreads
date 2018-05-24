@@ -41,6 +41,27 @@ const MainView = observer(class MainView extends React.Component {
         let patients = this.state.selectedPatients.slice();
         if (patients.includes(patient)) {
             patients.splice(patients.indexOf(patient), 1)
+
+    handleGlobalTimeClick(event) {
+        this.props.store.rootStore.globalTime=!this.props.store.rootStore.globalTime;
+        event.target.className = (this.props.store.rootStore.globalTime)? "selected":"notSelected";
+    }
+
+
+
+    createTimeButton() {
+        const _self = this;
+        if(this.props.timepoints.length===0) {
+            return (<div></div>)
+        } else {
+            return (
+                <div>
+                    <button className={"notSeleced"} onClick={(e) => _self.handleTimeClick(e)}
+                        key={this.props.store.rootStore.realTime}>
+                        {(this.props.store.rootStore.realTime)? "Hide actual timeline": "Show actual timeline"}
+                    </button>
+                </div>
+            )
         }
         else {
             patients.push(patient);
@@ -49,8 +70,7 @@ const MainView = observer(class MainView extends React.Component {
             selectedPatients: patients
         });
     }
-
-    /**
+      /**
      * handles the selection of patients in a partition
      * @param patients
      */
@@ -80,6 +100,22 @@ const MainView = observer(class MainView extends React.Component {
         this.setState({
             selectedPatients: selectedPatients,
         });
+    }
+
+    createGlobalTimeButton(){
+        const _self = this;
+        if(this.props.timepoints.length===0) {
+            return null
+        } else {
+            return (
+                <div>
+                    <button className={"notSeleced"} onClick={(e) => _self.handleGlobalTimeClick(e)}
+                        key={this.props.store.rootStore.globalTime}>
+                        {(this.props.store.rootStore.globalTime)? "Hide global timeline": "Show global timeline"}
+                    </button>
+                </div>
+            )
+        }
     }
 
 
