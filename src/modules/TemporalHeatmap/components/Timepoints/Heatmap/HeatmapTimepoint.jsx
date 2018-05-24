@@ -61,7 +61,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
             //let color = _self.props.visMap.getColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].type);
+            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
@@ -69,7 +69,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
 
 
-            if (row.variable === _self.props.primaryVariable) {
+            if (row.variable === _self.props.primaryVariable.id) {
               rows.push(<g key={row.variable + i + globalIndex} >
 
                     <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -143,7 +143,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
             //let color = _self.props.visMap.getColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].type);
+            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
             if(_self.props.currentVariables[i].type==="binary"){
@@ -155,7 +155,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
 
 
-            if (row.variable === _self.props.primaryVariable ) {
+            if (row.variable === _self.props.primaryVariable.id ) {
               rows.push(<g key={row.variable + i + globalIndex} >
 
                     <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}

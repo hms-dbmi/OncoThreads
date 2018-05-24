@@ -131,7 +131,7 @@ class RootStore {
         this.patientOrderPerTimepoint = allPatients;
         this.patientsPerTimepoint = patientsPerTimepoint;
         this.eventCategories = eventCategories;
-        this.actualTimeLine=this.getTimeLine(sampleTimelineMap, timepointStructure, sampleStructure, maxTP);
+        this.actualTimeLine=this.getTimeLine(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
         this.buildTimepointStructure(sampleStructure, maxTP);
         this.buildTransitionStructure();
         this.buildTimeGapStructure(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
@@ -306,6 +306,13 @@ class RootStore {
         });
     }
 
+    /**
+     *creates a mapping of selected events to patients (OR)
+     * @param eventType
+     * @param selectedVariables
+     * @param selectedCategory
+     * @returns {any[]}
+     */
     getOReventMapping(eventType, selectedVariables, selectedCategory) {
         let mapper = new Array(this.transitionStructure.length).fill(null).map(Object);
         const _self = this;

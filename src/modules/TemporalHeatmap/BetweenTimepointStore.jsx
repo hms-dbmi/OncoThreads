@@ -11,16 +11,18 @@ class BetweenTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.variableStore = new VariableStore();
-        this.sampleEventList=[];
-        this.patientOrderForEvents=[];
+        this.sampleEventList = [];
+        this.patientOrderForEvents = [];
         extendObservable(this, {
             timepoints: [],
         });
     }
+
     reset() {
         this.timepoints = [];
         this.variableStore.constructor();
     }
+
     /**
      * adds variable to heatmap timepointData
      * @param mapper
@@ -42,71 +44,6 @@ class BetweenTimepointStore {
         });
         this.timepoints = timepoints;
 
-    }
-    addHeatmapVariable(type, selectedValues, selectedKey, name) {
-        let timepoints = this.timepoints.slice();
-        for (let j = 0; j < this.timepointStructure.length; j++) {
-            timepoints[j].heatmap.push({variable: name, sorting: 0, data: []});
-        }
-        const addIndex = timepoints[0].heatmap.length - 1;
-        const _self = this;
-
-        let eventDetails=[];
-        this.patients.forEach(function (f) {
-            let samples = [];
-            _self.timepointStructure.forEach(function (g) {
-                g.forEach(function (l) {
-                    if (l.patient === f) {
-                        samples.push(l.sample);
-                    }
-                });
-            });
-            let currTimepoint = 0;
-            let startAtEvent =0;
-            let eventDate=-1, eventEndDate;
-            while (currTimepoint < samples.length) {
-                let eventCounter = startAtEvent;
-                let attributeFound = false;
-                while (eventCounter < _self.clinicalEvents[f].length) {
-                    let currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
-                    const currEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate);
-                    if (currEventInRange) {
-                        if(_self.doesEventMatch(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter])) {
-                            attributeFound = true;
-                        }
-                        let dt=_self.eventStartDays(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter]);
-                        let dt1=Object.keys(dt);
-                        if(dt1.length>0) {
-                            eventDate=Object.values(dt)[0].startNumberOfDaysSinceDiagnosis;
-                            eventEndDate=Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
-                            eventDetails.push({time: currTimepoint, patientId: f, eventDate: eventDate, eventEndDate: eventEndDate});
-                            _self.sampleEventList.push(dt);
-                            _self.patientOrderForEvents.push(f);
-                        }
-                        if(eventCounter<_self.clinicalEvents[f].length-1) {
-                            const nextEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter+1], currMaxDate);
-                            if (!nextEventInRange) {
-                                startAtEvent = eventCounter+1;
-                                break;
-                            }
-                        }
-                    }
-                    eventCounter += 1;
-                }
-                timepoints[currTimepoint].heatmap[addIndex].data.push({
-                    "patient": f,
-                    "value": attributeFound,
-                    "eventDate": eventDate
-                });
-
-                eventDate=-1;
-
-                currTimepoint += 1;
-            }
-        });
-
-        this.rootStore.eventDetails=this.rootStore.eventDetails.concat(eventDetails);
-        this.timepoints = timepoints;
     }
 
     /**
@@ -142,7 +79,7 @@ class BetweenTimepointStore {
         if (type === event.eventType) {
             values.forEach(function (d, i) {
                 event.attributes.forEach(function (f, j) {
-                    if (f.key === key && f.value === d) {
+                    if (f.key === key && f.value === d.name) {
                         hasAttribute = true;
                     }
                 })
@@ -171,29 +108,25 @@ class BetweenTimepointStore {
         if (type === event.eventType) {
             values.forEach(function (d, i) {
                 event.attributes.forEach(function (f, j) {
-                    if (f.key === key && f.value === d) {
+                    if (f.key === key && f.value === d.name) {
                         hasAttribute = true;
-                       // startDays = event.startNumberOfDaysSinceDiagnosis;
-
-
+                        // startDays = event.startNumberOfDaysSinceDiagnosis;
 
 
                     }
                 });
-
-                if(hasAttribute){
-
-                    if(event.endNumberOfDaysSinceDiagnosis){
+                if (hasAttribute) {
+                    if (event.endNumberOfDaysSinceDiagnosis) {
                         //sampleEvents[event.patientId+event.eventType+event.startNumberOfDaysSinceDiagnosis] = {
-                        sampleEvents[event.patientId+event.startNumberOfDaysSinceDiagnosis] = {
+                        sampleEvents[event.patientId + event.startNumberOfDaysSinceDiagnosis] = {
                             "patientId": event.patientId,
                             "hasAttribute": hasAttribute,
                             "startNumberOfDaysSinceDiagnosis": event.startNumberOfDaysSinceDiagnosis,
                             "endNumberOfDaysSinceDiagnosis": event.endNumberOfDaysSinceDiagnosis
                         };
                     }
-                    else{
-                        sampleEvents[event.patientId+event.startNumberOfDaysSinceDiagnosis] = {
+                    else {
+                        sampleEvents[event.patientId + event.startNumberOfDaysSinceDiagnosis] = {
                             "patientId": event.patientId,
                             "hasAttribute": hasAttribute,
                             "startNumberOfDaysSinceDiagnosis": event.startNumberOfDaysSinceDiagnosis,
@@ -202,19 +135,8 @@ class BetweenTimepointStore {
 
                     }
                 }
-                /*else{
-                    sampleEvents[event.patientId+event.eventType+"-1"] = {
-                        "patientId": event.patientId,
-                        "hasAttribute": hasAttribute,
-                        "startNumberOfDaysSinceDiagnosis": -1
-                    };
-
-                }*/
-
-                hasAttribute=false;
-
-
-            })
+                hasAttribute = false;
+                })
         }
 
         return sampleEvents;
@@ -245,13 +167,84 @@ class BetweenTimepointStore {
         }), "or", null);
         //initialize if the variable is the first variable to be added
         if (this.timepoints.length === 0) {
+            this.rootStore.transitionOn=true;
             this.rootStore.realTime = false;
             for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
                 this.timepoints.push(new SingleTimepoint(this.rootStore, this.variableStore.getById(derivedId), this.rootStore.transitionStructure[i], "between", i))
             }
             this.rootStore.timepointStore.initialize();
         }
-        this.addHeatmapVariable(this.rootStore.getOReventMapping(type, selectedValues, selectedKey), derivedId);
+        let timepoints = this.timepoints.slice();
+        for (let j = 0; j < this.rootStore.transitionStructure.length; j++) {
+            timepoints[j].heatmap.push({variable: derivedId, sorting: 0, data: []});
+        }
+        const addIndex = timepoints[0].heatmap.length - 1;
+
+        let eventDetails = [];
+        this.rootStore.patientOrderPerTimepoint.forEach(function (f) {
+            let samples = [];
+            _self.rootStore.timepointStructure.forEach(function (g) {
+                g.forEach(function (l) {
+                    if (l.patient === f) {
+                        samples.push(l.sample);
+                    }
+                });
+            });
+            let currTimepoint = 0;
+            let startAtEvent = 0;
+            let eventDate = -1, eventEndDate;
+            while (currTimepoint < samples.length + 1) {
+                let eventCounter = startAtEvent;
+                let attributeFound = false;
+                while (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length) {
+                    let currMaxDate;
+                    if (currTimepoint === samples.length) {
+                        currMaxDate = Number.POSITIVE_INFINITY;
+                    }
+                    else {
+                        currMaxDate = _self.rootStore.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
+                    }
+                    const currEventInRange = BetweenTimepointStore.isInCurrentRange(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter], currMaxDate);
+                    if (currEventInRange) {
+                        if (_self.doesEventMatch(type, selectedValues, selectedKey, _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter])) {
+                            attributeFound = true;
+                        }
+                        let dt = _self.eventStartDays(type, selectedValues, selectedKey, _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter]);
+                        let dt1 = Object.keys(dt);
+                        if (dt1.length > 0) {
+                            eventDate = Object.values(dt)[0].startNumberOfDaysSinceDiagnosis;
+                            eventEndDate = Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
+                            eventDetails.push({
+                                time: currTimepoint,
+                                patientId: f,
+                                eventDate: eventDate,
+                                eventEndDate: eventEndDate
+                            });
+                            _self.sampleEventList.push(dt);
+                            _self.patientOrderForEvents.push(f);
+                        }
+                        if (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length - 1) {
+                            const nextEventInRange = BetweenTimepointStore.isInCurrentRange(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter + 1], currMaxDate);
+                            if (!nextEventInRange) {
+                                startAtEvent = eventCounter + 1;
+                                break;
+                            }
+                        }
+                    }
+                    eventCounter += 1;
+                }
+                timepoints[currTimepoint].heatmap[addIndex].data.push({
+                    "patient": f,
+                    "value": attributeFound,
+                    "eventDate": eventDate
+                });
+                eventDate = -1;
+                currTimepoint += 1;
+            }
+        });
+
+        this.rootStore.eventDetails = this.rootStore.eventDetails.concat(eventDetails);
+        this.timepoints = timepoints;
         this.rootStore.timepointStore.regroupTimepoints();
     }
 
@@ -259,8 +252,8 @@ class BetweenTimepointStore {
      *
      * @param variableId
      */
-    addTimepointDistance(variableId){
-        if(!this.variableStore.hasVariable(variableId)) {
+    addTimepointDistance(variableId) {
+        if (!this.variableStore.hasVariable(variableId)) {
             this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
             if (this.timepoints.length === 0) {
                 this.rootStore.realTime = false;
@@ -297,6 +290,7 @@ class BetweenTimepointStore {
         }
         //case: last timepoint variableId was removed
         else {
+            this.rootStore.transitionOn=false;
             this.timepoints = [];
             this.variableStore.constructor();
             this.rootStore.timepointStore.initialize();
