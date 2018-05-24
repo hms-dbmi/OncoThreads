@@ -22,6 +22,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          * @param variable: Variable with which the timepoint will be grouped
          */
         group(timepoint, variable) {
+            console.log(variable,timepoint.type,this.props.store.isContinuous(variable,timepoint.type));
             if (this.props.store.isContinuous(variable, timepoint.type)) {
                 this.props.openBinningModal(variable, timepoint.type, this.props.store.groupBinnedTimepoint, timepoint.globalIndex);
             }
@@ -42,7 +43,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             }
             else {
                 timepoint.sort(variable, this.props.selectedPatients);
-                            //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
+                //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
                 if (this.props.store.rootStore.realTime) {
                     this.props.store.applySortingToAll(timepoint.globalIndex);
                 }
@@ -69,7 +70,6 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 this.props.openBinningModal(variable, timepoint.type, this.props.store.promoteBinnedTimepoint, timepoint.globalIndex);
             }
             else {
-
                 timepoint.promote(variable);
             }
 
@@ -194,8 +194,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
                        onMouseLeave={this.props.hideTooltip}>
                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
-                      onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(variable, fontSize, fontWeight, width)}</text>
+                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
+                      onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
             </g>);
         }
 
@@ -212,7 +212,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             return this.props.timepoint.heatmap.map(function (d, i) {
                 let lineHeight;
                 let fontWeight;
-                if (d.variable === _self.props.timepoint.primaryVariable) {
+                if (d.variable === _self.props.timepoint.primaryVariable.id) {
                     lineHeight = _self.props.visMap.primaryHeight;
                     fontWeight = "bold";
                 }

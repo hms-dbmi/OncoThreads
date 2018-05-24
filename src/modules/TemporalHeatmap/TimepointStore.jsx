@@ -7,6 +7,7 @@ class TimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.numberOfPatients = 0;
+        this.variableStore={"sample":null,"between":null};
         extendObservable(this, {
             currentVariables: {"sample": [], "between": []},
             timepoints: [],
@@ -47,11 +48,13 @@ class TimepointStore {
     initialize() {
         this.timepoints = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepoints, this.rootStore.sampleTimepointStore.timepoints);
         this.timepoints.forEach(function (d, i) {
-                d.globalIndex = i;
-
+            d.globalIndex = i;
+            d.isGrouped=false;
         });
-        this.currentVariables.sample = this.rootStore.sampleTimepointStore.currentVariables;
-        this.currentVariables.between = this.rootStore.betweenTimepointStore.currentVariables;
+        this.variableStore.sample = this.rootStore.sampleTimepointStore.variableStore;
+        this.variableStore.between = this.rootStore.betweenTimepointStore.variableStore;
+        this.currentVariables.sample=this.variableStore.sample.currentVariables;
+        this.currentVariables.between=this.variableStore.between.currentVariables;
         this.rootStore.transitionStore.initializeTransitions(this.timepoints.length - 1);
     }
 
@@ -98,53 +101,47 @@ class TimepointStore {
         });
         return allValues;
     }
-    removeVariable(variable,type){
-        if(type==="sample"){
-            this.rootStore.sampleTimepointStore.removeVariable(variable);
+
+    removeVariable(variableId, type) {
+        if (type === "sample") {
+            this.rootStore.sampleTimepointStore.removeVariable(variableId);
         }
-        else{
-            this.rootStore.betweenTimepointStore.removeVariable(variable);
+        else {
+            this.rootStore.betweenTimepointStore.removeVariable(variableId);
         }
     }
-    /**
-     * checks if a variable is continuous
-     * @param variable
-     * @param type
-     * @returns {boolean}
-     */
-    isContinuous(variable, type) {
-        return this.currentVariables[type].filter(function (d) {
-            return d.variable === variable;
-        })[0].type === "NUMBER";
-    }
+
+
+
 
     /**
      * Bins a continuous variable
-     * @param variable
+     * @param newId
+     * @param oldId
      * @param bins
      * @param binNames
      * @param type: between or sample
      */
-    binContinuous(variable, bins, binNames, type) {
+    binContinuous(newId, oldId, bins, binNames, type) {
         const _self = this;
-        this.currentVariables[type].forEach(function (d, i) {
-            if (d.variable === variable) {
-                _self.currentVariables[type][i].type = "BINNED";
-            }
-        });
+        _self.variableStore[type].modifyVariable(newId,_self.variableStore[type].getById(oldId).name,"BINNED",oldId,"binning",[bins,binNames]);
         this.timepoints.forEach(function (d, i) {
             d.heatmap.forEach(function (f, j) {
-                if (f.variable === variable) {
+                if (f.variable === oldId) {
                     let newData = [];
                     f.data.forEach(function (g) {
                         newData.push({patient: g.patient, value: TimepointStore.getBin(bins, binNames, g.value)})
                     });
                     _self.timepoints[i].heatmap[j].data = newData;
+                    f.variable=newId;
+                    d.setPrimaryVariable(newId);
                 }
             });
         });
     }
-
+    isContinuous(variableId,type){
+        return this.variableStore[type].isContinuous(variableId);
+    }
     /**
      * gets a bin corresponding to value and returns the name of the bin
      * @param bins
@@ -318,7 +315,7 @@ class TimepointStore {
         const _self = this;
         this.timepoints.forEach(function (d, i) {
             if (d.isGrouped) {
-                d.group(d.primaryVariable);
+                d.group(d.primaryVariable.id);
                 d.sortGroup(d.groupOrder);
                 _self.rootStore.transitionStore.adaptTransitions(i);
             }

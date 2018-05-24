@@ -2,6 +2,7 @@ import React from "react";
 import {observer} from "mobx-react";
 import {Button,ButtonGroup,Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
+import RootStore from "../../../RootStore";
 
 /*
 creates the selector for sample variables (left side of main view, top)
@@ -20,61 +21,41 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.toggleMutationIcon=this.toggleMutationIcon.bind(this);
     }
 
-    /**
-     * method to the indices of all occurences of val in arr
-     * @param arr
-     * @param val
-     * @returns {Array}
-     */
-    static getAllIndices(arr, val) {
-        let indexes = [], i;
-        for (i = 0; i < arr.length; i++)
-            if (arr[i] === val)
-                indexes.push(i);
-        return indexes;
-    }
 
     /**
      * adds a variable to the view
+     * @param id
      * @param variable
      * @param type
-     * @param dataset
-     * @param event
      */
-    addVariable(variable, type, dataset, event) {
-        if (this.props.currentVariables.length === 0) {
-            this.props.store.initialize(variable);
-        }
-        this.props.store.addVariable(variable, type, dataset);
+    addVariable(id,variable, type) {
+        this.props.store.addVariable(id,variable, type);
     }
 
 
     /**
      * handles a click on one of the categorical Variables
-     * @param event
+     * @param id
      * @param variable
      * @param type
-     * @param dataset
      */
-    handleVariableClick(event, variable, type, dataset) {
+    handleVariableClick(id, variable, type) {
         if (!(this.props.currentVariables.map(function (d) {
-                return d.variable
-            }).includes(variable))) {
-            this.addVariable(variable, type, dataset, event);
+                return d.id
+            }).includes(id))) {
+            this.addVariable(id,variable, type);
         }
     }
 
     /**
-     * TODO: generalize
      * handles a click on one of the continuous Variables
-     * @param event
-     * @param category
-     * @param dataset
+     * @param id
+     * @param variable
      */
-    handleContinousClick(event, category, dataset) {
-        this.props.store.computeMaxMutationCount();
-        this.props.visMap.setContinousColorScale(category, 0, this.props.store.maxMutationCount);
-        this.handleVariableClick(event, category, "NUMBER", dataset)
+    handleContinousClick(id,variable) {
+        let minMax=RootStore.getMinMaxOfContinuous(this.props.store.rootStore.sampleMappers[id],"sample");
+        this.props.visMap.setContinousColorScale(id, minMax[0], minMax[1]);
+        this.handleVariableClick(id,variable, "NUMBER")
     }
 
     /**
@@ -85,7 +66,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<Button key={d.variable} onClick={(e) => _self.handleVariableClick(e, d.variable, d.datatype, "clinical")}>{d.variable}</Button>)
+            buttons.push(<Button key={d.variable} onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype)}>{d.variable}</Button>)
         });
         return buttons;
     }
@@ -97,7 +78,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     createGenomicAttributesList() {
         let buttons = [];
         const _self = this;
-        buttons.push(<Button onClick={(e) => _self.handleContinousClick(e, this.props.mutationCount, "mutationCount")}
+        buttons.push(<Button onClick={() => _self.handleContinousClick(this.props.store.rootStore.mutationCountId,"Mutation Count")}
                              key={this.props.mutationCount}>{this.props.mutationCount}</Button>);
         return buttons;
     }

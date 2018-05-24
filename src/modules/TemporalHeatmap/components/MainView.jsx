@@ -123,6 +123,7 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
+        console.log(this.props.currentVariables,this.props.timepoints);
         //the width of the heatmap cells is computed relative to the number of patients
         let rectWidth = this.props.width / 50 - 1;
         if (this.props.store.numberOfPatients < 50) {
@@ -135,15 +136,15 @@ const MainView = observer(class MainView extends React.Component {
 
         const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
         const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
-        let height=0;
-        if(sampleTPHeight===0){
-            height=betweenTPHeight;
+        let height = 0;
+        if (sampleTPHeight === 0) {
+            height = betweenTPHeight;
         }
-        else if(betweenTPHeight===0){
-            height=sampleTPHeight;
+        else if (betweenTPHeight === 0) {
+            height = sampleTPHeight;
         }
-        else{
-            height=(sampleTPHeight+betweenTPHeight)/2
+        else {
+            height = (sampleTPHeight + betweenTPHeight) / 2
         }
         const svgHeight = this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace);
         return (
@@ -175,7 +176,7 @@ const MainView = observer(class MainView extends React.Component {
                         <RowOperators {...this.props} height={svgHeight} width={200}
                                       posY={timepointPositions.timepoint}
                                       selectedPatients={this.state.selectedPatients}
-                                        currentVariables={this.props.store.currentVariables}/>
+                                      currentVariables={this.props.store.currentVariables}/>
 
                     </Col>
                     <Col xs={8} md={7} style={{padding: 0}}>

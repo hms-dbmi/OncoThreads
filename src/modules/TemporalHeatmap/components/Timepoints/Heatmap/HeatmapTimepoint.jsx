@@ -14,9 +14,9 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
         let previousYposition = 0;
         this.props.timepoint.forEach(function (row, i) {
             //get the correct color scale depending on the type of the variable (STRING, continous or binary)
-            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].type);
+            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
             const transform = "translate(0," + previousYposition + ")";
-            if (row.variable === _self.props.primaryVariable) {
+            if (row.variable === _self.props.primaryVariable.id) {
                 rows.push(<g key={row.variable} transform={transform}>
                     <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
                                 height={_self.props.visMap.primaryHeight}

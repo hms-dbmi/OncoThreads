@@ -13,12 +13,12 @@ const Band = observer(class Band extends React.Component {
      * @returns {*}
      */
     static getTooltipPartitionName(primaryVariable, partitionValue) {
-        if (primaryVariable.type === "binary") {
+        if (primaryVariable.datatype === "binary") {
             if (partitionValue === false) {
-                return "no " + primaryVariable.variable;
+                return "no " + primaryVariable.name;
             }
             else {
-                return primaryVariable.variable;
+                return primaryVariable.name;
             }
         }
         else {

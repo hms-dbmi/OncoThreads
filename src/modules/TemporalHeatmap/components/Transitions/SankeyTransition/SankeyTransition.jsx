@@ -33,14 +33,14 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
         let currXtarget = {};
         let sourcePartitionPos = 0;
         this.props.firstTimepoint.grouped.forEach(function (d, i) {
-            const firstParLength = _self.getPartitionLength(d, _self.props.firstPrimary.variable);
+            const firstParLength = _self.getPartitionLength(d, _self.props.firstPrimary.id);
             let currXsource = sourcePartitionPos;
-            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, _self.props.visMap.gap, _self.props.groupScale(firstParLength), rectHeight, _self.props.visMap.getColorScale(_self.props.firstPrimary.variable, _self.props.firstPrimary.type)(d.partition), d.partition + "source"));
+            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, _self.props.visMap.gap, _self.props.groupScale(firstParLength), rectHeight, _self.props.visMap.getColorScale(_self.props.firstPrimary.id, _self.props.firstPrimary.datatype)(d.partition), d.partition + "source"));
 
             let targetPartitionPos = 0;
             _self.props.secondTimepoint.grouped.forEach(function (f) {
                 if (i === 0) {
-                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpace - rectHeight - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.variable)), rectHeight, _self.props.visMap.getColorScale(_self.props.secondPrimary.variable, _self.props.secondPrimary.type)(f.partition), f.partition + "target"));
+                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpace - rectHeight - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)), rectHeight, _self.props.visMap.getColorScale(_self.props.secondPrimary.id, _self.props.secondPrimary.datatype)(f.partition), f.partition + "target"));
                 }
                 let transition = _self.getTransition(d.partition, f.partition);
                 if (!(f.partition in currXtarget)) {
@@ -55,7 +55,7 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
                     currXsource += transitionWidth;
                     currXtarget[f.partition] += transitionWidth;
                 }
-                targetPartitionPos += _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.variable)) + 10;
+                targetPartitionPos += _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)) + 10;
             });
             sourcePartitionPos += _self.props.groupScale(firstParLength) + 10;
         });
