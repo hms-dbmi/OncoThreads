@@ -88,22 +88,24 @@ const Transitions = observer(class Transitions extends React.Component {
 
             }
             else {
-                if (flagSample) {
-                    if (i % 2 === 1) {
-                        globalInd++;
-                        trans_ind++;
+                if (i%2===1) {
+                    if (i + 2 < _self.props.transitionData.length) {
+                        trans_ind += 1;
+                        let firstIndex = i;
+                        let secondIndex = i + 2;
+                        console.log(firstIndex, secondIndex);
                         return (<g key={i + "transition" + globalInd}><Transition transition={d}
                                                                                   index={i}
                                                                                   realTime={_self.props.realTime}
                                                                                   transitionOn={_self.props.transitionOn}
                                                                                   globalTime={_self.props.globalTime}
-                                                                                  firstTimepoint={_self.props.timepoints[i - 1]}
-                                                                                  secondTimepoint={_self.props.timepoints[i]}
+                                                                                  firstTimepoint={_self.props.timepoints[firstIndex]}
+                                                                                  secondTimepoint={_self.props.timepoints[secondIndex]}
                                                                                   firstPrimary={firstPrimary}
                                                                                   secondPrimary={secondPrimary}
                                                                                   groupScale={_self.props.groupScale}
-                                                                                  firstHeatmapScale={_self.props.heatmapScales[i - 1]}
-                                                                                  secondHeatmapScale={_self.props.heatmapScales[i]}
+                                                                                  firstHeatmapScale={_self.props.heatmapScales[firstIndex]}
+                                                                                  secondHeatmapScale={_self.props.heatmapScales[secondIndex]}
                                                                                   allYPositionsy1={_self.props.allYPositions[trans_ind]}
                                                                                   allYPositionsy2={_self.props.allYPositions[trans_ind + 1]}
                                                                                   max={_self.props.max}
@@ -114,6 +116,8 @@ const Transitions = observer(class Transitions extends React.Component {
                         </g>);
                     }
                 }
+                }
+                /*
                 else {
                     globalInd++;
                     trans_ind++;
@@ -137,9 +141,7 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                               hideTooltip={_self.props.hideTooltip}
                                                                               visMap={_self.props.visMap}/>
                     </g>);
-                }
-
-            }
+                }*/
 
             return null;
         }))

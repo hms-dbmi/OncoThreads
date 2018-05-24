@@ -263,7 +263,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     groupScale={_self.props.groupScale}
                     heatmapScale={_self.props.heatmapScales[heatmapi]}
                     onDrag={_self.props.onDrag}
-                    selectedPatients={_self.props.selectedPatients}/>
+                    selectedPatients={_self.props.selectedPatients}
+                    showTooltip={_self.props.showTooltip}
+                    hideTooltip={_self.props.hideTooltip}/>
                 </g>);
 
                 globalIndex++;
