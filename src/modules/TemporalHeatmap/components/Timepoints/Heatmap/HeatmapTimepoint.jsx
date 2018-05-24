@@ -50,7 +50,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
         let count=0;
 
-        var globalIndex = 0;
+        let globalIndex = 0;
 
         let ypi=_self.props.ypi;
 
@@ -76,7 +76,6 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 height={_self.props.visMap.primaryHeight}
                                 opacity={1}
                                 color={color}
-
                                 x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                 ypi={_self.props.ypi}
                                 ht={_self.props.ht}/>;
@@ -107,7 +106,6 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 height={_self.props.visMap.secondaryHeight}
                                 opacity={0.5}
                                 color={color}
-
                                 x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                 ypi={ypi}
                                 ht={_self.props.ht}/>;
@@ -136,7 +134,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
         let ypi=_self.props.ypi;
 
-        var globalIndex = 0;
+        let globalIndex = 0;
 
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;

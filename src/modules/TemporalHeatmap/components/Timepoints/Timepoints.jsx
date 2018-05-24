@@ -20,7 +20,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             }
             const transform = "translate(0," + _self.props.yPositions[i] + ")";
 
-            var ht=_self.props.timepoints[i].patients.map(d=>_self.props.visMap.primaryHeight);
+            let ht = _self.props.timepoints[i].patients.map(d => _self.props.visMap.primaryHeight);
 
             if (d.heatmap.length > 0) {
                 timepoints.push(<g key={i + "timepoint"} transform={transform}><Timepoint timepoint={d} index={i}
@@ -43,12 +43,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
             }
 
 
-
         });
         return timepoints;
     }
-
-
 
 
     getGlobalTimepoints() {
@@ -56,22 +53,22 @@ const Timepoints = observer(class Timepoints extends React.Component {
         let timepoints = [];
 
 
-        let a=_self.props.store.rootStore.eventDetails;
+        let a = _self.props.store.rootStore.eventDetails;
 
-        let b=a.filter(d=>d.eventDate);
-        let c=b.map(d=>d.eventDate);
+        let b = a.filter(d => d.eventDate);
+        let c = b.map(d => d.eventDate);
 
 
-        let max1=Math.max(...c);
+        let max1 = Math.max(...c);
 
 
         let max2 = _self.props.allYPositions
-            .map(yPositions => yPositions.reduce((next, max) => next>max? next: max, 0))
-            .reduce((next, max) => next>max? next: max, 0);
+            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
+            .reduce((next, max) => next > max ? next : max, 0);
 
-        const max=Math.max(max1, max2);
+        const max = Math.max(max1, max2);
 
-        var globalIndex=0;
+        let globalIndex = 0;
 
         this.props.timepoints.forEach(function (d, i) {
             let rectWidth;
@@ -84,11 +81,11 @@ const Timepoints = observer(class Timepoints extends React.Component {
             }
 
 
-            var numEventsForEachPatient=[], count;
-            var p =_self.props.store.rootStore.patientOrderPerTimepoint;
+            let numEventsForEachPatient = [], count;
+            let p = _self.props.store.rootStore.patientOrderPerTimepoint;
 
-            p.forEach(function(d,i){
-                count=1;
+            p.forEach(function (d, i) {
+                count = 1;
 
                 numEventsForEachPatient.push(count);
 
@@ -97,30 +94,32 @@ const Timepoints = observer(class Timepoints extends React.Component {
             });
 
 
+            let yp = _self.props.allYPositions[i].map(y => y * 700.0 / max); //.map(x=>x.timeGapBetweenSample);
 
-            var yp=_self.props.allYPositions[i].map(y => y*700.0/max); //.map(x=>x.timeGapBetweenSample);
-
-            var ht=yp.map(d=>_self.props.visMap.primaryHeight )
+            let ht = yp.map(d => _self.props.visMap.primaryHeight);
 
             if (d.heatmap.length > 0) {
 
-                var heatmapd=d;
-                var heatmapi=i;
+                let heatmapd = d;
+                let heatmapi = i;
 
-                timepoints.push(<g key={heatmapi + "timepoint" + globalIndex} ><Timepoint timepoint={heatmapd} index={heatmapi}
-                                                                                          ypi={yp}
-                                                                                          ht={ht}
-                                                                                          numEventsForEachPatient={numEventsForEachPatient}
-                                                                                          eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
-                                                                                          currentVariables={_self.props.store.currentVariables[heatmapd.type]}
-                                                                                          rectWidth={rectWidth}
-                                                                                          width={_self.props.heatmapWidth}
-                                                                                          store={_self.props.store}
-                                                                                          visMap={_self.props.visMap}
-                                                                                          groupScale={_self.props.groupScale}
-                                                                                          heatmapScale={_self.props.heatmapScales[heatmapi]}
-                                                                                          onDrag={_self.props.onDrag}
-                                                                                          selectedPatients={_self.props.selectedPatients}/>
+                timepoints.push(<g key={heatmapi + "timepoint" + globalIndex}><Timepoint timepoint={heatmapd}
+                                                                                         index={heatmapi}
+                                                                                         ypi={yp}
+                                                                                         ht={ht}
+                                                                                         numEventsForEachPatient={numEventsForEachPatient}
+                                                                                         eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
+                                                                                         currentVariables={_self.props.store.currentVariables[heatmapd.type]}
+                                                                                         rectWidth={rectWidth}
+                                                                                         width={_self.props.heatmapWidth}
+                                                                                         store={_self.props.store}
+                                                                                         visMap={_self.props.visMap}
+                                                                                         groupScale={_self.props.groupScale}
+                                                                                         heatmapScale={_self.props.heatmapScales[heatmapi]}
+                                                                                         onDrag={_self.props.onDrag}
+                                                                                         selectedPatients={_self.props.selectedPatients}
+                                                                                         showTooltip={_self.props.showTooltip}
+                                                                                         hideTooltip={_self.props.hideTooltip}/>
                 </g>);
                 globalIndex++;
             }
@@ -131,7 +130,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
     }
 
     comparePatientOrder(order, p, q) {
-        return order.indexOf(p.patientId)<order.indexOf(q.patientId)? -1: 1;
+        return order.indexOf(p.patientId) < order.indexOf(q.patientId) ? -1 : 1;
     }
 
     getTreatmentTimepoints() {
@@ -139,100 +138,98 @@ const Timepoints = observer(class Timepoints extends React.Component {
         let timepoints = [];
 
 
-        let a=_self.props.store.rootStore.eventDetails;
+        let a = _self.props.store.rootStore.eventDetails;
 
         //let b=a.filter(d=>d.eventDate);
         //let c=b.map(d=>d.eventDate);
 
-        let b=a.filter(d=>d.eventEndDate);
-        let c=b.map(d=>d.eventEndDate);
+        let b = a.filter(d => d.eventEndDate);
+        let c = b.map(d => d.eventEndDate);
 
 
-        let max1=Math.max(...c);
+        let max1 = Math.max(...c);
 
 
         let max2 = _self.props.allYPositions
-            .map(yPositions => yPositions.reduce((next, max) => next>max? next: max, 0))
-            .reduce((next, max) => next>max? next: max, 0);
+            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
+            .reduce((next, max) => next > max ? next : max, 0);
 
-        const max=Math.max(max1, max2);
+        const max = Math.max(max1, max2);
 
-        var globalIndex=0;
+        let globalIndex = 0;
 
         this.props.timepoints.forEach(function (d, i) {
             let rectWidth;
-            var yp, count, ht;
+            let yp, count, ht;
 
-            var transform;
+            let transform;
 
-            var numEventsForEachPatient=[];
+            let numEventsForEachPatient = [];
 
             //var sampleEventLengthForThisTimeLine=[];
 
-            var p =_self.props.store.rootStore.patientOrderPerTimepoint;
+            let p = _self.props.store.rootStore.patientOrderPerTimepoint;
 
-            var flag=false;
+            let flag = false;
 
-            _self.props.timepoints.forEach(function(d){if(d.type!=="between") flag=true;})
+            _self.props.timepoints.forEach(function (d) {
+                if (d.type !== "between") flag = true;
+            });
 
 
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-            if(_self.props.timepoints[i].type === "between") {
+            if (_self.props.timepoints[i].type === "between") {
                 rectWidth = _self.props.visMap.betweenRectWidth;
                 let k;
-                if(flag){
-                    k=a.filter(d=>d.time===Math.floor(i/2));
+                if (flag) {
+                    k = a.filter(d => d.time === Math.floor(i / 2));
                 }
-                else{
-                    k=a.filter(d=>d.time===Math.floor(i));
+                else {
+                    k = a.filter(d => d.time === Math.floor(i));
                 }
                 k.sort((p1, p2) => _self.comparePatientOrder(p, p1, p2));
-                yp=k.map(d=>d.eventDate *700.0 / max);
+                yp = k.map(d => d.eventDate * 700.0 / max);
 
 
-                ht= k.map(d=>(d.eventEndDate - d.eventDate)*700/max + _self.props.visMap.primaryHeight );
+                ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
 
-                transform= "translate(0, 0)";
-
-
+                transform = "translate(0, 0)";
 
 
-                count=0;
-                i=0;
-                k=Object.values(k);
+                count = 0;
+                i = 0;
+                k = Object.values(k);
 
-                p.forEach(function(d,i){
-                    k.forEach(function(l){
+                p.forEach(function (d, i) {
+                    k.forEach(function (l) {
                         //console.log(p);
 
-                        if(l.patientId===p[i]){
-                        count++;
+                        if (l.patientId === p[i]) {
+                            count++;
                         }
                     });
 
                     numEventsForEachPatient.push(count);
 
-                    count=0;
+                    count = 0;
 
                 });
 
                 //arr;
 
 
-
             }
             else {
                 rectWidth = _self.props.visMap.sampleRectWidth;
-                yp=_self.props.allYPositions[Math.floor(i/2)].map(y => y*700.0/max);
+                yp = _self.props.allYPositions[Math.floor(i / 2)].map(y => y * 700.0 / max);
 
                 //transform= "translate(0, 350)";
-                transform= "translate(0, 0)";
-
+                transform = "translate(0, 0)";
 
 
                 //p=_self.props.store.rootStore.patientOrderPerTimepoint;
-                p.forEach(function(d,i){
-                    count=1;
+                p.forEach(function (d, i) {
+                    count = 1;
 
                     numEventsForEachPatient.push(count);
 
@@ -244,30 +241,29 @@ const Timepoints = observer(class Timepoints extends React.Component {
             }
 
 
-
-
             //var yp=_self.props.allYPositions[i].map(y => y*700.0/max); //.map(x=>x.timeGapBetweenSample);
 
 
             if (d.heatmap.length > 0) {
 
-                var heatmapd=d;
-                var heatmapi=i;
+                let heatmapd = d;
+                let heatmapi = i;
 
-                timepoints.push(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}><Timepoint timepoint={heatmapd} index={heatmapi}
-                                                                                          ypi={yp}
-                                                                                          ht={ht}
-                                                                                          numEventsForEachPatient={numEventsForEachPatient}
-                                                                                          eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
-                                                                                          currentVariables={_self.props.store.currentVariables[heatmapd.type]}
-                                                                                          rectWidth={rectWidth}
-                                                                                          width={_self.props.heatmapWidth}
-                                                                                          store={_self.props.store}
-                                                                                          visMap={_self.props.visMap}
-                                                                                          groupScale={_self.props.groupScale}
-                                                                                          heatmapScale={_self.props.heatmapScales[heatmapi]}
-                                                                                          onDrag={_self.props.onDrag}
-                                                                                          selectedPatients={_self.props.selectedPatients}/>
+                timepoints.push(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}><Timepoint
+                    timepoint={heatmapd} index={heatmapi}
+                    ypi={yp}
+                    ht={ht}
+                    numEventsForEachPatient={numEventsForEachPatient}
+                    eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
+                    currentVariables={_self.props.store.currentVariables[heatmapd.type]}
+                    rectWidth={rectWidth}
+                    width={_self.props.heatmapWidth}
+                    store={_self.props.store}
+                    visMap={_self.props.visMap}
+                    groupScale={_self.props.groupScale}
+                    heatmapScale={_self.props.heatmapScales[heatmapi]}
+                    onDrag={_self.props.onDrag}
+                    selectedPatients={_self.props.selectedPatients}/>
                 </g>);
 
                 globalIndex++;
@@ -279,42 +275,23 @@ const Timepoints = observer(class Timepoints extends React.Component {
     }
 
 
-
-
     render() {
-
-        if(this.props.store.rootStore.transitionOn && this.props.store.rootStore.globalTime){
-        //if(this.props.store.rootStore.transitionOn){
+        if (this.props.store.rootStore.transitionOn && this.props.store.rootStore.globalTime) {
             return (
                 this.getTreatmentTimepoints()
-                //this.getTimepoints()
             )
         }
 
-        else if(this.props.store.rootStore.globalTime) {
+        else if (this.props.store.rootStore.globalTime) {
             return (
                 this.getGlobalTimepoints()
             )
         }
         else {
-            /*if(this.props.store.rootStore.transitionOn){
-                return (
-                    this.getTreatmentTimepoints()
-                    //this.getTimepoints()
-                )
-            }
-            else{
-                return (
-                    this.getTimepoints()
-                )
-            }*/
-
-
             return (
                 this.getTimepoints()
             )
         }
-
 
 
     }

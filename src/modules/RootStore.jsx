@@ -31,7 +31,6 @@ class RootStore {
         this.timeGapStructure=[];
         this.actualTimeLine=[];
         this.eventDetails=[];
-        //this.sampleEventList=[];
 
         this.reset = this.reset.bind(this);
 
@@ -207,7 +206,6 @@ class RootStore {
             let patientSamples3 = [];
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
-
                    // if(i===0){
                      //   patientSamples2.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0], timeGapBetweenSample: 0});
                     //}

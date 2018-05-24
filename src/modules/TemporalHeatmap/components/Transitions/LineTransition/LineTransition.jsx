@@ -37,7 +37,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
     drawDefaultLines() {
         let lines = [];
         const _self = this;
-        this.props.transition.data.from.forEach(function (d) {
+        this.props.transition.data.from.forEach(function (d,i) {
         let globalInd=1;
 
             if (_self.props.transition.data.to.includes(d)) {
@@ -60,12 +60,6 @@ const LineTransition = observer(class LineTransition extends React.Component {
         const _self = this;
 
 
-        //const max = /*_self.props.allYPositionsi
-            //.map(yPositions => yPositions.reduce((next, max) => next>max? next: max, 0))
-            //.reduce((next, max) => next>max? next: max, 0);*/
-           // Math.max(..._self.props.allYPositionsi);
-
-
         let j=0;
 
         let y1=_self.props.allYPositionsy1; //.map(y=>y*700.00/_self.props.max);
@@ -79,32 +73,12 @@ const LineTransition = observer(class LineTransition extends React.Component {
 
             y2=y2.map(y=>y*700.00/_self.props.max);
 
-            var globalInd=2;
+            let globalInd=2;
 
-            //var flag=false;
 
             this.props.transition.data.from.forEach(function (d, i) {
 
-                //var yp=_self.props.allYPositionsi.map(y => y*700.0/max);
-                /*
-                console.log(d);
-
-                console.log( _self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2);
-
-                console.log(_self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2);
-
-                console.log(0 - _self.props.visMap.gap);
-
-                console.log(_self.props.visMap.transitionSpace);
-
-
-                */
-
-                //_self.props.transition.timeGapStructure.forEach(function(k){if (k.patient===d) {flag=true; }})
-
-                //if(i%2===1){
                 if (_self.props.transition.data.to.includes(d)) {
-                //if(flag){
                     let strokeColor="lightgray";
                     if(_self.props.selectedPatients.includes(d)){
                         strokeColor="black"
@@ -133,12 +107,6 @@ const LineTransition = observer(class LineTransition extends React.Component {
         const _self = this;
 
 
-        //const max = /*_self.props.allYPositionsi
-            //.map(yPositions => yPositions.reduce((next, max) => next>max? next: max, 0))
-            //.reduce((next, max) => next>max? next: max, 0);*/
-           // Math.max(..._self.props.allYPositionsi);
-
-
         let j=0;
 
         let y1=_self.props.allYPositionsy1.map(y=>y*700.00/_self.props.max);
@@ -147,22 +115,10 @@ const LineTransition = observer(class LineTransition extends React.Component {
         let y2=_self.props.allYPositionsy2.map(y=>y*700.00/_self.props.max);
 
 
-        var globalInd=2;
+        let globalInd=2;
 
         _self.props.transition.data.from.forEach(function (d, i) {
 
-            //var yp=_self.props.allYPositionsi.map(y => y*700.0/max);
-            /*
-            console.log(d);
-
-            console.log( _self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2);
-
-            console.log(_self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2);
-
-            console.log(0 - _self.props.visMap.gap);
-
-            console.log(_self.props.visMap.transitionSpace);
-            */
             if (_self.props.transition.data.to.includes(d)) {
                 let strokeColor="lightgray";
                 if(_self.props.selectedPatients.includes(d)){
@@ -193,8 +149,6 @@ const LineTransition = observer(class LineTransition extends React.Component {
 
         let timeGapBetweenMap = {};
 
-        let globalInd=3;
-
         const max = this.props.transition.timeGapStructure.map(t=> {
             timeGapBetweenMap[t.patient] = t.timeGapBetweenSample;
             return t.timeGapBetweenSample;
@@ -207,7 +161,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
         })[0].data;
         let ind = -1;
 
-        this.props.transition.data.from.forEach(function (d, i) {
+        this.props.transition.data.from.forEach(function (d) {
 
             if (_self.props.transition.data.to.includes(d)) {
                 let strokeColor="lightgray";
@@ -217,33 +171,25 @@ const LineTransition = observer(class LineTransition extends React.Component {
                 const frac = timeGapBetweenMap[d]/max;
                 ind++;
                 lines.push(LineTransition.drawLine(
-                    (_self.props.firstHeatmapScale(d)) + _self.props.visMap.sampleRectWidth / 2, 
-                    _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2, 
+                    (_self.props.firstHeatmapScale(d)) + _self.props.visMap.sampleRectWidth / 2,
+                    _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2,
                     0 - _self.props.visMap.gap,
-                    _self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max, d+globalInd+i, true, strokeColor
+                    _self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max, d, true, strokeColor
                 ));
-
-                globalInd++;
-
                 if(timeGapBetweenMap[d]<max) {
                     lines.push(LineTransition.drawLine(
-                        _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2, 
-                        _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2, 
+                        _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2,
+                        _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
                         _self.props.visMap.transitionSpace*frac,
-                        _self.props.visMap.transitionSpace, d+globalInd+i, false, strokeColor
+                        _self.props.visMap.transitionSpace, d, false, strokeColor
                     ));
-
-                    globalInd=globalInd+3;
-
                     const color = getColor(currentRow[ind].value);
                     lines.push(
-                        <rect key={d}
+                        <rect
                             x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-_self.props.visMap.sampleRectWidth / 6}
                             y={_self.props.visMap.transitionSpace*timeGapBetweenMap[d]/max-5}
-                           // width={10}
-                           width={_self.props.visMap.sampleRectWidth/3}
-                           height={_self.props.visMap.sampleRectWidth/3}
-                            //height={10}
+                            width={_self.props.visMap.sampleRectWidth / 3}
+                            height={_self.props.visMap.sampleRectWidth / 3}
                             fill={color}
                         />);
                 }

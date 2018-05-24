@@ -48,45 +48,8 @@ const Plot = observer(class Plot extends React.Component {
             .map(yPositions => yPositions.reduce((next, max) => next>max? next: max, 0))
             .reduce((next, max) => next>max? next: max, 0);
 
-        //if(!this.props.store.rootStore.globalTime) {
-
-        if(this.props.store.rootStore.realTime) {
-        return (
-            <div className="view">
-                <svg width={this.props.width} height={this.props.height}>
-                    <g transform={transform}>
-                        <Timepoints {...this.props}
-                                    allYPositions={this.props.store.rootStore.timeGapStructure}
-                                    yPositions={this.props.timepointY}
-                                    groupScale={groupScale}
-                                    heatmapScales={sampleHeatmapScales}
-                                    onDrag={this.handlePatientSelection}
-                                    selectedPatients={this.state.selectedPatients}/>
 
 
-                        <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
-                                     timepointData={this.props.store.timepoints}
-                                     realTime={this.props.store.rootStore.realTime}
-                                     globalTime={this.props.store.rootStore.globalTime}
-                                     transitionOn={this.props.store.rootStore.transitionOn}
-                                     yPositions={this.props.transY}
-                                     groupScale={groupScale}
-                                     heatmapScales={sampleHeatmapScales}
-                                     height={this.props.transitionSpace}
-                                     selectedPatients={this.state.selectedPatients}
-                                     showTooltip={this.showSankeyTooltip}
-                                     hideTooltip={this.hideSankeyTooltip}/>
-
-                    </g>
-                </svg>
-                <SankeyTransitionTooltip visibility={this.state.showTooltip} x={this.state.tooltipX}
-                                         y={this.state.tooltipY} content={this.state.tooltipContent}/>
-            </div>
-        )
-
-    }
-
-    else{
 
         return (
             <div className="scrollableX">
@@ -115,7 +78,5 @@ const Plot = observer(class Plot extends React.Component {
 
     }
 
-
-    }
 });
 export default Plot;

@@ -43,7 +43,7 @@ class BetweenTimepointStore {
         //disable realtime view if a between variable is added
         this.rootStore.realTime=false;
           //one additional timepoint for events after the last samples
-        this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[0],"between",0));
+        //this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[0],"between",0));
         for(let i=1;i<this.timepointStructure.length+1;i++){
             this.timepoints.push(new SingleTimepoint(this.rootStore,variable,this.rootStore.patientsPerTimepoint[i-1],"between",i))
         }
@@ -75,14 +75,10 @@ class BetweenTimepointStore {
             });
             let currTimepoint = 0;
             let startAtEvent =0;
-
             let eventDate=-1, eventEndDate;
-
-
             while (currTimepoint < samples.length) {
                 let eventCounter = startAtEvent;
                 let attributeFound = false;
-
                 while (eventCounter < _self.clinicalEvents[f].length) {
                     let currMaxDate = _self.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
                     const currEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter], currMaxDate);
@@ -92,25 +88,13 @@ class BetweenTimepointStore {
                         }
                         let dt=_self.eventStartDays(type, selectedValues, selectedKey, _self.clinicalEvents[f][eventCounter]);
                         let dt1=Object.keys(dt);
-                        
-                        
-
                         if(dt1.length>0) {
-
                             eventDate=Object.values(dt)[0].startNumberOfDaysSinceDiagnosis;
-
                             eventEndDate=Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
-
                             eventDetails.push({time: currTimepoint, patientId: f, eventDate: eventDate, eventEndDate: eventEndDate});
-
                             _self.sampleEventList.push(dt);
-
                             _self.patientOrderForEvents.push(f);
                         }
-
-
-                       
-
                         if(eventCounter<_self.clinicalEvents[f].length-1) {
                             const nextEventInRange=BetweenTimepointStore.isInCurrentRange(_self.clinicalEvents[f][eventCounter+1], currMaxDate);
                             if (!nextEventInRange) {
@@ -207,7 +191,7 @@ class BetweenTimepointStore {
 
 
                     }
-                })
+                });
 
                 if(hasAttribute){
 
