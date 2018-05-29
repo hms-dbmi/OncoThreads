@@ -146,7 +146,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
             let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
-            if(_self.props.currentVariables[i].type==="binary"){
+            if(_self.props.currentVariables[i].datatype==="binary"){
                 color = x => { return "#ffd92f" };
             }
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
