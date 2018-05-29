@@ -35,6 +35,10 @@ const Transitions = observer(class Transitions extends React.Component {
         const _self = this;
         let globalInd = 0;
 
+        let toPatientsInd=0;
+
+        var toPatients;
+
         let trans_ind = -1;
 
         /*let flagSample = false;
@@ -71,15 +75,24 @@ const Transitions = observer(class Transitions extends React.Component {
             }
             else {
                 if (i % 2 === 1) {
+                //if (i % 2 === 0) {    
                     if (i + 2 < _self.props.transitionData.length) {
                         trans_ind += 1;
                         let firstIndex = i;
                         let secondIndex = i + 2;
+
+                        toPatientsInd++;
+                        
+                        toPatients=_self.props.transitionStore.rootStore.patientsPerTimepoint[toPatientsInd];
+
+                        console.log(toPatients);
+                        
                         return (<g key={i + "transition" + globalInd}><Transition transition={d}
                                                                                   index={i}
                                                                                   realTime={_self.props.realTime}
                                                                                   transitionOn={_self.props.transitionOn}
                                                                                   globalTime={_self.props.globalTime}
+                                                                                  toPatients={toPatients}
                                                                                   firstTimepoint={_self.props.timepoints[firstIndex]}
                                                                                   secondTimepoint={_self.props.timepoints[secondIndex]}
                                                                                   firstPrimary={_self.props.timepoints[i].primaryVariable}
@@ -95,6 +108,12 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                   hideTooltip={_self.props.hideTooltip}
                                                                                   visMap={_self.props.visMap}/>
                         </g>);
+
+                        //toPatientsInd++;
+
+                        //console.log(toPatientsInd);
+
+                        
                     }
                 }
             }
