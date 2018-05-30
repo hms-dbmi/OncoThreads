@@ -54,6 +54,10 @@ class RootStore {
 
     reset() {
         this.parsed = false;
+        this.globalTime=false;
+        this.realTime=false;
+        this.transitionOn=false;
+        this.eventDetails=[];
         this.betweenTimepointStore.reset();
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
         this.parsed = true;
