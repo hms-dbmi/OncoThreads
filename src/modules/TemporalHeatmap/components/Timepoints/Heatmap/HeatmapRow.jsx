@@ -78,6 +78,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 if (typeof(ht) === 'undefined') {
                     let startDay=Math.round(_self.props.ypi[j]*_self.props.max/700);
                     let duration=0;
+                    //let varName=_self.props.primaryVariable.name;
                     rects.push(<rect stroke={stroke} 
                                      onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
                                      onMouseLeave={_self.handleMouseLeave} 
@@ -96,6 +97,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                     let startDay= Math.round(_self.props.ypi[j]*_self.props.max/700);
 
                     let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
+
+                    //let varName=_self.props.primaryVariable.name;
 
                     rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
                                      onMouseLeave={_self.handleMouseLeave}  

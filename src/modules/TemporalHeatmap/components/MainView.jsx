@@ -154,58 +154,108 @@ const MainView = observer(class MainView extends React.Component {
         else {
             height = (sampleTPHeight + betweenTPHeight) / 2
         }
-        const svgHeight = this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace);
-        return (
-            <Grid fluid={true} onClick={this.closeContextMenu}>
-                <Row>
-                    <Col md={5}>
-                        <ButtonToolbar>
-                            <Button onClick={this.props.store.rootStore.reset}><FontAwesome
-                                name="undo"/> Reset</Button>
-                            <Button onClick={this.handleTimeClick}
-                                    disabled={this.props.store.rootStore.globalTime||this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
-                                    key={"actualTimeline"}>
-                                <FontAwesome
-                                    name="clock"/> {(this.props.store.rootStore.realTime) ? "Hide actual timeline" : "Show actual timeline"}
-                            </Button>
-                            <Button onClick={(e) => this.handleGlobalTimeClick(e)}
-                                    key={this.props.store.rootStore.globalTime}>
-                                {(this.props.store.rootStore.globalTime) ? "Hide global timeline" : "Show global timeline"}
-                            </Button>
-                        </ButtonToolbar>
-                    </Col>
-                    <Col md={7}>
-                        <PatientAxis width={400} height={60}/>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col md={1} style={{padding: 0}}>
-                        <TimepointLabels sampleTPHeight={sampleTPHeight} betweenTPHeight={betweenTPHeight}
-                                         timepoints={this.props.store.timepoints} width={100} height={svgHeight}
-                                         posY={timepointPositions.timepoint}/>
-                    </Col>
-                    <Col xs={2} md={2} style={{padding: 0}}>
-                        <RowOperators {...this.props} height={svgHeight} width={200}
-                                      posY={timepointPositions.timepoint}
-                                      selectedPatients={this.state.selectedPatients}
-                                      currentVariables={this.props.store.currentVariables}/>
+        var svgHeight = this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace);
+        if(!this.props.store.rootStore.globalTime){
+            return (
+                <Grid fluid={true} onClick={this.closeContextMenu}>
+                    <Row>
+                        <Col md={5}>
+                            <ButtonToolbar>
+                                <Button onClick={this.props.store.rootStore.reset}><FontAwesome
+                                    name="undo"/> Reset</Button>
+                                <Button onClick={this.handleTimeClick}
+                                        disabled={this.props.store.rootStore.globalTime||this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
+                                        key={"actualTimeline"}>
+                                    <FontAwesome
+                                        name="clock"/> {(this.props.store.rootStore.realTime) ? "Hide relative time" : "Show relative time"}
+                                </Button>
+                                <Button onClick={(e) => this.handleGlobalTimeClick(e)}
+                                        key={this.props.store.rootStore.globalTime}>
+                                    {(this.props.store.rootStore.globalTime) ? "Hide global timeline" : "Show global timeline"}
+                                </Button>
+                            </ButtonToolbar>
+                        </Col>
+                        <Col md={7}>
+                            <PatientAxis width={400} height={60}/>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={1} style={{padding: 0}}>
+                            <TimepointLabels sampleTPHeight={sampleTPHeight} betweenTPHeight={betweenTPHeight}
+                                            timepoints={this.props.store.timepoints} width={100} height={svgHeight}
+                                            posY={timepointPositions.timepoint}/>
+                        </Col>
+                        <Col xs={2} md={2} style={{padding: 0}}>
+                            <RowOperators {...this.props} height={svgHeight} width={200}
+                                        posY={timepointPositions.timepoint}
+                                        selectedPatients={this.state.selectedPatients}
+                                        currentVariables={this.props.store.currentVariables}/>
 
-                    </Col>
-                    <Col xs={8} md={7} style={{padding: 0}}>
-                        <Plot {...this.props} width={this.props.width} svgWidth={svgWidth} height={svgHeight}
-                              heatmapWidth={heatmapWidth}
-                              timepointY={timepointPositions.timepoint}
-                              transY={timepointPositions.connection}
-                              selectedPatients={this.state.selectedPatients}
-                              onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
-                    </Col>
-                    <Col xs={2} md={2} style={{padding: 0}}>
-                        <Legend {...this.props} mainWidth={svgWidth} height={svgHeight} width={400}
-                                posY={timepointPositions.timepoint}/>
-                    </Col>
-                </Row>
-            </Grid>
-        )
+                        </Col>
+                        <Col xs={8} md={7} style={{padding: 0}}>
+                            <Plot {...this.props} width={this.props.width} svgWidth={svgWidth} height={svgHeight}
+                                heatmapWidth={heatmapWidth}
+                                timepointY={timepointPositions.timepoint}
+                                transY={timepointPositions.connection}
+                                selectedPatients={this.state.selectedPatients}
+                                onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
+                        </Col>
+                        <Col xs={2} md={2} style={{padding: 0}}>
+                            <Legend {...this.props} mainWidth={svgWidth} height={svgHeight} width={400}
+                                    posY={timepointPositions.timepoint}/>
+                        </Col>
+                    </Row>
+                </Grid>
+            )
+        }  
+        else{
+            if(this.props.store.currentVariables.between.length===0){ //since there's no transition variables, the window height is small, so making it larger
+                svgHeight =this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace) * 1.5;
+            }
+
+            return (
+                <Grid fluid={true} onClick={this.closeContextMenu}>
+                    <Row>
+                        <Col md={5}>
+                            <ButtonToolbar>
+                                <Button onClick={this.props.store.rootStore.reset}><FontAwesome
+                                    name="undo"/> Reset</Button>
+                                <Button onClick={this.handleTimeClick}
+                                        disabled={this.props.store.rootStore.globalTime||this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
+                                        key={"actualTimeline"}>
+                                    <FontAwesome
+                                        name="clock"/> {(this.props.store.rootStore.realTime) ? "Hide relative time" : "Show relative time"}
+                                </Button>
+                                <Button onClick={(e) => this.handleGlobalTimeClick(e)}
+                                        key={this.props.store.rootStore.globalTime}>
+                                    {(this.props.store.rootStore.globalTime) ? "Hide global timeline" : "Show global timeline"}
+                                </Button>
+                            </ButtonToolbar>
+                        </Col>
+                        <Col md={7}>
+                            <PatientAxis width={400} height={60}/>
+                        </Col>
+                    </Row>
+                    <Row>
+                       
+                        <Col xs={2} md={2} style={{padding: 0}}>
+                            
+
+                        </Col>
+                        <Col xs={8} md={7} style={{padding: 0}}>
+                            <Plot {...this.props} width={this.props.width} svgWidth={svgWidth} height={svgHeight}
+                                heatmapWidth={heatmapWidth}
+                                timepointY={timepointPositions.timepoint}
+                                transY={timepointPositions.connection}
+                                selectedPatients={this.state.selectedPatients}
+                                onDrag={this.handlePatientSelection} 
+                                selectPartition={this.handlePartitionSelection}/>
+                        </Col>
+                        
+                    </Row>
+                </Grid>
+            )
+        }
     }
 });
 MainView.defaultProps = {
