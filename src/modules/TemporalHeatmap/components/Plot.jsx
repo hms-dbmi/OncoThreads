@@ -58,6 +58,7 @@ const Plot = observer(class Plot extends React.Component {
                         <Timepoints {...this.props}
                                     allYPositions={this.props.store.rootStore.actualTimeLine}
                                     yPositions={this.props.timepointY}
+                                    max={max}
                                     groupScale={groupScale}
                                     heatmapScales={sampleHeatmapScales}/>
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}

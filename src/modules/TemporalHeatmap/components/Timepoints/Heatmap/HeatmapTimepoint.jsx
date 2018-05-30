@@ -165,6 +165,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 eventStartEnd={_self.props.eventStartEnd}
                                 x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                 ypi={_self.props.ypi}
+                                max={_self.props.max}
                                 ht={_self.props.ht}/>;
 
                 </g>);
@@ -197,6 +198,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
                                 x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                 ypi={ypi}
+                                max={_self.props.max}
                                 ht={_self.props.ht}/>;
                 </g>);
                 previousYposition = previousYposition + _self.props.visMap.secondaryHeight + _self.props.visMap.gap;

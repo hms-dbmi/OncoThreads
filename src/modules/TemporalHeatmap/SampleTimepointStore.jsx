@@ -45,6 +45,7 @@ class SampleTimepointStore {
                 variableData.push({
                     patient: f.patient,
                     value: value
+                    
                 });
             });
             _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});

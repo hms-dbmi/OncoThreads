@@ -85,8 +85,8 @@ const Transitions = observer(class Transitions extends React.Component {
                         
                         toPatients=_self.props.transitionStore.rootStore.patientsPerTimepoint[toPatientsInd];
 
-                        console.log(toPatients);
-                        
+                        //console.log(toPatients);
+
                         return (<g key={i + "transition" + globalInd}><Transition transition={d}
                                                                                   index={i}
                                                                                   realTime={_self.props.realTime}

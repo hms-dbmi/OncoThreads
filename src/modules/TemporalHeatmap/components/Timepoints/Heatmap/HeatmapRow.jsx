@@ -15,6 +15,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
         this.handleMouseEnter=this.handleMouseEnter.bind(this);
+        this.handleMouseEnterGlobal=this.handleMouseEnterGlobal.bind(this);
     }
 
     getRow() {
@@ -43,6 +44,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         let j = 0, ind;
 
         let ht = _self.props.ht;
+
+        //var startDay, duration;
 
         this.props.row.data.forEach(function (d, i) {
             let stroke = "none";
@@ -73,8 +76,11 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 }
 
                 if (typeof(ht) === 'undefined') {
-
-                    rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value)}
+                    let startDay=Math.round(_self.props.ypi[j]*_self.props.max/700);
+                    let duration=0;
+                    rects.push(<rect stroke={stroke} 
+                                     onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
+                                     onMouseLeave={_self.handleMouseLeave} 
                                      onMouseDown={() => _self.handleMouseDown(d.patient)}
                                      onMouseUp={_self.handleMouseUp}
                                      key={d.patient + i + j}
@@ -87,7 +93,12 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                     />);
                 }
                 else {
-                    rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value)}
+                    let startDay= Math.round(_self.props.ypi[j]*_self.props.max/700);
+
+                    let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
+
+                    rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
+                                     onMouseLeave={_self.handleMouseLeave}  
                                      onMouseDown={() => _self.handleMouseDown(d.patient)}
                                      onMouseUp={_self.handleMouseUp}
                                      key={d.patient + i + j}
@@ -161,6 +172,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         }
         else {
             this.props.showTooltip(event, patient + ": " + value)
+        }
+    }
+
+    handleMouseEnterGlobal(event, patient, value, startDay, duration) {
+        if (this.state.dragging) {
+            this.props.onDrag(patient);
+        }
+        else {
+            this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: "+ duration + " days")
         }
     }
 
