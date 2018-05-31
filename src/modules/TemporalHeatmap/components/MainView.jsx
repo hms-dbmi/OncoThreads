@@ -8,6 +8,7 @@ import RowOperators from "./RowOperators/RowOperators"
 import Legend from "./Legend"
 import Plot from "./Plot";
 import PatientAxis from "./PlotLabeling/PatientAxis";
+import GlobalTimeAxis from "./PlotLabeling/GlobalTimeAxis";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
 
 
@@ -235,13 +236,18 @@ const MainView = observer(class MainView extends React.Component {
                         <Col md={7}>
                             <PatientAxis width={400} height={60}/>
                         </Col>
+
+                        
+
                     </Row>
                     <Row>
                        
-                        <Col xs={2} md={2} style={{padding: 0}}>
-                            
+                      
 
+                        <Col md={2}>
+                            <GlobalTimeAxis width={150} height={400}/>
                         </Col>
+
                         <Col xs={8} md={7} style={{padding: 0}}>
                             <Plot {...this.props} width={this.props.width} svgWidth={svgWidth} height={svgHeight}
                                 heatmapWidth={heatmapWidth}

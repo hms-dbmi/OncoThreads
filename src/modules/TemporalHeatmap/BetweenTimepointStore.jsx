@@ -214,11 +214,21 @@ class BetweenTimepointStore {
                         if (dt1.length > 0) {
                             eventDate = Object.values(dt)[0].startNumberOfDaysSinceDiagnosis;
                             eventEndDate = Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
+                            var vId;
+                            _self.variableStore.allVariables.forEach(function(d){
+                                if(d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value){
+                                    //console.log(d.originalIds);
+                                    vId=d.id;
+                                }
+                            })
                             eventDetails.push({
                                 time: currTimepoint,
                                 patientId: f,
                                 eventDate: eventDate,
-                                eventEndDate: eventEndDate
+                                eventEndDate: eventEndDate,
+                                eventType: _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].eventType,
+                                eventTypeDetailed: _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value,
+                                varId: vId
                             });
                             _self.sampleEventList.push(dt);
                             _self.patientOrderForEvents.push(f);
@@ -273,6 +283,31 @@ class BetweenTimepointStore {
      * @param variableId
      */
     removeVariable(variableId) {
+
+
+        //remove from eventDetails too;
+
+        //console.log(this.rootStore.eventDetails);
+
+        var indexToDelete=this.variableStore.currentVariables.map(function (d) {
+            return d.id
+        }).indexOf(variableId);
+
+        var originalIds=this.variableStore.currentVariables[indexToDelete].originalIds;
+
+
+        for(var i=0; i<this.rootStore.eventDetails.length; ){
+
+            //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+            
+	        if(originalIds.includes(this.rootStore.eventDetails[i].varId)){
+		        this.rootStore.eventDetails.splice(i, 1);
+	        }
+	        else{ i++;}
+        }
+
+        //console.log(this.rootStore.eventDetails);
+        
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
                 if (d.primaryVariable.id === variableId) {
@@ -295,6 +330,9 @@ class BetweenTimepointStore {
             this.variableStore.constructor();
             this.rootStore.timepointStore.initialize();
         }
+
+   
+
     }
 }
 

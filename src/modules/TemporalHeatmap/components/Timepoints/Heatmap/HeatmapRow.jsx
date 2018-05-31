@@ -96,7 +96,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 else {
                     let startDay= Math.round(_self.props.ypi[j]*_self.props.max/700);
 
-                    let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
+                    let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
 
                     //let varName=_self.props.primaryVariable.name;
 
