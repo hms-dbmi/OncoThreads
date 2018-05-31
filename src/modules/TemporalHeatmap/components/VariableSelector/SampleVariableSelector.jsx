@@ -29,7 +29,12 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param type
      */
     addVariable(id,variable, type) {
-        this.props.store.addVariable(id,variable, type);
+        if (this.props.currentVariables.length === 0) {
+            this.props.store.initialize(id, variable, type);
+        }
+        else {
+            this.props.store.addVariable(id,variable, type);
+        }
     }
 
 
