@@ -216,7 +216,7 @@ class BetweenTimepointStore {
                             eventEndDate = Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
                             var vId;
                             _self.variableStore.allVariables.forEach(function(d){
-                                if(d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value){
+                                if(d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value && !d.derived){
                                     //console.log(d.originalIds);
                                     vId=d.id;
                                 }
