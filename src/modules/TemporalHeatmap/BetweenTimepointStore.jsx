@@ -294,14 +294,28 @@ class BetweenTimepointStore {
         var originalIds=this.variableStore.currentVariables[indexToDelete].originalIds;
 
 
-        for(var i=0; i<this.rootStore.eventDetails.length; ){
+        var flag=false;
 
-            //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+        this.variableStore.currentVariables.forEach(function(d, i){
+            var k=d.originalIds; //console.log(k);
+            if(k.includes(originalIds[0]) && i!==indexToDelete && originalIds.length===1) {
+                //console.log("true");
+                flag=true;
+            } 
             
-	        if(originalIds.includes(this.rootStore.eventDetails[i].varId)){
-		        this.rootStore.eventDetails.splice(i, 1);
-	        }
-	        else{ i++;}
+            //else {console.log("false");}
+        })
+
+        if(!flag){
+            for(var i=0; i<this.rootStore.eventDetails.length; ){
+
+                //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+                
+                if(originalIds.includes(this.rootStore.eventDetails[i].varId)){
+                    this.rootStore.eventDetails.splice(i, 1);
+                }
+                else{ i++;}
+            }
         }
 
         //console.log(this.rootStore.eventDetails);
