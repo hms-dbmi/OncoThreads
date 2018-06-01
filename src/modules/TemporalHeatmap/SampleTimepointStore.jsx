@@ -22,6 +22,7 @@ class SampleTimepointStore {
      * @param type
      */
     initialize(variableId, variable, type) {
+        this.variableStore.constructor();
         this.variableStore.addOriginalVariable(variableId, variable, type);
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {

@@ -193,8 +193,12 @@ class BetweenTimepointStore {
             let currTimepoint = 0;
             let startAtEvent = 0;
             let eventDate = -1, eventEndDate;
+            let eventCounter;
+            let getEventId = function(d) {
+                return d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value && !d.derived;
+            };
             while (currTimepoint < samples.length + 1) {
-                let eventCounter = startAtEvent;
+                eventCounter = startAtEvent;
                 let attributeFound = false;
                 while (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length) {
                     let currMaxDate;
@@ -214,13 +218,7 @@ class BetweenTimepointStore {
                         if (dt1.length > 0) {
                             eventDate = Object.values(dt)[0].startNumberOfDaysSinceDiagnosis;
                             eventEndDate = Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
-                            var vId;
-                            _self.variableStore.allVariables.forEach(function(d){
-                                if(d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value && !d.derived){
-                                    //console.log(d.originalIds);
-                                    vId=d.id;
-                                }
-                            })
+                            var vId = _self.variableStore.allVariables.find(getEventId).id;
                             eventDetails.push({
                                 time: currTimepoint,
                                 patientId: f,
