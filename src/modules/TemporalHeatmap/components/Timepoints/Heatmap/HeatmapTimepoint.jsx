@@ -1,6 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import HeatmapRow from './HeatmapRow';
+import * as d3 from 'd3';
 
 /*
 creates a heatmap timepoint
@@ -23,7 +24,8 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 opacity={1}
                                 color={color}
                                 ht={_self.props.ht}
-                    x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}/>;
+                                x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
+                                dtype={_self.props.currentVariables[i].datatype}/>;
                 </g>);
                 previousYposition += _self.props.visMap.primaryHeight + _self.props.visMap.gap;
             }
@@ -34,7 +36,8 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 opacity={0.5}
                                 color={color}
                                 ht={_self.props.ht}
-                                x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}/>;
+                                x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
+                                dtype={_self.props.currentVariables[i].datatype}/>;
                 </g>);
                 previousYposition += _self.props.visMap.secondaryHeight + _self.props.visMap.gap;
             }
@@ -78,7 +81,8 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 color={color}
                                 x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
                                 ypi={_self.props.ypi}
-                                ht={_self.props.ht}/>;
+                                ht={_self.props.ht}
+                                dtype={_self.props.currentVariables[i].datatype}/>;
 
                 </g>);
 
@@ -109,7 +113,9 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                 x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
                                 ypi={ypi}
-                                ht={_self.props.ht}/>;
+                                ht={_self.props.ht}
+                                dtype={_self.props.currentVariables[i].datatype}
+                                />;
                 </g>);
 
                 previousYposition = previousYposition + _self.props.visMap.secondaryHeight + _self.props.visMap.gap;
@@ -146,9 +152,15 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
             let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
+            
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
             if(_self.props.currentVariables[i].datatype==="binary"){
-                color = x => { return "#ffd92f" };
+                //color = x => { return "#ffd92f" };
+                //color=d3.scaleOrdinal().range(['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec']).domain([true]);
+
+                
+
+                color=d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17']).domain([true]);
             }
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
@@ -168,7 +180,8 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
                                 ypi={_self.props.ypi}
                                 max={_self.props.max}
-                                ht={_self.props.ht}/>;
+                                ht={_self.props.ht}
+                                dtype={_self.props.currentVariables[i].datatype}/>;
 
                 </g>);
 
@@ -202,7 +215,8 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
                                 ypi={ypi}
                                 max={_self.props.max}
-                                ht={_self.props.ht}/>;
+                                ht={_self.props.ht}
+                                dtype={_self.props.currentVariables[i].datatype}/>;
                 </g>);
                 previousYposition = previousYposition + _self.props.visMap.secondaryHeight + _self.props.visMap.gap;
 

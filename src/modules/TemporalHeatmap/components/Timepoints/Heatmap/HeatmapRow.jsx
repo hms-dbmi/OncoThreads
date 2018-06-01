@@ -75,6 +75,11 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                     opc1 = 0.6;
                 }
 
+                var fillC= _self.props.color(d.value);
+
+                //if(_self.props.dtype=="binary"){
+                  //  fillC=_self.props.color(_self.props.store.rootStore.betweenTimepointStore.variableStore.currentVariables.length);
+                //}
                 if (typeof(ht) === 'undefined') {
                     let startDay=Math.round(_self.props.ypi[j]*_self.props.max/700);
                     let duration=0;
@@ -89,7 +94,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                      width={_self.props.rectWidth}
                                      x={_self.props.heatmapScale(d.patient) + _self.props.x}
                                      y={_self.props.ypi[j]}
-                                     fill={_self.props.color(d.value)}
+                                     fill={fillC}
+                                     
                                      opacity={opc1}
                     />);
                 }
@@ -100,6 +106,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                     //let varName=_self.props.primaryVariable.name;
 
+
                     rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
                                      onMouseLeave={_self.handleMouseLeave}  
                                      onMouseDown={() => _self.handleMouseDown(d.patient)}
@@ -109,7 +116,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                      width={_self.props.rectWidth}
                                      x={_self.props.heatmapScale(d.patient) + _self.props.x}
                                      y={_self.props.ypi[j]}
-                                     fill={_self.props.color(d.value)}
+                                     fill={fillC}
+                                     //fill={_self.props.color(_self.props.timepoint)}
                                      opacity={opc1}
                         />
                     );

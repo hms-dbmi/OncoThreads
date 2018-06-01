@@ -195,7 +195,8 @@ class BetweenTimepointStore {
             let eventDate = -1, eventEndDate;
             let eventCounter;
             let getEventId = function(d) {
-                return d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value && !d.derived;
+                if(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes.length===1)
+                    return d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value && !d.derived;
             };
             while (currTimepoint < samples.length + 1) {
                 eventCounter = startAtEvent;

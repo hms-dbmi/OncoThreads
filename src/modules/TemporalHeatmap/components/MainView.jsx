@@ -242,6 +242,13 @@ const MainView = observer(class MainView extends React.Component {
                     </Row>
                     <Row>
                        
+                        <Col xs={2} md={2} style={{padding: 0}}>
+                            <RowOperators {...this.props} height={svgHeight} width={200}
+                                        posY={timepointPositions.timepoint}
+                                        selectedPatients={this.state.selectedPatients}
+                                        currentVariables={this.props.store.currentVariables}/>
+
+                        </Col>
                       
 
                         <Col md={2}>
