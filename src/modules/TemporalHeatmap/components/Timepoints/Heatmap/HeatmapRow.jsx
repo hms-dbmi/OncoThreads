@@ -59,6 +59,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             let p_num = _self.props.store.rootStore.patientOrderPerTimepoint.indexOf(d.patient);
             let maxNum = _self.props.numEventsForEachPatient[p_num];
 
+            //var globalButtonHandler = function(e) {_self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)};
+
             while (ind < maxNum) {
 
                 //var k = _self.props.eventStartEnd;
@@ -134,7 +136,9 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                     }
 
                     
-                    rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)}
+                    rects.push(<rect stroke={stroke} 
+                                     onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
+                                        }
                                      onMouseLeave={_self.handleMouseLeave}  
                                      onMouseDown={() => _self.handleMouseDown(d.patient)}
                                      onMouseUp={_self.handleMouseUp}

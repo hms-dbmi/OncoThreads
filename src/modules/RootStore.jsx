@@ -41,6 +41,8 @@ class RootStore {
         this.actualTimeLine=[];
         this.eventDetails=[];
 
+        this.maxTimeInDays=0;
+
         this.reset = this.reset.bind(this);
 
         extendObservable(this, {
@@ -49,6 +51,7 @@ class RootStore {
             realTime: false,
             globalTime: false,
             transitionOn: false
+            
         })
     }
 
@@ -58,6 +61,7 @@ class RootStore {
         this.realTime=false;
         this.transitionOn=false;
         this.eventDetails=[];
+        //this.maxTimeInDays=0;
         this.betweenTimepointStore.reset();
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
         this.parsed = true;

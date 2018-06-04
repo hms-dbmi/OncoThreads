@@ -60,7 +60,7 @@ const App = observer(class App extends React.Component {
     }
 
     render() {
-        this.props.studyapi.getStudies();
+        //this.props.studyapi.getStudies();
         return (
             <div><Navbar style={{margin:0}}>
                 <Navbar.Header>

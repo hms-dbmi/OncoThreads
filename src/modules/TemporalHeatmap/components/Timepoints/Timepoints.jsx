@@ -66,6 +66,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         const max = Math.max(max1, max2);
 
+        _self.props.store.rootStore.maxTimeInDays = max;
+
         let globalIndex = 0;
 
         this.props.timepoints.forEach(function (d, i) {
@@ -149,6 +151,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
             .reduce((next, max) => next > max ? next : max, 0);
 
         const max = Math.max(max1, max2);
+
+        _self.props.store.rootStore.maxTimeInDays = max;
 
         let globalIndex = 0;
 

@@ -6,6 +6,8 @@ import FontAwesome from 'react-fontawesome';
 
 import RowOperators from "./RowOperators/RowOperators"
 
+import GlobalRowOperators from "./RowOperators/GlobalRowOperators"
+
 import Legend from "./Legend"
 import Plot from "./Plot";
 import PatientAxis from "./PlotLabeling/PatientAxis";
@@ -211,9 +213,30 @@ const MainView = observer(class MainView extends React.Component {
             )
         }  
         else{
-            if(this.props.store.currentVariables.between.length===0){ //since there's no transition variables, the window height is small, so making it larger
-                svgHeight =this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace) * 1.5;
+            if(this.props.store.currentVariables.between.length===0){ //since there's no transition variables, the default window height is small, so making it larger
+                svgHeight =this.props.store.timepoints.length * (sampleTPHeight + this.props.visMap.transitionSpace) * 1.5;
             }
+            else{
+                svgHeight = Math.floor((this.props.store.timepoints.length/2)) * (sampleTPHeight + this.props.visMap.transitionSpace) * 1.5;
+            }
+
+
+            let a = this.props.store.rootStore.eventDetails;
+
+            let b = a.filter(d => d.eventEndDate);
+            let c = b.map(d => d.eventEndDate);
+    
+    
+            let max1 = Math.max(...c);
+    
+    
+            let max2 = this.props.store.rootStore.actualTimeLine
+                .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
+                .reduce((next, max) => next > max ? next : max, 0);
+    
+            var maxTime = Math.max(max1, max2);
+
+
 
             return (
                 <Grid fluid={true} onClick={this.closeContextMenu}>
@@ -244,7 +267,7 @@ const MainView = observer(class MainView extends React.Component {
                     <Row>
                        
                         <Col xs={2} md={2} style={{padding: 0}}>
-                            <RowOperators {...this.props} height={svgHeight} width={200}
+                            <GlobalRowOperators {...this.props} height={svgHeight} width={200}
                                         posY={timepointPositions.timepoint}
                                         selectedPatients={this.state.selectedPatients}
                                         currentVariables={this.props.store.currentVariables}/>
@@ -253,7 +276,7 @@ const MainView = observer(class MainView extends React.Component {
                       
 
                         <Col md={2}>
-                            <GlobalTimeAxis width={150} height={400}/>
+                            <GlobalTimeAxis width={150} height={svgHeight} maxTimeInDays={maxTime}/>
                         </Col>
 
                         <Col xs={8} md={7} style={{padding: 0}}>
