@@ -190,14 +190,61 @@ class BetweenTimepointStore {
                     }
                 });
             });
+            /*let samples = _self.rootStore.timepointStructure
+                .map(tpStruct => tpStruct.filter(l => l.patient===f).map(l => l.sample))
+                .reduce((next, concatenated) => concatenated.concat(next), []);*/
             let currTimepoint = 0;
             let startAtEvent = 0;
             let eventDate = -1, eventEndDate;
             let eventCounter;
+
+            //var a=false, b=false, c=false;
+
+            //var findName;
+
             let getEventId = function(d) {
-                if(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes.length===1)
-                    return d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value && !d.derived;
-            };
+                return !d.derived && _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes
+                    .map(attr =>  attr.value===d.name)
+                    .reduce((next, result) => result || next, false);
+            }
+
+            /*let getEventId = function(d) {
+
+                a=false; b=false; c=false;
+
+                if(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes.length===3 && !d.derived){
+                    a = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value);
+                    b = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value );
+                    c = d.name ===  (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[2].value ) ;
+                    
+
+                    if(a) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value;
+                    if(b) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value;
+                    if(c) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[2].value;
+
+                    //return a|| b || c;
+
+
+                }  
+                else if(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes.length===2 && !d.derived){
+                    a = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value);
+                    b = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value );
+                       
+                    if(a) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value;
+                    if(b) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value;
+
+                    //return a||b;
+
+                }  
+
+                else{
+                    a= (d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value) && !d.derived;
+
+                    if(a) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value;
+                }  
+                //console.log(findName);  
+                return a || b || c;     
+            };*/
             while (currTimepoint < samples.length + 1) {
                 eventCounter = startAtEvent;
                 let attributeFound = false;
@@ -219,14 +266,16 @@ class BetweenTimepointStore {
                         if (dt1.length > 0) {
                             eventDate = Object.values(dt)[0].startNumberOfDaysSinceDiagnosis;
                             eventEndDate = Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
-                            var vId = _self.variableStore.allVariables.find(getEventId).id;
+                            var variable = _self.variableStore.allVariables.find(getEventId);
+                            var vId = variable.id;
+                            var findName = variable.name;
                             eventDetails.push({
                                 time: currTimepoint,
                                 patientId: f,
                                 eventDate: eventDate,
                                 eventEndDate: eventEndDate,
                                 eventType: _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].eventType,
-                                eventTypeDetailed: _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value,
+                                eventTypeDetailed: findName, //_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value,
                                 varId: vId
                             });
                             _self.sampleEventList.push(dt);
@@ -245,7 +294,8 @@ class BetweenTimepointStore {
                 timepoints[currTimepoint].heatmap[addIndex].data.push({
                     "patient": f,
                     "value": attributeFound,
-                    "eventDate": eventDate
+                    "eventDate": eventDate,
+                    "eventName": findName
                 });
                 eventDate = -1;
                 currTimepoint += 1;
@@ -288,26 +338,49 @@ class BetweenTimepointStore {
 
         //console.log(this.rootStore.eventDetails);
 
-        var indexToDelete=this.variableStore.currentVariables.map(function (d) {
+        const _self=this;
+
+        var indexToDelete=_self.variableStore.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId);
 
-        var originalIds=this.variableStore.currentVariables[indexToDelete].originalIds;
+        var originalIdsDel=_self.variableStore.currentVariables[indexToDelete].originalIds;
 
 
         var flag=false;
 
-        this.variableStore.currentVariables.forEach(function(d, i){
-            var k=d.originalIds; //console.log(k);
-            if(k.includes(originalIds[0]) && i!==indexToDelete && originalIds.length===1) {
-                //console.log("true");
-                flag=true;
-            } 
-            
-            //else {console.log("false");}
-        })
+        for(var j=0; j<originalIdsDel.length; j++){ //for every variable to delete
+            _self.variableStore.currentVariables.forEach(function(d, i){ // go over the list of current variables
+                var k=d.originalIds; //console.log(k);
+                if(k.includes(originalIdsDel[j]) && i!==indexToDelete) {
+                    //console.log("true");
+                    flag=true;
+                } 
+                
+                else {
+                    //console.log("false");
 
-        if(!flag){
+                   
+            
+                }
+            })
+            if(!flag){
+                for(var l=0; l<_self.rootStore.eventDetails.length; ){
+
+                    //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+                    
+                    if(originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)){
+                        _self.rootStore.eventDetails.splice(l, 1);
+                    }
+                    else{ l++;}
+                }
+            }
+            flag=false;
+
+        }
+
+        
+       /* if(!flag){
             for(var i=0; i<this.rootStore.eventDetails.length; ){
 
                 //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
@@ -317,7 +390,7 @@ class BetweenTimepointStore {
                 }
                 else{ i++;}
             }
-        }
+        }*/
 
         //console.log(this.rootStore.eventDetails);
         

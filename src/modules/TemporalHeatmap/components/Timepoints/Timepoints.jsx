@@ -82,7 +82,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             let numEventsForEachPatient = [], count;
             let p = _self.props.store.rootStore.patientOrderPerTimepoint;
 
-            p.forEach(function (d, i) {
+            p.forEach(function (d1) {
                 count = 1;
 
                 numEventsForEachPatient.push(count);
@@ -191,14 +191,13 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
 
                 count = 0;
-                i = 0;
                 k = Object.values(k);
 
-                p.forEach(function (d, i) {
+                p.forEach(function (d1, j) {
                     k.forEach(function (l) {
                         //console.log(p);
 
-                        if (l.patientId === p[i]) {
+                        if (l.patientId === p[j]) {
                             count++;
                         }
                     });
@@ -222,7 +221,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
 
                 //p=_self.props.store.rootStore.patientOrderPerTimepoint;
-                p.forEach(function (d, i) {
+                p.forEach(function (d1, j) {
                     count = 1;
 
                     numEventsForEachPatient.push(count);
@@ -244,7 +243,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 let heatmapi = i;
 
                 timepoints.push(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}><Timepoint
-                    timepoint={heatmapd} index={heatmapi}
+                    timepoint={heatmapd} 
+                    index={heatmapi}
                     ypi={yp}
                     ht={ht}
                     max={_self.props.max}

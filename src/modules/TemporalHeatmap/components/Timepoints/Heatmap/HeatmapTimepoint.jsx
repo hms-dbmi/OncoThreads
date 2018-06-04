@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import HeatmapRow from './HeatmapRow';
-import * as d3 from 'd3';
+//import * as d3 from 'd3';
 
 /*
 creates a heatmap timepoint
@@ -131,6 +131,9 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
     }
 
 
+    comparePatientOrder(order, p, q) {
+        return order.indexOf(p.patientId) < order.indexOf(q.patientId) ? -1 : 1;
+    }
 
     getGlobalTimepointWithTransition() {
         const _self = this;
@@ -143,6 +146,10 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
         let globalIndex = 0;
 
+        var a1= _self.props.store.rootStore.eventDetails
+            .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
+
+        var a2;
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
         this.props.timepoint.forEach(function (row, i) {
@@ -152,7 +159,8 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
             let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
-            
+            a2=a1.filter(d=>d.time===Math.floor(_self.props.index/2));
+
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
             if(_self.props.currentVariables[i].datatype==="binary"){
                 //color = x => { return "#ffd92f" };
@@ -160,7 +168,8 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
                 
 
-                color=d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17']).domain([true]);
+                //color= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17']).domain([undefined]);
+                color=_self.props.visMap.getColorScale(row.variable, "GlobalTransitions");
             }
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
@@ -181,6 +190,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 ypi={_self.props.ypi}
                                 max={_self.props.max}
                                 ht={_self.props.ht}
+                                events={a2}
                                 dtype={_self.props.currentVariables[i].datatype}/>;
 
                 </g>);
@@ -216,6 +226,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 ypi={ypi}
                                 max={_self.props.max}
                                 ht={_self.props.ht}
+                                events={a2}
                                 dtype={_self.props.currentVariables[i].datatype}/>;
                 </g>);
                 previousYposition = previousYposition + _self.props.visMap.secondaryHeight + _self.props.visMap.gap;

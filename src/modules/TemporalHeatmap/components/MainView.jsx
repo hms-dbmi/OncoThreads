@@ -5,6 +5,7 @@ import FontAwesome from 'react-fontawesome';
 
 
 import RowOperators from "./RowOperators/RowOperators"
+import GlobalRowOperators from "./RowOperators/GlobalRowOperators"
 import Legend from "./Legend"
 import Plot from "./Plot";
 import PatientAxis from "./PlotLabeling/PatientAxis";

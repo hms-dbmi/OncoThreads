@@ -23,6 +23,7 @@ class VisStore{
         this.transitionSpace=0;
         //gap between partitions in grouped timepoints
         this.partitionGap=0;
+        this.GlobalTransitionColors= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17']).domain([undefined]);
         extendObservable(this,{
             timepointY:[],
             transY:[],
@@ -110,6 +111,9 @@ class VisStore{
         }
         else if(type==="BINNED"){
             return this.binnedColor[variable];
+        }
+        else if(type==="GlobalTransitions"){
+            return this.GlobalTransitionColors;
         }
         else{
             return this.continuousColor[variable];

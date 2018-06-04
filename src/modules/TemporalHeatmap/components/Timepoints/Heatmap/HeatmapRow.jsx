@@ -44,6 +44,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         let j = 0, ind;
 
         let ht = _self.props.ht;
+        var eventIndices = {};
 
         //var startDay, duration;
 
@@ -66,6 +67,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 //var height1;
                 let opc1;
 
+                var nId=0;
+
                 if (typeof(d.eventDate) === 'undefined') {
                     //console.log("not transition");
                     opc1 = _self.props.opacity;
@@ -76,6 +79,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 }
 
                 var fillC= _self.props.color(d.value);
+
+                //var colorEx=['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17'];
+
+                /*if(_self.props.dtype==="binary"){
+                    //fillC= _self.props.color(_self.props.currentVariables[_self.props.currentVariables.length-1].name);
+
+                    //fillC= colorEx[(colorEx.length ) % _self.props.currentVariables.length];
+                    fillC=_self.props.color(d.eventName);
+                }*/
 
                 //if(_self.props.dtype=="binary"){
                   //  fillC=_self.props.color(_self.props.store.rootStore.betweenTimepointStore.variableStore.currentVariables.length);
@@ -106,6 +118,16 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                     //let varName=_self.props.primaryVariable.name;
 
+                    if(_self.props.dtype==="binary") {
+                        if(!eventIndices[d.patient]) {
+                            eventIndices[d.patient] = 0;
+                        }
+                        var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
+
+                        fillC=_self.props.color(eventHere);
+
+                        eventIndices[d.patient] = eventIndices[d.patient]+1;
+                    }
 
                     rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
                                      onMouseLeave={_self.handleMouseLeave}  
