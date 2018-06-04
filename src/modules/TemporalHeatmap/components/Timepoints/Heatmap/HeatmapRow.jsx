@@ -67,7 +67,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 //var height1;
                 let opc1;
 
-                var nId=0;
+                //var nId=0;
 
                 if (typeof(d.eventDate) === 'undefined') {
                     //console.log("not transition");
