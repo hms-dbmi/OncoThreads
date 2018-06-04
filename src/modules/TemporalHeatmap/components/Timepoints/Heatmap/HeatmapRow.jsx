@@ -118,6 +118,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                     //let varName=_self.props.primaryVariable.name;
 
+                    var val= d.value;
+
                     if(_self.props.dtype==="binary") {
                         if(!eventIndices[d.patient]) {
                             eventIndices[d.patient] = 0;
@@ -127,9 +129,12 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                         fillC=_self.props.color(eventHere);
 
                         eventIndices[d.patient] = eventIndices[d.patient]+1;
+
+                        val="true";
                     }
 
-                    rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
+                    
+                    rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)}
                                      onMouseLeave={_self.handleMouseLeave}  
                                      onMouseDown={() => _self.handleMouseDown(d.patient)}
                                      onMouseUp={_self.handleMouseUp}

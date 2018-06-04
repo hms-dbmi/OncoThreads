@@ -190,9 +190,6 @@ class BetweenTimepointStore {
                     }
                 });
             });
-            /*let samples = _self.rootStore.timepointStructure
-                .map(tpStruct => tpStruct.filter(l => l.patient===f).map(l => l.sample))
-                .reduce((next, concatenated) => concatenated.concat(next), []);*/
             let currTimepoint = 0;
             let startAtEvent = 0;
             let eventDate = -1, eventEndDate;
