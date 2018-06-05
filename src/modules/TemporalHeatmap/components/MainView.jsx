@@ -267,7 +267,7 @@ const MainView = observer(class MainView extends React.Component {
                     <Row>
                        
                         <Col xs={2} md={2} style={{padding: 0}}>
-                            <GlobalRowOperators {...this.props} height={svgHeight} width={200}
+                            <GlobalRowOperators {...this.props} height={svgHeight-20} width={200}
                                         posY={timepointPositions.timepoint}
                                         selectedPatients={this.state.selectedPatients}
                                         currentVariables={this.props.store.currentVariables}/>
@@ -276,7 +276,7 @@ const MainView = observer(class MainView extends React.Component {
                       
 
                         <Col md={2}>
-                            <GlobalTimeAxis width={150} height={svgHeight} maxTimeInDays={maxTime}/>
+                            <GlobalTimeAxis width={150} height={svgHeight-20} maxTimeInDays={maxTime}/>
                         </Col>
 
                         <Col xs={8} md={7} style={{padding: 0}}>

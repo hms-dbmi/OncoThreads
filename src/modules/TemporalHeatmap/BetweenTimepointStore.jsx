@@ -346,7 +346,10 @@ class BetweenTimepointStore {
 
         var flag=false;
 
-        for(var j=0; j<originalIdsDel.length; j++){ //for every variable to delete
+        //for(var j=0; j<originalIdsDel.length; j++){ //for every variable to delete
+
+        Array.from(Array(originalIdsDel.length).keys()).forEach(
+            function(j){
             _self.variableStore.currentVariables.forEach(function(d, i){ // go over the list of current variables
                 var k=d.originalIds; //console.log(k);
                 if(k.includes(originalIdsDel[j]) && i!==indexToDelete) {
@@ -373,8 +376,8 @@ class BetweenTimepointStore {
                 }
             }
             flag=false;
-
-        }
+        })
+        //}
 
         
        /* if(!flag){

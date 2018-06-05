@@ -41,10 +41,16 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     getGlobalRow() {
         let rects = [];
         const _self = this;
-        let j = 0, ind;
+        let j = 0, ind2, ind;
 
         let ht = _self.props.ht;
         var eventIndices = {};
+
+        var globalRectHeight;
+
+        var globalRectWidth;
+
+        var xGlobal;
 
         //var startDay, duration;
 
@@ -55,13 +61,17 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             }
 
 
-            ind = 0;
+            ind2 = 0; ind=0;
             let p_num = _self.props.store.rootStore.patientOrderPerTimepoint.indexOf(d.patient);
             let maxNum = _self.props.numEventsForEachPatient[p_num];
 
+            //var funcGlobalButton = function(e, patient, val, startDay, duration) { return _self.handleMouseEnterGlobal(e, patient, val, startDay, duration)}
             //var globalButtonHandler = function(e) {_self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)};
 
+
             while (ind < maxNum) {
+
+            //Array.from(Array(maxNum).keys()).forEach(function(ind){
 
                 //var k = _self.props.eventStartEnd;
 
@@ -97,6 +107,20 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 if (typeof(ht) === 'undefined') {
                     let startDay=Math.round(_self.props.ypi[j]*_self.props.max/700);
                     let duration=0;
+
+                    globalRectHeight = _self.props.height;
+
+                    globalRectWidth =_self.props.rectWidth;
+
+                    xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth/2;
+                    if(_self.props.dtype!=="binary") {
+                        globalRectHeight= _self.props.height/2;
+
+                        globalRectWidth =_self.props.rectWidth/2;
+
+                        xGlobal= xGlobal+ _self.props.rectWidth/2;
+                    }
+
                     //let varName=_self.props.primaryVariable.name;
                     rects.push(<rect stroke={stroke} 
                                      onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
@@ -104,9 +128,9 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                      onMouseDown={() => _self.handleMouseDown(d.patient)}
                                      onMouseUp={_self.handleMouseUp}
                                      key={d.patient + i + j}
-                                     height={_self.props.height}
-                                     width={_self.props.rectWidth}
-                                     x={_self.props.heatmapScale(d.patient) + _self.props.x}
+                                     height={globalRectHeight}
+                                     width={globalRectWidth}
+                                     x={xGlobal}
                                      y={_self.props.ypi[j]}
                                      fill={fillC}
                                      
@@ -122,6 +146,11 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                     var val= d.value;
 
+                    globalRectHeight =ht[j];
+
+                    globalRectWidth =_self.props.rectWidth;
+
+
                     if(_self.props.dtype==="binary") {
                         if(!eventIndices[d.patient]) {
                             eventIndices[d.patient] = 0;
@@ -133,8 +162,18 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                         eventIndices[d.patient] = eventIndices[d.patient]+1;
 
                         val="true";
+
+                        xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth/2;
+                       
                     }
 
+                    else{
+                        globalRectHeight= ht[j]/2;
+
+                        globalRectWidth =_self.props.rectWidth/2;
+
+                        xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x ;
+                    }
                     
                     rects.push(<rect stroke={stroke} 
                                      onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
@@ -143,9 +182,9 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                      onMouseDown={() => _self.handleMouseDown(d.patient)}
                                      onMouseUp={_self.handleMouseUp}
                                      key={d.patient + i + j}
-                                     height={ht[j]}//{_self.props.height}
-                                     width={_self.props.rectWidth}
-                                     x={_self.props.heatmapScale(d.patient) + _self.props.x}
+                                     height={globalRectHeight}//{_self.props.height}
+                                     width={globalRectWidth}
+                                     x={xGlobal}
                                      y={_self.props.ypi[j]}
                                      fill={fillC}
                                      //fill={_self.props.color(_self.props.timepoint)}
@@ -155,10 +194,12 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 }
                 j++;
                 ind++;
+                ind2=ind;
+            //})
             }
 
-            _self.props.numEventsForEachPatient[p_num] = _self.props.numEventsForEachPatient[p_num] - ind;
-            ind = 0;
+            _self.props.numEventsForEachPatient[p_num] = _self.props.numEventsForEachPatient[p_num] - ind2;
+            ind2 = 0;
 
 
         });

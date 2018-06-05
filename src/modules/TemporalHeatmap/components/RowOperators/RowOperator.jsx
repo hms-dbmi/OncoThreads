@@ -22,7 +22,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          * @param variable: Variable with which the timepoint will be grouped
          */
         group(timepoint, variable) {
-            console.log(variable,timepoint.type,this.props.store.isContinuous(variable,timepoint.type));
+            //console.log(variable,timepoint.type,this.props.store.isContinuous(variable,timepoint.type));
             if (this.props.store.isContinuous(variable, timepoint.type)) {
                 this.props.openBinningModal(variable, timepoint.type, this.props.store.groupBinnedTimepoint, timepoint.globalIndex);
             }
