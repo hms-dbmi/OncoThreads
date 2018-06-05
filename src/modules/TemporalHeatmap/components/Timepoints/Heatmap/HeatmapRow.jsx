@@ -41,7 +41,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     getGlobalRow() {
         let rects = [];
         const _self = this;
-        let j = 0, ind2, ind;
+        let j = 0, ind2; //ind;
 
         let ht = _self.props.ht;
         var eventIndices = {};
@@ -61,7 +61,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             }
 
 
-            ind2 = 0; ind=0;
+            ind2 = -1; 
             let p_num = _self.props.store.rootStore.patientOrderPerTimepoint.indexOf(d.patient);
             let maxNum = _self.props.numEventsForEachPatient[p_num];
 
@@ -69,9 +69,9 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             //var globalButtonHandler = function(e) {_self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)};
 
 
-            while (ind < maxNum) {
+            //while (ind < maxNum) {
 
-            //Array.from(Array(maxNum).keys()).forEach(function(ind){
+            Array.from(Array(maxNum).keys()).forEach(function(ind){
 
                 //var k = _self.props.eventStartEnd;
 
@@ -155,15 +155,37 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                         if(!eventIndices[d.patient]) {
                             eventIndices[d.patient] = 0;
                         }
-                        var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
+                        if(_self.props.events.length>0){
+                            var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
 
-                        fillC=_self.props.color(eventHere);
+                            if(eventHere){
+                                fillC=_self.props.color(eventHere);
 
-                        eventIndices[d.patient] = eventIndices[d.patient]+1;
+                                eventIndices[d.patient] = eventIndices[d.patient]+1;
 
-                        val="true";
+                                val="true";
 
-                        xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth/2;
+                                xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth/2;
+
+                                rects.push(<rect stroke={stroke} 
+                                    onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
+                                        }
+                                    onMouseLeave={_self.handleMouseLeave}  
+                                    onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                    onMouseUp={_self.handleMouseUp}
+                                    key={d.patient + i + j}
+                                    height={globalRectHeight}//{_self.props.height}
+                                    width={globalRectWidth}
+                                    x={xGlobal}
+                                    y={_self.props.ypi[j]}
+                                    fill={fillC}
+                                    //fill={_self.props.color(_self.props.timepoint)}
+                                    opacity={opc1}
+                                />
+                                );
+                            }
+
+                        }
                        
                     }
 
@@ -173,33 +195,38 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                         globalRectWidth =_self.props.rectWidth/2;
 
                         xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x ;
-                    }
                     
-                    rects.push(<rect stroke={stroke} 
-                                     onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
-                                        }
-                                     onMouseLeave={_self.handleMouseLeave}  
-                                     onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                     onMouseUp={_self.handleMouseUp}
-                                     key={d.patient + i + j}
-                                     height={globalRectHeight}//{_self.props.height}
-                                     width={globalRectWidth}
-                                     x={xGlobal}
-                                     y={_self.props.ypi[j]}
-                                     fill={fillC}
-                                     //fill={_self.props.color(_self.props.timepoint)}
-                                     opacity={opc1}
-                        />
-                    );
+                    
+                        rects.push(<rect stroke={stroke} 
+                                        onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
+                                            }
+                                        onMouseLeave={_self.handleMouseLeave}  
+                                        onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                        onMouseUp={_self.handleMouseUp}
+                                        key={d.patient + i + j}
+                                        height={globalRectHeight}//{_self.props.height}
+                                        width={globalRectWidth}
+                                        x={xGlobal}
+                                        y={_self.props.ypi[j]}
+                                        fill={fillC}
+                                        //fill={_self.props.color(_self.props.timepoint)}
+                                        opacity={opc1}
+                            />
+                        );
+                    }
                 }
                 j++;
-                ind++;
+                //ind++;
                 ind2=ind;
-            //})
-            }
 
-            _self.props.numEventsForEachPatient[p_num] = _self.props.numEventsForEachPatient[p_num] - ind2;
-            ind2 = 0;
+                //console.log(ind2);
+            })
+            //}
+
+            //console.log(ind);
+            //console.log(ind2)
+            _self.props.numEventsForEachPatient[p_num] = _self.props.numEventsForEachPatient[p_num] - (ind2+1);
+            ind2 = -1;
 
 
         });
