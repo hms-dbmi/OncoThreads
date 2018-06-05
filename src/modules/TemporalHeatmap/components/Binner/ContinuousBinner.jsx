@@ -7,8 +7,9 @@ import * as d3 from 'd3';
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        this.bins=[];
+        this.data=props.store.getAllValues(props.variable);
         this.state={
+            bins:[d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)],
             binNames:["Bin 1", "Bin 2"]
         };
         this.handleBinChange = this.handleBinChange.bind(this);
@@ -23,7 +24,9 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * @param bins
      */
     handleBinChange(bins) {
-        this.bins=bins;
+        this.setState({
+            bins:bins
+        })
     }
 
     handleNumberOfBinsChange(number) {
@@ -39,8 +42,10 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
 
     close() {
         this.props.closeModal();
-        this.bins=[];
-        this.setState({binNames:["Bin 1", "Bin 2"]});
+        this.setState({
+            bins:[],
+            binNames:["Bin 1", "Bin 2"]
+        });
     }
 
 
@@ -48,8 +53,8 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * applies binning to data and color scales
      */
     handleApply() {
-        this.props.store.binContinuous(this.props.variable, this.bins, this.state.binNames, this.props.type);
-        this.props.visMap.setBinnedColorScale(this.props.variable, this.state.binNames, this.bins);
+        this.props.store.binContinuous(this.props.variable, this.state.bins, this.state.binNames, this.props.type);
+        this.props.visMap.setBinnedColorScale(this.props.variable, this.state.binNames, this.state.bins);
         this.props.followUpFunction(this.props.timepointIndex, this.props.variable);
         this.close();
     }
@@ -66,10 +71,8 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     render() {
-        const data=this.props.store.getAllValues(this.props.variable);
-        this.bins=[d3.min(data) - 1, Math.round((d3.max(data) + d3.min(data)) / 2), d3.max(data)];
         return (
-            <BinningModal data={data} binNames={this.state.binNames} bins={this.bins} variable={this.props.variable} handleBinChange={this.handleBinChange}
+            <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins} variable={this.props.variable} handleBinChange={this.handleBinChange}
                                          handleNumberOfBinsChange={this.handleNumberOfBinsChange} handleBinNameChange={this.handleBinNameChange}
                                         close={this.close} handleApply={this.handleApply} modalIsOpen={this.props.modalIsOpen}/>
         )

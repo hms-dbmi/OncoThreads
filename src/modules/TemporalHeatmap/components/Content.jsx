@@ -107,6 +107,20 @@ const Content = observer(class Content extends React.Component {
     hideSidebar() {
         this.setState({sidebarSize: 0, mainSize: 12, displaySidebar: "none", displayShowButton: ""})
     }
+    getBinner(){
+        if(this.state.modalIsOpen){
+             return(<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
+                                  variable={this.state.clickedVariable}
+                                  timepointIndex={this.state.clickedTimepoint} type={this.state.type}
+                                  followUpFunction={this.state.followUpFunction}
+                                  closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
+                                  visMap={this.props.rootStore.visStore}
+                />);
+        }
+        else{
+            return null;
+        }
+    }
 
     render() {
         return (
@@ -158,13 +172,7 @@ const Content = observer(class Content extends React.Component {
                         </Row>
                     </Col>
                 </Grid>
-                <ContinuousBinner modalIsOpen={this.state.modalIsOpen}
-                                  variable={this.state.clickedVariable}
-                                  timepointIndex={this.state.clickedTimepoint} type={this.state.type}
-                                  followUpFunction={this.state.followUpFunction}
-                                  closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
-                                  visMap={this.props.rootStore.visStore}
-                />
+                {this.getBinner()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} content={this.state.tooltipContent}/>
                 <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}
