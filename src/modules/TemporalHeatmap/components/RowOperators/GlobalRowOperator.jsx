@@ -189,6 +189,23 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 </g>);
         }
 
+                  /**
+         * computes the width of a text. Returns 30 if the text width would be shorter than 30
+         * @param text
+         * @param fontSize
+         * @returns {number}
+         */
+        static getTextWidth(text,fontSize) {
+            const minWidth = 30;
+            const context = document.createElement("canvas").getContext("2d");
+            context.font=fontSize+"px Arial";
+            const width = context.measureText(text).width;
+            if (width > minWidth) {
+                return width;
+            }
+            else return minWidth;
+        }
+
         getRowLabel(timepoint, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
            /* return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
@@ -198,21 +215,50 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                       onClick={() => this.promote(timepoint, variable)}>{GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
             </g>);*/
 
-            return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                      
-                       onMouseLeave={this.props.hideTooltip}>
-                <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
-                      
-                      >
-                      {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
-            </g>);
+            if(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).datatype==="binary"){
+                var name1=this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name;
+                var c1=this.props.store.rootStore.visStore.getColorScale(name1, "GlobalTransitions");
+                var fillC=c1(name1);
 
+                var xT= GlobalRowOperator.getTextWidth(name1, fontSize);
+
+                return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}             
+                                
+                onMouseLeave={this.props.hideTooltip}>
+
+                <rect key={"rect" } opacity={0.5} width={15} height={15}
+                            x={xPos + xT +5} y={yPos-25}
+                            fill={fillC}/>
+                    <text style={{fontWeight: fontWeight, fontSize: fontSize}}
+                    onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
+                    
+                    >
+                    {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
+                </g>);
+
+            }
+
+            else{
+                return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}             
+                                
+                    onMouseLeave={this.props.hideTooltip}>
+
+                    <text style={{fontWeight: fontWeight, fontSize: fontSize}}
+                        onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
+                        
+                        >
+                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
+                </g>);
+
+            }
         }
 
         static getHighlightRect(height, width) {
             return <rect height={height} width={width} fill="#e8e8e8"/>
         }
+
+  
+
 
         /**
          * Creates the Row operator for a timepoint
@@ -225,14 +271,14 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 
                 let lineHeight;
                 let fontWeight;
-                if (d.variable === _self.props.timepoint.primaryVariable.id) {
-                    lineHeight = _self.props.visMap.primaryHeight;
-                    fontWeight = "bold";
-                }
-                else {
+               // if (d.variable === _self.props.timepoint.primaryVariable.id) {
+                 //   lineHeight =  _self.props.visMap.primaryHeight;
+                    //fontWeight = "bold";
+                //}
+                //else {
                     lineHeight = _self.props.visMap.secondaryHeight;
                     fontWeight = "normal";
-                }
+                //}
                 const transform = "translate(0," + pos + ")";
                 const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
                 let fontSize = 12;
@@ -249,10 +295,10 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
 
                 }*/
-                let highlightRect = null;
-                if (d.variable === _self.props.highlightedVariable) {
-                    highlightRect = GlobalRowOperator.getHighlightRect(lineHeight, 200);
-                }
+                //let highlightRect = null;
+                //if (d.variable === _self.props.highlightedVariable) {
+                  //  highlightRect = GlobalRowOperator.getHighlightRect(lineHeight, 200);
+                //}
                 /*return <g key={d.variable} className={"clickable"} transform={transform}>
                     {highlightRect}
                     {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
@@ -262,7 +308,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 </g>*/
 
                 return <g key={d.variable} className={"clickable"} transform={transform}>
-                    {highlightRect}
+                    
                     {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
                    
                     {secondIcon}

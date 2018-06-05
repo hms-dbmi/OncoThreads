@@ -159,9 +159,14 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
             let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
-            a2=a1.filter(d=>d.time===Math.floor(_self.props.index/2))
-            .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
-
+            if(_self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length===0){
+                a2=a1.filter(d=>d.time===Math.floor(_self.props.index))
+                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
+            }
+            else{
+                a2=a1.filter(d=>d.time===Math.floor(_self.props.index/2))
+                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
+            }    
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
             if(_self.props.currentVariables[i].datatype==="binary"){
                 //color = x => { return "#ffd92f" };

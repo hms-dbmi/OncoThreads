@@ -156,9 +156,14 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                             eventIndices[d.patient] = 0;
                         }
                         if(_self.props.events.length>0){
-                            var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
+                            //var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
 
-                            if(eventHere){
+                            var eventHere2=_self.props.events.filter(ev => ev.patientId===d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
+
+                            if(eventHere2){
+
+                                var eventHere=eventHere2[eventIndices[d.patient]].eventTypeDetailed;
+                                
                                 fillC=_self.props.color(eventHere);
 
                                 eventIndices[d.patient] = eventIndices[d.patient]+1;

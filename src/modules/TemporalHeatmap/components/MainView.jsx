@@ -213,12 +213,16 @@ const MainView = observer(class MainView extends React.Component {
             )
         }  
         else{
-            if(this.props.store.currentVariables.between.length===0){ //since there's no transition variables, the default window height is small, so making it larger
-                svgHeight =this.props.store.timepoints.length * (sampleTPHeight + this.props.visMap.transitionSpace) * 1.5;
+
+            var sampH=this.props.visMap.getTimepointHeight(1);
+            /*if(this.props.store.currentVariables.between.length===0){ //since there's no transition variables, the default window height is small, so making it larger
+                svgHeight =this.props.store.timepoints.length * (sampH + this.props.visMap.transitionSpace) * 1.5;
             }
             else{
-                svgHeight = Math.floor((this.props.store.timepoints.length/2)) * (sampleTPHeight + this.props.visMap.transitionSpace) * 1.5;
-            }
+                svgHeight = Math.floor((this.props.store.timepoints.length/2)) * (sampH + this.props.visMap.transitionSpace) * 1.5;
+            }*/
+
+            svgHeight =4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
 
             let a = this.props.store.rootStore.eventDetails;
