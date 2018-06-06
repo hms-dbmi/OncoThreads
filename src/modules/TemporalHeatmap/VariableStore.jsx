@@ -116,6 +116,17 @@ class VariableStore {
             return d.id===id
         })[0];
     }
+
+    getByOriginalId(id){
+
+        return this.allVariables.filter(d=>!d.derived).filter(function (d) {
+            return d.id===id
+        })[0];
+
+        //_self.props.store.variableStore[timepoint.type].allVariables
+        //.filter(d=>!d.derived).filter(function(k){return k.id == element})[0];
+
+    }
     /**
      * checks if a variable is continuous
      * @param variableId

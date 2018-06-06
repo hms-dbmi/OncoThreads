@@ -215,26 +215,54 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                       onClick={() => this.promote(timepoint, variable)}>{GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
             </g>);*/
 
+            const _self=this;
             if(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).datatype==="binary"){
-                var name1=this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name;
-                var c1=this.props.store.rootStore.visStore.getColorScale(name1, "GlobalTransitions");
-                var fillC=c1(name1);
+                
+                let labels=[];
+                //var txtR=[];
+                var oIds=_self.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).originalIds;
 
-                var xT= GlobalRowOperator.getTextWidth(name1, fontSize);
+                console.log(variable);
 
-                return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}             
-                                
-                onMouseLeave={this.props.hideTooltip}>
+                oIds.forEach(function(element, i) {
+                   
+                    var name1=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).name;
 
-                <rect key={"rect" } opacity={0.5} width={15} height={15}
-                            x={xPos + xT +5} y={yPos-25}
-                            fill={fillC}/>
-                    <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                    onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
-                    
-                    >
-                    {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
-                </g>);
+                    var orId=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).id;
+
+                    console.log(name1);
+
+                    console.log(orId);
+
+                    var c1=_self.props.store.rootStore.visStore.getColorScale(name1, "GlobalTransitions");
+                    var fillC=c1(name1);
+
+                    console.log(fillC);
+
+                    var xT= GlobalRowOperator.getTextWidth(name1, fontSize);
+
+                    console.log(xT);
+
+
+                    labels.push (<g transform={"translate(" + xPos + "," + (yPos + i*15)+ ")scale(" + iconScale + ")"}             
+                                    
+                    onMouseLeave={_self.props.hideTooltip}>
+
+                    <rect key={"rect" } opacity={0.5} width={15} height={15}
+                                x={xPos + xT +5} y={yPos -25}
+                                fill={fillC}/>
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}
+                        onContextMenu={(e) => _self.props.showContextMenu(e, timepoint.globalIndex, orId,"promote")}
+                        
+                        >
+                        {GlobalRowOperator.cropText(name1, fontSize, fontWeight, width)}</text>
+                    </g>);
+
+
+
+                });
+                
+                return labels;
 
             }
 
