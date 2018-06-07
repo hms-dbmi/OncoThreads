@@ -376,6 +376,11 @@ class TimepointStore {
             })
         }
     }
+    ungroupEverything(){
+        this.timepoints.forEach(function (d) {
+            d.setIsGrouped(false);
+        })
+    }
 
     /**
      * sets the primary variable of a timepoint to the primary variable of the previous timepoint of the same type
