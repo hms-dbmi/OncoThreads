@@ -110,7 +110,7 @@ const Content = observer(class Content extends React.Component {
     }
     getBinner(){
         if(this.state.modalIsOpen){
-            return( <ContinuousBinner modalIsOpen={this.state.modalIsOpen}
+             return(<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
                                   variable={this.state.clickedVariable}
                                   timepointIndex={this.state.clickedTimepoint} type={this.state.type}
                                   followUpFunction={this.state.followUpFunction}

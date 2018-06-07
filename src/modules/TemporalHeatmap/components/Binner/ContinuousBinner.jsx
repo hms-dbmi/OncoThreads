@@ -8,10 +8,10 @@ import uuidv4 from 'uuid/v4';
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        this.data= props.store.getAllValues(props.variable);
-        this.state = {
-            bins: [d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)],
-            binNames: ["Bin 1", "Bin 2"]
+        this.data=props.store.getAllValues(props.variable);
+        this.state={
+            bins:[d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)],
+            binNames:["Bin 1", "Bin 2"]
         };
         this.handleBinChange = this.handleBinChange.bind(this);
         this.handleNumberOfBinsChange = this.handleNumberOfBinsChange.bind(this);
@@ -43,7 +43,10 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
 
     close() {
         this.props.closeModal();
-        this.setState({binNames: ["Bin 1", "Bin 2"],bins:[d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)]});
+        this.setState({
+            bins:[],
+            binNames:["Bin 1", "Bin 2"]
+        });
     }
 
 
@@ -68,22 +71,12 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         binNames[index] = e.target.value;
         this.setState({binNames: binNames})
     }
-    getBinningModal(){
-        return(<BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins} variableName={this.props.store.variableStore[this.props.type].getById(this.props.variable).name}
-                          handleBinChange={this.handleBinChange}
-                          handleNumberOfBinsChange={this.handleNumberOfBinsChange}
-                          handleBinNameChange={this.handleBinNameChange}
-                          close={this.close} handleApply={this.handleApply} modalIsOpen={this.props.modalIsOpen}/>)
-    }
 
     render() {
-        let binningModal=null;
-        if(this.props.modalIsOpen){
-            binningModal=this.getBinningModal();
-        }
-
         return (
-           binningModal
+            <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins} variable={this.props.variable} handleBinChange={this.handleBinChange}
+                                         handleNumberOfBinsChange={this.handleNumberOfBinsChange} handleBinNameChange={this.handleBinNameChange}
+                                        close={this.close} handleApply={this.handleApply} modalIsOpen={this.props.modalIsOpen}/>
         )
     }
 });
