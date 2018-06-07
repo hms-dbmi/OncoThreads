@@ -13,6 +13,7 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
             ReactMixins.call(this);
             this.highlightVariable = this.highlightVariable.bind(this);
             this.unhighlightVariable = this.unhighlightVariable.bind(this);
+            this.numOfBetweenVars=0;
         }
 
         highlightVariable(variable) {
@@ -42,6 +43,10 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
                                             highlightVariable={_self.highlightVariable}
                                             unhighlightVariable={_self.unhighlightVariable}
                                             highlightedVariable={_self.state.highlightedVariable}/>);
+
+               _self.numOfBetweenVars= _self.props.store.variableStore.between.allVariables.filter(d=>!d.derived).length 
+                                        - _self.props.store.variableStore.between.allVariables.filter(d=>d.derived).length
+                                        -_self.numOfBetweenVars;
 
             //});
             //}

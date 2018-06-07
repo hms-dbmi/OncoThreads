@@ -222,7 +222,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 //var txtR=[];
                 var oIds=_self.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).originalIds;
 
-                console.log(variable);
+                //console.log(variable);
 
                 oIds.forEach(function(element, i) {
                    
@@ -230,21 +230,21 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                     var orId=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).id;
 
-                    console.log(name1);
+                    //console.log(name1);
 
-                    console.log(orId);
+                    //console.log(orId);
 
                     var c1=_self.props.store.rootStore.visStore.getColorScale(name1, "GlobalTransitions");
                     var fillC=c1(name1);
 
-                    console.log(fillC);
+                    //console.log(fillC);
 
                     var xT= GlobalRowOperator.getTextWidth(name1, fontSize);
 
-                    console.log(xT);
+                    //console.log(xT);
 
 
-                    labels.push (<g transform={"translate(" + xPos + "," + (yPos + i*15)+ ")scale(" + iconScale + ")"}             
+                    labels.push (<g transform={"translate(" + xPos + "," + (yPos + i*_self.props.store.rootStore.visStore.secondaryHeight)+ ")scale(" + iconScale + ")"}             
                                     
                     onMouseLeave={_self.props.hideTooltip}>
 
@@ -313,7 +313,12 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 if (lineHeight < fontSize) {
                     fontSize = Math.round(lineHeight);
                 }
-                pos = pos + lineHeight + _self.props.visMap.gap;
+                var numVar = 1;
+                var variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable,_self.props.timepoint.type)
+                if(variable.datatype==='binary') {
+                    numVar = variable.originalIds.length;
+                }
+                pos = pos + (lineHeight + _self.props.visMap.gap)*numVar;
                 const yPos = -(iconScale * 24 - lineHeight) / 2;
                 let secondIcon;
                 /*if (!_self.props.timepoint.isGrouped) {

@@ -21,6 +21,9 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     getRow() {
         let rects = [];
         const _self = this;
+
+        //console.log(this.props.row.data);
+
         this.props.row.data.forEach(function (d) {
             let stroke = "none";
             if (_self.props.selectedPatients.includes(d.patient)) {
@@ -54,19 +57,20 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
         //var startDay, duration;
 
-        this.props.row.data.forEach(function (d, i) {
-            let stroke = "none";
-            if (_self.props.selectedPatients.includes(d.patient)) {
-                stroke = "black"
-            }
+        //console.log(this.props.row.data);
 
+        this.props.row.data.forEach(function (d, i) {
 
             ind2 = -1; 
             let p_num = _self.props.store.rootStore.patientOrderPerTimepoint.indexOf(d.patient);
             let maxNum = _self.props.numEventsForEachPatient[p_num];
 
-            //var funcGlobalButton = function(e, patient, val, startDay, duration) { return _self.handleMouseEnterGlobal(e, patient, val, startDay, duration)}
-            //var globalButtonHandler = function(e) {_self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)};
+
+            let stroke = "none";
+            if (_self.props.selectedPatients.includes(d.patient)) {
+                stroke = "black";
+                
+            }
 
 
             //while (ind < maxNum) {
@@ -125,8 +129,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                     rects.push(<rect stroke={stroke} 
                                      onMouseEnter={(e) => _self.handleMouseEnterGlobal(e, d.patient, d.value, startDay, duration)}
                                      onMouseLeave={_self.handleMouseLeave} 
-                                     onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                     onMouseUp={_self.handleMouseUp}
+                                     //onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                     //onMouseUp={_self.handleMouseUp}
                                      key={d.patient + i + j}
                                      height={globalRectHeight}
                                      width={globalRectWidth}
@@ -163,7 +167,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                             if(eventHere2){
 
                                 var eventHere=eventHere2[eventIndices[d.patient]].eventTypeDetailed;
-                                
+
                                 fillC=_self.props.color(eventHere);
 
                                 eventIndices[d.patient] = eventIndices[d.patient]+1;
@@ -176,8 +180,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                     onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
                                         }
                                     onMouseLeave={_self.handleMouseLeave}  
-                                    onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                    onMouseUp={_self.handleMouseUp}
+                                    //onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                    //onMouseUp={_self.handleMouseUp}
                                     key={d.patient + i + j}
                                     height={globalRectHeight}//{_self.props.height}
                                     width={globalRectWidth}
@@ -206,8 +210,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                         onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
                                             }
                                         onMouseLeave={_self.handleMouseLeave}  
-                                        onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                        onMouseUp={_self.handleMouseUp}
+                                        //onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                        //onMouseUp={_self.handleMouseUp}
                                         key={d.patient + i + j}
                                         height={globalRectHeight}//{_self.props.height}
                                         width={globalRectWidth}
