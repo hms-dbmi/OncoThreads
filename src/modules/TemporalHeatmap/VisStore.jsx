@@ -55,7 +55,7 @@ class VisStore{
         for(let i=0;i<binNames.length;i++){
             colors.push(continousScale((binValues[i+1]+binValues[i])/2));
         }
-        this.binnedColor[newId]=d3.scaleOrdinal().range(colors).domain(binNames).unknown('#f2baba');
+        this.binnedColor[newId]=d3.scaleOrdinal().range(colors).domain(binNames).unknown('white');
     }
     setGap(gap){
         this.gap=gap;

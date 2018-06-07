@@ -26,8 +26,13 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
         this.props.row.data.forEach(function (d) {
             let stroke = "none";
+            let fill=_self.props.color(d.value);
+            if(d.value===undefined){
+                stroke="lightgray";
+                fill="white";
+            }
             if (_self.props.selectedPatients.includes(d.patient)) {
-                stroke = "black"
+                stroke = "black";
             }
             rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value)}
                              onMouseLeave={_self.handleMouseLeave} onMouseDown={() => _self.handleMouseDown(d.patient)}
@@ -35,7 +40,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                              key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
                              x={_self.props.heatmapScale(d.patient) + _self.props.x}
-                             fill={_self.props.color(d.value)} opacity={_self.props.opacity}/>);
+                             fill={fill} opacity={_self.props.opacity}/>);
         });
         return rects;
 
@@ -67,6 +72,11 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
 
             let stroke = "none";
+            let fill=_self.props.color(d.value);
+            if(d.value===undefined){
+                stroke="lightgray";
+                fill="white";
+            }
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";
                 
@@ -94,7 +104,6 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                     opc1 = 0.6;
                 }
 
-                var fillC= _self.props.color(d.value);
 
                 //var colorEx=['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17'];
 
@@ -136,7 +145,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                      width={globalRectWidth}
                                      x={xGlobal}
                                      y={_self.props.ypi[j]}
-                                     fill={fillC}
+                                     fill={fill}
                                      
                                      opacity={opc1}
                     />);
@@ -169,7 +178,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                                 var eventHere=eventHere2[eventIndices[d.patient]].eventTypeDetailed;
 
-                                fillC=_self.props.color(eventHere);
+                                fill=_self.props.color(eventHere);
 
                                 eventIndices[d.patient] = eventIndices[d.patient]+1;
 
@@ -194,7 +203,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                     width={globalRectWidth}
                                     x={xGlobal}
                                     y={_self.props.ypi[j]}
-                                    fill={fillC}
+                                    fill={fill}
                                     //fill={_self.props.color(_self.props.timepoint)}
                                     opacity={opc1}
                                 />
@@ -228,7 +237,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                                         width={globalRectWidth}
                                         x={xGlobal}
                                         y={_self.props.ypi[j]}
-                                        fill={fillC}
+                                        fill={fill}
                                         //fill={_self.props.color(_self.props.timepoint)}
                                         opacity={opc1}
                             />
