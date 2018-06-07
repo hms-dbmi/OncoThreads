@@ -23,6 +23,7 @@ class SingleTimepoint {
 
     setIsGrouped(boolean) {
         this.isGrouped = boolean;
+        this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
     sortWithParameters(variableId,heatmapSorting,groupSorting){
         if (this.isGrouped) {
@@ -73,9 +74,8 @@ class SingleTimepoint {
      * @param variable
      */
     unGroup(variable) {
-        this.setIsGrouped(false);
         this.setPrimaryVariable(variable);
-        this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
+        this.setIsGrouped(false);
     }
 
     /**
@@ -120,7 +120,7 @@ class SingleTimepoint {
                 }
             }
         }
-        this.setIsGrouped(true);
+        this.isGrouped=true;
     }
 
 
