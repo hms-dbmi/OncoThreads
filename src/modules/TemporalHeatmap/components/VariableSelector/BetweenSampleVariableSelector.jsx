@@ -14,6 +14,7 @@ import {
     Modal,
     Panel
 } from 'react-bootstrap';
+import RootStore from "../../../RootStore";
 
 
 /*
@@ -35,6 +36,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
+        this.addTimeDistance=this.addTimeDistance.bind(this);
     }
 
     openModal(buttonClicked) {
@@ -54,7 +56,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     /**
      * adds a variable to the view
      */
-    addVariable() {
+    addORVariable() {
         this.setState({showUniqueNameAlert: false,showEmptySelectionAlert:false});
         let name = this.state.name;
         if (this.state.name === "") {
@@ -69,27 +71,31 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             this.setState({showEmptySelectionAlert: true});
         }
         else {
-            if (this.props.currentVariables.length === 0) {
-                this.props.store.initialize(name);
-            }
-            this.props.store.addVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
+            this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
             this.closeModal();
         }
+    }
+    addTimeDistance(id){
+        let minMax=RootStore.getMinMaxOfContinuous(this.props.store.rootStore.timeGapMapping,"between");
+        this.props.visMap.setContinousColorScale(id, minMax[0], minMax[1]);
+        this.props.store.addTimepointDistance(id)
     }
 
     /**
      * handles the click on one of the checkboxes
      * @param event
      * @param type
-     * @param value
+     * @param variable
      */
-    handleCheckBoxClick(event, type, value) {
+    handleCheckBoxClick(event, type, variable) {
         let selected = this.state.selectedValues.slice();
         if (event.target.checked) {
-            selected.push(value);
+            selected.push(variable);
         }
         else {
-            let index = selected.indexOf(value);
+            let index = selected.map(function(d){
+                return d.id
+            }).indexOf(variable.id);
             selected.splice(index, 1);
         }
         let disabled = Object.assign({}, this.state.disabled);
@@ -119,7 +125,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             if (i !== 0) {
                 name += "/";
             }
-            name += d;
+            name += d.name;
         });
         return (name);
     }
@@ -137,8 +143,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             let checkboxes = [];
             attributes[key].forEach(function (d) {
                 checkboxes.push(
-                    <Checkbox key={d} disabled={_self.state.disabled[key]}
-                              onClick={(e) => _self.handleCheckBoxClick(e, key, d)}>{d}</Checkbox>)
+                    <Checkbox key={d.id} disabled={_self.state.disabled[key]}
+                              onClick={(e) => _self.handleCheckBoxClick(e, key, d)}>{d.name}</Checkbox>)
             });
             elements.push(<Panel key={key}>
                 <Panel.Heading>
@@ -173,6 +179,11 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             }
         });
         return buttons;
+    }
+    createTimepointDistanceButton(){
+        return(<Button onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
+                                     key={"timepointdistance"}>Time between timepoints<FontAwesome
+                    name="clock"/></Button>)
     }
 
     /**
@@ -232,6 +243,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                 <h4>Transition variables</h4>
                 <ButtonGroup vertical block>
                     {this.createBetweenVariablesList()}
+                    {this.createTimepointDistanceButton()}
                 </ButtonGroup>
                 <Modal
                     show={this.state.modalIsOpen}
@@ -272,7 +284,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                                         onChange={(e) => this.handleNameChange(e)}/>
                                 </Col>
                                 <Col sm={4}>
-                                    <Button onClick={() => this.addVariable()}>Add</Button>
+                                    <Button onClick={() => this.addORVariable()}>Add</Button>
                                     <Button onClick={this.closeModal}>Close</Button>
                                 </Col>
                             </FormGroup>

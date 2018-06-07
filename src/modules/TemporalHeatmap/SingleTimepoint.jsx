@@ -25,19 +25,19 @@ class SingleTimepoint {
         this.isGrouped = boolean;
     }
 
-    sort(variable,selected) {
+    sort(variableId,selected) {
         //case: the timepoint is grouped
         if (this.isGrouped) {
-            if (this.primaryVariable !== variable) {
-                this.setPrimaryVariable(variable);
-                this.groupTimepoint(variable);
+            if (this.primaryVariable.id !== variableId) {
+                this.setPrimaryVariable(variableId);
+                this.groupTimepoint(variableId);
             }
             this.sortGroup(-this.groupOrder);
         }
         //case: the timepoint is not grouped
         else {
-            this.setPrimaryVariable(variable);
-            this.sortHeatmap(variable,selected);
+            this.setPrimaryVariable(variableId);
+            this.sortHeatmap(variableId,selected);
         }
     }
 
@@ -47,10 +47,10 @@ class SingleTimepoint {
         this.sortGroup(1);
     }
 
-    promote(variable) {
-        this.setPrimaryVariable(variable);
+    promote(variableId) {
+        this.setPrimaryVariable(variableId);
         if (this.isGrouped) {
-            this.groupTimepoint(variable);
+            this.groupTimepoint(variableId);
             this.sortGroup(this.groupOrder);
         }
     }
@@ -67,10 +67,10 @@ class SingleTimepoint {
 
     /**
      * declares a variable the primary variable of a timepoint
-     * @param variable
+     * @param variableId
      */
-    setPrimaryVariable(variable) {
-        this.primaryVariable = variable
+    setPrimaryVariable(variableId) {
+        this.primaryVariable = this.rootStore.timepointStore.variableStore[this.type].getById(variableId);
     }
 
     /**
@@ -80,7 +80,7 @@ class SingleTimepoint {
     groupTimepoint(variable) {
         this.grouped = [];
         const variableIndex = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
-            return d.variable
+            return d.id
         }).indexOf(variable);
         let currPartitionCount = 0;
         for (let i = 0; i < this.heatmap[variableIndex].data.length; i++) {
@@ -90,7 +90,7 @@ class SingleTimepoint {
             }).indexOf(currPartitionKey);
             if (partitionIndex === -1) {
                 let rows = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
-                    return {variable: d.variable, counts: []}
+                    return {variable: d.id, counts: []}
                 });
                 let patients=this.heatmap[variableIndex].data.filter(function (d) {
                     return d.value===currPartitionKey;
@@ -180,7 +180,7 @@ class SingleTimepoint {
      */
     sortHeatmap(variable,selected) {
         const variableIndex = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
-            return d.variable
+            return d.id
         }).indexOf(variable);
         const rowToSort = this.heatmap[variableIndex];
         let helper = this.heatmapOrder.map(function (d) {
@@ -238,16 +238,16 @@ class SingleTimepoint {
 
     /**
      * resets the primary variable if the removed variable was a primary variable
-     * @param variable
+     * @param variableId
      */
-    adaptPrimaryVariable(variable) {
+    adaptPrimaryVariable(variableId) {
         let newVariableIndex = 0;
         if (this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
-                return d.variable
-            }).indexOf(variable) === 0) {
+                return d.id
+            }).indexOf(variableId) === 0) {
             newVariableIndex = 1
         }
-        this.primaryVariable = this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].variable;
+        this.primaryVariable = this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex];
     }
 }
 

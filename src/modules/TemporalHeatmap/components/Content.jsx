@@ -24,6 +24,7 @@ const Content = observer(class Content extends React.Component {
             followUpFunction: null,
             clickedVariable: "",
             clickedTimepoint: -1,
+            type:"",
             x: 0,
             y: 0,
             sidebarSize: 2,
@@ -121,7 +122,6 @@ const Content = observer(class Content extends React.Component {
             return null;
         }
     }
-
     render() {
         return (
             <div>

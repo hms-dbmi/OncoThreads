@@ -13,7 +13,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
                 onHide={this.props.close}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Bin {this.props.variable}</Modal.Title>
+                    <Modal.Title>Bin {this.props.variableName}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Alert bsStyle="info">
