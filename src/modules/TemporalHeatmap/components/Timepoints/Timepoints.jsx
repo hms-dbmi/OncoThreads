@@ -191,6 +191,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
                 ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight/2);
 
+                //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
+
                 transform = "translate(0, 0)";
 
 
