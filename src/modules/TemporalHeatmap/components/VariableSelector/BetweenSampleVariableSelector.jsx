@@ -15,6 +15,7 @@ import {
     Panel
 } from 'react-bootstrap';
 import RootStore from "../../../RootStore";
+import SampleVariableSelector from "./SampleVariableSelector";
 
 
 /*
@@ -33,7 +34,11 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selectedValues: [],
             showUniqueNameAlert: false,
             showEmptySelectionAlert: false,
+            eventIcon:"caret-down",
+            timepointDistanceIcon:"caret-right"
         };
+        this.toggleEventIcon=this.toggleEventIcon.bind(this);
+        this.toggleTimepointDistanceIcon=this.toggleTimepointDistanceIcon.bind(this);
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.addTimeDistance=this.addTimeDistance.bind(this);
@@ -182,8 +187,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
     createTimepointDistanceButton(){
         return(<Button onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
-                                     key={"timepointdistance"}>Time between timepoints<FontAwesome
-                    name="clock"/></Button>)
+                                     key={"timepointdistance"}>Time between timepoints</Button>)
     }
 
     /**
@@ -235,16 +239,53 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             return null;
         }
     }
-
+     static toggleIcon(icon){
+        if(icon==="caret-down"){
+            return "caret-right"
+        }
+        else{
+            return "caret-down"
+        }
+    }
+    toggleEventIcon(){
+        this.setState({eventIcon:SampleVariableSelector.toggleIcon(this.state.eventIcon)});
+    }
+    toggleTimepointDistanceIcon(){
+        this.setState({timepointDistanceIcon:SampleVariableSelector.toggleIcon(this.state.timepointDistanceIcon)});
+    }
 
     render() {
         return (
             <div className="mt-2">
                 <h4>Transition variables</h4>
-                <ButtonGroup vertical block>
-                    {this.createBetweenVariablesList()}
-                    {this.createTimepointDistanceButton()}
-                </ButtonGroup>
+                    <Panel defaultExpanded>
+                     <Panel.Heading>
+                        <Panel.Title toggle>
+                            <div  onClick={this.toggleEventIcon}> Events <FontAwesome name={this.state.eventIcon}/></div>
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Panel.Collapse>
+                        <Panel.Body>
+                            <ButtonGroup vertical block>
+                                {this.createBetweenVariablesList()}
+                            </ButtonGroup>
+                        </Panel.Body>
+                    </Panel.Collapse>
+                    </Panel>
+                    <Panel>
+                     <Panel.Heading>
+                        <Panel.Title toggle>
+                            <div  onClick={this.toggleTimepointDistanceIcon}> Derived Variables <FontAwesome name={this.state.timepointDistanceIcon}/></div>
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Panel.Collapse>
+                        <Panel.Body>
+                            <ButtonGroup vertical block>
+                                {this.createTimepointDistanceButton()}
+                            </ButtonGroup>
+                        </Panel.Body>
+                    </Panel.Collapse>
+                    </Panel>
                 <Modal
                     show={this.state.modalIsOpen}
                     onHide={this.closeModal}
