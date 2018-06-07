@@ -309,6 +309,7 @@ class BetweenTimepointStore {
      * @param variableId
      */
     addTimepointDistance(variableId) {
+        this.rootStore.transitionOn=true;
         if (!this.variableStore.hasVariable(variableId)) {
             this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
             if (this.timepoints.length === 0) {
@@ -341,57 +342,47 @@ class BetweenTimepointStore {
             return d.id
         }).indexOf(variableId);
 
-        var originalIdsDel=_self.variableStore.currentVariables[indexToDelete].originalIds;
+        if(_self.variableStore.currentVariables[indexToDelete].datatype!=="NUMBER"){
+            var originalIdsDel=_self.variableStore.currentVariables[indexToDelete].originalIds;
 
 
-        var flag=false;
+            var flag=false;
 
-        //for(var j=0; j<originalIdsDel.length; j++){ //for every variable to delete
+            //for(var j=0; j<originalIdsDel.length; j++){} //for every variable to delete
 
-        Array.from(Array(originalIdsDel.length).keys()).forEach(
-            function(j){
-            _self.variableStore.currentVariables.forEach(function(d, i){ // go over the list of current variables
-                var k=d.originalIds; //console.log(k);
-                if(k.includes(originalIdsDel[j]) && i!==indexToDelete) {
-                    //console.log("true");
-                    flag=true;
-                } 
-                
-                else {
-                    //console.log("false");
-
-                   
-            
-                }
-            })
-            if(!flag){
-                for(var l=0; l<_self.rootStore.eventDetails.length; ){
-
-                    //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+            Array.from(Array(originalIdsDel.length).keys()).forEach(
+                function(j){
+                _self.variableStore.currentVariables.forEach(function(d, i){ // go over the list of current variables
+                    var k=d.originalIds; //console.log(k);
+                    if(k.includes(originalIdsDel[j]) && i!==indexToDelete) {
+                        //console.log("true");
+                        flag=true;
+                    } 
                     
-                    if(originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)){
-                        _self.rootStore.eventDetails.splice(l, 1);
-                    }
-                    else{ l++;}
-                }
-            }
-            flag=false;
-        })
-        //}
+                    else {
+                        //console.log("false");
 
-        
-       /* if(!flag){
-            for(var i=0; i<this.rootStore.eventDetails.length; ){
-
-                //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+                    
                 
-                if(originalIds.includes(this.rootStore.eventDetails[i].varId)){
-                    this.rootStore.eventDetails.splice(i, 1);
-                }
-                else{ i++;}
-            }
-        }*/
+                    }
+                })
+                if(!flag){
+                    for(var l=0; l<_self.rootStore.eventDetails.length; ){
 
+                        //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+                        
+                        if(originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)){
+                            _self.rootStore.eventDetails.splice(l, 1);
+                        }
+                        else{ l++;}
+                    }
+                }
+                flag=false;
+            })
+    
+        }
+        
+       
         //console.log(this.rootStore.eventDetails);
         
         if (this.variableStore.currentVariables.length !== 1) {
