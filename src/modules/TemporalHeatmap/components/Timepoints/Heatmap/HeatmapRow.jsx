@@ -86,6 +86,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             //while (ind < maxNum) {
 
             Array.from(Array(maxNum).keys()).forEach(function(ind){
+               if(_self.props.dtype!=="NUMBER"){ 
 
                 //var k = _self.props.eventStartEnd;
 
@@ -192,6 +193,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                                 let duration=Math.round(((2*ht[j] - _self.props.visMap.primaryHeight)*_self.props.max)/(700*2));
 
+                                console.log(_self.props.ypi);
                                 rects.push(<rect stroke={stroke} 
                                     onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
                                         }
@@ -249,6 +251,9 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 ind2=ind;
 
                 //console.log(ind2);
+
+
+                } 
             })
             //}
 
@@ -258,6 +263,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             ind2 = -1;
 
 
+            
         });
         j = 0;
         return rects;

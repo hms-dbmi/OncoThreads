@@ -175,53 +175,56 @@ const Timepoints = observer(class Timepoints extends React.Component {
             });
 
 
+            //if(_self.props.timepoints[i].primaryVariable.datatype!=="NUMBER"){
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.timepoints[i].type === "between") {
 
-                if(_self.props.timepoints[i].primaryVariable.datatype==="NUMBER"){
-                    return timepoints;
-                }
-                rectWidth = _self.props.visMap.betweenRectWidth;
-                let k;
-                if (flag) {
-                    k = a.filter(d => d.time === Math.floor(i / 2));
-                }
-                else {
-                    k = a.filter(d => d.time === Math.floor(i));
-                }
-                k.sort((p1, p2) => _self.comparePatientOrder(p, p1, p2));
-                yp = k.map(d => d.eventDate * 700.0 / max);
+                
+                  //  return timepoints;
+                //}
+                    rectWidth = _self.props.visMap.betweenRectWidth;
+                    let k;
+                    if (flag) {
+                        k = a.filter(d => d.time === Math.floor(i / 2));
+                    }
+                    else {
+                        k = a.filter(d => d.time === Math.floor(i));
+                    }
+                    k.sort((p1, p2) => _self.comparePatientOrder(p, p1, p2));
+                    yp = k.map(d => d.eventDate * 700.0 / max);
 
 
-                ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight/2);
+                    //console.log(yp);
 
-                //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
+                    ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight/2);
 
-                transform = "translate(0, 0)";
+                    //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
 
+                    transform = "translate(0, 0)";
 
-                count = 0;
-                k = Object.values(k);
-
-                p.forEach(function (d1, j) {
-                    k.forEach(function (l) {
-                        //console.log(p);
-
-                        if (l.patientId === p[j]) {
-                            count++;
-                        }
-                    });
-
-                    numEventsForEachPatient.push(count);
 
                     count = 0;
+                    k = Object.values(k);
 
-                });
+                    p.forEach(function (d1, j) {
+                        k.forEach(function (l) {
+                            //console.log(p);
+
+                            if (l.patientId === p[j]) {
+                                count++;
+                            }
+                        });
+
+                        numEventsForEachPatient.push(count);
+
+                        count = 0;
+
+                    });
 
                 //arr;
+                }
 
-
-            }
+            
             else {
                 rectWidth = _self.props.visMap.sampleRectWidth;
                 yp = _self.props.allYPositions[Math.floor(i / 2)].map(y => y * 700.0 / max);
@@ -277,7 +280,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
             }
 
 
+        //}
         });
+    
         return timepoints;
     }
 
