@@ -177,6 +177,10 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.timepoints[i].type === "between") {
+
+                if(_self.props.timepoints[i].primaryVariable.datatype==="NUMBER"){
+                    return timepoints;
+                }
                 rectWidth = _self.props.visMap.betweenRectWidth;
                 let k;
                 if (flag) {

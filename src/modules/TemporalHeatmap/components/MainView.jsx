@@ -174,6 +174,7 @@ const MainView = observer(class MainView extends React.Component {
                                         name="clock"/> {(this.props.store.rootStore.realTime) ? "Hide relative time" : "Show relative time"}
                                 </Button>
                                 <Button onClick={(e) => this.handleGlobalTimeClick(e)}
+                                        disabled={this.props.store.rootStore.realTime}
                                         key={this.props.store.rootStore.globalTime}>
                                     {(this.props.store.rootStore.globalTime) ? "Hide global timeline" : "Show global timeline"}
                                 </Button>

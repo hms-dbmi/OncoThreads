@@ -151,7 +151,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                     var val= d.value;
 
-                    globalRectHeight =ht[j];
+                   // globalRectHeight =ht[j];
 
                     globalRectWidth =_self.props.rectWidth;
 
@@ -175,9 +175,13 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                                 val="true";
 
+                                globalRectHeight =ht[j];
+                                
                                 xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth/2;
 
-                                let duration=Math.round((2*ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
+                                //let duration=Math.round((2*ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
+
+                                let duration=Math.round(((2*ht[j] - _self.props.visMap.primaryHeight)*_self.props.max)/(700*2));
 
                                 rects.push(<rect stroke={stroke} 
                                     onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
@@ -202,7 +206,10 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                     }
 
                     else{
+                        //globalRectHeight= ht[j]/2;
+
                         globalRectHeight= ht[j]/2;
+
 
                         globalRectWidth =_self.props.rectWidth/2;
 
