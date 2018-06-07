@@ -33,7 +33,7 @@ const GroupContextMenu = observer(class GroupContextMenu extends React.Component
             this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.store.applyGroupingToPrevious, this.props.clickedTimepoint);
         }
         else {
-            this.props.store.applyGroupingToAll(this.props.clickedTimepoint, this.props.clickedVariable);
+            this.props.store.applyGroupingToPrevious(this.props.clickedTimepoint, this.props.clickedVariable);
         }
     }
 
@@ -45,7 +45,7 @@ const GroupContextMenu = observer(class GroupContextMenu extends React.Component
             this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.store.applyGroupingToNext, this.props.clickedTimepoint);
         }
         else {
-            this.props.store.applyGroupingToAll(this.props.clickedTimepoint, this.props.clickedVariable);
+            this.props.store.applyGroupingToNext(this.props.clickedTimepoint, this.props.clickedVariable);
         }
     }
 

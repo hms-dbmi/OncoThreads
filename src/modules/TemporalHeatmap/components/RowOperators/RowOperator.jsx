@@ -45,7 +45,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 timepoint.sort(variable, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
                 if (this.props.store.rootStore.realTime) {
-                    this.props.store.applySortingToAll(timepoint.globalIndex);
+                    this.props.store.applyPatientOrderToAll(timepoint.globalIndex);
                 }
             }
         }
@@ -168,10 +168,23 @@ const RowOperator = observer(class RowOperator extends React.Component {
                     <path fill="gray"
                           d="M9,11H15V8L19,12L15,16V13H9V16L5,12L9,8V11M2,20V4H4V20H2M20,20V4H22V20H20Z"/>
                     <rect onClick={() => this.unGroup(timepoint, variable)}
-                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "group")}
+                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "ungroup")}
                           width={iconScale * 24} height={24}
                           fill="none"
                           pointerEvents="visible"/>
+                </g>);
+        }
+        getAlignIcon(timepoint, variable, iconScale, xPos, yPos) {
+            return (
+                <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                   onMouseEnter={(e) => this.props.showTooltip(e, "Realign timepoints")}
+                   onMouseLeave={this.props.hideTooltip}>
+                    <path fill="gray"
+                          d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
+                    <rect onClick={() => this.props.store.applyPatientOrderToAll(timepoint.globalIndex)}
+                      width={iconScale * 24} height={24}
+                      fill="none"
+                      pointerEvents="visible"/>
                 </g>);
         }
 
@@ -230,10 +243,10 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 const yPos = -(iconScale * 24 - lineHeight) / 2;
                 let secondIcon;
                 if (!_self.props.timepoint.isGrouped) {
-                    secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+                    secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 72, yPos)
                 }
                 else {
-                    secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+                    secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 72, yPos)
 
                 }
                 let highlightRect = null;
@@ -242,9 +255,10 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 }
                 return <g key={d.variable} className={"clickable"} transform={transform}>
                     {highlightRect}
-                    {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
-                    {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
+                    {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 96, fontWeight, fontSize)}
+                    {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 96), yPos)}
                     {secondIcon}
+                    {_self.getAlignIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 48), yPos)}
                     {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
                 </g>
             });

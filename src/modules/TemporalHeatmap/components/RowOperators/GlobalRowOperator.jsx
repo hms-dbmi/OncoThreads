@@ -45,7 +45,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 timepoint.sort(variable, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
                 if (this.props.store.rootStore.realTime) {
-                    this.props.store.applySortingToAll(timepoint.globalIndex);
+                    this.props.store.applyPatientOrderToAll(timepoint.globalIndex);
                 }
             }
         }*/

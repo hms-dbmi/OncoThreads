@@ -17,21 +17,21 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
      * applies sorting of the clicked timepoint to all timepoints
      */
     applySortToAll() {
-        this.props.store.applySortingToAll(this.props.clickedTimepoint);
+        this.props.store.applySortingToAll(this.props.clickedTimepoint,this.props.clickedVariable);
     }
 
     /**
      * applies sorting of the clicked timepoint to previous timepoint
      */
     applySortToPrevious() {
-        this.props.store.applySortingToPrevious(this.props.clickedTimepoint);
+        this.props.store.applySortingToPrevious(this.props.clickedTimepoint,this.props.clickedVariable);
     }
 
     /**
      * applies sorting of the clicked timepoint to next timepoint
      */
     applySortToNext() {
-        this.props.store.applySortingToNext(this.props.clickedTimepoint);
+        this.props.store.applySortingToNext(this.props.clickedTimepoint,this.props.clickedVariable);
     }
 
     render() {
@@ -42,9 +42,9 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
                 top: this.props.contextY,
                 left: this.props.contextX
             }}>
-                <Button onClick={() => this.applySortToPrevious()}>Apply patient order to previous timepoint</Button>
-                <Button onClick={() => this.applySortToNext()}>Apply patient order to next timepoint</Button>
-                <Button onClick={() => this.applySortToAll()}>Apply patient order to all timepoints</Button>
+                <Button onClick={() => this.applySortToPrevious()}>Apply sorting to previous timepoint</Button>
+                <Button onClick={() => this.applySortToNext()}>Apply sorting to next timepoint</Button>
+                <Button onClick={() => this.applySortToAll()}>Apply sorting to all timepoints</Button>
             </ButtonGroup>
         )
     }

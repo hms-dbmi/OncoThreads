@@ -23,9 +23,6 @@ Sets the basic parameters, e.g. the dimensions of the rectangles or the height o
 const MainView = observer(class MainView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = ({
-            selectedPatients: [],
-        });
         this.handlePatientSelection = this.handlePatientSelection.bind(this);
         this.handlePartitionSelection = this.handlePartitionSelection.bind(this);
         this.handleTimeClick=this.handleTimeClick.bind(this);
@@ -34,7 +31,7 @@ const MainView = observer(class MainView extends React.Component {
 
 
     handleTimeClick() {
-        this.props.store.applySortingToAll(0);
+        this.props.store.applyPatientOrderToAll(0);
         this.props.store.rootStore.realTime = !this.props.store.rootStore.realTime;
     }
      handleGlobalTimeClick() {
@@ -47,16 +44,12 @@ const MainView = observer(class MainView extends React.Component {
      * @param patient
      */
     handlePatientSelection(patient) {
-        let patients = this.state.selectedPatients.slice();
-        if (patients.includes(patient)) {
-            patients.splice(patients.indexOf(patient), 1)
+        if (this.props.store.selectedPatients.includes(patient)) {
+            this.props.store.removePatientFromSelection(patient)
         }
         else {
-            patients.push(patient);
+            this.props.store.addPatientToSelection(patient);
         }
-        this.setState({
-            selectedPatients: patients
-        });
     }
 
 
@@ -67,31 +60,28 @@ const MainView = observer(class MainView extends React.Component {
      * @param patients
      */
     handlePartitionSelection(patients) {
-        let selectedPatients = this.state.selectedPatients.slice();
+        const _self=this;
         //isContained: true if all patients are contained
         let isContained = true;
         patients.forEach(function (d, i) {
-            if (!selectedPatients.includes(d)) {
+            if (!_self.props.store.selectedPatients.includes(d)) {
                 isContained = false
             }
         });
         //If not all patients are contained, add the patients that are not contained to the selected patients
         if (!isContained) {
             patients.forEach(function (d) {
-                if (!selectedPatients.includes(d)) {
-                    selectedPatients.push(d);
+                if (!_self.props.store.selectedPatients.includes(d)) {
+                    _self.props.store.addPatientToSelection(d);
                 }
             });
         }
         //If all the patients are already contained, remove them from selected patients
         else {
             patients.forEach(function (d) {
-                selectedPatients.splice(selectedPatients.indexOf(d), 1);
+                _self.props.store.removePatientFromSelection(d);
             });
         }
-        this.setState({
-            selectedPatients: selectedPatients,
-        });
     }
 
 
@@ -192,7 +182,7 @@ const MainView = observer(class MainView extends React.Component {
                         <Col xs={2} md={2} style={{padding: 0}}>
                             <RowOperators {...this.props} height={svgHeight} width={200}
                                         posY={timepointPositions.timepoint}
-                                        selectedPatients={this.state.selectedPatients}
+                                        selectedPatients={this.props.store.selectedPatients}
                                         currentVariables={this.props.store.currentVariables}/>
 
                         </Col>
@@ -201,7 +191,7 @@ const MainView = observer(class MainView extends React.Component {
                                 heatmapWidth={heatmapWidth}
                                 timepointY={timepointPositions.timepoint}
                                 transY={timepointPositions.connection}
-                                selectedPatients={this.state.selectedPatients}
+                                selectedPatients={this.props.store.selectedPatients}
                                 onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
                         </Col>
                         <Col xs={2} md={2} style={{padding: 0}}>
@@ -273,7 +263,7 @@ const MainView = observer(class MainView extends React.Component {
                         <Col xs={2} md={2} style={{padding: 0}}>
                             <GlobalRowOperators {...this.props} height={svgHeight-20} width={200}
                                         posY={timepointPositions.timepoint}
-                                        selectedPatients={this.state.selectedPatients}
+                                        selectedPatients={this.props.store.selectedPatients}
                                         currentVariables={this.props.store.currentVariables}/>
 
                         </Col>
@@ -288,7 +278,7 @@ const MainView = observer(class MainView extends React.Component {
                                 heatmapWidth={heatmapWidth}
                                 timepointY={timepointPositions.timepoint}
                                 transY={timepointPositions.connection}
-                                selectedPatients={this.state.selectedPatients}
+                                selectedPatients={this.props.store.selectedPatients}
                                 onDrag={this.handlePatientSelection} 
                                 selectPartition={this.handlePartitionSelection}/>
                         </Col>
