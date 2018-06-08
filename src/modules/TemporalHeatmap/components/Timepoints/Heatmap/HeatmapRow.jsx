@@ -77,16 +77,18 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 stroke="lightgray";
                 fill="white";
             }
+            /*
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";
                 
             }
+            */
 
 
             //while (ind < maxNum) {
 
             Array.from(Array(maxNum).keys()).forEach(function(ind){
-               if(_self.props.dtype!=="NUMBER"){ 
+               if(!(_self.props.dtype==="NUMBER"&&_self.props.timepointType==="between")){
 
                 //var k = _self.props.eventStartEnd;
 

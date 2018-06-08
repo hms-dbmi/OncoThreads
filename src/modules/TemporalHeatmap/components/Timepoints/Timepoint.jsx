@@ -22,6 +22,7 @@ const Timepoint = observer(class Timepoint extends React.Component {
                                       max={this.props.max}
                                       eventStartEnd={this.props.eventStartEnd}
                                       timepoint={this.props.timepoint.heatmap}
+                                      timepointType={this.props.timepoint.type}
                                       patientOrder={this.props.timepoint.heatmapOrder}
                                       primaryVariable={this.props.timepoint.primaryVariable}/>);
         }
