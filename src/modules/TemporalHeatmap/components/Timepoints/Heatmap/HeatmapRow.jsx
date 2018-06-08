@@ -94,18 +94,18 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
 
                 //var height1;
-                let opc1;
+                let opc1=1;
 
                 //var nId=0;
 
-                if (typeof(d.eventDate) === 'undefined') {
+                /*if (typeof(d.eventDate) === 'undefined') {
                     //console.log("not transition");
                     opc1 = _self.props.opacity;
 
                 }
                 else {
                     opc1 = 0.6;
-                }
+                }*/
 
 
                 //var colorEx=['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17'];
@@ -195,7 +195,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
                                 let duration=Math.round(((2*ht[j] - _self.props.visMap.primaryHeight)*_self.props.max)/(700*2));
 
-                                console.log(_self.props.ypi);
+                                //console.log(_self.props.ypi);
                                 rects.push(<rect stroke={stroke} 
                                     onMouseEnter={ (e) => _self.handleMouseEnterGlobal(e, d.patient, val, startDay, duration)
                                         }
