@@ -91,7 +91,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                 //previousYpositions = _self.props.ypi;
 
                 //_self.drawLines4(rows);
-                count++;
+                //count++;
 
             //}
             /*else {
