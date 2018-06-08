@@ -46,7 +46,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
         this.setState({currentBin: index, dragging: true})
     }
 
-    handleMouseUp(xScale) {
+    handleMouseUp() {
         this.setState({currentBin: -1, dragging: false});
         this.coordX = null;
         this.props.handleBinChange(this.getBins());

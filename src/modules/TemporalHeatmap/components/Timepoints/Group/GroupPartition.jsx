@@ -11,11 +11,11 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
         let previousYposition = 0;
         let rows = [];
         this.props.partition.rows.forEach(function (d, i) {
-            const color = _self.props.visMap.getColorScale(d.variable,_self.props.currentVariables[i].type);
+            const color = _self.props.visMap.getColorScale(d.variable,_self.props.currentVariables[i].datatype);
             let height = 0;
             let opacity = 1;
             const transform = "translate(0," + previousYposition + ")";
-            if (_self.props.primaryVariable === d.variable) {
+            if (_self.props.primaryVariable.id === d.variable) {
                 height = _self.props.visMap.primaryHeight;
             }
             else {

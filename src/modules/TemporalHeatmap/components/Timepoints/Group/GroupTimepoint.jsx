@@ -25,7 +25,7 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
                                transform={transform}><GroupPartition {..._self.props} partition={d}
                                                                      partitionIndex={i} stroke={stroke}/></g>);
             for (let j = 0; j < d.rows.length; j++) {
-                if (d.rows[j].variable === _self.props.primaryVariable) {
+                if (d.rows[j].variable === _self.props.primaryVariable.id) {
                     previousXPosition += _self.props.groupScale(d.rows[j].counts[0].value) + 10;
                 }
             }

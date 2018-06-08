@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import BinningModal from './BinningModal';
 import * as d3 from 'd3';
+import uuidv4 from 'uuid/v4';
 
 
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
@@ -30,14 +31,14 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     handleNumberOfBinsChange(number) {
-        let binNames=this.state.binNames.slice();
+        let binNames = this.state.binNames.slice();
         if (number > this.state.binNames.length) {
             binNames.push("Bin " + number);
         }
         else {
             binNames.pop();
         }
-        this.setState({binNames:binNames})
+        this.setState({binNames: binNames})
     }
 
     close() {
@@ -53,9 +54,10 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * applies binning to data and color scales
      */
     handleApply() {
-        this.props.store.binContinuous(this.props.variable, this.state.bins, this.state.binNames, this.props.type);
-        this.props.visMap.setBinnedColorScale(this.props.variable, this.state.binNames, this.state.bins);
-        this.props.followUpFunction(this.props.timepointIndex, this.props.variable);
+        const newId=uuidv4();
+        this.props.store.binContinuous(newId,this.props.variable, this.state.bins, this.state.binNames, this.props.type);
+        this.props.visMap.setBinnedColorScale(newId,this.props.variable, this.state.binNames, this.state.bins);
+        this.props.followUpFunction(this.props.timepointIndex, newId);
         this.close();
     }
 
@@ -65,9 +67,9 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * @param index
      */
     handleBinNameChange(e, index) {
-        let binNames=this.state.binNames.slice();
+        let binNames = this.state.binNames.slice();
         binNames[index] = e.target.value;
-        this.setState({binNames:binNames})
+        this.setState({binNames: binNames})
     }
 
     render() {

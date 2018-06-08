@@ -23,6 +23,7 @@ class VisStore{
         this.transitionSpace=0;
         //gap between partitions in grouped timepoints
         this.partitionGap=0;
+        this.GlobalTransitionColors= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']).domain([undefined]);
         extendObservable(this,{
             timepointY:[],
             transY:[],
@@ -43,17 +44,18 @@ class VisStore{
 
     /**
      * creates a binned color scale for a binned variable using its corresponding continuous scale
-     * @param variable
+     * @param newId
+     * @param oldId
      * @param binNames: domain of scale
      * @param binValues: bins
      */
-    setBinnedColorScale(variable,binNames,binValues){
-        const continousScale=this.continuousColor[variable];
+    setBinnedColorScale(newId,oldId,binNames,binValues){
+        const continousScale=this.continuousColor[oldId];
         let colors=[];
         for(let i=0;i<binNames.length;i++){
             colors.push(continousScale((binValues[i+1]+binValues[i])/2));
         }
-        this.binnedColor[variable]=d3.scaleOrdinal().range(colors).domain(binNames);
+        this.binnedColor[newId]=d3.scaleOrdinal().range(colors).domain(binNames).unknown('white');
     }
     setGap(gap){
         this.gap=gap;
@@ -109,6 +111,9 @@ class VisStore{
         }
         else if(type==="BINNED"){
             return this.binnedColor[variable];
+        }
+        else if(type==="GlobalTransitions"){
+            return this.GlobalTransitionColors;
         }
         else{
             return this.continuousColor[variable];
