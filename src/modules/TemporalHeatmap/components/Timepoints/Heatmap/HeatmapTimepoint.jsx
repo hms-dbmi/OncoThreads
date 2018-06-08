@@ -49,13 +49,13 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
     getGlobalTimepoint() {
         const _self = this;
         let rows = [];
-        let previousYposition=0;
+        //let previousYposition=0;
 
-        let count=0;
+        //let count=0;
 
         let globalIndex = 0;
 
-        let ypi=_self.props.ypi;
+        //let ypi=_self.props.ypi;
 
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
@@ -72,7 +72,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
 
 
-            if (row.variable === _self.props.primaryVariable.id) {
+            //if (row.variable === _self.props.primaryVariable.id) {
               rows.push(<g key={row.variable + i + globalIndex} >
 
                     <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -93,16 +93,16 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                 //_self.drawLines4(rows);
                 count++;
 
-            }
-            else {
+            //}
+            /*else {
 
 
-              if(count===1){
-                ypi=ypi.map(y=>y+_self.props.rectWidth);
-              }
-              else{
-                ypi=ypi.map(y=>y+_self.props.rectWidth/2);
-              }
+              //if(count===1){
+                //ypi=ypi.map(y=>y+_self.props.rectWidth);
+              //}
+              //else{
+                //ypi=ypi.map(y=>y+_self.props.rectWidth/2);
+              //}
 
               rows.push(<g key={row.variable  + i + globalIndex} >
 
@@ -123,7 +123,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                 count++;
 
                 //_self.drawLines4(rows);
-            }
+            }*/
 
             globalIndex++;
         });
@@ -138,11 +138,11 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
     getGlobalTimepointWithTransition() {
         const _self = this;
         let rows = [];
-        let previousYposition=0;
+        //let previousYposition=0;
 
         //let count=0;
 
-        let ypi=_self.props.ypi;
+        //let ypi=_self.props.ypi;
 
         let globalIndex = 0;
 
@@ -183,7 +183,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
 
 
-            if (row.variable === _self.props.primaryVariable.id ) {
+            //if (row.variable === _self.props.primaryVariable.id ) {
 
                 //console.log(ypi);
               rows.push(<g key={row.variable + i + globalIndex} >
@@ -211,17 +211,17 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                 //count++;
 
 
-            }
-            else {
+            //}
+            /*else {
 
 
                 //console.log(ypi);
-              /*if(count===1){
-                ypi=ypi.map(y=>y+_self.props.rectWidth);
-              }
-              else{
-                ypi=ypi.map(y=>y+_self.props.rectWidth/2);
-              }*/
+              //if(count===1){
+                //ypi=ypi.map(y=>y+_self.props.rectWidth);
+              //}
+              //else{
+                //ypi=ypi.map(y=>y+_self.props.rectWidth/2);
+              //}
 
               //console.log(ypi);
               rows.push(<g key={row.variable + i+ globalIndex} >
@@ -246,7 +246,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
 
                 //_self.drawLines4(rows);
-            }
+            }*/
 
             globalIndex++;
         });
