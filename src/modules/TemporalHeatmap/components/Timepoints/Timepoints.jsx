@@ -36,7 +36,11 @@ const Timepoints = observer(class Timepoints extends React.Component {
                                                                                           selectedPatients={_self.props.selectedPatients}
                                                                                           translateGroupX={_self.props.translateGroupX}
                                                                                           showTooltip={_self.props.showTooltip}
-                                                                                          hideTooltip={_self.props.hideTooltip}/>
+                                                                                          hideTooltip={_self.props.hideTooltip}
+                                                                                          showContextMenu={_self.props.showContextMenu}
+                                                                                          hideContextMenu={_self.props.hideContextMenu}
+                                                                                          showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
+                                                                                          />
                 </g>);
             }
 

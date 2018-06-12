@@ -257,24 +257,6 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
 
 
     render() {
-       // return (
-         //   this.getTimepoint()
-        //)
-        //
-
-
-
-        /*if(this.props.store.rootStore.globalTime || this.props.store.rootStore.transitionOn) {
-            return (
-                this.getGlobalTimepoint()
-            )
-        } else {
-            return (
-                this.getTimepoint()
-            )
-
-        }
-    */
 
         if(this.props.store.rootStore.globalTime && !this.props.store.rootStore.transitionOn) {
             return (
@@ -283,7 +265,6 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
         }
 
         else if(this.props.store.rootStore.globalTime && this.props.store.rootStore.transitionOn) {
-        //else if(this.props.store.rootStore.transitionOn) {
             return (
                 this.getGlobalTimepointWithTransition()
             )
@@ -294,10 +275,6 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
             )
 
         }
-
-
-
-       //
 
 
     }
