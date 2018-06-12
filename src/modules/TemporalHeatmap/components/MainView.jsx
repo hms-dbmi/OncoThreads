@@ -150,7 +150,7 @@ const MainView = observer(class MainView extends React.Component {
         else {
             height = (sampleTPHeight + betweenTPHeight) / 2
         }
-        var svgHeight = this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace);
+        let svgHeight = this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace);
         if(!this.props.store.rootStore.globalTime){
             return (
                 <Grid fluid={true} onClick={this.closeContextMenu}>
@@ -182,7 +182,7 @@ const MainView = observer(class MainView extends React.Component {
                                             timepoints={this.props.store.timepoints} width={100} height={svgHeight}
                                             posY={timepointPositions.timepoint}/>
                         </Col>
-                        <Col xs={2} md={2} style={{padding: 0}}>
+                        <Col xs={2} md={2} style={{paddingLeft: 10}}>
                             <RowOperators {...this.props} height={svgHeight} width={200}
                                         posY={timepointPositions.timepoint}
                                         selectedPatients={this.props.store.selectedPatients}
