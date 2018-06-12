@@ -135,7 +135,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseOver={(e) => this.props.showTooltip(e, "Sort timepoint after this variable")}
+                       onMouseOver={(e) => this.props.showTooltip(e, "Sort timepoint by this variable")}
                        onMouseOut={this.props.hideTooltip}>
                 <path fill="gray" d="M3,13H15V11H3M3,6V8H21V6M3,18H9V16H3V18Z"/>
                 <rect onClick={() => this.sortTimepoint(timepoint, variable)}
@@ -148,7 +148,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         getGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Group timepoint after this variable")}
+                       onMouseEnter={(e) => this.props.showTooltip(e, "Group timepoint by this variable")}
                        onMouseLeave={this.props.hideTooltip}>
                 <path fill="gray"
                       d="M12.5,19.5V3.47H14.53V19.5H12.5M9.5,19.5V3.47H11.53V19.5H9.5M4.5,7.5L8.53,11.5L4.5,15.47V12.47H1.5V10.5H4.5V7.5M19.5,15.47L15.5,11.5L19.5,7.5V10.5H22.5V12.47H19.5V15.47Z"/>
