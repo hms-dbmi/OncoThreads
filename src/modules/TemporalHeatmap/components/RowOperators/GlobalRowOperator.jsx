@@ -345,7 +345,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
                    
                     {secondIcon}
-                    {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
+                    {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos+3)}
                 </g>
            
             });

@@ -179,11 +179,13 @@ const Timepoints = observer(class Timepoints extends React.Component {
             });
 
 
+            let transFlag=false;
+
             //if(_self.props.timepoints[i].primaryVariable.datatype!=="NUMBER"){
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.timepoints[i].type === "between") {
 
-                
+                transFlag=true;
                   //  return timepoints;
                 //}
                     rectWidth = _self.props.visMap.betweenRectWidth;
@@ -230,6 +232,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             
             else {
+                transFlag=false;
                 rectWidth = _self.props.visMap.sampleRectWidth;
                 yp = _self.props.allYPositions[Math.floor(i / 2)].map(y => y * 700.0 / max);
 
@@ -259,26 +262,53 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 let heatmapd = d;
                 let heatmapi = i;
 
-                timepoints.push(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}><Timepoint
-                    timepoint={heatmapd} 
-                    index={heatmapi}
-                    ypi={yp}
-                    ht={ht}
-                    max={_self.props.max}
-                    numEventsForEachPatient={numEventsForEachPatient}
-                    eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
-                    currentVariables={_self.props.store.currentVariables[heatmapd.type]}
-                    rectWidth={rectWidth}
-                    width={_self.props.heatmapWidth}
-                    store={_self.props.store}
-                    visMap={_self.props.visMap}
-                    groupScale={_self.props.groupScale}
-                    heatmapScale={_self.props.heatmapScales[heatmapi]}
-                    onDrag={_self.props.onDrag}
-                    selectedPatients={_self.props.selectedPatients}
-                    showTooltip={_self.props.showTooltip}
-                    hideTooltip={_self.props.hideTooltip}/>
-                </g>);
+                if(!transFlag){
+                    timepoints.push(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}><Timepoint
+                        timepoint={heatmapd} 
+                        index={heatmapi}
+                        ypi={yp}
+                        ht={ht}
+                        max={_self.props.max}
+                        numEventsForEachPatient={numEventsForEachPatient}
+                        eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
+                        currentVariables={_self.props.store.currentVariables[heatmapd.type]}
+                        rectWidth={rectWidth}
+                        width={_self.props.heatmapWidth}
+                        store={_self.props.store}
+                        visMap={_self.props.visMap}
+                        groupScale={_self.props.groupScale}
+                        heatmapScale={_self.props.heatmapScales[heatmapi]}
+                        onDrag={_self.props.onDrag}
+                        selectedPatients={_self.props.selectedPatients}
+                        showTooltip={_self.props.showTooltip}
+                        hideTooltip={_self.props.hideTooltip}/>
+                    </g>);
+                }
+                else{
+
+                    timepoints.unshift(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}><Timepoint
+                        timepoint={heatmapd} 
+                        index={heatmapi}
+                        ypi={yp}
+                        ht={ht}
+                        max={_self.props.max}
+                        numEventsForEachPatient={numEventsForEachPatient}
+                        eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
+                        currentVariables={_self.props.store.currentVariables[heatmapd.type]}
+                        rectWidth={rectWidth}
+                        width={_self.props.heatmapWidth}
+                        store={_self.props.store}
+                        visMap={_self.props.visMap}
+                        groupScale={_self.props.groupScale}
+                        heatmapScale={_self.props.heatmapScales[heatmapi]}
+                        onDrag={_self.props.onDrag}
+                        selectedPatients={_self.props.selectedPatients}
+                        showTooltip={_self.props.showTooltip}
+                        hideTooltip={_self.props.hideTooltip}/>
+                    </g>);
+                }
+
+
 
                 globalIndex++;
             }
