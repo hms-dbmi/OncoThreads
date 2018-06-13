@@ -73,8 +73,9 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     render() {
+        let variableName=this.props.store.variableStore[this.props.type].getById(this.props.variable).name;
         return (
-            <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins} variable={this.props.variable} handleBinChange={this.handleBinChange}
+            <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins} variableName={variableName} variable={this.props.variable} handleBinChange={this.handleBinChange}
                                          handleNumberOfBinsChange={this.handleNumberOfBinsChange} handleBinNameChange={this.handleBinNameChange}
                                         close={this.close} handleApply={this.handleApply} modalIsOpen={this.props.modalIsOpen}/>
         )

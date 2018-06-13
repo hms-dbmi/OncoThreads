@@ -61,13 +61,14 @@ class TimepointStore {
         this.timepoints = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepoints, this.rootStore.sampleTimepointStore.timepoints);
         this.timepoints.forEach(function (d, i) {
             d.globalIndex = i;
-            d.isGrouped = false;
+            //d.isGrouped = false;
         });
         this.variableStore.sample = this.rootStore.sampleTimepointStore.variableStore;
         this.variableStore.between = this.rootStore.betweenTimepointStore.variableStore;
         this.currentVariables.sample = this.variableStore.sample.currentVariables;
         this.currentVariables.between = this.variableStore.between.currentVariables;
         this.rootStore.transitionStore.initializeTransitions(this.timepoints.length - 1);
+        this.regroupTimepoints();
     }
 
 

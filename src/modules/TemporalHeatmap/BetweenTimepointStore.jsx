@@ -195,53 +195,12 @@ class BetweenTimepointStore {
             let eventDate = -1, eventEndDate;
             let eventCounter;
 
-            //var a=false, b=false, c=false;
-
-            //var findName;
-
             let getEventId = function(d) {
                 return !d.derived && _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes
                     .map(attr =>  attr.value===d.name)
                     .reduce((next, result) => result || next, false);
-            }
+            };
 
-            /*let getEventId = function(d) {
-
-                a=false; b=false; c=false;
-
-                if(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes.length===3 && !d.derived){
-                    a = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value);
-                    b = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value );
-                    c = d.name ===  (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[2].value ) ;
-                    
-
-                    if(a) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value;
-                    if(b) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value;
-                    if(c) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[2].value;
-
-                    //return a|| b || c;
-
-
-                }  
-                else if(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes.length===2 && !d.derived){
-                    a = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value);
-                    b = d.name === (_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value );
-                       
-                    if(a) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value;
-                    if(b) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[1].value;
-
-                    //return a||b;
-
-                }  
-
-                else{
-                    a= (d.name === _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value) && !d.derived;
-
-                    if(a) findName=_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value;
-                }  
-                //console.log(findName);  
-                return a || b || c;     
-            };*/
             while (currTimepoint < samples.length + 1) {
                 eventCounter = startAtEvent;
                 let attributeFound = false;
@@ -365,7 +324,7 @@ class BetweenTimepointStore {
                     
                 
                     }
-                })
+                });
                 if(!flag){
                     for(var l=0; l<_self.rootStore.eventDetails.length; ){
 
