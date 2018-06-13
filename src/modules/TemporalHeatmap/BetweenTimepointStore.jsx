@@ -270,7 +270,7 @@ class BetweenTimepointStore {
     addTimepointDistance(variableId) {
         this.rootStore.transitionOn=true;
         if (!this.variableStore.hasVariable(variableId)) {
-            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
+            this.variableStore.addOriginalVariable(variableId, "BlockViewTimepoint Distance", "NUMBER");
             if (this.timepoints.length === 0) {
                 this.rootStore.realTime = false;
                 for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
