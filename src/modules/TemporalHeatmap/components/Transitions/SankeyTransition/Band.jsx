@@ -69,10 +69,10 @@ const Band = observer(class Band extends React.Component {
         let selected = null;
         if (selectedWidth !== 0) {
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
-                             stroke={"#737373"} fill={"#737373"} opacity={0.5} title=""/>
+                             stroke={"#b7b7b7"} fill={"#b7b7b7"} opacity={0.5} title=""/>
         }
         let notSelected = <path d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
-                                stroke={"lightgray"} fill={"lightgray"} opacity={0.5}/>;
+                                stroke={"#dddddd"} fill={"#dddddd"} opacity={0.5}/>;
         return (
             <g onMouseEnter={(e) => this.props.showTooltip(e, source+ " -> "+ target+": "+ this.props.count)}
                onMouseLeave={this.props.hideTooltip}>

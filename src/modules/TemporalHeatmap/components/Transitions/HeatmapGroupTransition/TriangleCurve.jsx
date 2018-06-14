@@ -7,9 +7,9 @@ Creates a Triangle Curve
  */
 const TriangleCurve = observer(class TriangleCurve extends React.Component {
     render() {
-        let color = "lightgray";
+        let color = "#dddddd";
         if (this.props.selectedPatients.includes(this.props.patient)) {
-            color = "#737373"
+            color = "#b7b7b7"
         }
         const curvature = .5;
         const yi = d3.interpolateNumber(this.props.y0, this.props.y1),
