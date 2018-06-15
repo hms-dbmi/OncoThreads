@@ -27,7 +27,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
         //console.log(this.props.row.data);
 
-        this.props.row.data.forEach(function (d) {
+        this.props.row.data.forEach(function (d, j) {
             let stroke = "none";
             let fill=_self.props.color(d.value);
             if(d.value===undefined){
@@ -38,10 +38,10 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 stroke = "black";
             }
             rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value)}
-                             onMouseLeave={_self.handleMouseLeave} onMouseDown={() => _self.handleMouseDown(d.patient)}
+                             onMouseLeave={_self.handleMouseLeave} onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}
                              onMouseUp={_self.handleMouseUp} onDoubleClick={() => _self.handleDoubleClick(d.patient)}
                              onClick={_self.handleClick} 
-                             onContextMenu={_self.handleRightClick}
+                             onContextMenu={(e)=>_self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
                              key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
                              x={_self.props.heatmapScale(d.patient) + _self.props.x}
@@ -302,13 +302,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         }
     }
 
-    handleMouseDown(patient) {
-        if (!this.state.dragging) {
-            this.props.onDrag(patient);
+    handleMouseDown(e, patient) {
+        if(e.button===0){
+            if (!this.state.dragging) {
+                this.props.onDrag(patient);
+            }
+            this.setState({
+                dragging: true
+            });
         }
-        this.setState({
-            dragging: true
-        });
 
     }
 
@@ -357,12 +359,16 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         })
     }
 
-    handleRightClick(e) {
+    handleRightClick(e, patient, timepoint, xposition) {
         console.log("\n Right Clicked!");
+        this.setState({
+            dragging: false
+        })
 
-        //this.props.showContextMenu(e, 0, "some variable name", "");
-        //this.props.showContextMenuHeatmapRow(e, 0, "some variable name", "");
+        
+        this.props.showContextMenuHeatmapRow(e, patient, timepoint, xposition);
 
+        
     }
 
     handleClick(e) {
