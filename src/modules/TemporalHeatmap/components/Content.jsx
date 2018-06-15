@@ -13,7 +13,7 @@ import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
 
-import ContextMenuHeatmapRow from "./RowOperators/ContextMenuHeatmapRow";
+import ContextMenuHeatmapRow from "./ContextMenuHeatmapRow";
 
 /*
 Creates all components except for the top navbar
