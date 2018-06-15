@@ -38,7 +38,8 @@ const Content = observer(class Content extends React.Component {
             contextType: "",
             contextX: 0,
             contextY: 0,
-            showContextMenu: false
+            showContextMenu: false,
+            showContextMenuHeatmapRow: false
         }
         ;
         this.openModal = this.openModal.bind(this);
@@ -49,6 +50,8 @@ const Content = observer(class Content extends React.Component {
         this.hideContextMenu = this.hideContextMenu.bind(this);
         this.showSidebar = this.showSidebar.bind(this);
         this.hideSidebar = this.hideSidebar.bind(this);
+
+        this.showContextMenuHeatmapRow=this.showContextMenuHeatmapRow.bind(this);
     }
 
     /**
@@ -119,6 +122,7 @@ const Content = observer(class Content extends React.Component {
     hideContextMenu() {
         this.setState({
             contextType: "",
+            showContextMenuHeatmapRow: false
         })
     }
 
