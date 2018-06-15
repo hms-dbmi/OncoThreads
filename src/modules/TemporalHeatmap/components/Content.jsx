@@ -103,16 +103,15 @@ const Content = observer(class Content extends React.Component {
         e.preventDefault();
     }
 
-    showContextMenuHeatmapRow(e, timepointIndex, variable, type) {
+        
+    showContextMenuHeatmapRow(e, patient, timepoint, xposition) {
         this.setState({
-            x: e.pageX,
-            y: e.pageY,
-            clickedTimepoint: timepointIndex,
-            clickedVariable: variable,
-            contextType: type,
             contextX: e.pageX,
             contextY: e.pageY,
-            showContextMenuHeatmapRow: true
+            showContextMenuHeatmapRow: true,
+            patient:patient,
+            timepoint: timepoint,
+            xposition: xposition
         });
         e.preventDefault();
     }
