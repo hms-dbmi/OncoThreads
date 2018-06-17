@@ -33,7 +33,23 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
     goDown(patient, timepoint, xposition) {
         console.log("Go down");
         console.log(patient + ", " + timepoint + ", " + xposition );
+
+        this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, patient, timepoint, xposition, 0 )
        
+        //var k=this.props.rootStore.timepointStore.timepoints;
+
+       /* k.push(k[k.length-1]);
+
+        k[3].heatmap[0].data[0].push({
+            patient: patient,
+            value: "III"
+        });*/
+
+       // k[3].patients.push(patient);
+
+       // k[0].patients.pop(patient);
+
+        //k[3].patients.push("P01");
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y =
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y+131;
     }

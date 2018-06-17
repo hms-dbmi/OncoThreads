@@ -33,13 +33,16 @@ class RootStore {
         this.patientsPerTimepoint = [];
         this.patientOrderPerTimepoint = [];
         this.timeGapStructure = [];
-        this.timepointStructure = [];
+        //this.timepointStructure = [];
         this.transitionStructure = [];
         this.sampleTimelineMap = {};
         this.timeGapMapping = [];
         this.sampleMappers = {};
         this.actualTimeLine=[];
         this.eventDetails=[];
+
+        this.sampleStruct=[];
+        
 
         this.maxTimeInDays=0;
 
@@ -50,7 +53,8 @@ class RootStore {
             firstLoad: firstLoad,
             realTime: false,
             globalTime: false,
-            transitionOn: false
+            transitionOn: false,
+            timepointStructure: []
             
         })
     }
@@ -140,6 +144,9 @@ class RootStore {
         this.patientsPerTimepoint = patientsPerTimepoint;
         this.eventCategories = eventCategories;
         this.actualTimeLine=this.getTimeLine(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
+
+        this.sampleStruct = sampleStructure;
+
         this.buildTimepointStructure(sampleStructure, maxTP);
         this.buildTransitionStructure();
         this.buildTimeGapStructure(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
@@ -176,6 +183,80 @@ class RootStore {
         }
         this.timepointStructure=timepointStructure;
     }
+
+
+    updateTimepointStructure(numberOfTimepoints, patient, timepoint, xposition, up) {
+        /*let timepointStructure = [];
+        const _self = this;
+        for (let i = 0; i < numberOfTimepoints; i++) {
+            let patientSamples = [];
+            this.cbioAPI.patients.forEach(function (d, j) {
+                if (_self.minTP === 0) {
+                    _self.minTP = sampleStructure[d.patientId].length;
+                }
+                else {
+                    if (sampleStructure[d.patientId].length < _self.minTP) {
+                        _self.minTP = sampleStructure[d.patientId].length;
+                    }
+                }
+                if (sampleStructure[d.patientId].length > i) {
+                    patientSamples.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0]})
+                }
+            });
+            timepointStructure.push(patientSamples);
+        }
+        this.timepointStructure=timepointStructure;*/
+
+
+        var timeline=this.timepointStructure[timepoint];
+
+        var element = timeline[xposition];
+
+        var el, el2;
+
+        el=element;
+
+        const _self=this;
+
+        if(up==0){
+            if(timepoint=== numberOfTimepoints-1){
+                _self.timepointStructure.push(el);
+            }
+            else{
+                for (let i = timepoint; i < numberOfTimepoints; i++) {
+
+                    //el=_self.timepointStructure[i][xposition];
+
+                    if(_self.timepointStructure[i+1]){
+
+                        if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
+                            el2=_self.timepointStructure[i+1][xposition];
+
+                            _self.timepointStructure[i+1][xposition]=el;
+
+                            el=el2;
+                        }
+                        else{
+                            _self.timepointStructure[i+1].push(el);
+                        }
+
+                    }
+                    
+                    
+                }
+            }
+
+            
+
+            
+        }
+
+        timeline.splice(xposition, 1);
+
+        console.log(_self.timepointStructure);
+
+    }
+
 
     buildTransitionStructure() {
         let transitionStrucutre = [];
