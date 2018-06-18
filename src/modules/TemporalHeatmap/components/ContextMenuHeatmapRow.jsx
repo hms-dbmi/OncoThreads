@@ -2,7 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, ButtonGroup} from 'react-bootstrap';
 
-import Content from "./Content";
+//import Content from "./Content";
 
 /*
 sort context menu, appears after a right click on the sort button

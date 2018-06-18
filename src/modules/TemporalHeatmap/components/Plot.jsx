@@ -76,6 +76,20 @@ const Plot = observer(class Plot extends React.Component {
                 </svg>
             </div>
         )
+        /*return (
+            <div className="scrollableX">
+                <svg width={this.props.svgWidth} height={this.props.height}>
+                    <g transform={transform}>
+                        <Timepoints {...this.props}
+                                    allYPositions={this.props.store.rootStore.actualTimeLine}
+                                    yPositions={this.props.timepointY}
+                                    max={max}
+                                    groupScale={groupScale}
+                                    heatmapScales={sampleHeatmapScales}/>
+                    </g>
+                </svg>
+            </div>
+        )*/
 
     }
 

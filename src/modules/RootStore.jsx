@@ -206,11 +206,16 @@ class RootStore {
             timepointStructure.push(patientSamples);
         }
         this.timepointStructure=timepointStructure;*/
-
+        if(this.timepointStore.timepoints.length>numberOfTimepoints) {
+            timepoint = Math.floor(timepoint/2);
+        }
 
         var timeline=this.timepointStructure[timepoint];
 
         var element = timeline[xposition];
+        
+        var index = this.patientsPerTimepoint[timepoint].indexOf(element.patient)
+        this.patientsPerTimepoint[timepoint].splice(index, 1);
 
         var el, el2;
 
@@ -218,9 +223,11 @@ class RootStore {
 
         const _self=this;
 
-        if(up==0){
+        if(up===0){
             if(timepoint=== numberOfTimepoints-1){
-                _self.timepointStructure.push(el);
+                _self.timepointStructure.push([el]);
+                _self.patientsPerTimepoint.push([el.patient]);
+                _self.maxTP++;
             }
             else{
                 for (let i = timepoint; i < numberOfTimepoints; i++) {
@@ -229,17 +236,27 @@ class RootStore {
 
                     if(_self.timepointStructure[i+1]){
 
-                        if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
-                            el2=_self.timepointStructure[i+1][xposition];
-
-                            _self.timepointStructure[i+1][xposition]=el;
+                        var indexedElements=_self.timepointStructure[i+1]
+                            .map((d, j) => {
+                                return {index: j, patient: d.patient};
+                            }).find(d => d.patient===element.patient);
+                        //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
+                        if(indexedElements) {
+                            el2=_self.timepointStructure[i+1][indexedElements.index];
+                            _self.timepointStructure[i+1][indexedElements.index]=el;
 
                             el=el2;
                         }
                         else{
                             _self.timepointStructure[i+1].push(el);
+                            _self.patientsPerTimepoint[i+1].push(el.patient);
+                            break;
                         }
 
+                    } else {
+                        _self.timepointStructure.push([el]);
+                        _self.patientsPerTimepoint.push([el.patient]);
+                        _self.maxTP++;
                     }
                     
                     
@@ -252,21 +269,40 @@ class RootStore {
         }
 
         timeline.splice(xposition, 1);
+        this.buildTransitionStructure();
+        this.buildTimeGapStructure(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
 
         console.log(_self.timepointStructure);
+
+        /*var betweenTimepointIndex = this.betweenTimepointStore.timepoints[timepoint].heatmap[0].data
+            .map(d => d.patient).indexOf(element.patient);
+        var betweenTimepoint = this.betweenTimepointStore.timepoints[timepoint].heatmap[0].data.splice(betweenTimepointIndex, 1);
+        if(!this.betweenTimepointStore.timepoints[timepoint+1].heatmap || !this.betweenTimepointStore.timepoints[timepoint+1].heatmap.length) {
+
+        }
+
+        for (let i = timepoint+1; i <= numberOfTimepoints; i++) {
+            betweenTimepointIndex = this.betweenTimepointStore.timepoints[i].heatmap[0].data
+                .map(d => d.patient).indexOf(element.patient);
+            betweenTimepoint2 = this.betweenTimepointStore.timepoints[i].heatmap[0].data.splice(betweenTimepointIndex, 1);
+            this.betweenTimepointStore.timepoints[i].heatmap[0].data.push(betweenTimepoint);
+        }*/
+
+        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
+
 
     }
 
 
     buildTransitionStructure() {
-        let transitionStrucutre = [];
+        let transitionStructure = [];
         this.patientsPerTimepoint.forEach(function (d, i) {
             if (i === 0) {
-                transitionStrucutre.push(d);
+                transitionStructure.push(d);
             }
-            transitionStrucutre.push(d);
+            transitionStructure.push(d);
         });
-        this.transitionStructure=transitionStrucutre;
+        this.transitionStructure=transitionStructure;
     }
 
 

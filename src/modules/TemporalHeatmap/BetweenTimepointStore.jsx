@@ -183,10 +183,14 @@ class BetweenTimepointStore {
         let eventDetails = [];
         this.rootStore.patientOrderPerTimepoint.forEach(function (f) {
             let samples = [];
-            _self.rootStore.timepointStructure.forEach(function (g) {
+            let maxTimePoint = -1;
+            _self.rootStore.timepointStructure.forEach(function (g, t) {
                 g.forEach(function (l) {
                     if (l.patient === f) {
-                        samples.push(l.sample);
+                        samples.push({sample: l.sample, timepoint: t});
+                        if(maxTimePoint<t) {
+                            maxTimePoint = t;
+                        }
                     }
                 });
             });
@@ -242,16 +246,19 @@ class BetweenTimepointStore {
                 //console.log(findName);  
                 return a || b || c;     
             };*/
-            while (currTimepoint < samples.length + 1) {
+            var findSample = s => s.timepoint===currTimepoint;
+            //while (currTimepoint < maxTimePoint + 1) {
+            samples.map(s=> s.timepoint).forEach(currTimepoint => {
                 eventCounter = startAtEvent;
                 let attributeFound = false;
                 while (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length) {
                     let currMaxDate;
-                    if (currTimepoint === samples.length) {
+                    let currSample = samples.find(findSample);
+                    if (!currSample) {
                         currMaxDate = Number.POSITIVE_INFINITY;
                     }
                     else {
-                        currMaxDate = _self.rootStore.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
+                        currMaxDate = _self.rootStore.sampleTimelineMap[currSample.sample].startNumberOfDaysSinceDiagnosis;
                     }
                     const currEventInRange = BetweenTimepointStore.isInCurrentRange(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter], currMaxDate);
                     if (currEventInRange) {
@@ -296,7 +303,7 @@ class BetweenTimepointStore {
                 });
                 eventDate = -1;
                 currTimepoint += 1;
-            }
+            });
         });
 
         this.rootStore.eventDetails = this.rootStore.eventDetails.concat(eventDetails);

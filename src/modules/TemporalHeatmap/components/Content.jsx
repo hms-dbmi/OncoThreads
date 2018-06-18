@@ -188,12 +188,12 @@ const Content = observer(class Content extends React.Component {
 
     getContextMenuHeatmapRow(){
         if(this.state.showContextMenuHeatmapRow){
-            var contextMenuStyle = {
+            /*var contextMenuStyle = {
                 display: 'block',
                 position: 'absolute', 
                 left: this.state.contextX ? this.state.contextX : 0,
                 top: this.state.contextY ? this.state.contextY : 0
-            }
+            }*/
             //return(<div id="contextMenu" style={contextMenuStyle}>right clicked</div>);
 
             //console.log(this.state.patient + ", " + this.state.timepoint + ", " + this.state.y);

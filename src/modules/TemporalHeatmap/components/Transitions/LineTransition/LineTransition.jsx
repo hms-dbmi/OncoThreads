@@ -40,7 +40,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
         this.props.transition.data.from.forEach(function (d,i) {
         let globalInd=1;
 
-            if (_self.props.transition.data.to.includes(d)) {
+            if (_self.props.transition.data.to && _self.props.transition.data.to.includes(d)) {
                 let strokeColor="lightgray";
                 if(_self.props.selectedPatients.includes(d)){
                     strokeColor="black"
