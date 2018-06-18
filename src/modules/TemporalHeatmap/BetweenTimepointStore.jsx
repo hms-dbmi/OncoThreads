@@ -318,13 +318,6 @@ class BetweenTimepointStore {
                     if(k.includes(originalIdsDel[j]) && i!==indexToDelete) {
                         //console.log("true");
                         flag=true;
-                    } 
-                    
-                    else {
-                        //console.log("false");
-
-                    
-                
                     }
                 });
                 if(!flag){
