@@ -16,7 +16,7 @@ class SingleTimepoint {
             heatmapOrder: rootStore.patientOrderPerTimepoint,
             groupOrder: 1,
             isGrouped: false,
-            primaryVariable: variable,
+            primaryVariableId: variable,
         });
     }
 
@@ -27,7 +27,7 @@ class SingleTimepoint {
     }
     sortWithParameters(variableId,heatmapSorting,groupSorting){
         if (this.isGrouped) {
-            if (this.primaryVariable.id !== variableId) {
+            if (this.primaryVariableId !== variableId) {
                 this.setPrimaryVariable(variableId);
                 this.groupTimepoint(variableId);
             }
@@ -42,7 +42,7 @@ class SingleTimepoint {
     sort(variableId) {
         //case: the timepoint is grouped
         if (this.isGrouped) {
-            if (this.primaryVariable.id !== variableId) {
+            if (this.primaryVariableId !== variableId) {
                 this.setPrimaryVariable(variableId);
                 this.groupTimepoint(variableId);
             }
@@ -83,7 +83,7 @@ class SingleTimepoint {
      * @param variableId
      */
     setPrimaryVariable(variableId) {
-        this.primaryVariable = this.rootStore.timepointStore.variableStore[this.type].getById(variableId);
+        this.primaryVariableId = variableId;
     }
 
     /**
@@ -271,7 +271,7 @@ class SingleTimepoint {
             }).indexOf(variableId) === 0) {
             newVariableIndex = 1
         }
-        this.primaryVariable = this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex];
+        this.primaryVariableId = this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].id;
     }
 }
 

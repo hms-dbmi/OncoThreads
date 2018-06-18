@@ -8,7 +8,7 @@ stores information about sample timepoints
 class SampleTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.variableStore = new VariableStore();
+        this.variableStore = new VariableStore(rootStore);
         extendObservable(this, {
             timepoints: [],
         });
@@ -22,11 +22,11 @@ class SampleTimepointStore {
      * @param type
      */
     initialize(variableId, variable, type) {
-        this.variableStore.constructor();
+        this.variableStore.constructor(this.rootStore);
         this.variableStore.addOriginalVariable(variableId, variable, type);
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
-            this.timepoints.push(new SingleTimepoint(this.rootStore, this.variableStore.getById(variableId), this.rootStore.patientsPerTimepoint[i], "sample", i));
+            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i));
         }
         this.rootStore.timepointStore.initialize();
         this.addHeatmapVariable(variableId);
@@ -66,7 +66,7 @@ class SampleTimepointStore {
         this.variableStore.addOriginalVariable(variableId, variable, type);
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();
-
+        this.rootStore.logStore.saveVariableHistory("ADD VARIABLE", variable)
     }
 
 
@@ -75,9 +75,10 @@ class SampleTimepointStore {
      * @param variableId
      */
     removeVariable(variableId) {
+        let variableName=this.variableStore.getById(variableId).name;
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
-                if (d.primaryVariable.id === variableId) {
+                if (d.primaryVariableId === variableId) {
                     d.adaptPrimaryVariable(variableId);
                 }
             });
@@ -93,10 +94,12 @@ class SampleTimepointStore {
         //case: last timepoint variableId was removed
         else {
             this.timepoints = [];
-            this.variableStore.constructor();
+            this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
         }
+        this.rootStore.logStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
+
 
 
 }

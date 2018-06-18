@@ -38,7 +38,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                         selectedPatients={_self.props.selectedPatients}
                         showTooltip={_self.props.showTooltip}
                         hideTooltip={_self.props.hideTooltip}
-                        primaryVariable={d.primaryVariable}/></g>)
+                        primaryVariableId={d.primaryVariableId}/></g>)
                 }
                 else {
                     timepoints.push(<g key={i + "timepoint"} transform={transform}>
@@ -55,7 +55,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             selectedPatients={_self.props.selectedPatients}
                             showTooltip={_self.props.showTooltip}
                             hideTooltip={_self.props.hideTooltip}
-                            primaryVariable={d.primaryVariable}
+                            primaryVariableId={d.primaryVariableId}
                         /></g>)
 
                 }

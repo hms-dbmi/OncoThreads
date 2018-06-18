@@ -29,6 +29,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             else {
                 timepoint.group(variable);
             }
+            this.props.store.rootStore.logStore.saveTimepointHistory("GROUP", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -48,6 +49,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                     this.props.store.applyPatientOrderToAll(timepoint.globalIndex);
                 }
             }
+            this.props.store.rootStore.logStore.saveTimepointHistory("SORT", variable, timepoint.type, timepoint.localIndex)
         }
 
 
@@ -58,6 +60,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         unGroup(timepoint, variable) {
             timepoint.unGroup(variable);
+            this.props.store.rootStore.logStore.saveTimepointHistory("UNGROUP", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -72,8 +75,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             else {
                 timepoint.promote(variable);
             }
-
-
+            this.props.store.rootStore.logStore.saveTimepointHistory("PROMOTE", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -114,6 +116,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             this.props.highlightVariable(variable);
             this.props.showTooltip(e, "Delete variable from all timepoints")
         }
+
         /**
          * unhighlights variable for deletion and hides tooltip
          */
@@ -127,7 +130,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          * @param variable
          * @param timepoint
          */
-        handleDelete(variable,timepoint) {
+        handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
             this.props.store.removeVariable(variable, timepoint.type)
@@ -174,17 +177,18 @@ const RowOperator = observer(class RowOperator extends React.Component {
                           pointerEvents="visible"/>
                 </g>);
         }
+
         getAlignIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
                 <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                   onMouseEnter={(e) => this.props.showTooltip(e, "Realign timepoints")}
+                   onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
                           d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
                     <rect onClick={() => this.props.store.applyPatientOrderToAll(timepoint.globalIndex)}
-                      width={iconScale * 24} height={24}
-                      fill="none"
-                      pointerEvents="visible"/>
+                          width={iconScale * 24} height={24}
+                          fill="none"
+                          pointerEvents="visible"/>
                 </g>);
         }
 
@@ -207,8 +211,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
                        onMouseLeave={this.props.hideTooltip}>
                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
-                      onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
+                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
+                      onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
             </g>);
         }
 
@@ -225,7 +229,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             return this.props.timepoint.heatmap.map(function (d, i) {
                 let lineHeight;
                 let fontWeight;
-                if (d.variable === _self.props.timepoint.primaryVariable.id) {
+                if (d.variable === _self.props.timepoint.primaryVariableId) {
                     lineHeight = _self.props.visMap.primaryHeight;
                     fontWeight = "bold";
                 }

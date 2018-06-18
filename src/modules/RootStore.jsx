@@ -7,6 +7,7 @@ import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore"
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
+import LogStore from "./TemporalHeatmap/UndoRedoStore";
 
 
 /*
@@ -22,6 +23,7 @@ class RootStore {
         this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore();
+        this.logStore=new LogStore(this);
 
         this.maxTP = 0;
         this.minTP = 0;
@@ -46,6 +48,7 @@ class RootStore {
         this.reset = this.reset.bind(this);
 
         extendObservable(this, {
+            logs:[],
             parsed: false,
             firstLoad: firstLoad,
             realTime: false,
@@ -64,6 +67,7 @@ class RootStore {
         //this.maxTimeInDays=0;
         this.betweenTimepointStore.reset();
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
+        this.logStore.saveHistory();
         this.parsed = true;
     }
 
@@ -79,6 +83,7 @@ class RootStore {
 
 
             _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
+            _self.logStore.saveVariableHistory("ADD Variable", _self.clinicalSampleCategories[0].variable);
             _self.parsed = true;
 
         });

@@ -6,7 +6,8 @@ import DerivedVariable from "./DerivedVariable";
 Store containing information about variables
  */
 class VariableStore {
-    constructor() {
+    constructor(rootStore) {
+        this.rootStore=rootStore;
         this.allVariables = [];
         extendObservable(this, {
             currentVariables: [],

@@ -1,5 +1,4 @@
 import React from 'react';
-import * as d3 from 'd3';
 import {observer} from 'mobx-react';
 /*
 creats a row in the heatmap
@@ -51,25 +50,6 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     }
 
 
-    //added for drawing lines
-
-    static drawLine(x0, x1, y0, y1, key, mode, strokeColor) {
-        const curvature = .5;
-        const yi = d3.interpolateNumber(y0, y1),
-            y2 = yi(curvature),
-            y3 = yi(1 - curvature);
-
-        let path = "M" + x0 + "," + y0
-            + "C" + x0 + "," + y2
-            + " " + x1 + "," + y3
-            + " " + x1 + "," + y1;
-        if (mode) {
-            return (
-                <path key={key + "-solid"} d={path} stroke={strokeColor} fill="none" strokeWidth="22" opacity="0.2"/>)
-        } else {
-            return (<path key={key + "-dashed"} d={path} stroke={strokeColor} strokeDasharray="5, 5" fill="none"/>)
-        }
-    }
 
     handleMouseDown(event,patient) {
         if(event.button===0) {

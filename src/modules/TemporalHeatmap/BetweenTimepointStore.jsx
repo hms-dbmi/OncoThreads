@@ -10,7 +10,7 @@ stores information about betweenTimepoint
 class BetweenTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.variableStore = new VariableStore();
+        this.variableStore = new VariableStore(rootStore);
         this.sampleEventList = [];
         this.patientOrderForEvents = [];
         extendObservable(this, {
@@ -20,7 +20,7 @@ class BetweenTimepointStore {
 
     reset() {
         this.timepoints = [];
-        this.variableStore.constructor();
+        this.variableStore.constructor(this.rootStore);
     }
 
     /**
@@ -170,7 +170,7 @@ class BetweenTimepointStore {
             this.rootStore.transitionOn=true;
             this.rootStore.realTime = false;
             for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
-                this.timepoints.push(new SingleTimepoint(this.rootStore, this.variableStore.getById(derivedId), this.rootStore.transitionStructure[i], "between", i))
+                this.timepoints.push(new SingleTimepoint(this.rootStore, derivedId, this.rootStore.transitionStructure[i], "between", i))
             }
             this.rootStore.timepointStore.initialize();
         }
@@ -261,6 +261,7 @@ class BetweenTimepointStore {
         this.rootStore.eventDetails = this.rootStore.eventDetails.concat(eventDetails);
         this.timepoints = timepoints;
         this.rootStore.timepointStore.regroupTimepoints();
+        this.rootStore.logStore.saveVariableHistory("ADD VARIABLE", name)
     }
 
     /**
@@ -270,17 +271,18 @@ class BetweenTimepointStore {
     addTimepointDistance(variableId) {
         this.rootStore.transitionOn=true;
         if (!this.variableStore.hasVariable(variableId)) {
-            this.variableStore.addOriginalVariable(variableId, "BlockViewTimepoint Distance", "NUMBER");
+            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
             if (this.timepoints.length === 0) {
                 this.rootStore.realTime = false;
                 for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
-                    this.timepoints.push(new SingleTimepoint(this.rootStore, this.variableStore.getById(variableId), this.rootStore.transitionStructure[i], "between", i))
+                    this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.transitionStructure[i], "between", i))
                 }
                 this.rootStore.timepointStore.initialize();
             }
             this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
             this.rootStore.timepointStore.regroupTimepoints();
         }
+        this.rootStore.logStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
     }
 
 
@@ -343,10 +345,10 @@ class BetweenTimepointStore {
         
        
         //console.log(this.rootStore.eventDetails);
-        
+        let variableName=this.variableStore.getById(variableId).name;
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
-                if (d.primaryVariable.id === variableId) {
+                if (d.primaryVariableId === variableId) {
                     d.adaptPrimaryVariable(variableId);
                 }
             });
@@ -363,12 +365,10 @@ class BetweenTimepointStore {
         else {
             this.rootStore.transitionOn=false;
             this.timepoints = [];
-            this.variableStore.constructor();
+            this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
         }
-
-   
-
+        this.rootStore.logStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
 }
 

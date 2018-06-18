@@ -68,7 +68,6 @@ class TimepointStore {
         this.currentVariables.sample = this.variableStore.sample.currentVariables;
         this.currentVariables.between = this.variableStore.between.currentVariables;
         this.rootStore.transitionStore.initializeTransitions(this.timepoints.length - 1);
-        this.regroupTimepoints();
     }
 
 
@@ -149,6 +148,7 @@ class TimepointStore {
                 }
             });
         });
+        this.rootStore.logStore.saveVariableHistory("MODIFY VARIABLE", this.variableStore[type].getById(newId).name)
     }
 
     isContinuous(variableId, type) {
@@ -211,6 +211,7 @@ class TimepointStore {
 
             }
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY SORT TO PREVIOUS", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
     /**
@@ -234,6 +235,7 @@ class TimepointStore {
                 d.sortWithParameters(variable, sortOrder, _self.timepoints[timepointIndex].groupOrder);
             })
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY SORT TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
     /**
@@ -259,6 +261,7 @@ class TimepointStore {
 
             }
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY SORT TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
     /**
@@ -270,6 +273,7 @@ class TimepointStore {
         this.timepoints.forEach(function (d) {
             d.heatmapOrder = sorting;
         });
+        this.rootStore.logStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
     /**
@@ -286,6 +290,8 @@ class TimepointStore {
             else {
                 this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].group(variable);
             }
+        this.rootStore.logStore.saveTimepointHistory("APPLY GROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -305,6 +311,8 @@ class TimepointStore {
                 this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].group(variable);
             }
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY GROUP TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -323,6 +331,8 @@ class TimepointStore {
                 d.group(variable);
             })
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY GROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -339,6 +349,8 @@ class TimepointStore {
             else {
                 this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].unGroup(variable);
             }
+        this.rootStore.logStore.saveTimepointHistory("APPLY UNGROUP TO PREVIOUS", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -358,6 +370,8 @@ class TimepointStore {
                 this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].unGroup(variable);
             }
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY UNGROUP TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -376,8 +390,11 @@ class TimepointStore {
                 d.unGroup(variable);
             })
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY UNGROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
-    ungroupEverything(){
+
+    ungroupEverything() {
         this.timepoints.forEach(function (d) {
             d.setIsGrouped(false);
         })
@@ -397,6 +414,7 @@ class TimepointStore {
             else {
                 this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].promote(variable);
             }
+        this.rootStore.logStore.saveTimepointHistory("APPLY PROMOTE TO PREVIOUS", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
     /**
@@ -416,6 +434,8 @@ class TimepointStore {
                 this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].promote(variable);
             }
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY PROMOTE TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -434,6 +454,8 @@ class TimepointStore {
                 d.promote(variable);
             })
         }
+        this.rootStore.logStore.saveTimepointHistory("APPLY PROMOTE TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -443,7 +465,7 @@ class TimepointStore {
         const _self = this;
         this.timepoints.forEach(function (d, i) {
             if (d.isGrouped) {
-                d.group(d.primaryVariable.id);
+                d.group(d.primaryVariableId);
                 d.sortGroup(d.groupOrder);
                 _self.rootStore.transitionStore.adaptTransitions(i);
             }
