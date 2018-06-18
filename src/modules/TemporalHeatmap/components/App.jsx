@@ -90,7 +90,7 @@ const App = observer(class App extends React.Component {
                 </Nav>
             </Navbar>
                 {this.getMainContent()}
-                <LogModal modalIsOpen={this.state.modalIsOpen} close={this.closeModal} logs={this.rootStore.logStore.logs}/>
+                <LogModal modalIsOpen={this.state.modalIsOpen} close={this.closeModal} logs={this.rootStore.undoRedoStore.logs}/>
             </div>
         )
     }

@@ -261,7 +261,7 @@ class BetweenTimepointStore {
         this.rootStore.eventDetails = this.rootStore.eventDetails.concat(eventDetails);
         this.timepoints = timepoints;
         this.rootStore.timepointStore.regroupTimepoints();
-        this.rootStore.logStore.saveVariableHistory("ADD VARIABLE", name)
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
     }
 
     /**
@@ -282,7 +282,7 @@ class BetweenTimepointStore {
             this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
             this.rootStore.timepointStore.regroupTimepoints();
         }
-        this.rootStore.logStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
     }
 
 
@@ -368,7 +368,7 @@ class BetweenTimepointStore {
             this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
         }
-        this.rootStore.logStore.saveVariableHistory("REMOVE VARIABLE", variableName);
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
 }
 

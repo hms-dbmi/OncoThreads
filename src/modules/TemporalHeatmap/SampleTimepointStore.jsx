@@ -66,7 +66,7 @@ class SampleTimepointStore {
         this.variableStore.addOriginalVariable(variableId, variable, type);
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();
-        this.rootStore.logStore.saveVariableHistory("ADD VARIABLE", variable)
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)
     }
 
 
@@ -97,7 +97,7 @@ class SampleTimepointStore {
             this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
         }
-        this.rootStore.logStore.saveVariableHistory("REMOVE VARIABLE", variableName);
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
 
 

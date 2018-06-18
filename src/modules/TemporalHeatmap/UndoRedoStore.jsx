@@ -1,4 +1,4 @@
-import {createTransformer, extendObservable,autorun} from "mobx";
+import {createTransformer, extendObservable} from "mobx";
 import DerivedVariable from "./DerivedVariable";
 import OriginalVariable from "./OriginalVariable";
 
@@ -13,14 +13,16 @@ class UndoRedoStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.undoRedoMode = false;
-        this.stateStack=[];
+        this.stateStack = [];
         extendObservable(this, {
             logs: [],
             currentPointer: -1
         });
-        autorun(()=>{
+        /*
+        autorun(() => {
             console.log(this.currentPointer);
         });
+        */
         this.undo = this.undo.bind(this);
         this.redo = this.redo.bind(this);
     }
@@ -30,6 +32,9 @@ class UndoRedoStore {
      */
     undo() {
         if (this.currentPointer !== 0) {
+            if (this.rootStore.realTime) {
+                this.rootStore.realTime = false;
+            }
             this.logs.push("UNDO: " + this.logs[this.currentPointer]);
             this.deserialize(this.currentPointer - 1);
             this.currentPointer--;
@@ -56,10 +61,10 @@ class UndoRedoStore {
      * @param index: current index in state stack
      */
     deserialize(index) {
-        this.rootStore.sampleTimepointStore.timepoints=this.deserializeTimepoints(this.rootStore.sampleTimepointStore.timepoints.slice(), this.stateStack[index].sampleTimepoints);
-        this.rootStore.betweenTimepointStore.timepoints=this.deserializeTimepoints(this.rootStore.betweenTimepointStore.timepoints.slice(), this.stateStack[index].betweenTimepoints);
-        this.rootStore.sampleTimepointStore.variableStore.currentVariables=this.deserializeVariables(this.rootStore.sampleTimepointStore.variableStore.currentVariables.slice(), this.stateStack[index].currentSampleVar);
-        this.rootStore.betweenTimepointStore.variableStore.currentVariables=this.deserializeVariables(this.rootStore.betweenTimepointStore.variableStore.currentVariables.slice(), this.stateStack[index].currentBetweenVar);
+        this.rootStore.sampleTimepointStore.timepoints = this.deserializeTimepoints(this.rootStore.sampleTimepointStore.timepoints.slice(), this.stateStack[index].sampleTimepoints);
+        this.rootStore.betweenTimepointStore.timepoints = this.deserializeTimepoints(this.rootStore.betweenTimepointStore.timepoints.slice(), this.stateStack[index].betweenTimepoints);
+        this.rootStore.sampleTimepointStore.variableStore.currentVariables = this.deserializeVariables(this.rootStore.sampleTimepointStore.variableStore.currentVariables.slice(), this.stateStack[index].currentSampleVar);
+        this.rootStore.betweenTimepointStore.variableStore.currentVariables = this.deserializeVariables(this.rootStore.betweenTimepointStore.variableStore.currentVariables.slice(), this.stateStack[index].currentBetweenVar);
         this.rootStore.sampleTimepointStore.variableStore.allVariables = this.stateStack[index].allSampleVar;
         this.rootStore.betweenTimepointStore.variableStore.allVariables = this.stateStack[index].allBetweenVar;
         this.rootStore.transitionOn = this.stateStack[index].transitionOn;
@@ -72,8 +77,8 @@ class UndoRedoStore {
      * @param saved
      */
     deserializeTimepoints(observable, saved) {
-        if(saved.length===0){
-            observable=[];
+        if (saved.length === 0) {
+            observable = [];
         }
         else {
             saved.forEach(function (d, i) {
@@ -110,7 +115,6 @@ class UndoRedoStore {
             observable.splice(toDelete[i], 1);
         }
         //add variable if the saved variable array is longer than the observed variable array
-        if (saved.length > observable.length) {
             saved.forEach(function (d, i) {
                 let idIndex = observable.map(function (g) {
                     return g.id;
@@ -127,7 +131,6 @@ class UndoRedoStore {
                 else {
                     observable.splice(toAdd[i], 0, new OriginalVariable(currItem.id, currItem.name, currItem.datatype))
                 }
-            }
         }
         return observable;
     }
@@ -171,7 +174,7 @@ class UndoRedoStore {
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         if (this.undoRedoMode) {
-            this.stateStack = this.stateStack.slice(0, this.currentPointer+1);
+            this.stateStack = this.stateStack.slice(0, this.currentPointer + 1);
             this.undoRedoMode = false;
         }
         this.stateStack.push(serializeState(this));
@@ -199,11 +202,21 @@ class UndoRedoStore {
      * saves the history of a variale (in logs and in stateStack)
      * @param operation
      * @param variable
+     * @param saveToStack
      */
-    saveVariableHistory(operation, variable) {
+    saveVariableHistory(operation, variable,saveToStack) {
         this.logs.push(operation + ": " + variable);
-        this.saveHistory();
+            this.saveHistory();
 
+    }
+    saveVariableModification(type,variable,saveToStack){
+        if(saveToStack){
+            this.logs.push("MODIFY VARIABLE: "+variable+", Type: "+type);
+            this.saveHistory();
+        }
+        else{
+            this.logs.push("(MODIFY VARIABLE: "+variable+", Type: "+type+")");
+        }
     }
 
     /**

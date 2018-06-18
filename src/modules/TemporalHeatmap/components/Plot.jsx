@@ -55,12 +55,6 @@ const Plot = observer(class Plot extends React.Component {
             <div className="scrollableX">
                 <svg width={this.props.svgWidth} height={this.props.height}>
                     <g transform={transform}>
-                        <Timepoints {...this.props}
-                                    allYPositions={this.props.store.rootStore.actualTimeLine}
-                                    yPositions={this.props.timepointY}
-                                    max={max}
-                                    groupScale={groupScale}
-                                    heatmapScales={sampleHeatmapScales}/>
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
                                      timepointData={this.props.store.timepoints}
                                      realTime={this.props.store.rootStore.realTime}
@@ -72,6 +66,13 @@ const Plot = observer(class Plot extends React.Component {
                                      groupScale={groupScale}
                                      heatmapScales={sampleHeatmapScales}
                                      height={this.props.transitionSpace}/>
+                        <Timepoints {...this.props}
+                                    allYPositions={this.props.store.rootStore.actualTimeLine}
+                                    yPositions={this.props.timepointY}
+                                    max={max}
+                                    groupScale={groupScale}
+                                    heatmapScales={sampleHeatmapScales}/>
+
                     </g>
                 </svg>
             </div>

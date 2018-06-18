@@ -29,7 +29,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             else {
                 timepoint.group(variable);
             }
-            this.props.store.rootStore.logStore.saveTimepointHistory("GROUP", variable, timepoint.type, timepoint.localIndex)
+            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -49,7 +49,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                     this.props.store.applyPatientOrderToAll(timepoint.globalIndex);
                 }
             }
-            this.props.store.rootStore.logStore.saveTimepointHistory("SORT", variable, timepoint.type, timepoint.localIndex)
+            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable, timepoint.type, timepoint.localIndex)
         }
 
 
@@ -60,7 +60,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         unGroup(timepoint, variable) {
             timepoint.unGroup(variable);
-            this.props.store.rootStore.logStore.saveTimepointHistory("UNGROUP", variable, timepoint.type, timepoint.localIndex)
+            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("UNGROUP", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -75,7 +75,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             else {
                 timepoint.promote(variable);
             }
-            this.props.store.rootStore.logStore.saveTimepointHistory("PROMOTE", variable, timepoint.type, timepoint.localIndex)
+            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
