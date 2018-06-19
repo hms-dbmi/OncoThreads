@@ -4,21 +4,23 @@ import {extendObservable} from "mobx";
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
  */
 class SingleTimepoint {
-    constructor(rootStore, variable, patients, type, localIndex) {
+    constructor(rootStore, variable, patients, type, localIndex, order) {
         this.rootStore = rootStore;
         this.type = type;
         this.patients = patients;
         this.globalIndex = -1;
         this.localIndex = localIndex;
+        this.previousOrder=null;
         extendObservable(this, {
             heatmap: [],
             grouped: [],
-            heatmapOrder: rootStore.patientOrderPerTimepoint,
+            heatmapOrder: order,
             groupOrder: 1,
             isGrouped: false,
             primaryVariableId: variable,
         });
     }
+
     /*
     updateHeatmap(newStructure, oldStructure) {
         this.grouped = [];
@@ -229,6 +231,8 @@ class SingleTimepoint {
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
 
+
+
     /**
      * sorts a heatmap timepoint
      * @param variable
@@ -277,26 +281,39 @@ class SingleTimepoint {
                 return -1;
             }
             else {
-                if (_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && !_self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
-                    return -1;
-                }
-                if (!_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && _self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
-                    return 1;
-                }
-                else {
-                    if (a.patient < b.patient) {
+                if (_self.previousOrder === null) {
+                    if (_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && !_self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
                         return -1;
                     }
-                    if (a.patient > b.patient) {
+                    if (!_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && _self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
                         return 1;
                     }
-                    else return 0;
+                    else {
+                        if (a.patient < b.patient) {
+                            return -1;
+                        }
+                        if (a.patient > b.patient) {
+                            return 1;
+                        }
+                        else return 0;
+                    }
+                }
+                else{
+                    if(_self.previousOrder.indexOf(a.patient)<_self.previousOrder.indexOf(b.patient)){
+                        return -1;
+                    }
+                    if(_self.previousOrder.indexOf(a.patient)>_self.previousOrder.indexOf(b.patient)){
+                        return 1;
+                    }
+                    else{return 0}
                 }
             }
         }).map(function (d) {
             return d.patient;
         });
+        this.previousOrder=this.heatmapOrder.slice();
     }
+
 
     getSortOrder(variable) {
         return this.heatmap[this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {

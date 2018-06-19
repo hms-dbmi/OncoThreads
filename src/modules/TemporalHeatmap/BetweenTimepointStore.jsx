@@ -23,6 +23,25 @@ class BetweenTimepointStore {
         this.variableStore.constructor(this.rootStore);
     }
 
+    initialize(id,addToTimeline) {
+        this.rootStore.transitionOn = true;
+        this.rootStore.realTime = false;
+        for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
+            let order;
+            if(i<this.rootStore.timepointStructure.length){
+                order=this.rootStore.sampleTimepointStore.timepoints[i].heatmapOrder;
+            }
+            else{
+                order=this.rootStore.sampleTimepointStore.timepoints[i-1].heatmapOrder;
+            }
+            this.timepoints.push(new SingleTimepoint(this.rootStore, id, this.rootStore.transitionStructure[i], "between", i,order));
+            if(addToTimeline) {
+                this.timeline.push({type: "between", data: {}});
+            }
+        }
+        this.rootStore.timepointStore.initialize();
+    }
+
     /**
      * adds variable to heatmap timepointData
      * @param mapper
@@ -147,7 +166,7 @@ class BetweenTimepointStore {
     }
 
     update() {
-        const _self=this;
+        const _self = this;
         this.timepoints = [];
         this.variableStore.currentVariables.forEach(function (d, i) {
             if (i === 0) {
@@ -159,14 +178,14 @@ class BetweenTimepointStore {
                 this.addHeatmapVariable(this.rootStore.timeGapMapping, d.id);
             }
             else {
-                let selectedVariables=[];
-                let eventType=d.originalIds[0].eventType;
-                let selectedCategory=d.originalIds[0].eventSubType;
-                d.originalIds.forEach(function (f,i) {
-                    let variable=_self.variableStore.getByIdAllVariables(f.id);
-                    selectedVariables.push({id:variable.id,name:variable.name});
+                let selectedVariables = [];
+                let eventType = d.originalIds[0].eventType;
+                let selectedCategory = d.originalIds[0].eventSubType;
+                d.originalIds.forEach(function (f, i) {
+                    let variable = _self.variableStore.getByIdAllVariables(f.id);
+                    selectedVariables.push({id: variable.id, name: variable.name});
                 });
-                this.addHeatmapVariable(this.rootStore.getEventMapping(eventType,selectedVariables,selectedCategory))
+                this.addHeatmapVariable(this.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory))
             }
         });
     }
@@ -178,20 +197,14 @@ class BetweenTimepointStore {
         this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR");
         //initialize if the variable is the first variable to be added
         if (this.timepoints.length === 0) {
-            this.rootStore.transitionOn = true;
-            this.rootStore.realTime = false;
-            for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
-                this.timepoints.push(new SingleTimepoint(this.rootStore, derivedId, this.rootStore.transitionStructure[i], "between", i))
-                this.timeline.push({type: "between", data: {}});
-            }
-            this.rootStore.timepointStore.initialize();
+            this.initialize(derivedId,false);
         }
         const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
         this.addToTimeline(eventMapper);
         const derivedMapper = {};
         for (let patient in eventMapper) {
-            if(!(patient in derivedMapper)){
-                derivedMapper[patient]=[];
+            if (!(patient in derivedMapper)) {
+                derivedMapper[patient] = [];
             }
             eventMapper[patient].forEach(function (d, i) {
                 derivedMapper[patient].push(d.length > 0);
@@ -308,11 +321,7 @@ class BetweenTimepointStore {
         if (!this.variableStore.hasVariable(variableId)) {
             this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
             if (this.timepoints.length === 0) {
-                this.rootStore.realTime = false;
-                for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
-                    this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.transitionStructure[i], "between", i))
-                }
-                this.rootStore.timepointStore.initialize();
+                this.initialize(variableId,false);
             }
             this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
             this.rootStore.timepointStore.regroupTimepoints();

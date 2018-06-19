@@ -85,7 +85,7 @@ class UndoRedoStore {
         else {
             if (observable.length === 0) {
                 saved.forEach(function (d) {
-                    observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex))
+                    observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex,d.heatmapOrder))
                 });
             }
              saved.forEach(function (d, i) {
@@ -172,6 +172,7 @@ class UndoRedoStore {
             patients: timepoint.patients,
             globalIndex: timepoint.globalIndex,
             localIndex: timepoint.localIndex,
+            previousOrder:timepoint.previousOrder,
             heatmap: timepoint.heatmap.map(serialize),
             grouped: timepoint.grouped.map(serialize),
             heatmapOrder: timepoint.heatmapOrder,

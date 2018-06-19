@@ -36,7 +36,7 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     handleGlobalTimeClick() {
-        if(!this.store.rootStore.globalTime) {
+        if(!this.props.store.rootStore.globalTime) {
             this.props.store.applyPatientOrderToAll(0);
             this.props.store.ungroupEverything();
         }

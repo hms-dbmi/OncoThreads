@@ -27,7 +27,7 @@ class SampleTimepointStore {
         this.variableStore.addOriginalVariable(variableId, variable, type);
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
-            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i));
+            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i,this.rootStore.patientOrderPerTimepoint));
             this.timeline.push({type:"sample",data:{}});
         }
         this.rootStore.timepointStore.initialize();
