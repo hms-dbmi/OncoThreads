@@ -19,13 +19,55 @@ class SingleTimepoint {
             primaryVariableId: variable,
         });
     }
+    /*
+    updateHeatmap(newStructure, oldStructure) {
+        this.grouped = [];
+        const _self = this;
+        let newHeatmap = [];
+        let currentPatientIndices = {}; //index of current patients
+        let currentPatientPostition = {};
+        newStructure.forEach(function (d, i) {
+            newHeatmap.push = [];
+            this.heatmap.forEach(function (g, j) {
+                newHeatmap[i].push({variable: g.variable, data: []});
+            });
+            d.forEach(function (g) {
+                let position = 0;
+                if (!(g in currentPatientIndices)) {
+                    currentPatientIndices[g] = 0;
+                    currentPatientPostition[g] = 0;
+                }
+                currentPatientPostition[g] = SingleTimepoint.getPatientPosition(g, currentPatientIndices[g], currentPatientPostition[g], oldStructure);
+                _self.heatmap.forEach(function (f,l) {
+                    newHeatmap[l].data.push(f.data[currentPatientPostition]);
+                });
+                currentPatientIndices[g] += 1;
+            });
 
+        })
+    }
+
+    static getPatientPosition(patient, internalIndex, currentIndex, oldStructure) {
+        let counter = 0;
+        let returnIndex = -1;
+        for (let i = currentIndex; i < oldStructure.length; i++) {
+            if (oldStructure[i].includes(patient)) {
+                if (counter === internalIndex) {
+                    returnIndex = i;
+                    break;
+                }
+                counter++;
+            }
+        }
+        return (returnIndex);
+    }*/
 
     setIsGrouped(boolean) {
         this.isGrouped = boolean;
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
-    sortWithParameters(variableId,heatmapSorting,groupSorting){
+
+    sortWithParameters(variableId, heatmapSorting, groupSorting) {
         if (this.isGrouped) {
             if (this.primaryVariableId !== variableId) {
                 this.setPrimaryVariable(variableId);
@@ -36,9 +78,10 @@ class SingleTimepoint {
         //case: the timepoint is not grouped
         else {
             this.setPrimaryVariable(variableId);
-            this.sortHeatmap(variableId,heatmapSorting);
+            this.sortHeatmap(variableId, heatmapSorting);
         }
     }
+
     sort(variableId) {
         //case: the timepoint is grouped
         if (this.isGrouped) {
@@ -120,7 +163,7 @@ class SingleTimepoint {
                 }
             }
         }
-        this.isGrouped=true;
+        this.isGrouped = true;
     }
 
 
@@ -192,7 +235,7 @@ class SingleTimepoint {
      * @param sortOrder (optional) if it is not passed, the opposite order of the previous sorting is applied
      */
     sortHeatmap(variable, sortOrder) {
-        const _self=this;
+        const _self = this;
         const variableIndex = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
             return d.id
         }).indexOf(variable);
@@ -217,8 +260,8 @@ class SingleTimepoint {
                 rowToSort.sorting = rowToSort.sorting * (-1);
             }
         }
-        else{
-            rowToSort.sorting=sortOrder;
+        else {
+            rowToSort.sorting = sortOrder;
         }
 
         this.heatmap[variableIndex] = rowToSort;
@@ -254,8 +297,9 @@ class SingleTimepoint {
             return d.patient;
         });
     }
-    getSortOrder(variable){
-        return this.heatmap[ this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
+
+    getSortOrder(variable) {
+        return this.heatmap[this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
             return d.id
         }).indexOf(variable)].sorting;
     }

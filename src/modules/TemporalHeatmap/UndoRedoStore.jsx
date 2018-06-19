@@ -1,6 +1,7 @@
 import {createTransformer, extendObservable} from "mobx";
 import DerivedVariable from "./DerivedVariable";
 import OriginalVariable from "./OriginalVariable";
+import SingleTimepoint from "./SingleTimepoint";
 
 /**
  * handles undoing/redoing actions
@@ -77,13 +78,19 @@ class UndoRedoStore {
      * @param saved
      */
     deserializeTimepoints(observable, saved) {
+        const _self=this;
         if (saved.length === 0) {
             observable = [];
         }
         else {
-            saved.forEach(function (d, i) {
-                UndoRedoStore.remapProperties(observable[i], d);
-            });
+            if (observable.length === 0) {
+                saved.forEach(function (d) {
+                    observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex))
+                });
+            }
+             saved.forEach(function (d, i) {
+                    UndoRedoStore.remapProperties(observable[i], d);
+                });
         }
         return observable;
     }

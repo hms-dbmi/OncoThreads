@@ -25,10 +25,9 @@ class TimepointStore {
                 return max;
             }
         });
-
         this.groupBinnedTimepoint = this.groupBinnedTimepoint.bind(this);
         this.promoteBinnedTimepoint = this.promoteBinnedTimepoint.bind(this);
-        this.binContinuous = this.binContinuous.bind(this);
+        this.binVariable = this.binVariable.bind(this);
         this.applyGroupingToAll = this.applyGroupingToAll.bind(this);
         this.applyGroupingToPrevious = this.applyGroupingToPrevious.bind(this);
         this.applyGroupingToNext = this.applyGroupingToNext.bind(this);
@@ -59,9 +58,9 @@ class TimepointStore {
      */
     initialize() {
         this.timepoints = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepoints, this.rootStore.sampleTimepointStore.timepoints);
+        this.timeline = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timeline, this.rootStore.sampleTimepointStore.timeline)
         this.timepoints.forEach(function (d, i) {
             d.globalIndex = i;
-            //d.isGrouped = false;
         });
         this.variableStore.sample = this.rootStore.sampleTimepointStore.variableStore;
         this.variableStore.between = this.rootStore.betweenTimepointStore.variableStore;
@@ -133,10 +132,16 @@ class TimepointStore {
      * @param type: between or sample
      * @param saveToHistory
      */
-    binContinuous(newId, oldId, bins, binNames, type,saveToHistory) {
+    binVariable(newId, oldId, bins, binNames, type, saveToHistory) {
         const _self = this;
         let variableName=_self.variableStore[type].getById(oldId).name;
-        _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", [bins, binNames]);
+        _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {bins:bins, binNames: binNames});
+        this.bin(oldId,newId,bins,binNames);
+        console.log(_self.variableStore[type].getById(newId));
+        this.rootStore.undoRedoStore.saveVariableModification("bin", variableName,saveToHistory);
+    }
+    bin(oldId,newId,bins,binNames){
+        const _self=this;
         this.timepoints.forEach(function (d, i) {
             d.heatmap.forEach(function (f, j) {
                 if (f.variable === oldId) {
@@ -150,7 +155,6 @@ class TimepointStore {
                 }
             });
         });
-        this.rootStore.undoRedoStore.saveVariableModification("bin", variableName,saveToHistory);
     }
 
     isContinuous(variableId, type) {

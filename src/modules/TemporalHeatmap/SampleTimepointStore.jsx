@@ -11,6 +11,7 @@ class SampleTimepointStore {
         this.variableStore = new VariableStore(rootStore);
         extendObservable(this, {
             timepoints: [],
+            timeline: []
         });
     }
 
@@ -27,9 +28,25 @@ class SampleTimepointStore {
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
             this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i));
+            this.timeline.push({type:"sample",data:{}});
         }
         this.rootStore.timepointStore.initialize();
         this.addHeatmapVariable(variableId);
+    }
+    update(){
+        this.timepoints=[];
+        const _self=this;
+        this.variableStore.currentVariables.forEach(function (d,i) {
+            if(!d.derived) {
+                _self.addHeatmapVariable(d.id);
+            }
+            else{
+                if(d.modificationType==="binned") {
+                    _self.addHeatmapVariable(d.originalIds[0]);
+                    _self.rootStore.timepointStore.bin(d.originalIds[0],d.id,d.modification.bins,d.modification.binNames)
+                }
+            }
+        });
     }
 
     /**
@@ -39,6 +56,7 @@ class SampleTimepointStore {
     addHeatmapVariable(variableId) {
         const _self = this;
         let mapper = this.rootStore.sampleMappers[variableId];
+        let addToTimeline = _self.variableStore.getVariableIndex(variableId) === 0;
         this.rootStore.timepointStructure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
@@ -46,9 +64,14 @@ class SampleTimepointStore {
                 variableData.push({
                     patient: f.patient,
                     value: value
-                    
+
                 });
+                if (addToTimeline) {
+                    let date=_self.rootStore.sampleTimelineMap[f.sample].startNumberOfDaysSinceDiagnosis;
+                    _self.timeline[i].data[f.patient] = [{variableId:variableId,value:value,start:date,end:date}];
+                }
             });
+
             _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
         });
     }
