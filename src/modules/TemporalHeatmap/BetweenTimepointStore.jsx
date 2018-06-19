@@ -136,10 +136,14 @@ class BetweenTimepointStore {
                     }
                 }
                 hasAttribute = false;
-                })
+            })
         }
 
         return sampleEvents;
+    }
+
+    updateTimepoints() {
+
     }
 
     /**
@@ -167,7 +171,7 @@ class BetweenTimepointStore {
         }), "or", null);
         //initialize if the variable is the first variable to be added
         if (this.timepoints.length === 0) {
-            this.rootStore.transitionOn=true;
+            this.rootStore.transitionOn = true;
             this.rootStore.realTime = false;
             for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
                 this.timepoints.push(new SingleTimepoint(this.rootStore, derivedId, this.rootStore.transitionStructure[i], "between", i))
@@ -190,27 +194,28 @@ class BetweenTimepointStore {
                     }
                 });
             });
+            let currSample = 0;
             let currTimepoint = 0;
             let startAtEvent = 0;
             let eventDate = -1, eventEndDate;
             let eventCounter;
 
-            let getEventId = function(d) {
+            let getEventId = function (d) {
                 return !d.derived && _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes
-                    .map(attr =>  attr.value===d.name)
+                    .map(attr => attr.value === d.name)
                     .reduce((next, result) => result || next, false);
             };
 
-            while (currTimepoint < samples.length + 1) {
+            while (currSample < samples.length + 1) {
                 eventCounter = startAtEvent;
                 let attributeFound = false;
                 while (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length) {
                     let currMaxDate;
-                    if (currTimepoint === samples.length) {
+                    if (currSample === samples.length) {
                         currMaxDate = Number.POSITIVE_INFINITY;
                     }
                     else {
-                        currMaxDate = _self.rootStore.sampleTimelineMap[samples[currTimepoint]].startNumberOfDaysSinceDiagnosis;
+                        currMaxDate = _self.rootStore.sampleTimelineMap[samples[currSample]].startNumberOfDaysSinceDiagnosis;
                     }
                     const currEventInRange = BetweenTimepointStore.isInCurrentRange(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter], currMaxDate);
                     if (currEventInRange) {
@@ -226,7 +231,7 @@ class BetweenTimepointStore {
                             var vId = variable.id;
                             var findName = variable.name;
                             eventDetails.push({
-                                time: currTimepoint,
+                                time: currSample,
                                 patientId: f,
                                 eventDate: eventDate,
                                 eventEndDate: eventEndDate,
@@ -247,14 +252,21 @@ class BetweenTimepointStore {
                     }
                     eventCounter += 1;
                 }
-                timepoints[currTimepoint].heatmap[addIndex].data.push({
-                    "patient": f,
-                    "value": attributeFound,
-                    "eventDate": eventDate,
-                    "eventName": findName
-                });
+                while (currTimepoint < _self.rootStore.transitionStructure.length) {
+                    if (_self.rootStore.transitionStructure[currTimepoint].includes(f)) {
+                        timepoints[currSample].heatmap[addIndex].data.push({
+                            "patient": f,
+                            "value": attributeFound,
+                            "eventDate": eventDate,
+                            "eventName": findName
+                        });
+                        currTimepoint++;
+                        break;
+                    }
+                    currTimepoint++;
+                }
                 eventDate = -1;
-                currTimepoint += 1;
+                currSample += 1;
             }
         });
 
@@ -269,7 +281,7 @@ class BetweenTimepointStore {
      * @param variableId
      */
     addTimepointDistance(variableId) {
-        this.rootStore.transitionOn=true;
+        this.rootStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
             this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
             if (this.timepoints.length === 0) {
@@ -297,48 +309,50 @@ class BetweenTimepointStore {
 
         //console.log(this.rootStore.eventDetails);
 
-        const _self=this;
+        const _self = this;
 
-        var indexToDelete=_self.variableStore.currentVariables.map(function (d) {
+        var indexToDelete = _self.variableStore.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId);
 
-        if(_self.variableStore.currentVariables[indexToDelete].datatype!=="NUMBER"){
-            var originalIdsDel=_self.variableStore.currentVariables[indexToDelete].originalIds;
+        if (_self.variableStore.currentVariables[indexToDelete].datatype !== "NUMBER") {
+            var originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
 
 
-            var flag=false;
+            var flag = false;
 
             //for(var j=0; j<originalIdsDel.length; j++){} //for every variable to delete
 
             Array.from(Array(originalIdsDel.length).keys()).forEach(
-                function(j){
-                _self.variableStore.currentVariables.forEach(function(d, i){ // go over the list of current variables
-                    var k=d.originalIds; //console.log(k);
-                    if(k.includes(originalIdsDel[j]) && i!==indexToDelete) {
-                        //console.log("true");
-                        flag=true;
-                    }
-                });
-                if(!flag){
-                    for(var l=0; l<_self.rootStore.eventDetails.length; ){
-
-                        //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
-                        
-                        if(originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)){
-                            _self.rootStore.eventDetails.splice(l, 1);
+                function (j) {
+                    _self.variableStore.currentVariables.forEach(function (d, i) { // go over the list of current variables
+                        var k = d.originalIds; //console.log(k);
+                        if (k.includes(originalIdsDel[j]) && i !== indexToDelete) {
+                            //console.log("true");
+                            flag = true;
                         }
-                        else{ l++;}
+                    });
+                    if (!flag) {
+                        for (var l = 0; l < _self.rootStore.eventDetails.length;) {
+
+                            //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+
+                            if (originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)) {
+                                _self.rootStore.eventDetails.splice(l, 1);
+                            }
+                            else {
+                                l++;
+                            }
+                        }
                     }
-                }
-                flag=false;
-            })
-    
+                    flag = false;
+                })
+
         }
-        
-       
+
+
         //console.log(this.rootStore.eventDetails);
-        let variableName=this.variableStore.getById(variableId).name;
+        let variableName = this.variableStore.getById(variableId).name;
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
                 if (d.primaryVariableId === variableId) {
@@ -356,7 +370,7 @@ class BetweenTimepointStore {
         }
         //case: last timepoint variableId was removed
         else {
-            this.rootStore.transitionOn=false;
+            this.rootStore.transitionOn = false;
             this.timepoints = [];
             this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
