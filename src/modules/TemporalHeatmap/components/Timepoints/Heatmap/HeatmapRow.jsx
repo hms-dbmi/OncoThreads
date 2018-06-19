@@ -360,7 +360,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     }
 
     handleRightClick(e, patient, timepoint, xposition) {
-        console.log("\n Right Clicked!");
+        //console.log("\n Right Clicked!");
         this.setState({
             dragging: false
         })
@@ -373,10 +373,10 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
     handleClick(e) {
         if (e.type === 'click') {
-          console.log('Left click');
+          //console.log('Left click');
         } else if (e.type === 'contextmenu') {
             e.preventDefault();
-          console.log('Right click');
+          //console.log('Right click');
          
         }
         /*if (e.nativeEvent.which === 1) {

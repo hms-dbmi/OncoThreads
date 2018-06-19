@@ -42,12 +42,15 @@ class SampleTimepointStore {
         this.rootStore.timepointStructure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
+                if(f){
+                //console.log(f.patient);
                 let value = mapper[f.sample];
                 variableData.push({
                     patient: f.patient,
                     value: value
                     
                 });
+                }
             });
             _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
         });

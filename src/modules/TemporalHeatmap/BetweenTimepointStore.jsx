@@ -182,6 +182,7 @@ class BetweenTimepointStore {
 
         let eventDetails = [];
         this.rootStore.patientOrderPerTimepoint.forEach(function (f) {
+            //console.log(f);
             let samples = [];
             let maxTimePoint = -1;
             _self.rootStore.timepointStructure.forEach(function (g, t) {
@@ -247,13 +248,20 @@ class BetweenTimepointStore {
                 return a || b || c;     
             };*/
             var findSample = s => s.timepoint===currTimepoint;
+
+            console.log(samples);
             //while (currTimepoint < maxTimePoint + 1) {
             samples.map(s=> s.timepoint).forEach(currTimepoint => {
+
+           // while (currTimepoint < samples.length + 1) {
+                //console.log(s.timepoint);
+                //console.log(currTimepoint);
+
                 eventCounter = startAtEvent;
                 let attributeFound = false;
                 while (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length) {
                     let currMaxDate;
-                    let currSample = samples.find(findSample);
+                    let currSample = samples.filter(s=>s.timepoint===currTimepoint)[0]; //samples.find(findSample);
                     if (!currSample) {
                         currMaxDate = Number.POSITIVE_INFINITY;
                     }
@@ -304,10 +312,12 @@ class BetweenTimepointStore {
                 eventDate = -1;
                 currTimepoint += 1;
             });
+            //}
         });
 
         this.rootStore.eventDetails = this.rootStore.eventDetails.concat(eventDetails);
         this.timepoints = timepoints;
+        console.log(timepoints);
         this.rootStore.timepointStore.regroupTimepoints();
     }
 

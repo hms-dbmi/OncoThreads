@@ -212,10 +212,12 @@ class RootStore {
 
         var timeline=this.timepointStructure[timepoint];
 
-        var element = timeline[xposition];
+        //var element = timeline[xposition];
         
-        var index = this.patientsPerTimepoint[timepoint].indexOf(element.patient)
+        var index = this.patientsPerTimepoint[timepoint].indexOf(patient)
         this.patientsPerTimepoint[timepoint].splice(index, 1);
+
+        var element = timeline[index];
 
         var el, el2;
 
@@ -237,9 +239,11 @@ class RootStore {
                     if(_self.timepointStructure[i+1]){
 
                         var indexedElements=_self.timepointStructure[i+1]
+                            .filter(d=>d)
                             .map((d, j) => {
                                 return {index: j, patient: d.patient};
-                            }).find(d => d.patient===element.patient);
+                            }).find(d => d.patient===patient);    
+                            //}).find(d => d.patient===element.patient);
                         //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
                         if(indexedElements) {
                             el2=_self.timepointStructure[i+1][indexedElements.index];
@@ -268,11 +272,16 @@ class RootStore {
             
         }
 
-        timeline.splice(xposition, 1);
+        //timeline.splice(xposition, 1);
+
+        timeline.splice(index, 1);
+
         this.buildTransitionStructure();
+
+        //this.updateTransitionStructure(this.maxTP, patient, timepoint, xposition, up);
         this.buildTimeGapStructure(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
 
-        console.log(_self.timepointStructure);
+        //console.log(_self.timepointStructure);
 
         /*var betweenTimepointIndex = this.betweenTimepointStore.timepoints[timepoint].heatmap[0].data
             .map(d => d.patient).indexOf(element.patient);
@@ -294,6 +303,119 @@ class RootStore {
     }
 
 
+
+
+    moveTimepointUpDown(numberOfTimepoints, patient, xposition, up) {
+
+        //for(let timepoint=0; timepoint< numberOfTimepoints; timepoint++){
+       
+            let timepoint=0; 
+        if(this.timepointStore.timepoints.length>numberOfTimepoints) {
+            timepoint = Math.floor(timepoint/2);
+        }
+
+        var timeline=this.timepointStructure[0];
+
+        //var element = timeline[xposition];
+        
+        var index = this.patientsPerTimepoint[timepoint].indexOf(patient)
+        this.patientsPerTimepoint[timepoint].splice(index, 1);
+
+
+        var element = timeline[this.patientsPerTimepoint[timepoint].indexOf(patient)];
+
+        var el, el2;
+
+        el=element;
+
+        const _self=this;
+
+        if(up===0){
+            /*if(timepoint=== numberOfTimepoints-1){
+                _self.timepointStructure.push([el]);
+                _self.patientsPerTimepoint.push([el.patient]);
+                _self.maxTP++;
+            }*/
+            //else{
+                for (let i = 0; i < numberOfTimepoints; i++) {
+
+                    //el=_self.timepointStructure[i][xposition];
+
+                    if(_self.timepointStructure[i+1]){
+
+                        /*var indexedElements=_self.timepointStructure[i+1]
+                            .map((d, j) => {
+                               
+                                return {index: j, patient: d.patient};
+                            }).find(d => d.patient===patient);*/
+
+
+                        var x=_self.timepointStructure[i+1]
+                            .map((d, j) => {
+                                if(typeof(d)!== 'undefined' && typeof(d.patient)!== 'undefined')
+                                return {index: j, patient: d.patient};
+                            });
+                       
+                            var indexedElements=    x.find(function(d){if(d) return d.patient===patient;});
+                            
+                        //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
+                        if(indexedElements) {
+                            el2=_self.timepointStructure[i+1][indexedElements.index];
+                            _self.timepointStructure[i+1][indexedElements.index]=el;
+
+                            el=el2;
+                        }
+                        else{
+                            _self.timepointStructure[i+1].push(el);
+                            _self.patientsPerTimepoint[i+1].push(el.patient);
+                            break;
+                        }
+
+                    } else {
+                        _self.timepointStructure.push([el]);
+                        _self.patientsPerTimepoint.push([el.patient]);
+                        _self.maxTP++;
+                    }
+                    
+                    
+                }
+            //}
+
+            
+
+            
+        }
+
+        timeline.splice(xposition, 1);
+
+        this.buildTransitionStructure();
+        
+        //this.updateTransitionStructure(this.maxTP, patient, timepoint, xposition, up);
+        this.buildTimeGapStructure(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
+
+        console.log(_self.timepointStructure);
+
+        /*var betweenTimepointIndex = this.betweenTimepointStore.timepoints[timepoint].heatmap[0].data
+            .map(d => d.patient).indexOf(element.patient);
+        var betweenTimepoint = this.betweenTimepointStore.timepoints[timepoint].heatmap[0].data.splice(betweenTimepointIndex, 1);
+        if(!this.betweenTimepointStore.timepoints[timepoint+1].heatmap || !this.betweenTimepointStore.timepoints[timepoint+1].heatmap.length) {
+
+        }
+
+        for (let i = timepoint+1; i <= numberOfTimepoints; i++) {
+            betweenTimepointIndex = this.betweenTimepointStore.timepoints[i].heatmap[0].data
+                .map(d => d.patient).indexOf(element.patient);
+            betweenTimepoint2 = this.betweenTimepointStore.timepoints[i].heatmap[0].data.splice(betweenTimepointIndex, 1);
+            this.betweenTimepointStore.timepoints[i].heatmap[0].data.push(betweenTimepoint);
+        }*/
+
+        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
+
+        //}
+
+    }
+
+
     buildTransitionStructure() {
         let transitionStructure = [];
         this.patientsPerTimepoint.forEach(function (d, i) {
@@ -303,6 +425,28 @@ class RootStore {
             transitionStructure.push(d);
         });
         this.transitionStructure=transitionStructure;
+    }
+
+
+
+    updateTransitionStructure(maxTP, patient, timepoint, xposition, up) {
+        let transitionStructure = [];
+        //if(up==0){
+            this.patientsPerTimepoint.forEach(function (d, i) {
+               // if(xposition!==i){
+                    if (i === 0) {
+                        transitionStructure.push(d);
+                    }
+                    transitionStructure.push(d);
+               // }
+               // else{
+
+               // }
+            });
+        //}
+        this.transitionStructure=transitionStructure;
+
+       // this.transitionStore.initializeTransitions(maxTP - 1);;
     }
 
 

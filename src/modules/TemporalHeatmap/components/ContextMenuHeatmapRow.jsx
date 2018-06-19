@@ -31,10 +31,44 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
      * applies sorting of the clicked timepoint to previous timepoint
      */
     goDown(patient, timepoint, xposition) {
-        console.log("Go down");
-        console.log(patient + ", " + timepoint + ", " + xposition );
+        //console.log("Go down");
+        //console.log(patient + ", " + timepoint + ", " + xposition );
 
-        this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, patient, timepoint, xposition, 0 )
+        for(var i=0; i<this.props.rootStore.timepointStore.selectedPatients.length; i++){
+
+            //this.props.rootStore.moveTimepointUpDown(this.props.rootStore.maxTP, patient, xposition, 0 );
+
+
+            var p=this.props.rootStore.timepointStore.selectedPatients[i];
+
+            var findtimeline=0;
+            var flag=false;
+
+            var len = this.props.rootStore.timepointStructure.length;
+
+            for(let j=0; j<len; j++){
+                var list = this.props.rootStore.timepointStructure[j];
+                
+                for(let k=0; k<list.length; k++){
+                    if(list[k].patient===p){
+                        flag=true; 
+                        //console.log(list[k].patient); 
+                        findtimeline=j;
+                        break;
+                    }
+                    
+                }
+                if(flag){
+                    break;
+                }
+            
+            }
+            
+            //console.log(findtimeline);
+
+            this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 0 )
+        }
+        //this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, patient, timepoint, xposition, 0 )
        
         //var k=this.props.rootStore.timepointStore.timepoints;
 

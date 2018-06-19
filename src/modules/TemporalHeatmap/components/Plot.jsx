@@ -51,7 +51,7 @@ const Plot = observer(class Plot extends React.Component {
 
 
 
-        return (
+        /*return (
             <div className="scrollableX">
                 <svg width={this.props.svgWidth} height={this.props.height}>
                     <g transform={transform}>
@@ -75,8 +75,8 @@ const Plot = observer(class Plot extends React.Component {
                     </g>
                 </svg>
             </div>
-        )
-        /*return (
+        )*/
+        return (
             <div className="scrollableX">
                 <svg width={this.props.svgWidth} height={this.props.height}>
                     <g transform={transform}>
@@ -89,7 +89,7 @@ const Plot = observer(class Plot extends React.Component {
                     </g>
                 </svg>
             </div>
-        )*/
+        )
 
     }
 
