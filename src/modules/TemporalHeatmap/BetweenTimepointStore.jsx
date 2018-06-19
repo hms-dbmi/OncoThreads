@@ -251,8 +251,9 @@ class BetweenTimepointStore {
 
             console.log(samples);
             //while (currTimepoint < maxTimePoint + 1) {
-            samples.map(s=> s.timepoint).forEach(currTimepoint => {
+            //samples.map(s=> s.timepoint).forEach(currTimepoint => {
 
+            for(let currTimepoint=0; currTimepoint<samples.length+1; currTimepoint++ ) {
            // while (currTimepoint < samples.length + 1) {
                 //console.log(s.timepoint);
                 //console.log(currTimepoint);
@@ -310,9 +311,9 @@ class BetweenTimepointStore {
                     "eventName": findName
                 });
                 eventDate = -1;
-                currTimepoint += 1;
-            });
-            //}
+                //currTimepoint += 1;
+            //});
+            }
         });
 
         this.rootStore.eventDetails = this.rootStore.eventDetails.concat(eventDetails);
