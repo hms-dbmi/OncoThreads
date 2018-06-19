@@ -63,6 +63,9 @@ class VariableStore {
             this.allVariables.push(newVariable);
         }
     }
+    addEventVariable(id, name, datatype,eventType,eventSubType){
+        
+    }
 
     /**
      * adds a derived variable to current and all variables
