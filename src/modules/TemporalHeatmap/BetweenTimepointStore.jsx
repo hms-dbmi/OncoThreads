@@ -195,7 +195,7 @@ class BetweenTimepointStore {
                     }
                 });
             });
-            let currTimepoint = 0;
+            //let currTimepoint = 0;
             let startAtEvent = 0;
             let eventDate = -1, eventEndDate;
             let eventCounter;
@@ -247,9 +247,9 @@ class BetweenTimepointStore {
                 //console.log(findName);  
                 return a || b || c;     
             };*/
-            var findSample = s => s.timepoint===currTimepoint;
+            //var findSample = s => s.timepoint===currTimepoint;
 
-            console.log(samples);
+            //console.log(samples);
             //while (currTimepoint < maxTimePoint + 1) {
             //samples.map(s=> s.timepoint).forEach(currTimepoint => {
 

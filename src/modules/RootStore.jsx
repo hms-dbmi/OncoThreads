@@ -217,6 +217,8 @@ class RootStore {
         var index = this.patientsPerTimepoint[timepoint].indexOf(patient)
         this.patientsPerTimepoint[timepoint].splice(index, 1);
 
+        var indexedElements;
+
         var element = timeline[index];
 
         var el, el2;
@@ -238,7 +240,7 @@ class RootStore {
 
                     if(_self.timepointStructure[i+1]){
 
-                        var indexedElements=_self.timepointStructure[i+1]
+                        indexedElements=_self.timepointStructure[i+1]
                             .filter(d=>d)
                             .map((d, j) => {
                                 return {index: j, patient: d.patient};
@@ -280,9 +282,9 @@ class RootStore {
 
                     //el=_self.timepointStructure[i][xposition];
 
-                    if((i-1)>=0 && _self.timepointStructure[i-1]){ //if it exists
+                    if((i-1)>=0 && _self.timepointStructure[i-1]){ //if the timeline exists
 
-                        var indexedElements=_self.timepointStructure[i-1]
+                        indexedElements=_self.timepointStructure[i-1]
                             .filter(d=>d)
                             .map((d, j) => {
                                 return {index: j, patient: d.patient};
@@ -342,6 +344,15 @@ class RootStore {
             this.betweenTimepointStore.timepoints[i].heatmap[0].data.push(betweenTimepoint);
         }*/
 
+        //remove from timepointstruceture the timelines that are empty
+
+        /*for(let l=0; l< _self.timepointStructure.length; l++){
+             if(_self.timepointStructure[l].length===0) {
+                _self.timepointStructure.splice(l, 1);
+            }
+        }*/
+
+           
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
 
 
