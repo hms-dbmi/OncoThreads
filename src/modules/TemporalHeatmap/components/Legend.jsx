@@ -151,7 +151,7 @@ const Legend = observer(class Legend extends React.Component {
             data.forEach(function (d, i) {
                 let lineheight;
                 let opacity = 1;
-                if (primary.id === d.variable) {
+                if (primary === d.variable) {
                     lineheight = _self.props.visMap.primaryHeight;
                 }
                 else {
@@ -194,7 +194,7 @@ const Legend = observer(class Legend extends React.Component {
         this.props.timepoints.forEach(function (d, i) {
             let transform = "translate(10," + _self.props.posY[i] + ")";
             legends.push(<g key={i + d}
-                            transform={transform}>{_self.getLegend(d.heatmap, d.primaryVariable, textHeight, _self.props.store.variableStore[d.type].currentVariables)}</g>);
+                            transform={transform}>{_self.getLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStore[d.type].currentVariables)}</g>);
 
         });
         let transform = "translate(0," + 20 + ")";

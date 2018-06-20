@@ -4,7 +4,7 @@ import ReactMixins from './../../../../utils/ReactMixins';
 
 
 /*
- * Timepoint Labels on the left side of the main view
+ * BlockViewTimepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed al
  */
 const TimepointLabels = observer(class TimepointLabels extends React.Component {

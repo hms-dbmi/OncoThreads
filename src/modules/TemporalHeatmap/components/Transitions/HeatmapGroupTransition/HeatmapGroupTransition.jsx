@@ -4,7 +4,7 @@ import {isObservableArray} from 'mobx';
 import TriangleCurve from './TriangleCurve'
 
 /*
-Creates a HeatmapGroupTransition (between GroupTimepoint and HeatmapTimepoint)
+Creates a HeatmapGroupTransition (between GroupTimepoint and TimelineTimepoint)
  */
 /*
 TODO: make prettier, maybe make to classes: HeatmapGroupTransition and GroupHeatmapTransition

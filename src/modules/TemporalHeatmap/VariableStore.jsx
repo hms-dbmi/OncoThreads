@@ -1,12 +1,14 @@
 import {extendObservable} from "mobx";
 import OriginalVariable from "./OriginalVariable";
 import DerivedVariable from "./DerivedVariable";
+import EventVariable from "./EventVariable";
 
 /*
 Store containing information about variables
  */
 class VariableStore {
-    constructor() {
+    constructor(rootStore) {
+        this.rootStore=rootStore;
         this.allVariables = [];
         extendObservable(this, {
             currentVariables: [],
@@ -48,19 +50,22 @@ class VariableStore {
         this.allVariables.push(newVariable);
     }
 
-    /**
-     * adds a variable to all variables (usually used when a derived variable is added)
-     * @param id
-     * @param name
-     * @param datatype
-     */
-    addToAllVariables(id, name, datatype){
-        if(!this.allVariables.map(function (d) {
+    addEventVariable(newId,name,eventType, selectedVariables, eventSubtype,logicalOperator){
+        const _self=this;
+        selectedVariables.forEach(function (f) {
+           if(!_self.allVariables.map(function (d) {
                 return d.id;
-            }).includes(id)) {
-            const newVariable = new OriginalVariable(id, name, datatype);
-            this.allVariables.push(newVariable);
+            }).includes(f.id)) {
+            const newVariable = new EventVariable(f.id, f.name, "binary",eventType,eventSubtype);
+            _self.allVariables.push(newVariable);
         }
+        });
+        let combinedEvent=new DerivedVariable(newId,name,"binary",selectedVariables.map(function (d,i) {
+            return d.id;
+        }),logicalOperator,null);
+        this.allVariables.push(combinedEvent);
+        this.currentVariables.push(combinedEvent);
+
     }
 
     /**
@@ -106,6 +111,11 @@ class VariableStore {
             return d.id
         }).includes(id)
     }
+    getVariableIndex(id){
+        return this.currentVariables.map(function (d) {
+            return d.id;
+        }).indexOf(id)
+    }
 
     /**
      * gets a variable by id
@@ -113,6 +123,11 @@ class VariableStore {
      */
     getById(id){
         return this.currentVariables.filter(function (d) {
+            return d.id===id
+        })[0];
+    }
+    getByIdAllVariables(id){
+         return this.allVariables.filter(function (d) {
             return d.id===id
         })[0];
     }

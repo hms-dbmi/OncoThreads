@@ -37,7 +37,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
             x.push(Math.round(currX))
         }
         this.props.handleNumberOfBinsChange(e.target.value);
-        this.props.handleBinChange(this.getBins());
+        this.props.handleBinChange(this.getBins(x));
         this.setState({x: x});
     }
 
@@ -49,15 +49,15 @@ const BinSelector = observer(class BinSelector extends React.Component {
     handleMouseUp() {
         this.setState({currentBin: -1, dragging: false});
         this.coordX = null;
-        this.props.handleBinChange(this.getBins());
+        this.props.handleBinChange(this.getBins(this.state.x));
     }
 
-    getBins() {
+    getBins(x) {
         let binValues = [];
         const _self=this;
         binValues.push(this.xScale.domain()[0]);
-        this.state.x.forEach(function (d) {
-            binValues.push(_self.xScale.invert(d));
+        x.forEach(function (d) {
+            binValues.push(Math.round(_self.xScale.invert(d)));
         });
         binValues.push(this.xScale.domain()[1]);
         binValues.sort(function (a, b) {
@@ -82,8 +82,8 @@ const BinSelector = observer(class BinSelector extends React.Component {
     handlePositionTextFieldChange(event, index, xScale) {
         let x = this.state.x.slice();
         x[index] = xScale.invert(event.target.value);
+        this.props.handleBinChange(this.getBins(x));
         this.setState({x: x});
-        this.props.handleBinChange(this.getBins());
 
     }
 
