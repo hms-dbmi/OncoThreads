@@ -129,7 +129,9 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
             }
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
+            let opacity=1;
             if(_self.props.currentVariables[i].datatype==="binary"){
+                opacity=0.5;
                 //color = x => { return "#ffd92f" };
                 //color=d3.scaleOrdinal().range(['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec']).domain([true]);
 
@@ -159,6 +161,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                 max={_self.props.max}
                                 ht={_self.props.ht}
                                 events={a2}
+                                 opacity={opacity}
                                 dtype={_self.props.currentVariables[i].datatype}/>;
 
                 </g>);
@@ -222,7 +225,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 this.getGlobalTimepoint()
             )
         }
-
         else {
             return (
                 this.getGlobalTimepointWithTransition()

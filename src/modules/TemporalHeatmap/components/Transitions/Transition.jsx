@@ -17,12 +17,6 @@ const Transition = observer(class Transition extends React.Component {
             if (this.props.transition.type==="groupToPatients") {
                 return <GroupToPatientsTransition {...this.props}/>
             }
-
-            else if (this.props.transition.type==="empty") {
-                return null;
-            }
-
-
             else {
                 
                 return <LineTransition {...this.props}/>

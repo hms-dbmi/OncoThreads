@@ -112,6 +112,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                      x={xGlobal}
                                      y={_self.props.ypi[j]}
                                      fill={fill}
+                                     opacity={_self.props.opacity}
                     />);
                 }
                 else {
@@ -169,6 +170,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                     x={xGlobal}
                                     y={_self.props.ypi[j]}
                                     fill={fill}
+                                                 opacity={_self.props.opacity}
                                     //fill={_self.props.color(_self.props.timepoint)}
                                 />
                                 );
@@ -201,6 +203,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                         x={xGlobal}
                                         y={_self.props.ypi[j]}
                                         fill={fill}
+                                         opacity={_self.props.opacity}
                                         //fill={_self.props.color(_self.props.timepoint)}
                             />
                         );

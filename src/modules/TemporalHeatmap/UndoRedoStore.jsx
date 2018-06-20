@@ -69,6 +69,7 @@ class UndoRedoStore {
         this.rootStore.sampleTimepointStore.variableStore.allVariables = this.stateStack[index].allSampleVar;
         this.rootStore.betweenTimepointStore.variableStore.allVariables = this.stateStack[index].allBetweenVar;
         this.rootStore.transitionOn = this.stateStack[index].transitionOn;
+        this.rootStore.globalTime=this.stateStack[index].globalTime;
         this.rootStore.timepointStore.initialize();
     }
 
@@ -79,19 +80,13 @@ class UndoRedoStore {
      */
     deserializeTimepoints(observable, saved) {
         const _self=this;
-        if (saved.length === 0) {
-            observable = [];
-        }
-        else {
-            if (observable.length === 0) {
-                saved.forEach(function (d) {
-                    observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex,d.heatmapOrder))
-                });
-            }
-             saved.forEach(function (d, i) {
-                    UndoRedoStore.remapProperties(observable[i], d);
-                });
-        }
+        observable = [];
+        saved.forEach(function (d) {
+            observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex, d.heatmapOrder))
+        });
+        saved.forEach(function (d, i) {
+            UndoRedoStore.remapProperties(observable[i], d);
+        });
         return observable;
     }
 
@@ -122,22 +117,22 @@ class UndoRedoStore {
             observable.splice(toDelete[i], 1);
         }
         //add variable if the saved variable array is longer than the observed variable array
-            saved.forEach(function (d, i) {
-                let idIndex = observable.map(function (g) {
-                    return g.id;
-                }).indexOf(d.id);
-                if (idIndex === -1) {
-                    toAdd.push(i);
-                }
-            });
-            for (let i = 0; i < toAdd.length; i++) {
-                let currItem = saved[toAdd[i]];
-                if (currItem.derived) {
-                    observable.splice(toAdd[i], 0, new DerivedVariable(currItem.id, currItem.name, currItem.datatype, currItem.originalIds, currItem.modificationType, currItem.modification))
-                }
-                else {
-                    observable.splice(toAdd[i], 0, new OriginalVariable(currItem.id, currItem.name, currItem.datatype))
-                }
+        saved.forEach(function (d, i) {
+            let idIndex = observable.map(function (g) {
+                return g.id;
+            }).indexOf(d.id);
+            if (idIndex === -1) {
+                toAdd.push(i);
+            }
+        });
+        for (let i = 0; i < toAdd.length; i++) {
+            let currItem = saved[toAdd[i]];
+            if (currItem.derived) {
+                observable.splice(toAdd[i], 0, new DerivedVariable(currItem.id, currItem.name, currItem.datatype, currItem.originalIds, currItem.modificationType, currItem.modification))
+            }
+            else {
+                observable.splice(toAdd[i], 0, new OriginalVariable(currItem.id, currItem.name, currItem.datatype))
+            }
         }
         return observable;
     }
@@ -165,14 +160,15 @@ class UndoRedoStore {
             currentBetweenVar: store.rootStore.betweenTimepointStore.variableStore.currentVariables.map(serialize),
             allSampleVar: store.rootStore.sampleTimepointStore.variableStore.allVariables,
             allBetweenVar: store.rootStore.betweenTimepointStore.variableStore.allVariables,
-            transitionOn: store.rootStore.transitionOn
+            transitionOn: store.rootStore.transitionOn,
+            globalTime:store.rootStore.globalTime
         }));
         const serializeTimepoints = createTransformer(timepoint => ({
             type: timepoint.type,
             patients: timepoint.patients,
             globalIndex: timepoint.globalIndex,
             localIndex: timepoint.localIndex,
-            previousOrder:timepoint.previousOrder,
+            previousOrder: timepoint.previousOrder,
             heatmap: timepoint.heatmap.map(serialize),
             grouped: timepoint.grouped.map(serialize),
             heatmapOrder: timepoint.heatmapOrder,
@@ -212,19 +208,29 @@ class UndoRedoStore {
      * @param variable
      * @param saveToStack
      */
-    saveVariableHistory(operation, variable,saveToStack) {
+    saveVariableHistory(operation, variable, saveToStack) {
         this.logs.push(operation + ": " + variable);
-            this.saveHistory();
+        this.saveHistory();
 
     }
-    saveVariableModification(type,variable,saveToStack){
-        if(saveToStack){
-            this.logs.push("MODIFY VARIABLE: "+variable+", Type: "+type);
+
+    saveVariableModification(type, variable, saveToStack) {
+        if (saveToStack) {
+            this.logs.push("MODIFY VARIABLE: " + variable + ", Type: " + type);
             this.saveHistory();
         }
-        else{
-            this.logs.push("(MODIFY VARIABLE: "+variable+", Type: "+type+")");
+        else {
+            this.logs.push("(MODIFY VARIABLE: " + variable + ", Type: " + type + ")");
         }
+    }
+    saveSwitchHistory(globalTL){
+        if(globalTL){
+            this.logs.push("SWITCH TO: global timeline");
+        }
+        else{
+            this.logs.push("SWITCH TO: block view");
+        }
+        this.saveHistory();
     }
 
     /**
