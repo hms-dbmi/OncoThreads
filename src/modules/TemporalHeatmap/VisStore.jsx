@@ -23,7 +23,7 @@ class VisStore{
         this.transitionSpace=0;
         //gap between partitions in grouped timepoints
         this.partitionGap=0;
-        this.GlobalTransitionColors= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']).domain([undefined]);
+        this.GlobalTransitionColors= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this,{
             timepointY:[],
             transY:[],
@@ -99,7 +99,7 @@ class VisStore{
      * @param type
      * @returns {*}
      */
-    getColorScale(variable,type){
+    getBlockColorScale(variable, type){
         if(type==="STRING") {
             if (!(variable in this.categoricalColor)) {
                 this.categoricalColor[variable] = d3.scaleOrdinal().range(['#f7f7f7','#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']).domain([undefined]);
@@ -112,12 +112,12 @@ class VisStore{
         else if(type==="BINNED"){
             return this.binnedColor[variable];
         }
-        else if(type==="GlobalTransitions"){
-            return this.GlobalTransitionColors;
-        }
         else{
             return this.continuousColor[variable];
         }
+    }
+    getGlobalTransitionColorScale(){
+        return this.GlobalTransitionColors;
     }
 }
 export default VisStore;

@@ -66,7 +66,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
             }
         }
 
-        const getColor = _self.props.visMap.getColorScale(_self.props.secondPrimary.id, _self.props.secondPrimary.datatype);
+        const getColor = _self.props.visMap.getBlockColorScale(_self.props.secondPrimary.id, _self.props.secondPrimary.datatype);
         const currentRow=_self.props.secondTimepoint.heatmap.filter(function (d,i) {
             return d.variable===_self.props.secondPrimary.id
         })[0].data;

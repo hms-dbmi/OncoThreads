@@ -23,10 +23,10 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
         this.props.timepoint.forEach(function (row, i) {
             //get the correct color scale depending on the type of the variable (STRING, continous or binary)
-            //let color = _self.props.visMap.getColorScale("Timeline",_self.props.currentVariables[i].type);
+            //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
+            let color = _self.props.visMap.getBlockColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
@@ -115,10 +115,10 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
         this.props.timepoint.forEach(function (row, i) {
             //get the correct color scale depending on the type of the variable (STRING, continous or binary)
-            //let color = _self.props.visMap.getColorScale("Timeline",_self.props.currentVariables[i].type);
+            //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
+            let color = _self.props.visMap.getBlockColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
             if(_self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length===0){
                 a2=a1.filter(d=>d.time===Math.floor(_self.props.index))
@@ -138,7 +138,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
                 //color= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17']).domain([undefined]);
-                color=_self.props.visMap.getColorScale(row.variable, "GlobalTransitions");
+                color=_self.props.visMap.getGlobalTransitionColorScale();
             }
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 

@@ -141,7 +141,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                             if(eventHere2){
 
-                                var eventHere=eventHere2[eventIndices[d.patient]].eventTypeDetailed;
+                                var eventHere=eventHere2[eventIndices[d.patient]].varId;
+                                console.log(eventHere);
 
                                 fill=_self.props.color(eventHere);
 

@@ -358,7 +358,14 @@ class RootStore {
                             value: true,
                             start: d.startNumberOfDaysSinceDiagnosis,
                             end: end
-                        })
+                        });
+                         _self.eventDetails.push({
+                                time: counter,
+                                patientId: patient,
+                                eventDate: d.startNumberOfDaysSinceDiagnosis,
+                                eventEndDate: end,
+                                varId: matchingId
+                            });
                     }
                 }
                 else {

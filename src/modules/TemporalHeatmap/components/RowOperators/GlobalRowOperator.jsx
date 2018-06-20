@@ -220,26 +220,24 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 
                 let labels=[];
                 //var txtR=[];
-                var oIds=_self.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).originalIds;
+                let oIds=_self.props.store.variableStore[timepoint.type].getById(variable).originalIds;
 
                 //console.log(variable);
 
                 oIds.forEach(function(element, i) {
-                   
-                    var name1=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).name;
 
-                    var orId=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).id;
+                    let name=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).name;
+
 
                     //console.log(name1);
 
                     //console.log(orId);
-
-                    var c1=_self.props.store.rootStore.visStore.getColorScale(name1, "GlobalTransitions");
-                    var fillC=c1(name1);
+                    let c1=_self.props.store.rootStore.visStore.getGlobalTransitionColorScale();
+                    let fillC=c1(element);
 
                     //console.log(fillC);
 
-                    var xT= GlobalRowOperator.getTextWidth(name1, fontSize);
+                    let xT= GlobalRowOperator.getTextWidth(name, fontSize);
 
                     //console.log(xT);
 
@@ -251,11 +249,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     <rect key={"rect" } opacity={1} width={15} height={15}
                                 x={xPos + xT +5} y={yPos -25}
                                 fill={fillC}/>
-                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                        onContextMenu={(e) => _self.props.showContextMenu(e, timepoint.globalIndex, orId,"promote")}
-                        
-                        >
-                        {GlobalRowOperator.cropText(name1, fontSize, fontWeight, width)}</text>
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
+                        {GlobalRowOperator.cropText(name, fontSize, fontWeight, width)}</text>
                     </g>);
 
 
@@ -313,14 +308,13 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 if (lineHeight < fontSize) {
                     fontSize = Math.round(lineHeight);
                 }
-                var numVar = 1;
-                var variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable,_self.props.timepoint.type)
+                let numVar = 1;
+                let variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable,_self.props.timepoint.type)
                 if(variable.datatype==='binary') {
                     numVar = variable.originalIds.length;
                 }
                 pos = pos + (lineHeight + _self.props.visMap.gap)*numVar;
                 const yPos = -(iconScale * 24 - lineHeight) / 2;
-                let secondIcon;
                 /*if (!_self.props.timepoint.isGrouped) {
                     secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
                 }
@@ -341,10 +335,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 </g>*/
 
                 return <g key={d.variable} className={"clickable"} transform={transform}>
-                    
                     {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
-                   
-                    {secondIcon}
                     {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos+3)}
                 </g>
            
