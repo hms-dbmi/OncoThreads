@@ -64,7 +64,7 @@ class SampleTimepointStore {
     addHeatmapVariable(variableId) {
         const _self = this;
         let mapper = this.rootStore.sampleMappers[variableId];
-        let addToTimeline = _self.variableStore.getVariableIndex(variableId) === 0;
+        //let addToTimeline = _self.variableStore.getVariableIndex(variableId) === 0;
         this.rootStore.timepointStructure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
