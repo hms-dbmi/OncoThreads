@@ -14,7 +14,7 @@ class BetweenTimepointStore {
         this.patientOrderForEvents = [];
         extendObservable(this, {
             timepoints: [],
-            timeline: []
+            //timeline: []
         });
     }
 
@@ -35,9 +35,11 @@ class BetweenTimepointStore {
                 order = this.rootStore.sampleTimepointStore.timepoints[i - 1].heatmapOrder;
             }
             this.timepoints.push(new SingleTimepoint(this.rootStore, id, this.rootStore.transitionStructure[i], "between", i, order));
+            /*
             if (addToTimeline) {
                 this.timeline.push({type: "between", data: {}});
             }
+            */
         }
         this.rootStore.timepointStore.initialize();
     }
@@ -214,7 +216,7 @@ class BetweenTimepointStore {
             this.initialize(derivedId, false);
         }
         const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
-        this.addToTimeline(eventMapper);
+        //this.addToTimeline(eventMapper);
         this.addHeatmapVariable(this.deriveMapper(eventMapper, "or"), derivedId);
         this.rootStore.timepointStore.regroupTimepoints();
         this.addEventDetails(type, selectedValues, selectedKey, name);

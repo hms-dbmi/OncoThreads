@@ -11,7 +11,7 @@ class SampleTimepointStore {
         this.variableStore = new VariableStore(rootStore);
         extendObservable(this, {
             timepoints: [],
-            timeline: []
+            //timeline: []
         });
     }
 
@@ -28,7 +28,7 @@ class SampleTimepointStore {
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
             this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i, this.rootStore.patientOrderPerTimepoint));
-            this.timeline.push({type: "sample", data: {}});
+            //this.timeline.push({type: "sample", data: {}});
         }
         this.rootStore.timepointStore.initialize();
         this.addHeatmapVariable(variableId);
@@ -76,6 +76,7 @@ class SampleTimepointStore {
                         value: value
 
                     });
+                    /*
                     if (addToTimeline) {
                         let date = _self.rootStore.sampleTimelineMap[f.sample].startNumberOfDaysSinceDiagnosis;
                         _self.timeline[i].data[f.patient] = [{
@@ -85,6 +86,7 @@ class SampleTimepointStore {
                             end: date
                         }];
                     }
+                    */
                 }
             });
 
