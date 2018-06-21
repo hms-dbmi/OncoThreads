@@ -170,22 +170,23 @@ class BetweenTimepointStore {
         this.timepoints = [];
         this.variableStore.currentVariables.forEach(function (d, i) {
             if (i === 0) {
-                for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
-                    this.timepoints.push(new SingleTimepoint(this.rootStore, d.id, this.rootStore.transitionStructure[i], "between", i))
+                for (let i = 0; i < _self.rootStore.transitionStructure.length; i++) {
+                    _self.timepoints.push(new SingleTimepoint(_self.rootStore, d.id, _self.rootStore.transitionStructure[i], "between", i))
                 }
             }
             if (!d.derived) {
-                this.addHeatmapVariable(this.rootStore.timeGapMapping, d.id);
+                this.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
             }
             else {
                 let selectedVariables = [];
                 let eventType = d.originalIds[0].eventType;
                 let selectedCategory = d.originalIds[0].eventSubType;
                 d.originalIds.forEach(function (f, i) {
-                    let variable = _self.variableStore.getByIdAllVariables(f.id);
+                    //let variable = _self.variableStore.getByIdAllVariables(f.id);
+                    let variable = _self.variableStore.getByIdAllVariables(f);
                     selectedVariables.push({id: variable.id, name: variable.name});
                 });
-                this.addHeatmapVariable(this.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory))
+                _self.addHeatmapVariable(_self.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory))
             }
         });
     }

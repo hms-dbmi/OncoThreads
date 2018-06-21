@@ -359,8 +359,11 @@ class RootStore {
 
            
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
+        //this.sampleTimepointStore.update();
+        this.betweenTimepointStore.update();
 
 
+        //this.timepointStore.initialize();
     }
 
 
