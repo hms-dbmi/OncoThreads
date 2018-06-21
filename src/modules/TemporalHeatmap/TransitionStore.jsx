@@ -28,13 +28,13 @@ class TransitionStore {
         this.timeGapStructure = this.rootStore.timeGapMapping;
         for (let i = 0; i < this.numberOfTransitions; i++) {
             this.transitionData.push({
-                type: "line",
-                data: {
-                    from: this.rootStore.timepointStore.timepoints[i].patients,
-                    to: this.rootStore.timepointStore.timepoints[i + 1].patients,
-                },
+                type: "",
+                data: null,
                 timeGapStructure: this.timeGapStructure[i+1]
-            })
+            });
+            if(i<this.numberOfTransitions){
+                this.adaptTransitions(i);
+            }
         }
     }
     /**
@@ -119,10 +119,10 @@ class TransitionStore {
         let secondPatients = [];
         const _self = this;
         let firstTP = this.rootStore.timepointStore.timepoints[firstTPindex].heatmap.filter(function (d) {
-            return d.variable === _self.rootStore.timepointStore.timepoints[firstTPindex].primaryVariable.id
+            return d.variable === _self.rootStore.timepointStore.timepoints[firstTPindex].primaryVariableId
         })[0].data;
         let secondTP = this.rootStore.timepointStore.timepoints[secondTPindex].heatmap.filter(function (d) {
-            return d.variable === _self.rootStore.timepointStore.timepoints[secondTPindex].primaryVariable.id
+            return d.variable === _self.rootStore.timepointStore.timepoints[secondTPindex].primaryVariableId
         })[0].data;
         firstTP.forEach(function (d) {
             if (d.value === firstPartition) {
@@ -170,7 +170,7 @@ class TransitionStore {
     getPatientsInPartition(groupedIndex, ungroupedIndex, partition) {
         const _self = this;
         let TP = this.rootStore.timepointStore.timepoints[groupedIndex].heatmap.filter(function (d) {
-            return d.variable === _self.rootStore.timepointStore.timepoints[groupedIndex].primaryVariable.id
+            return d.variable === _self.rootStore.timepointStore.timepoints[groupedIndex].primaryVariableId
         })[0].data;
         return (TP.filter(function (d) {
             return d.value === partition && _self.rootStore.timepointStore.timepoints[ungroupedIndex].patients.includes(d.patient)

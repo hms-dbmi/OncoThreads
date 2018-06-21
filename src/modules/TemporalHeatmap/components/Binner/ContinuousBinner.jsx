@@ -55,9 +55,15 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      */
     handleApply() {
         const newId=uuidv4();
-        this.props.store.binContinuous(newId,this.props.variable, this.state.bins, this.state.binNames, this.props.type);
+        let saveToHistory=false;
+        if(this.props.followUpFunction===null){
+            saveToHistory=true;
+        }
+        this.props.store.binVariable(newId,this.props.variable, this.state.bins, this.state.binNames, this.props.type,saveToHistory);
         this.props.visMap.setBinnedColorScale(newId,this.props.variable, this.state.binNames, this.state.bins);
-        this.props.followUpFunction(this.props.timepointIndex, newId);
+        if(!saveToHistory) {
+            this.props.followUpFunction(this.props.timepointIndex, newId);
+        }
         this.close();
     }
 
@@ -73,8 +79,9 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     render() {
+        let variableName=this.props.store.variableStore[this.props.type].getById(this.props.variable).name;
         return (
-            <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins} variable={this.props.variable} handleBinChange={this.handleBinChange}
+            <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins} variableName={variableName} variable={this.props.variable} handleBinChange={this.handleBinChange}
                                          handleNumberOfBinsChange={this.handleNumberOfBinsChange} handleBinNameChange={this.handleBinNameChange}
                                         close={this.close} handleApply={this.handleApply} modalIsOpen={this.props.modalIsOpen}/>
         )

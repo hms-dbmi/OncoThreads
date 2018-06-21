@@ -15,7 +15,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
             let height = 0;
             let opacity = 1;
             const transform = "translate(0," + previousYposition + ")";
-            if (_self.props.primaryVariable.id === d.variable) {
+            if (_self.props.primaryVariableId === d.variable) {
                 height = _self.props.visMap.primaryHeight;
             }
             else {

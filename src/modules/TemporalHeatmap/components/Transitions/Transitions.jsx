@@ -6,7 +6,9 @@ creates the transitions between timepoints
  */
 const Transitions = observer(class Transitions extends React.Component {
 
-
+    getFullPrimary(timepoint){
+        return this.props.store.variableStore[timepoint.type].getById(timepoint.primaryVariableId);
+    }
     getTransitions() {
         const _self = this;
         return (_self.props.transitionData.map(function (d, i) {
@@ -16,8 +18,8 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                 realTime={_self.props.realTime}
                                                                                 firstTimepoint={_self.props.timepoints[i]}
                                                                                 secondTimepoint={_self.props.timepoints[i + 1]}
-                                                                                firstPrimary={_self.props.timepoints[i].primaryVariable}
-                                                                                secondPrimary={_self.props.timepoints[i + 1].primaryVariable}
+                                                                                firstPrimary={_self.getFullPrimary(_self.props.timepoints[i])}
+                                                                                secondPrimary={_self.getFullPrimary(_self.props.timepoints[i + 1])}
                                                                                 groupScale={_self.props.groupScale}
                                                                                 firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                                 secondHeatmapScale={_self.props.heatmapScales[i + 1]}
@@ -58,8 +60,8 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                           globalTime={_self.props.globalTime}
                                                                           firstTimepoint={_self.props.timepoints[i]}
                                                                           secondTimepoint={_self.props.timepoints[i + 1]}
-                                                                          firstPrimary={_self.props.timepoints[i].primaryVariable}
-                                                                          secondPrimary={_self.props.timepoints[i + 1].primaryVariable}
+                                                                          firstPrimary={_self.getFullPrimary(_self.props.timepoints[i])}
+                                                                          secondPrimary={_self.getFullPrimary(_self.props.timepoints[i + 1])}
                                                                           groupScale={_self.props.groupScale}
                                                                           firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                           secondHeatmapScale={_self.props.heatmapScales[i + 1]}
@@ -95,8 +97,8 @@ const Transitions = observer(class Transitions extends React.Component {
                                                                                   toPatients={toPatients}
                                                                                   firstTimepoint={_self.props.timepoints[firstIndex]}
                                                                                   secondTimepoint={_self.props.timepoints[secondIndex]}
-                                                                                  firstPrimary={_self.props.timepoints[i].primaryVariable}
-                                                                                  secondPrimary={_self.props.timepoints[i + 1].primaryVariable}
+                                                                                  firstPrimary={_self.getFullPrimary(_self.props.timepoints[i])}
+                                                                                  secondPrimary={_self.getFullPrimary(_self.props.timepoints[i + 1])}
                                                                                   groupScale={_self.props.groupScale}
                                                                                   firstHeatmapScale={_self.props.heatmapScales[firstIndex]}
                                                                                   secondHeatmapScale={_self.props.heatmapScales[secondIndex]}

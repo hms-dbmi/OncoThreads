@@ -10,17 +10,36 @@ stores information about betweenTimepoint
 class BetweenTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.variableStore = new VariableStore();
-        this.sampleEventList = [];
+        this.variableStore = new VariableStore(rootStore);
         this.patientOrderForEvents = [];
         extendObservable(this, {
             timepoints: [],
+            timeline: []
         });
     }
 
     reset() {
         this.timepoints = [];
-        this.variableStore.constructor();
+        this.variableStore.constructor(this.rootStore);
+    }
+
+    initialize(id,addToTimeline) {
+        this.rootStore.transitionOn = true;
+        this.rootStore.realTime = false;
+        for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
+            let order;
+            if(i<this.rootStore.timepointStructure.length){
+                order=this.rootStore.sampleTimepointStore.timepoints[i].heatmapOrder;
+            }
+            else{
+                order=this.rootStore.sampleTimepointStore.timepoints[i-1].heatmapOrder;
+            }
+            this.timepoints.push(new SingleTimepoint(this.rootStore, id, this.rootStore.transitionStructure[i], "between", i,order));
+            if(addToTimeline) {
+                this.timeline.push({type: "between", data: {}});
+            }
+        }
+        this.rootStore.timepointStore.initialize();
     }
 
     /**
@@ -31,14 +50,19 @@ class BetweenTimepointStore {
     addHeatmapVariable(mapper, variableId) {
         let timepoints = this.timepoints.slice();
         const _self = this;
+        let currentPatientIndices = {};
         this.rootStore.transitionStructure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
-                let value = mapper[i][f];
+                if (!(f in currentPatientIndices)) {
+                    currentPatientIndices[f] = 0
+                }
+                let value = mapper[f][currentPatientIndices[f]];
                 variableData.push({
                     patient: f,
                     value: value
                 });
+                currentPatientIndices[f] += 1;
             });
             _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
         });
@@ -95,10 +119,9 @@ class BetweenTimepointStore {
      * @param values
      * @param key
      * @param event
-     * @returns {structure}
+     * @returns
      */
     eventStartDays(type, values, key, event) {
-
         let sampleEvents = {};
 
         //let ddate=999;
@@ -136,10 +159,78 @@ class BetweenTimepointStore {
                     }
                 }
                 hasAttribute = false;
-                })
+            })
         }
 
         return sampleEvents;
+    }
+
+    update() {
+        const _self = this;
+        this.timepoints = [];
+        this.variableStore.currentVariables.forEach(function (d, i) {
+            if (i === 0) {
+                for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
+                    this.timepoints.push(new SingleTimepoint(this.rootStore, d.id, this.rootStore.transitionStructure[i], "between", i))
+                }
+            }
+            if (!d.derived) {
+                this.addHeatmapVariable(this.rootStore.timeGapMapping, d.id);
+            }
+            else {
+                let selectedVariables = [];
+                let eventType = d.originalIds[0].eventType;
+                let selectedCategory = d.originalIds[0].eventSubType;
+                d.originalIds.forEach(function (f, i) {
+                    let variable = _self.variableStore.getByIdAllVariables(f.id);
+                    selectedVariables.push({id: variable.id, name: variable.name});
+                });
+                this.addHeatmapVariable(this.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory))
+            }
+        });
+    }
+
+    addORVariable(type, selectedValues, selectedKey, name) {
+        // create new Id
+        let derivedId = uuidv4();
+        // add derived variable
+        this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR");
+        //initialize if the variable is the first variable to be added
+        if (this.timepoints.length === 0) {
+            this.initialize(derivedId,false);
+        }
+        const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
+        this.addToTimeline(eventMapper);
+        const derivedMapper = {};
+        for (let patient in eventMapper) {
+            if (!(patient in derivedMapper)) {
+                derivedMapper[patient] = [];
+            }
+            eventMapper[patient].forEach(function (d, i) {
+                derivedMapper[patient].push(d.length > 0);
+            })
+        }
+        this.addHeatmapVariable(derivedMapper, derivedId);
+        this.rootStore.timepointStore.regroupTimepoints();
+        this.addEventDetails(type, selectedValues, selectedKey, name);
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
+    }
+
+    addToTimeline(mapper) {
+        this.timeline.forEach(function (g, j) {
+            for (let patient in mapper) {
+                if (!(patient in g.data)) {
+                    g.data[patient] = mapper[patient][j];
+                }
+                else {
+                    if (!(g.data[patient].map(function (g) {
+                            return g.variableId;
+                        }).includes(mapper[patient][j].variableId))) {
+                        g.data[patient].push(mapper[patient][j]);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -151,35 +242,8 @@ class BetweenTimepointStore {
      * @param selectedKey
      * @param name
      */
-    addORVariable(type, selectedValues, selectedKey, name) {
+    addEventDetails(type, selectedValues, selectedKey, name) {
         const _self = this;
-        // Add original variables to all variables
-        selectedValues.forEach(function (d) {
-            if (!_self.variableStore.hasVariable(d.id)) {
-                _self.variableStore.addToAllVariables(d.id, d.name, "binary")
-            }
-        });
-        // create new Id
-        let derivedId = uuidv4();
-        // add derived variable
-        this.variableStore.addDerivedVariable(derivedId, name, "binary", selectedValues.map(function (d, i) {
-            return d.id;
-        }), "or", null);
-        //initialize if the variable is the first variable to be added
-        if (this.timepoints.length === 0) {
-            this.rootStore.transitionOn=true;
-            this.rootStore.realTime = false;
-            for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
-                this.timepoints.push(new SingleTimepoint(this.rootStore, this.variableStore.getById(derivedId), this.rootStore.transitionStructure[i], "between", i))
-            }
-            this.rootStore.timepointStore.initialize();
-        }
-        let timepoints = this.timepoints.slice();
-        for (let j = 0; j < this.rootStore.transitionStructure.length; j++) {
-            timepoints[j].heatmap.push({variable: derivedId, sorting: 0, data: []});
-        }
-        const addIndex = timepoints[0].heatmap.length - 1;
-
         let eventDetails = [];
         this.rootStore.patientOrderPerTimepoint.forEach(function (f) {
             //console.log(f);
@@ -199,14 +263,9 @@ class BetweenTimepointStore {
             let startAtEvent = 0;
             let eventDate = -1, eventEndDate;
             let eventCounter;
-
-            //var a=false, b=false, c=false;
-
-            //var findName;
-
-            let getEventId = function(d) {
+            let getEventId = function (d) {
                 return !d.derived && _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes
-                    .map(attr =>  attr.value===d.name)
+                    .map(attr => attr.value === d.name)
                     .reduce((next, result) => result || next, false);
             }
 
@@ -259,7 +318,6 @@ class BetweenTimepointStore {
                 //console.log(currTimepoint);
 
                 eventCounter = startAtEvent;
-                let attributeFound = false;
                 while (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length) {
                     let currMaxDate;
                     let currSample = samples.filter(s=>s.timepoint===currTimepoint)[0]; //samples.find(findSample);
@@ -271,17 +329,14 @@ class BetweenTimepointStore {
                     }
                     const currEventInRange = BetweenTimepointStore.isInCurrentRange(_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter], currMaxDate);
                     if (currEventInRange) {
-                        if (_self.doesEventMatch(type, selectedValues, selectedKey, _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter])) {
-                            attributeFound = true;
-                        }
                         let dt = _self.eventStartDays(type, selectedValues, selectedKey, _self.rootStore.cbioAPI.clinicalEvents[f][eventCounter]);
                         let dt1 = Object.keys(dt);
                         if (dt1.length > 0) {
                             eventDate = Object.values(dt)[0].startNumberOfDaysSinceDiagnosis;
                             eventEndDate = Object.values(dt)[0].endNumberOfDaysSinceDiagnosis;
-                            var variable = _self.variableStore.allVariables.find(getEventId);
-                            var vId = variable.id;
-                            var findName = variable.name;
+                            let variable = _self.variableStore.allVariables.find(getEventId);
+                            let vId = variable.id;
+                            let findName = variable.name;
                             eventDetails.push({
                                 time: currTimepoint,
                                 patientId: f,
@@ -291,7 +346,6 @@ class BetweenTimepointStore {
                                 eventTypeDetailed: findName, //_self.rootStore.cbioAPI.clinicalEvents[f][eventCounter].attributes[0].value,
                                 varId: vId
                             });
-                            _self.sampleEventList.push(dt);
                             _self.patientOrderForEvents.push(f);
                         }
                         if (eventCounter < _self.rootStore.cbioAPI.clinicalEvents[f].length - 1) {
@@ -304,12 +358,6 @@ class BetweenTimepointStore {
                     }
                     eventCounter += 1;
                 }
-                timepoints[currTimepoint].heatmap[addIndex].data.push({
-                    "patient": f,
-                    "value": attributeFound,
-                    "eventDate": eventDate,
-                    "eventName": findName
-                });
                 eventDate = -1;
                 //currTimepoint += 1;
             //});
@@ -317,9 +365,10 @@ class BetweenTimepointStore {
         });
 
         this.rootStore.eventDetails = this.rootStore.eventDetails.concat(eventDetails);
-        this.timepoints = timepoints;
-        console.log(timepoints);
-        this.rootStore.timepointStore.regroupTimepoints();
+       
+       // this.timepoints = timepoints;
+       // console.log(timepoints);
+       // this.rootStore.timepointStore.regroupTimepoints();
     }
 
     /**
@@ -327,19 +376,16 @@ class BetweenTimepointStore {
      * @param variableId
      */
     addTimepointDistance(variableId) {
-        this.rootStore.transitionOn=true;
+        this.rootStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
             this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
             if (this.timepoints.length === 0) {
-                this.rootStore.realTime = false;
-                for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
-                    this.timepoints.push(new SingleTimepoint(this.rootStore, this.variableStore.getById(variableId), this.rootStore.transitionStructure[i], "between", i))
-                }
-                this.rootStore.timepointStore.initialize();
+                this.initialize(variableId,false);
             }
             this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
             this.rootStore.timepointStore.regroupTimepoints();
         }
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
     }
 
 
@@ -354,58 +400,50 @@ class BetweenTimepointStore {
 
         //console.log(this.rootStore.eventDetails);
 
-        const _self=this;
+        const _self = this;
 
-        var indexToDelete=_self.variableStore.currentVariables.map(function (d) {
+        var indexToDelete = _self.variableStore.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId);
 
-        if(_self.variableStore.currentVariables[indexToDelete].datatype!=="NUMBER"){
-            var originalIdsDel=_self.variableStore.currentVariables[indexToDelete].originalIds;
+        if (_self.variableStore.currentVariables[indexToDelete].datatype !== "NUMBER") {
+            var originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
 
 
-            var flag=false;
-
-            //for(var j=0; j<originalIdsDel.length; j++){} //for every variable to delete
-
+            var flag = false;
             Array.from(Array(originalIdsDel.length).keys()).forEach(
-                function(j){
-                _self.variableStore.currentVariables.forEach(function(d, i){ // go over the list of current variables
-                    var k=d.originalIds; //console.log(k);
-                    if(k.includes(originalIdsDel[j]) && i!==indexToDelete) {
-                        //console.log("true");
-                        flag=true;
-                    } 
-                    
-                    else {
-                        //console.log("false");
-
-                    
-                
-                    }
-                })
-                if(!flag){
-                    for(var l=0; l<_self.rootStore.eventDetails.length; ){
-
-                        //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
-                        
-                        if(originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)){
-                            _self.rootStore.eventDetails.splice(l, 1);
+                function (j) {
+                    _self.variableStore.currentVariables.forEach(function (d, i) { // go over the list of current variables
+                        var k = d.originalIds; //console.log(k);
+                        if (k.includes(originalIdsDel[j]) && i !== indexToDelete) {
+                            //console.log("true");
+                            flag = true;
                         }
-                        else{ l++;}
+                    });
+                    if (!flag) {
+                        for (var l = 0; l < _self.rootStore.eventDetails.length;) {
+
+                            //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
+
+                            if (originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)) {
+                                _self.rootStore.eventDetails.splice(l, 1);
+                            }
+                            else {
+                                l++;
+                            }
+                        }
                     }
-                }
-                flag=false;
-            })
-    
+                    flag = false;
+                })
+
         }
-        
-       
+
+
         //console.log(this.rootStore.eventDetails);
-        
+        let variableName = this.variableStore.getById(variableId).name;
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
-                if (d.primaryVariable.id === variableId) {
+                if (d.primaryVariableId === variableId) {
                     d.adaptPrimaryVariable(variableId);
                 }
             });
@@ -420,14 +458,12 @@ class BetweenTimepointStore {
         }
         //case: last timepoint variableId was removed
         else {
-            this.rootStore.transitionOn=false;
+            this.rootStore.transitionOn = false;
             this.timepoints = [];
-            this.variableStore.constructor();
+            this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
         }
-
-   
-
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
 }
 
