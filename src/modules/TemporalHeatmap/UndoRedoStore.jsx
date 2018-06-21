@@ -19,11 +19,6 @@ class UndoRedoStore {
             logs: [],
             currentPointer: -1
         });
-        /*
-        autorun(() => {
-            console.log(this.currentPointer);
-        });
-        */
         this.undo = this.undo.bind(this);
         this.redo = this.redo.bind(this);
     }
@@ -70,6 +65,7 @@ class UndoRedoStore {
         this.rootStore.betweenTimepointStore.variableStore.allVariables = this.stateStack[index].allBetweenVar;
         this.rootStore.transitionOn = this.stateStack[index].transitionOn;
         this.rootStore.globalTime=this.stateStack[index].globalTime;
+        this.rootStore.eventDetails=this.stateStack[index].eventDetails;
         this.rootStore.timepointStore.initialize();
     }
 
@@ -161,7 +157,8 @@ class UndoRedoStore {
             allSampleVar: store.rootStore.sampleTimepointStore.variableStore.allVariables,
             allBetweenVar: store.rootStore.betweenTimepointStore.variableStore.allVariables,
             transitionOn: store.rootStore.transitionOn,
-            globalTime:store.rootStore.globalTime
+            globalTime:store.rootStore.globalTime,
+            eventDetails:store.rootStore.eventDetails.slice()
         }));
         const serializeTimepoints = createTransformer(timepoint => ({
             type: timepoint.type,

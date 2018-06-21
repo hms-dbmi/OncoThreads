@@ -86,7 +86,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                   //  fillC=_self.props.color(_self.props.store.rootStore.betweenTimepointStore.variableStore.currentVariables.length);
                 //}
                 if (typeof(ht) === 'undefined') {
-                    let startDay=Math.round(_self.props.ypi[j]*_self.props.max/700);
+                    let startDay=_self.props.timeScale.invert(_self.props.ypi[j]);
                     let duration=0;
 
                     globalRectHeight = _self.props.height;
@@ -116,7 +116,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                     />);
                 }
                 else {
-                    let startDay= Math.round(_self.props.ypi[j]*_self.props.max/700);
+                    let startDay= _self.props.timeScale.invert(_self.props.ypi[j]);
 
                     //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
 
@@ -140,14 +140,9 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                             var eventHere2=_self.props.events.filter(ev => ev.patientId===d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
 
                             if(eventHere2){
-
                                 var eventHere=eventHere2[eventIndices[d.patient]].varId;
-                                console.log(eventHere);
-
                                 fill=_self.props.color(eventHere);
-
                                 eventIndices[d.patient] = eventIndices[d.patient]+1;
-
                                 val="true";
 
                                 globalRectHeight =ht[j];
@@ -156,7 +151,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                                 //let duration=Math.round((2*ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
 
-                                let duration=Math.round(((2*ht[j] - _self.props.visMap.primaryHeight)*_self.props.max)/(700*2));
+                                let duration=_self.props.timeScale.invert(2*ht[j] - _self.props.visMap.primaryHeight);
 
                                 //console.log(_self.props.ypi);
                                 rects.push(<rect stroke={stroke}
@@ -191,7 +186,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                         xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x ;
 
-                        let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
+                        let duration=_self.props.timeScale.invert(ht[j]-_self.props.visMap.primaryHeight);
 
                         rects.push(<rect stroke={stroke}
                                         onMouseEnter={ (e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)

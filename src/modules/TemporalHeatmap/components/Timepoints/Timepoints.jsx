@@ -113,23 +113,19 @@ const Timepoints = observer(class Timepoints extends React.Component {
             });
 
 
-            let yp = _self.props.allYPositions[i].map(y => y * 700.0 / max); //.map(x=>x.timeGapBetweenSample);
+            let yp = _self.props.allYPositions[i].map(y => _self.props.timeScale(y)); //.map(x=>x.timeGapBetweenSample);
 
             let ht = yp.map(d => _self.props.visMap.primaryHeight);
 
             if (d.heatmap.length > 0) {
-
-                let heatmapd = d;
-                let heatmapi = i;
-
-                timepoints.push(<g key={heatmapi + "timepoint" + globalIndex}><TimelineTimepoint
+                timepoints.push(<g key={i + "timepoint" + globalIndex}><TimelineTimepoint
                     timepoint={d.heatmap}
                     timepointType={d.type}
                     primaryVariable={d.primaryVariable}
-                    index={heatmapi}
+                    index={i}
                     ypi={yp}
                     ht={ht}
-                    max={_self.props.max}
+                    timeScale={_self.props.timeScale}
                     numEventsForEachPatient={numEventsForEachPatient}
                     eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
                     currentVariables={_self.props.store.currentVariables[d.type]}
@@ -215,12 +211,12 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     k = a.filter(d => d.time === Math.floor(i));
                 }
                 k.sort((p1, p2) => _self.comparePatientOrder(p, p1, p2));
-                yp = k.map(d => d.eventDate * 700.0 / max);
+                yp = k.map(d => _self.props.timeScale(d.eventDate));
 
 
                 //console.log(yp);
 
-                ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight / 2);
+                ht = k.map(d => _self.props.timeScale(d.eventEndDate - d.eventDate)+ _self.props.visMap.primaryHeight / 2);
 
                 //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
 
@@ -252,7 +248,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             else {
                 transFlag = false;
                 rectWidth = _self.props.visMap.sampleRectWidth;
-                yp = _self.props.allYPositions[Math.floor(i / 2)].map(y => y * 700.0 / max);
+                yp = _self.props.allYPositions[Math.floor(i / 2)].map(y => _self.props.timeScale(y));
 
                 //transform= "translate(0, 350)";
                 transform = "translate(0, 0)";
@@ -288,7 +284,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             primaryVariable={d.primaryVariable} index={heatmapi}
                             ypi={yp}
                             ht={ht}
-                            max={_self.props.max}
+                            timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
                             eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
                             currentVariables={_self.props.store.currentVariables[heatmapd.type]}
@@ -311,7 +307,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             primaryVariable={d.primaryVariable} index={heatmapi}
                             ypi={yp}
                             ht={ht}
-                            max={_self.props.max}
+                            timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
                             eventStartEnd={d.rootStore.betweenTimepointStore.sampleEventList}
                             currentVariables={_self.props.store.currentVariables[heatmapd.type]}

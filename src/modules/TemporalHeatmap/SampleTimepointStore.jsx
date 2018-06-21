@@ -101,6 +101,7 @@ class SampleTimepointStore {
      */
     removeVariable(variableId) {
         let variableName=this.variableStore.getById(variableId).name;
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
                 if (d.primaryVariableId === variableId) {
@@ -122,7 +123,6 @@ class SampleTimepointStore {
             this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
         }
-        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
 
 

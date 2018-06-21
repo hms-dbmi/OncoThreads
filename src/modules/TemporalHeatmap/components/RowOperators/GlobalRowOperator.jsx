@@ -226,7 +226,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                 oIds.forEach(function(element, i) {
 
-                    let name=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).name;
+                    let name=_self.props.store.variableStore[timepoint.type].getByIdAllVariables(element).name;
 
 
                     //console.log(name1);

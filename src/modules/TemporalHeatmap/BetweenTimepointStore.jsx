@@ -91,27 +91,6 @@ class BetweenTimepointStore {
         return isInRange;
     }
 
-    /**
-     * check if an event has a specific attribute (key-value pair)
-     * @param type: type of the event (Status/Treatment/Surgery)
-     * @param values
-     * @param key
-     * @param event
-     * @returns {boolean}
-     */
-    doesEventMatch(type, values, key, event) {
-        let hasAttribute = false;
-        if (type === event.eventType) {
-            values.forEach(function (d, i) {
-                event.attributes.forEach(function (f, j) {
-                    if (f.key === key && f.value === d.name) {
-                        hasAttribute = true;
-                    }
-                })
-            })
-        }
-        return hasAttribute;
-    }
 
 
     update() {
@@ -205,7 +184,8 @@ class BetweenTimepointStore {
      * @param variableId
      */
     removeVariable(variableId) {
-
+        let variableName = this.variableStore.getById(variableId).name;
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
 
         //remove from eventDetails too;
 
@@ -251,7 +231,6 @@ class BetweenTimepointStore {
 
 
         //console.log(this.rootStore.eventDetails);
-        let variableName = this.variableStore.getById(variableId).name;
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
                 if (d.primaryVariableId === variableId) {
@@ -274,7 +253,6 @@ class BetweenTimepointStore {
             this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
         }
-        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
 }
 

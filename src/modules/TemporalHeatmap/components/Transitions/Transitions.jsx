@@ -49,19 +49,24 @@ const Transitions = observer(class Transitions extends React.Component {
             transitions.push(
                 <GlobalTransition from={from}
                                   to={to}
+                                  timeScale={this.props.timeScale}
                                   patientScale={this.props.heatmapScales[0]}
                                   allYPositionsy1={this.props.allYPositions[counter]}
-                                  allYPositionsy2={this.props.allYPositions[counter + 1]}
+                                  allYPositionsy2={this.props.allYPositions[counter+1]}
                                   max={this.props.max}
                                   selectedPatients={this.props.selectedPatients}
                                   showTooltip={this.props.showTooltip}
                                   hideTooltip={this.props.hideTooltip}
                                   visMap={this.props.visMap}/>
             );
-            counter++;
+                        counter++;
+
         }
         return transitions;
     }
+
+
+
     render() {
         if (this.props.store.rootStore.globalTime) {
             return (
