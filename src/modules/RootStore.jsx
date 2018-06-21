@@ -23,7 +23,7 @@ class RootStore {
         this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore();
-        this.undoRedoStore=new UndoRedoStore(this);
+        this.undoRedoStore = new UndoRedoStore(this);
 
         this.maxTP = 0;
         this.minTP = 0;
@@ -40,34 +40,34 @@ class RootStore {
         this.sampleTimelineMap = {};
         this.timeGapMapping = [];
         this.sampleMappers = {};
-        this.actualTimeLine=[];
-        this.eventDetails=[];
+        this.actualTimeLine = [];
+        this.eventDetails = [];
 
-        this.sampleStruct=[];
-        
+        this.sampleStruct = [];
 
-        this.maxTimeInDays=0;
+
+        this.maxTimeInDays = 0;
 
         this.reset = this.reset.bind(this);
 
         extendObservable(this, {
-            logs:[],
+            logs: [],
             parsed: false,
             firstLoad: firstLoad,
             realTime: false,
             globalTime: false,
             transitionOn: false,
             timepointStructure: []
-            
+
         })
     }
 
     reset() {
         this.parsed = false;
-        this.globalTime=false;
-        this.realTime=false;
-        this.transitionOn=false;
-        this.eventDetails=[];
+        this.globalTime = false;
+        this.realTime = false;
+        this.transitionOn = false;
+        this.eventDetails = [];
         //this.maxTimeInDays=0;
         this.betweenTimepointStore.reset();
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
@@ -148,7 +148,7 @@ class RootStore {
         this.patientOrderPerTimepoint = allPatients;
         this.patientsPerTimepoint = patientsPerTimepoint;
         this.eventCategories = eventCategories;
-        this.actualTimeLine=this.getTimeLine(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
+        this.actualTimeLine = this.getTimeLine(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
 
         this.sampleStruct = sampleStructure;
 
@@ -186,7 +186,7 @@ class RootStore {
             });
             timepointStructure.push(patientSamples);
         }
-        this.timepointStructure=timepointStructure;
+        this.timepointStructure = timepointStructure;
     }
 
 
@@ -211,14 +211,14 @@ class RootStore {
             timepointStructure.push(patientSamples);
         }
         this.timepointStructure=timepointStructure;*/
-        if(this.timepointStore.timepoints.length>numberOfTimepoints) {
-            timepoint = Math.floor(timepoint/2);
+        if (this.timepointStore.timepoints.length > numberOfTimepoints) {
+            timepoint = Math.floor(timepoint / 2);
         }
 
-        var timeline=this.timepointStructure[timepoint];
+        var timeline = this.timepointStructure[timepoint];
 
         //var element = timeline[xposition];
-        
+
         var index = this.patientsPerTimepoint[timepoint].indexOf(patient)
         this.patientsPerTimepoint[timepoint].splice(index, 1);
 
@@ -228,39 +228,39 @@ class RootStore {
 
         var el, el2;
 
-        el=element;
+        el = element;
 
-        const _self=this;
+        const _self = this;
 
-        if(up===0){ //down movement
-            if(timepoint=== numberOfTimepoints-1){
+        if (up === 0) { //down movement
+            if (timepoint === numberOfTimepoints - 1) {
                 _self.timepointStructure.push([el]);
                 _self.patientsPerTimepoint.push([el.patient]);
                 _self.maxTP++;
             }
-            else{
+            else {
                 for (let i = timepoint; i < numberOfTimepoints; i++) {
 
                     //el=_self.timepointStructure[i][xposition];
 
-                    if(_self.timepointStructure[i+1]){
+                    if (_self.timepointStructure[i + 1]) {
 
-                        indexedElements=_self.timepointStructure[i+1]
-                            .filter(d=>d)
+                        indexedElements = _self.timepointStructure[i + 1]
+                            .filter(d => d)
                             .map((d, j) => {
                                 return {index: j, patient: d.patient};
-                            }).find(d => d.patient===patient);    
-                            //}).find(d => d.patient===element.patient);
+                            }).find(d => d.patient === patient);
+                        //}).find(d => d.patient===element.patient);
                         //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
-                        if(indexedElements) {
-                            el2=_self.timepointStructure[i+1][indexedElements.index];
-                            _self.timepointStructure[i+1][indexedElements.index]=el;
+                        if (indexedElements) {
+                            el2 = _self.timepointStructure[i + 1][indexedElements.index];
+                            _self.timepointStructure[i + 1][indexedElements.index] = el;
 
-                            el=el2;
+                            el = el2;
                         }
-                        else{
-                            _self.timepointStructure[i+1].push(el);
-                            _self.patientsPerTimepoint[i+1].push(el.patient);
+                        else {
+                            _self.timepointStructure[i + 1].push(el);
+                            _self.patientsPerTimepoint[i + 1].push(el.patient);
                             break;
                         }
 
@@ -269,59 +269,55 @@ class RootStore {
                         _self.patientsPerTimepoint.push([el.patient]);
                         _self.maxTP++;
                     }
-                    
-                    
+
+
                 }
             }
 
-            
 
-            
         }
-        else{ //up movement
+        else { //up movement
             //if(timepoint=== 0){
-              //do nothing right now
+            //do nothing right now
             //}
             //else{
-                for (let i = timepoint; i>=0; i--) {
+            for (let i = timepoint; i >= 0; i--) {
 
-                    //el=_self.timepointStructure[i][xposition];
+                //el=_self.timepointStructure[i][xposition];
 
-                    if((i-1)>=0 && _self.timepointStructure[i-1]){ //if the timeline exists
+                if ((i - 1) >= 0 && _self.timepointStructure[i - 1]) { //if the timeline exists
 
-                        indexedElements=_self.timepointStructure[i-1]
-                            .filter(d=>d)
-                            .map((d, j) => {
-                                return {index: j, patient: d.patient};
-                            }).find(d => d.patient===patient);    
-                            //}).find(d => d.patient===element.patient);
-                        //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
-                        if(indexedElements) {
-                            el2=_self.timepointStructure[i-1][indexedElements.index];
-                            _self.timepointStructure[i-1][indexedElements.index]=el;
+                    indexedElements = _self.timepointStructure[i - 1]
+                        .filter(d => d)
+                        .map((d, j) => {
+                            return {index: j, patient: d.patient};
+                        }).find(d => d.patient === patient);
+                    //}).find(d => d.patient===element.patient);
+                    //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
+                    if (indexedElements) {
+                        el2 = _self.timepointStructure[i - 1][indexedElements.index];
+                        _self.timepointStructure[i - 1][indexedElements.index] = el;
 
-                            el=el2;
-                        }
-                        else{
-                            _self.timepointStructure[i-1].push(el);
-                            _self.patientsPerTimepoint[i-1].push(el.patient);
-                            break;
-                        }
-
-                    } 
-                    else {
-                        _self.timepointStructure.unshift([el]);
-                        _self.patientsPerTimepoint.unshift([el.patient]);
-                        _self.maxTP++;
+                        el = el2;
                     }
-                    
-                    
+                    else {
+                        _self.timepointStructure[i - 1].push(el);
+                        _self.patientsPerTimepoint[i - 1].push(el.patient);
+                        break;
+                    }
+
                 }
+                else {
+                    _self.timepointStructure.unshift([el]);
+                    _self.patientsPerTimepoint.unshift([el.patient]);
+                    _self.maxTP++;
+                }
+
+
+            }
             //}
 
-            
 
-            
         } //else end
 
         //timeline.splice(xposition, 1);
@@ -357,48 +353,54 @@ class RootStore {
             }
         }*/
 
-           
+
         //this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
         this.sampleTimepointStore.update();
         this.betweenTimepointStore.update();
-
+        console.log(this.timepointStructure,this.transitionStructure);
 
         //this.timepointStore.initialize();
     }
 
 
-
     buildTransitionStructure() {
         let transitionStructure = [];
-        this.patientsPerTimepoint.forEach(function (d, i) {
-            if (i === 0) {
-                transitionStructure.push(d);
+        transitionStructure.push(this.patientsPerTimepoint[0]);
+        for (let i = 1; i < this.patientsPerTimepoint.length; i++) {
+            const _self = this;
+            let patients = this.patientsPerTimepoint[i - 1].slice();
+            this.patientsPerTimepoint[i].forEach(function (d) {
+                if (!(_self.patientsPerTimepoint[i - 1].includes(d))) {
+                    patients.push(d);
+                }
+            });
+            transitionStructure.push(patients);
+            if (i === this.patientsPerTimepoint.length - 1) {
+                transitionStructure.push(this.patientsPerTimepoint[this.patientsPerTimepoint.length - 1]);
             }
-            transitionStructure.push(d);
-        });
-        this.transitionStructure=transitionStructure;
+        }
+        this.transitionStructure = transitionStructure;
     }
-
 
 
     updateTransitionStructure(maxTP, patient, timepoint, xposition, up) {
         let transitionStructure = [];
         //if(up==0){
-            this.patientsPerTimepoint.forEach(function (d, i) {
-               // if(xposition!==i){
-                    if (i === 0) {
-                        transitionStructure.push(d);
-                    }
-                    transitionStructure.push(d);
-               // }
-               // else{
+        this.patientsPerTimepoint.forEach(function (d, i) {
+            // if(xposition!==i){
+            if (i === 0) {
+                transitionStructure.push(d);
+            }
+            transitionStructure.push(d);
+            // }
+            // else{
 
-               // }
-            });
+            // }
+        });
         //}
-        this.transitionStructure=transitionStructure;
+        this.transitionStructure = transitionStructure;
 
-       // this.transitionStore.initializeTransitions(maxTP - 1);;
+        // this.transitionStore.initializeTransitions(maxTP - 1);;
     }
 
     /**
@@ -409,8 +411,8 @@ class RootStore {
         const _self = this;
         for (let i = 0; i < numberOfTimepoints + 1; i++) {
             this.cbioAPI.patients.forEach(function (d, j) {
-                if(!(d.patientId in _self.timeGapMapping)){
-                    _self.timeGapMapping[d.patientId]=[];
+                if (!(d.patientId in _self.timeGapMapping)) {
+                    _self.timeGapMapping[d.patientId] = [];
                 }
                 if (sampleStructure[d.patientId].length > i) {
                     if (i === 0) {
@@ -435,13 +437,13 @@ class RootStore {
         let max = Number.NEGATIVE_INFINITY;
         let min = Number.POSITIVE_INFINITY;
         if (type === "between") {
-            for(let patient in mapper){
-                for(let i=0;i<mapper[patient].length;i++){
-                    if(mapper[patient][i]>max){
-                        max=mapper[patient][i];
+            for (let patient in mapper) {
+                for (let i = 0; i < mapper[patient].length; i++) {
+                    if (mapper[patient][i] > max) {
+                        max = mapper[patient][i];
                     }
-                    if(mapper[patient][i]<min){
-                        min=mapper[patient][i];
+                    if (mapper[patient][i] < min) {
+                        min = mapper[patient][i];
                     }
                 }
             }
@@ -467,16 +469,13 @@ class RootStore {
             let patientSamples3 = [];
             this.cbioAPI.patients.forEach(function (d, j) {
                 if (sampleStructure[d.patientId].length > i) {
-                        patientSamples3.push( sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis);
-               }
+                    patientSamples3.push(sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis);
+                }
             });
             timeLine.push(patientSamples3);
         }
         return timeLine;
     }
-
-
-
 
 
     /**
@@ -536,8 +535,8 @@ class RootStore {
         const _self = this;
         for (let patient in this.cbioAPI.clinicalEvents) {
             if (!(patient in mapper)) {
-                    mapper[patient] = [];
-                }
+                mapper[patient] = [];
+            }
             let samples = [];
             //extract samples for current patient
             this.timepointStructure.forEach(function (g) {
@@ -551,7 +550,7 @@ class RootStore {
             let currentStart = Number.NEGATIVE_INFINITY;
             let currentEnd = this.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
             this.cbioAPI.clinicalEvents[patient].forEach(function (d, i) {
-                if(mapper[patient].length<=counter){
+                if (mapper[patient].length <= counter) {
                     mapper[patient].push([]);
                 }
                 if (RootStore.isInCurrentRange(d, currentStart, currentEnd)) {
