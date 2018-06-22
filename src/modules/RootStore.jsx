@@ -191,35 +191,14 @@ class RootStore {
 
 
     updateTimepointStructure(numberOfTimepoints, patient, timepoint, xposition, up) {
-        /*let timepointStructure = [];
-        const _self = this;
-        for (let i = 0; i < numberOfTimepoints; i++) {
-            let patientSamples = [];
-            this.cbioAPI.patients.forEach(function (d, j) {
-                if (_self.minTP === 0) {
-                    _self.minTP = sampleStructure[d.patientId].length;
-                }
-                else {
-                    if (sampleStructure[d.patientId].length < _self.minTP) {
-                        _self.minTP = sampleStructure[d.patientId].length;
-                    }
-                }
-                if (sampleStructure[d.patientId].length > i) {
-                    patientSamples.push({patient: d.patientId, sample: sampleStructure[d.patientId][i][0]})
-                }
-            });
-            timepointStructure.push(patientSamples);
-        }
-        this.timepointStructure=timepointStructure;*/
-        if (this.timepointStore.timepoints.length > numberOfTimepoints) {
-            timepoint = Math.floor(timepoint / 2);
-        }
-
         var timeline = this.timepointStructure[timepoint];
 
         //var element = timeline[xposition];
 
-        var index = this.patientsPerTimepoint[timepoint].indexOf(patient)
+        var index = this.patientsPerTimepoint[timepoint].indexOf(patient);
+
+
+
         this.patientsPerTimepoint[timepoint].splice(index, 1);
 
         var indexedElements;
@@ -295,6 +274,7 @@ class RootStore {
                     //}).find(d => d.patient===element.patient);
                     //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
                     if (indexedElements) {
+                        //el=_self.timepointStructure[i][indexedElements.index];
                         el2 = _self.timepointStructure[i - 1][indexedElements.index];
                         _self.timepointStructure[i - 1][indexedElements.index] = el;
 
@@ -324,38 +304,17 @@ class RootStore {
 
         timeline.splice(index, 1);
 
+        this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
+        this.patientsPerTimepoint = this.patientsPerTimepoint.filter(list => list.length);
+        this.maxTP = this.timepointStructure.length;
+
         this.buildTransitionStructure();
 
         //this.updateTransitionStructure(this.maxTP, patient, timepoint, xposition, up);
         this.buildTimeGapStructure(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
 
-        //console.log(_self.timepointStructure);
-
-        /*var betweenTimepointIndex = this.betweenTimepointStore.timepoints[timepoint].heatmap[0].data
-            .map(d => d.patient).indexOf(element.patient);
-        var betweenTimepoint = this.betweenTimepointStore.timepoints[timepoint].heatmap[0].data.splice(betweenTimepointIndex, 1);
-        if(!this.betweenTimepointStore.timepoints[timepoint+1].heatmap || !this.betweenTimepointStore.timepoints[timepoint+1].heatmap.length) {
-
-        }
-
-        for (let i = timepoint+1; i <= numberOfTimepoints; i++) {
-            betweenTimepointIndex = this.betweenTimepointStore.timepoints[i].heatmap[0].data
-                .map(d => d.patient).indexOf(element.patient);
-            betweenTimepoint2 = this.betweenTimepointStore.timepoints[i].heatmap[0].data.splice(betweenTimepointIndex, 1);
-            this.betweenTimepointStore.timepoints[i].heatmap[0].data.push(betweenTimepoint);
-        }*/
-
-        //remove from timepointstruceture the timelines that are empty
-
-        /*for(let l=0; l< _self.timepointStructure.length; l++){
-             if(_self.timepointStructure[l].length===0) {
-                _self.timepointStructure.splice(l, 1);
-            }
-        }*/
-
-
-        //this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
-        this.sampleTimepointStore.update();
+        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
+        //this.sampleTimepointStore.update();
         this.betweenTimepointStore.update();
         console.log(this.timepointStructure,this.transitionStructure);
 

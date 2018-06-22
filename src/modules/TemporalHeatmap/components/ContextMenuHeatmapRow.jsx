@@ -69,7 +69,8 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
         //console.log("Go down");
         //console.log(patient + ", " + timepoint + ", " + xposition );
 
-        for(var i=0; i<this.props.rootStore.timepointStore.selectedPatients.length; i++){
+        //for(var i=0; i<this.props.rootStore.timepointStore.selectedPatients.length; i++){
+        for(var i=this.props.rootStore.timepointStore.selectedPatients.length-1; i>=0; i--){
 
             //this.props.rootStore.moveTimepointUpDown(this.props.rootStore.maxTP, patient, xposition, 0 );
 
