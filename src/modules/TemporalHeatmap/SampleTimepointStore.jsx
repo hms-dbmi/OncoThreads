@@ -1,6 +1,7 @@
 import {extendObservable} from "mobx";
 import SingleTimepoint from "./SingleTimepoint"
 import VariableStore from "./VariableStore";
+import RootStore from "../RootStore";
 
 /*
 stores information about sample timepoints
@@ -25,6 +26,10 @@ class SampleTimepointStore {
     initialize(variableId, variable, type) {
         this.variableStore.constructor(this.rootStore);
         this.variableStore.addOriginalVariable(variableId, variable, type);
+        if(type==="NUMBER"){
+            let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId],"sample");
+            this.rootStore.visStore.setContinousColorScale(variableId,minMax[0],minMax[1])
+        }
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
             this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i,this.rootStore.patientOrderPerTimepoint));
@@ -89,6 +94,10 @@ class SampleTimepointStore {
      */
     addVariable(variableId, variable, type) {
         this.variableStore.addOriginalVariable(variableId, variable, type);
+         if(type==="NUMBER"){
+            let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId],"sample");
+            this.rootStore.visStore.setContinousColorScale(variableId,minMax[0],minMax[1])
+        }
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)

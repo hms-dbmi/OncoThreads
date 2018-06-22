@@ -65,7 +65,6 @@ class VariableStore {
         }),logicalOperator,null);
         this.allVariables.push(combinedEvent);
         this.currentVariables.push(combinedEvent);
-
     }
 
     /**

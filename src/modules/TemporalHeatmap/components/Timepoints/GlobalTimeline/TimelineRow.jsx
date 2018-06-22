@@ -85,39 +85,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 //if(_self.props.dtype=="binary"){
                   //  fillC=_self.props.color(_self.props.store.rootStore.betweenTimepointStore.variableStore.currentVariables.length);
                 //}
-                if (typeof(ht) === 'undefined') {
-                    let startDay=_self.props.timeScale.invert(_self.props.ypi[j]);
-                    let duration=0;
 
-                    globalRectHeight = _self.props.height;
-
-                    globalRectWidth =_self.props.rectWidth;
-
-                    xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth/2;
-                    if(_self.props.dtype!=="binary") {
-                        globalRectHeight= _self.props.height/2;
-
-                        globalRectWidth =_self.props.rectWidth/2;
-
-                        xGlobal= xGlobal+ _self.props.rectWidth/2;
-                    }
-
-                    //let varName=_self.props.primaryVariable.name;
-                    rects.push(<rect stroke={stroke}
-                                     onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value, startDay, duration)}
-                                     onMouseLeave={_self.handleMouseLeave}
-                                     key={d.patient + i + j}
-                                     height={globalRectHeight}
-                                     width={globalRectWidth}
-                                     x={xGlobal}
-                                     y={_self.props.ypi[j]}
-                                     fill={fill}
-                                     opacity={_self.props.opacity}
-                    />);
-                }
-                else {
-                    let startDay= _self.props.timeScale.invert(_self.props.ypi[j]);
-
+                    let startDay= _self.props.ypi[j];
                     //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
 
 
@@ -134,59 +103,64 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         if(!eventIndices[d.patient]) {
                             eventIndices[d.patient] = 0;
                         }
-                        if(_self.props.events.length>0){
+                        if(_self.props.events.length>0) {
                             //var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
 
-                            var eventHere2=_self.props.events.filter(ev => ev.patientId===d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
+                            var eventHere2 = _self.props.events.filter(ev => ev.patientId === d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
 
-                            if(eventHere2){
-                                var eventHere=eventHere2[eventIndices[d.patient]].varId;
-                                fill=_self.props.color(eventHere);
-                                eventIndices[d.patient] = eventIndices[d.patient]+1;
-                                val="true";
+                            if (eventHere2) {
+                                var eventHere = eventHere2[eventIndices[d.patient]].varId;
+                                fill = _self.props.color(eventHere);
+                                eventIndices[d.patient] = eventIndices[d.patient] + 1;
+                                val = "true";
+                                console.log(ht[j]);
+                                if (ht[j] === 0) {
+                                    globalRectHeight = globalRectWidth;
+                                }
+                                else {
+                                    globalRectHeight = _self.props.timeScale(ht[j]);
+                                }
+                                console.log(globalRectHeight);
 
-                                globalRectHeight =ht[j];
-
-                                xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth/2;
+                                xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth / 2;
 
                                 //let duration=Math.round((2*ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
 
-                                let duration=_self.props.timeScale.invert(2*ht[j] - _self.props.visMap.primaryHeight);
+                                let duration = ht[j];
 
                                 //console.log(_self.props.ypi);
                                 rects.push(<rect stroke={stroke}
-                                    onMouseEnter={ (e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
-                                        }
-                                    onMouseLeave={_self.handleMouseLeave}
-                                    //onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                    //onMouseUp={_self.handleMouseUp}
-                                    key={d.patient + i + j}
-                                    height={globalRectHeight}//{_self.props.height}
-                                    width={globalRectWidth}
-                                    x={xGlobal}
-                                    y={_self.props.ypi[j]}
-                                    fill={fill}
+                                                 onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
+                                                 }
+                                                 onMouseLeave={_self.handleMouseLeave}
+                                        //onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                        //onMouseUp={_self.handleMouseUp}
+                                                 key={d.patient + i + j}
+                                                 height={globalRectHeight}//{_self.props.height}
+                                                 width={globalRectWidth}
+                                                 x={xGlobal}
+                                                 y={_self.props.timeScale(_self.props.ypi[j])}
+                                                 fill={fill}
                                                  opacity={_self.props.opacity}
-                                    //fill={_self.props.color(_self.props.timepoint)}
-                                />
+                                        //fill={_self.props.color(_self.props.timepoint)}
+                                    />
                                 );
                             }
 
                         }
-
                     }
 
                     else{
                         //globalRectHeight= ht[j]/2;
 
-                        globalRectHeight= ht[j]/2;
 
 
                         globalRectWidth =_self.props.rectWidth/2;
+                        globalRectHeight=globalRectWidth;
 
                         xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x ;
 
-                        let duration=_self.props.timeScale.invert(ht[j]-_self.props.visMap.primaryHeight);
+                        let duration=ht[j];
 
                         rects.push(<rect stroke={stroke}
                                         onMouseEnter={ (e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
@@ -197,13 +171,13 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                         height={globalRectHeight}//{_self.props.height}
                                         width={globalRectWidth}
                                         x={xGlobal}
-                                        y={_self.props.ypi[j]}
+                                        y={_self.props.timeScale(_self.props.ypi[j])}
                                         fill={fill}
                                          opacity={_self.props.opacity}
                                         //fill={_self.props.color(_self.props.timepoint)}
                             />
                         );
-                    }
+
                 }
                 j++;
                 //ind++;

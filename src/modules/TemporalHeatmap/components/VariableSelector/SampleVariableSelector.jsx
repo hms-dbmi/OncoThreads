@@ -101,6 +101,27 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     toggleMutationIcon(){
         this.setState({mutationIcon:SampleVariableSelector.toggleIcon(this.state.mutationIcon)});
     }
+    getGenomicPanel(){
+        if(this.props.store.rootStore.hasMutationCount){
+            return(<Panel id="genomicPanel">
+                    <Panel.Heading>
+                        <Panel.Title toggle >
+                            <div onClick={this.toggleMutationIcon}> Genomic Features <FontAwesome name={this.state.mutationIcon}/> </div>
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Panel.Collapse>
+                        <Panel.Body>
+                            <ButtonGroup vertical block>
+                                {this.createGenomicAttributesList()}
+                            </ButtonGroup>
+                        </Panel.Body>
+                    </Panel.Collapse>
+                </Panel>)
+        }
+        else{
+            return null;
+        }
+    }
 
 
     render() {
@@ -121,20 +142,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                         </Panel.Body>
                     </Panel.Collapse>
                 </Panel>
-                <Panel id="genomicPanel">
-                    <Panel.Heading>
-                        <Panel.Title toggle >
-                            <div onClick={this.toggleMutationIcon}> Genomic Features <FontAwesome name={this.state.mutationIcon}/> </div>
-                        </Panel.Title>
-                    </Panel.Heading>
-                    <Panel.Collapse>
-                        <Panel.Body>
-                            <ButtonGroup vertical block>
-                                {this.createGenomicAttributesList()}
-                            </ButtonGroup>
-                        </Panel.Body>
-                    </Panel.Collapse>
-                </Panel>
+                {this.getGenomicPanel()}
 
             </div>
 

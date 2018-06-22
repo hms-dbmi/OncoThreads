@@ -121,12 +121,10 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             let color = _self.props.visMap.getBlockColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
             if(_self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length===0){
-                a2=a1.filter(d=>d.time===Math.floor(_self.props.index))
-                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
+                a2=a1.filter(d=>d.time===Math.floor(_self.props.index));
             }
             else{
-                a2=a1.filter(d=>d.time===Math.floor(_self.props.index/2))
-                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
+                a2=a1.filter(d=>d.time===Math.floor(_self.props.index/2));
             }
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
             let opacity=1;
@@ -154,7 +152,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
                                 height={_self.props.visMap.primaryHeight}
                                 color={color}
-                                eventStartEnd={_self.props.eventStartEnd}
                                 //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                 x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
                                 ypi={_self.props.ypi}
