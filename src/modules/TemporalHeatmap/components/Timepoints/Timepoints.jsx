@@ -116,7 +116,6 @@ const Timepoints = observer(class Timepoints extends React.Component {
             let yp = _self.props.allYPositions[i]; //.map(x=>x.timeGapBetweenSample);
 
             let ht = yp.map(d => 0);
-            console.log(ht);
 
             if (d.heatmap.length > 0) {
                 timepoints.push(<g key={i + "timepoint" + globalIndex}><TimelineTimepoint

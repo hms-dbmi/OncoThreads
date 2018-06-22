@@ -121,11 +121,11 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             let color = _self.props.visMap.getBlockColorScale(row.variable,_self.props.currentVariables[i].datatype);
 
             if(_self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length===0){
-                a2=a1.filter(d=>d.time===Math.floor(_self.props.index));
-            }
+ a2=a1.filter(d=>d.time===Math.floor(_self.props.index))
+                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2))            }
             else{
-                a2=a1.filter(d=>d.time===Math.floor(_self.props.index/2));
-            }
+                a2=a1.filter(d=>d.time===Math.floor(_self.props.index/2))
+                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));            }
             //if(row.variable,_self.props.currentVariables[i].type==="binary"){
             let opacity=1;
             if(_self.props.currentVariables[i].datatype==="binary"){

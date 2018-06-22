@@ -25,7 +25,7 @@ class RootStore {
         this.visStore = new VisStore();
         this.undoRedoStore = new UndoRedoStore(this);
 
-        this.hasMutationCount=false;
+        this.hasMutationCount = false;
 
         this.maxTP = 0;
         this.minTP = 0;
@@ -312,7 +312,7 @@ class RootStore {
      * @returns {{}}
      */
     createMutationCountsMapping() {
-        if(this.cbioAPI.mutationCounts.length!==0) {
+        if (this.cbioAPI.mutationCounts.length !== 0) {
             this.hasMutationCount = true;
             const _self = this;
             this.sampleMappers[this.mutationCountId] = {};
@@ -349,44 +349,53 @@ class RootStore {
                 let counter = 0;
                 let currentStart = Number.NEGATIVE_INFINITY;
                 let currentEnd = this.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
-                this.cbioAPI.clinicalEvents[patient].forEach(function (d, i) {
+                let i=0;
+                while (i < this.cbioAPI.clinicalEvents[patient].length) {
                     if (mapper[patient].length <= counter) {
                         mapper[patient].push([]);
                     }
-                    if (RootStore.isInCurrentRange(d, currentStart, currentEnd)) {
-                        let matchingId = _self.doesEventMatch(eventType, selectedVariables, selectedCategory, d);
+                    let start = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
+                    let end = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
+                    if (this.cbioAPI.clinicalEvents[patient][i].hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+                        end = this.cbioAPI.clinicalEvents[patient][i].endNumberOfDaysSinceDiagnosis;
+                    }
+                    if (RootStore.isInCurrentRange(this.cbioAPI.clinicalEvents[patient][i], currentStart, currentEnd)) {
+                        let matchingId = _self.doesEventMatch(eventType, selectedVariables, selectedCategory, this.cbioAPI.clinicalEvents[patient][i]);
                         if (matchingId !== null) {
-                            let end = d.startNumberOfDaysSinceDiagnosis;
-                            if (d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
-                                end = d.endNumberOfDaysSinceDiagnosis;
-                            }
                             mapper[patient][counter].push({
                                 variableId: matchingId,
                                 value: true,
-                                start: d.startNumberOfDaysSinceDiagnosis,
+                                start: start,
                                 end: end
                             });
                             _self.eventDetails.push({
                                 time: counter,
                                 patientId: patient,
-                                eventDate: d.startNumberOfDaysSinceDiagnosis,
+                                eventDate: start,
                                 eventEndDate: end,
                                 varId: matchingId
                             });
                         }
+                        i++;
                     }
                     else {
-                        currentStart = _self.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
-                        if (counter + 1 < samples.length) {
-                            currentEnd = _self.sampleTimelineMap[samples[counter + 1]].startNumberOfDaysSinceDiagnosis;
+                        if (start >= currentEnd) {
+                            currentStart = _self.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
+                            if (counter + 1 < samples.length) {
+                                currentEnd = _self.sampleTimelineMap[samples[counter + 1]].startNumberOfDaysSinceDiagnosis;
+                            }
+                            else {
+                                currentEnd = Number.POSITIVE_INFINITY;
+                            }
+                            counter++;
                         }
-                        else {
-                            currentEnd = Number.POSITIVE_INFINITY;
+                        else{
+                            i++;
                         }
-                        counter += 1;
-                    }
 
-                });
+
+                    }
+                }
             }
         }
         return mapper;

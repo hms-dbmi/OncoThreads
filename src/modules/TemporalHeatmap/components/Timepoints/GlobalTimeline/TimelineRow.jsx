@@ -30,7 +30,24 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         //var startDay, duration;
 
         //console.log(this.props.row.data);
-
+        /*this.props.events.forEach(function (d,i) {
+             rects.push(<rect onMouseEnter={(e) => _self.handleMouseEnter(e, d.patientId, true,d.eventDate,d.eventEndDate , d.eventEndDate-d.eventDate)
+                                                 }
+                                                 onMouseLeave={_self.handleMouseLeave}
+                                        //onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                        //onMouseUp={_self.handleMouseUp}
+                                                 key={d.patientId + i + j}
+                                                 height={_self.props.timeScale(d.eventEndDate-d.eventDate)}//{_self.props.height}
+                                                 width={_self.props.timeScale(_self.props.rectWidth)}
+                                                 x={_self.props.heatmapScale(d.patientId)}
+                                                 y={_self.props.timeScale(d.eventDate)}
+                                                 fill={_self.props.color(d.varId)}
+                                                 opacity={0.5}
+                                        //fill={_self.props.color(_self.props.timepoint)}
+                                    />
+                                );
+        });
+        */
         this.props.row.data.forEach(function (d, i) {
 
             ind2 = -1;
@@ -56,54 +73,24 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
             Array.from(Array(maxNum).keys()).forEach(function(ind){
                if(!(_self.props.dtype==="NUMBER"&&_self.props.timepointType==="between")){
-
-                //var k = _self.props.eventStartEnd;
-
-
-                //var height1;
-
-                //var nId=0;
-
-                /*if (typeof(d.eventDate) === 'undefined') {
-                    //console.log("not transition");
-
-                }
-                else {
-                    opc1 = 0.6;
-                }*/
-
-
-                //var colorEx=['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17'];
-
-                /*if(_self.props.dtype==="binary"){
-                    //fillC= _self.props.color(_self.props.currentVariables[_self.props.currentVariables.length-1].name);
-
-                    //fillC= colorEx[(colorEx.length ) % _self.props.currentVariables.length];
-                    fillC=_self.props.color(d.eventName);
-                }*/
-
-                //if(_self.props.dtype=="binary"){
-                  //  fillC=_self.props.color(_self.props.store.rootStore.betweenTimepointStore.variableStore.currentVariables.length);
-                //}
-
-                    let startDay= _self.props.ypi[j];
+                    let startDay = _self.props.ypi[j];
                     //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
 
 
                     //let varName=_self.props.primaryVariable.name;
 
-                    var val= d.value;
+                    var val = d.value;
 
-                   // globalRectHeight =ht[j];
+                    // globalRectHeight =ht[j];
 
-                    globalRectWidth =_self.props.rectWidth;
+                    globalRectWidth = _self.props.rectWidth;
 
 
-                    if(_self.props.dtype==="binary") {
-                        if(!eventIndices[d.patient]) {
+                    if (_self.props.dtype === "binary") {
+                        if (!eventIndices[d.patient]) {
                             eventIndices[d.patient] = 0;
                         }
-                        if(_self.props.events.length>0) {
+                        if (_self.props.events.length > 0) {
                             //var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
 
                             var eventHere2 = _self.props.events.filter(ev => ev.patientId === d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
@@ -113,14 +100,12 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                 fill = _self.props.color(eventHere);
                                 eventIndices[d.patient] = eventIndices[d.patient] + 1;
                                 val = "true";
-                                console.log(ht[j]);
                                 if (ht[j] === 0) {
                                     globalRectHeight = globalRectWidth;
                                 }
                                 else {
                                     globalRectHeight = _self.props.timeScale(ht[j]);
                                 }
-                                console.log(globalRectHeight);
 
                                 xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth / 2;
 
@@ -150,34 +135,34 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         }
                     }
 
-                    else{
+
+                    else {
                         //globalRectHeight= ht[j]/2;
 
 
+                        globalRectWidth = _self.props.rectWidth / 2;
+                        globalRectHeight = globalRectWidth;
 
-                        globalRectWidth =_self.props.rectWidth/2;
-                        globalRectHeight=globalRectWidth;
+                        xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x;
 
-                        xGlobal= _self.props.heatmapScale(d.patient) + _self.props.x ;
-
-                        let duration=ht[j];
+                        let duration = ht[j];
 
                         rects.push(<rect stroke={stroke}
-                                        onMouseEnter={ (e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
-                                            }
-                                        onMouseLeave={_self.handleMouseLeave}
-                                         onDoubleClick={()=>_self.handleDoubleClick(d.patient)}
-                                        key={d.patient + i + j}
-                                        height={globalRectHeight}//{_self.props.height}
-                                        width={globalRectWidth}
-                                        x={xGlobal}
-                                        y={_self.props.timeScale(_self.props.ypi[j])}
-                                        fill={fill}
+                                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
+                                         }
+                                         onMouseLeave={_self.handleMouseLeave}
+                                         onDoubleClick={() => _self.handleDoubleClick(d.patient)}
+                                         key={d.patient + i + j}
+                                         height={globalRectHeight}//{_self.props.height}
+                                         width={globalRectWidth}
+                                         x={xGlobal}
+                                         y={_self.props.timeScale(_self.props.ypi[j])}
+                                         fill={fill}
                                          opacity={_self.props.opacity}
-                                        //fill={_self.props.color(_self.props.timepoint)}
                             />
                         );
 
+                    }
                 }
                 j++;
                 //ind++;
@@ -186,7 +171,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 //console.log(ind2);
 
 
-                }
             });
             //}
 
