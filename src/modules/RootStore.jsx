@@ -148,14 +148,13 @@ class RootStore {
         this.patientOrderPerTimepoint = allPatients;
         this.patientsPerTimepoint = patientsPerTimepoint;
         this.eventCategories = eventCategories;
-        this.actualTimeLine = this.getTimeLine(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
-
         this.sampleStruct = sampleStructure;
 
-        this.buildTimepointStructure(sampleStructure, maxTP);
+        this.buildTimepointStructure(this.sampleStruct, this.maxTP);
         this.buildTransitionStructure();
-        this.buildTimeGapStructure(sampleTimelineMap, this.timepointStructure, sampleStructure, maxTP);
+        this.buildTimeGapStructure(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
         this.getEventAttributes(excludeDates);
+        this.actualTimeLine = this.getTimeLine(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
 
 
     }
@@ -187,6 +186,13 @@ class RootStore {
             timepointStructure.push(patientSamples);
         }
         this.timepointStructure = timepointStructure;
+    }
+
+
+    sortByPatientOrder(ObjectStructure) {
+        return ObjectStructure.sort((d1, d2) => {
+            return this.patientOrderPerTimepoint.indexOf(d1.patient)-this.patientOrderPerTimepoint.indexOf(d2.patient);
+        })
     }
 
 
@@ -238,8 +244,12 @@ class RootStore {
                             el = el2;
                         }
                         else {
+                            //_self.timepointStructure[i + 1].push(el);
+                            //_self.patientsPerTimepoint[i + 1].push(el.patient);
                             _self.timepointStructure[i + 1].push(el);
-                            _self.patientsPerTimepoint[i + 1].push(el.patient);
+                            _self.timepointStructure[i + 1] = _self.sortByPatientOrder(_self.timepointStructure[i + 1]);
+                            _self.patientsPerTimepoint[i + 1] = _self.timepointStructure[i + 1].map(struct => struct.patient);
+    
                             break;
                         }
 
@@ -281,8 +291,11 @@ class RootStore {
                         el = el2;
                     }
                     else {
+                        //_self.timepointStructure[i - 1].push(el);
+                        //_self.patientsPerTimepoint[i - 1].push(el.patient);
                         _self.timepointStructure[i - 1].push(el);
-                        _self.patientsPerTimepoint[i - 1].push(el.patient);
+                        _self.timepointStructure[i - 1] = _self.sortByPatientOrder(_self.timepointStructure[i - 1]);
+                        _self.patientsPerTimepoint[i - 1] = _self.timepointStructure[i - 1].map(struct => struct.patient);
                         break;
                     }
 
@@ -316,9 +329,16 @@ class RootStore {
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
         //this.sampleTimepointStore.update();
         this.betweenTimepointStore.update();
+        this.betweenTimepointStore.timepoints.forEach((timepoint, i) => {
+            timepoint.heatmap.forEach((ht, j) => {
+                ht.data = _self.sortByPatientOrder(ht.data);
+            })
+        })
+
         console.log(this.timepointStructure,this.transitionStructure);
 
-        //this.timepointStore.initialize();
+        this.timepointStore.initialize();
+        this.actualTimeLine = this.getTimeLine(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
     }
 
 
@@ -359,7 +379,7 @@ class RootStore {
         //}
         this.transitionStructure = transitionStructure;
 
-        // this.transitionStore.initializeTransitions(maxTP - 1);;
+        //this.transitionStore.initializeTransitions(maxTP - 1);;
     }
 
     /**
@@ -423,12 +443,24 @@ class RootStore {
 
 
     getTimeLine(sampleTimelineMap, timepointStructure, sampleStructure, numberOfTimepoints) {
+        let cumulativeCountsForAllPatients = {};
+        this.cbioAPI.patients.forEach(function(d, i) {
+            let counts = [0].concat(timepointStructure.map(tpStruct => tpStruct.map(p => p.patient).filter(p => p===d.patientId).length));
+            for(let i=1; i<counts.length; i++) {
+                counts[i] = counts[i-1]+counts[i];
+            }
+            cumulativeCountsForAllPatients[d.patientId] = counts;
+        })
         let timeLine = [];
         for (let i = 0; i < numberOfTimepoints; i++) {
             let patientSamples3 = [];
             this.cbioAPI.patients.forEach(function (d, j) {
-                if (sampleStructure[d.patientId].length > i) {
+                /*if (sampleStructure[d.patientId].length > i) {
                     patientSamples3.push(sampleTimelineMap[sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis);
+                }*/
+                let cumulativeCounts =  cumulativeCountsForAllPatients[d.patientId];
+                if(cumulativeCounts[i+1]-cumulativeCounts[i]>0) {
+                    patientSamples3.push(sampleTimelineMap[sampleStructure[d.patientId][cumulativeCounts[i+1]-1][0]].startNumberOfDaysSinceDiagnosis);
                 }
             });
             timeLine.push(patientSamples3);
