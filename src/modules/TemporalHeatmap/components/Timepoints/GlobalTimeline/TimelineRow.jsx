@@ -38,10 +38,10 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
             let maxNum = _self.props.numEventsForEachPatient[p_num];
 
 
-            let stroke = "none";
+            //let stroke = "none";
             let fill=_self.props.color(d.value);
             if(d.value===undefined){
-                stroke="lightgray";
+                //stroke="lightgray";
                 fill="white";
             }
             /*
@@ -53,6 +53,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
             //while (ind < maxNum) {
+
+            var strColor;
 
             Array.from(Array(maxNum).keys()).forEach(function(ind){
                if(!(_self.props.dtype==="NUMBER"&&_self.props.timepointType==="between")){
@@ -102,8 +104,10 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         xGlobal= xGlobal+ _self.props.rectWidth/2;
                     }
 
+                    strColor='#800080';
+
                     //let varName=_self.props.primaryVariable.name;
-                    rects.push(<rect stroke={stroke}
+                    rects.push(<rect //stroke={stroke}
                                      onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value, startDay, duration)}
                                      onMouseLeave={_self.handleMouseLeave}
                                      key={d.patient + i + j}
@@ -112,6 +116,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                      x={xGlobal}
                                      y={_self.props.ypi[j]}
                                      fill={fill}
+                                     strokeWidth={1}
+                                     stroke={strColor}
                     />);
                 }
                 else {
@@ -123,6 +129,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                     //let varName=_self.props.primaryVariable.name;
 
                     var val= d.value;
+
 
                    // globalRectHeight =ht[j];
 
@@ -144,6 +151,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                                 fill=_self.props.color(eventHere);
 
+                                strColor='#FF00FF';
+
                                 eventIndices[d.patient] = eventIndices[d.patient]+1;
 
                                 val="true";
@@ -157,7 +166,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                 let duration=Math.round(((2*ht[j] - _self.props.visMap.primaryHeight)*_self.props.max)/(700*2));
 
                                 //console.log(_self.props.ypi);
-                                rects.push(<rect stroke={stroke}
+                                rects.push(<rect //stroke={stroke}
                                     onMouseEnter={ (e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
                                         }
                                     onMouseLeave={_self.handleMouseLeave}
@@ -169,6 +178,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                     x={xGlobal}
                                     y={_self.props.ypi[j]}
                                     fill={fill}
+                                    strokeWidth={1}
+                                    stroke={strColor}
                                     //fill={_self.props.color(_self.props.timepoint)}
                                 />
                                 );
@@ -183,6 +194,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                         globalRectHeight= ht[j]/2;
 
+                        strColor='#800080';
 
                         globalRectWidth =_self.props.rectWidth/2;
 
@@ -190,7 +202,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                         let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
 
-                        rects.push(<rect stroke={stroke}
+                        rects.push(<rect //stroke={stroke}
                                         onMouseEnter={ (e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
                                             }
                                         onMouseLeave={_self.handleMouseLeave}
@@ -201,6 +213,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                         x={xGlobal}
                                         y={_self.props.ypi[j]}
                                         fill={fill}
+                                        strokeWidth={1}
+                                        stroke={strColor}
                                         //fill={_self.props.color(_self.props.timepoint)}
                             />
                         );
