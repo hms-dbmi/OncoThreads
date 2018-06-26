@@ -2,6 +2,8 @@ import {extendObservable} from "mobx";
 import SingleTimepoint from "./SingleTimepoint";
 import VariableStore from "./VariableStore";
 import uuidv4 from 'uuid/v4';
+import RootStore from "../RootStore";
+import VisStore from "./VisStore";
 
 
 /*
@@ -122,7 +124,7 @@ class BetweenTimepointStore {
         // create new Id
         let derivedId = uuidv4();
         // add derived variable
-        this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR");
+        this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR",[]);
         //initialize if the variable is the first variable to be added
         if (this.timepoints.length === 0) {
             this.initialize(derivedId,false);
@@ -142,24 +144,6 @@ class BetweenTimepointStore {
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
     }
-    /*
-    addToTimeline(mapper) {
-        this.timeline.forEach(function (g, j) {
-            for (let patient in mapper) {
-                if (!(patient in g.data)) {
-                    g.data[patient] = mapper[patient][j];
-                }
-                else {
-                    if (!(g.data[patient].map(function (g) {
-                            return g.variableId;
-                        }).includes(mapper[patient][j].variableId))) {
-                        g.data[patient].push(mapper[patient][j]);
-                    }
-                }
-            }
-        });
-    }
-    */
 
     /**
      *
@@ -168,7 +152,8 @@ class BetweenTimepointStore {
     addTimepointDistance(variableId) {
         this.rootStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
-            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER");
+            let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping,"between");
+            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER",minMax);
             if (this.timepoints.length === 0) {
                 this.initialize(variableId,false);
             }

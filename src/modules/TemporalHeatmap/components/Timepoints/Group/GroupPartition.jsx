@@ -11,7 +11,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
         let previousYposition = 0;
         let rows = [];
         this.props.partition.rows.forEach(function (d, i) {
-            const color = _self.props.visMap.getBlockColorScale(d.variable,_self.props.currentVariables[i].datatype);
+            const color = _self.props.currentVariables[i].colorScale;
             let height = 0;
             let opacity = 1;
             let stroke="none";

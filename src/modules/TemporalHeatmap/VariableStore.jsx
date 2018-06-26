@@ -43,14 +43,16 @@ class VariableStore {
      * @param id
      * @param name
      * @param datatype
+     * @param domain
+     * @param range
      */
-    addOriginalVariable(id, name, datatype) {
-        const newVariable = new OriginalVariable(id, name, datatype);
+    addOriginalVariable(id, name, datatype,domain,range) {
+        const newVariable = new OriginalVariable(id, name, datatype,domain,range);
         this.currentVariables.push(newVariable);
         this.allVariables.push(newVariable);
     }
 
-    addEventVariable(newId,name,eventType, selectedVariables, eventSubtype,logicalOperator){
+    addEventVariable(newId,name,eventType, selectedVariables, eventSubtype,logicalOperator,domain,range){
         const _self=this;
         selectedVariables.forEach(function (f) {
            if(!_self.allVariables.map(function (d) {
@@ -62,7 +64,7 @@ class VariableStore {
         });
         let combinedEvent=new DerivedVariable(newId,name,"binary",selectedVariables.map(function (d,i) {
             return d.id;
-        }),logicalOperator,null);
+        }),logicalOperator,null,domain);
         this.allVariables.push(combinedEvent);
         this.currentVariables.push(combinedEvent);
     }
@@ -90,9 +92,10 @@ class VariableStore {
      * @param originalId
      * @param modificationType
      * @param modification
+     * @param domain
      */
-    modifyVariable(id, name, datatype, originalId, modificationType, modification) {
-        const newVariable = new DerivedVariable(id, name, datatype, [originalId], modificationType, modification);
+    modifyVariable(id, name, datatype, originalId, modificationType, modification,domain) {
+        const newVariable = new DerivedVariable(id, name, datatype, [originalId], modificationType, modification,domain);
         const oldIndex = this.currentVariables.map(function (d) {
             return d.id;
         }).indexOf(originalId);

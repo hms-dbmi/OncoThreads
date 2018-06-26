@@ -1,4 +1,5 @@
 import {extendObservable} from "mobx";
+import VisStore from "./VisStore";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -134,13 +135,19 @@ class TimepointStore {
      */
     binVariable(newId, oldId, bins, binNames, type, saveToHistory) {
         const _self = this;
-        let variableName=_self.variableStore[type].getById(oldId).name;
-        _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {bins:bins, binNames: binNames});
-        this.bin(oldId,newId,bins,binNames);
-        this.rootStore.undoRedoStore.saveVariableModification("bin", variableName,saveToHistory);
+        let oldVar=_self.variableStore[type].getById(oldId);
+        let variableName = oldVar.name;
+        let variableDomain= oldVar.domain;
+        _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {
+            bins: bins,
+            binNames: binNames
+        }, variableDomain);
+        this.bin(oldId, newId, bins, binNames);
+        this.rootStore.undoRedoStore.saveVariableModification("bin", variableName, saveToHistory);
     }
-    bin(oldId,newId,bins,binNames){
-        const _self=this;
+
+    bin(oldId, newId, bins, binNames) {
+        const _self = this;
         this.timepoints.forEach(function (d, i) {
             d.heatmap.forEach(function (f, j) {
                 if (f.variable === oldId) {
@@ -150,7 +157,7 @@ class TimepointStore {
                     });
                     _self.timepoints[i].heatmap[j].data = newData;
                     f.variable = newId;
-                    if(d.primaryVariableId===oldId){
+                    if (d.primaryVariableId === oldId) {
                         d.setPrimaryVariable(newId);
                     }
                 }

@@ -172,7 +172,7 @@ const Legend = observer(class Legend extends React.Component {
                     lineheight = _self.props.visMap.secondaryHeight;
                     opacity = 0.5
                 }
-                let color = _self.props.visMap.getBlockColorScale(d.variable, currentVariables[i].datatype);
+                let color = currentVariables[i].colorScale;
                 let legendEntries = [];
                 if (lineheight < fontSize) {
                     fontSize = Math.round(lineheight);

@@ -71,8 +71,8 @@ class UndoRedoStore {
 
     deserializeLocalStorage() {
         this.stateStack = JSON.parse(localStorage.getItem(this.rootStore.study.studyId)).states;
-        this.logs=JSON.parse(localStorage.getItem(this.rootStore.study.studyId)).logs;
-        this.currentPointer= this.stateStack.length-1;
+        this.logs = JSON.parse(localStorage.getItem(this.rootStore.study.studyId)).logs;
+        this.currentPointer = this.stateStack.length - 1;
         this.deserialize(this.currentPointer)
     }
 
@@ -82,7 +82,6 @@ class UndoRedoStore {
      * @param saved
      */
     deserializeTimepoints(observable, saved) {
-        console.log(saved);
         const _self = this;
         observable = [];
         saved.forEach(function (d) {
@@ -132,10 +131,10 @@ class UndoRedoStore {
         for (let i = 0; i < toAdd.length; i++) {
             let currItem = saved[toAdd[i]];
             if (currItem.derived) {
-                observable.splice(toAdd[i], 0, new DerivedVariable(currItem.id, currItem.name, currItem.datatype, currItem.originalIds, currItem.modificationType, currItem.modification))
+                observable.splice(toAdd[i], 0, new DerivedVariable(currItem.id, currItem.name, currItem.datatype, currItem.originalIds, currItem.modificationType, currItem.modification, currItem.domain, currItem.range))
             }
             else {
-                observable.splice(toAdd[i], 0, new OriginalVariable(currItem.id, currItem.name, currItem.datatype))
+                observable.splice(toAdd[i], 0, new OriginalVariable(currItem.id, currItem.name, currItem.datatype, currItem.domain, currItem.range))
             }
         }
         return observable;
@@ -150,6 +149,7 @@ class UndoRedoStore {
         for (let property in savedEntry) {
             observableEntry[property] = savedEntry[property];
         }
+        console.log(observableEntry);
     }
 
     /**
@@ -188,7 +188,7 @@ class UndoRedoStore {
         }
         this.stateStack.push(serializeState(this));
         this.currentPointer = this.stateStack.length - 1;
-        localStorage.setItem(this.rootStore.study.studyId, JSON.stringify({states:this.stateStack,logs:this.logs}));
+        localStorage.setItem(this.rootStore.study.studyId, JSON.stringify({states: this.stateStack, logs: this.logs}));
     }
 
     /**

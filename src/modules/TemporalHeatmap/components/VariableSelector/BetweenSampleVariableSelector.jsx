@@ -81,8 +81,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         }
     }
     addTimeDistance(id){
-        let minMax=RootStore.getMinMaxOfContinuous(this.props.store.rootStore.timeGapMapping,"between");
-        this.props.visMap.setContinousColorScale(id, minMax[0], minMax[1]);
+
         this.props.store.addTimepointDistance(id)
     }
 

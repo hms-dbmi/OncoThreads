@@ -2,6 +2,7 @@ import {extendObservable} from "mobx";
 import SingleTimepoint from "./SingleTimepoint"
 import VariableStore from "./VariableStore";
 import RootStore from "../RootStore";
+import VisStore from "./VisStore";
 
 /*
 stores information about sample timepoints
@@ -25,10 +26,12 @@ class SampleTimepointStore {
      */
     initialize(variableId, variable, type) {
         this.variableStore.constructor(this.rootStore);
-        this.variableStore.addOriginalVariable(variableId, variable, type);
         if(type==="NUMBER"){
             let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId],"sample");
-            this.rootStore.visStore.setContinousColorScale(variableId,minMax[0],minMax[1])
+            this.variableStore.addOriginalVariable(variableId, variable, type,minMax);
+        }
+        else{
+            this.variableStore.addOriginalVariable(variableId, variable, type,[]);
         }
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
@@ -95,11 +98,10 @@ class SampleTimepointStore {
     addVariable(variableId, variable, type) {
          if(type==="NUMBER"){
             let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId],"sample");
-            this.rootStore.visStore.setContinousColorScale(variableId,minMax[0],minMax[1]);
-            this.variableStore.addOriginalVariable(variableId, variable, type,this.rootStore.visStore.getBlockColorScale(variable,type));
+            this.variableStore.addOriginalVariable(variableId, variable, type,minMax);
         }
         else{
-             this.variableStore.addOriginalVariable(variableId, variable, type,this.rootStore.visStore.getBlockColorScale(variable,type));
+             this.variableStore.addOriginalVariable(variableId, variable, type,[]);
          }
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();

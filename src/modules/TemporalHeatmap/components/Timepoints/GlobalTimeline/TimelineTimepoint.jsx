@@ -26,7 +26,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color = _self.props.visMap.getBlockColorScale(row.variable,_self.props.currentVariables[i].datatype);
+            let color = _self.props.currentVariables[i].colorScale;
 
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
@@ -118,7 +118,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color = _self.props.visMap.getBlockColorScale(row.variable,_self.props.currentVariables[i].datatype);
+            let color = _self.props.currentVariables[i].colorScale;
 
             if(_self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length===0){
  a2=a1.filter(d=>d.time===Math.floor(_self.props.index))

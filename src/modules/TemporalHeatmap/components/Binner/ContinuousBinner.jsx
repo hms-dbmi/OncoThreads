@@ -64,7 +64,6 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
             saveToHistory=true;
         }
         this.props.store.binVariable(newId,this.props.variable, this.state.bins, this.state.binNames, this.props.type,saveToHistory);
-        this.props.visMap.setBinnedColorScale(newId,this.props.variable, this.state.binNames, this.state.bins);
         if(!saveToHistory) {
             this.props.followUpFunction(this.props.timepointIndex, newId);
         }

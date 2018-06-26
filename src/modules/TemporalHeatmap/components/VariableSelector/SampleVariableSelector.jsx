@@ -23,7 +23,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
     bin(id){
-        console.log("Bin "+id);
        this.props.openBinningModal(id, "sample", null, null)
     }
     /**
@@ -62,8 +61,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param variable
      */
     handleContinousClick(id,variable) {
-        let minMax=RootStore.getMinMaxOfContinuous(this.props.store.rootStore.sampleMappers[id],"sample");
-        this.props.visMap.setContinousColorScale(id, minMax[0], minMax[1]);
         this.handleVariableClick(id,variable, "NUMBER")
     }
 
