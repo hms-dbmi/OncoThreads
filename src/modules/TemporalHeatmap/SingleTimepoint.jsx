@@ -181,7 +181,15 @@ class SingleTimepoint {
                     if (a.key > b.key) {
                         return order
                     }
-                    else return 0;
+                    else{
+                        if(a.key === undefined && b.key !== undefined) {
+                            return 1;
+                        }
+                        if (a.key !== undefined && b.key === undefined) {
+                            return -1;
+                        }
+                        else return 0;
+                    }
                 })
             })
         });

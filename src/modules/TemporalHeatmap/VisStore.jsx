@@ -39,8 +39,22 @@ class VisStore{
      * @param max
      */
     setContinousColorScale(variable,min,max){
-        this.continuousColor[variable]=d3.scaleLinear().range(['#e6e6e6','#000000']).domain([min,max])
-    }
+        if(min<0){
+            let lowerLimit,upperLimit;
+            if(-min>max){
+                lowerLimit=min;
+                upperLimit=-min;
+            }
+            else{
+                lowerLimit=-max;
+                upperLimit=max;
+            }
+            this.continuousColor[variable]= d3.scaleLinear().range(['#0571b0','#f7f7f7', '#ca0020']).domain([lowerLimit,0, upperLimit]);
+        }
+        else {
+            this.continuousColor[variable] = d3.scaleLinear().range(['#e6e6e6', '#000000']).domain([min, max])
+        }
+        }
 
     /**
      * creates a binned color scale for a binned variable using its corresponding continuous scale

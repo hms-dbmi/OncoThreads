@@ -81,7 +81,7 @@ const App = observer(class App extends React.Component {
             <div><Navbar style={{margin:0}}>
                 <Navbar.Header>
                     <Navbar.Brand>
-                        <a>Onco Threads</a>
+                        <a>OncoThreads</a>
                     </Navbar.Brand>
                     <Navbar.Toggle/>
                 </Navbar.Header>

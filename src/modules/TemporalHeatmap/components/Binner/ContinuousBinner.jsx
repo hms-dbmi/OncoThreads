@@ -33,10 +33,14 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     handleNumberOfBinsChange(number) {
         let binNames = this.state.binNames.slice();
         if (number > this.state.binNames.length) {
-            binNames.push("Bin " + number);
+            for(let i=this.state.binNames.length;i<number;i++) {
+                binNames.push("Bin " + i);
+            }
         }
         else {
-            binNames.pop();
+            for(let i=0;i<this.state.binNames.length-number;i++) {
+                binNames.pop();
+            }
         }
         this.setState({binNames: binNames})
     }

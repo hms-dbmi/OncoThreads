@@ -83,9 +83,13 @@ class RootStore {
             _self.createClinicalSampleMapping();
             _self.createMutationCountsMapping();
 
-
-            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
-            _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
+            if(localStorage.getItem(_self.study.studyId)===null) {
+                _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
+                _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
+            }
+            else{
+                _self.undoRedoStore.deserializeLocalStorage();
+            }
             _self.parsed = true;
 
         });

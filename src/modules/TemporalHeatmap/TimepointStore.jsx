@@ -137,7 +137,6 @@ class TimepointStore {
         let variableName=_self.variableStore[type].getById(oldId).name;
         _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {bins:bins, binNames: binNames});
         this.bin(oldId,newId,bins,binNames);
-        console.log(_self.variableStore[type].getById(newId));
         this.rootStore.undoRedoStore.saveVariableModification("bin", variableName,saveToHistory);
     }
     bin(oldId,newId,bins,binNames){
@@ -151,7 +150,9 @@ class TimepointStore {
                     });
                     _self.timepoints[i].heatmap[j].data = newData;
                     f.variable = newId;
-                    d.setPrimaryVariable(newId);
+                    if(d.primaryVariableId===oldId){
+                        d.setPrimaryVariable(newId);
+                    }
                 }
             });
         });

@@ -14,15 +14,17 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
             const color = _self.props.visMap.getBlockColorScale(d.variable,_self.props.currentVariables[i].datatype);
             let height = 0;
             let opacity = 1;
+            let stroke="none";
             const transform = "translate(0," + previousYposition + ")";
             if (_self.props.primaryVariableId === d.variable) {
                 height = _self.props.visMap.primaryHeight;
+                stroke=_self.props.stroke;
             }
             else {
                 height = _self.props.visMap.secondaryHeight;
                 opacity = 0.5;
             }
-            rows.push(<g key={d.variable} transform={transform}><PartitionRow row={d.counts} height={height} opacity={opacity} color={color} stroke={_self.props.stroke}
+            rows.push(<g key={d.variable} transform={transform}><PartitionRow row={d.counts} height={height} opacity={opacity} color={color} stroke={stroke}
                                     groupScale={_self.props.groupScale} showTooltip={_self.props.showTooltip} hideTooltip={_self.props.hideTooltip}/></g>);
             previousYposition += height + _self.props.visMap.gap;
 

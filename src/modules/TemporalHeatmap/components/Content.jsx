@@ -128,7 +128,7 @@ const Content = observer(class Content extends React.Component {
                 {/*<Button style={{display:this.state.displayShowButton}} onClick={this.showSidebar}>Show Sidebar</Button>*/}
                 <Grid fluid={true} style={{padding: 0}}>
                     <Col sm={this.state.sidebarSize} md={this.state.sidebarSize}
-                         style={{display: this.state.displaySidebar, backgroundColor: "lightgray", paddingTop: "10px"}}>
+                         style={{display: this.state.displaySidebar, paddingTop: "10px"}}>
                         {/*
                         <Row>
                         <Button style={{float:"right"}} onClick={this.hideSidebar}>X</Button>
@@ -141,6 +141,7 @@ const Content = observer(class Content extends React.Component {
                                       minTP={this.props.rootStore.minTP}
                                       maxTP={this.props.rootStore.maxTP}/>
                         <SampleVariableSelector
+                                                            openBinningModal={this.openModal}
                             clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                             mutationCount="Mutation count"
                             currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
@@ -148,6 +149,7 @@ const Content = observer(class Content extends React.Component {
                             visMap={this.props.rootStore.visStore}
                         />
                         <BetweenSampleVariableSelector
+                                                            openBinningModal={this.openModal}
                             eventCategories={this.props.rootStore.eventCategories}
                             eventAttributes={this.props.rootStore.eventAttributes}
                             currentVariables={this.props.rootStore.timepointStore.currentVariables.between}

@@ -19,9 +19,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon=this.toggleClinicalIcon.bind(this);
         this.toggleMutationIcon=this.toggleMutationIcon.bind(this);
+        this.bin=this.bin.bind(this);
     }
 
-
+    bin(id){
+        console.log("Bin "+id);
+       this.props.openBinningModal(id, "sample", null, null)
+    }
     /**
      * adds a variable to the view
      * @param id
@@ -71,7 +75,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            buttons.push(<Button key={d.variable} onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype)}>{d.variable}</Button>)
+            let icon=null;
+            if(d.datatype==="NUMBER"){
+                icon=<FontAwesome onClick={()=>_self.bin(d.id)} name="cog"/>
+            }
+            buttons.push(<Button style={{textAlign:"left"}} bsSize="xsmall" key={d.variable} onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype)}>{icon} {d.variable}</Button>)
         });
         return buttons;
     }
@@ -83,8 +91,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     createGenomicAttributesList() {
         let buttons = [];
         const _self = this;
-        buttons.push(<Button onClick={() => _self.handleContinousClick(this.props.store.rootStore.mutationCountId,"Mutation Count")}
-                             key={this.props.mutationCount}>{this.props.mutationCount}</Button>);
+        buttons.push(<Button style={{textAlign:"left"}} bsSize="xsmall" onClick={() => _self.handleContinousClick(this.props.store.rootStore.mutationCountId,"Mutation Count")}
+                             key={this.props.mutationCount}><FontAwesome onClick={()=>_self.bin(_self.props.store.rootStore.mutationCountId)
+} name="cog"/> {this.props.mutationCount}</Button>);
         return buttons;
     }
     static toggleIcon(icon){
