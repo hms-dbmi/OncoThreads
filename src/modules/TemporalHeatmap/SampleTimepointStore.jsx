@@ -2,7 +2,6 @@ import {extendObservable} from "mobx";
 import SingleTimepoint from "./SingleTimepoint"
 import VariableStore from "./VariableStore";
 import RootStore from "../RootStore";
-import VisStore from "./VisStore";
 
 /*
 stores information about sample timepoints
@@ -25,6 +24,7 @@ class SampleTimepointStore {
      * @param type
      */
     initialize(variableId, variable, type) {
+        this.rootStore.visStore.resetTransitionSpace();
         this.variableStore.constructor(this.rootStore);
         if(type==="NUMBER"){
             let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId],"sample");

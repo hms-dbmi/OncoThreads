@@ -50,7 +50,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                                   markerEnd="url(#arrow)" strokeWidth="2"/>)
             }
             if(i!==_self.props.timepoints.length-1){
-                let height=_self.props.posY[i+1]-_self.props.posY[i]-30;
+                let height=_self.props.posY[i+1]-_self.props.posY[i];
                 labels.push(<line key={i+"vline"} x1={_self.state.width/2} x2={_self.state.width/2} y1={start} y2={start+height} stroke="lightgray"/>);
             }
         });

@@ -47,7 +47,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
                 }
                 lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
                     _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
-                    0 - _self.props.visMap.gap, _self.props.visMap.transitionSpace,
+                    0 - _self.props.visMap.gap, _self.props.visMap.transitionSpaces[_self.props.index],
                     d+globalInd+i, true, strokeColor));
                 globalInd++;
             }
@@ -85,21 +85,21 @@ const LineTransition = observer(class LineTransition extends React.Component {
                     (_self.props.firstHeatmapScale(d)) + _self.props.visMap.sampleRectWidth / 2,
                     _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2,
                     0 - _self.props.visMap.gap,
-                    _self.props.visMap.transitionSpace*_self.props.transition.timeGapStructure[d]/max, d, true, strokeColor
+                    _self.props.visMap.transitionSpaces[_self.props.index]*_self.props.transition.timeGapStructure[d]/max, d, true, strokeColor
                 ));
                 if(_self.props.transition.timeGapStructure[d]<max) {
                     lines.push(LineTransition.drawLine(
                         _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2,
                         _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
-                        _self.props.visMap.transitionSpace*frac,
-                        _self.props.visMap.transitionSpace, d, false, strokeColor
+                        _self.props.visMap.transitionSpaces[_self.props.index]*frac,
+                        _self.props.visMap.transitionSpaces[_self.props.index], d, false, strokeColor
                     ));
                     const color = getColor(currentRow[ind].value);
                     lines.push(
                         <rect
                             key={d+"_proxy"}
                             x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-_self.props.visMap.sampleRectWidth / 6}
-                            y={_self.props.visMap.transitionSpace*_self.props.transition.timeGapStructure[d]/max-5}
+                            y={_self.props.visMap.transitionSpaces[_self.props.index]*_self.props.transition.timeGapStructure[d]/max-5}
                             width={_self.props.visMap.sampleRectWidth / 3}
                             height={_self.props.visMap.sampleRectWidth / 3}
                             fill={color}
@@ -121,17 +121,6 @@ const LineTransition = observer(class LineTransition extends React.Component {
         if(this.props.realTime) {
             return (
                 this.drawRealtimeLines()
-            )
-        }
-        else if(this.props.globalTime && !this.props.transitionOn){
-            return (
-                this.drawLinesGlobal()
-            )
-        }
-        else if(this.props.globalTime && this.props.transitionOn){
-            return (
-                //this.drawLinesGlobal()  //or, 
-                this.drawLinesGlobalWithTransition()
             )
         }
         else {

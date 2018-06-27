@@ -3,7 +3,6 @@ import SingleTimepoint from "./SingleTimepoint";
 import VariableStore from "./VariableStore";
 import uuidv4 from 'uuid/v4';
 import RootStore from "../RootStore";
-import VisStore from "./VisStore";
 
 
 /*
@@ -25,6 +24,7 @@ class BetweenTimepointStore {
     }
 
     initialize(id,addToTimeline) {
+        this.rootStore.visStore.resetTransitionSpace();
         this.rootStore.transitionOn = true;
         this.rootStore.realTime = false;
         for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {

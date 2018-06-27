@@ -22,7 +22,7 @@ class RootStore {
         this.betweenTimepointStore = new BetweenTimepointStore(this);
         this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
-        this.visStore = new VisStore();
+        this.visStore = new VisStore(this);
         this.undoRedoStore = new UndoRedoStore(this);
 
         this.hasMutationCount = false;

@@ -1,21 +1,20 @@
 import {extendObservable} from 'mobx';
-import VisStore from './VisStore';
+import ColorScales from './ColorScales';
 
 class OriginalVariable {
-    constructor(id, name, datatype,domain,range) {
+    constructor(id, name, datatype, domain, range) {
         extendObservable(this, {
             get colorScale() {
                 let scale;
-                switch (this.datatype){
+                switch (this.datatype) {
                     case "NUMBER":
-                        scale= VisStore.getContinousColorScale(this.domain);
-                        break;
-                    case "STRING":
-                        scale= VisStore.getCategoricalScale(this.range);
+                        scale = ColorScales.getContinousColorScale(this.domain);
                         break;
                     case "binary":
-                        scale=VisStore.getBinaryScale(this.range);
+                        scale = ColorScales.getBinaryScale(this.range);
                         break;
+                    default:
+                        scale = ColorScales.getCategoricalScale(this.range);
                 }
                 return scale;
             },
@@ -24,8 +23,8 @@ class OriginalVariable {
         this.name = name;
         this.datatype = datatype;
         this.derived = false;
-        this.domain=domain;
-        this.range=range;
+        this.domain = domain;
+        this.range = range;
     }
 
 }

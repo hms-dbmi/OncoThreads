@@ -55,12 +55,14 @@ class SingleTimepoint {
             this.setPrimaryVariable(variableId);
             this.sortHeatmap(variableId);
         }
+        //this.rootStore.visStore.modifyTransitionSpace(100,this.globalIndex-1);
     }
 
     group(variable) {
         this.setPrimaryVariable(variable);
         this.groupTimepoint(variable);
         this.sortGroup(1);
+        //this.rootStore.visStore.modifyTransitionSpace(100,this.globalIndex-1);
     }
 
     promote(variableId) {
@@ -78,6 +80,7 @@ class SingleTimepoint {
     unGroup(variable) {
         this.setPrimaryVariable(variable);
         this.setIsGrouped(false);
+        //this.rootStore.visStore.modifyTransitionSpace(100,this.globalIndex-1);
     }
 
     /**
@@ -306,6 +309,9 @@ class SingleTimepoint {
                 return d.id
             }).indexOf(variableId) === 0) {
             newVariableIndex = 1
+        }
+        if(this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].datatype==="NUMBER"){
+            this.unGroup(variableId)
         }
         this.primaryVariableId = this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].id;
     }

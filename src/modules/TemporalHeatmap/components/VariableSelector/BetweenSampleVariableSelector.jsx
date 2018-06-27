@@ -14,7 +14,6 @@ import {
     Modal,
     Panel
 } from 'react-bootstrap';
-import RootStore from "../../../RootStore";
 import SampleVariableSelector from "./SampleVariableSelector";
 
 

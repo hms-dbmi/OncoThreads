@@ -1,5 +1,4 @@
 import {extendObservable} from "mobx";
-import VisStore from "./VisStore";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -135,9 +134,9 @@ class TimepointStore {
      */
     binVariable(newId, oldId, bins, binNames, type, saveToHistory) {
         const _self = this;
-        let oldVar=_self.variableStore[type].getById(oldId);
+        let oldVar = _self.variableStore[type].getById(oldId);
         let variableName = oldVar.name;
-        let variableDomain= oldVar.domain;
+        let variableDomain = oldVar.domain;
         _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {
             bins: bins,
             binNames: binNames
@@ -291,6 +290,7 @@ class TimepointStore {
             d.heatmapOrder = sorting;
         });
         this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+        this.rootStore.visStore.resetTransitionSpace();
     }
 
     /**
@@ -309,6 +309,18 @@ class TimepointStore {
             }
         this.rootStore.undoRedoStore.saveTimepointHistory("APPLY GROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
 
+    }
+
+    isAligned(firstTP, secondTP) {
+        if(this.timepoints[firstTP].isGrouped||this.timepoints[secondTP].isGrouped){
+            return false;
+        }
+        for (let i = this.timepoints[firstTP].heatmapOrder.length; i--;) {
+            if (this.timepoints[firstTP].heatmapOrder[i] !== this.timepoints[secondTP].heatmapOrder[i])
+                return false;
+        }
+
+        return true;
     }
 
     /**
@@ -411,11 +423,6 @@ class TimepointStore {
 
     }
 
-    ungroupEverything() {
-        this.timepoints.forEach(function (d) {
-            d.setIsGrouped(false);
-        })
-    }
 
     /**
      * sets the primary variable of a timepoint to the primary variable of the previous timepoint of the same type

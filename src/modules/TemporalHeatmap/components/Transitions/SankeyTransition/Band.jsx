@@ -65,7 +65,7 @@ const Band = observer(class Band extends React.Component {
         const target = Band.getTooltipPartitionName(this.props.secondPrimary, this.props.secondPartition);
         const selectedWidth = this.getSelectedWidth();
         const y0 = this.props.visMap.gap + this.props.rectHeight,
-            y1 = this.props.visMap.transitionSpace - this.props.visMap.gap * 2 - this.props.rectHeight;
+            y1 = this.props.visMap.transitionSpaces[this.props.index] - this.props.visMap.gap * 2 - this.props.rectHeight;
         let selected = null;
         if (selectedWidth !== 0) {
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}

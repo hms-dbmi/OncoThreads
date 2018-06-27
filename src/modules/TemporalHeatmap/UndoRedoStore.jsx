@@ -149,7 +149,6 @@ class UndoRedoStore {
         for (let property in savedEntry) {
             observableEntry[property] = savedEntry[property];
         }
-        console.log(observableEntry);
     }
 
     /**
@@ -185,6 +184,9 @@ class UndoRedoStore {
         if (this.undoRedoMode) {
             this.stateStack = this.stateStack.slice(0, this.currentPointer + 1);
             this.undoRedoMode = false;
+        }
+        if(this.stateStack.length>15){
+            this.stateStack.shift();
         }
         this.stateStack.push(serializeState(this));
         this.currentPointer = this.stateStack.length - 1;

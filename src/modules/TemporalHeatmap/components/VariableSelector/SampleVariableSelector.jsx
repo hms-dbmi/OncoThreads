@@ -2,7 +2,6 @@ import React from "react";
 import {observer} from "mobx-react";
 import {Button,ButtonGroup,Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import RootStore from "../../../RootStore";
 
 /*
 creates the selector for sample variables (left side of main view, top)

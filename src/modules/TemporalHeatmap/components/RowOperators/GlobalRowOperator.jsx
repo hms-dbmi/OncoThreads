@@ -1,5 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import ColorScales from "../../ColorScales";
 
 
 /*
@@ -232,7 +233,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     //console.log(name1);
 
                     //console.log(orId);
-                    let c1=_self.props.store.rootStore.visStore.getGlobalTransitionColorScale();
+                    let c1=ColorScales.getGlobalTransitionColorScale();
                     let fillC=c1(element);
 
                     //console.log(fillC);
