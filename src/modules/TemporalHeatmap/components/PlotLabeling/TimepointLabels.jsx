@@ -38,7 +38,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                     label = (i - 1) / 2
                 }
                 let pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 30;
-                start=pos+10;
+                start=pos+5;
                 labels.push(<text key={i} y={pos} x={_self.state.width / 2-TimepointLabels.getTextWidth(label,14)/2}>{label}</text>)
             }
             else {
@@ -47,10 +47,10 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                 labels.push(<line key={i} x1={_self.state.width / 2} y1={pos - 10} x2={_self.state.width / 2} y2={pos + 10}
                                   stroke="darkgray"
                                   fill="darkgray"
-                                  markerEnd="url(#arrow)" strokeWidth="2"/>)
+                                  markerEnd="url(#arrow)" strokeWidth="1"/>)
             }
             if(i!==_self.props.timepoints.length-1){
-                let height=_self.props.posY[i+1]-_self.props.posY[i];
+                let height=_self.props.posY[i+1]-_self.props.posY[i]-5;
                 labels.push(<line key={i+"vline"} x1={_self.state.width/2} x2={_self.state.width/2} y1={start} y2={start+height} stroke="lightgray"/>);
             }
         });
@@ -60,7 +60,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                     <defs>
                         <marker fill="#f00" id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"
                                 markerUnits="strokeWidth">
-                            <path d="M0,0 L0,6 L9,3 z" fill="#f00"/>
+                            <path d="M0,0 L0,6 L9,3 z" fill="darkgray"/>
                         </marker>
                     </defs>
                     <text y={15} x={this.state.width/2-TimepointLabels.getTextWidth("Timepoint",14)/2}>Timepoint</text>

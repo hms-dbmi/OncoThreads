@@ -1,4 +1,5 @@
 import {extendObservable} from "mobx";
+import * as d3 from 'd3';
 
 /*
 stores information about current visual parameters
@@ -14,9 +15,10 @@ class VisStore {
         //gap between rows in heatmap
         this.gap = 1;
         //space for transitions
-        this.transitionSpace = 80;
+        this.transitionSpace = 100;
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
+        this.globalTimelineColors=d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
             timepointY: [],
             transY: [],
@@ -35,7 +37,13 @@ class VisStore {
                 return this.computeTimepointPositions();
             },
             get svgHeight(){
-                return this.timepointPositions.connection[this.timepointPositions.connection.length-1]+this.betweenTPHeight
+                if(this.betweenTPHeight!==0){
+                    return this.timepointPositions.connection[this.timepointPositions.connection.length-1]+this.betweenTPHeight;
+                }
+                else{
+                    return this.timepointPositions.timepoint[this.timepointPositions.timepoint.length-1]+this.sampleTPHeight;
+
+                }
             }
         })
     }

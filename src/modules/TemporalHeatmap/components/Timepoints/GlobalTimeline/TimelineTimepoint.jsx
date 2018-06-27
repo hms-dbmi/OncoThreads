@@ -1,7 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import TimelineRow from "./TimelineRow";
-import ColorScales from "../../../ColorScales";
 //import * as d3 from 'd3';
 
 /*
@@ -137,7 +136,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
                 //color= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17']).domain([undefined]);
-                color=ColorScales.getGlobalTransitionColorScale();
+                color=_self.props.visMap.globalTimelineColors;
             }
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
