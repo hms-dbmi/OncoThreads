@@ -56,6 +56,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             showTooltip={_self.props.showTooltip}
                             hideTooltip={_self.props.hideTooltip}
                             primaryVariableId={d.primaryVariableId}
+                            showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
                         /></g>)
 
                 }

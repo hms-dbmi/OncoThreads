@@ -58,7 +58,6 @@ class TimepointStore {
      */
     initialize() {
         this.timepoints = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepoints, this.rootStore.sampleTimepointStore.timepoints);
-        //this.timeline = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timeline, this.rootStore.sampleTimepointStore.timeline)
         this.timepoints.forEach(function (d, i) {
             d.globalIndex = i;
         });

@@ -80,7 +80,6 @@ const Plot = observer(class Plot extends React.Component {
                 </svg>
             </div>
         )
-
     }
 
 });

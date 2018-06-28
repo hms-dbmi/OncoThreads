@@ -58,9 +58,9 @@ class VariableStore {
            if(!_self.allVariables.map(function (d) {
                 return d.id;
             }).includes(f.id)) {
-            const newVariable = new EventVariable(f.id, f.name, "binary",eventType,eventSubtype);
-            _self.allVariables.push(newVariable);
-        }
+                const newVariable = new EventVariable(f.id, f.name, "binary",eventType,eventSubtype);
+                _self.allVariables.push(newVariable);
+            }
         });
         let combinedEvent=new DerivedVariable(newId,name,"binary",selectedVariables.map(function (d,i) {
             return d.id;

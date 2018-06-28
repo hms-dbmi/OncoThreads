@@ -30,24 +30,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         //var startDay, duration;
 
         //console.log(this.props.row.data);
-        /*this.props.events.forEach(function (d,i) {
-             rects.push(<rect onMouseEnter={(e) => _self.handleMouseEnter(e, d.patientId, true,d.eventDate,d.eventEndDate , d.eventEndDate-d.eventDate)
-                                                 }
-                                                 onMouseLeave={_self.handleMouseLeave}
-                                        //onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                        //onMouseUp={_self.handleMouseUp}
-                                                 key={d.patientId + i + j}
-                                                 height={_self.props.timeScale(d.eventEndDate-d.eventDate)}//{_self.props.height}
-                                                 width={_self.props.timeScale(_self.props.rectWidth)}
-                                                 x={_self.props.heatmapScale(d.patientId)}
-                                                 y={_self.props.timeScale(d.eventDate)}
-                                                 fill={_self.props.color(d.varId)}
-                                                 opacity={0.5}
-                                        //fill={_self.props.color(_self.props.timepoint)}
-                                    />
-                                );
-        });
-        */
+
         this.props.row.data.forEach(function (d, i) {
 
             ind2 = -1;
@@ -134,7 +117,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                         }
                     }
-
 
                     else {
                         //globalRectHeight= ht[j]/2;
