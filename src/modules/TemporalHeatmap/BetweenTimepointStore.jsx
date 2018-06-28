@@ -139,15 +139,14 @@ class BetweenTimepointStore {
             this.initialize(derivedId, false);
         }
         const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
-        const derivedMapper = {};
         //this.addToTimeline(eventMapper);
         this.addHeatmapVariable(this.deriveMapper(eventMapper, "or"), derivedId);
         this.rootStore.timepointStore.regroupTimepoints();
-        this.addEventDetails(type, selectedValues, selectedKey, name);
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
     }
 
     deriveMapper(mapper, operator) {
+        const derivedMapper = {};
         if (operator === "or") {
             for (let patient in mapper) {
                 if (!(patient in derivedMapper)) {
