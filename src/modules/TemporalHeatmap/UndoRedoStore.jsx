@@ -1,4 +1,4 @@
-import {createTransformer, toJS,extendObservable} from "mobx";
+import {createTransformer, toJS, extendObservable} from "mobx";
 import DerivedVariable from "./DerivedVariable";
 import OriginalVariable from "./OriginalVariable";
 import SingleTimepoint from "./SingleTimepoint";
@@ -66,8 +66,8 @@ class UndoRedoStore {
         this.rootStore.transitionOn = this.stateStack[index].transitionOn;
         this.rootStore.globalTime = this.stateStack[index].globalTime;
         this.rootStore.eventDetails = this.stateStack[index].eventDetails;
-        this.rootStore.timepointStructure=this.deserializeTPStructure(this.rootStore.timepointStructure,this.stateStack[index].timepointStructure);
-        this.rootStore.transitionStructure=this.stateStack[index].transitionStructure;
+        this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].timepointStructure);
+        this.rootStore.transitionStructure = this.stateStack[index].transitionStructure;
         this.rootStore.timepointStore.initialize();
     }
 
@@ -77,30 +77,26 @@ class UndoRedoStore {
         this.currentPointer = this.stateStack.length - 1;
         this.deserialize(this.currentPointer)
     }
-       /**
+
+    /**
      * deserializes the timepoint data structure
      * @param observable
      * @param saved
      */
     deserializeTimepoints(observable, saved) {
-        const _self=this;
-        if (saved.length === 0) {
-            observable = [];
-        }
-        else {
-            if (observable.length === 0) {
-                saved.forEach(function (d) {
-                    observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex,d.heatmapOrder))
-                });
-            }
-             saved.forEach(function (d, i) {
-                    UndoRedoStore.remapProperties(observable[i], d);
-                });
-        }
+        const _self = this;
+        observable = [];
+        saved.forEach(function (d) {
+            console.log(d.patients);
+            observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex, d.heatmapOrder))
+        });
+        saved.forEach(function (d, i) {
+            UndoRedoStore.remapProperties(observable[i], d);
+        });
         return observable;
     }
-    deserializeTPStructure(observable,saved){
-        const _self = this;
+
+    deserializeTPStructure(observable, saved) {
         observable = [];
         saved.forEach(function (d) {
             observable.push(d)
@@ -173,6 +169,7 @@ class UndoRedoStore {
      * saves the history to the stateStack. For this the datastructures have to be serialized (put into a simple, non-observable object)
      */
     saveHistory() {
+        console.log(this.rootStore.sampleTimepointStore.timepoints);
         const serializeState = createTransformer(store => ({
             sampleTimepoints: store.rootStore.sampleTimepointStore.timepoints.map(serializeTimepoints),
             betweenTimepoints: store.rootStore.betweenTimepointStore.timepoints.map(serializeTimepoints),
@@ -182,17 +179,17 @@ class UndoRedoStore {
             allBetweenVar: store.rootStore.betweenTimepointStore.variableStore.allVariables,
             transitionOn: store.rootStore.transitionOn,
             globalTime: store.rootStore.globalTime,
-            timepointStructure:toJS(store.rootStore.timepointStructure),
-            transitionStructure:store.rootStore.transitionStructure,
+            timepointStructure: toJS(store.rootStore.timepointStructure),
+            transitionStructure: store.rootStore.transitionStructure,
             eventDetails: store.rootStore.eventDetails.slice()
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({
             type: timepoint.type,
-            patients: timepoint.patients,
+            patients: timepoint.patients.map(d=>d),
             globalIndex: timepoint.globalIndex,
             localIndex: timepoint.localIndex,
-            previousOrder:timepoint.previousOrder,
+            previousOrder: timepoint.previousOrder,
             heatmap: toJS(timepoint.heatmap),
             grouped: toJS(timepoint.grouped),
             heatmapOrder: timepoint.heatmapOrder,
@@ -204,10 +201,9 @@ class UndoRedoStore {
             this.stateStack = this.stateStack.slice(0, this.currentPointer + 1);
             this.undoRedoMode = false;
         }
-        if(this.stateStack.length>15){
+        if (this.stateStack.length > 15) {
             this.stateStack.shift();
         }
-        console.log(this.stateStack,this.rootStore.timepointStructure);
         this.stateStack.push(serializeState(this));
         this.currentPointer = this.stateStack.length - 1;
         localStorage.setItem(this.rootStore.study.studyId, JSON.stringify({states: this.stateStack, logs: this.logs}));
@@ -274,7 +270,8 @@ class UndoRedoStore {
         this.logs.push("REALIGN PATIENTS: based on " + type + " " + timepointIndex);
         this.saveHistory();
     }
-    saveTPMovement(dir,patient){
+
+    saveTPMovement(dir, patient) {
         this.logs.push("MOVE PATIENT: " + patient + " " + dir);
         this.saveHistory();
     }

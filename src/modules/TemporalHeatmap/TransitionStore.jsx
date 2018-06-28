@@ -6,7 +6,6 @@ class TransitionStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.numberOfTransitions = 0;
-        this.patientsPerTimepoint = [];
         this.timeGapStructure=[];
 
         extendObservable(this, {

@@ -25,16 +25,16 @@ class SampleTimepointStore {
     initialize(variableId, variable, type) {
         this.rootStore.visStore.resetTransitionSpace();
         this.variableStore.constructor(this.rootStore);
-        if(type==="NUMBER"){
-            let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId],"sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type,minMax);
+        if (type === "NUMBER") {
+            let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
+            this.variableStore.addOriginalVariable(variableId, variable, type, minMax);
         }
-        else{
-            this.variableStore.addOriginalVariable(variableId, variable, type,[]);
+        else {
+            this.variableStore.addOriginalVariable(variableId, variable, type, []);
         }
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
-            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i,this.rootStore.patientOrderPerTimepoint));
+            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i, this.rootStore.patientOrderPerTimepoint));
         }
         this.rootStore.timepointStore.initialize();
         this.addHeatmapVariable(variableId);
@@ -43,13 +43,11 @@ class SampleTimepointStore {
     update() {
         this.timepoints = [];
         const _self = this;
+        for (let j = 0; j < _self.rootStore.timepointStructure.length; j++) {
+            _self.timepoints.push(new SingleTimepoint(_self.rootStore, this.variableStore.currentVariables[0].id, _self.rootStore.patientsPerTimepoint[j], "sample", j, _self.rootStore.patientOrderPerTimepoint));
+        }
+        _self.rootStore.timepointStore.initialize();
         this.variableStore.currentVariables.forEach(function (d, i) {
-            if (i === 0) {
-                for (let j = 0; j < _self.rootStore.timepointStructure.length; j++) {
-                    _self.timepoints.push(new SingleTimepoint(_self.rootStore, d.id, _self.rootStore.patientsPerTimepoint[j], "sample", j, _self.rootStore.patientOrderPerTimepoint));
-                }
-                _self.rootStore.timepointStore.initialize();
-            }
             if (!d.derived) {
                 _self.addHeatmapVariable(d.id);
             }
@@ -84,7 +82,7 @@ class SampleTimepointStore {
             });
 
             _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
-            });
+        });
     }
 
 
@@ -97,13 +95,13 @@ class SampleTimepointStore {
      * @param type
      */
     addVariable(variableId, variable, type) {
-         if(type==="NUMBER"){
-            let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId],"sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type,minMax);
+        if (type === "NUMBER") {
+            let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
+            this.variableStore.addOriginalVariable(variableId, variable, type, minMax);
         }
-        else{
-             this.variableStore.addOriginalVariable(variableId, variable, type,[]);
-         }
+        else {
+            this.variableStore.addOriginalVariable(variableId, variable, type, []);
+        }
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)
@@ -115,7 +113,7 @@ class SampleTimepointStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        let variableName=this.variableStore.getById(variableId).name;
+        let variableName = this.variableStore.getById(variableId).name;
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {

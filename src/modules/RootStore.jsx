@@ -328,15 +328,15 @@ class RootStore {
 
         this.buildTransitionStructure();
         this.buildTimeGapStructure(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
-
+        this.visStore.resetTransitionSpace();
         this.sampleTimepointStore.update();
         this.betweenTimepointStore.update();
+        this.timepointStore.initialize();
         this.betweenTimepointStore.timepoints.forEach((timepoint, i) => {
             timepoint.heatmap.forEach((ht, j) => {
                 ht.data = _self.sortByPatientOrder(ht.data);
             })
         });
-        this.timepointStore.initialize();
         this.actualTimeLine = this.getTimeLine(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
     }
 
