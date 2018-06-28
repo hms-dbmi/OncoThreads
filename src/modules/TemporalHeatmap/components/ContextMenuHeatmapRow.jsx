@@ -20,7 +20,6 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
      */
     goUp(patient, timepoint, xposition) {
         //console.log("Go up");
-        console.log(patient + ", " + timepoint + ", " + xposition );
 
         for(var i=0; i<this.props.rootStore.timepointStore.selectedPatients.length; i++){
 
@@ -51,14 +50,13 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
                 }
             
             }
-            
-            console.log(findtimeline);
 
             this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 1 )
         }
         
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y =
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y - 131;
+        this.props.rootStore.undoRedoStore.saveTPMovement("up",patient);
        
     }
 
@@ -103,6 +101,7 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
             //console.log(findtimeline);
 
             this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 0 )
+            this.props.rootStore.undoRedoStore.saveTPMovement("down",patient);
         }
         //this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, patient, timepoint, xposition, 0 )
        
@@ -144,8 +143,8 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
                 xposition: this.props.xposition
                 
             }}>
-                <Button onClick={(e) => this.goUp(this.props.patient, this.props.timepoint, this.props.xposition)}>Up</Button>
-                <Button onClick={(e) => this.goDown(this.props.patient, this.props.timepoint, this.props.xposition)}>Down</Button>
+                <Button onClick={() => this.goUp(this.props.patient, this.props.timepoint, this.props.xposition)}>Up</Button>
+                <Button onClick={() => this.goDown(this.props.patient, this.props.timepoint, this.props.xposition)}>Down</Button>
                 
             </ButtonGroup>
         )

@@ -64,6 +64,13 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
             }
 
         });
+        let offset;
+        if(this.props.betweenTPHeight!==0){
+            offset=this.props.betweenTPHeight/2+30;
+        }
+        else{
+            offset=this.props.sampleTPHeight/2+30;
+        }
         return (
             <div>
                 <svg width={this.state.width} height={this.props.height}>
@@ -74,6 +81,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                             <path d="M0,0 L0,6 L9,3 z" fill="darkgray"/>
                         </marker>
                     </defs>
+                    <line x1={this.state.width/2} x2={this.state.width/2} y1={this.props.posY[0]+offset} y2={this.props.posY[this.props.posY.length-1]+offset} stroke='lightgray'/>
                     <text y={15}
                           x={this.state.width / 2 - TimepointLabels.getTextWidth("Timepoint", 14) / 2}>Timepoint
                     </text>

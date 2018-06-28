@@ -87,13 +87,13 @@ class RootStore {
             _self.createClinicalSampleMapping();
             _self.createMutationCountsMapping();
 
-            if(localStorage.getItem(_self.study.studyId)===null) {
+            //if(localStorage.getItem(_self.study.studyId)===null) {
                 _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
                 _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
-            }
+            /*}
             else{
                 _self.undoRedoStore.deserializeLocalStorage();
-            }
+            }*/
             _self.parsed = true;
 
         });
@@ -327,12 +327,9 @@ class RootStore {
         this.maxTP = this.timepointStructure.length;
 
         this.buildTransitionStructure();
-
-        //this.updateTransitionStructure(this.maxTP, patient, timepoint, xposition, up);
         this.buildTimeGapStructure(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
 
-        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
-        //this.sampleTimepointStore.update();
+        this.sampleTimepointStore.update();
         this.betweenTimepointStore.update();
         this.betweenTimepointStore.timepoints.forEach((timepoint, i) => {
             timepoint.heatmap.forEach((ht, j) => {
@@ -363,26 +360,6 @@ class RootStore {
         this.transitionStructure = transitionStructure;
     }
 
-
-    updateTransitionStructure(maxTP, patient, timepoint, xposition, up) {
-        let transitionStructure = [];
-        //if(up==0){
-        this.patientsPerTimepoint.forEach(function (d, i) {
-            // if(xposition!==i){
-            if (i === 0) {
-                transitionStructure.push(d);
-            }
-            transitionStructure.push(d);
-            // }
-            // else{
-
-            // }
-        });
-        //}
-        this.transitionStructure = transitionStructure;
-
-        //this.transitionStore.initializeTransitions(maxTP - 1);;
-    }
 
     /**
 
@@ -452,7 +429,7 @@ class RootStore {
                 counts[i] = counts[i-1]+counts[i];
             }
             cumulativeCountsForAllPatients[d.patientId] = counts;
-        })
+        });
         let timeLine = [];
         for (let i = 0; i < numberOfTimepoints; i++) {
             let patientSamples3 = [];

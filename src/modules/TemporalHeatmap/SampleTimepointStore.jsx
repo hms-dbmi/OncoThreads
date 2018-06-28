@@ -60,7 +60,6 @@ class SampleTimepointStore {
                 }
             }
         });
-        console.log(this.timepoints,this.rootStore.timepointStructure);
     }
 
     /**

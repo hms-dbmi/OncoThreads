@@ -126,7 +126,6 @@ class BetweenTimepointStore {
                 _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory), "or"), d.id);
             }
         });
-        console.log(this.rootStore.timepointStructure, this.rootStore.transitionStructure);
     }
 
     addORVariable(type, selectedValues, selectedKey, name) {
