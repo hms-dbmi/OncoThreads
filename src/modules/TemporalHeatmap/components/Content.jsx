@@ -13,6 +13,8 @@ import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
 
+import ContextMenuHeatmapRow from "./ContextMenuHeatmapRow";
+
 /*
 Creates all components except for the top navbar
  */
@@ -33,7 +35,11 @@ const Content = observer(class Content extends React.Component {
             displayShowButton: "none",
             tooltipContent: "",
             showTooltip: "hidden",
-            contextType: ""
+            contextType: "",
+            contextX: 0,
+            contextY: 0,
+            showContextMenu: false,
+            showContextMenuHeatmapRow: false
         }
         ;
         this.openModal = this.openModal.bind(this);
@@ -44,6 +50,8 @@ const Content = observer(class Content extends React.Component {
         this.hideContextMenu = this.hideContextMenu.bind(this);
         this.showSidebar = this.showSidebar.bind(this);
         this.hideSidebar = this.hideSidebar.bind(this);
+
+        this.showContextMenuHeatmapRow=this.showContextMenuHeatmapRow.bind(this);
     }
 
     /**
@@ -90,7 +98,23 @@ const Content = observer(class Content extends React.Component {
             y: e.pageY,
             clickedTimepoint: timepointIndex,
             clickedVariable: variable,
-            contextType: type
+            contextType: type,
+            //contextX: e.pageX,
+            //contextY: e.pageY,
+            //showContextMenu: true
+        });
+        e.preventDefault();
+    }
+
+        
+    showContextMenuHeatmapRow(e, patient, timepoint, xposition) {
+        this.setState({
+            contextX: e.pageX,
+            contextY: e.pageY,
+            showContextMenuHeatmapRow: true,
+            patient:patient,
+            timepoint: timepoint,
+            xposition: xposition
         });
         e.preventDefault();
     }
@@ -98,6 +122,7 @@ const Content = observer(class Content extends React.Component {
     hideContextMenu() {
         this.setState({
             contextType: "",
+            showContextMenuHeatmapRow: false
         })
     }
 
@@ -122,6 +147,73 @@ const Content = observer(class Content extends React.Component {
             return null;
         }
     }
+    /*getContextMenu(){
+        if(this.state.showContextMenu){
+            var contextMenuStyle = {
+                display: 'block',
+                position: 'absolute', 
+                left: this.state.contextX ? this.state.contextX : 0,
+                top: this.state.contextY ? this.state.contextY : 0
+            }
+            //return(<div id="contextMenu" style={contextMenuStyle}>right clicked</div>);
+
+            return (<div><div className="contextMenu--option">Up</div>
+                <div className="contextMenu--option">Down</div>
+                </div>);
+        } else{
+            return null;
+        }
+    }
+
+    getContextMenuHeatmapRow(){
+        if(this.state.showContextMenuHeatmapRow){
+            var contextMenuStyle = {
+                display: 'block',
+                position: 'absolute', 
+                left: this.state.contextX ? this.state.contextX : 0,
+                top: this.state.contextY ? this.state.contextY : 0
+            }
+            //return(<div id="contextMenu" style={contextMenuStyle}>right clicked</div>);
+
+            return (<ContextMenuHeatmapRow showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
+                contextX={this.state.contextX}
+                contextY={this.state.contextY}
+
+            />);
+        } else{
+            return null;
+        }
+    }*/
+
+
+    getContextMenuHeatmapRow(){
+        if(this.state.showContextMenuHeatmapRow){
+            /*var contextMenuStyle = {
+                display: 'block',
+                position: 'absolute', 
+                left: this.state.contextX ? this.state.contextX : 0,
+                top: this.state.contextY ? this.state.contextY : 0
+            }*/
+            //return(<div id="contextMenu" style={contextMenuStyle}>right clicked</div>);
+
+            //console.log(this.state.patient + ", " + this.state.timepoint + ", " + this.state.y);
+
+            return (<ContextMenuHeatmapRow showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
+                contextX={this.state.contextX}
+                contextY={this.state.contextY}
+                patient={this.state.patient}
+                timepoint={this.state.timepoint} 
+                xposition={this.state.xposition}
+                {...this.props}
+
+            />);
+        } else{
+            return null;
+        }
+    }
+    
+
+
     render() {
         return (
             <div>
@@ -168,11 +260,13 @@ const Content = observer(class Content extends React.Component {
                                 showTooltip={this.showTooltip}
                                 hideTooltip={this.hideTooltip}
                                 showContextMenu={this.showContextMenu}
-                                hideContextMenu={this.hideContextMenu}/>
+                                hideContextMenu={this.hideContextMenu}
+                                showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}/>
                         </Row>
                     </Col>
                 </Grid>
                 {this.getBinner()}
+                {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} content={this.state.tooltipContent}/>
                 <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}

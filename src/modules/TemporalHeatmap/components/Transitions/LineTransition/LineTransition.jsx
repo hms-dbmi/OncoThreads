@@ -40,7 +40,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
         this.props.transition.data.from.forEach(function (d,i) {
         let globalInd=1;
 
-            if (_self.props.transition.data.to.includes(d)) {
+            if (_self.props.transition.data.to && _self.props.transition.data.to.includes(d)) {
                 let strokeColor="lightgray";
                 if(_self.props.selectedPatients.includes(d)){
                     strokeColor="black"
@@ -77,8 +77,9 @@ const LineTransition = observer(class LineTransition extends React.Component {
 
 
             this.props.transition.data.from.forEach(function (d, i) {
-
-                if (_self.props.toPatients.includes(d)) {
+                j = _self.props.toPatients.indexOf(d);
+                if(j>-1) {
+                //if (_self.props.toPatients.includes(d)) {
                     let strokeColor="lightgray";
                     if(_self.props.selectedPatients.includes(d)){
                         strokeColor="black"
@@ -86,17 +87,17 @@ const LineTransition = observer(class LineTransition extends React.Component {
                     lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
                         _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
                         //0 - _self.props.visMap.gap,
-                        y1[j] + _self.props.visMap.sampleRectWidth /2,
+                        y1[i] + _self.props.visMap.sampleRectWidth /2,
                         //_self.props.visMap.transitionSpace,
                         y2[j], // + _self.props.visMap.sampleRectWidth / 2,
                         d+globalInd+i, true, strokeColor));
-                    j++;
+                    //j++;
                     globalInd=globalInd+2;
                 }
 
             });
 
-            j=0;
+            //j=0;
 
         }
         return lines;
@@ -118,8 +119,9 @@ const LineTransition = observer(class LineTransition extends React.Component {
         let globalInd=2;
 
         _self.props.transition.data.from.forEach(function (d, i) {
-
-            if (_self.props.transition.data.to.includes(d)) {
+            j = _self.props.transition.data.to.indexOf(d);
+            //if (_self.props.transition.data.to.includes(d)) {
+            if(j>-1) {
                 let strokeColor="lightgray";
                 if(_self.props.selectedPatients.includes(d)){
                     strokeColor="black"
@@ -132,12 +134,12 @@ const LineTransition = observer(class LineTransition extends React.Component {
                     //_self.props.visMap.transitionSpace,
                     y2[j], // + _self.props.visMap.sampleRectWidth / 2,
                     d+globalInd+i, true, strokeColor));
-                j++;
+                //j++;
                 globalInd=globalInd+2;
             }
         });
 
-        j=0;
+        //j=0;
 
         return lines;
     }

@@ -182,14 +182,17 @@ const MainView = observer(class MainView extends React.Component {
 
         let maxTime = Math.max(max1, max2);
         return (<Row>
-            <Col xs={2} md={2} style={{padding: 0}}>
+            
+            <Col md={1}>
+                <GlobalTimeAxis width={150} height={svgHeight - 20} maxTimeInDays={maxTime}/>
+            </Col>
+
+
+            <Col xs={2} style={{padding: 0}}>
                 <GlobalRowOperators {...this.props} height={svgHeight - 20} width={200}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
-            </Col>
-            <Col md={2}>
-                <GlobalTimeAxis width={150} height={svgHeight - 20} maxTimeInDays={maxTime}/>
             </Col>
 
             <Col xs={8} md={7} style={{padding: 0}}>

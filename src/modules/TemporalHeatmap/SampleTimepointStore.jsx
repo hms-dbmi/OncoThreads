@@ -11,7 +11,7 @@ class SampleTimepointStore {
         this.variableStore = new VariableStore(rootStore);
         extendObservable(this, {
             timepoints: [],
-            timeline: []
+            //timeline: []
         });
     }
 
@@ -27,26 +27,34 @@ class SampleTimepointStore {
         this.variableStore.addOriginalVariable(variableId, variable, type);
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
-            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i,this.rootStore.patientOrderPerTimepoint));
-            this.timeline.push({type:"sample",data:{}});
+            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i, this.rootStore.patientOrderPerTimepoint));
+            //this.timeline.push({type: "sample", data: {}});
         }
         this.rootStore.timepointStore.initialize();
         this.addHeatmapVariable(variableId);
     }
-    update(){
-        this.timepoints=[];
-        const _self=this;
-        this.variableStore.currentVariables.forEach(function (d,i) {
-            if(!d.derived) {
+
+    update() {
+        this.timepoints = [];
+        const _self = this;
+        this.variableStore.currentVariables.forEach(function (d, i) {
+            if (i === 0) {
+                for (let j = 0; j < _self.rootStore.timepointStructure.length; j++) {
+                    _self.timepoints.push(new SingleTimepoint(_self.rootStore, d.id, _self.rootStore.patientsPerTimepoint[j], "sample", j, _self.rootStore.patientOrderPerTimepoint));
+                }
+                _self.rootStore.timepointStore.initialize();
+            }
+            if (!d.derived) {
                 _self.addHeatmapVariable(d.id);
             }
-            else{
-                if(d.modificationType==="binned") {
+            else {
+                if (d.modificationType === "binned") {
                     _self.addHeatmapVariable(d.originalIds[0]);
-                    _self.rootStore.timepointStore.bin(d.originalIds[0],d.id,d.modification.bins,d.modification.binNames)
+                    _self.rootStore.timepointStore.bin(d.originalIds[0], d.id, d.modification.bins, d.modification.binNames)
                 }
             }
         });
+        console.log(this.timepoints,this.rootStore.timepointStructure);
     }
 
     /**
@@ -56,19 +64,29 @@ class SampleTimepointStore {
     addHeatmapVariable(variableId) {
         const _self = this;
         let mapper = this.rootStore.sampleMappers[variableId];
-        let addToTimeline = _self.variableStore.getVariableIndex(variableId) === 0;
+        //let addToTimeline = _self.variableStore.getVariableIndex(variableId) === 0;
         this.rootStore.timepointStructure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
-                let value = mapper[f.sample];
-                variableData.push({
-                    patient: f.patient,
-                    value: value
+                if (f) {
+                    //console.log(f.patient);
+                    let value = mapper[f.sample];
+                    variableData.push({
+                        patient: f.patient,
+                        value: value
 
-                });
-                if (addToTimeline) {
-                    let date=_self.rootStore.sampleTimelineMap[f.sample].startNumberOfDaysSinceDiagnosis;
-                    _self.timeline[i].data[f.patient] = [{variableId:variableId,value:value,start:date,end:date}];
+                    });
+                    /*
+                    if (addToTimeline) {
+                        let date = _self.rootStore.sampleTimelineMap[f.sample].startNumberOfDaysSinceDiagnosis;
+                        _self.timeline[i].data[f.patient] = [{
+                            variableId: variableId,
+                            value: value,
+                            start: date,
+                            end: date
+                        }];
+                    }
+                    */
                 }
             });
 
@@ -98,7 +116,7 @@ class SampleTimepointStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        let variableName=this.variableStore.getById(variableId).name;
+        let variableName = this.variableStore.getById(variableId).name;
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
                 if (d.primaryVariableId === variableId) {
@@ -122,7 +140,6 @@ class SampleTimepointStore {
         }
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
     }
-
 
 
 }
