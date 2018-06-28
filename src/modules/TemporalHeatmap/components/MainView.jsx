@@ -144,17 +144,17 @@ const MainView = observer(class MainView extends React.Component {
         let maxTime = Math.max(max1, max2);
         return (<Row>
             <Col xs={2} md={2} style={{padding: 0}}>
-                <GlobalRowOperators {...this.props} height={svgHeight} width={200}
+                <GlobalRowOperators {...this.props} height={this.props.height} width={200}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
             </Col>
             <Col md={2}>
-                <GlobalTimeAxis width={150} height={svgHeight - 20} maxTimeInDays={maxTime}/>
+                <GlobalTimeAxis width={150} height={this.props.height} maxTimeInDays={maxTime}/>
             </Col>
 
             <Col xs={8} md={7} style={{padding: 0}}>
-                <Plot {...this.props} width={this.props.width} svgWidth={svgWidth} height={svgHeight}
+                <Plot {...this.props} width={this.props.width} svgWidth={svgWidth} height={this.props.height}
                       heatmapWidth={heatmapWidth}
                       timepointY={timepointPositions.timepoint}
                       transY={timepointPositions.connection}
@@ -179,6 +179,7 @@ const MainView = observer(class MainView extends React.Component {
         const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
         let view;
         if (!this.props.store.rootStore.globalTime) {
+            console.log(this.props.visMap.svgHeight,this.props.visMap.sampleTPHeight,this.props.visMap.betweenTPHeight,this.props.visMap.timepointPositions);
             view = this.getBlockView(this.props.visMap.sampleTPHeight, this.props.visMap.betweenTPHeight, this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
         }
         else {
@@ -217,6 +218,7 @@ const MainView = observer(class MainView extends React.Component {
     }
 });
 MainView.defaultProps = {
-    width: 700
+    width: 700,
+    height:700
 };
 export default MainView;

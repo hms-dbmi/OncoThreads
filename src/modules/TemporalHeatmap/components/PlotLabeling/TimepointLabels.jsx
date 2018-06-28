@@ -24,10 +24,21 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
         context.font=fontSize+"px Arial";
         return context.measureText(text).width;
     }
+     /**
+     * computes the width of a text
+     * @param text
+     * @param fontSize
+     * @returns {number}
+     */
+    static getTextHeight(text,fontSize) {
+        const context = document.createElement("canvas").getContext("2d");
+        context.font=fontSize+"px Arial";
+        return context.measureText(text).height;
+    }
     render() {
         let labels = [];
         const _self = this;
-        let start;
+        let start,substract;
         this.props.timepoints.forEach(function (d, i) {
             if (d.type === "sample") {
                 let label = "";
@@ -38,19 +49,27 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                     label = (i - 1) / 2
                 }
                 let pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 30;
-                start=pos+5;
+                start=pos;
+                substract=40;
                 labels.push(<text key={i} y={pos} x={_self.state.width / 2-TimepointLabels.getTextWidth(label,14)/2}>{label}</text>)
             }
             else {
                 let pos = _self.props.betweenTPHeight / 2 + _self.props.posY[i] + 15;
-                start=pos+25;
+                start=pos+20;
+                substract=-40;
                 labels.push(<line key={i} x1={_self.state.width / 2} y1={pos - 10} x2={_self.state.width / 2} y2={pos + 10}
                                   stroke="darkgray"
                                   fill="darkgray"
                                   markerEnd="url(#arrow)" strokeWidth="1"/>)
             }
-            if(i!==_self.props.timepoints.length-1){
-                let height=_self.props.posY[i+1]-_self.props.posY[i]-5;
+            if(i<_self.props.timepoints.length-1){
+                let height=_self.props.posY[i+1]-_self.props.posY[i];
+                if(_self.props.betweenTPHeight!==0){
+                    height-=substract;
+                }
+                else{
+                    height-=10;
+                }
                 labels.push(<line key={i+"vline"} x1={_self.state.width/2} x2={_self.state.width/2} y1={start} y2={start+height} stroke="lightgray"/>);
             }
         });

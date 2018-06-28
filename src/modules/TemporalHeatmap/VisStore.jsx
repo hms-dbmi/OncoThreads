@@ -41,7 +41,7 @@ class VisStore {
                     return this.timepointPositions.connection[this.timepointPositions.connection.length-1]+this.betweenTPHeight;
                 }
                 else{
-                    return this.timepointPositions.timepoint[this.timepointPositions.timepoint.length-1]+this.sampleTPHeight;
+                    return this.timepointPositions.connection[this.timepointPositions.connection.length-1]+this.sampleTPHeight;
 
                 }
             }
