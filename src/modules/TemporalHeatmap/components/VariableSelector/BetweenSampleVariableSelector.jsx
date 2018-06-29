@@ -14,7 +14,6 @@ import {
     Modal,
     Panel
 } from 'react-bootstrap';
-import RootStore from "../../../RootStore";
 import SampleVariableSelector from "./SampleVariableSelector";
 
 
@@ -34,14 +33,14 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selectedValues: [],
             showUniqueNameAlert: false,
             showEmptySelectionAlert: false,
-            eventIcon:"caret-down",
-            timepointDistanceIcon:"caret-right"
+            eventIcon: "caret-down",
+            timepointDistanceIcon: "caret-right"
         };
-        this.toggleEventIcon=this.toggleEventIcon.bind(this);
-        this.toggleTimepointDistanceIcon=this.toggleTimepointDistanceIcon.bind(this);
+        this.toggleEventIcon = this.toggleEventIcon.bind(this);
+        this.toggleTimepointDistanceIcon = this.toggleTimepointDistanceIcon.bind(this);
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
-        this.addTimeDistance=this.addTimeDistance.bind(this);
+        this.addTimeDistance = this.addTimeDistance.bind(this);
     }
 
     openModal(buttonClicked) {
@@ -62,14 +61,14 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * adds a variable to the view
      */
     addORVariable() {
-        this.setState({showUniqueNameAlert: false,showEmptySelectionAlert:false});
+        this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
         let name = this.state.name;
         if (this.state.name === "") {
             name = this.state.defaultName;
         }
         if (this.props.currentVariables.map(function (d) {
-                return d.variable
-            }).includes(name)) {
+            return d.variable
+        }).includes(name)) {
             this.setState({showUniqueNameAlert: true});
         }
         else if (this.state.selectedValues.length === 0) {
@@ -80,9 +79,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             this.closeModal();
         }
     }
-    addTimeDistance(id){
-        let minMax=RootStore.getMinMaxOfContinuous(this.props.store.rootStore.timeGapMapping,"between");
-        this.props.visMap.setContinousColorScale(id, minMax[0], minMax[1]);
+
+    addTimeDistance(id) {
+
         this.props.store.addTimepointDistance(id)
     }
 
@@ -98,7 +97,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selected.push(variable);
         }
         else {
-            let index = selected.map(function(d){
+            let index = selected.map(function (d) {
                 return d.id
             }).indexOf(variable.id);
             selected.splice(index, 1);
@@ -178,16 +177,17 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<Button value={d} onClick={() => _self.openModal(d)}
+                buttons.push(<Button bsSize="xsmall" value={d} onClick={() => _self.openModal(d)}
                                      key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} <FontAwesome
                     name="plus"/></Button>)
             }
         });
         return buttons;
     }
-    createTimepointDistanceButton(){
-        return(<Button onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
-                                     key={"timepointdistance"}>Time between timepoints</Button>)
+
+    createTimepointDistanceButton() {
+        return (<Button bsSize="xsmall" onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
+                        key={"timepointdistance"}>Time between timepoints</Button>)
     }
 
     /**
@@ -202,7 +202,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
 
     closeModal() {
         this.setState({
-             modalIsOpen: false,
+            modalIsOpen: false,
             buttonClicked: "",
             selectedKey: "",
             name: "",
@@ -239,29 +239,32 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             return null;
         }
     }
-     static toggleIcon(icon){
-        if(icon==="caret-down"){
+
+    static toggleIcon(icon) {
+        if (icon === "caret-down") {
             return "caret-right"
         }
-        else{
+        else {
             return "caret-down"
         }
     }
-    toggleEventIcon(){
-        this.setState({eventIcon:SampleVariableSelector.toggleIcon(this.state.eventIcon)});
+
+    toggleEventIcon() {
+        this.setState({eventIcon: SampleVariableSelector.toggleIcon(this.state.eventIcon)});
     }
-    toggleTimepointDistanceIcon(){
-        this.setState({timepointDistanceIcon:SampleVariableSelector.toggleIcon(this.state.timepointDistanceIcon)});
+
+    toggleTimepointDistanceIcon() {
+        this.setState({timepointDistanceIcon: SampleVariableSelector.toggleIcon(this.state.timepointDistanceIcon)});
     }
 
     render() {
         return (
             <div className="mt-2">
                 <h4>Transition variables</h4>
-                    <Panel defaultExpanded>
-                     <Panel.Heading>
+                <Panel defaultExpanded>
+                    <Panel.Heading>
                         <Panel.Title toggle>
-                            <div  onClick={this.toggleEventIcon}> Events <FontAwesome name={this.state.eventIcon}/></div>
+                            <div onClick={this.toggleEventIcon}> Events <FontAwesome name={this.state.eventIcon}/></div>
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Collapse>
@@ -271,11 +274,12 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                             </ButtonGroup>
                         </Panel.Body>
                     </Panel.Collapse>
-                    </Panel>
-                    <Panel>
-                     <Panel.Heading>
+                </Panel>
+                <Panel>
+                    <Panel.Heading>
                         <Panel.Title toggle>
-                            <div  onClick={this.toggleTimepointDistanceIcon}> Derived Variables <FontAwesome name={this.state.timepointDistanceIcon}/></div>
+                            <div onClick={this.toggleTimepointDistanceIcon}> Derived Variables <FontAwesome
+                                name={this.state.timepointDistanceIcon}/></div>
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Collapse>
@@ -285,7 +289,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                             </ButtonGroup>
                         </Panel.Body>
                     </Panel.Collapse>
-                    </Panel>
+                </Panel>
                 <Modal
                     show={this.state.modalIsOpen}
                     onHide={this.closeModal}

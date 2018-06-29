@@ -4,8 +4,7 @@ import * as d3 from 'd3';
 import ReactDOM from 'react-dom'
 
 
-
-const Axis=observer(class Axis extends React.Component {
+const Axis = observer(class Axis extends React.Component {
     componentDidUpdate() {
         this.renderAxis();
     }

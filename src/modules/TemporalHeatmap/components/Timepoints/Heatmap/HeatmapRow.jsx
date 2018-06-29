@@ -16,8 +16,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
-        this.handleMouseEnter=this.handleMouseEnter.bind(this);
-        this.handleMouseEnterGlobal=this.handleMouseEnterGlobal.bind(this);
+        this.handleMouseEnter = this.handleMouseEnter.bind(this);
+        this.handleMouseEnterGlobal = this.handleMouseEnterGlobal.bind(this);
     }
 
     getRow() {
@@ -28,19 +28,28 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
         this.props.row.data.forEach(function (d, j) {
             let stroke = "none";
-            let fill=_self.props.color(d.value);
-            if(d.value===undefined){
-                stroke="lightgray";
-                fill="white";
+            let fill = _self.props.color(d.value);
+            if (d.value === undefined) {
+                stroke = "lightgray";
+                fill = "none";
+                rects.push(<line stroke={stroke}
+                                 key={d.patient + "UNDEFINED"} height={_self.props.height}
+                                 width={_self.props.rectWidth}
+                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
+                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
+                                 y1={0}
+                                 y2={_self.props.height}
+                                 opacity={_self.props.opacity}/>);
             }
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";
             }
             rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value)}
-                             onMouseLeave={_self.handleMouseLeave} onMouseDown={(e) => _self.handleMouseDown(e,d.patient)}
+                             onMouseLeave={_self.handleMouseLeave}
+                             onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}
                              onMouseUp={_self.handleMouseUp} onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                             onClick={_self.handleClick} 
-                             onContextMenu={(e)=>_self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
+                             onClick={_self.handleClick}
+                             onContextMenu={(e) => _self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
                              key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
                              x={_self.props.heatmapScale(d.patient) + _self.props.x}
@@ -55,9 +64,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     }
 
 
-
-    handleMouseDown(event,patient) {
-        if(event.button===0) {
+    handleMouseDown(event, patient) {
+        if (event.button === 0) {
             if (!this.state.dragging) {
                 this.props.onDrag(patient);
             }
@@ -88,7 +96,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             this.props.onDrag(patient);
         }
         else {
-            this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: "+ duration + " days")
+            this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
         }
     }
 
@@ -119,31 +127,31 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             dragging: false
         })
 
-        
+
         this.props.showContextMenuHeatmapRow(e, patient, timepoint, xposition);
 
-        
+
     }
 
     handleClick(e) {
         if (e.type === 'click') {
-          //console.log('Left click');
+            //console.log('Left click');
         } else if (e.type === 'contextmenu') {
             e.preventDefault();
-          //console.log('Right click');
-         
+            //console.log('Right click');
+
         }
         /*if (e.nativeEvent.which === 1) {
           console.log('left click');
         } else if (e.nativeEvent.which === 3) {
           console.log('right click');
         }*/
-     }
+    }
 
     render() {
-            return (
-                this.getRow()
-            )
+        return (
+            this.getRow()
+        )
 
 
     }

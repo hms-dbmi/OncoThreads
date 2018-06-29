@@ -15,7 +15,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
         let previousYposition = 0;
         this.props.timepoint.forEach(function (row, i) {
             //get the correct color scale depending on the type of the variable (STRING, continous or binary)
-            let color = _self.props.visMap.getColorScale(row.variable,_self.props.currentVariables[i].datatype);
+            let color = _self.props.currentVariables[i].colorScale;
             const transform = "translate(0," + previousYposition + ")";
             if (row.variable === _self.props.primaryVariableId) {
                 rows.push(<g key={row.variable} transform={transform}>
@@ -24,7 +24,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 opacity={1}
                                 color={color}
                                 ht={_self.props.ht}
-                                x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
+                                x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
                                 dtype={_self.props.currentVariables[i].datatype}/>;
                 </g>);
                 previousYposition += _self.props.visMap.primaryHeight + _self.props.visMap.gap;
@@ -36,7 +36,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                 opacity={0.5}
                                 color={color}
                                 ht={_self.props.ht}
-                                x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
+                                x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
                                 dtype={_self.props.currentVariables[i].datatype}/>;
                 </g>);
                 previousYposition += _self.props.visMap.secondaryHeight + _self.props.visMap.gap;
@@ -46,9 +46,9 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
     }
 
     render() {
-            return (
-                this.getTimepoint()
-            )
+        return (
+            this.getTimepoint()
+        )
     }
 });
 export default HeatmapTimepoint;

@@ -10,21 +10,15 @@ creates a transition:   SankeyTransition - between two grouped timepoints
  */
 const Transition = observer(class Transition extends React.Component {
     getTransition() {
-        if (this.props.transition.type==="sankey") {
+        if (this.props.transition.type === "sankey") {
             return <SankeyTransition {...this.props}/>
         }
         else {
-            if (this.props.transition.type==="groupToPatients") {
+            if (this.props.transition.type === "groupToPatients") {
                 return <GroupToPatientsTransition {...this.props}/>
             }
-
-            else if (this.props.transition.type==="empty") {
-                return null;
-            }
-
-
             else {
-                
+
                 return <LineTransition {...this.props}/>
             }
         }

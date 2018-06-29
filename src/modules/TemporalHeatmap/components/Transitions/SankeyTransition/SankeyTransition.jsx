@@ -35,12 +35,12 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
         this.props.firstTimepoint.grouped.forEach(function (d, i) {
             const firstParLength = _self.getPartitionLength(d, _self.props.firstPrimary.id);
             let currXsource = sourcePartitionPos;
-            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, _self.props.visMap.gap, _self.props.groupScale(firstParLength), rectHeight, _self.props.visMap.getColorScale(_self.props.firstPrimary.id, _self.props.firstPrimary.datatype)(d.partition), d.partition + "source"));
+            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, _self.props.visMap.gap, _self.props.groupScale(firstParLength), rectHeight, _self.props.firstPrimary.colorScale(d.partition), d.partition + "source"));
 
             let targetPartitionPos = 0;
             _self.props.secondTimepoint.grouped.forEach(function (f) {
                 if (i === 0) {
-                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpace - rectHeight - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)), rectHeight, _self.props.visMap.getColorScale(_self.props.secondPrimary.id, _self.props.secondPrimary.datatype)(f.partition), f.partition + "target"));
+                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpaces[_self.props.index] - rectHeight - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)), rectHeight, _self.props.secondPrimary.colorScale(f.partition), f.partition + "target"));
                 }
                 let transition = _self.getTransition(d.partition, f.partition);
                 if (!(f.partition in currXtarget)) {
@@ -51,7 +51,8 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
                     transitions.push(<Band {..._self.props} key={d.partition + "->" + f.partition} x0={currXsource}
                                            x1={currXtarget[f.partition]}
                                            width={transitionWidth} rectHeight={rectHeight} firstPartition={d.partition}
-                                           secondPartition={f.partition} patients={transition.patients} count={transition.value}/>);
+                                           secondPartition={f.partition} patients={transition.patients}
+                                           count={transition.value}/>);
                     currXsource += transitionWidth;
                     currXtarget[f.partition] += transitionWidth;
                 }

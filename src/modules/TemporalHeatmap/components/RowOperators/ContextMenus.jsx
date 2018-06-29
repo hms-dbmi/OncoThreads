@@ -9,14 +9,14 @@ class creating the different sorts of context menus
  */
 const ContextMenus = observer(class ContextMenus extends React.Component {
     render() {
-        let show={sort:"hidden",group:"hidden",promote:"hidden",ungroup:"hidden"};
-        show[this.props.type]="visible";
+        let show = {sort: "hidden", group: "hidden", promote: "hidden", ungroup: "hidden"};
+        show[this.props.type] = "visible";
         return (
             <div>
                 <SortContextMenu showContextMenu={show.sort} contextX={this.props.contextX}
-                                  contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
-                                  clickedVariable={this.props.clickedVariable}
-                                  store={this.props.store}/>
+                                 contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
+                                 clickedVariable={this.props.clickedVariable}
+                                 store={this.props.store}/>
                 <GroupContextMenu showContextMenu={show.group} contextX={this.props.contextX}
                                   contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
                                   clickedVariable={this.props.clickedVariable}
@@ -28,10 +28,10 @@ const ContextMenus = observer(class ContextMenus extends React.Component {
                                     store={this.props.store}
                                     openBinningModal={this.props.openBinningModal}/>
                 <UnGroupContextMenu showContextMenu={show.ungroup} contextX={this.props.contextX}
-                                  contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
-                                  clickedVariable={this.props.clickedVariable}
-                                  store={this.props.store}
-                                  openBinningModal={this.props.openBinningModal}/>
+                                    contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
+                                    clickedVariable={this.props.clickedVariable}
+                                    store={this.props.store}
+                                    openBinningModal={this.props.openBinningModal}/>
             </div>
         )
     }

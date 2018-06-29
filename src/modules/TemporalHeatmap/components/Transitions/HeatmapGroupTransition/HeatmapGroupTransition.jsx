@@ -78,12 +78,13 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         grouped.grouped.forEach(function (d) {
             let currXsource = sourcePartitionPos;
             const partitionLength = _self.getPartitionLength(d, primary.id);
-            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, _self.props.visMap.getColorScale(primary.id, primary.datatype)(d.partition), d.partition));
+            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, primary.colorScale(d.partition), d.partition));
             let transitionPatients = _self.getPartitionPatients(d.partition, reverse);
             if (transitionPatients.length !== 0) {
                 const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
                 transitionPatients.forEach(function (f) {
-                    transitions.push(<TriangleCurve key={f} selectedPatients={_self.props.selectedPatients} x0={currXsource} x1={currXsource + transitionWidth}
+                    transitions.push(<TriangleCurve key={f} selectedPatients={_self.props.selectedPatients}
+                                                    x0={currXsource} x1={currXsource + transitionWidth}
                                                     x2={scale(f) + 0.5 * _self.props.visMap.sampleRectWidth} y0={y0}
                                                     y1={y1} patient={f}/>);
                     currXsource += transitionWidth;
@@ -104,7 +105,7 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         if (reverse) {
             grouped = this.props.secondTimepoint;
             scale = this.props.firstHeatmapScale;
-            y0 = this.props.visMap.transitionSpace - rectHeight - 2 * this.props.visMap.gap;
+            y0 = this.props.visMap.transitionSpaces[this.props.index] - rectHeight - 2 * this.props.visMap.gap;
             y1 = 0 - this.props.visMap.gap;
             recty = y0;
             primary = this.props.secondPrimary
@@ -113,7 +114,7 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
             grouped = this.props.firstTimepoint;
             scale = this.props.secondHeatmapScale;
             y0 = 0 + this.props.visMap.gap + rectHeight;
-            y1 = this.props.visMap.transitionSpace;
+            y1 = this.props.visMap.transitionSpaces[this.props.index];
             recty = 0 + this.props.visMap.gap;
             primary = this.props.firstPrimary
         }

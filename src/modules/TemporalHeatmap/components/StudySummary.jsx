@@ -8,19 +8,21 @@ import FontAwesome from 'react-fontawesome';
 Creates the list of current variables
  */
 const StudySummary = observer(class StudySummary extends React.Component {
-    constructor(){
+    constructor() {
         super();
-        this.state={icon:"caret-down"}
-        this.toggleIcon=this.toggleIcon.bind(this);
+        this.state = {icon: "caret-down"}
+        this.toggleIcon = this.toggleIcon.bind(this);
     }
-    toggleIcon(){
-        if(this.state.icon==="caret-down"){
-            this.setState({icon:"caret-right"});
+
+    toggleIcon() {
+        if (this.state.icon === "caret-down") {
+            this.setState({icon: "caret-right"});
         }
-        else{
-            this.setState({icon:"caret-down"});
+        else {
+            this.setState({icon: "caret-down"});
         }
     }
+
     render() {
         return (
             <Panel id="collapsible-panel-example-2" defaultExpanded>

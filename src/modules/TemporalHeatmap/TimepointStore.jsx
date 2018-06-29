@@ -58,8 +58,6 @@ class TimepointStore {
      */
     initialize() {
         this.timepoints = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepoints, this.rootStore.sampleTimepointStore.timepoints);
-        //this.timeline = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timeline, this.rootStore.sampleTimepointStore.timeline)
-        console.log(this.timepoints);
         this.timepoints.forEach(function (d, i) {
             d.globalIndex = i;
         });
@@ -135,14 +133,19 @@ class TimepointStore {
      */
     binVariable(newId, oldId, bins, binNames, type, saveToHistory) {
         const _self = this;
-        let variableName=_self.variableStore[type].getById(oldId).name;
-        _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {bins:bins, binNames: binNames});
-        this.bin(oldId,newId,bins,binNames);
-        console.log(_self.variableStore[type].getById(newId));
-        this.rootStore.undoRedoStore.saveVariableModification("bin", variableName,saveToHistory);
+        let oldVar = _self.variableStore[type].getById(oldId);
+        let variableName = oldVar.name;
+        let variableDomain = oldVar.domain;
+        _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {
+            bins: bins,
+            binNames: binNames
+        }, variableDomain);
+        this.bin(oldId, newId, bins, binNames);
+        this.rootStore.undoRedoStore.saveVariableModification("bin", variableName, saveToHistory);
     }
-    bin(oldId,newId,bins,binNames){
-        const _self=this;
+
+    bin(oldId, newId, bins, binNames) {
+        const _self = this;
         this.timepoints.forEach(function (d, i) {
             d.heatmap.forEach(function (f, j) {
                 if (f.variable === oldId) {
@@ -152,7 +155,9 @@ class TimepointStore {
                     });
                     _self.timepoints[i].heatmap[j].data = newData;
                     f.variable = newId;
-                    d.setPrimaryVariable(newId);
+                    if (d.primaryVariableId === oldId) {
+                        d.setPrimaryVariable(newId);
+                    }
                 }
             });
         });
@@ -284,6 +289,7 @@ class TimepointStore {
             d.heatmapOrder = sorting;
         });
         this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+        //this.rootStore.visStore.resetTransitionSpace();
     }
 
     /**
@@ -302,6 +308,18 @@ class TimepointStore {
             }
         this.rootStore.undoRedoStore.saveTimepointHistory("APPLY GROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
 
+    }
+
+    isAligned(firstTP, secondTP) {
+        if (this.timepoints[firstTP].isGrouped || this.timepoints[secondTP].isGrouped) {
+            return false;
+        }
+        for (let i = this.timepoints[firstTP].heatmapOrder.length; i--;) {
+            if (this.timepoints[firstTP].heatmapOrder[i] !== this.timepoints[secondTP].heatmapOrder[i])
+                return false;
+        }
+
+        return true;
     }
 
     /**
@@ -404,11 +422,6 @@ class TimepointStore {
 
     }
 
-    ungroupEverything() {
-        this.timepoints.forEach(function (d) {
-            d.setIsGrouped(false);
-        })
-    }
 
     /**
      * sets the primary variable of a timepoint to the primary variable of the previous timepoint of the same type

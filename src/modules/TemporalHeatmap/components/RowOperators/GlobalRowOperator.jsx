@@ -65,6 +65,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * @param timepoint: timepoint where the primary variable is changes
          * @param variable: variable to be the primary variable
          */
+
         /*promote(timepoint, variable) {
             if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
                 this.props.openBinningModal(variable, timepoint.type, this.props.store.promoteBinnedTimepoint, timepoint.globalIndex);
@@ -114,6 +115,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             this.props.highlightVariable(variable);
             this.props.showTooltip(e, "Delete variable from all timepoints")
         }
+
         /**
          * unhighlights variable for deletion and hides tooltip
          */
@@ -127,7 +129,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * @param variable
          * @param timepoint
          */
-        handleDelete(variable,timepoint) {
+        handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
             this.props.store.removeVariable(variable, timepoint.type)
@@ -189,16 +191,16 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 </g>);
         }
 
-                  /**
+        /**
          * computes the width of a text. Returns 30 if the text width would be shorter than 30
          * @param text
          * @param fontSize
          * @returns {number}
          */
-        static getTextWidth(text,fontSize) {
+        static getTextWidth(text, fontSize) {
             const minWidth = 30;
             const context = document.createElement("canvas").getContext("2d");
-            context.font=fontSize+"px Arial";
+            context.font = fontSize + "px Arial";
             const width = context.measureText(text).width;
             if (width > minWidth) {
                 return width;
@@ -207,75 +209,70 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
         }
 
         getRowLabel(timepoint, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
-           /* return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
-                       onMouseLeave={this.props.hideTooltip}>
-                <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
-                      onClick={() => this.promote(timepoint, variable)}>{GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
-            </g>);*/
+            /* return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
+                        onMouseLeave={this.props.hideTooltip}>
+                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
+                       onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
+                       onClick={() => this.promote(timepoint, variable)}>{GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
+             </g>);*/
 
-            const _self=this;
-            if(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).datatype==="binary"){
-                
-                let labels=[];
+            const _self = this;
+            if (this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).datatype === "binary") {
+
+                let labels = [];
                 //var txtR=[];
-                var oIds=_self.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).originalIds;
+                let oIds = _self.props.store.variableStore[timepoint.type].getById(variable).originalIds;
 
                 //console.log(variable);
 
-                oIds.forEach(function(element, i) {
-                   
-                    var name1=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).name;
+                oIds.forEach(function (element, i) {
 
-                    var orId=_self.props.store.variableStore[timepoint.type].getByOriginalId(element,timepoint.type).id;
+                    let name = _self.props.store.variableStore[timepoint.type].getByIdAllVariables(element).name;
+
 
                     //console.log(name1);
 
                     //console.log(orId);
-
-                    var c1=_self.props.store.rootStore.visStore.getColorScale(name1, "GlobalTransitions");
-                    var fillC=c1(name1);
+                    let c1 = _self.props.visMap.globalTimelineColors;
+                    let fillC = c1(element);
 
                     //console.log(fillC);
 
-                    var xT= GlobalRowOperator.getTextWidth(name1, fontSize);
+                    let xT = GlobalRowOperator.getTextWidth(name, fontSize);
 
                     //console.log(xT);
 
 
-                    labels.push (<g transform={"translate(" + xPos + "," + (yPos + i*_self.props.store.rootStore.visStore.secondaryHeight)+ ")scale(" + iconScale + ")"}             
-                                    
-                    onMouseLeave={_self.props.hideTooltip}>
+                    labels.push(<g
+                        transform={"translate(" + xPos + "," + (yPos + i * _self.props.store.rootStore.visStore.secondaryHeight) + ")scale(" + iconScale + ")"}
 
-                    <rect key={"rect" } opacity={1} width={15} height={15}
-                                x={xPos + xT +5} y={yPos -25}
-                                fill={fillC}/>
-                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                        onContextMenu={(e) => _self.props.showContextMenu(e, timepoint.globalIndex, orId,"promote")}
-                        
-                        >
-                        {GlobalRowOperator.cropText(name1, fontSize, fontWeight, width)}</text>
+                        onMouseLeave={_self.props.hideTooltip}>
+
+                        <rect key={"rect"} opacity={1} width={15} height={15}
+                              x={xPos + xT + 5} y={yPos - 25}
+                              fill={fillC}/>
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
+                            {GlobalRowOperator.cropText(name, fontSize, fontWeight, width)}</text>
                     </g>);
 
 
-
                 });
-                
+
                 return labels;
 
             }
 
-            else{
-                return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}             
-                                
-                    onMouseLeave={this.props.hideTooltip}>
+            else {
+                return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+
+                           onMouseLeave={this.props.hideTooltip}>
 
                     <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                        onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
-                        
-                        >
-                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
+                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
+
+                    >
+                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
                 </g>);
 
             }
@@ -285,8 +282,6 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             return <rect height={height} width={width} fill="#e8e8e8"/>
         }
 
-  
-
 
         /**
          * Creates the Row operator for a timepoint
@@ -294,61 +289,57 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
         getRowOperator() {
             const _self = this;
             let pos = 0;
-            if(this.props.timepoint){
-            return this.props.timepoint.heatmap.map(function (d, i) {
-                
-                let lineHeight;
-                let fontWeight;
-               // if (d.variable === _self.props.timepoint.primaryVariable.id) {
-                 //   lineHeight =  _self.props.visMap.primaryHeight;
+            if (this.props.timepoint) {
+                return this.props.timepoint.heatmap.map(function (d, i) {
+
+                    let lineHeight;
+                    let fontWeight;
+                    // if (d.variable === _self.props.timepoint.primaryVariable.id) {
+                    //   lineHeight =  _self.props.visMap.primaryHeight;
                     //fontWeight = "bold";
-                //}
-                //else {
+                    //}
+                    //else {
                     lineHeight = _self.props.visMap.secondaryHeight;
                     fontWeight = "normal";
-                //}
-                const transform = "translate(0," + pos + ")";
-                const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
-                let fontSize = 12;
-                if (lineHeight < fontSize) {
-                    fontSize = Math.round(lineHeight);
-                }
-                var numVar = 1;
-                var variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable,_self.props.timepoint.type)
-                if(variable.datatype==='binary') {
-                    numVar = variable.originalIds.length;
-                }
-                pos = pos + (lineHeight + _self.props.visMap.gap)*numVar;
-                const yPos = -(iconScale * 24 - lineHeight) / 2;
-                let secondIcon;
-                /*if (!_self.props.timepoint.isGrouped) {
-                    secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
-                }
-                else {
-                    secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+                    //}
+                    const transform = "translate(0," + pos + ")";
+                    const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
+                    let fontSize = 12;
+                    if (lineHeight < fontSize) {
+                        fontSize = Math.round(lineHeight);
+                    }
+                    let numVar = 1;
+                    let variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type)
+                    if (variable.datatype === 'binary') {
+                        numVar = variable.originalIds.length;
+                    }
+                    pos = pos + (lineHeight + _self.props.visMap.gap) * numVar;
+                    const yPos = -(iconScale * 24 - lineHeight) / 2;
+                    /*if (!_self.props.timepoint.isGrouped) {
+                        secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+                    }
+                    else {
+                        secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
 
-                }*/
-                //let highlightRect = null;
-                //if (d.variable === _self.props.highlightedVariable) {
-                  //  highlightRect = GlobalRowOperator.getHighlightRect(lineHeight, 200);
-                //}
-                /*return <g key={d.variable} className={"clickable"} transform={transform}>
-                    {highlightRect}
-                    {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
-                    {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
-                    {secondIcon}
-                    {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
-                </g>*/
+                    }*/
+                    //let highlightRect = null;
+                    //if (d.variable === _self.props.highlightedVariable) {
+                    //  highlightRect = GlobalRowOperator.getHighlightRect(lineHeight, 200);
+                    //}
+                    /*return <g key={d.variable} className={"clickable"} transform={transform}>
+                        {highlightRect}
+                        {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
+                        {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
+                        {secondIcon}
+                        {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
+                    </g>*/
 
-                return <g key={d.variable} className={"clickable"} transform={transform}>
-                    
-                    {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
-                   
-                    {secondIcon}
-                    {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos+3)}
-                </g>
-           
-            });
+                    return <g key={d.variable} className={"clickable"} transform={transform}>
+                        {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
+                        {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos + 3)}
+                    </g>
+
+                });
             }
             else return null;
 

@@ -26,7 +26,7 @@ const Content = observer(class Content extends React.Component {
             followUpFunction: null,
             clickedVariable: "",
             clickedTimepoint: -1,
-            type:"",
+            type: "",
             x: 0,
             y: 0,
             sidebarSize: 2,
@@ -51,7 +51,7 @@ const Content = observer(class Content extends React.Component {
         this.showSidebar = this.showSidebar.bind(this);
         this.hideSidebar = this.hideSidebar.bind(this);
 
-        this.showContextMenuHeatmapRow=this.showContextMenuHeatmapRow.bind(this);
+        this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
     }
 
     /**
@@ -106,13 +106,13 @@ const Content = observer(class Content extends React.Component {
         e.preventDefault();
     }
 
-        
+
     showContextMenuHeatmapRow(e, patient, timepoint, xposition) {
         this.setState({
             contextX: e.pageX,
             contextY: e.pageY,
             showContextMenuHeatmapRow: true,
-            patient:patient,
+            patient: patient,
             timepoint: timepoint,
             xposition: xposition
         });
@@ -133,20 +133,22 @@ const Content = observer(class Content extends React.Component {
     hideSidebar() {
         this.setState({sidebarSize: 0, mainSize: 12, displaySidebar: "none", displayShowButton: ""})
     }
-    getBinner(){
-        if(this.state.modalIsOpen){
-             return(<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
-                                  variable={this.state.clickedVariable}
-                                  timepointIndex={this.state.clickedTimepoint} type={this.state.type}
-                                  followUpFunction={this.state.followUpFunction}
-                                  closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
-                                  visMap={this.props.rootStore.visStore}
-                />);
+
+    getBinner() {
+        if (this.state.modalIsOpen) {
+            return (<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
+                                      variable={this.state.clickedVariable}
+                                      timepointIndex={this.state.clickedTimepoint} type={this.state.type}
+                                      followUpFunction={this.state.followUpFunction}
+                                      closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
+                                      visMap={this.props.rootStore.visStore}
+            />);
         }
-        else{
+        else {
             return null;
         }
     }
+
     /*getContextMenu(){
         if(this.state.showContextMenu){
             var contextMenuStyle = {
@@ -186,8 +188,8 @@ const Content = observer(class Content extends React.Component {
     }*/
 
 
-    getContextMenuHeatmapRow(){
-        if(this.state.showContextMenuHeatmapRow){
+    getContextMenuHeatmapRow() {
+        if (this.state.showContextMenuHeatmapRow) {
             /*var contextMenuStyle = {
                 display: 'block',
                 position: 'absolute', 
@@ -199,19 +201,18 @@ const Content = observer(class Content extends React.Component {
             //console.log(this.state.patient + ", " + this.state.timepoint + ", " + this.state.y);
 
             return (<ContextMenuHeatmapRow showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
-                contextX={this.state.contextX}
-                contextY={this.state.contextY}
-                patient={this.state.patient}
-                timepoint={this.state.timepoint} 
-                xposition={this.state.xposition}
-                {...this.props}
+                                           contextX={this.state.contextX}
+                                           contextY={this.state.contextY}
+                                           patient={this.state.patient}
+                                           timepoint={this.state.timepoint}
+                                           xposition={this.state.xposition}
+                                           {...this.props}
 
             />);
-        } else{
+        } else {
             return null;
         }
     }
-    
 
 
     render() {
@@ -220,7 +221,7 @@ const Content = observer(class Content extends React.Component {
                 {/*<Button style={{display:this.state.displayShowButton}} onClick={this.showSidebar}>Show Sidebar</Button>*/}
                 <Grid fluid={true} style={{padding: 0}}>
                     <Col sm={this.state.sidebarSize} md={this.state.sidebarSize}
-                         style={{display: this.state.displaySidebar, backgroundColor: "lightgray", paddingTop: "10px"}}>
+                         style={{display: this.state.displaySidebar, paddingTop: "10px"}}>
                         {/*
                         <Row>
                         <Button style={{float:"right"}} onClick={this.hideSidebar}>X</Button>
@@ -233,6 +234,7 @@ const Content = observer(class Content extends React.Component {
                                       minTP={this.props.rootStore.minTP}
                                       maxTP={this.props.rootStore.maxTP}/>
                         <SampleVariableSelector
+                            openBinningModal={this.openModal}
                             clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                             mutationCount="Mutation count"
                             currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
@@ -240,6 +242,7 @@ const Content = observer(class Content extends React.Component {
                             visMap={this.props.rootStore.visStore}
                         />
                         <BetweenSampleVariableSelector
+                            openBinningModal={this.openModal}
                             eventCategories={this.props.rootStore.eventCategories}
                             eventAttributes={this.props.rootStore.eventAttributes}
                             currentVariables={this.props.rootStore.timepointStore.currentVariables.between}

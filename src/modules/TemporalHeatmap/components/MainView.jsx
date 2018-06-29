@@ -36,11 +36,8 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     handleGlobalTimeClick() {
-        if(!this.props.store.rootStore.globalTime) {
-            this.props.store.applyPatientOrderToAll(0);
-            this.props.store.ungroupEverything();
-        }
         this.props.store.rootStore.globalTime = !this.props.store.rootStore.globalTime;
+        this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.store.rootStore.globalTime);
     }
 
 
@@ -93,38 +90,9 @@ const MainView = observer(class MainView extends React.Component {
      * @param rectWidth
      */
     setVisualParameters(rectWidth) {
-        this.props.visMap.setGap(1);
-        this.props.visMap.setPartitionGap(10);
-        this.props.visMap.setTransitionSpace(100);
         this.props.visMap.setSampleRectWidth(rectWidth);
-        this.props.visMap.setBetweenRectWidth(rectWidth / 2);
-        this.props.visMap.setPrimaryHeight(30);
-        this.props.visMap.setSecondaryHeight(30 / 2);
     }
 
-    /**
-     * computes the positions for sample and between timepoints
-     * @param sampleTPHeight
-     * @param betweenTPHeight
-     * @returns {{sample: Array, between: Array}}
-     */
-    computeTimepointPositions(sampleTPHeight, betweenTPHeight) {
-        let timepointPositions = {"timepoint": [], "connection": []};
-        let prevY = 0;
-        for (let i = 0; i < this.props.timepoints.length; i++) {
-            let tpHeight;
-            if (this.props.timepoints[i].type === "between") {
-                tpHeight = betweenTPHeight;
-            }
-            else {
-                tpHeight = sampleTPHeight;
-            }
-            timepointPositions.timepoint.push(prevY);
-            timepointPositions.connection.push(prevY + tpHeight);
-            prevY += this.props.visMap.transitionSpace + tpHeight;
-        }
-        return timepointPositions;
-    }
 
     getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, svgWidth, heatmapWidth, timepointPositions) {
         return (<Row>
@@ -156,15 +124,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     getGlobalView(timepointPositions, svgHeight, svgWidth, heatmapWidth) {
-        let sampH = this.props.visMap.getTimepointHeight(1);
-        /*if(this.props.store.currentVariables.between.length===0){ //since there's no transition variables, the default window height is small, so making it larger
-            svgHeight =this.props.store.timepoints.length * (sampH + this.props.visMap.transitionSpace) * 1.5;
-        }
-        else{
-            svgHeight = Math.floor((this.props.store.timepoints.length/2)) * (sampH + this.props.visMap.transitionSpace) * 1.5;
-        }*/
-
-        svgHeight = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
 
         let a = this.props.store.rootStore.eventDetails;
@@ -182,14 +141,14 @@ const MainView = observer(class MainView extends React.Component {
 
         let maxTime = Math.max(max1, max2);
         return (<Row>
-            
+
             <Col md={1}>
-                <GlobalTimeAxis width={150} height={svgHeight - 20} maxTimeInDays={maxTime}/>
+                <GlobalTimeAxis width={150} height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
 
 
             <Col xs={2} style={{padding: 0}}>
-                <GlobalRowOperators {...this.props} height={svgHeight - 20} width={200}
+                <GlobalRowOperators {...this.props} height={svgHeight} width={200}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
@@ -215,29 +174,16 @@ const MainView = observer(class MainView extends React.Component {
             rectWidth = this.props.width / this.props.store.numberOfPatients - 1;
         }
         this.setVisualParameters(rectWidth);
-        const sampleTPHeight = this.props.visMap.getTimepointHeight(this.props.currentVariables.sample.length);
-        const betweenTPHeight = this.props.visMap.getTimepointHeight(this.props.currentVariables.between.length);
-        const timepointPositions = this.computeTimepointPositions(sampleTPHeight, betweenTPHeight);
+
 
         const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
         const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
-        let height = 0;
-        if (sampleTPHeight === 0) {
-            height = betweenTPHeight;
-        }
-        else if (betweenTPHeight === 0) {
-            height = sampleTPHeight;
-        }
-        else {
-            height = (sampleTPHeight + betweenTPHeight) / 2
-        }
-        let svgHeight = this.props.store.timepoints.length * (height + this.props.visMap.transitionSpace);
         let view;
         if (!this.props.store.rootStore.globalTime) {
-            view = this.getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, svgWidth, heatmapWidth, timepointPositions);
+            view = this.getBlockView(this.props.visMap.sampleTPHeight, this.props.visMap.betweenTPHeight, this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
         }
         else {
-            view = this.getGlobalView(timepointPositions, svgHeight, svgWidth, heatmapWidth);
+            view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
@@ -272,6 +218,7 @@ const MainView = observer(class MainView extends React.Component {
     }
 });
 MainView.defaultProps = {
-    width: 700
+    width: 700,
+    height: 700
 };
 export default MainView;

@@ -65,16 +65,17 @@ const Band = observer(class Band extends React.Component {
         const target = Band.getTooltipPartitionName(this.props.secondPrimary, this.props.secondPartition);
         const selectedWidth = this.getSelectedWidth();
         const y0 = this.props.visMap.gap + this.props.rectHeight,
-            y1 = this.props.visMap.transitionSpace - this.props.visMap.gap * 2 - this.props.rectHeight;
+            y1 = this.props.visMap.transitionSpaces[this.props.index] - this.props.visMap.gap * 2 - this.props.rectHeight;
         let selected = null;
         if (selectedWidth !== 0) {
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
-                             stroke={"#b7b7b7"} fill={"#b7b7b7"} opacity={0.5} title=""/>
+                             stroke={"#cccccc"} fill={"#b7b7b7"} opacity={0.5}/>
         }
-        let notSelected = <path d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
-                                stroke={"#dddddd"} fill={"#dddddd"} opacity={0.5}/>;
+        let notSelected = <path
+            d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
+            stroke={"#cccccc"} fill={"#dddddd"} opacity={0.5}/>;
         return (
-            <g onMouseEnter={(e) => this.props.showTooltip(e, source+ " -> "+ target+": "+ this.props.count)}
+            <g onMouseEnter={(e) => this.props.showTooltip(e, source + " -> " + target + ": " + this.props.count)}
                onMouseLeave={this.props.hideTooltip}>
                 {selected}
                 {notSelected}

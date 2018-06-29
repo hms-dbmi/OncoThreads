@@ -10,7 +10,7 @@ class SingleTimepoint {
         this.patients = patients;
         this.globalIndex = -1;
         this.localIndex = localIndex;
-        this.previousOrder=null;
+        this.previousOrder = null;
         extendObservable(this, {
             heatmap: [],
             grouped: [],
@@ -20,49 +20,6 @@ class SingleTimepoint {
             primaryVariableId: variable,
         });
     }
-
-    /*
-    updateHeatmap(newStructure, oldStructure) {
-        this.grouped = [];
-        const _self = this;
-        let newHeatmap = [];
-        let currentPatientIndices = {}; //index of current patients
-        let currentPatientPostition = {};
-        newStructure.forEach(function (d, i) {
-            newHeatmap.push = [];
-            this.heatmap.forEach(function (g, j) {
-                newHeatmap[i].push({variable: g.variable, data: []});
-            });
-            d.forEach(function (g) {
-                let position = 0;
-                if (!(g in currentPatientIndices)) {
-                    currentPatientIndices[g] = 0;
-                    currentPatientPostition[g] = 0;
-                }
-                currentPatientPostition[g] = SingleTimepoint.getPatientPosition(g, currentPatientIndices[g], currentPatientPostition[g], oldStructure);
-                _self.heatmap.forEach(function (f,l) {
-                    newHeatmap[l].data.push(f.data[currentPatientPostition]);
-                });
-                currentPatientIndices[g] += 1;
-            });
-
-        })
-    }
-
-    static getPatientPosition(patient, internalIndex, currentIndex, oldStructure) {
-        let counter = 0;
-        let returnIndex = -1;
-        for (let i = currentIndex; i < oldStructure.length; i++) {
-            if (oldStructure[i].includes(patient)) {
-                if (counter === internalIndex) {
-                    returnIndex = i;
-                    break;
-                }
-                counter++;
-            }
-        }
-        return (returnIndex);
-    }*/
 
     setIsGrouped(boolean) {
         this.isGrouped = boolean;
@@ -98,12 +55,14 @@ class SingleTimepoint {
             this.setPrimaryVariable(variableId);
             this.sortHeatmap(variableId);
         }
+        //this.rootStore.visStore.modifyTransitionSpace(100,this.globalIndex-1);
     }
 
     group(variable) {
         this.setPrimaryVariable(variable);
         this.groupTimepoint(variable);
         this.sortGroup(1);
+        //this.rootStore.visStore.modifyTransitionSpace(100,this.globalIndex-1);
     }
 
     promote(variableId) {
@@ -121,6 +80,7 @@ class SingleTimepoint {
     unGroup(variable) {
         this.setPrimaryVariable(variable);
         this.setIsGrouped(false);
+        //this.rootStore.visStore.modifyTransitionSpace(100,this.globalIndex-1);
     }
 
     /**
@@ -224,13 +184,20 @@ class SingleTimepoint {
                     if (a.key > b.key) {
                         return order
                     }
-                    else return 0;
+                    else {
+                        if (a.key === undefined && b.key !== undefined) {
+                            return 1;
+                        }
+                        if (a.key !== undefined && b.key === undefined) {
+                            return -1;
+                        }
+                        else return 0;
+                    }
                 })
             })
         });
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
-
 
 
     /**
@@ -269,49 +236,60 @@ class SingleTimepoint {
         }
 
         this.heatmap[variableIndex] = rowToSort;
+        //first sort after primary variable values
         this.heatmapOrder = helper.sort(function (a, b) {
             if (a.value < b.value)
                 return -sortOrder;
             if (a.value > b.value)
                 return sortOrder;
+            //undefined values accumulate on the right
             if (a.value === undefined && b.value !== undefined) {
                 return 1;
             }
             if (a.value !== undefined && b.value === undefined) {
                 return -1;
             }
+            //if sorting is ambiguous do additional sorting
             else {
+                //if the timepoint is sorted for the first time (no previous order)
                 if (_self.previousOrder === null) {
+                    //selected patients to the left
+                    /*
                     if (_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && !_self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
                         return -1;
                     }
                     if (!_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && _self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
                         return 1;
                     }
+                    //if still ambiguous sort after patient id
                     else {
-                        if (a.patient < b.patient) {
-                            return -1;
-                        }
-                        if (a.patient > b.patient) {
-                            return 1;
-                        }
-                        else return 0;
-                    }
-                }
-                else{
-                    if(_self.previousOrder.indexOf(a.patient)<_self.previousOrder.indexOf(b.patient)){
+                    */
+                    if (a.patient < b.patient) {
                         return -1;
                     }
-                    if(_self.previousOrder.indexOf(a.patient)>_self.previousOrder.indexOf(b.patient)){
+                    if (a.patient > b.patient) {
                         return 1;
                     }
-                    else{return 0}
+                    else return 0;
+                    //}
+                }
+                //if there is a previous order use it for the sorting
+                else {
+                    if (_self.previousOrder.indexOf(a.patient) < _self.previousOrder.indexOf(b.patient)) {
+                        return -1;
+                    }
+                    if (_self.previousOrder.indexOf(a.patient) > _self.previousOrder.indexOf(b.patient)) {
+                        return 1;
+                    }
+                    else {
+                        return 0
+                    }
                 }
             }
         }).map(function (d) {
             return d.patient;
         });
-        this.previousOrder=this.heatmapOrder.slice();
+        this.previousOrder = this.heatmapOrder.slice();
     }
 
 
@@ -328,9 +306,12 @@ class SingleTimepoint {
     adaptPrimaryVariable(variableId) {
         let newVariableIndex = 0;
         if (this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
-                return d.id
-            }).indexOf(variableId) === 0) {
+            return d.id
+        }).indexOf(variableId) === 0) {
             newVariableIndex = 1
+        }
+        if (this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].datatype === "NUMBER") {
+            this.unGroup(variableId)
         }
         this.primaryVariableId = this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].id;
     }

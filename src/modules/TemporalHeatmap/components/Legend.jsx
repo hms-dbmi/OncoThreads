@@ -1,5 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import uuidv4 from 'uuid/v4';
+
 /*
 implements the legend on the right side of the main view
  */
@@ -21,8 +23,8 @@ const Legend = observer(class Legend extends React.Component {
         legendEntry.push(<rect key={"rect" + value} opacity={opacity} width={rectWidth} height={fontSize + 2}
                                x={currX} y={lineheight / 2 - fontSize / 2}
                                fill={rectColor}/>);
-        legendEntry.push(<text key={"text" + value} fill={textColor} style={{fontSize:fontSize}} x={currX + 2}
-                               y={lineheight/2+fontSize/2}>{value}</text>);
+        legendEntry.push(<text key={"text" + value} fill={textColor} style={{fontSize: fontSize}} x={currX + 2}
+                               y={lineheight / 2 + fontSize / 2}>{value}</text>);
         return legendEntry;
     }
 
@@ -32,15 +34,14 @@ const Legend = observer(class Legend extends React.Component {
      * @param fontSize
      * @returns {number}
      */
-    static getTextWidth(text,fontSize) {
-        const minWidth = 30;
+    static getTextWidth(min, text, fontSize) {
         const context = document.createElement("canvas").getContext("2d");
-        context.font=fontSize+"px Arial";
+        context.font = fontSize + "px Arial";
         const width = context.measureText(text).width;
-        if (width > minWidth) {
+        if (width > min) {
             return width;
         }
-        else return minWidth;
+        else return min;
     }
 
     /**
@@ -52,26 +53,40 @@ const Legend = observer(class Legend extends React.Component {
      * @returns {Array}
      */
     static getContinuousLegend(opacity, fontSize, lineheight, color) {
-        let legendEntries = [];
         const min = color.domain()[0];
-        const max = color.domain()[1];
-        let value = min;
-        let textValue;
-        let step = (parseFloat(max) - parseFloat(min)) / 2;
-        let currX = 0;
-        for (let i = 0; i < 3; i++) {
-            if (i < 1) {
-                textValue = max;
-            }
-            else {
-                textValue = min
-            }
-            const rectWidth = Legend.getTextWidth(value,fontSize) + 4;
-            legendEntries = legendEntries.concat(this.getLegendEntry(value, opacity, rectWidth, fontSize, currX, lineheight, color(value), color(textValue)));
-            value += step;
-            currX += rectWidth + 2
+        const max = color.domain()[color.domain().length - 1];
+        let intermediateStop = null;
+        let text = [];
+        if (color.domain().length === 3) {
+            intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
+            text.push(<text key={"text" + min} fill="white" style={{fontSize: fontSize}} x={0}
+                            y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
+                <text key={"text" + 0} fill="black" style={{fontSize: fontSize}}
+                      x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
+                      y={lineheight / 2 + fontSize / 2}>{0}</text>,
+                <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
+                      x={100 - Legend.getTextWidth(0, Math.round(max), fontSize)}
+                      y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
         }
-        return legendEntries;
+        else {
+            text.push(<text key={"text" + min} fill="black" style={{fontSize: fontSize}} x={0}
+                            y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
+                <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
+                      x={100 - Legend.getTextWidth(0, Math.round(max), fontSize)}
+                      y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
+        }
+        let randomId = uuidv4();
+        return <g>
+            <defs>
+                <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style={{stopColor: color(min)}}/>
+                    {intermediateStop}
+                    <stop offset="100%" style={{stopColor: color(max)}}/>
+                </linearGradient>
+            </defs>
+            <rect x="0" y="0" width={100} height={lineheight} fill={"url(#" + randomId + ")"}/>
+            {text}
+        </g>;
     }
 
     /**
@@ -89,7 +104,7 @@ const Legend = observer(class Legend extends React.Component {
         let legendEntries = [];
         row.data.forEach(function (f) {
             if (!currKeys.includes(f.value) && f.value !== undefined) {
-                const rectWidth = Legend.getTextWidth(f.value,fontSize) + 4;
+                const rectWidth = Legend.getTextWidth(30, f.value, fontSize) + 4;
                 currKeys.push(f.value);
                 legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(f.value), "black"));
                 currX += (rectWidth + 2);
@@ -97,24 +112,26 @@ const Legend = observer(class Legend extends React.Component {
         });
         return (legendEntries);
     }
+
     static getBinnedLegend(opacity, fontSize, lineheight, color) {
         let legendEntries = [];
-        const _self=this;
+        const _self = this;
         let currX = 0;
-        color.domain().forEach(function (d,i) {
+        color.domain().forEach(function (d, i) {
             let textValue;
-            if(i<color.domain().length/2){
-                textValue= color.domain()[color.domain().length-1]
+            if (i < color.domain().length / 2) {
+                textValue = color.domain()[color.domain().length - 1]
             }
-            else{
-                textValue=color.domain()[0]
+            else {
+                textValue = color.domain()[0]
             }
-                const rectWidth = Legend.getTextWidth(d,fontSize) + 4;
-                legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), color(textValue)));
-                currX += (rectWidth + 2);
+            const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
+            legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), color(textValue)));
+            currX += (rectWidth + 2);
         });
         return legendEntries;
     }
+
     /**
      * gets a legend for a binary variable
      * @param row
@@ -126,14 +143,14 @@ const Legend = observer(class Legend extends React.Component {
      */
     static getBinaryLegend(row, opacity, fontSize, lineheight, color) {
         let legendEntries = [];
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, Legend.getTextWidth("true",fontSize) + 4, fontSize, 0, lineheight, color(true), "black"));
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth("false",fontSize) + 4, fontSize, Legend.getTextWidth("true") + 6, lineheight, color(false), "black"));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, Legend.getTextWidth(30, "true", fontSize) + 4, fontSize, 0, lineheight, color(true), "black"));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth(30, "false", fontSize) + 4, fontSize, Legend.getTextWidth(30, "true", fontSize) + 6, lineheight, color(false), "black"));
         return (legendEntries);
     }
 
-      getHighlightRect(height,width){
-            return <rect height={height} width={width} fill="lightgray"/>
-        }
+    getHighlightRect(height, width) {
+        return <rect height={height} width={width} fill="lightgray"/>
+    }
 
     /**
      * gets the legend
@@ -158,10 +175,10 @@ const Legend = observer(class Legend extends React.Component {
                     lineheight = _self.props.visMap.secondaryHeight;
                     opacity = 0.5
                 }
-                let color = _self.props.visMap.getColorScale(d.variable, currentVariables[i].datatype);
+                let color = currentVariables[i].colorScale;
                 let legendEntries = [];
-                if(lineheight<fontSize){
-                    fontSize=Math.round(lineheight);
+                if (lineheight < fontSize) {
+                    fontSize = Math.round(lineheight);
                 }
                 if (currentVariables[i].datatype === "STRING") {
                     legendEntries = _self.getCategoricalLegend(d, opacity, fontSize, lineheight, color);
@@ -169,17 +186,17 @@ const Legend = observer(class Legend extends React.Component {
                 else if (currentVariables[i].datatype === "binary") {
                     legendEntries = Legend.getBinaryLegend(d, opacity, fontSize, lineheight, color);
                 }
-                else if(currentVariables[i].datatype === "BINNED"){
-                    legendEntries=Legend.getBinnedLegend(opacity,fontSize,lineheight,color);
+                else if (currentVariables[i].datatype === "BINNED") {
+                    legendEntries = Legend.getBinnedLegend(opacity, fontSize, lineheight, color);
                 }
                 else {
                     legendEntries = Legend.getContinuousLegend(opacity, fontSize, lineheight, color);
                 }
                 const transform = "translate(0," + currPos + ")";
                 currPos += lineheight + _self.props.visMap.gap;
-                let highlightRect=null;
-                if(d.variable===_self.props.highlightedVariable){
-                    highlightRect=_self.getHighlightRect(lineheight,400)
+                let highlightRect = null;
+                if (d.variable === _self.props.highlightedVariable) {
+                    highlightRect = _self.getHighlightRect(lineheight, 400)
                 }
                 legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
             });
@@ -198,7 +215,7 @@ const Legend = observer(class Legend extends React.Component {
 
         });
         let transform = "translate(0," + 20 + ")";
-        let viewBox="0, 0, "+this.props.width+", "+this.props.height;
+        let viewBox = "0, 0, " + this.props.width + ", " + this.props.height;
         return (
             <div className="scrollableX">
                 <svg width={this.props.width} height={this.props.height} viewBox={viewBox}>
