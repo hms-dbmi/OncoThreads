@@ -87,7 +87,6 @@ class UndoRedoStore {
         const _self = this;
         observable = [];
         saved.forEach(function (d) {
-            console.log(d.patients);
             observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex, d.heatmapOrder))
         });
         saved.forEach(function (d, i) {
@@ -169,7 +168,6 @@ class UndoRedoStore {
      * saves the history to the stateStack. For this the datastructures have to be serialized (put into a simple, non-observable object)
      */
     saveHistory() {
-        console.log(this.rootStore.sampleTimepointStore.timepoints);
         const serializeState = createTransformer(store => ({
             sampleTimepoints: store.rootStore.sampleTimepointStore.timepoints.map(serializeTimepoints),
             betweenTimepoints: store.rootStore.betweenTimepointStore.timepoints.map(serializeTimepoints),

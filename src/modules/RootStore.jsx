@@ -332,11 +332,7 @@ class RootStore {
         this.sampleTimepointStore.update();
         this.betweenTimepointStore.update();
         this.timepointStore.initialize();
-        this.betweenTimepointStore.timepoints.forEach((timepoint, i) => {
-            timepoint.heatmap.forEach((ht, j) => {
-                ht.data = _self.sortByPatientOrder(ht.data);
-            })
-        });
+        this.timepointStore.applyPatientOrderToAll(timepoint);
         this.actualTimeLine = this.getTimeLine(this.sampleTimelineMap, this.timepointStructure, this.sampleStruct, this.maxTP);
     }
 

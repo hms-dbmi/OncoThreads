@@ -34,7 +34,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         let binNames = this.state.binNames.slice();
         if (number > this.state.binNames.length) {
             for(let i=this.state.binNames.length;i<number;i++) {
-                binNames.push("Bin " + i);
+                binNames.push("Bin " + (i+1));
             }
         }
         else {

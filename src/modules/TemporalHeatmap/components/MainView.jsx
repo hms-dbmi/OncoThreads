@@ -187,8 +187,6 @@ const MainView = observer(class MainView extends React.Component {
         else {
             view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
         }
-        console.log(this.props.visMap.svgHeight);
-        console.log(this.props.visMap.timepointPositions);
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
                 <Row>

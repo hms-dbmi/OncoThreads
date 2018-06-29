@@ -36,9 +36,9 @@ const BinSelector = observer(class BinSelector extends React.Component {
             currX += stepWidth;
             x.push(Math.round(currX))
         }
+        this.setState({x: x});
         this.props.handleNumberOfBinsChange(e.target.value);
         this.props.handleBinChange(this.getBins(x));
-        this.setState({x: x});
     }
 
     handleMouseDown(e, index) {

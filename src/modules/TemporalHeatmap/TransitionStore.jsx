@@ -1,4 +1,5 @@
 import {extendObservable} from "mobx";
+
 /*
 stores information about transitions
  */
@@ -6,10 +7,27 @@ class TransitionStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.numberOfTransitions = 0;
-        this.timeGapStructure=[];
+        this.timeGapStructure = [];
 
         extendObservable(this, {
             transitionData: [],
+            get timeGapStructure() {
+                const _self=this;
+                let currentPatientIndices = {};
+                let timeGapStructure = [];
+                this.rootStore.transitionStructure.forEach(function (d, i) {
+                    let variableData = {};
+                    d.forEach(function (f) {
+                        if (!(f in currentPatientIndices)) {
+                            currentPatientIndices[f] = 0
+                        }
+                        variableData[f] = _self.rootStore.timeGapMapping[f][currentPatientIndices[f]];
+                        currentPatientIndices[f] += 1;
+                    });
+                    timeGapStructure.push(variableData);
+                });
+                return timeGapStructure;
+            }
         })
     }
 
@@ -24,18 +42,18 @@ class TransitionStore {
     initializeTransitions(numberOfTransitions) {
         this.transitionData = [];
         this.setNumberOfTransitions(numberOfTransitions);
-        this.timeGapStructure = this.rootStore.timeGapMapping;
         for (let i = 0; i < this.numberOfTransitions; i++) {
             this.transitionData.push({
                 type: "",
                 data: null,
-                timeGapStructure: this.timeGapStructure[i+1]
+                timeGapStructure: null
             });
-            if(i<this.numberOfTransitions){
+            if (i < this.numberOfTransitions) {
                 this.adaptTransitions(i);
             }
         }
     }
+
     /**
      * adapts the transitions for a timepoint (usually used after a timepoint is grouped, ungrouped or sorted)
      * @param timepoint
@@ -91,12 +109,12 @@ class TransitionStore {
         const _self = this;
         this.rootStore.timepointStore.timepoints[firstTP].grouped.forEach(function (d) {
             _self.rootStore.timepointStore.timepoints[secondTP].grouped.forEach(function (f) {
-                const intersection=_self.computeIntersection(firstTP, secondTP, d.partition, f.partition);
+                const intersection = _self.computeIntersection(firstTP, secondTP, d.partition, f.partition);
                 transitions.push({
                     from: d.partition,
                     to: f.partition,
                     value: intersection.length,
-                    patients:intersection
+                    patients: intersection
                 });
 
             })
@@ -188,7 +206,8 @@ class TransitionStore {
         this.transitionData[firstTP].data = {
             "from": this.rootStore.timepointStore.timepoints[firstTP].patients,
             "to": this.rootStore.timepointStore.timepoints[secondTP].patients
-        }
+        };
+        this.transitionData[firstTP].timeGapStructure = this.timeGapStructure[secondTP];
     }
 
     /**
