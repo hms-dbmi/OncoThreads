@@ -289,7 +289,7 @@ class TimepointStore {
             d.heatmapOrder = sorting;
         });
         this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-        this.rootStore.visStore.resetTransitionSpace();
+        //this.rootStore.visStore.resetTransitionSpace();
     }
 
     /**

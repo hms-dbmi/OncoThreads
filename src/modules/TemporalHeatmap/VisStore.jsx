@@ -18,12 +18,13 @@ class VisStore {
         this.transitionSpace = 100;
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
+        this.transitionSpaces = [];
+
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
             timepointY: [],
             transY: [],
             svgWidth: 0,
-            transitionSpaces: [],
             get betweenRectWidth() {
                 return this.sampleRectWidth / 2;
             },
@@ -105,10 +106,6 @@ class VisStore {
      * @returns {{sample: Array, between: Array}}
      */
     computeTimepointPositions() {
-        let unChangedSpaces = false;
-        if (this.transitionSpaces.length === 0) {
-            unChangedSpaces = true;
-        }
         let timepointPositions = {"timepoint": [], "connection": []};
         let prevY = 0;
         for (let i = 0; i < this.rootStore.timepointStore.timepoints.length; i++) {
@@ -121,7 +118,7 @@ class VisStore {
             }
             timepointPositions.timepoint.push(prevY);
             timepointPositions.connection.push(prevY + tpHeight);
-            if (unChangedSpaces) {
+            if (this.transitionSpaces.length <= i) {
                 prevY += this.transitionSpace + tpHeight;
                 this.transitionSpaces.push(this.transitionSpace);
             }

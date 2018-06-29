@@ -78,7 +78,6 @@ class RootStore {
                 return timeLine;
             },
             get transitionStructure() {
-                const _self = this;
                 let transitionStructure = [];
                 transitionStructure.push(this.timepointStructure[0].map(d => d.patient));
                 for (let i = 1; i < this.timepointStructure.length; i++) {
@@ -342,9 +341,11 @@ class RootStore {
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
         this.maxTP = this.timepointStructure.length;
         this.visStore.resetTransitionSpace();
-        this.sampleTimepointStore.update();
+        let heatmapOrder=this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
+        this.sampleTimepointStore.update(heatmapOrder);
         this.betweenTimepointStore.update();
         this.timepointStore.initialize();
+        this.timepointStore.applyPatientOrderToAll(0);
         //this.timepointStore.applyPatientOrderToAll(timepoint);
     }
 
