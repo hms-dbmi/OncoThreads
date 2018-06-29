@@ -3,7 +3,7 @@ install:
 - nvm ls-remote
 - nvm install "$(jq -r '.engines.node' package.json)"
 script:
-- npm install --only=dev
+- npm install --dev
 #- ./tests.sh
 - npm run build
 deploy:
