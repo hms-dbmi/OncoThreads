@@ -342,6 +342,7 @@ class RootStore {
         this.maxTP = this.timepointStructure.length;
         this.visStore.resetTransitionSpace();
         let heatmapOrder=this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
+        this.eventDetails=[];
         this.sampleTimepointStore.update(heatmapOrder);
         this.betweenTimepointStore.update();
         this.timepointStore.initialize();

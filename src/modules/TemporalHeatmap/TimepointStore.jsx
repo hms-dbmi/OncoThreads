@@ -46,11 +46,15 @@ class TimepointStore {
     }
 
     addPatientToSelection(patient) {
-        this.selectedPatients.push(patient);
+        let selected=this.selectedPatients.slice();
+        selected.push(patient);
+        this.selectedPatients=selected;
     }
 
     removePatientFromSelection(patient) {
-        this.selectedPatients.splice(this.selectedPatients.indexOf(patient), 1);
+        let selected=this.selectedPatients.slice();
+        selected.splice(this.selectedPatients.indexOf(patient), 1);
+        this.selectedPatients=selected;
     }
 
     /**

@@ -10,9 +10,12 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
         this.handleMouseEnter = this.handleMouseEnter.bind(this);
         this.handleMouseEnter = this.handleMouseEnter.bind(this);
+        this.handleClick=this.handleClick.bind(this);
     }
 
-
+    handleClick(patient){
+        this.props.selectPatient(patient)
+    }
     getRow() {
         let rects = [];
         const _self = this;
@@ -44,12 +47,9 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 stroke = "lightgray";
                 fill = "white";
             }
-            /*
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";
-
             }
-            */
 
 
             //while (ind < maxNum) {
@@ -101,6 +101,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                                  onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
                                                  }
                                                  onMouseLeave={_self.handleMouseLeave}
+                                                 onDoubleClick={() => _self.handleDoubleClick(d.patient)}
+                                                 onClick={()=>_self.handleClick(d.patient)}
                                         //onMouseDown={() => _self.handleMouseDown(d.patient)}
                                         //onMouseUp={_self.handleMouseUp}
                                                  key={d.patient + i + j}
@@ -134,6 +136,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                          }
                                          onMouseLeave={_self.handleMouseLeave}
                                          onDoubleClick={() => _self.handleDoubleClick(d.patient)}
+                                         onClick={()=>_self.handleClick(d.patient)}
                                          key={d.patient + i + j}
                                          height={globalRectHeight}//{_self.props.height}
                                          width={globalRectWidth}
