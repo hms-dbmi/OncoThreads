@@ -12,7 +12,7 @@ class TransitionStore {
         extendObservable(this, {
             transitionData: [],
             get timeGapStructure() {
-                const _self=this;
+                const _self = this;
                 let currentPatientIndices = {};
                 let timeGapStructure = [];
                 this.rootStore.transitionStructure.forEach(function (d, i) {

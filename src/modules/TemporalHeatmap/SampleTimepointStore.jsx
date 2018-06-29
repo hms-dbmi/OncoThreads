@@ -34,7 +34,7 @@ class SampleTimepointStore {
         }
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
-            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.patientsPerTimepoint[i], "sample", i, this.rootStore.patientOrderPerTimepoint));
+            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.timepointStructure[i].map(d => d.patient), "sample", i, this.rootStore.patientOrderPerTimepoint));
         }
         this.rootStore.timepointStore.initialize();
         this.addHeatmapVariable(variableId);
@@ -44,7 +44,7 @@ class SampleTimepointStore {
         this.timepoints = [];
         const _self = this;
         for (let j = 0; j < _self.rootStore.timepointStructure.length; j++) {
-            _self.timepoints.push(new SingleTimepoint(_self.rootStore, this.variableStore.currentVariables[0].id, _self.rootStore.patientsPerTimepoint[j], "sample", j, _self.rootStore.patientOrderPerTimepoint));
+            _self.timepoints.push(new SingleTimepoint(_self.rootStore, this.variableStore.currentVariables[0].id, _self.rootStore.timepointStructure[j].map(d => d.patient), "sample", j, _self.rootStore.patientOrderPerTimepoint));
         }
         _self.rootStore.timepointStore.initialize();
         this.variableStore.currentVariables.forEach(function (d, i) {

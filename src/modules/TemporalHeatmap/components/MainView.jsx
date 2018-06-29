@@ -94,7 +94,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 
 
-
     getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, svgWidth, heatmapWidth, timepointPositions) {
         return (<Row>
             <Col md={1} style={{padding: 0}}>
@@ -125,7 +124,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     getGlobalView(timepointPositions, svgHeight, svgWidth, heatmapWidth) {
-
 
 
         let a = this.props.store.rootStore.eventDetails;
@@ -221,6 +219,6 @@ const MainView = observer(class MainView extends React.Component {
 });
 MainView.defaultProps = {
     width: 700,
-    height:700
+    height: 700
 };
 export default MainView;

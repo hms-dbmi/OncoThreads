@@ -51,7 +51,7 @@ const Plot = observer(class Plot extends React.Component {
         const max = this.props.store.rootStore.actualTimeLine
             .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
             .reduce((next, max) => next > max ? next : max, 0);
-        const timeScale = Plot.createTimeScale(this.props.height-this.props.visMap.sampleRectWidth*2, 0, max);
+        const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.sampleRectWidth * 2, 0, max);
 
 
         return (

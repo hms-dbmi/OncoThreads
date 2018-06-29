@@ -1,6 +1,6 @@
 import React from "react";
 import {observer} from "mobx-react";
-import {Button,ButtonGroup,Panel} from 'react-bootstrap';
+import {Button, ButtonGroup, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 /*
@@ -11,31 +11,32 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         super();
         this.state = {
             buttonClicked: "",
-            clinicalOpen:true,
-            clinicalIcon:"caret-down",
-            mutationIcon:"caret-right"
+            clinicalOpen: true,
+            clinicalIcon: "caret-down",
+            mutationIcon: "caret-right"
         };
         this.handleVariableClick = this.handleVariableClick.bind(this);
-        this.toggleClinicalIcon=this.toggleClinicalIcon.bind(this);
-        this.toggleMutationIcon=this.toggleMutationIcon.bind(this);
-        this.bin=this.bin.bind(this);
+        this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
+        this.toggleMutationIcon = this.toggleMutationIcon.bind(this);
+        this.bin = this.bin.bind(this);
     }
 
-    bin(id){
-       this.props.openBinningModal(id, "sample", null, null)
+    bin(id) {
+        this.props.openBinningModal(id, "sample", null, null)
     }
+
     /**
      * adds a variable to the view
      * @param id
      * @param variable
      * @param type
      */
-    addVariable(id,variable, type) {
+    addVariable(id, variable, type) {
         if (this.props.currentVariables.length === 0) {
             this.props.store.initialize(id, variable, type);
         }
         else {
-            this.props.store.addVariable(id,variable, type);
+            this.props.store.addVariable(id, variable, type);
         }
     }
 
@@ -48,9 +49,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      */
     handleVariableClick(id, variable, type) {
         if (!(this.props.currentVariables.map(function (d) {
-                return d.id
-            }).includes(id))) {
-            this.addVariable(id,variable, type);
+            return d.id
+        }).includes(id))) {
+            this.addVariable(id, variable, type);
         }
     }
 
@@ -59,8 +60,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param id
      * @param variable
      */
-    handleContinousClick(id,variable) {
-        this.handleVariableClick(id,variable, "NUMBER")
+    handleContinousClick(id, variable) {
+        this.handleVariableClick(id, variable, "NUMBER")
     }
 
     /**
@@ -71,11 +72,12 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let buttons = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
-            let icon=null;
-            if(d.datatype==="NUMBER"){
-                icon=<FontAwesome onClick={()=>_self.bin(d.id)} name="cog"/>
+            let icon = null;
+            if (d.datatype === "NUMBER") {
+                icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
-            buttons.push(<Button style={{textAlign:"left"}} bsSize="xsmall" key={d.variable} onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype)}>{icon} {d.variable}</Button>)
+            buttons.push(<Button style={{textAlign: "left"}} bsSize="xsmall" key={d.variable}
+                                 onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype)}>{icon} {d.variable}</Button>)
         });
         return buttons;
     }
@@ -87,43 +89,50 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     createGenomicAttributesList() {
         let buttons = [];
         const _self = this;
-        buttons.push(<Button style={{textAlign:"left"}} bsSize="xsmall" onClick={() => _self.handleContinousClick(this.props.store.rootStore.mutationCountId,"Mutation Count")}
-                             key={this.props.mutationCount}><FontAwesome onClick={()=>_self.bin(_self.props.store.rootStore.mutationCountId)
-} name="cog"/> {this.props.mutationCount}</Button>);
+        buttons.push(<Button style={{textAlign: "left"}} bsSize="xsmall"
+                             onClick={() => _self.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
+                             key={this.props.mutationCount}><FontAwesome
+            onClick={() => _self.bin(_self.props.store.rootStore.mutationCountId)
+            } name="cog"/> {this.props.mutationCount}</Button>);
         return buttons;
     }
-    static toggleIcon(icon){
-        if(icon==="caret-down"){
+
+    static toggleIcon(icon) {
+        if (icon === "caret-down") {
             return "caret-right"
         }
-        else{
+        else {
             return "caret-down"
         }
     }
-    toggleClinicalIcon(){
-        this.setState({clinicalIcon:SampleVariableSelector.toggleIcon(this.state.clinicalIcon)});
+
+    toggleClinicalIcon() {
+        this.setState({clinicalIcon: SampleVariableSelector.toggleIcon(this.state.clinicalIcon)});
     }
-    toggleMutationIcon(){
-        this.setState({mutationIcon:SampleVariableSelector.toggleIcon(this.state.mutationIcon)});
+
+    toggleMutationIcon() {
+        this.setState({mutationIcon: SampleVariableSelector.toggleIcon(this.state.mutationIcon)});
     }
-    getGenomicPanel(){
-        if(this.props.store.rootStore.hasMutationCount){
-            return(<Panel id="genomicPanel">
-                    <Panel.Heading>
-                        <Panel.Title toggle >
-                            <div onClick={this.toggleMutationIcon}> Genomic Features <FontAwesome name={this.state.mutationIcon}/> </div>
-                        </Panel.Title>
-                    </Panel.Heading>
-                    <Panel.Collapse>
-                        <Panel.Body>
-                            <ButtonGroup vertical block>
-                                {this.createGenomicAttributesList()}
-                            </ButtonGroup>
-                        </Panel.Body>
-                    </Panel.Collapse>
-                </Panel>)
+
+    getGenomicPanel() {
+        if (this.props.store.rootStore.hasMutationCount) {
+            return (<Panel id="genomicPanel">
+                <Panel.Heading>
+                    <Panel.Title toggle>
+                        <div onClick={this.toggleMutationIcon}> Genomic Features <FontAwesome
+                            name={this.state.mutationIcon}/></div>
+                    </Panel.Title>
+                </Panel.Heading>
+                <Panel.Collapse>
+                    <Panel.Body>
+                        <ButtonGroup vertical block>
+                            {this.createGenomicAttributesList()}
+                        </ButtonGroup>
+                    </Panel.Body>
+                </Panel.Collapse>
+            </Panel>)
         }
-        else{
+        else {
             return null;
         }
     }
@@ -136,7 +145,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 <Panel id="clinicalPanel" defaultExpanded>
                     <Panel.Heading>
                         <Panel.Title toggle>
-                            <div  onClick={this.toggleClinicalIcon}> Clinical Features <FontAwesome name={this.state.clinicalIcon}/></div>
+                            <div onClick={this.toggleClinicalIcon}> Clinical Features <FontAwesome
+                                name={this.state.clinicalIcon}/></div>
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Collapse>

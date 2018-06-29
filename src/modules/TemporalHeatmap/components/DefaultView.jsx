@@ -13,14 +13,14 @@ const DefaultView = observer(class DefaultView extends React.Component {
     }
 
     getStudy(study) {
-        this.props.setRoot(study,true);
+        this.props.setRoot(study, true);
     }
 
 
     setOptions() {
         let options = [];
         const _self = this;
-        this.props.studies.forEach(function (d,i) {
+        this.props.studies.forEach(function (d, i) {
             options.push(<MenuItem eventKey={i} onClick={() => _self.getStudy(d)} key={d.studyId}>{d.name}</MenuItem>)
         });
         return options;

@@ -311,7 +311,7 @@ class TimepointStore {
     }
 
     isAligned(firstTP, secondTP) {
-        if(this.timepoints[firstTP].isGrouped||this.timepoints[secondTP].isGrouped){
+        if (this.timepoints[firstTP].isGrouped || this.timepoints[secondTP].isGrouped) {
             return false;
         }
         for (let i = this.timepoints[firstTP].heatmapOrder.length; i--;) {

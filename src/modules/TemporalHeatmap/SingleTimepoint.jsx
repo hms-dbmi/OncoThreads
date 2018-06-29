@@ -184,8 +184,8 @@ class SingleTimepoint {
                     if (a.key > b.key) {
                         return order
                     }
-                    else{
-                        if(a.key === undefined && b.key !== undefined) {
+                    else {
+                        if (a.key === undefined && b.key !== undefined) {
                             return 1;
                         }
                         if (a.key !== undefined && b.key === undefined) {
@@ -306,11 +306,11 @@ class SingleTimepoint {
     adaptPrimaryVariable(variableId) {
         let newVariableIndex = 0;
         if (this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
-                return d.id
-            }).indexOf(variableId) === 0) {
+            return d.id
+        }).indexOf(variableId) === 0) {
             newVariableIndex = 1
         }
-        if(this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].datatype==="NUMBER"){
+        if (this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].datatype === "NUMBER") {
             this.unGroup(variableId)
         }
         this.primaryVariableId = this.rootStore.timepointStore.currentVariables[this.type][newVariableIndex].id;

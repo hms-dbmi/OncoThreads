@@ -9,7 +9,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
     constructor(props) {
         super(props);
         this.coordX = 0;
-        this.xScale=d3.scaleLinear();
+        this.xScale = d3.scaleLinear();
         this.state = {
             dragging: false,
             x: [(props.width - 70) / 2],
@@ -54,7 +54,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
 
     getBins(x) {
         let binValues = [];
-        const _self=this;
+        const _self = this;
         binValues.push(this.xScale.domain()[0]);
         x.forEach(function (d) {
             binValues.push(Math.round(_self.xScale.invert(d)));
@@ -88,18 +88,17 @@ const BinSelector = observer(class BinSelector extends React.Component {
     }
 
 
-
     render() {
         const margin = {top: 20, right: 20, bottom: 70, left: 50},
             w = this.props.width - (margin.left + margin.right),
             h = this.props.height - (margin.top + margin.bottom);
         const transform = 'translate(' + margin.left + ',' + margin.top + ')';
 
-        this.xScale.domain([d3.min(this.props.data)-1, d3.max(this.props.data)]).rangeRound([0, w]);
+        this.xScale.domain([d3.min(this.props.data) - 1, d3.max(this.props.data)]).rangeRound([0, w]);
 
-        const reverseX = d3.scaleLinear().domain([0, w]).rangeRound([d3.min(this.props.data)-1, d3.max(this.props.data)]);
+        const reverseX = d3.scaleLinear().domain([0, w]).rangeRound([d3.min(this.props.data) - 1, d3.max(this.props.data)]);
         const bins = d3.histogram()
-            .domain([d3.min(this.props.data)-1, d3.max(this.props.data)])
+            .domain([d3.min(this.props.data) - 1, d3.max(this.props.data)])
             .thresholds(this.xScale.ticks(30))(this.props.data);
 
         const y = d3.scaleLinear()
@@ -124,7 +123,9 @@ const BinSelector = observer(class BinSelector extends React.Component {
                         <Axis h={this.props.height} axis={yAxis} axisType="y"/>
                         <Axis h={h} axis={xAxis} axisType="x"/>
                         <Histogram data={this.props.data} bins={bins} xScale={this.xScale} yScale={y} height={h}/>
-                        <Slider yPos={h+30} width={w} x={this.state.x} reverseScale={reverseX} handleMouseDown={this.handleMouseDown} handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>
+                        <Slider yPos={h + 30} width={w} x={this.state.x} reverseScale={reverseX}
+                                handleMouseDown={this.handleMouseDown}
+                                handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>
                     </g>
                 </svg>
             </div>

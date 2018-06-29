@@ -18,7 +18,7 @@ class VisStore {
         this.transitionSpace = 100;
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
-        this.globalTimelineColors=d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
+        this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
             timepointY: [],
             transY: [],
@@ -36,12 +36,12 @@ class VisStore {
             get timepointPositions() {
                 return this.computeTimepointPositions();
             },
-            get svgHeight(){
-                if(this.betweenTPHeight!==0){
-                    return this.timepointPositions.connection[this.timepointPositions.connection.length-1]+this.betweenTPHeight;
+            get svgHeight() {
+                if (this.betweenTPHeight !== 0) {
+                    return this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.betweenTPHeight;
                 }
-                else{
-                    return this.timepointPositions.connection[this.timepointPositions.connection.length-1]+this.sampleTPHeight;
+                else {
+                    return this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.sampleTPHeight;
 
                 }
             }
@@ -58,12 +58,12 @@ class VisStore {
 
     modifyTransitionSpace(number, index) {
         if (index !== this.transitionSpaces.length - 2) {
-            console.log(index,this.rootStore.timepointStore.isAligned(index, index + 1),this.rootStore.timepointStore.isAligned(index + 1, index + 2));
+            console.log(index, this.rootStore.timepointStore.isAligned(index, index + 1), this.rootStore.timepointStore.isAligned(index + 1, index + 2));
             if (this.rootStore.timepointStore.isAligned(index, index + 1)
-                &&this.rootStore.timepointStore.isAligned(index + 1, index + 2)
-                &&!this.rootStore.timepointStore.timepoints[index].isGrouped
-                &&!this.rootStore.timepointStore.timepoints[index+1].isGrouped
-                &&!this.rootStore.timepointStore.timepoints[index+2].isGrouped) {
+                && this.rootStore.timepointStore.isAligned(index + 1, index + 2)
+                && !this.rootStore.timepointStore.timepoints[index].isGrouped
+                && !this.rootStore.timepointStore.timepoints[index + 1].isGrouped
+                && !this.rootStore.timepointStore.timepoints[index + 2].isGrouped) {
                 this.transitionSpaces[index] = this.transitionSpace;
                 this.transitionSpaces[index + 1] = this.transitionSpace;
             }
@@ -72,8 +72,8 @@ class VisStore {
                 this.transitionSpaces[index + 1] = number;
             }
         }
-        else{
-             if (this.rootStore.timepointStore.isAligned(index, index + 1)) {
+        else {
+            if (this.rootStore.timepointStore.isAligned(index, index + 1)) {
                 this.transitionSpaces[index] = this.transitionSpace;
             }
             else {

@@ -33,10 +33,10 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 stroke = "lightgray";
                 fill = "none";
                 rects.push(<line stroke={stroke}
-                                 key={d.patient+"UNDEFINED"} height={_self.props.height}
+                                 key={d.patient + "UNDEFINED"} height={_self.props.height}
                                  width={_self.props.rectWidth}
-                                 x1={_self.props.heatmapScale(d.patient)+ _self.props.x}
-                                 x2={_self.props.heatmapScale(d.patient) +_self.props.x+ _self.props.rectWidth}
+                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
+                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
                                  y1={0}
                                  y2={_self.props.height}
                                  opacity={_self.props.opacity}/>);
@@ -48,8 +48,8 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                              onMouseLeave={_self.handleMouseLeave}
                              onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}
                              onMouseUp={_self.handleMouseUp} onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                             onClick={_self.handleClick} 
-                             onContextMenu={(e)=>_self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
+                             onClick={_self.handleClick}
+                             onContextMenu={(e) => _self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
                              key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
                              x={_self.props.heatmapScale(d.patient) + _self.props.x}
@@ -127,26 +127,26 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             dragging: false
         })
 
-        
+
         this.props.showContextMenuHeatmapRow(e, patient, timepoint, xposition);
 
-        
+
     }
 
     handleClick(e) {
         if (e.type === 'click') {
-          //console.log('Left click');
+            //console.log('Left click');
         } else if (e.type === 'contextmenu') {
             e.preventDefault();
-          //console.log('Right click');
-         
+            //console.log('Right click');
+
         }
         /*if (e.nativeEvent.which === 1) {
           console.log('left click');
         } else if (e.nativeEvent.which === 3) {
           console.log('right click');
         }*/
-     }
+    }
 
     render() {
         return (

@@ -8,8 +8,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         super(props);
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
-        this.handleMouseEnter=this.handleMouseEnter.bind(this);
-        this.handleMouseEnter=this.handleMouseEnter.bind(this);
+        this.handleMouseEnter = this.handleMouseEnter.bind(this);
+        this.handleMouseEnter = this.handleMouseEnter.bind(this);
     }
 
 
@@ -39,10 +39,10 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
             let stroke = "none";
-            let fill=_self.props.color(d.value);
-            if(d.value===undefined){
-                stroke="lightgray";
-                fill="white";
+            let fill = _self.props.color(d.value);
+            if (d.value === undefined) {
+                stroke = "lightgray";
+                fill = "white";
             }
             /*
             if (_self.props.selectedPatients.includes(d.patient)) {
@@ -54,8 +54,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
             //while (ind < maxNum) {
 
-            Array.from(Array(maxNum).keys()).forEach(function(ind){
-               if(!(_self.props.dtype==="NUMBER"&&_self.props.timepointType==="between")){
+            Array.from(Array(maxNum).keys()).forEach(function (ind) {
+                if (!(_self.props.dtype === "NUMBER" && _self.props.timepointType === "between")) {
                     let startDay = _self.props.ypi[j];
                     //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
 
@@ -148,7 +148,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 }
                 j++;
                 //ind++;
-                ind2=ind;
+                ind2 = ind;
 
                 //console.log(ind2);
 
@@ -158,9 +158,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
             //console.log(ind);
             //console.log(ind2)
-            _self.props.numEventsForEachPatient[p_num] = _self.props.numEventsForEachPatient[p_num] - (ind2+1);
+            _self.props.numEventsForEachPatient[p_num] = _self.props.numEventsForEachPatient[p_num] - (ind2 + 1);
             ind2 = -1;
-
 
 
         });
@@ -174,10 +173,9 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
     }
 
 
-
     handleMouseEnter(event, patient, value, startDay, duration) {
 
-            this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: "+ duration + " days")
+        this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
 
     }
 
@@ -187,9 +185,9 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
     render() {
-        return(
-                this.getRow()
-    )
+        return (
+            this.getRow()
+        )
 
 
     }

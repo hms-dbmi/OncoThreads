@@ -1,4 +1,4 @@
-import {createTransformer, toJS, extendObservable} from "mobx";
+import {createTransformer, extendObservable, toJS} from "mobx";
 import DerivedVariable from "./DerivedVariable";
 import OriginalVariable from "./OriginalVariable";
 import SingleTimepoint from "./SingleTimepoint";
@@ -67,7 +67,6 @@ class UndoRedoStore {
         this.rootStore.globalTime = this.stateStack[index].globalTime;
         this.rootStore.eventDetails = this.stateStack[index].eventDetails;
         this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].timepointStructure);
-        this.rootStore.transitionStructure = this.stateStack[index].transitionStructure;
         this.rootStore.timepointStore.initialize();
     }
 
@@ -178,13 +177,12 @@ class UndoRedoStore {
             transitionOn: store.rootStore.transitionOn,
             globalTime: store.rootStore.globalTime,
             timepointStructure: toJS(store.rootStore.timepointStructure),
-            transitionStructure: store.rootStore.transitionStructure,
             eventDetails: store.rootStore.eventDetails.slice()
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({
             type: timepoint.type,
-            patients: timepoint.patients.map(d=>d),
+            patients: timepoint.patients.map(d => d),
             globalIndex: timepoint.globalIndex,
             localIndex: timepoint.localIndex,
             previousOrder: timepoint.previousOrder,

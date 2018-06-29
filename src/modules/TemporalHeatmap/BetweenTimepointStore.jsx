@@ -23,7 +23,7 @@ class BetweenTimepointStore {
         this.variableStore.constructor(this.rootStore);
     }
 
-    initialize(id,addToTimeline) {
+    initialize(id, addToTimeline) {
         this.rootStore.visStore.resetTransitionSpace();
         this.rootStore.transitionOn = true;
         this.rootStore.realTime = false;
@@ -35,7 +35,7 @@ class BetweenTimepointStore {
             else {
                 order = this.rootStore.sampleTimepointStore.timepoints[i - 1].heatmapOrder;
             }
-            this.timepoints.push(new SingleTimepoint(this.rootStore, id, this.rootStore.transitionStructure[i], "between", i,order));
+            this.timepoints.push(new SingleTimepoint(this.rootStore, id, this.rootStore.transitionStructure[i], "between", i, order));
         }
         this.rootStore.timepointStore.initialize();
     }
@@ -89,7 +89,6 @@ class BetweenTimepointStore {
     }
 
 
-
     update() {
         const _self = this;
         this.timepoints = [];
@@ -132,7 +131,7 @@ class BetweenTimepointStore {
         // create new Id
         let derivedId = uuidv4();
         // add derived variable
-        this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR",[]);
+        this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR", []);
         //initialize if the variable is the first variable to be added
         if (this.timepoints.length === 0) {
             this.initialize(derivedId, false);
@@ -166,8 +165,8 @@ class BetweenTimepointStore {
     addTimepointDistance(variableId) {
         this.rootStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
-            let minMax=RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping,"between");
-            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER",minMax);
+            let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping, "between");
+            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", minMax);
             if (this.timepoints.length === 0) {
                 this.initialize(variableId, false);
             }

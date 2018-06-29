@@ -29,21 +29,21 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
         let y2 = _self.props.allYPositionsy2.map(y => _self.props.timeScale(y));
         let globalInd = 2;
         _self.props.from.forEach(function (d, i) {
-             let j = _self.props.to.indexOf(d);
-                     if (j!==-1) {
-                         let strokeColor = "lightgray";
-                         if (_self.props.selectedPatients.includes(d)) {
-                             strokeColor = "black"
-                         }
-                         lines.push(
-                             GlobalTransition.drawLine(_self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                                 _self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                                 y1[i] + _self.props.visMap.sampleRectWidth / 2,
-                                 y2[j],
-                                 d + globalInd + i, strokeColor));
-                         globalInd = globalInd + 2;
-                     }
-             });
+            let j = _self.props.to.indexOf(d);
+            if (j !== -1) {
+                let strokeColor = "lightgray";
+                if (_self.props.selectedPatients.includes(d)) {
+                    strokeColor = "black"
+                }
+                lines.push(
+                    GlobalTransition.drawLine(_self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
+                        _self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
+                        y1[i] + _self.props.visMap.sampleRectWidth / 2,
+                        y2[j],
+                        d + globalInd + i, strokeColor));
+                globalInd = globalInd + 2;
+            }
+        });
         return lines;
     }
 

@@ -21,43 +21,43 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
     goUp(patient, timepoint, xposition) {
         //console.log("Go up");
 
-        for(var i=0; i<this.props.rootStore.timepointStore.selectedPatients.length; i++){
+        for (var i = 0; i < this.props.rootStore.timepointStore.selectedPatients.length; i++) {
 
             //this.props.rootStore.moveTimepointUpDown(this.props.rootStore.maxTP, patient, xposition, 0 );
 
 
-            var p=this.props.rootStore.timepointStore.selectedPatients[i];
+            var p = this.props.rootStore.timepointStore.selectedPatients[i];
 
-            var findtimeline=0;
-            var flag=false;
+            var findtimeline = 0;
+            var flag = false;
 
             var len = this.props.rootStore.timepointStructure.length;
 
-            for(let j=len-1; j>=0; j--){
+            for (let j = len - 1; j >= 0; j--) {
                 var list = this.props.rootStore.timepointStructure[j];
-                
-                for(let k=0; k<list.length; k++){
-                    if(list[k].patient===p){
-                        flag=true; 
+
+                for (let k = 0; k < list.length; k++) {
+                    if (list[k].patient === p) {
+                        flag = true;
                         //console.log(list[k].patient); 
-                        findtimeline=j;
+                        findtimeline = j;
                         break;
                     }
-                    
+
                 }
-                if(flag){
+                if (flag) {
                     break;
                 }
-            
+
             }
 
-            this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 1 )
+            this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 1)
         }
-        
+
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y =
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y - 131;
-        this.props.rootStore.undoRedoStore.saveTPMovement("up",patient);
-       
+        this.props.rootStore.undoRedoStore.saveTPMovement("up", patient);
+
     }
 
     /**
@@ -68,55 +68,55 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
         //console.log(patient + ", " + timepoint + ", " + xposition );
 
         //for(var i=0; i<this.props.rootStore.timepointStore.selectedPatients.length; i++){
-        for(var i=this.props.rootStore.timepointStore.selectedPatients.length-1; i>=0; i--){
+        for (var i = this.props.rootStore.timepointStore.selectedPatients.length - 1; i >= 0; i--) {
 
             //this.props.rootStore.moveTimepointUpDown(this.props.rootStore.maxTP, patient, xposition, 0 );
 
 
-            var p=this.props.rootStore.timepointStore.selectedPatients[i];
+            var p = this.props.rootStore.timepointStore.selectedPatients[i];
 
-            var findtimeline=0;
-            var flag=false;
+            var findtimeline = 0;
+            var flag = false;
 
             var len = this.props.rootStore.timepointStructure.length;
 
-            for(let j=0; j<len; j++){
+            for (let j = 0; j < len; j++) {
                 var list = this.props.rootStore.timepointStructure[j];
-                
-                for(let k=0; k<list.length; k++){
-                    if(list[k].patient===p){
-                        flag=true; 
+
+                for (let k = 0; k < list.length; k++) {
+                    if (list[k].patient === p) {
+                        flag = true;
                         //console.log(list[k].patient); 
-                        findtimeline=j;
+                        findtimeline = j;
                         break;
                     }
-                    
+
                 }
-                if(flag){
+                if (flag) {
                     break;
                 }
-            
+
             }
-            
+
             //console.log(findtimeline);
 
-            this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 0 )
-            this.props.rootStore.undoRedoStore.saveTPMovement("down",patient);
+            this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 0)
+            this.props.rootStore.undoRedoStore.saveTPMovement("down", patient);
         }
         //this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, patient, timepoint, xposition, 0 )
-       
+
         //var k=this.props.rootStore.timepointStore.timepoints;
 
-       /* k.push(k[k.length-1]);
+        /* k.push(k[k.length-1]);
 
-        k[3].heatmap[0].data[0].push({
-            patient: patient,
-            value: "III"
-        });*/
+         k[3].heatmap[0].data[0].push({
+             patient: patient,
+             value: "III"
+         });*/
 
-       // k[3].patients.push(patient);
+        // k[3].patients.push(patient);
 
-       // k[0].patients.pop(patient);
+        // k[0].patients.pop(patient);
 
         //k[3].patients.push("P01");
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y =
@@ -126,6 +126,7 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
     /**
      * applies sorting of the clicked timepoint to next timepoint
      */
+
     /*applySortToNext() {
         this.props.store.applySortingToNext(this.props.clickedTimepoint,this.props.clickedVariable);
     }*/
@@ -141,11 +142,13 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
                 patient: this.props.patient,
                 timepoint: this.props.timepoint,
                 xposition: this.props.xposition
-                
+
             }}>
-                <Button onClick={() => this.goUp(this.props.patient, this.props.timepoint, this.props.xposition)}>Up</Button>
-                <Button onClick={() => this.goDown(this.props.patient, this.props.timepoint, this.props.xposition)}>Down</Button>
-                
+                <Button
+                    onClick={() => this.goUp(this.props.patient, this.props.timepoint, this.props.xposition)}>Up</Button>
+                <Button
+                    onClick={() => this.goDown(this.props.patient, this.props.timepoint, this.props.xposition)}>Down</Button>
+
             </ButtonGroup>
         )
     }

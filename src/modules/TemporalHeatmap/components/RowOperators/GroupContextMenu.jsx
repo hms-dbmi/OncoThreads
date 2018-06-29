@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button,ButtonGroup} from 'react-bootstrap';
+import {Button, ButtonGroup} from 'react-bootstrap';
 
 /*
 group context menu. Appears after a right click on the group button

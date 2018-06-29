@@ -34,7 +34,7 @@ const Legend = observer(class Legend extends React.Component {
      * @param fontSize
      * @returns {number}
      */
-    static getTextWidth(min,text, fontSize) {
+    static getTextWidth(min, text, fontSize) {
         const context = document.createElement("canvas").getContext("2d");
         context.font = fontSize + "px Arial";
         const width = context.measureText(text).width;
@@ -56,21 +56,24 @@ const Legend = observer(class Legend extends React.Component {
         const min = color.domain()[0];
         const max = color.domain()[color.domain().length - 1];
         let intermediateStop = null;
-        let text=[];
+        let text = [];
         if (color.domain().length === 3) {
             intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
             text.push(<text key={"text" + min} fill="white" style={{fontSize: fontSize}} x={0}
-                  y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
-                <text key={"text" + 0} fill="black" style={{fontSize: fontSize}} x={50-Legend.getTextWidth(0,0,fontSize)/2}
-                  y={lineheight / 2 + fontSize / 2}>{0}</text>,
-            <text key={"text" + max} fill="white" style={{fontSize: fontSize}} x={100-Legend.getTextWidth(0,Math.round(max),fontSize)}
-                  y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
+                            y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
+                <text key={"text" + 0} fill="black" style={{fontSize: fontSize}}
+                      x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
+                      y={lineheight / 2 + fontSize / 2}>{0}</text>,
+                <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
+                      x={100 - Legend.getTextWidth(0, Math.round(max), fontSize)}
+                      y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
         }
-        else{
+        else {
             text.push(<text key={"text" + min} fill="black" style={{fontSize: fontSize}} x={0}
-                  y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
-            <text key={"text" + max} fill="white" style={{fontSize: fontSize}} x={100-Legend.getTextWidth(0,Math.round(max),fontSize)}
-                  y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
+                            y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
+                <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
+                      x={100 - Legend.getTextWidth(0, Math.round(max), fontSize)}
+                      y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
         }
         let randomId = uuidv4();
         return <g>
@@ -101,7 +104,7 @@ const Legend = observer(class Legend extends React.Component {
         let legendEntries = [];
         row.data.forEach(function (f) {
             if (!currKeys.includes(f.value) && f.value !== undefined) {
-                const rectWidth = Legend.getTextWidth(30,f.value, fontSize) + 4;
+                const rectWidth = Legend.getTextWidth(30, f.value, fontSize) + 4;
                 currKeys.push(f.value);
                 legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(f.value), "black"));
                 currX += (rectWidth + 2);
@@ -122,7 +125,7 @@ const Legend = observer(class Legend extends React.Component {
             else {
                 textValue = color.domain()[0]
             }
-            const rectWidth = Legend.getTextWidth(30,d, fontSize) + 4;
+            const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
             legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), color(textValue)));
             currX += (rectWidth + 2);
         });
@@ -140,8 +143,8 @@ const Legend = observer(class Legend extends React.Component {
      */
     static getBinaryLegend(row, opacity, fontSize, lineheight, color) {
         let legendEntries = [];
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, Legend.getTextWidth(30,"true", fontSize) + 4, fontSize, 0, lineheight, color(true), "black"));
-        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth(30,"false", fontSize) + 4, fontSize, Legend.getTextWidth(30,"true",fontSize) + 6, lineheight, color(false), "black"));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("true", opacity, Legend.getTextWidth(30, "true", fontSize) + 4, fontSize, 0, lineheight, color(true), "black"));
+        legendEntries = legendEntries.concat(Legend.getLegendEntry("false", opacity, Legend.getTextWidth(30, "false", fontSize) + 4, fontSize, Legend.getTextWidth(30, "true", fontSize) + 6, lineheight, color(false), "black"));
         return (legendEntries);
     }
 

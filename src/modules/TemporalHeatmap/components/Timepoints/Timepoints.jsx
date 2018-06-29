@@ -249,7 +249,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 transFlag = false;
                 rectWidth = _self.props.visMap.sampleRectWidth;
                 yp = _self.props.allYPositions[Math.floor(i / 2)];
-                ht=yp.map(d=>0);
+                ht = yp.map(d => 0);
                 //transform= "translate(0, 350)";
                 transform = "translate(0, 0)";
 

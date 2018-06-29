@@ -83,7 +83,8 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
             if (transitionPatients.length !== 0) {
                 const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
                 transitionPatients.forEach(function (f) {
-                    transitions.push(<TriangleCurve key={f} selectedPatients={_self.props.selectedPatients} x0={currXsource} x1={currXsource + transitionWidth}
+                    transitions.push(<TriangleCurve key={f} selectedPatients={_self.props.selectedPatients}
+                                                    x0={currXsource} x1={currXsource + transitionWidth}
                                                     x2={scale(f) + 0.5 * _self.props.visMap.sampleRectWidth} y0={y0}
                                                     y1={y1} patient={f}/>);
                     currXsource += transitionWidth;

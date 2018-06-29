@@ -8,10 +8,10 @@ Creates a Triangle Curve
 const TriangleCurve = observer(class TriangleCurve extends React.Component {
     render() {
         let color = "#dddddd";
-        let stroke="#cccccc"
+        let stroke = "#cccccc"
         if (this.props.selectedPatients.includes(this.props.patient)) {
             color = "#b7b7b7"
-            stroke="#cccccc"
+            stroke = "#cccccc"
         }
         const curvature = .5;
         const yi = d3.interpolateNumber(this.props.y0, this.props.y1),
