@@ -32,14 +32,14 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             if (d.value === undefined) {
                 stroke = "lightgray";
                 fill = "none";
-                rects.push(<line stroke={stroke}
+                /*rects.push(<line stroke={stroke}
                                  key={d.patient + "UNDEFINED"} height={_self.props.height}
                                  width={_self.props.rectWidth}
                                  x1={_self.props.heatmapScale(d.patient) + _self.props.x}
                                  x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
                                  y1={0}
                                  y2={_self.props.height}
-                                 opacity={_self.props.opacity}/>);
+                                 opacity={_self.props.opacity}/>);*/
             }
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";

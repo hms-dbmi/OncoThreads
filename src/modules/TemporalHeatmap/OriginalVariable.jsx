@@ -21,6 +21,7 @@ class OriginalVariable {
         });
         this.id = id;
         this.name = name;
+        this.type="original";
         this.datatype = datatype;
         this.derived = false;
         this.domain = domain;

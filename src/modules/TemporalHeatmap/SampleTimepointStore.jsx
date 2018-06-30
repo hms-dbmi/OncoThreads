@@ -52,9 +52,9 @@ class SampleTimepointStore {
                 _self.addHeatmapVariable(d.id);
             }
             else {
-                if (d.modificationType === "binned") {
+                if (d.modificationType === "binning") {
                     _self.addHeatmapVariable(d.originalIds[0]);
-                    _self.rootStore.timepointStore.bin(d.originalIds[0], d.id, d.modification.bins, d.modification.binNames)
+                    _self.rootStore.timepointStore.bin(d.originalIds[0],d.id, d.modification.bins, d.modification.binNames);
                 }
             }
         });

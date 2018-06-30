@@ -26,6 +26,7 @@ class DerivedVariable {
         this.id = id;
         this.name = name;
         this.datatype = datatype;
+        this.type="derived";
         this.derived = true;
         this.originalIds = originalIds;
         this.modificationType = modificationType;

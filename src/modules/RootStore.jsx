@@ -28,7 +28,7 @@ class RootStore {
         this.hasMutationCount = false;
 
         this.maxTP = 0;
-        this.minTP = 0;
+        this.minTP = Number.POSITIVE_INFINITY;
         this.clinicalSampleCategories = [];
         this.mutationCountId = "mutCount";
         this.timeDistanceId = "timeDist";
@@ -65,7 +65,7 @@ class RootStore {
                     cumulativeCountsForAllPatients[d.patientId] = counts;
                 });
                 let timeLine = [];
-                for (let i = 0; i < this.maxTP; i++) {
+                for (let i = 0; i < this.timepointStructure.length; i++) {
                     let patientSamples3 = [];
                     this.cbioAPI.patients.forEach(function (d, j) {
                         let cumulativeCounts = cumulativeCountsForAllPatients[d.patientId];
@@ -98,7 +98,7 @@ class RootStore {
             get timeGapMapping() {
                 let timeGapMapping = {};
                 const _self = this;
-                for (let i = 0; i < this.maxTP + 1; i++) {
+                for (let i = 0; i < this.timepointStructure.length + 1; i++) {
                     this.cbioAPI.patients.forEach(function (d, j) {
                         if (!(d.patientId in timeGapMapping)) {
                             timeGapMapping[d.patientId] = [];
@@ -111,7 +111,7 @@ class RootStore {
                                 timeGapMapping[d.patientId].push(_self.sampleTimelineMap[_self.sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis - _self.sampleTimelineMap[_self.sampleStructure[d.patientId][i - 1][0]].startNumberOfDaysSinceDiagnosis);
                             }
                         }
-                        if (i === _self.maxTP && _self.sampleStructure[d.patientId].length > i - 1) {
+                        if (i === _self.timepointStructure.length && _self.sampleStructure[d.patientId].length > i - 1) {
                             timeGapMapping[d.patientId].push(undefined);
                         }
 
@@ -129,10 +129,12 @@ class RootStore {
         this.realTime = false;
         this.transitionOn = false;
         this.eventDetails = [];
+        this.timepointStore.selectedPatients=[];
         //this.maxTimeInDays=0;
+        this.resetTimepointStructure();
         this.betweenTimepointStore.reset();
-        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical");
-        this.undoRedoStore.saveHistory();
+        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical",this.patientOrderPerTimepoint);
+        this.undoRedoStore.saveVariableHistory("ADD VARIABLE", this.clinicalSampleCategories[0].variable);
         this.parsed = true;
     }
 
@@ -141,14 +143,15 @@ class RootStore {
      */
     parseCBio() {
         const _self = this;
+        this.firstLoad=false;
         this.cbioAPI.getAllData(this.study.studyId, function () {
             _self.buildPatientStructure();
             _self.createClinicalSampleMapping();
             _self.createMutationCountsMapping();
 
-           // if (localStorage.getItem(_self.study.studyId) === null) {
-                _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
-                _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
+            // if (localStorage.getItem(_self.study.studyId) === null) {
+            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, "clinical");
+            _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
             /*}
             else {
                 _self.undoRedoStore.deserializeLocalStorage();
@@ -168,6 +171,7 @@ class RootStore {
         let sampleTimelineMap = {};
         let eventCategories = [];
         let maxTP = 0;
+        let minTP = Number.POSITIVE_INFINITY;
         let timepointStructure = [];
         let allPatients = [];
         let excludeDates = {};
@@ -196,18 +200,23 @@ class RootStore {
                         }
                         timepointStructure[currTP].push({patient: d.patientId, sample: e.attributes[1].value});
                         currTP += 1;
-                        if (currTP > maxTP) {
-                            maxTP = currTP;
-                        }
+
                     }
                     else {
                         sampleStructure[d.patientId][currTP - 1].push(e.attributes[1].value);
                     }
                     previousDate = e.startNumberOfDaysSinceDiagnosis;
                 }
-            })
+            });
+            if (sampleStructure[d.patientId].length > maxTP) {
+                maxTP = currTP;
+            }
+            if (sampleStructure[d.patientId].length < minTP) {
+                minTP = currTP;
+            }
         });
         this.maxTP = maxTP;
+        this.minTP = minTP;
         this.sampleTimelineMap = sampleTimelineMap;
         this.timepointStore.setNumberOfPatients(allPatients.length);
         this.patientOrderPerTimepoint = allPatients;
@@ -215,6 +224,32 @@ class RootStore {
         this.sampleStructure = sampleStructure;
         this.timepointStructure = timepointStructure;
         this.getEventAttributes(excludeDates);
+    }
+    resetTimepointStructure(){
+        let timepointStructure = [];
+        const _self = this;
+        for (let i = 0; i < this.maxTP; i++) {
+            let patientSamples = [];
+            this.cbioAPI.patients.forEach(function (d, j) {
+                if (_self.minTP === 0) {
+                    _self.minTP = _self.sampleStructure[d.patientId].length;
+                }
+                else {
+                    if (_self.sampleStructure[d.patientId].length < _self.minTP) {
+                        _self.minTP = _self.sampleStructure[d.patientId].length;
+                    }
+                }
+                if (_self.sampleStructure[d.patientId].length > i) {
+                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i][0]})
+                }
+            });
+            timepointStructure.push(patientSamples);
+        }
+        this.timepointStructure=timepointStructure;
+        this.eventDetails = [];
+        this.sampleTimepointStore.update(this.patientOrderPerTimepoint);
+        this.betweenTimepointStore.update();
+        this.timepointStore.initialize();
     }
 
 
@@ -246,7 +281,6 @@ class RootStore {
         if (up === 0) { //down movement
             if (timepoint === numberOfTimepoints - 1) {
                 _self.timepointStructure.push([el]);
-                _self.maxTP++;
             }
             else {
                 for (let i = timepoint; i < numberOfTimepoints; i++) {
@@ -279,7 +313,6 @@ class RootStore {
 
                     } else {
                         _self.timepointStructure.push([el]);
-                        _self.maxTP++;
                     }
 
 
@@ -324,7 +357,6 @@ class RootStore {
                 }
                 else {
                     _self.timepointStructure.unshift([el]);
-                    _self.maxTP++;
                 }
 
 
@@ -339,14 +371,11 @@ class RootStore {
         timeline.splice(index, 1);
 
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
-        this.maxTP = this.timepointStructure.length;
         this.visStore.resetTransitionSpace();
-        let heatmapOrder=this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
-        this.eventDetails=[];
+        let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
+        this.eventDetails = [];
         this.sampleTimepointStore.update(heatmapOrder);
         this.betweenTimepointStore.update();
-        this.timepointStore.initialize();
-        this.timepointStore.applyPatientOrderToAll(0);
         //this.timepointStore.applyPatientOrderToAll(timepoint);
     }
 
@@ -511,6 +540,7 @@ class RootStore {
                 }
             }
         }
+        console.log(this.eventDetails);
         return mapper;
     }
 
