@@ -53,110 +53,111 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
             //while (ind < maxNum) {
-
-            Array.from(Array(maxNum).keys()).forEach(function (ind) {
-                if (!(_self.props.dtype === "NUMBER" && _self.props.timepointType === "between")) {
-                    let startDay = _self.props.ypi[j];
-                    //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
-
-
-                    //let varName=_self.props.primaryVariable.name;
-
-                    var val = d.value;
-
-                    // globalRectHeight =ht[j];
-
-                    globalRectWidth = _self.props.rectWidth;
+                            if (!(_self.props.dtype === "NUMBER" && _self.props.timepointType === "between")) {
+                                Array.from(Array(maxNum).keys()).forEach(function (ind) {
+                                    let startDay = _self.props.ypi[j];
+                                    //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
 
 
-                    if (_self.props.dtype === "binary") {
-                        if (!eventIndices[d.patient]) {
-                            eventIndices[d.patient] = 0;
-                        }
-                        if (_self.props.events.length > 0) {
-                            //var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
+                                    //let varName=_self.props.primaryVariable.name;
 
-                            var eventHere2 = _self.props.events.filter(ev => ev.patientId === d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
+                                    var val = d.value;
 
-                            if (eventHere2) {
-                                var eventHere = eventHere2[eventIndices[d.patient]].varId;
-                                fill = _self.props.color(eventHere);
-                                eventIndices[d.patient] = eventIndices[d.patient] + 1;
-                                val = "true";
-                                if (ht[j] === 0) {
-                                    globalRectHeight = globalRectWidth;
-                                }
-                                else {
-                                    globalRectHeight = _self.props.timeScale(ht[j]);
-                                }
+                                    // globalRectHeight =ht[j];
 
-                                xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth / 2;
+                                    globalRectWidth = _self.props.rectWidth;
 
-                                //let duration=Math.round((2*ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
 
-                                let duration = ht[j];
+                                    if (_self.props.dtype === "binary") {
+                                        if (!eventIndices[d.patient]) {
+                                            eventIndices[d.patient] = 0;
+                                        }
+                                        if (_self.props.events.length > 0) {
+                                            //var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
 
-                                //console.log(_self.props.ypi);
-                                rects.push(<rect stroke={stroke}
-                                                 onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
-                                                 }
-                                                 onMouseLeave={_self.handleMouseLeave}
-                                                 onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                                 onClick={()=>_self.handleClick(d.patient)}
-                                        //onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                        //onMouseUp={_self.handleMouseUp}
-                                                 key={d.patient + i + j}
-                                                 height={globalRectHeight}//{_self.props.height}
-                                                 width={globalRectWidth}
-                                                 x={xGlobal}
-                                                 y={_self.props.timeScale(_self.props.ypi[j])}
-                                                 fill={fill}
-                                                 opacity={_self.props.opacity}
-                                        //fill={_self.props.color(_self.props.timepoint)}
-                                    />
-                                );
+                                            var eventHere2 = _self.props.events.filter(ev => ev.patientId === d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
+
+                                            if (eventHere2) {
+                                                var eventHere = eventHere2[eventIndices[d.patient]].varId;
+                                                fill = _self.props.color(eventHere);
+                                                eventIndices[d.patient] = eventIndices[d.patient] + 1;
+                                                val = "true";
+                                                if (ht[j] === 0) {
+                                                    globalRectHeight = globalRectWidth;
+                                                }
+                                                else {
+                                                    globalRectHeight = _self.props.timeScale(ht[j]);
+                                                }
+
+                                                xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth / 2;
+
+                                                //let duration=Math.round((2*ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
+
+                                                let duration = ht[j];
+
+                                                //console.log(_self.props.ypi);
+                                                rects.push(<rect stroke={stroke}
+                                                                 onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
+                                                                 }
+                                                                 onMouseLeave={_self.handleMouseLeave}
+                                                                 onDoubleClick={() => _self.handleDoubleClick(d.patient)}
+                                                                 onClick={() => _self.handleClick(d.patient)}
+                                                        //onMouseDown={() => _self.handleMouseDown(d.patient)}
+                                                        //onMouseUp={_self.handleMouseUp}
+                                                                 key={d.patient + i + j}
+                                                                 height={globalRectHeight}//{_self.props.height}
+                                                                 width={globalRectWidth}
+                                                                 x={xGlobal}
+                                                                 y={_self.props.timeScale(_self.props.ypi[j])}
+                                                                 fill={fill}
+                                                                 opacity={_self.props.opacity}
+                                                        //fill={_self.props.color(_self.props.timepoint)}
+                                                    />
+                                                );
+                                            }
+
+                                        }
+                                    }
+
+                                    else {
+                                        //globalRectHeight= ht[j]/2;
+
+
+                                        globalRectWidth = _self.props.rectWidth / 2;
+                                        globalRectHeight = globalRectWidth;
+
+                                        xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x;
+
+                                        let duration = ht[j];
+
+                                        rects.push(<rect stroke={stroke}
+                                                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
+                                                         }
+                                                         onMouseLeave={_self.handleMouseLeave}
+                                                         onDoubleClick={() => _self.handleDoubleClick(d.patient)}
+                                                         onClick={() => _self.handleClick(d.patient)}
+                                                         key={d.patient + i + j}
+                                                         height={globalRectHeight}//{_self.props.height}
+                                                         width={globalRectWidth}
+                                                         x={xGlobal}
+                                                         y={_self.props.timeScale(_self.props.ypi[j])}
+                                                         fill={fill}
+                                                         opacity={_self.props.opacity}
+                                            />
+                                        );
+
+                                    }
+
+                                    j++;
+                                    //ind++;
+                                    ind2 = ind;
+
+                                    //console.log(ind2);
+
+
+                                });
                             }
 
-                        }
-                    }
-
-                    else {
-                        //globalRectHeight= ht[j]/2;
-
-
-                        globalRectWidth = _self.props.rectWidth / 2;
-                        globalRectHeight = globalRectWidth;
-
-                        xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x;
-
-                        let duration = ht[j];
-
-                        rects.push(<rect stroke={stroke}
-                                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
-                                         }
-                                         onMouseLeave={_self.handleMouseLeave}
-                                         onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                         onClick={()=>_self.handleClick(d.patient)}
-                                         key={d.patient + i + j}
-                                         height={globalRectHeight}//{_self.props.height}
-                                         width={globalRectWidth}
-                                         x={xGlobal}
-                                         y={_self.props.timeScale(_self.props.ypi[j])}
-                                         fill={fill}
-                                         opacity={_self.props.opacity}
-                            />
-                        );
-
-                    }
-                }
-                j++;
-                //ind++;
-                ind2 = ind;
-
-                //console.log(ind2);
-
-
-            });
             //}
 
             //console.log(ind);
