@@ -158,7 +158,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                              ht={_self.props.ht}
                              events={a2}
                              opacity={opacity}
-                             dtype={_self.props.currentVariables[i].datatype}/>;
+                             dtype={_self.props.currentVariables[i].datatype}/>
 
             </g>);
 

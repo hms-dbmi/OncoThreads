@@ -23,7 +23,7 @@ class BetweenTimepointStore {
         this.variableStore.constructor(this.rootStore);
     }
 
-    initialize(id, addToTimeline) {
+    initialize(id) {
         this.rootStore.visStore.resetTransitionSpace();
         this.rootStore.transitionOn = true;
         this.rootStore.realTime = false;
@@ -92,38 +92,35 @@ class BetweenTimepointStore {
     update() {
         const _self = this;
         this.timepoints = [];
-        this.variableStore.currentVariables.forEach(function (d, i) {
-            if (i === 0) {
-                for (let i = 0; i < _self.rootStore.transitionStructure.length; i++) {
-                    let order;
-                    if (i < _self.rootStore.timepointStructure.length) {
-                        order = _self.rootStore.sampleTimepointStore.timepoints[i].heatmapOrder;
-                    }
-                    else {
-                        order = _self.rootStore.sampleTimepointStore.timepoints[i - 1].heatmapOrder;
-                    }
-                    _self.timepoints.push(new SingleTimepoint(_self.rootStore, d.id, _self.rootStore.transitionStructure[i], "between", i, order))
-                }
-                _self.rootStore.timepointStore.initialize();
-            }
+        if(this.variableStore.currentVariables.length>0) {
+            this.initialize(this.variableStore.currentVariables[0].id);
+        }
+        this.variableStore.currentVariables.forEach(function (d) {
             if (!d.derived) {
                 _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
             }
             else {
-                let selectedVariables = [];
-                let eventType;
-                let selectedCategory;
-                d.originalIds.forEach(function (f, i) {
-                    //let variable = _self.variableStore.getByIdAllVariables(f.id);
-                    let variable = _self.variableStore.getByIdAllVariables(f);
-                    if (i === 0) {
-                        eventType = variable.eventType;
-                        selectedCategory = variable.eventSubType;
-                    }
-                    selectedVariables.push({id: variable.id, name: variable.name});
-                });
-                _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory), "or"), d.id);
+                if (d.modificationType === "OR") {
+                    let selectedVariables = [];
+                    let eventType;
+                    let selectedCategory;
+                    d.originalIds.forEach(function (f, i) {
+                        //let variable = _self.variableStore.getByIdAllVariables(f.id);
+                        let variable = _self.variableStore.getByIdAllVariables(f);
+                        if (i === 0) {
+                            eventType = variable.eventType;
+                            selectedCategory = variable.eventSubType;
+                        }
+                        selectedVariables.push({id: variable.id, name: variable.name});
+                    });
+                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory), "or"), d.id);
+                }
+                else if (d.modificationType === "binning") {
+                    _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.originalIds[0]);
+                    _self.rootStore.timepointStore.bin(d.originalIds[0], d.id, d.modification.bins, d.modification.binNames);
+                }
             }
+
         });
     }
 
@@ -194,27 +191,14 @@ class BetweenTimepointStore {
         var indexToDelete = _self.variableStore.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId);
-
-        if (_self.variableStore.currentVariables[indexToDelete].datatype !== "NUMBER") {
+        if (_self.variableStore.currentVariables[indexToDelete].type === "derived") {
             var originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
-
-
-            var flag = false;
-            Array.from(Array(originalIdsDel.length).keys()).forEach(
-                function (j) {
-                    _self.variableStore.currentVariables.forEach(function (d, i) { // go over the list of current variables
-                        var k = d.originalIds; //console.log(k);
-                        if (k.includes(originalIdsDel[j]) && i !== indexToDelete) {
-                            //console.log("true");
-                            flag = true;
-                        }
-                    });
-                    if (!flag) {
-                        for (var l = 0; l < _self.rootStore.eventDetails.length;) {
-
-                            //console.log(originalIds.includes(this.rootStore.eventDetails[i].varId));
-
-                            if (originalIdsDel[j].includes(_self.rootStore.eventDetails[l].varId)) {
+            console.log(originalIdsDel);
+            originalIdsDel.forEach(
+                function (d) {
+                    if (_self.variableStore.getByIdAllVariables(d).type === "event") {
+                        for (let l = 0; l < _self.rootStore.eventDetails.length;) {
+                            if (d === _self.rootStore.eventDetails[l].varId) {
                                 _self.rootStore.eventDetails.splice(l, 1);
                             }
                             else {
@@ -222,8 +206,8 @@ class BetweenTimepointStore {
                             }
                         }
                     }
-                    flag = false;
-                })
+                });
+                    console.log(originalIdsDel,this.rootStore.eventDetails);
 
         }
 

@@ -3,6 +3,7 @@ class EventVariable {
         this.id = id;
         this.name = name; //e.g. TMZ
         this.datatype = datatype;
+        this.type="event";
         this.derived = false;
         this.eventType = eventType; //e.g. Treatment
         this.eventSubType = eventSubType; //e.g. Agent

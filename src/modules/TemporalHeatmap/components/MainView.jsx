@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, ButtonToolbar, Col, Grid, Row} from 'react-bootstrap';
+import {Button, ButtonToolbar, Col, Grid, Row, DropdownButton,MenuItem} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 
@@ -27,6 +27,11 @@ const MainView = observer(class MainView extends React.Component {
         this.handlePartitionSelection = this.handlePartitionSelection.bind(this);
         this.handleTimeClick = this.handleTimeClick.bind(this);
         this.handleGlobalTimeClick = this.handleGlobalTimeClick.bind(this);
+        this.handleResetAll=this.handleResetAll.bind(this);
+        this.handleResetAlignment=this.handleResetAlignment.bind(this);
+        this.handleResetSelection=this.handleResetSelection.bind(this);
+
+
     }
 
 
@@ -38,6 +43,15 @@ const MainView = observer(class MainView extends React.Component {
     handleGlobalTimeClick() {
         this.props.store.rootStore.globalTime = !this.props.store.rootStore.globalTime;
         this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.store.rootStore.globalTime);
+    }
+    handleResetAll(){
+        this.props.store.rootStore.reset();
+    }
+    handleResetAlignment(){
+        this.props.store.rootStore.resetTimepointStructure();
+    }
+    handleResetSelection(){
+        this.props.store.selectedPatients=[]
     }
 
 
@@ -194,6 +208,15 @@ const MainView = observer(class MainView extends React.Component {
                                 name="undo"/></Button>
                             <Button onClick={this.props.store.rootStore.undoRedoStore.redo}><FontAwesome
                                 name="redo"/></Button>
+                             <DropdownButton
+                                title={"Reset"}
+                                key={"ResetButton"}
+                                id={"ResetButton"}
+                            >
+                                <MenuItem eventKey="1" onClick={this.handleResetAlignment}>...timepoint alignment</MenuItem>
+                                 <MenuItem eventKey="2" onClick={this.handleResetSelection}>...selection</MenuItem>
+                                <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
+                            </DropdownButton>
                             <Button onClick={this.handleTimeClick}
                                     disabled={this.props.store.rootStore.globalTime || this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
                                     key={"actualTimeline"}>

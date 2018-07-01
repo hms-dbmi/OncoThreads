@@ -10,7 +10,7 @@ Creates the list of current variables
 const StudySummary = observer(class StudySummary extends React.Component {
     constructor() {
         super();
-        this.state = {icon: "caret-down"}
+        this.state = {icon: "caret-down"};
         this.toggleIcon = this.toggleIcon.bind(this);
     }
 

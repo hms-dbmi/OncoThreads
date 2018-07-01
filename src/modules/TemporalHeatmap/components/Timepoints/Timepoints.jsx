@@ -130,6 +130,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     numEventsForEachPatient={numEventsForEachPatient}
                     currentVariables={_self.props.store.currentVariables[d.type]}
                     rectWidth={rectWidth}
+                    selectPatient={_self.props.onDrag}
                     width={_self.props.heatmapWidth}
                     store={_self.props.store}
                     visMap={_self.props.visMap}
@@ -288,6 +289,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             numEventsForEachPatient={numEventsForEachPatient}
                             currentVariables={_self.props.store.currentVariables[heatmapd.type]}
                             rectWidth={rectWidth}
+                            selectPatient={_self.props.onDrag}
                             width={_self.props.heatmapWidth}
                             store={_self.props.store}
                             visMap={_self.props.visMap}
@@ -298,7 +300,6 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     </g>);
                 }
                 else {
-
                     timepoints.unshift(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}>
                         <TimelineTimepoint
                             timepoint={d.heatmap}
@@ -310,6 +311,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             numEventsForEachPatient={numEventsForEachPatient}
                             currentVariables={_self.props.store.currentVariables[heatmapd.type]}
                             rectWidth={rectWidth}
+                            selectPatient={_self.props.onDrag}
                             width={_self.props.heatmapWidth}
                             store={_self.props.store}
                             visMap={_self.props.visMap}
