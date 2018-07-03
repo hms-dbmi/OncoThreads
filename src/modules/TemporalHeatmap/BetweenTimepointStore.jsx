@@ -193,7 +193,6 @@ class BetweenTimepointStore {
         }).indexOf(variableId);
         if (_self.variableStore.currentVariables[indexToDelete].type === "derived") {
             var originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
-            console.log(originalIdsDel);
             originalIdsDel.forEach(
                 function (d) {
                     if (_self.variableStore.getByIdAllVariables(d).type === "event") {
@@ -207,7 +206,6 @@ class BetweenTimepointStore {
                         }
                     }
                 });
-                    console.log(originalIdsDel,this.rootStore.eventDetails);
 
         }
 

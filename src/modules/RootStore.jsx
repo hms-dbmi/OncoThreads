@@ -56,26 +56,15 @@ class RootStore {
             timepointStructure: [],
             get actualTimeLine() {
                 const _self = this;
-                let cumulativeCountsForAllPatients = {};
-                this.cbioAPI.patients.forEach(function (d, i) {
-                    let counts = [0].concat(_self.timepointStructure.map(tpStruct => tpStruct.map(p => p.patient).filter(p => p === d.patientId).length));
-                    for (let i = 1; i < counts.length; i++) {
-                        counts[i] = counts[i - 1] + counts[i];
-                    }
-                    cumulativeCountsForAllPatients[d.patientId] = counts;
-                });
-                let timeLine = [];
-                for (let i = 0; i < this.timepointStructure.length; i++) {
-                    let patientSamples3 = [];
-                    this.cbioAPI.patients.forEach(function (d, j) {
-                        let cumulativeCounts = cumulativeCountsForAllPatients[d.patientId];
-                        if (cumulativeCounts[i + 1] - cumulativeCounts[i] > 0) {
-                            patientSamples3.push(_self.sampleTimelineMap[_self.sampleStructure[d.patientId][cumulativeCounts[i + 1] - 1][0]].startNumberOfDaysSinceDiagnosis);
-                        }
+                let timeline=[];
+                this.timepointStructure.forEach(function (d) {
+                    let singleTP=[];
+                    d.forEach(function (f) {
+                        singleTP.push(_self.sampleTimelineMap[f.sample].startNumberOfDaysSinceDiagnosis)
                     });
-                    timeLine.push(patientSamples3);
-                }
-                return timeLine;
+                    timeline.push(singleTP);
+                });
+                return timeline;
             },
             get transitionStructure() {
                 let transitionStructure = [];
@@ -299,14 +288,13 @@ class RootStore {
                         if (indexedElements) {
                             el2 = _self.timepointStructure[i + 1][indexedElements.index];
                             _self.timepointStructure[i + 1][indexedElements.index] = el;
-
                             el = el2;
                         }
                         else {
                             //_self.timepointStructure[i + 1].push(el);
                             //_self.patientsPerTimepoint[i + 1].push(el.patient);
                             _self.timepointStructure[i + 1].push(el);
-                            //_self.timepointStructure[i + 1] = _self.sortByPatientOrder(_self.timepointStructure[i + 1]);
+                            _self.timepointStructure[i + 1] = _self.sortByPatientOrder(_self.timepointStructure[i + 1]);
 
                             break;
                         }
@@ -350,7 +338,7 @@ class RootStore {
                         //_self.timepointStructure[i - 1].push(el);
                         //_self.patientsPerTimepoint[i - 1].push(el.patient);
                         _self.timepointStructure[i - 1].push(el);
-                        //_self.timepointStructure[i - 1] = _self.sortByPatientOrder(_self.timepointStructure[i - 1]);
+                        _self.timepointStructure[i - 1] = _self.sortByPatientOrder(_self.timepointStructure[i - 1]);
                         break;
                     }
 
@@ -540,7 +528,6 @@ class RootStore {
                 }
             }
         }
-        console.log(this.eventDetails);
         return mapper;
     }
 

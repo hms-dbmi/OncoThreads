@@ -244,7 +244,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     //console.log(xT);
 
 
-                    labels.push(<g
+                    labels.push(<g key={element}
                         transform={"translate(" + xPos + "," + (yPos + i * _self.props.store.rootStore.visStore.secondaryHeight) + ")scale(" + iconScale + ")"}
 
                         onMouseLeave={_self.props.hideTooltip}>

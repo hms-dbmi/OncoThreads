@@ -47,7 +47,9 @@ const Transitions = observer(class Transitions extends React.Component {
             let from = this.props.timepoints[i - stepWidth].patients;
             let to = this.props.timepoints[i].patients;
             transitions.push(
-                <GlobalTransition from={from}
+                <GlobalTransition
+                                    key={i}
+                                    from={from}
                                   to={to}
                                   timeScale={this.props.timeScale}
                                   patientScale={this.props.heatmapScales[0]}
