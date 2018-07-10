@@ -202,7 +202,7 @@ const MainView = observer(class MainView extends React.Component {
 
             //var svgH = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
-            var svgH = this.props.visMap.rootStore.actualTimeLine.length * (sampH + this.props.visMap.transitionSpace) * 1.5;
+            var svgH = this.props.visMap.rootStore.originalTimePointLength * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
             //view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
 
