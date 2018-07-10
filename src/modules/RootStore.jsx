@@ -44,6 +44,8 @@ class RootStore {
 
         this.maxTimeInDays = 0;
 
+        this.originalTimePointLength=0;
+
         this.reset = this.reset.bind(this);
 
         extendObservable(this, {
@@ -213,6 +215,8 @@ class RootStore {
         this.sampleStructure = sampleStructure;
         this.timepointStructure = timepointStructure;
         this.getEventAttributes(excludeDates);
+
+        this.originalTimePointLength = this.actualTimeLine.length;
     }
     resetTimepointStructure(){
         let timepointStructure = [];

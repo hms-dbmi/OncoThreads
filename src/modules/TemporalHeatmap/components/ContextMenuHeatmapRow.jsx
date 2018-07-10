@@ -145,9 +145,9 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
 
             }}>
                 <Button
-                    onClick={() => this.goUp(this.props.patient, this.props.timepoint, this.props.xposition)}>Up</Button>
+                    onClick={() => this.goUp(this.props.patient, this.props.timepoint, this.props.xposition)}> Move this up</Button>
                 <Button
-                    onClick={() => this.goDown(this.props.patient, this.props.timepoint, this.props.xposition)}>Down</Button>
+                    onClick={() => this.goDown(this.props.patient, this.props.timepoint, this.props.xposition)}>Move this down</Button>
 
             </ButtonGroup>
         )
