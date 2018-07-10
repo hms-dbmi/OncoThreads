@@ -27,8 +27,10 @@ class RootStore {
 
         this.hasMutationCount = false;
 
+        //maximum and minum amount of timepoints a patient has in the dataset
         this.maxTP = 0;
         this.minTP = Number.POSITIVE_INFINITY;
+
         this.clinicalSampleCategories = [];
         this.mutationCountId = "mutCount";
         this.timeDistanceId = "timeDist";
@@ -114,6 +116,9 @@ class RootStore {
         })
     }
 
+    /**
+     * resets everything
+     */
     reset() {
         this.parsed = false;
         this.globalTime = false;
@@ -127,6 +132,36 @@ class RootStore {
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical",this.patientOrderPerTimepoint);
         this.undoRedoStore.saveVariableHistory("ADD VARIABLE", this.clinicalSampleCategories[0].variable);
         this.parsed = true;
+    }
+
+    /**
+     * resets the timepoint structure to the default alignment
+     */
+    resetTimepointStructure(){
+        let timepointStructure = [];
+        const _self = this;
+        for (let i = 0; i < this.maxTP; i++) {
+            let patientSamples = [];
+            this.cbioAPI.patients.forEach(function (d, j) {
+                if (_self.minTP === 0) {
+                    _self.minTP = _self.sampleStructure[d.patientId].length;
+                }
+                else {
+                    if (_self.sampleStructure[d.patientId].length < _self.minTP) {
+                        _self.minTP = _self.sampleStructure[d.patientId].length;
+                    }
+                }
+                if (_self.sampleStructure[d.patientId].length > i) {
+                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i][0]})
+                }
+            });
+            timepointStructure.push(patientSamples);
+        }
+        this.timepointStructure=timepointStructure;
+        this.eventDetails = [];
+        this.sampleTimepointStore.update(this.patientOrderPerTimepoint);
+        this.betweenTimepointStore.update();
+        this.timepointStore.initialize();
     }
 
     /*
@@ -218,32 +253,8 @@ class RootStore {
 
         this.originalTimePointLength = this.actualTimeLine.length;
     }
-    resetTimepointStructure(){
-        let timepointStructure = [];
-        const _self = this;
-        for (let i = 0; i < this.maxTP; i++) {
-            let patientSamples = [];
-            this.cbioAPI.patients.forEach(function (d, j) {
-                if (_self.minTP === 0) {
-                    _self.minTP = _self.sampleStructure[d.patientId].length;
-                }
-                else {
-                    if (_self.sampleStructure[d.patientId].length < _self.minTP) {
-                        _self.minTP = _self.sampleStructure[d.patientId].length;
-                    }
-                }
-                if (_self.sampleStructure[d.patientId].length > i) {
-                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i][0]})
-                }
-            });
-            timepointStructure.push(patientSamples);
-        }
-        this.timepointStructure=timepointStructure;
-        this.eventDetails = [];
-        this.sampleTimepointStore.update(this.patientOrderPerTimepoint);
-        this.betweenTimepointStore.update();
-        this.timepointStore.initialize();
-    }
+
+
 
 
     sortByPatientOrder(ObjectStructure) {
@@ -252,8 +263,14 @@ class RootStore {
         })
     }
 
-
-    updateTimepointStructure(numberOfTimepoints, patient, timepoint, xposition, up) {
+    /**
+     * updates the timepoint structure after a patient is moved up or down
+     * @param patient
+     * @param timepoint
+     * @param xposition
+     * @param up
+     */
+    updateTimepointStructure(patient, timepoint, xposition, up) {
         var timeline = this.timepointStructure[timepoint];
 
         //var element = timeline[xposition];
@@ -272,16 +289,12 @@ class RootStore {
         const _self = this;
 
         if (up === 0) { //down movement
-            if (timepoint === numberOfTimepoints - 1) {
+            if (timepoint === this.timepointStore.timepoints.length - 1) {
                 _self.timepointStructure.push([el]);
             }
             else {
-                for (let i = timepoint; i < numberOfTimepoints; i++) {
-
-                    //el=_self.timepointStructure[i][xposition];
-
-                    if (_self.timepointStructure[i + 1]) {
-
+                for (let i = timepoint; i < this.sampleTimepointStore.timepoints.length; i++) {
+                    if (i+1<_self.timepointStructure.length) {
                         indexedElements = _self.timepointStructure[i + 1]
                             .filter(d => d)
                             .map((d, j) => {
@@ -358,7 +371,6 @@ class RootStore {
 
         } //else end
 
-        //timeline.splice(xposition, 1);
 
         timeline.splice(index, 1);
 

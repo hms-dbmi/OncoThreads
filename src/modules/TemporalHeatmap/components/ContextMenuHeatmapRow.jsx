@@ -51,7 +51,7 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
 
             }
 
-            this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 1)
+            this.props.rootStore.updateTimepointStructure(p, findtimeline, xposition, 1)
         }
 
         //this.props.rootStore.variablePositions.filter(d=>d.timepoint==timepoint).filter(d=>d.patient==patient)[0].y =
@@ -100,7 +100,7 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
 
             //console.log(findtimeline);
 
-            this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, p, findtimeline, xposition, 0)
+            this.props.rootStore.updateTimepointStructure(p, findtimeline, xposition, 0)
             this.props.rootStore.undoRedoStore.saveTPMovement("down", patient);
         }
         //this.props.rootStore.updateTimepointStructure(this.props.rootStore.maxTP, patient, timepoint, xposition, 0 )
