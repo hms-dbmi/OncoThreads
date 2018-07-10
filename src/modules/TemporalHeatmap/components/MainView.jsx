@@ -197,7 +197,17 @@ const MainView = observer(class MainView extends React.Component {
             view = this.getBlockView(this.props.visMap.sampleTPHeight, this.props.visMap.betweenTPHeight, this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
         }
         else {
-            view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
+
+            var sampH = this.props.visMap.getTimepointHeight(1);
+
+            //var svgH = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
+
+            var svgH = this.props.visMap.rootStore.actualTimeLine.length * (sampH + this.props.visMap.transitionSpace) * 1.5;
+
+            //view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
+
+            view = this.getGlobalView(this.props.visMap.timepointPositions, svgH, svgWidth, heatmapWidth);
+
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
