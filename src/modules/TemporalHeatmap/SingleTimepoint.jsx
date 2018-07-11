@@ -11,6 +11,7 @@ class SingleTimepoint {
         this.globalIndex = -1;
         this.localIndex = localIndex;
         this.previousOrder = null;
+        this.variableSortOrder = [];
         extendObservable(this, {
             heatmap: [],
             grouped: [],
@@ -26,18 +27,22 @@ class SingleTimepoint {
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
 
-    sortWithParameters(variableId, heatmapSorting, groupSorting) {
+    sortWithParameters(variables, heatmapSortings, groupSorting) {
+        this.variableSortOrder = variables;
         if (this.isGrouped) {
-            if (this.primaryVariableId !== variableId) {
-                this.setPrimaryVariable(variableId);
-                this.groupTimepoint(variableId);
+            if (this.primaryVariableId !== this.variableSortOrder[this.variableSortOrder.length - 1]) {
+                this.setPrimaryVariable(this.variableSortOrder[this.variableSortOrder.length - 1]);
+                this.groupTimepoint(this.variableSortOrder[this.variableSortOrder.length - 1]);
             }
             this.sortGroup(groupSorting);
         }
         //case: the timepoint is not grouped
         else {
-            this.setPrimaryVariable(variableId);
-            this.sortHeatmap(variableId, heatmapSorting);
+            this.setPrimaryVariable(this.variableSortOrder[this.variableSortOrder.length - 1]);
+            const _self = this;
+            this.variableSortOrder.forEach(function (d,i) {
+                _self.sortHeatmap(d,heatmapSortings[i]);
+            })
         }
     }
 
@@ -53,9 +58,15 @@ class SingleTimepoint {
         //case: the timepoint is not grouped
         else {
             this.setPrimaryVariable(variableId);
+            if (!(this.variableSortOrder.includes(variableId))) {
+                this.variableSortOrder.push(variableId);
+            }
+            else {
+                this.variableSortOrder.splice(this.variableSortOrder.indexOf(variableId), 1);
+                this.variableSortOrder.push(variableId);
+            }
             this.sortHeatmap(variableId);
         }
-        //this.rootStore.visStore.modifyTransitionSpace(100,this.globalIndex-1);
     }
 
     group(variable) {
