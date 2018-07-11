@@ -38,6 +38,7 @@ class SingleTimepoint {
         }
         //case: the timepoint is not grouped
         else {
+            this.rootStore.realTime=false;
             this.setPrimaryVariable(this.variableSortOrder[this.variableSortOrder.length - 1]);
             const _self = this;
             this.variableSortOrder.forEach(function (d,i) {
@@ -57,6 +58,7 @@ class SingleTimepoint {
         }
         //case: the timepoint is not grouped
         else {
+            this.rootStore.realTime=false;
             this.setPrimaryVariable(variableId);
             if (!(this.variableSortOrder.includes(variableId))) {
                 this.variableSortOrder.push(variableId);
