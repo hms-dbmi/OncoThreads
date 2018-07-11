@@ -25,6 +25,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                 opacity = 0.5;
             }
             rows.push(<g key={d.variable} transform={transform}><PartitionRow row={d.counts} height={height}
+                                                                              variableType={_self.props.currentVariables[i].datatype}
                                                                               opacity={opacity} color={color}
                                                                               stroke={stroke}
                                                                               groupScale={_self.props.groupScale}

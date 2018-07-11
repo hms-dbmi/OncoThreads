@@ -177,7 +177,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<Button bsSize="xsmall" value={d} onClick={() => _self.openModal(d)}
+                buttons.push(<Button style={{textAlign: "left"}} bsSize="xsmall" value={d} onClick={() => _self.openModal(d)}
                                      key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} <FontAwesome
                     name="plus"/></Button>)
             }
@@ -186,7 +186,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     createTimepointDistanceButton() {
-        return (<Button bsSize="xsmall" onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
+        return (<Button style={{textAlign: "left"}} bsSize="xsmall" onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
                         key={"timepointdistance"}>Time between timepoints</Button>)
     }
 
