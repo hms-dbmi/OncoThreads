@@ -207,7 +207,6 @@ class BetweenTimepointStore {
                         }
                     }
                 });
-                    console.log(originalIdsDel,this.rootStore.eventDetails);
 
         }
 
