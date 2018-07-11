@@ -11,8 +11,6 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         });
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleRightClick = this.handleRightClick.bind(this);
-        this.handleClick = this.handleClick.bind(this);
-
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
@@ -123,30 +121,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
     handleRightClick(e, patient, timepoint, xposition) {
         //console.log("\n Right Clicked!");
+        e.preventDefault();
         this.setState({
             dragging: false
-        })
-
-
+        });
         this.props.showContextMenuHeatmapRow(e, patient, timepoint, xposition);
 
 
     }
 
-    handleClick(e) {
-        if (e.type === 'click') {
-            //console.log('Left click');
-        } else if (e.type === 'contextmenu') {
-            e.preventDefault();
-            //console.log('Right click');
-
-        }
-        /*if (e.nativeEvent.which === 1) {
-          console.log('left click');
-        } else if (e.nativeEvent.which === 3) {
-          console.log('right click');
-        }*/
-    }
 
     render() {
         return (
