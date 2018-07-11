@@ -30,6 +30,7 @@ const Plot = observer(class Plot extends React.Component {
     }
 
 
+
     /**
      * creates scales for computing the length of the partitions in grouped timepoints
      * @param w: width of the plot
@@ -39,28 +40,25 @@ const Plot = observer(class Plot extends React.Component {
 
     }
 
+    static createTimeScale(height, min, max) {
+        return (d3.scaleLinear().domain([min, max]).rangeRound([0, height]));
+    }
+
     render() {
         const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.heatmapWidth, this.props.visMap.sampleRectWidth);
         const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
 
         const max = this.props.store.rootStore.actualTimeLine
-            .map(yPositions => yPositions.reduce((next, max) => next>max? next: max, 0))
-            .reduce((next, max) => next>max? next: max, 0);
-
-
+            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
+            .reduce((next, max) => next > max ? next : max, 0);
+        const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.sampleRectWidth * 2, 0, max);
 
 
         return (
             <div className="scrollableX">
                 <svg width={this.props.svgWidth} height={this.props.height}>
                     <g transform={transform}>
-                        <Timepoints {...this.props}
-                                    allYPositions={this.props.store.rootStore.actualTimeLine}
-                                    yPositions={this.props.timepointY}
-                                    max={max}
-                                    groupScale={groupScale}
-                                    heatmapScales={sampleHeatmapScales}/>
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
                                      timepointData={this.props.store.timepoints}
                                      realTime={this.props.store.rootStore.realTime}
@@ -68,15 +66,21 @@ const Plot = observer(class Plot extends React.Component {
                                      transitionOn={this.props.store.rootStore.transitionOn}
                                      yPositions={this.props.transY}
                                      allYPositions={this.props.store.rootStore.actualTimeLine}
-                                     max={max}
                                      groupScale={groupScale}
                                      heatmapScales={sampleHeatmapScales}
+                                     timeScale={timeScale}
                                      height={this.props.transitionSpace}/>
+                        <Timepoints {...this.props}
+                                    allYPositions={this.props.store.rootStore.actualTimeLine}
+                                    yPositions={this.props.timepointY}
+                                    groupScale={groupScale}
+                                    timeScale={timeScale}
+                                    heatmapScales={sampleHeatmapScales}/>
+
                     </g>
                 </svg>
             </div>
         )
-
     }
 
 });

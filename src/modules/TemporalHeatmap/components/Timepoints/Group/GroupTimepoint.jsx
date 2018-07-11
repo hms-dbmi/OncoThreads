@@ -6,10 +6,11 @@ import GroupPartition from './GroupPartition'
 creates a grouped timepoint
  */
 const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
-    constructor(){
+    constructor() {
         super();
-        this.handleMouseClick=this.handleMouseClick.bind(this);
+        this.handleMouseClick = this.handleMouseClick.bind(this);
     }
+
     /**
      * gets the different partitions in the grouped timepoint
      * @returns partitions
@@ -25,19 +26,20 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
                 stroke = "black";
             }
             partitions.push(<g key={d.partition} style={{backgroundColor: "darkgray"}}
-                               onClick={(e) => _self.handleMouseClick(e,d.patients)}
+                               onClick={(e) => _self.handleMouseClick(e, d.patients)}
                                transform={transform}><GroupPartition {..._self.props} partition={d}
                                                                      partitionIndex={i} stroke={stroke}/></g>);
             for (let j = 0; j < d.rows.length; j++) {
-                if (d.rows[j].variable === _self.props.primaryVariable.id) {
+                if (d.rows[j].variable === _self.props.primaryVariableId) {
                     previousXPosition += _self.props.groupScale(d.rows[j].counts[0].value) + 10;
                 }
             }
         });
         return partitions;
     }
-    handleMouseClick(event,patients){
-        if(event.button===0){
+
+    handleMouseClick(event, patients) {
+        if (event.button === 0) {
             this.props.selectPartition(patients);
         }
     }

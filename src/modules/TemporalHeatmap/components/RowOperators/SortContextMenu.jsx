@@ -17,21 +17,21 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
      * applies sorting of the clicked timepoint to all timepoints
      */
     applySortToAll() {
-        this.props.store.applySortingToAll(this.props.clickedTimepoint,this.props.clickedVariable);
+        this.props.store.applySortingToAll(this.props.clickedTimepoint, this.props.clickedVariable);
     }
 
     /**
      * applies sorting of the clicked timepoint to previous timepoint
      */
     applySortToPrevious() {
-        this.props.store.applySortingToPrevious(this.props.clickedTimepoint,this.props.clickedVariable);
+        this.props.store.applySortingToPrevious(this.props.clickedTimepoint, this.props.clickedVariable);
     }
 
     /**
      * applies sorting of the clicked timepoint to next timepoint
      */
     applySortToNext() {
-        this.props.store.applySortingToNext(this.props.clickedTimepoint,this.props.clickedVariable);
+        this.props.store.applySortingToNext(this.props.clickedTimepoint, this.props.clickedVariable);
     }
 
     render() {

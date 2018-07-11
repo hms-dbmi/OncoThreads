@@ -28,166 +28,79 @@ const LineTransition = observer(class LineTransition extends React.Component {
             + "C" + x0 + "," + y2
             + " " + x1 + "," + y3
             + " " + x1 + "," + y1;
-        if(mode) {
-            return (<path key={key+"-solid"} d={path} stroke={strokeColor} fill="none"/>)
+        if (mode) {
+            return (<path key={key + "-solid"} d={path} stroke={strokeColor} fill="none"/>)
         } else {
-            return (<path key={key+"-dashed"} d={path} stroke={strokeColor} strokeDasharray="5, 5" fill="none"/>)
+            return (<path key={key + "-dashed"} d={path} stroke={strokeColor} strokeDasharray="5, 5" fill="none"/>)
         }
     }
+
     drawDefaultLines() {
         let lines = [];
         const _self = this;
-        this.props.transition.data.from.forEach(function (d,i) {
-        let globalInd=1;
+        this.props.transition.data.from.forEach(function (d, i) {
+            let globalInd = 1;
 
-            if (_self.props.transition.data.to.includes(d)) {
-                let strokeColor="lightgray";
-                if(_self.props.selectedPatients.includes(d)){
-                    strokeColor="black"
+            if (_self.props.transition.data.to && _self.props.transition.data.to.includes(d)) {
+                let strokeColor = "lightgray";
+                if (_self.props.selectedPatients.includes(d)) {
+                    strokeColor = "black"
                 }
                 lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
                     _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
-                    0 - _self.props.visMap.gap, _self.props.visMap.transitionSpace,
-                    d+globalInd+i, true, strokeColor));
+                    0 - _self.props.visMap.gap, _self.props.visMap.transitionSpaces[_self.props.index],
+                    d + globalInd + i, true, strokeColor));
                 globalInd++;
             }
         });
         return lines;
     }
 
-    drawLinesGlobalWithTransition(){
-        let lines = [];
-        const _self = this;
-
-
-        let j=0;
-
-        let y1=_self.props.allYPositionsy1; //.map(y=>y*700.00/_self.props.max);
-
-
-        let y2=_self.props.allYPositionsy2; //.map(y=>y*700.00/_self.props.max);
-
-        if(y1 && y2){
-
-            y1=y1.map(y=>y*700.00/_self.props.max);
-
-            y2=y2.map(y=>y*700.00/_self.props.max);
-
-            let globalInd=2;
-
-
-            this.props.transition.data.from.forEach(function (d, i) {
-
-                if (_self.props.toPatients.includes(d)) {
-                    let strokeColor="lightgray";
-                    if(_self.props.selectedPatients.includes(d)){
-                        strokeColor="black"
-                    }
-                    lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                        _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                        //0 - _self.props.visMap.gap,
-                        y1[j] + _self.props.visMap.sampleRectWidth /2,
-                        //_self.props.visMap.transitionSpace,
-                        y2[j], // + _self.props.visMap.sampleRectWidth / 2,
-                        d+globalInd+i, true, strokeColor));
-                    j++;
-                    globalInd=globalInd+2;
-                }
-
-            });
-
-            j=0;
-
-        }
-        return lines;
-    }
-
-    drawLinesGlobal() {
-        let lines = [];
-        const _self = this;
-
-
-        let j=0;
-
-        let y1=_self.props.allYPositionsy1.map(y=>y*700.00/_self.props.max);
-
-
-        let y2=_self.props.allYPositionsy2.map(y=>y*700.00/_self.props.max);
-
-
-        let globalInd=2;
-
-        _self.props.transition.data.from.forEach(function (d, i) {
-
-            if (_self.props.transition.data.to.includes(d)) {
-                let strokeColor="lightgray";
-                if(_self.props.selectedPatients.includes(d)){
-                    strokeColor="black"
-                }
-                lines.push(
-                    LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                    _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                    //0 - _self.props.visMap.gap,
-                    y1[i] + _self.props.visMap.sampleRectWidth/2,
-                    //_self.props.visMap.transitionSpace,
-                    y2[j], // + _self.props.visMap.sampleRectWidth / 2,
-                    d+globalInd+i, true, strokeColor));
-                j++;
-                globalInd=globalInd+2;
-            }
-        });
-
-        j=0;
-
-        return lines;
-    }
-
-
-
     drawRealtimeLines() {
         let lines = [];
         const _self = this;
 
-        let max =0;
-        for(let timegap in this.props.transition.timeGapStructure){
-            if(this.props.transition.timeGapStructure[timegap]>max){
-                max=this.props.transition.timeGapStructure[timegap];
+        let max = 0;
+        for (let timegap in this.props.transition.timeGapStructure) {
+            if (this.props.transition.timeGapStructure[timegap] > max) {
+                max = this.props.transition.timeGapStructure[timegap];
             }
         }
 
-        const getColor = _self.props.visMap.getColorScale(_self.props.secondPrimary.id, _self.props.secondPrimary.datatype);
-        const currentRow=_self.props.secondTimepoint.heatmap.filter(function (d,i) {
-            return d.variable===_self.props.secondPrimary.id
+        const getColor = _self.props.secondPrimary.colorScale;
+        const currentRow = _self.props.secondTimepoint.heatmap.filter(function (d, i) {
+            return d.variable === _self.props.secondPrimary.id
         })[0].data;
         let ind = -1;
 
         this.props.transition.data.from.forEach(function (d) {
 
             if (_self.props.transition.data.to.includes(d)) {
-                let strokeColor="lightgray";
-                if(_self.props.selectedPatients.includes(d)){
-                    strokeColor="black"
+                let strokeColor = "lightgray";
+                if (_self.props.selectedPatients.includes(d)) {
+                    strokeColor = "black"
                 }
-                const frac = _self.props.transition.timeGapStructure[d]/max;
+                const frac = _self.props.transition.timeGapStructure[d] / max;
                 ind++;
                 lines.push(LineTransition.drawLine(
                     (_self.props.firstHeatmapScale(d)) + _self.props.visMap.sampleRectWidth / 2,
-                    _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2,
+                    _self.props.firstHeatmapScale(d) * (1 - frac) + _self.props.secondHeatmapScale(d) * (frac) + _self.props.visMap.sampleRectWidth / 2,
                     0 - _self.props.visMap.gap,
-                    _self.props.visMap.transitionSpace*_self.props.transition.timeGapStructure[d]/max, d, true, strokeColor
+                    _self.props.visMap.transitionSpaces[_self.props.index] * _self.props.transition.timeGapStructure[d] / max, d, true, strokeColor
                 ));
-                if(_self.props.transition.timeGapStructure[d]<max) {
+                if (_self.props.transition.timeGapStructure[d] < max) {
                     lines.push(LineTransition.drawLine(
-                        _self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth / 2,
+                        _self.props.firstHeatmapScale(d) * (1 - frac) + _self.props.secondHeatmapScale(d) * (frac) + _self.props.visMap.sampleRectWidth / 2,
                         _self.props.secondHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
-                        _self.props.visMap.transitionSpace*frac,
-                        _self.props.visMap.transitionSpace, d, false, strokeColor
+                        _self.props.visMap.transitionSpaces[_self.props.index] * frac,
+                        _self.props.visMap.transitionSpaces[_self.props.index], d, false, strokeColor
                     ));
                     const color = getColor(currentRow[ind].value);
                     lines.push(
                         <rect
-                            x={_self.props.firstHeatmapScale(d)*(1-frac) +_self.props.secondHeatmapScale(d)*(frac) + _self.props.visMap.sampleRectWidth/2-_self.props.visMap.sampleRectWidth / 6}
-                            y={_self.props.visMap.transitionSpace*_self.props.transition.timeGapStructure[d]/max-5}
+                            key={d + "_proxy"}
+                            x={_self.props.firstHeatmapScale(d) * (1 - frac) + _self.props.secondHeatmapScale(d) * (frac) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 6}
+                            y={_self.props.visMap.transitionSpaces[_self.props.index] * _self.props.transition.timeGapStructure[d] / max - 5}
                             width={_self.props.visMap.sampleRectWidth / 3}
                             height={_self.props.visMap.sampleRectWidth / 3}
                             fill={color}
@@ -199,27 +112,14 @@ const LineTransition = observer(class LineTransition extends React.Component {
     }
 
     static getMax(max, num) {
-        return max>num? max: num;
+        return max > num ? max : num;
     }
 
 
-
-
     render() {
-        if(this.props.realTime) {
+        if (this.props.realTime) {
             return (
                 this.drawRealtimeLines()
-            )
-        }
-        else if(this.props.globalTime && !this.props.transitionOn){
-            return (
-                this.drawLinesGlobal()
-            )
-        }
-        else if(this.props.globalTime && this.props.transitionOn){
-            return (
-                //this.drawLinesGlobal()  //or, 
-                this.drawLinesGlobalWithTransition()
             )
         }
         else {

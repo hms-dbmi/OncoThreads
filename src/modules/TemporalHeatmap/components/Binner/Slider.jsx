@@ -62,21 +62,23 @@ const Slider = observer(class Slider extends React.Component {
         x.forEach(function (d, i) {
             if (i + 1 !== x.length) {
                 textFields.push(
-                    <rect key={"rect"+(i+2)} x={x[i]} y={yPos} width={x[i + 1] - x[i]} height={12} stroke={"black"} strokeWidth={1}
+                    <rect key={"rect" + (i + 2)} x={x[i]} y={yPos} width={x[i + 1] - x[i]} height={12} stroke={"black"}
+                          strokeWidth={1}
                           fill="white"/>);
                 textFields.push(
-                    <text key={"text"+(i+2)} fontSize="10" x={(x[i] + x[i + 1]) / 2}
+                    <text key={"text" + (i + 2)} fontSize="10" x={(x[i] + x[i + 1]) / 2}
                           y={yPos + 10}>
                         {(i + 2)}
                     </text>)
             }
         });
         textFields.push(
-            <rect key={"rect"+(x.length + 1)} x={x[x.length - 1]} y={yPos} width={this.props.width - x[x.length - 1]} height={12} stroke={"black"}
+            <rect key={"rect" + (x.length + 1)} x={x[x.length - 1]} y={yPos} width={this.props.width - x[x.length - 1]}
+                  height={12} stroke={"black"}
                   strokeWidth={1}
                   fill="white"/>);
         textFields.push(
-            <text key={"text"+(x.length + 1)} fontSize="10" x={(this.props.width + x[x.length - 1]) / 2}
+            <text key={"text" + (x.length + 1)} fontSize="10" x={(this.props.width + x[x.length - 1]) / 2}
                   y={yPos + 10}>
                 {(x.length + 1)}
             </text>);

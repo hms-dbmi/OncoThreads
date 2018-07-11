@@ -2,7 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import BinSelector from './BinSelector'
 import BinNames from './BinNames'
-import {Button, Modal,Alert} from 'react-bootstrap';
+import {Alert, Button, Modal} from 'react-bootstrap';
 
 
 const BinningModal = observer(class ContinuousBinner extends React.Component {

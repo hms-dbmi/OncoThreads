@@ -1,12 +1,14 @@
 import {extendObservable} from "mobx";
 import OriginalVariable from "./OriginalVariable";
 import DerivedVariable from "./DerivedVariable";
+import EventVariable from "./EventVariable";
 
 /*
 Store containing information about variables
  */
 class VariableStore {
-    constructor() {
+    constructor(rootStore) {
+        this.rootStore = rootStore;
         this.allVariables = [];
         extendObservable(this, {
             currentVariables: [],
@@ -21,18 +23,18 @@ class VariableStore {
         this.currentVariables.splice(this.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId), 1);
-        let isIncluded=false;
+        let isIncluded = false;
         this.currentVariables.forEach(function (d) {
-            if(d.derived){
-                if(d.originalIds.includes(variableId)){
-                    isIncluded=true;
+            if (d.derived) {
+                if (d.originalIds.includes(variableId)) {
+                    isIncluded = true;
                 }
             }
         });
-        if(!isIncluded){
+        if (!isIncluded) {
             this.allVariables.splice(this.allVariables.map(function (d) {
                 return d.id;
-            }).indexOf(variableId),1);
+            }).indexOf(variableId), 1);
         }
     }
 
@@ -41,26 +43,30 @@ class VariableStore {
      * @param id
      * @param name
      * @param datatype
+     * @param domain
+     * @param range
      */
-    addOriginalVariable(id, name, datatype) {
-        const newVariable = new OriginalVariable(id, name, datatype);
+    addOriginalVariable(id, name, datatype, domain, range) {
+        const newVariable = new OriginalVariable(id, name, datatype, domain, range);
         this.currentVariables.push(newVariable);
         this.allVariables.push(newVariable);
     }
 
-    /**
-     * adds a variable to all variables (usually used when a derived variable is added)
-     * @param id
-     * @param name
-     * @param datatype
-     */
-    addToAllVariables(id, name, datatype){
-        if(!this.allVariables.map(function (d) {
+    addEventVariable(newId, name, eventType, selectedVariables, eventSubtype, logicalOperator, domain, range) {
+        const _self = this;
+        selectedVariables.forEach(function (f) {
+            if (!_self.allVariables.map(function (d) {
                 return d.id;
-            }).includes(id)) {
-            const newVariable = new OriginalVariable(id, name, datatype);
-            this.allVariables.push(newVariable);
-        }
+            }).includes(f.id)) {
+                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, eventSubtype);
+                _self.allVariables.push(newVariable);
+            }
+        });
+        let combinedEvent = new DerivedVariable(newId, name, "binary", selectedVariables.map(function (d, i) {
+            return d.id;
+        }), logicalOperator, null, domain);
+        this.allVariables.push(combinedEvent);
+        this.currentVariables.push(combinedEvent);
     }
 
     /**
@@ -86,9 +92,10 @@ class VariableStore {
      * @param originalId
      * @param modificationType
      * @param modification
+     * @param domain
      */
-    modifyVariable(id, name, datatype, originalId, modificationType, modification) {
-        const newVariable = new DerivedVariable(id, name, datatype, [originalId], modificationType, modification);
+    modifyVariable(id, name, datatype, originalId, modificationType, modification, domain) {
+        const newVariable = new DerivedVariable(id, name, datatype, [originalId], modificationType, modification, domain);
         const oldIndex = this.currentVariables.map(function (d) {
             return d.id;
         }).indexOf(originalId);
@@ -101,32 +108,41 @@ class VariableStore {
      * @param id
      * @returns {boolean}
      */
-    hasVariable(id){
+    hasVariable(id) {
         return this.currentVariables.map(function (d) {
             return d.id
         }).includes(id)
+    }
+
+    getVariableIndex(id) {
+        return this.currentVariables.map(function (d) {
+            return d.id;
+        }).indexOf(id)
     }
 
     /**
      * gets a variable by id
      * @param id
      */
-    getById(id){
+    getById(id) {
         return this.currentVariables.filter(function (d) {
-            return d.id===id
+            return d.id === id
         })[0];
     }
 
-    getByOriginalId(id){
+    getByIdAllVariables(id) {
+        return this.allVariables.filter(function (d) {
+            return d.id === id
+        })[0];
+    }
 
-        return this.allVariables.filter(d=>!d.derived).filter(function (d) {
-            return d.id===id
+    getByOriginalId(id) {
+        return this.allVariables.filter(d => !d.derived).filter(function (d) {
+            return d.id === id
         })[0];
 
-        //_self.props.store.variableStore[timepoint.type].allVariables
-        //.filter(d=>!d.derived).filter(function(k){return k.id == element})[0];
-
     }
+
     /**
      * checks if a variable is continuous
      * @param variableId
@@ -138,4 +154,5 @@ class VariableStore {
         })[0].datatype === "NUMBER";
     }
 }
+
 export default VariableStore;

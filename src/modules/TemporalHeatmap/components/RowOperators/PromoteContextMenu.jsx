@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button,ButtonGroup} from 'react-bootstrap';
+import {Button, ButtonGroup} from 'react-bootstrap';
 
 /*
 promote context menu, appears after a right click on the variables name

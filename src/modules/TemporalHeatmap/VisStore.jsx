@@ -1,82 +1,90 @@
-import * as d3 from 'd3';
 import {extendObservable} from "mobx";
+import * as d3 from 'd3';
 
 /*
 stores information about current visual parameters
  */
-class VisStore{
-    constructor(){
-        this.categoricalColor={};
-        this.continuousColor={};
-        this.binnedColor={};
-        this.binaryColor=d3.scaleOrdinal().range(['#f7f7f7','#ffd92f','#8da0cb']).domain([undefined,true,false]);
-        //width of rects in sampleTomepoints
-        this.sampleRectWidth=0;
-        //width of rects in betweenTimepoints
-        this.betweenRectWidth=0;
+class VisStore {
+    constructor(rootStore) {
+        //width of rects in sampleTimepoints
+        this.rootStore = rootStore;
+        this.sampleRectWidth = 0;
         //height of rects in a row which is primary
-        this.primaryHeight=0;
-        this.secondaryHeight=0;
+        this.primaryHeight = 30;
+        this.secondaryHeight = 15;
         //gap between rows in heatmap
-        this.gap=0;
+        this.gap = 1;
         //space for transitions
-        this.transitionSpace=0;
+        this.transitionSpace = 100;
         //gap between partitions in grouped timepoints
-        this.partitionGap=0;
-        this.GlobalTransitionColors= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']).domain([undefined]);
-        extendObservable(this,{
-            timepointY:[],
-            transY:[],
-            svgWidth:0,
-            svgHeight:0
+        this.partitionGap = 10;
+        this.transitionSpaces = [];
+
+        this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
+        extendObservable(this, {
+            timepointY: [],
+            transY: [],
+            svgWidth: 0,
+            get betweenRectWidth() {
+                return this.sampleRectWidth / 2;
+            },
+            get betweenTPHeight() {
+                return this.getTimepointHeight(this.rootStore.timepointStore.currentVariables.between.length);
+            },
+            get sampleTPHeight() {
+                return this.getTimepointHeight(this.rootStore.timepointStore.currentVariables.sample.length);
+            },
+            get timepointPositions() {
+                return this.computeTimepointPositions();
+            },
+            get svgHeight() {
+                if (this.betweenTPHeight !== 0) {
+                    return this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.betweenTPHeight;
+                }
+                else {
+                    return this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.sampleTPHeight;
+
+                }
+            }
         })
     }
 
-    /**
-     * creates a continous color scale for a variable between min and max
-     * @param variable
-     * @param min
-     * @param max
-     */
-    setContinousColorScale(variable,min,max){
-        this.continuousColor[variable]=d3.scaleLinear().range(['#e6e6e6','#000000']).domain([min,max])
+    setTransitionSpace(transitionSpace) {
+        this.transitionSpace = transitionSpace;
     }
 
-    /**
-     * creates a binned color scale for a binned variable using its corresponding continuous scale
-     * @param newId
-     * @param oldId
-     * @param binNames: domain of scale
-     * @param binValues: bins
-     */
-    setBinnedColorScale(newId,oldId,binNames,binValues){
-        const continousScale=this.continuousColor[oldId];
-        let colors=[];
-        for(let i=0;i<binNames.length;i++){
-            colors.push(continousScale((binValues[i+1]+binValues[i])/2));
+    setSampleRectWidth(width) {
+        this.sampleRectWidth = width;
+    }
+
+    modifyTransitionSpace(number, index) {
+        if (index !== this.transitionSpaces.length - 2) {
+            console.log(index, this.rootStore.timepointStore.isAligned(index, index + 1), this.rootStore.timepointStore.isAligned(index + 1, index + 2));
+            if (this.rootStore.timepointStore.isAligned(index, index + 1)
+                && this.rootStore.timepointStore.isAligned(index + 1, index + 2)
+                && !this.rootStore.timepointStore.timepoints[index].isGrouped
+                && !this.rootStore.timepointStore.timepoints[index + 1].isGrouped
+                && !this.rootStore.timepointStore.timepoints[index + 2].isGrouped) {
+                this.transitionSpaces[index] = this.transitionSpace;
+                this.transitionSpaces[index + 1] = this.transitionSpace;
+            }
+            else {
+                this.transitionSpaces[index] = number;
+                this.transitionSpaces[index + 1] = number;
+            }
         }
-        this.binnedColor[newId]=d3.scaleOrdinal().range(colors).domain(binNames).unknown('white');
+        else {
+            if (this.rootStore.timepointStore.isAligned(index, index + 1)) {
+                this.transitionSpaces[index] = this.transitionSpace;
+            }
+            else {
+                this.transitionSpaces[index] = number;
+            }
+        }
     }
-    setGap(gap){
-        this.gap=gap;
-    }
-    setPartitionGap(partitionGap){
-        this.partitionGap=partitionGap;
-    }
-    setTransitionSpace(transitionSpace){
-        this.transitionSpace=transitionSpace;
-    }
-    setSampleRectWidth(width){
-        this.sampleRectWidth=width;
-    }
-    setBetweenRectWidth(width){
-        this.betweenRectWidth=width;
-    }
-    setPrimaryHeight(height){
-        this.primaryHeight=height;
-    }
-    setSecondaryHeight(height){
-        this.secondaryHeight=height;
+
+    resetTransitionSpace() {
+        this.transitionSpaces = [];
     }
 
     /**
@@ -84,8 +92,8 @@ class VisStore{
      * @param numVar
      * @returns {*}
      */
-    getTimepointHeight(numVar){
-        if(numVar===0){
+    getTimepointHeight(numVar) {
+        if (numVar === 0) {
             return 0;
         }
         else {
@@ -94,30 +102,32 @@ class VisStore{
     }
 
     /**
-     * returns a color scale for a variable depending on its type.
-     * @param variable
-     * @param type
-     * @returns {*}
+     * computes the positions for sample and between timepoints
+     * @returns {{sample: Array, between: Array}}
      */
-    getColorScale(variable,type){
-        if(type==="STRING") {
-            if (!(variable in this.categoricalColor)) {
-                this.categoricalColor[variable] = d3.scaleOrdinal().range(['#f7f7f7','#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']).domain([undefined]);
+    computeTimepointPositions() {
+        let timepointPositions = {"timepoint": [], "connection": []};
+        let prevY = 0;
+        for (let i = 0; i < this.rootStore.timepointStore.timepoints.length; i++) {
+            let tpHeight;
+            if (this.rootStore.timepointStore.timepoints[i].type === "between") {
+                tpHeight = this.betweenTPHeight;
             }
-            return this.categoricalColor[variable];
+            else {
+                tpHeight = this.sampleTPHeight;
+            }
+            timepointPositions.timepoint.push(prevY);
+            timepointPositions.connection.push(prevY + tpHeight);
+            if (this.transitionSpaces.length <= i) {
+                prevY += this.transitionSpace + tpHeight;
+                this.transitionSpaces.push(this.transitionSpace);
+            }
+            else {
+                prevY += this.transitionSpaces[i] + tpHeight;
+            }
         }
-        else if(type==="binary"){
-            return this.binaryColor;
-        }
-        else if(type==="BINNED"){
-            return this.binnedColor[variable];
-        }
-        else if(type==="GlobalTransitions"){
-            return this.GlobalTransitionColors;
-        }
-        else{
-            return this.continuousColor[variable];
-        }
+        return timepointPositions;
     }
 }
+
 export default VisStore;

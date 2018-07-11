@@ -51,16 +51,28 @@ class cBioAPI {
                                 patientDataResults.forEach(function (response3, i) {
                                     _self.clinicalPatientData.push(response3.data);
                                 });
-
                                 /**
                                  * get clinical data and mutation counts
                                  */
-                                axios.all([cBioAPI.getClinicalData(studyID), cBioAPI.getMutationCounts(studyID)])
-                                    .then(axios.spread(function (clinicalData, mutationCounts) {
+                                axios.all([cBioAPI.getClinicalData(studyID), cBioAPI.getMolecularProfiles(studyID)])
+                                    .then(axios.spread(function (clinicalData, molecularProfiles) {
                                         _self.clinicalSampleData = clinicalData.data;
-                                        _self.mutationCounts = mutationCounts.data;
-                                        callback();
-                                    }));
+                                        let index = molecularProfiles.data.map(function (d, i) {
+                                            return d.molecularAlterationType;
+                                        }).indexOf("MUTATION_EXTENDED");
+                                        if (index !== -1) {
+                                            axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfiles.data[index].molecularProfileId + "/mutation-counts?sampleListId=" + studyID + "_all")
+                                                .then(response => {
+                                                    _self.mutationCounts = response.data;
+                                                    callback();
+                                                })
+                                        }
+                                        else {
+                                            callback();
+                                        }
+                                    })).catch(function (error) {
+                                    console.log(error);
+                                });
                             })
                     })
             })
@@ -81,6 +93,10 @@ class cBioAPI {
      */
     static getMutationCounts(studyID) {
         return axios.get("http://cbiohack.org/api/molecular-profiles/" + studyID + "_mutations/mutation-counts?sampleListId=" + studyID + "_all");
+    }
+
+    static getMolecularProfiles(studyID) {
+        return axios.get("http://www.cbiohack.org/api/studies/" + studyID + "/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
     }
 
 }
