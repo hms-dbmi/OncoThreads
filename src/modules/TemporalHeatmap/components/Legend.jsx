@@ -118,15 +118,17 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let currX = 0;
         color.domain().forEach(function (d, i) {
-            let textValue;
-            if (i < color.domain().length / 2) {
-                textValue = color.domain()[color.domain().length - 1]
+            let rgb = color.range()[i].replace(/[^\d,]/g, '').split(',');
+            let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+            let textColor;
+            if (brightness < 255 / 2) {
+                textColor = "white";
             }
             else {
-                textValue = color.domain()[0]
+                textColor = "black";
             }
             const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
-            legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), color(textValue)));
+            legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), textColor));
             currX += (rectWidth + 2);
         });
         return legendEntries;
