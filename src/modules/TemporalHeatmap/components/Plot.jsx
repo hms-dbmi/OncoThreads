@@ -30,6 +30,7 @@ const Plot = observer(class Plot extends React.Component {
     }
 
 
+
     /**
      * creates scales for computing the length of the partitions in grouped timepoints
      * @param w: width of the plot

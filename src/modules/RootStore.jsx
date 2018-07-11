@@ -270,7 +270,7 @@ class RootStore {
      * @param xposition
      * @param up
      */
-    updateTimepointStructure(patient, timepoint, xposition, up) {
+    updateTimepointStructure(patient, timepoint, up) {
         var timeline = this.timepointStructure[timepoint];
 
         //var element = timeline[xposition];
