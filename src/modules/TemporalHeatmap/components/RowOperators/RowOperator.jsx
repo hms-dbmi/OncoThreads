@@ -133,7 +133,12 @@ const RowOperator = observer(class RowOperator extends React.Component {
         handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
-            this.props.store.removeVariable(variable, timepoint.type)
+            if(timepoint.type==="between"||this.props.store.currentVariables[timepoint.type].length>1) {
+                this.props.store.removeVariable(variable, timepoint.type)
+            }
+            else{
+                alert("Samples have to be represented by at least one variable");
+            }
         }
 
         getSortIcon(timepoint, variable, iconScale, xPos, yPos) {

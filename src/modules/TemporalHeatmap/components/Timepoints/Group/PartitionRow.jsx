@@ -30,8 +30,15 @@ const PartitionRow = observer(class PartitionRow extends React.Component {
                 }
                 fill = "white"
             }
+            let tooltipContent;
+            if(_self.props.variableType!=='NUMBER'){
+                tooltipContent=PartitionRow.getTooltipContent(f.key, f.value);
+            }
+            else{
+                tooltipContent=f.key;
+            }
             rects.push(<rect key={f.key}
-                             onMouseEnter={(e) => _self.props.showTooltip(e, PartitionRow.getTooltipContent(f.key, f.value))}
+                             onMouseEnter={(e) => _self.props.showTooltip(e,tooltipContent)}
                              onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.value)}
                              x={_self.props.groupScale(currCounts)} height={_self.props.height}
                              fill={fill} stroke={stroke} opacity={_self.props.opacity}/>);
