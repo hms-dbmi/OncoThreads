@@ -29,7 +29,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             let fill = _self.props.color(d.value);
             if (d.value === undefined) {
                 stroke = "lightgray";
-                fill = "none";
+                fill = "white";
                 /*rects.push(<line stroke={stroke}
                                  key={d.patient + "UNDEFINED"} height={_self.props.height}
                                  width={_self.props.rectWidth}

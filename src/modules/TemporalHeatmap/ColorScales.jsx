@@ -38,7 +38,7 @@ class ColorScales {
     }
 
     static getBinaryScale() {
-        return d3.scaleOrdinal().range(['#f7f7f7', '#ffd92f', '#8da0cb']).domain([undefined, true, false]);
+        return d3.scaleOrdinal().range(['#f7f7f7', '#ffd92f', 'lightgray']).domain([undefined, true, false]);
     }
 
 }

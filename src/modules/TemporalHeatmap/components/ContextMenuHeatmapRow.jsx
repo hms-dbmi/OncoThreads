@@ -127,12 +127,11 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
 
             }}>
                 <Button
-                    onClick={() => this.goUp(this.props.patient)}> Move this
-                    up</Button>
+                    onClick={() => this.goUp(this.props.patient)}> Move patient(s)
+                    up by 1 timepoint</Button>
                 <Button
                     onClick={() => this.goDown(this.props.patient)}>Move
-                    this down</Button>
-
+                    patient(s) down by 1 timepoint</Button>
             </ButtonGroup>
         )
     }

@@ -11,6 +11,7 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
         this.applySortToAll = this.applySortToAll.bind(this);
         this.applySortToPrevious = this.applySortToPrevious.bind(this);
         this.applySortToNext = this.applySortToNext.bind(this);
+        this.magicSort=this.magicSort.bind(this);
     }
 
     /**
@@ -33,6 +34,9 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
     applySortToNext() {
         this.props.store.applySortingToNext(this.props.clickedTimepoint, this.props.clickedVariable);
     }
+    magicSort(){
+        this.props.store.magicSort(this.props.clickedTimepoint,this.props.clickedVariable);
+    }
 
     render() {
         return (
@@ -45,6 +49,7 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
                 <Button onClick={() => this.applySortToPrevious()}>Apply sorting to previous timepoint</Button>
                 <Button onClick={() => this.applySortToNext()}>Apply sorting to next timepoint</Button>
                 <Button onClick={() => this.applySortToAll()}>Apply sorting to all timepoints</Button>
+                <Button onClick={()=> this.magicSort()}>Magic Sort</Button>
             </ButtonGroup>
         )
     }
