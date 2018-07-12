@@ -1,6 +1,5 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import uuidv4 from "uuid/v4";
 /*
 creates a row in a partition of a grouped timepoint
  */
