@@ -138,8 +138,8 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         }).map(element => element.key);
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
         return (
-            //this.createGradientRow(boxPlotValues, values.length)
-            this.createBoxPlot(boxPlotValues,values.length)
+            this.createGradientRow(boxPlotValues, values.length)
+            //this.createBoxPlot(boxPlotValues,values.length)
         )
     }
 });
