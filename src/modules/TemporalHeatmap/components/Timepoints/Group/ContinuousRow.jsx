@@ -32,7 +32,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             gradient=<linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" style={{stopColor: this.props.color(boxPlotValues[0])}}/>
                     <stop offset="33%" style={{stopColor: this.props.color(boxPlotValues[1])}}/>
-                    <stop offset="33%" style={{stopColor: this.props.color(boxPlotValues[3])}}/>
+                    <stop offset="66%" style={{stopColor: this.props.color(boxPlotValues[3])}}/>
                     <stop offset="100%" style={{stopColor: this.props.color(boxPlotValues[4])}}/>
                 </linearGradient>
         }
@@ -52,7 +52,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             </defs>
             <rect x="0" height={this.props.height} width={this.props.groupScale(numValues)}
                   fill={"url(#" + randomId + ")"} opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, 'Minimum: ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median: ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum: ' + Math.round(boxPlotValues[4] * 100) / 100)}
+                  onMouseEnter={(e) => this.props.showTooltip(e, numValues+' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
                   onMouseLeave={this.props.hideTooltip}/>
             <rect x={this.props.groupScale(numValues)} height={this.props.height}
                   width={this.props.groupScale(this.props.row.length - numValues)} fill={"white"} stroke="lightgray"
@@ -138,7 +138,8 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         }).map(element => element.key);
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
         return (
-            this.createGradientRow(boxPlotValues, values.length)
+            //this.createGradientRow(boxPlotValues, values.length)
+            this.createBoxPlot(boxPlotValues,values.length)
         )
     }
 });

@@ -29,15 +29,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             let fill = _self.props.color(d.value);
             if (d.value === undefined) {
                 stroke = "lightgray";
-                fill = "none";
-                rects.push(<line stroke={stroke}
-                                 key={d.patient + "UNDEFINED"} height={_self.props.height}
-                                 width={_self.props.rectWidth}
-                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
-                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
-                                 y1={0}
-                                 y2={_self.props.height}
-                                 opacity={_self.props.opacity}/>);
+                fill = "white";
             }
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";
@@ -52,6 +44,16 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                              width={_self.props.rectWidth}
                              x={_self.props.heatmapScale(d.patient) + _self.props.x}
                              fill={fill} opacity={_self.props.opacity}/>);
+            if(d.value===undefined){
+                 rects.push(<line stroke={stroke}
+                                 key={d.patient + "UNDEFINED"} height={_self.props.height}
+                                 width={_self.props.rectWidth}
+                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
+                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
+                                 y1={0}
+                                 y2={_self.props.height}
+                                 opacity={_self.props.opacity}/>);
+            }
         });
         return rects;
 
