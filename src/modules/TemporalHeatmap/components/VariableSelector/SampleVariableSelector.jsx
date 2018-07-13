@@ -21,7 +21,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.bin = this.bin.bind(this);
     }
 
-    bin(id,timepointIndex) {
+    bin(id) {
         this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints , null);
     }
 
