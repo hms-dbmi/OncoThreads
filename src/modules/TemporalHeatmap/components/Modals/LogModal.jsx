@@ -3,7 +3,7 @@ import {observer} from 'mobx-react';
 import {Button, Modal} from 'react-bootstrap';
 
 
-const LogModal = observer(class ContinuousBinner extends React.Component {
+const LogModal = observer(class LogModal extends React.Component {
     getFormattedLogs() {
         let formattedLogs = [];
         this.props.logs.forEach(function (d, i) {

@@ -9,7 +9,9 @@ import GetStudy from "./GetStudy";
 import Content from "./Content"
 import DefaultView from "./DefaultView"
 import RootStore from "../../RootStore";
-import LogModal from "./LogModal";
+import LogModal from "./Modals/LogModal";
+import SettingsModal from "./Modals/SettingsModal";
+import AboutModal from "./Modals/AboutModal";
 
 const App = observer(class App extends React.Component {
     constructor(props) {
@@ -17,20 +19,35 @@ const App = observer(class App extends React.Component {
         this.rootStore = new RootStore(props.cbioAPI, "", true);
         this.setRootStore = this.setRootStore.bind(this);
         this.state = {
-            modalIsOpen: false
+            logModalIsOpen: false,
+            aboutModalIsOpen: false,
+            settingsModalIsOpen: false
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
     }
 
-    openModal() {
-        this.setState({
-            modalIsOpen: true
-        });
+    openModal(type) {
+        if (type === 'about') {
+            this.setState({
+                aboutModalIsOpen: true
+            });
+        }
+        else if (type === 'log') {
+            this.setState({
+                logModalIsOpen: true
+            });
+        }
+        else {
+            this.setState({
+                settingsModalIsOpen: true
+            });
+        }
+
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false});
+        this.setState({logModalIsOpen: false, aboutModalIsOpen: false, settingsModalIsOpen: false});
     }
 
     setRootStore(study, firstLoad) {
@@ -43,12 +60,14 @@ const App = observer(class App extends React.Component {
             return ([
                     <GetStudy key="getStudy" setRoot={this.setRootStore} cbioAPI={this.props.cbioAPI}
                               studies={this.props.studyapi.studies}/>,
-                    <NavItem key="showLogs" onClick={this.openModal}>Show Logs</NavItem>
+                    <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
+                    <NavItem key='settings' onClick={() => this.openModal('settings')}>Settings</NavItem>,
+                    <NavItem key='about' onClick={() => this.openModal('about')}>About</NavItem>
                 ]
             )
         }
         else {
-            return null;
+            return (<NavItem key='about' onClick={() => this.openModal('about')}>About</NavItem>);
         }
     }
 
@@ -94,8 +113,11 @@ const App = observer(class App extends React.Component {
                 </Nav>
             </Navbar>
                 {this.getMainContent()}
-                <LogModal modalIsOpen={this.state.modalIsOpen} close={this.closeModal}
+                <LogModal modalIsOpen={this.state.logModalIsOpen} close={this.closeModal}
                           logs={this.rootStore.undoRedoStore.logs}/>
+                <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} store={this.rootStore}
+                               close={this.closeModal}/>
+                <AboutModal modalIsOpen={this.state.aboutModalIsOpen} close={this.closeModal}/>
             </div>
         )
     }

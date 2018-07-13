@@ -52,7 +52,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             buttonClicked: buttonClicked,
             selectedKey: "",
             selectedValues: [],
-            modalIsOpen: true,
+            logModalIsOpen: true,
             disabled: disabled
         });
     }
@@ -202,7 +202,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
 
     closeModal() {
         this.setState({
-            modalIsOpen: false,
+            logModalIsOpen: false,
             buttonClicked: "",
             selectedKey: "",
             name: "",
