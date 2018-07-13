@@ -32,7 +32,8 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                                                                                    variableDomain={_self.props.currentVariables[i].domain}
                                                                                     groupScale={_self.props.groupScale}
                                                                                     showTooltip={_self.props.showTooltip}
-                                                                                    hideTooltip={_self.props.hideTooltip}/>
+                                                                                    hideTooltip={_self.props.hideTooltip}
+                                                                                    continuousRepresentation={_self.props.store.rootStore.continuousRepresentation}/>
                 </g>);
             }
             else {

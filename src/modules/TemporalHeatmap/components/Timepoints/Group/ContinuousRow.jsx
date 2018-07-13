@@ -119,6 +119,19 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             </g>
         )
     }
+    createMedianValue(boxPlotValues,numValues){
+         return (<g>
+            <rect x="0" height={this.props.height} width={this.props.groupScale(numValues)}
+                  fill={this.props.color(boxPlotValues[2])} opacity={this.props.opacity}
+                  onMouseEnter={(e) => this.props.showTooltip(e, numValues+' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
+                  onMouseLeave={this.props.hideTooltip}/>
+            <rect x={this.props.groupScale(numValues)} height={this.props.height}
+                  width={this.props.groupScale(this.props.row.length - numValues)} fill={"white"} stroke="lightgray"
+                  opacity={this.props.opacity}
+                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
+                  onMouseLeave={this.props.hideTooltip}/>
+        </g>);
+    }
 
     static computeBoxPlotValues(values) {
         values.sort(function (a, b) {
@@ -137,10 +150,18 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             return d.key !== undefined;
         }).map(element => element.key);
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
-        return (
+        if(this.props.continuousRepresentation==='gradient'){
+            return (
             this.createGradientRow(boxPlotValues, values.length)
-            //this.createBoxPlot(boxPlotValues,values.length)
         )
+        }
+        else if(this.props.continuousRepresentation==='boxplot')
+        return (
+            this.createBoxPlot(boxPlotValues,values.length)
+        );
+        else{
+            return(this.createMedianValue(boxPlotValues,values.length));
+        }
     }
 });
 export default ContinuousRow;

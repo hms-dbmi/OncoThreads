@@ -37,6 +37,7 @@ class TimepointStore {
         this.applyPromotingToAll = this.applyPromotingToAll.bind(this);
         this.applyPromotingToPrevious = this.applyPromotingToPrevious.bind(this);
         this.applyPromotingToNext = this.applyPromotingToNext.bind(this);
+        this.regroupTimepoints=this.regroupTimepoints.bind(this);
 
     }
 

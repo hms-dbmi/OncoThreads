@@ -52,6 +52,7 @@ class RootStore {
 
         extendObservable(this, {
             logs: [],
+            continuousRepresentation:'gradient',
             parsed: false,
             firstLoad: firstLoad,
             realTime: false,
