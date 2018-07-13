@@ -100,7 +100,6 @@ const BinSelector = observer(class BinSelector extends React.Component {
         const bins = d3.histogram()
             .domain([d3.min(this.props.data) - 1, d3.max(this.props.data)])
             .thresholds(this.xScale.ticks(30))(this.props.data);
-
         const y = d3.scaleLinear()
             .domain([0, d3.max(bins, function (d) {
                 return d.length;
@@ -122,7 +121,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
                     <g transform={transform}>
                         <Axis h={this.props.height} axis={yAxis} axisType="y"/>
                         <Axis h={h} axis={xAxis} axisType="x"/>
-                        <Histogram data={this.props.data} bins={bins} xScale={this.xScale} yScale={y} height={h}/>
+                        <Histogram bins={bins} xScale={this.xScale} yScale={y} height={h}/>
                         <Slider yPos={h + 30} width={w} x={this.state.x} reverseScale={reverseX}
                                 handleMouseDown={this.handleMouseDown}
                                 handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>
