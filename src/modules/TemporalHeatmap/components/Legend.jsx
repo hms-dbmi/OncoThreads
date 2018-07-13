@@ -84,7 +84,7 @@ const Legend = observer(class Legend extends React.Component {
                     <stop offset="100%" style={{stopColor: color(max)}}/>
                 </linearGradient>
             </defs>
-            <rect x="0" y="0" width={100} height={lineheight} fill={"url(#" + randomId + ")"}/>
+            <rect opacity={opacity} x="0" y="0" width={100} height={lineheight} fill={"url(#" + randomId + ")"}/>
             {text}
         </g>;
     }

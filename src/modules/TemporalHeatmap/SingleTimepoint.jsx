@@ -134,12 +134,13 @@ class SingleTimepoint {
             for (let row = 0; row < this.heatmap.length; row++) {
                 if (this.heatmap[row].variable !== variable) {
                     let currSecondary = this.heatmap[row].data[i].value;
-                    this.addInstance(partitionIndex, currSecondary, row);
+                    this.addInstance(partitionIndex, currSecondary, row,this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype==="NUMBER");
                 }
             }
         }
         this.isGrouped = true;
     }
+
 
 
     /**
@@ -148,14 +149,14 @@ class SingleTimepoint {
      * @param currKey: Key of partition
      * @param row: current row
      */
-    addInstance(partitionIndex, currKey, row) {
+    addInstance(partitionIndex, currKey, row, continuous) {
         let rowIndex = this.grouped[partitionIndex].rows.map(function (e) {
             return e.variable;
         }).indexOf(this.heatmap[row].variable);
         let keyIndex = this.grouped[partitionIndex].rows[rowIndex].counts.map(function (e) {
             return e.key
         }).indexOf(currKey);
-        if (keyIndex === -1) {
+        if (keyIndex === -1||continuous) {
             this.grouped[partitionIndex].rows[rowIndex].counts.push({
                 "key": currKey,
                 "value": 1
