@@ -26,7 +26,13 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color = _self.props.currentVariables[i].colorScale;
+            let color;
+
+            if(_self.props.store.rootStore.globalPrimary===""){
+            
+                color = _self.props.currentVariables[i].colorScale;
+                
+
 
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
@@ -46,6 +52,28 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             </g>);
 
+
+        }    
+        else{ 
+                color = _self.props.currentVariables.filter(d=>d.id==_self.props.store.rootStore.globalPrimary)[0].colorScale;
+
+
+                if(row.variable===_self.props.store.rootStore.globalPrimary){
+                    rows.push(<g key={row.variable + i + globalIndex}>
+
+                        <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
+                                    height={_self.props.visMap.primaryHeight}
+                                    color={color}
+                                    x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                                    ypi={_self.props.ypi}
+                                    ht={_self.props.ht}
+                                    dtype={_self.props.currentVariables[i].datatype}/>;
+        
+                    </g>);
+
+                }
+
+        }
             //previousYposition += _self.props.visMap.primaryHeight + _self.props.visMap.gap;
 
             //previousYpositions = _self.props.ypi;

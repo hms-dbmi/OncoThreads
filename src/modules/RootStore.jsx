@@ -43,6 +43,7 @@ class RootStore {
 
         this.sampleStructure = [];
 
+        //this.globalPrimary="";
 
         this.maxTimeInDays = 0;
 
@@ -57,6 +58,9 @@ class RootStore {
             firstLoad: firstLoad,
             realTime: false,
             globalTime: false,
+           
+            globalPrimary:'',
+
             transitionOn: false,
             timepointStructure: [],
             get actualTimeLine() {
