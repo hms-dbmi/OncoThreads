@@ -218,6 +218,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
              </g>);*/
 
             const _self = this;
+
+            let fillC="#F00";
             if (this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).datatype === "binary") {
 
                 let labels = [];
@@ -235,7 +237,11 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                     //console.log(orId);
                     let c1 = _self.props.visMap.globalTimelineColors;
-                    let fillC = c1(element);
+                    //let fillC = c1(element);
+
+                    if(fillC==="#F00"){
+                        fillC = c1(element);
+                    }
 
                     //console.log(fillC);
 
@@ -253,8 +259,9 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                               x={xPos + xT + 5} y={yPos - 25}
                               fill={fillC}/>
                         <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                             onClick={() => this.promote(timepoint, variable)}> 
-                             {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}
+                             //onClick={() => this.promote(timepoint, variable)}
+                             > 
+                             {GlobalRowOperator.cropText(name, fontSize, fontWeight, width)}
                            
                            
                             </text>
@@ -273,10 +280,11 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                            onMouseLeave={this.props.hideTooltip}>
 
                     <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
+                         // onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
 
 
-                          onClick={() => this.promote(timepoint, variable)}>
+                          onClick={() => this.promote(timepoint, variable)}
+                          >
                           {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}
                        
                        
@@ -302,14 +310,14 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                     let lineHeight;
                     let fontWeight;
-                    // if (d.variable === _self.props.timepoint.primaryVariable.id) {
-                    //   lineHeight =  _self.props.visMap.primaryHeight;
-                    //fontWeight = "bold";
-                    //}
-                    //else {
-                    lineHeight = _self.props.visMap.secondaryHeight;
-                    fontWeight = "normal";
-                    //}
+                    if (d.variable === _self.props.store.rootStore.globalPrimary) {
+                       lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
+                       fontWeight = "bold";
+                    }
+                    else {
+                        lineHeight = _self.props.visMap.secondaryHeight;
+                        fontWeight = "normal";
+                    }
                     const transform = "translate(0," + pos + ")";
                     const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
                     let fontSize = 12;
