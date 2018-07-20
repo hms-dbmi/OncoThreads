@@ -98,28 +98,28 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                           x="37"
 
                           y={this.props.height / 2 - 140}
-                          fontSize="13px"
+                          fontSize="10px"
                     >
                         <tspan x="37" dy="1em">Time</tspan>
-                        <tspan x="37" dy="1em">(days)</tspan>
+                        <tspan x="39" dy="1em">(months)</tspan>
                     </text>
 
                     <line x1="43" y1="30" x2="43" y2={this.props.height - 18} stroke="darkgray"
                           markerEnd="url(#arrow)" strokeWidth="2"/>
 
-                    <text textAnchor="end" x="32" y="40" fontSize="12px">0</text>
+                    <text textAnchor="end" x="32" y="40" fontSize="10px">0</text>
 
                     <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) / 4}
-                          fontSize="12px">{Math.floor(this.props.maxTimeInDays / 4)}</text>
+                          fontSize="10px">{Math.floor((this.props.maxTimeInDays / 4) / 30)}</text>
 
                     <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 2 / 4}
-                          fontSize="12px">{Math.floor(this.props.maxTimeInDays * 2 / 4)}</text>
+                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 2 / 4)/30)}</text>
 
                     <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 3 / 4}
-                          fontSize="12px">{Math.floor(this.props.maxTimeInDays * 3 / 4)}</text>
+                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 3 / 4)/30)}</text>
 
                     <text textAnchor="end" x="32" y={this.props.height - 20}
-                          fontSize="12px">{this.props.maxTimeInDays}</text>
+                          fontSize="10px">{Math.floor(this.props.maxTimeInDays/30)}</text>
 
                 </g>
 

@@ -257,7 +257,10 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                         <rect key={"rect"} opacity={1} width={15} height={15}
                               x={xPos + xT + 5} y={yPos - 25}
-                              fill={fillC}/>
+                              fill={fillC}
+                              opacity={0.5}
+                              
+                              />
                         <text style={{fontWeight: fontWeight, fontSize: fontSize}}
                              //onClick={() => this.promote(timepoint, variable)}
                              > 
