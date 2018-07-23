@@ -1,7 +1,7 @@
 import {extendObservable} from "mobx";
 
 /*
-stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
+stores information about a single timepoint
  */
 class SingleTimepoint {
     constructor(rootStore, variable, patients, type, localIndex, order) {
