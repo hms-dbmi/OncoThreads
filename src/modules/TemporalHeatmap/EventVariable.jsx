@@ -1,5 +1,11 @@
+import {extendObservable} from "mobx/lib/mobx";
+import ColorScales from "./ColorScales";
+
 class EventVariable {
     constructor(id, name, datatype, eventType, eventSubType) {
+        extendObservable(this, {
+            colorScale:ColorScales.getBinaryScale()
+        });
         this.id = id;
         this.name = name; //e.g. TMZ
         this.datatype = datatype;

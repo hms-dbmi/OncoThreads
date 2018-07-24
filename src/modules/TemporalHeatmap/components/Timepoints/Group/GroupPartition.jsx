@@ -33,7 +33,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                                                                                     groupScale={_self.props.groupScale}
                                                                                     showTooltip={_self.props.showTooltip}
                                                                                     hideTooltip={_self.props.hideTooltip}
-                                                                                    continuousRepresentation={_self.props.store.rootStore.continuousRepresentation}/>
+                                                                                    continuousRepresentation={_self.props.store.continuousRepresentation}/>
                 </g>);
             }
             else {
@@ -42,7 +42,9 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                                                                                     stroke={stroke}
                                                                                     groupScale={_self.props.groupScale}
                                                                                     showTooltip={_self.props.showTooltip}
-                                                                                    hideTooltip={_self.props.hideTooltip}/>
+                                                                                    hideTooltip={_self.props.hideTooltip}
+                                                                                    selectedPatients={_self.props.selectedPatients}
+                                                                                    advancedSelection={_self.props.advancedSelection}/>
                 </g>);
             }
             previousYposition += height + _self.props.visMap.gap;

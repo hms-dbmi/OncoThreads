@@ -69,7 +69,7 @@ const Transitions = observer(class Transitions extends React.Component {
 
 
     render() {
-        if (this.props.store.rootStore.globalTime) {
+        if (this.props.store.globalTime) {
             return (
                 this.getGlobalTransitions()
             )

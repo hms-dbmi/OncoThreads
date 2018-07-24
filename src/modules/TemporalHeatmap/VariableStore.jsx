@@ -52,7 +52,7 @@ class VariableStore {
         this.allVariables.push(newVariable);
     }
 
-    addEventVariable(newId, name, eventType, selectedVariables, eventSubtype, logicalOperator, domain, range) {
+    addCombinedEventVariable(newId, name, eventType, selectedVariables, eventSubtype, logicalOperator, domain, range) {
         const _self = this;
         selectedVariables.forEach(function (f) {
             if (!_self.allVariables.map(function (d) {
@@ -67,6 +67,18 @@ class VariableStore {
         }), logicalOperator, null, domain);
         this.allVariables.push(combinedEvent);
         this.currentVariables.push(combinedEvent);
+    }
+    addSeperateEventVariables(eventType, selectedVariables, eventSubtype){
+        const _self=this;
+        selectedVariables.forEach(function (f) {
+            if (!_self.allVariables.map(function (d) {
+                return d.id;
+            }).includes(f.id)) {
+                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, eventSubtype);
+                _self.allVariables.push(newVariable);
+                _self.currentVariables.push(newVariable);
+            }
+        });
     }
 
     /**

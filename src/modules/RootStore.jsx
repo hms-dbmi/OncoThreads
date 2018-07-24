@@ -51,13 +51,8 @@ class RootStore {
         this.reset = this.reset.bind(this);
 
         extendObservable(this, {
-            logs: [],
-            continuousRepresentation:'gradient',
             parsed: false,
             firstLoad: firstLoad,
-            realTime: false,
-            globalTime: false,
-            transitionOn: false,
             timepointStructure: [],
             get actualTimeLine() {
                 const _self = this;
@@ -122,9 +117,10 @@ class RootStore {
      */
     reset() {
         this.parsed = false;
-        this.globalTime = false;
-        this.realTime = false;
-        this.transitionOn = false;
+        this.timepointStore.globalTime = false;
+        this.timepointStore.realTime = false;
+        this.timepointStore.transitionOn = false;
+        this.timepointStore.addAsGroup=false;
         this.eventDetails = [];
         this.timepointStore.selectedPatients=[];
         //this.maxTimeInDays=0;

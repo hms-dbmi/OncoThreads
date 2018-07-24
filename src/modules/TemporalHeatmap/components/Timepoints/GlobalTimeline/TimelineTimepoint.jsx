@@ -214,7 +214,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
     render() {
-        if (!this.props.store.rootStore.transitionOn) {
+        if (!this.props.store.transitionOn) {
             return (
                 this.getGlobalTimepoint()
             )

@@ -17,7 +17,6 @@ class BetweenTimepointStore {
             //timeline: []
         });
     }
-
     reset() {
         this.timepoints = [];
         this.variableStore.constructor(this.rootStore);
@@ -25,7 +24,7 @@ class BetweenTimepointStore {
 
     initialize(id) {
         this.rootStore.visStore.resetTransitionSpace();
-        this.rootStore.transitionOn = true;
+        this.rootStore.timepointStore.transitionOn = true;
         this.rootStore.realTime = false;
         for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
             let order;
@@ -65,7 +64,6 @@ class BetweenTimepointStore {
             _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
         });
         this.timepoints = timepoints;
-
     }
 
     /**
@@ -126,18 +124,32 @@ class BetweenTimepointStore {
 
     addORVariable(type, selectedValues, selectedKey, name) {
         // create new Id
+        let isFirst=this.timepoints.length===0;
         let derivedId = uuidv4();
         // add derived variable
-        this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR", []);
+        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR", []);
         //initialize if the variable is the first variable to be added
-        if (this.timepoints.length === 0) {
-            this.initialize(derivedId, false);
+        if (isFirst) {
+            this.initialize(derivedId);
         }
         const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
-        //this.addToTimeline(eventMapper);
         this.addHeatmapVariable(this.deriveMapper(eventMapper, "or"), derivedId);
-        this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
+    }
+    addVariablesSeperate(type, selectedValues, selectedKey){
+        let isFirst=this.timepoints.length===0;
+        const _self=this;
+        this.variableStore.addSeperateEventVariables(type, selectedValues, selectedKey);
+        //initialize if the variable is the first variable to be added
+        if (isFirst) {
+            this.initialize(selectedValues[0].id);
+        }
+        selectedValues.forEach(function (d,i) {
+            const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]], selectedKey);
+            _self.addHeatmapVariable(_self.deriveMapper(eventMapper, "or"), d.id);
+        });
+        this.rootStore.timepointStore.regroupTimepoints();
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable=>variable.name))
     }
 
     deriveMapper(mapper, operator) {
@@ -160,14 +172,15 @@ class BetweenTimepointStore {
      * @param variableId
      */
     addTimepointDistance(variableId) {
-        this.rootStore.transitionOn = true;
+        let isFirst=this.timepoints.length===0;
+        this.rootStore.timepointStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping, "between");
             this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", minMax);
-            if (this.timepoints.length === 0) {
+            if (isFirst) {
                 this.initialize(variableId, false);
             }
-            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
+            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId,isFirst);
             this.rootStore.timepointStore.regroupTimepoints();
         }
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
@@ -229,7 +242,7 @@ class BetweenTimepointStore {
         }
         //case: last timepoint variableId was removed
         else {
-            this.rootStore.transitionOn = false;
+            this.rootStore.timepointStore.transitionOn = false;
             this.timepoints = [];
             this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();
