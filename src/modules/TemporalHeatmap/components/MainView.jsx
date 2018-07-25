@@ -48,7 +48,7 @@ const MainView = observer(class MainView extends React.Component {
         this.props.store.rootStore.reset();
     }
     handleResetAlignment(){
-        this.props.store.rootStore.resetTimepointStructure();
+        this.props.store.rootStore.resetTimepointStructure(true);
     }
     handleResetSelection(){
         this.props.store.selectedPatients=[]

@@ -54,7 +54,6 @@ const Plot = observer(class Plot extends React.Component {
             .reduce((next, max) => next > max ? next : max, 0);
         const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.sampleRectWidth * 2, 0, max);
 
-
         return (
             <div className="scrollableX">
                 <svg width={this.props.svgWidth} height={this.props.height}>

@@ -46,7 +46,7 @@ class RootStore {
 
         this.maxTimeInDays = 0;
 
-        this.originalTimePointLength=0;
+        this.originalTimePointLength = 0;
 
         this.reset = this.reset.bind(this);
 
@@ -56,9 +56,9 @@ class RootStore {
             timepointStructure: [],
             get actualTimeLine() {
                 const _self = this;
-                let timeline=[];
+                let timeline = [];
                 this.timepointStructure.forEach(function (d) {
-                    let singleTP=[];
+                    let singleTP = [];
                     d.forEach(function (f) {
                         singleTP.push(_self.sampleTimelineMap[f.sample].startNumberOfDaysSinceDiagnosis)
                     });
@@ -119,14 +119,12 @@ class RootStore {
         this.parsed = false;
         this.timepointStore.globalTime = false;
         this.timepointStore.realTime = false;
+        this.timepointStore.addAsGroup = false;
+        this.timepointStore.selectedPatients = [];
         this.timepointStore.transitionOn = false;
-        this.timepointStore.addAsGroup=false;
-        this.eventDetails = [];
-        this.timepointStore.selectedPatients=[];
-        //this.maxTimeInDays=0;
-        this.resetTimepointStructure();
+        this.resetTimepointStructure(false);
         this.betweenTimepointStore.reset();
-        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical",this.patientOrderPerTimepoint);
+        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical", this.patientOrderPerTimepoint);
         this.undoRedoStore.saveVariableHistory("ADD VARIABLE", this.clinicalSampleCategories[0].variable);
         this.parsed = true;
     }
@@ -134,7 +132,7 @@ class RootStore {
     /**
      * resets the timepoint structure to the default alignment
      */
-    resetTimepointStructure(){
+    resetTimepointStructure(update) {
         let timepointStructure = [];
         const _self = this;
         for (let i = 0; i < this.maxTP; i++) {
@@ -154,10 +152,12 @@ class RootStore {
             });
             timepointStructure.push(patientSamples);
         }
-        this.timepointStructure=timepointStructure;
+        this.timepointStructure = timepointStructure;
         this.eventDetails = [];
-        this.sampleTimepointStore.update(this.patientOrderPerTimepoint);
-        this.betweenTimepointStore.update();
+        if(update){
+            this.sampleTimepointStore.update(this.patientOrderPerTimepoint);
+            this.betweenTimepointStore.update();
+        }
         this.timepointStore.initialize();
     }
 
@@ -166,7 +166,7 @@ class RootStore {
      */
     parseCBio() {
         const _self = this;
-        this.firstLoad=false;
+        this.firstLoad = false;
         this.cbioAPI.getAllData(this.study.studyId, function () {
             _self.buildPatientStructure();
             _self.createClinicalSampleMapping();
@@ -252,8 +252,6 @@ class RootStore {
     }
 
 
-
-
     sortByPatientOrder(ObjectStructure) {
         return ObjectStructure.sort((d1, d2) => {
             return this.patientOrderPerTimepoint.indexOf(d1.patient) - this.patientOrderPerTimepoint.indexOf(d2.patient);
@@ -291,7 +289,7 @@ class RootStore {
             }
             else {
                 for (let i = timepoint; i < this.sampleTimepointStore.timepoints.length; i++) {
-                    if (i+1<_self.timepointStructure.length) {
+                    if (i + 1 < _self.timepointStructure.length) {
                         indexedElements = _self.timepointStructure[i + 1]
                             .filter(d => d)
                             .map((d, j) => {

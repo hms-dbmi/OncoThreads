@@ -15,7 +15,6 @@ import {
     Panel,
     Radio
 } from 'react-bootstrap';
-import SampleVariableSelector from "./SampleVariableSelector";
 
 
 /*
@@ -273,11 +272,11 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     toggleEventIcon() {
-        this.setState({eventIcon: SampleVariableSelector.toggleIcon(this.state.eventIcon)});
+        this.setState({eventIcon: BetweenSampleVariableSelector.toggleIcon(this.state.eventIcon)});
     }
 
     toggleTimepointDistanceIcon() {
-        this.setState({timepointDistanceIcon: SampleVariableSelector.toggleIcon(this.state.timepointDistanceIcon)});
+        this.setState({timepointDistanceIcon: BetweenSampleVariableSelector.toggleIcon(this.state.timepointDistanceIcon)});
     }
 
     render() {

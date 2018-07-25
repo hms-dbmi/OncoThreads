@@ -14,7 +14,6 @@ class BetweenTimepointStore {
         this.variableStore = new VariableStore(rootStore);
         extendObservable(this, {
             timepoints: [],
-            //timeline: []
         });
     }
     reset() {
@@ -95,7 +94,12 @@ class BetweenTimepointStore {
         }
         this.variableStore.currentVariables.forEach(function (d) {
             if (!d.derived) {
-                _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
+                if(d.type==='event'){
+                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(d.eventType, [{name:d.name,id:d.id}], d.eventSubType), "or"), d.id);
+                }
+                else {
+                    _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
+                }
             }
             else {
                 if (d.modificationType === "OR") {
@@ -201,27 +205,20 @@ class BetweenTimepointStore {
 
         const _self = this;
 
-        var indexToDelete = _self.variableStore.currentVariables.map(function (d) {
+        let indexToDelete = _self.variableStore.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId);
-        if (_self.variableStore.currentVariables[indexToDelete].type === "derived") {
-            var originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
-            //console.log(originalIdsDel);
+            let originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
             originalIdsDel.forEach(
                 function (d) {
-                    if (_self.variableStore.getByIdAllVariables(d).type === "event") {
-                        for (let l = 0; l < _self.rootStore.eventDetails.length;) {
+                        for (let l =_self.rootStore.eventDetails.length-1;l>=0;l--) {
                             if (d === _self.rootStore.eventDetails[l].varId) {
                                 _self.rootStore.eventDetails.splice(l, 1);
                             }
-                            else {
-                                l++;
-                            }
-                        }
                     }
                 });
 
-        }
+
 
 
         //console.log(this.rootStore.eventDetails);

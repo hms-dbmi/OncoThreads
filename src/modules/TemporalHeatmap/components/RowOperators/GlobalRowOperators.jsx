@@ -54,7 +54,7 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
             //if(_self.props.store.){
 
             //}
-            if (_self.props.store.rootStore.transitionOn && _self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length !== 0) {
+            if (_self.props.store.transitionOn && _self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length !== 0) {
                 i = 1;
                 d = this.props.timepoints[i];
 
