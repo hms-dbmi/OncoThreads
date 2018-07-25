@@ -255,7 +255,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                         onMouseLeave={_self.props.hideTooltip}>
 
-                        <rect key={"rect"} opacity={1} width={15} height={15}
+                        <rect key={"rect"} 
+                              width={15} height={15}
                               x={xPos + xT + 5} y={yPos - 25}
                               fill={fillC}
                               opacity={0.5}
