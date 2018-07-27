@@ -1,5 +1,7 @@
 import React from "react";
 import {observer} from "mobx-react";
+import FontAwesome from 'react-fontawesome';
+import {extendObservable} from "mobx";
 
 
 /*
@@ -7,8 +9,104 @@ import {observer} from "mobx-react";
  */
 const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
+    /*constructor(props){
+        super(props)
+        this.state = {
+          listOpen: false,
+          headerTitle: this.props.title,
 
+          list: [
+            {
+                id: 0,
+                title: 'Days',
+                selected: false,
+                key: 'location'
+            },
+            {
+              id: 1,
+              title: 'Months',
+              selected: false,
+              key: 'location'
+            },
+            {
+              id: 2,
+              title: 'Year',
+              selected: false,
+              key: 'location'
+            }
+          ]
+        }
+
+
+    }  
+
+    handleClickOutside(){
+        this.setState({
+          listOpen: false
+        })
+      }
+      toggleList(){
+        this.setState(prevState => ({
+          listOpen: !prevState.listOpen
+        }))
+      }
+*/
+
+
+
+
+    constructor() {
+        super();
+        
+        this.state = {
+        showMenu: false
+       
+        };
+        
+
+        extendObservable(this, {
+            timeVar: 1
+            //timeline: []
+        });
+
+
+        this.showMenu = this.showMenu.bind(this);
+        this.closeMenu = this.closeMenu.bind(this);
+        
+    }
+    
+    showMenu(event) {
+        event.preventDefault();
+        
+        this.setState({ showMenu: true }, () => {
+        document.addEventListener('click', this.closeMenu);
+        });
+    }
+    
+    closeMenu(event) {
+        
+        if (!this.dropdownMenu.contains(event.target)) {
+        
+        this.setState({ showMenu: false }, () => {
+            document.removeEventListener('click', this.closeMenu);
+        });  
+        
+        }
+    }
+
+
+
+    handleClick(e) {
+        e.preventDefault();
+        console.log(e.target.id);
+        this.timeVar=e.target.id;
+      }
     render() {
+
+
+
+        //const list = this.state.list;
+        //const{listOpen, headerTitle} = this.state;
 
         /* return (
                  <svg width={this.props.width} height={this.props.height}>
@@ -85,6 +183,33 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
 
         return (
+            <div>
+
+        <div>
+            <button onClick={this.showMenu}>
+            Show time as..
+            </button>
+            
+            {
+            this.state.showMenu
+                ? (
+                <div
+                    className="menu"
+                    ref={(element) => {
+                    this.dropdownMenu = element;
+                    }}
+                >
+                    <button id="1" onClick={e => this.handleClick(e)} > Days </button>
+                    <button id="30" onClick={e => this.handleClick(e)} > Months </button>
+                    <button id="365" onClick={e => this.handleClick(e)} > Years </button>
+                </div>
+                )
+                : (
+                null
+                )
+            }
+        </div>
+
             <svg width={this.props.width / 3} height={this.props.height}>
                 <defs>
                     <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"
@@ -92,6 +217,17 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                         <path d="M0,0 L0,6 L9,3 z" fill="darkgray"/>
                     </marker>
                 </defs>
+
+
+
+                <foreignobject className="node" x="30" y={this.props.height - 18} width="100" height="100">
+
+                <div>
+                    I'm a div inside a SVG. 
+
+                </div>          
+                </foreignobject>
+
                 <g>
 
                     <text textAnchor="end"
@@ -102,7 +238,13 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                     >
                         <tspan x="37" dy="1em">Time</tspan>
                         <tspan x="39" dy="1em">(months)</tspan>
+
+
+                        
                     </text>
+
+                   
+
 
                     <line x1="43" y1="30" x2="43" y2={this.props.height - 18} stroke="darkgray"
                           markerEnd="url(#arrow)" strokeWidth="2"/>
@@ -110,21 +252,72 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                     <text textAnchor="end" x="32" y="40" fontSize="10px">0</text>
 
                     <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) / 4}
-                          fontSize="10px">{Math.floor((this.props.maxTimeInDays / 4) / 30)}</text>
+                          fontSize="10px">{Math.floor((this.props.maxTimeInDays / 4) / (this.timeVar)  )}</text>
 
                     <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 2 / 4}
-                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 2 / 4)/30)}</text>
+                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 2 / 4)/ (this.timeVar))}</text>
 
                     <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 3 / 4}
-                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 3 / 4)/30)}</text>
+                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 3 / 4)/(this.timeVar))}</text>
 
                     <text textAnchor="end" x="32" y={this.props.height - 20}
-                          fontSize="10px">{Math.floor(this.props.maxTimeInDays/30)}</text>
+                          fontSize="10px">{Math.floor(this.props.maxTimeInDays/ (this.timeVar)  )}</text>
 
                 </g>
 
             </svg>
+            </div>
         );
     }
 });
 export default GlobalTimeAxis;
+
+/*  <select className="dropdown">
+                        <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Dropdown button
+                        </button>
+                        <select className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <button>Month </button>
+                            <button>Days </button>
+                        </select>
+                    </select>
+
+
+
+
+                    <select className="dropdown">
+                        
+                            
+                                <option>Month </option>
+                                <option>Days </option>
+                        
+                        </select>
+*/
+
+/*
+
+
+//in render
+
+    const list = this.state.list;
+        const{listOpen, headerTitle} = this.state;
+//in return
+
+            <div className="dd-wrapper">
+            <div className="dd-header" onClick={() => this.toggleList()}>
+                <div className="dd-header-title">{headerTitle}</div>
+                {listOpen
+                ? <FontAwesome name="angle-up" size="0.5x"/>
+                : <FontAwesome name="angle-down" size="0.5x"/>
+                }
+            </div>
+            {listOpen && <ul className="dd-list">
+            {this.state.list.map((item) => (
+                <li className="dd-list-item" key={item.id} >{item.title} </li>
+                ))}
+            </ul>}
+            </div>
+
+
+
+*/
