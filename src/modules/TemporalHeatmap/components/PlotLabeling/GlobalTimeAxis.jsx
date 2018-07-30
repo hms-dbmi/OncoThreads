@@ -65,7 +65,8 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         
 
         extendObservable(this, {
-            timeVar: 1
+            timeVar: 1,
+            timeValue: "days"
             //timeline: []
         });
 
@@ -100,6 +101,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         e.preventDefault();
         console.log(e.target.id);
         this.timeVar=e.target.id;
+        this.timeValue=e.target.value;
       }
     render() {
 
@@ -186,7 +188,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             <div>
 
         <div>
-            <button onClick={this.showMenu}>
+            <button onClick={this.showMenu} >
             Show time as..
             </button>
             
@@ -199,9 +201,9 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                     this.dropdownMenu = element;
                     }}
                 >
-                    <button id="1" onClick={e => this.handleClick(e)} > Days </button>
-                    <button id="30" onClick={e => this.handleClick(e)} > Months </button>
-                    <button id="365" onClick={e => this.handleClick(e)} > Years </button>
+                    <button id="1" value="days" onClick={e => this.handleClick(e)} > Days </button>
+                    <button id="30" value="months" onClick={e => this.handleClick(e)} > Months </button>
+                    <button id="365" value="years" onClick={e => this.handleClick(e)} > Years </button>
                 </div>
                 )
                 : (
@@ -210,6 +212,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             }
         </div>
 
+        <div>
             <svg width={this.props.width / 3} height={this.props.height}>
                 <defs>
                     <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"
@@ -218,15 +221,6 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                     </marker>
                 </defs>
 
-
-
-                <foreignobject className="node" x="30" y={this.props.height - 18} width="100" height="100">
-
-                <div>
-                    I'm a div inside a SVG. 
-
-                </div>          
-                </foreignobject>
 
                 <g>
 
@@ -237,7 +231,9 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                           fontSize="10px"
                     >
                         <tspan x="37" dy="1em">Time</tspan>
-                        <tspan x="39" dy="1em">(months)</tspan>
+
+                        <tspan x="39" dy="1em">({this.timeValue})</tspan>
+                        
 
 
                         
@@ -266,12 +262,15 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                 </g>
 
             </svg>
+
+            </div>
             </div>
         );
     }
 });
 export default GlobalTimeAxis;
 
+//<tspan x="39" dy="1em">(months)</tspan>
 /*  <select className="dropdown">
                         <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Dropdown button
