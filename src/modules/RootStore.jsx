@@ -61,6 +61,9 @@ class RootStore {
            
             globalPrimary:'',
 
+            timeVar: 1,
+            timeValue: "days",
+
             transitionOn: false,
             timepointStructure: [],
             get actualTimeLine() {

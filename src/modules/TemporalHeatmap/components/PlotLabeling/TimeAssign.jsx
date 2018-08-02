@@ -1,10 +1,11 @@
 import React from "react";
 import {observer} from "mobx-react";
 
+
 /*
  * Patient axis pointing to the right
  */
-const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
+const TimeAssign = observer(class TimeAssign extends React.Component {
 
     /*constructor(props){
         super(props)
@@ -52,28 +53,28 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
 
 
-    //constructor() {
-      //  super();
+    constructor() {
+        super();
         
-        /*this.state = {
+        this.state = {
         showMenu: false
        
-        };*/
+        };
         
 
-        /*extendObservable(this, {
+       /* extendObservable(this, {
             timeVar: this.props.timeVar,
             timeValue: this.props.timeValue
             //timeline: []
         });*/
 
 
-        //this.showMenu = this.showMenu.bind(this);
-       // this.closeMenu = this.closeMenu.bind(this);
+        this.showMenu = this.showMenu.bind(this);
+        this.closeMenu = this.closeMenu.bind(this);
         
-    //}
+    }
     
-    /*showMenu(event) {
+    showMenu(event) {
         event.preventDefault();
         
         this.setState({ showMenu: true }, () => {
@@ -96,11 +97,10 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
     handleClick(e) {
         e.preventDefault();
-        console.log(e.target.id);
-        this.timeVar=e.target.id;
-        this.timeValue=e.target.value;
-      }*/
-
+        //console.log(e.target.id);
+        this.props.store.rootStore.timeVar=e.target.id;
+        this.props.store.rootStore.timeValue=e.target.value;
+      }
     render() {
 
 
@@ -185,64 +185,42 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         return (
             <div>
 
+        <div>
 
-       
-            <svg width={this.props.width / 3} height={this.props.height}>
-                <defs>
-                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"
-                            markerUnits="strokeWidth">
-                        <path d="M0,0 L0,6 L9,3 z" fill="darkgray"/>
-                    </marker>
-                </defs>
-
-
-                <g>
-
-                    <text textAnchor="end"
-                          x="37"
-
-                          y={this.props.height / 2 - 140}
-                          fontSize="10px"
-                    >
-                        <tspan x="37" dy="1em">Time</tspan>
-
-                        <tspan x="39" dy="1em">({this.props.store.rootStore.timeValue})</tspan>
-                        
-
-
-                        
-                    </text>
-
-                   
-
-
-                    <line x1="43" y1="30" x2="43" y2={this.props.height - 18} stroke="darkgray"
-                          markerEnd="url(#arrow)" strokeWidth="2"/>
-
-                    <text textAnchor="end" x="32" y="40" fontSize="10px">0</text>
-
-                    <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) / 4}
-                          fontSize="10px">{Math.floor((this.props.maxTimeInDays / 4) / (this.props.store.rootStore.timeVar)  )}</text>
-
-                    <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 2 / 4}
-                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 2 / 4)/ (this.props.store.rootStore.timeVar))}</text>
-
-                    <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 3 / 4}
-                          fontSize="10px">{Math.floor((this.props.maxTimeInDays * 3 / 4)/(this.props.store.rootStore.timeVar))}</text>
-
-                    <text textAnchor="end" x="32" y={this.props.height - 20}
-                          fontSize="10px">{Math.floor(this.props.maxTimeInDays/ (this.props.store.rootStore.timeVar)  )}</text>
-
-                </g>
-
-            </svg>
-
+        
+            <button onClick={this.showMenu} >
+            Show time as..
+            </button>
             
+            {
+            this.state.showMenu
+                ? (
+                <div
+                    className="menu"
+                    ref={(element) => {
+                    this.dropdownMenu = element;
+                    }}
+                >
+                    <button id="1" value="days" onClick={e => this.handleClick(e)} > Days </button>
+                    <button id="30" value="months" onClick={e => this.handleClick(e)} > Months </button>
+                    <button id="365" value="years" onClick={e => this.handleClick(e)} > Years </button>
+                </div>
+                )
+                : (
+                null
+                )
+            }
+
+        </div>
+
+
+
+      
             </div>
         );
     }
 });
-export default GlobalTimeAxis;
+export default TimeAssign;
 
 //<tspan x="39" dy="1em">(months)</tspan>
 /*  <select className="dropdown">

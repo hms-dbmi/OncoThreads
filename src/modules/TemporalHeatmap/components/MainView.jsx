@@ -12,8 +12,9 @@ import Legend from "./Legend"
 import Plot from "./Plot";
 import PatientAxis from "./PlotLabeling/PatientAxis";
 import GlobalTimeAxis from "./PlotLabeling/GlobalTimeAxis";
+import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
-
+//import {extendObservable} from "mobx";
 
 /*
 Main View
@@ -31,6 +32,11 @@ const MainView = observer(class MainView extends React.Component {
         this.handleResetAlignment=this.handleResetAlignment.bind(this);
         this.handleResetSelection=this.handleResetSelection.bind(this);
 
+        /*extendObservable(this, {
+            timeVar: 1,
+            timeValue: "days"
+            //timeline: []
+        });*/
 
     }
 
@@ -156,8 +162,17 @@ const MainView = observer(class MainView extends React.Component {
         let maxTime = Math.max(max1, max2);
         return (<Row>
 
+
             <Col md={1}>
-                <GlobalTimeAxis width={150} height={svgHeight} maxTimeInDays={maxTime}/>
+                <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue} 
+                width={250} height={svgHeight} maxTimeInDays={maxTime}/>
+            </Col>
+
+
+
+            <Col md={1}>
+                <GlobalTimeAxis {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue} 
+                width={150} height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
 
 
