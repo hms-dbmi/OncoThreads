@@ -267,7 +267,7 @@ const Content = observer(class Content extends React.Component {
                                 showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}/>
                         </Row>
                     </Col>
-                </Grid>f
+                </Grid>
                 {this.getBinner()}
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
