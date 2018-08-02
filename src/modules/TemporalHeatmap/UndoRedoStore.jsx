@@ -63,8 +63,8 @@ class UndoRedoStore {
         this.rootStore.betweenTimepointStore.variableStore.currentVariables = this.deserializeVariables(this.rootStore.betweenTimepointStore.variableStore.currentVariables.slice(), this.stateStack[index].currentBetweenVar);
         this.rootStore.sampleTimepointStore.variableStore.allVariables = this.stateStack[index].allSampleVar;
         this.rootStore.betweenTimepointStore.variableStore.allVariables = this.stateStack[index].allBetweenVar;
-        this.rootStore.transitionOn = this.stateStack[index].transitionOn;
-        this.rootStore.globalTime = this.stateStack[index].globalTime;
+        this.rootStore.timepointStore.transitionOn = this.stateStack[index].transitionOn;
+        this.rootStore.timepointStore.globalTime = this.stateStack[index].globalTime;
         this.rootStore.eventDetails = this.stateStack[index].eventDetails;
         this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].timepointStructure);
         this.rootStore.timepointStore.initialize();
@@ -174,8 +174,8 @@ class UndoRedoStore {
             currentBetweenVar: toJS(store.rootStore.betweenTimepointStore.variableStore.currentVariables),
             allSampleVar: store.rootStore.sampleTimepointStore.variableStore.allVariables,
             allBetweenVar: store.rootStore.betweenTimepointStore.variableStore.allVariables,
-            transitionOn: store.rootStore.transitionOn,
-            globalTime: store.rootStore.globalTime,
+            transitionOn: store.rootStore.timepointStore.transitionOn,
+            globalTime: store.rootStore.timepointStore.globalTime,
             timepointStructure: toJS(store.rootStore.timepointStructure),
             eventDetails: store.rootStore.eventDetails.slice()
         }));
