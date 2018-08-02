@@ -138,6 +138,7 @@ class BetweenTimepointStore {
         }
         const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
         this.addHeatmapVariable(this.deriveMapper(eventMapper, "or"), derivedId);
+        this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
     }
     addVariablesSeperate(type, selectedValues, selectedKey){

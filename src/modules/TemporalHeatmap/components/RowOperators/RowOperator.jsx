@@ -46,7 +46,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 timepoint.sort(variable, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
                 if (this.props.store.rootStore.realTime) {
-                    this.props.store.applyPatientOrderToAll(timepoint.globalIndex);
+                    this.props.store.applyPatientOrderToAll(timepoint.globalIndex,false);
                 }
             }
             this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable, timepoint.type, timepoint.localIndex)
@@ -190,7 +190,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
                           d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
-                    <rect onClick={() => this.props.store.applyPatientOrderToAll(timepoint.globalIndex)}
+                    <rect onClick={() => this.props.store.applyPatientOrderToAll(timepoint.globalIndex,true)}
                           width={iconScale * 24} height={24}
                           fill="none"
                           pointerEvents="visible"/>

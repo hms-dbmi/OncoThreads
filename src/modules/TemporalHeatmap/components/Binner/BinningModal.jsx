@@ -7,6 +7,12 @@ import {Alert, Button, Modal} from 'react-bootstrap';
 
 const BinningModal = observer(class ContinuousBinner extends React.Component {
     render() {
+        let alert=null;
+        if(this.props.showAlert) {
+            alert = <Alert bsStyle="info">
+                <strong>Please bin the continuous variable before grouping</strong>
+            </Alert>;
+        }
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -16,9 +22,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
                     <Modal.Title>Bin {this.props.variableName}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Alert bsStyle="info">
-                        <strong>Please bin the continuous variable before grouping</strong>
-                    </Alert>
+                    {alert}
                     <BinSelector data={this.props.data} numBins={this.props.bins} width={450} height={300}
                                  handleBinChange={this.props.handleBinChange}
                                  handleNumberOfBinsChange={this.props.handleNumberOfBinsChange}/>

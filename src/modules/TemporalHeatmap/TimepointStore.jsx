@@ -314,12 +314,14 @@ class TimepointStore {
      * applies the patient order of the current timepoint to all the other timepoints
      * @param timepointIndex
      */
-    applyPatientOrderToAll(timepointIndex) {
+    applyPatientOrderToAll(timepointIndex,saveRealign) {
         let sorting = this.timepoints[timepointIndex].heatmapOrder;
         this.timepoints.forEach(function (d) {
             d.heatmapOrder = sorting;
         });
-        this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+        if(saveRealign){
+                    this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+        }
         //this.rootStore.visStore.resetTransitionSpace();
     }
 
@@ -348,6 +350,8 @@ class TimepointStore {
                 break;
             }
         }
+        this.applyPatientOrderToAll(timepointIndex,false);
+        this.rootStore.undoRedoStore.saveTimepointHistory("MAGICSORT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
     isAligned(firstTP, secondTP) {
