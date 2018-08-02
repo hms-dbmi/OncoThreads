@@ -96,7 +96,7 @@ class VariableStore {
                 _self.allVariables.push(newVariable);
                 _self.currentVariables.push(newVariable);
             }
-            else{
+            else if(!_self.hasVariable(f.id)){
                 _self.currentVariables.push(_self.getByIdAllVariables(f.id));
 
             }

@@ -143,15 +143,17 @@ class BetweenTimepointStore {
     addVariablesSeperate(type, selectedValues, selectedKey){
         let isFirst=this.timepoints.length===0;
         const _self=this;
-        this.variableStore.addSeperateEventVariables(type, selectedValues, selectedKey);
-        //initialize if the variable is the first variable to be added
-        if (isFirst) {
+          if (isFirst) {
             this.initialize(selectedValues[0].id);
         }
         selectedValues.forEach(function (d,i) {
-            const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]], selectedKey);
-            _self.addHeatmapVariable(_self.deriveMapper(eventMapper, "or"), d.id);
+            if(!_self.variableStore.hasVariable(d.id)) {
+                const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]], selectedKey);
+                _self.addHeatmapVariable(_self.deriveMapper(eventMapper, "or"), d.id);
+            }
         });
+        this.variableStore.addSeperateEventVariables(type, selectedValues, selectedKey);
+        //initialize if the variable is the first variable to be added
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable=>variable.name))
     }
