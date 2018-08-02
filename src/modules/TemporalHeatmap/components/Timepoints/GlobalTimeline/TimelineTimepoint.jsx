@@ -170,7 +170,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 _self.props.currentVariables[i].originalIds.forEach(function (d) {
                     events=events.filter(eventElement=>eventElement.varId===d)
                 });
-            console.log(events,_self.props.index);
             rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
