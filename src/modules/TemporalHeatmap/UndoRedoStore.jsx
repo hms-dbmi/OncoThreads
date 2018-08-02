@@ -202,7 +202,7 @@ class UndoRedoStore {
         }
         this.stateStack.push(serializeState(this));
         this.currentPointer = this.stateStack.length - 1;
-        localStorage.setItem(this.rootStore.study.studyId, JSON.stringify({states: this.stateStack, logs: this.logs}));
+        //localStorage.setItem(this.rootStore.study.studyId, JSON.stringify({states: this.stateStack, logs: this.logs}));
     }
 
     /**

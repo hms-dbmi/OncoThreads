@@ -8,8 +8,11 @@ import Radio from "react-bootstrap/es/Radio";
 const SettingsModal = observer(class SettingsModal extends React.Component {
 
 
-    handleRadioButtons(type){
+    handleContiuousRepresentationSetting(type){
         this.props.store.continuousRepresentation=type;
+    }
+    handleSelectionSetting(advanced){
+        this.props.store.advancedSelection=advanced;
     }
     handleApply(){
         this.props.store.continuousRepresentation=this.continuousRepresentation;
@@ -37,20 +40,30 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                     <Modal.Title>Settings</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{'maxHeight': '400px', 'overflowY': 'auto'}}>
-                    <h5>Show continuous variable distributions in groups as</h5>
                     <form>
                         <FormGroup>
-                            <Radio checked={gradient} name="radioGroup" inline onChange={()=>this.handleRadioButtons('gradient')}>
+                            <h5>Show continuous variable distributions in groups as</h5>
+                            <Radio checked={gradient} name="radioGroup" inline onChange={()=>this.handleContiuousRepresentationSetting('gradient')}>
                                 Color Gradients
                             </Radio>{' '}
-                            <Radio checked={boxplot} name="radioGroup" inline onChange={()=>this.handleRadioButtons('boxplot')}>
+                            <Radio checked={boxplot} name="radioGroup" inline onChange={()=>this.handleContiuousRepresentationSetting('boxplot')}>
                                 Boxplots
                             </Radio>{' '}
-                            <Radio checked={median} name="radioGroup" inline onChange={()=>this.handleRadioButtons('median')}>
+                            <Radio checked={median} name="radioGroup" inline onChange={()=>this.handleContiuousRepresentationSetting('median')}>
                                 Median Color
                             </Radio>
                         </FormGroup>
-
+                    </form>
+                    <form>
+                          <FormGroup>
+                            <h5>Selection Type</h5>
+                            <Radio checked={!this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(false)}>
+                                Normal
+                            </Radio>{' '}
+                            <Radio checked={this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(true)}>
+                                Advanced
+                            </Radio>{' '}
+                        </FormGroup>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

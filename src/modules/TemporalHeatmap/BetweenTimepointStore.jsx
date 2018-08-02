@@ -14,10 +14,8 @@ class BetweenTimepointStore {
         this.variableStore = new VariableStore(rootStore);
         extendObservable(this, {
             timepoints: [],
-            //timeline: []
         });
     }
-
     reset() {
         this.timepoints = [];
         this.variableStore.constructor(this.rootStore);
@@ -25,7 +23,7 @@ class BetweenTimepointStore {
 
     initialize(id) {
         this.rootStore.visStore.resetTransitionSpace();
-        this.rootStore.transitionOn = true;
+        this.rootStore.timepointStore.transitionOn = true;
         this.rootStore.realTime = false;
         for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
             let order;
@@ -65,7 +63,6 @@ class BetweenTimepointStore {
             _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
         });
         this.timepoints = timepoints;
-
     }
 
     /**
@@ -97,7 +94,12 @@ class BetweenTimepointStore {
         }
         this.variableStore.currentVariables.forEach(function (d) {
             if (!d.derived) {
-                _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
+                if(d.type==='event'){
+                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(d.eventType, [{name:d.name,id:d.id}], d.eventSubType), "or"), d.id);
+                }
+                else {
+                    _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
+                }
             }
             else {
                 if (d.modificationType === "OR") {
@@ -126,18 +128,34 @@ class BetweenTimepointStore {
 
     addORVariable(type, selectedValues, selectedKey, name) {
         // create new Id
+        let isFirst=this.timepoints.length===0;
         let derivedId = uuidv4();
         // add derived variable
-        this.variableStore.addEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR", []);
+        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR", []);
         //initialize if the variable is the first variable to be added
-        if (this.timepoints.length === 0) {
-            this.initialize(derivedId, false);
+        if (isFirst) {
+            this.initialize(derivedId);
         }
         const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
-        //this.addToTimeline(eventMapper);
         this.addHeatmapVariable(this.deriveMapper(eventMapper, "or"), derivedId);
-        this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
+    }
+    addVariablesSeperate(type, selectedValues, selectedKey){
+        let isFirst=this.timepoints.length===0;
+        const _self=this;
+          if (isFirst) {
+            this.initialize(selectedValues[0].id);
+        }
+        selectedValues.forEach(function (d,i) {
+            if(!_self.variableStore.hasVariable(d.id)) {
+                const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]], selectedKey);
+                _self.addHeatmapVariable(_self.deriveMapper(eventMapper, "or"), d.id);
+            }
+        });
+        this.variableStore.addSeperateEventVariables(type, selectedValues, selectedKey);
+        //initialize if the variable is the first variable to be added
+        this.rootStore.timepointStore.regroupTimepoints();
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable=>variable.name))
     }
 
     deriveMapper(mapper, operator) {
@@ -160,14 +178,15 @@ class BetweenTimepointStore {
      * @param variableId
      */
     addTimepointDistance(variableId) {
-        this.rootStore.transitionOn = true;
+        let isFirst=this.timepoints.length===0;
+        this.rootStore.timepointStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping, "between");
             this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", minMax);
-            if (this.timepoints.length === 0) {
+            if (isFirst) {
                 this.initialize(variableId, false);
             }
-            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
+            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId,isFirst);
             this.rootStore.timepointStore.regroupTimepoints();
         }
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
@@ -188,27 +207,20 @@ class BetweenTimepointStore {
 
         const _self = this;
 
-        var indexToDelete = _self.variableStore.currentVariables.map(function (d) {
+        let indexToDelete = _self.variableStore.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId);
-        if (_self.variableStore.currentVariables[indexToDelete].type === "derived") {
-            var originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
-            //console.log(originalIdsDel);
+            let originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
             originalIdsDel.forEach(
                 function (d) {
-                    if (_self.variableStore.getByIdAllVariables(d).type === "event") {
-                        for (let l = 0; l < _self.rootStore.eventDetails.length;) {
+                        for (let l =_self.rootStore.eventDetails.length-1;l>=0;l--) {
                             if (d === _self.rootStore.eventDetails[l].varId) {
                                 _self.rootStore.eventDetails.splice(l, 1);
                             }
-                            else {
-                                l++;
-                            }
-                        }
                     }
                 });
 
-        }
+
 
 
         //console.log(this.rootStore.eventDetails);
@@ -229,7 +241,7 @@ class BetweenTimepointStore {
         }
         //case: last timepoint variableId was removed
         else {
-            this.rootStore.transitionOn = false;
+            this.rootStore.timepointStore.transitionOn = false;
             this.timepoints = [];
             this.variableStore.constructor(this.rootStore);
             this.rootStore.timepointStore.initialize();

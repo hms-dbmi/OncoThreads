@@ -12,6 +12,11 @@ class TimepointStore {
             currentVariables: {"sample": [], "between": []},
             selectedPatients: [],
             timepoints: [],
+            continuousRepresentation:'gradient',
+            realTime: false,
+            globalTime: false,
+            transitionOn: false,
+            advancedSelection: false,
             get maxPartitions() {
                 let max = 0;
                 const _self = this;

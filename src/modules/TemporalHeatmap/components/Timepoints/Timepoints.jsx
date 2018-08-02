@@ -36,6 +36,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                         groupScale={_self.props.groupScale}
                         selectPartition={_self.props.selectPartition}
                         selectedPatients={_self.props.selectedPatients}
+                        advancedSelection={_self.props.store.advancedSelection}
                         showTooltip={_self.props.showTooltip}
                         hideTooltip={_self.props.hideTooltip}
                         primaryVariableId={d.primaryVariableId}/></g>)
@@ -337,13 +338,13 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
 
     render() {
-        if (this.props.store.rootStore.transitionOn && this.props.store.rootStore.globalTime) {
+        if (this.props.store.transitionOn && this.props.store.globalTime) {
             return (
                 this.getTreatmentTimepoints()
             )
         }
 
-        else if (this.props.store.rootStore.globalTime) {
+        else if (this.props.store.globalTime) {
             return (
                 this.getGlobalTimepoints()
             )

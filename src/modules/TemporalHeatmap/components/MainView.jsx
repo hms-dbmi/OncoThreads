@@ -43,18 +43,18 @@ const MainView = observer(class MainView extends React.Component {
 
     handleTimeClick() {
         this.props.store.applyPatientOrderToAll(0);
-        this.props.store.rootStore.realTime = !this.props.store.rootStore.realTime;
+        this.props.store.realTime = !this.props.store.realTime;
     }
 
     handleGlobalTimeClick() {
-        this.props.store.rootStore.globalTime = !this.props.store.rootStore.globalTime;
-        this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.store.rootStore.globalTime);
+        this.props.store.globalTime = !this.props.store.globalTime;
+        this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.store.globalTime);
     }
     handleResetAll(){
         this.props.store.rootStore.reset();
     }
     handleResetAlignment(){
-        this.props.store.rootStore.resetTimepointStructure();
+        this.props.store.rootStore.resetTimepointStructure(true);
     }
     handleResetSelection(){
         this.props.store.selectedPatients=[]
@@ -208,7 +208,7 @@ const MainView = observer(class MainView extends React.Component {
         const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
         const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
         let view;
-        if (!this.props.store.rootStore.globalTime) {
+        if (!this.props.store.globalTime) {
             view = this.getBlockView(this.props.visMap.sampleTPHeight, this.props.visMap.betweenTPHeight, this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
         }
         else {
@@ -243,15 +243,15 @@ const MainView = observer(class MainView extends React.Component {
                                 <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
                             </DropdownButton>
                             <Button onClick={this.handleTimeClick}
-                                    disabled={this.props.store.rootStore.globalTime || this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
+                                    disabled={this.props.store.globalTime || this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
                                     key={"actualTimeline"}>
                                 <FontAwesome
-                                    name="clock"/> {(this.props.store.rootStore.realTime) ? "Hide relative time" : "Show relative time"}
+                                    name="clock"/> {(this.props.store.realTime) ? "Hide relative time" : "Show relative time"}
                             </Button>
                             <Button onClick={(e) => this.handleGlobalTimeClick(e)}
-                                    disabled={this.props.store.rootStore.realTime}
-                                    key={this.props.store.rootStore.globalTime}>
-                                {(this.props.store.rootStore.globalTime) ? "Hide global timeline" : "Show global timeline"}
+                                    disabled={this.props.store.realTime}
+                                    key={this.props.store.globalTime}>
+                                {(this.props.store.globalTime) ? "Hide global timeline" : "Show global timeline"}
                             </Button>
                         </ButtonToolbar>
                     </Col>

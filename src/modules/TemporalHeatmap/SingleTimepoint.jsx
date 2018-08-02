@@ -1,7 +1,7 @@
 import {extendObservable} from "mobx";
 
 /*
-stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
+stores information about a single timepoint
  */
 class SingleTimepoint {
     constructor(rootStore, variable, patients, type, localIndex, order) {
@@ -136,11 +136,11 @@ class SingleTimepoint {
                 partitionIndex = currPartitionCount;
                 currPartitionCount += 1;
             }
-            this.addInstance(partitionIndex, currPartitionKey, variableIndex);
+            this.addInstance(partitionIndex, currPartitionKey,variableIndex,this.heatmap[variableIndex].data[i].patient);
             for (let row = 0; row < this.heatmap.length; row++) {
                 if (this.heatmap[row].variable !== variable) {
                     let currSecondary = this.heatmap[row].data[i].value;
-                    this.addInstance(partitionIndex, currSecondary, row,this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype==="NUMBER");
+                    this.addInstance(partitionIndex, currSecondary, row,this.heatmap[row].data[i].patient,this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype==="NUMBER");
                 }
             }
         }
@@ -154,8 +154,10 @@ class SingleTimepoint {
      * @param partitionIndex: Index of partition to add to
      * @param currKey: Key of partition
      * @param row: current row
+     * @param currPatient
+     * @param continuous
      */
-    addInstance(partitionIndex, currKey, row, continuous) {
+    addInstance(partitionIndex, currKey, row, currPatient, continuous) {
         let rowIndex = this.grouped[partitionIndex].rows.map(function (e) {
             return e.variable;
         }).indexOf(this.heatmap[row].variable);
@@ -165,11 +167,13 @@ class SingleTimepoint {
         if (keyIndex === -1||continuous) {
             this.grouped[partitionIndex].rows[rowIndex].counts.push({
                 "key": currKey,
-                "value": 1
+                "value": 1,
+                'patients':[currPatient]
             })
         }
         else {
             this.grouped[partitionIndex].rows[rowIndex].counts[keyIndex].value += 1;
+            this.grouped[partitionIndex].rows[rowIndex].counts[keyIndex].patients.push(currPatient);
         }
     }
 

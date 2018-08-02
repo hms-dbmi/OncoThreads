@@ -20,6 +20,7 @@ class OriginalVariable {
             },
         });
         this.id = id;
+        this.originalIds=[id];
         this.name = name;
         this.type="original";
         this.datatype = datatype;

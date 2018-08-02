@@ -67,12 +67,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          */
 
         promote(timepoint, variable) {
-           if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
-                this.props.openBinningModal(variable, timepoint.type, this.props.store.promoteBinnedTimepoint, timepoint.globalIndex);
-            }
-            else {
-                timepoint.promote(variable);
-            }
+           this.props.store.rootStore.globalPrimary=variable;
 
 
         }
@@ -314,7 +309,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                     let lineHeight;
                     let fontWeight;
-                    if (d.variable === _self.props.store.rootStore.globalPrimary) {
+                    if (d.variable === _self.props.store.rootStore.globalPrimary||(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample")) {
                        lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
                        fontWeight = "bold";
                     }

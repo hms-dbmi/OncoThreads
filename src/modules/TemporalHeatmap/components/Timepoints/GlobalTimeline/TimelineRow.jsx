@@ -55,7 +55,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                             fillC = _self.props.color(d.originalIds[0]);
                         }
                 
-                    })
+                    });
                     let height=_self.props.timeScale(ev.eventEndDate-ev.eventDate);
                     if(height===0){
                         height=_self.props.rectWidth;
@@ -136,112 +136,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         }
         return rects;
     }
-                /*
-                Array.from(Array(maxNum).keys()).forEach(function (ind) {
-                    let startDay = _self.props.ypi[j];
-                    //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
-
-
-                    //let varName=_self.props.primaryVariable.name;
-
-                    var val = d.value;
-
-                    // globalRectHeight =ht[j];
-
-                    globalRectWidth = _self.props.rectWidth;
-
-
-                    if (_self.props.dtype === "binary") {
-                        if (!eventIndices[d.patient]) {
-                            eventIndices[d.patient] = 0;
-                        }
-                        if (_self.props.events.length > 0) {
-                            //var eventHere=_self.props.events.filter(ev => ev.patientId===d.patient)[eventIndices[d.patient]].eventTypeDetailed;
-
-                            var eventHere2 = _self.props.events.filter(ev => ev.patientId === d.patient);// [eventIndices[d.patient]].eventTypeDetailed;
-
-                            if (eventHere2) {
-                                var eventHere = eventHere2[eventIndices[d.patient]];
-                                fill = _self.props.color(eventHere.varId);
-                                eventIndices[d.patient] = eventIndices[d.patient] + 1;
-                                val = _self.props.store.variableStore['between'].getByIdAllVariables(eventHere.varId).name;
-                                if (eventHere.eventEndDate===eventHere.eventDate) {
-                                    globalRectHeight = globalRectWidth;
-                                }
-                                else {
-                                    globalRectHeight = _self.props.timeScale(eventHere.eventEndDate-eventHere.eventDate);
-                                }
-
-                                xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x - _self.props.rectWidth / 2;
-
-                                //let duration=Math.round((2*ht[j]-_self.props.visMap.primaryHeight)*_self.props.max/700);
-
-                                let duration = ht[j];
-
-                                //console.log(_self.props.ypi);
-                                rects.push(<rect stroke={stroke}
-                                                 onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, eventHere.eventDate, eventHere.eventEndDate-eventHere.eventDate)
-                                                 }
-                                                 onMouseLeave={_self.handleMouseLeave}
-                                                 onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                                 onClick={() => _self.handleClick(d.patient)}
-                                        //onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                        //onMouseUp={_self.handleMouseUp}
-                                                 key={d.patient + i + j}
-                                                 height={globalRectHeight}//{_self.props.height}
-                                                 width={globalRectWidth}
-                                                 x={xGlobal}
-                                                 y={_self.props.timeScale(eventHere.eventDate)}
-                                                 fill={fill}
-                                                 opacity={_self.props.opacity}
-                                        //fill={_self.props.color(_self.props.timepoint)}
-                                    />
-                                );
-                            }
-
-                        }
-                    }
-
-                    else {
-                        //globalRectHeight= ht[j]/2;
-
-
-                        globalRectWidth = _self.props.rectWidth / 2;
-                        globalRectHeight = globalRectWidth;
-
-                        xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x;
-
-                        let duration = ht[j];
-
-                        rects.push(<rect stroke={stroke}
-                                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
-                                         }
-                                         onMouseLeave={_self.handleMouseLeave}
-                                         onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                         onClick={() => _self.handleClick(d.patient)}
-                                         key={d.patient + i + j}
-                                         height={globalRectHeight}//{_self.props.height}
-                                         width={globalRectWidth}
-                                         x={xGlobal}
-                                         y={_self.props.timeScale(_self.props.ypi[j])}
-                                         fill={fill}
-                                         opacity={_self.props.opacity}
-                            />
-                        );
-
-                    }
-
-                    j++;
-                    //ind++;
-                    ind2 = ind;
-
-                    //console.log(ind2);
-
-
-                });
-                */
-
-            //}
 
 
 

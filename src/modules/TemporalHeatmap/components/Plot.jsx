@@ -54,16 +54,15 @@ const Plot = observer(class Plot extends React.Component {
             .reduce((next, max) => next > max ? next : max, 0);
         const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.sampleRectWidth * 2, 0, max);
 
-
         return (
             <div className="scrollableX">
                 <svg width={this.props.svgWidth} height={this.props.height}>
                     <g transform={transform}>
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
                                      timepointData={this.props.store.timepoints}
-                                     realTime={this.props.store.rootStore.realTime}
-                                     globalTime={this.props.store.rootStore.globalTime}
-                                     transitionOn={this.props.store.rootStore.transitionOn}
+                                     realTime={this.props.store.realTime}
+                                     globalTime={this.props.store.globalTime}
+                                     transitionOn={this.props.store.transitionOn}
                                      yPositions={this.props.transY}
                                      allYPositions={this.props.store.rootStore.actualTimeLine}
                                      groupScale={groupScale}
