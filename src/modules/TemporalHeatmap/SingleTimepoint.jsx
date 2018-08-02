@@ -101,7 +101,13 @@ class SingleTimepoint {
      * @param variableId
      */
     setPrimaryVariable(variableId) {
-        this.primaryVariableId = variableId;
+        if(!this.rootStore.globalTime){
+            this.primaryVariableId = variableId;
+        }
+        else{
+
+            this.rootStore.globalPrimary=variableId;
+        }     
     }
 
     /**

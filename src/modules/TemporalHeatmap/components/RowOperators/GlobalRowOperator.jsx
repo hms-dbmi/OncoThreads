@@ -11,7 +11,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             //this.sortTimepoint = this.sortTimepoint.bind(this);
             //this.group = this.group.bind(this);
             //this.unGroup = this.unGroup.bind(this);
-            //this.promote = this.promote.bind(this);
+            this.promote = this.promote.bind(this);
             this.handleDeleteLeave = this.handleDeleteLeave.bind(this);
         }
 
@@ -66,8 +66,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * @param variable: variable to be the primary variable
          */
 
-        /*promote(timepoint, variable) {
-            if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
+        promote(timepoint, variable) {
+           if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
                 this.props.openBinningModal(variable, timepoint.type, this.props.store.promoteBinnedTimepoint, timepoint.globalIndex);
             }
             else {
@@ -75,7 +75,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             }
 
 
-        }*/
+        }
 
         /**
          * computes the width of a text. Returns 30 if the text width would be shorter than 30
@@ -218,6 +218,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
              </g>);*/
 
             const _self = this;
+
+            let fillC="#F00";
             if (this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).datatype === "binary") {
 
                 let labels = [];
@@ -235,7 +237,11 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                     //console.log(orId);
                     let c1 = _self.props.visMap.globalTimelineColors;
-                    let fillC = c1(element);
+                    //let fillC = c1(element);
+
+                    if(fillC==="#F00"){
+                        fillC = c1(element);
+                    }
 
                     //console.log(fillC);
 
@@ -249,11 +255,20 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                         onMouseLeave={_self.props.hideTooltip}>
 
-                        <rect key={"rect"} opacity={1} width={15} height={15}
+                        <rect key={"rect"} 
+                              width={15} height={15}
                               x={xPos + xT + 5} y={yPos - 25}
-                              fill={fillC}/>
-                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
-                            {GlobalRowOperator.cropText(name, fontSize, fontWeight, width)}</text>
+                              fill={fillC}
+                              opacity={0.5}
+                              
+                              />
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}
+                             //onClick={() => this.promote(timepoint, variable)}
+                             > 
+                             {GlobalRowOperator.cropText(name, fontSize, fontWeight, width)}
+                           
+                           
+                            </text>
                     </g>);
 
 
@@ -269,10 +284,15 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                            onMouseLeave={this.props.hideTooltip}>
 
                     <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
+                         // onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
 
-                    >
-                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
+
+                          onClick={() => this.promote(timepoint, variable)}
+                          >
+                          {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}
+                       
+                       
+                        </text>
                 </g>);
 
             }
@@ -294,14 +314,14 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                     let lineHeight;
                     let fontWeight;
-                    // if (d.variable === _self.props.timepoint.primaryVariable.id) {
-                    //   lineHeight =  _self.props.visMap.primaryHeight;
-                    //fontWeight = "bold";
-                    //}
-                    //else {
-                    lineHeight = _self.props.visMap.secondaryHeight;
-                    fontWeight = "normal";
-                    //}
+                    if (d.variable === _self.props.store.rootStore.globalPrimary) {
+                       lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
+                       fontWeight = "bold";
+                    }
+                    else {
+                        lineHeight = _self.props.visMap.secondaryHeight;
+                        fontWeight = "normal";
+                    }
                     const transform = "translate(0," + pos + ")";
                     const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
                     let fontSize = 12;

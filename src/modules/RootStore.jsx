@@ -43,6 +43,7 @@ class RootStore {
 
         this.sampleStructure = [];
 
+        //this.globalPrimary="";
 
         this.maxTimeInDays = 0;
 
@@ -53,6 +54,12 @@ class RootStore {
         extendObservable(this, {
             parsed: false,
             firstLoad: firstLoad,
+
+            globalPrimary:'',
+
+            timeVar: 1,
+            timeValue: "days",
+
             timepointStructure: [],
             get actualTimeLine() {
                 const _self = this;

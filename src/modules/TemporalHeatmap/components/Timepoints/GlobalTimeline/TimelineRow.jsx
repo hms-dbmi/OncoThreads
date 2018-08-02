@@ -35,7 +35,27 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         //console.log(this.props.row.data);
         if (_self.props.timepointType === "between") {
             if (_self.props.dtype === "binary") {
+
+                let fillC="#F00";
+
+                
                 _self.props.events.forEach(function (ev, j) {
+
+                   
+
+                    //if(fillC==="#F00"){
+                      //  fillC = _self.props.color(ev.varId);
+                    //}
+
+
+
+                    _self.props.store.variableStore['between'].currentVariables.forEach(function(d){
+                        if(d.originalIds.includes(ev.varId)){
+                            //console.log(d.originalIds[0]);
+                            fillC = _self.props.color(d.originalIds[0]);
+                        }
+                
+                    })
                     let height=_self.props.timeScale(ev.eventEndDate-ev.eventDate);
                     if(height===0){
                         height=_self.props.rectWidth;
@@ -53,7 +73,9 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                      width={_self.props.rectWidth}
                                      x={_self.props.heatmapScale(ev.patientId)}
                                      y={_self.props.timeScale(ev.eventDate)}
-                                     fill={_self.props.color(ev.varId)}
+                                     //fill={_self.props.color(ev.varId)}
+
+                                     fill={fillC}
                                      opacity={_self.props.opacity}
                             //fill={_self.props.color(_self.props.timepoint)}
                         />

@@ -138,7 +138,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     heatmapScale={_self.props.heatmapScales[0]}
                     selectedPatients={_self.props.selectedPatients}
                     showTooltip={_self.props.showTooltip}
-                    hideTooltip={_self.props.hideTooltip}/>
+                    hideTooltip={_self.props.hideTooltip}
+                    primaryVariableId={d.primaryVariableId}
+                    />
                 </g>);
                 globalIndex++;
             }
