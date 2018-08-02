@@ -158,7 +158,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             let color;
 
-            if (_self.props.currentVariables[i].datatype === "binary") {
+            if (_self.props.currentVariables[i].datatype === "binary"&&_self.props.timepointType==='between') {
                 opacity = 0.5;
                 color = _self.props.visMap.globalTimelineColors;
 
@@ -166,13 +166,10 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //if (row.variable === _self.props.primaryVariable.id ) {
 
             //console.log(ypi);
-                let events;
-            if(_self.props.currentVariables[i].type==='event'){
-                events=a2.filter(eventElement=>eventElement.varId===_self.props.currentVariables[i].id)
-            }
-            else{
-                events=a2.slice();
-            }
+                let events=a2.slice();
+                _self.props.currentVariables[i].originalIds.forEach(function (d) {
+                    events=events.filter(eventElement=>eventElement.varId===d)
+                });
             rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
