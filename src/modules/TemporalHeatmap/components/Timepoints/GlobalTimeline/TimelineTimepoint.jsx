@@ -166,8 +166,12 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //if (row.variable === _self.props.primaryVariable.id ) {
 
             //console.log(ypi);
+                let events;
             if(_self.props.currentVariables[i].type==='event'){
-                a2=a2.filter(eventElement=>eventElement.varId===_self.props.currentVariables[i].id)
+                events=a2.filter(eventElement=>eventElement.varId===_self.props.currentVariables[i].id)
+            }
+            else{
+                events=a2.slice();
             }
             rows.push(<g key={row.variable + i + globalIndex}>
 
@@ -179,7 +183,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                  ypi={_self.props.ypi}
                                  max={_self.props.max}
                                  ht={_self.props.ht}
-                                 events={a2}
+                                 events={events}
                                  opacity={opacity}
                                  dtype={_self.props.currentVariables[i].datatype}
                                  //fillBin={fillBin}
