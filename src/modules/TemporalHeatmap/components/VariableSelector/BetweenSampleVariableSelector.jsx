@@ -12,9 +12,9 @@ import {
     FormControl,
     FormGroup,
     Modal,
-    Panel
+    Panel,
+    Radio
 } from 'react-bootstrap';
-import SampleVariableSelector from "./SampleVariableSelector";
 
 
 /*
@@ -24,6 +24,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     constructor() {
         super();
         this.state = {
+            addCombined: true,
             modalIsOpen: false,
             buttonClicked: "",
             selectedKey: "",
@@ -41,6 +42,13 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.addTimeDistance = this.addTimeDistance.bind(this);
+        this.handleCombineClick = this.handleCombineClick.bind(this);
+    }
+
+    handleCombineClick(addCombined) {
+        this.setState({
+            addCombined: addCombined
+        })
     }
 
     openModal(buttonClicked) {
@@ -55,6 +63,16 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             modalIsOpen: true,
             disabled: disabled
         });
+    }
+
+    addEventVariable() {
+        if (this.state.addCombined) {
+            this.addORVariable();
+        }
+        else {
+            this.addVariablesSeperate();
+        }
+        this.closeModal();
     }
 
     /**
@@ -76,12 +94,14 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         }
         else {
             this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
-            this.closeModal();
         }
     }
 
-    addTimeDistance(id) {
+    addVariablesSeperate() {
+        this.props.store.addVariablesSeperate(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey);
+    }
 
+    addTimeDistance(id) {
         this.props.store.addTimepointDistance(id)
     }
 
@@ -177,7 +197,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const _self = this;
         this.props.eventCategories.forEach(function (d) {
             if (d !== "SPECIMEN") {
-                buttons.push(<Button style={{textAlign: "left"}} bsSize="xsmall" value={d} onClick={() => _self.openModal(d)}
+                buttons.push(<Button style={{textAlign: "left"}} bsSize="xsmall" value={d}
+                                     onClick={() => _self.openModal(d)}
                                      key={d}>{BetweenSampleVariableSelector.toTitleCase(d)} <FontAwesome
                     name="plus"/></Button>)
             }
@@ -186,7 +207,8 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     createTimepointDistanceButton() {
-        return (<Button style={{textAlign: "left"}} bsSize="xsmall" onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
+        return (<Button style={{textAlign: "left"}} bsSize="xsmall"
+                        onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
                         key={"timepointdistance"}>Time between timepoints</Button>)
     }
 
@@ -250,17 +272,29 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     toggleEventIcon() {
-        this.setState({eventIcon: SampleVariableSelector.toggleIcon(this.state.eventIcon)});
+        this.setState({eventIcon: BetweenSampleVariableSelector.toggleIcon(this.state.eventIcon)});
     }
 
     toggleTimepointDistanceIcon() {
-        this.setState({timepointDistanceIcon: SampleVariableSelector.toggleIcon(this.state.timepointDistanceIcon)});
+        this.setState({timepointDistanceIcon: BetweenSampleVariableSelector.toggleIcon(this.state.timepointDistanceIcon)});
     }
 
     render() {
+        let namefield = <Col sm={8}/>;
+        if (this.state.addCombined) {
+            namefield = [<Col componentClass={ControlLabel} key="text" sm={4}>
+                New Variable name:
+            </Col>,
+                <Col key="input" sm={4}>
+                    <FormControl
+                        type="text" className="form-control" id="name"
+                        placeholder={this.state.defaultName}
+                        onChange={(e) => this.handleNameChange(e)}/>
+                </Col>]
+        }
         return (
             <div className="mt-2">
-                <h4>Transition variables</h4>
+                <h4>Event variables</h4>
                 <Panel defaultExpanded>
                     <Panel.Heading>
                         <Panel.Title toggle>
@@ -296,7 +330,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                 >
                     <Modal.Header>
                         <Modal.Title>
-                            Add Transition Variable
+                            Add Event Variable
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -307,29 +341,21 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     <Modal.Footer>
                         {this.getUniqueNameAlert()}
                         {this.getEmptySelectionAlert()}
-                        {/*
                         <FormGroup>
-                                <Radio name="radioGroup" inline checked>
-                                    Combine
-                                </Radio>{' '}
-                                <Radio name="radioGroup" inline>
-                                    Add as separate rows
-                                </Radio>{' '}
-                            </FormGroup>
-                            */}
+                            <Radio name="radioGroup" inline checked={this.state.addCombined}
+                                   onChange={() => this.handleCombineClick(true)}>
+                                Combine
+                            </Radio>{' '}
+                            <Radio name="radioGroup" inline checked={!this.state.addCombined}
+                                   onChange={() => this.handleCombineClick(false)}>
+                                Add as separate rows
+                            </Radio>{' '}
+                        </FormGroup>
                         <Form horizontal>
                             <FormGroup>
-                                <Col componentClass={ControlLabel} sm={4}>
-                                    New Variable name:
-                                </Col>
+                                {namefield}
                                 <Col sm={4}>
-                                    <FormControl
-                                        type="text" className="form-control" id="name"
-                                        placeholder={this.state.defaultName}
-                                        onChange={(e) => this.handleNameChange(e)}/>
-                                </Col>
-                                <Col sm={4}>
-                                    <Button onClick={() => this.addORVariable()}>Add</Button>
+                                    <Button onClick={() => this.addEventVariable()}>Add</Button>
                                     <Button onClick={this.closeModal}>Close</Button>
                                 </Col>
                             </FormGroup>

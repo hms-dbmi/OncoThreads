@@ -131,11 +131,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             let opacity = 1;
             if (_self.props.currentVariables[i].datatype === "binary") {
                 opacity = 0.5;
-                //color = x => { return "#ffd92f" };
-                //color=d3.scaleOrdinal().range(['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec']).domain([true]);
-
-
-                //color= d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17']).domain([undefined]);
                 color = _self.props.visMap.globalTimelineColors;
             }
             //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
@@ -146,6 +141,9 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //if (row.variable === _self.props.primaryVariable.id ) {
 
             //console.log(ypi);
+            if(_self.props.currentVariables[i].type==='event'){
+                a2=a2.filter(eventElement=>eventElement.varId===_self.props.currentVariables[i].id)
+            }
             rows.push(<g key={row.variable + i + globalIndex}>
 
                 <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -214,7 +212,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
     render() {
-        if (!this.props.store.rootStore.transitionOn) {
+        if (!this.props.store.transitionOn) {
             return (
                 this.getGlobalTimepoint()
             )

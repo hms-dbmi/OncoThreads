@@ -35,9 +35,31 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
                              onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.value)}
                              x={_self.props.groupScale(currCounts)} height={_self.props.height}
                              fill={fill} stroke={stroke} opacity={_self.props.opacity}/>);
+            if(_self.props.advancedSelection){
+                rects.push(
+                <rect key={f.key+'selected'}
+                             width={_self.props.groupScale(_self.getSelected(f.patients))}
+                             x={_self.props.groupScale(currCounts)} height={_self.props.height}
+                             fill='none' stroke='black'/>
+            );
+            }
             currCounts += f.value
         });
         return rects
+    }
+    /**
+     * checks if the patients in the partition are selected
+     * @param patients
+     * @returns {boolean}
+     */
+    getSelected(patients) {
+        let selected = 0;
+        for (let i = 0; i < patients.length; i++) {
+            if (this.props.selectedPatients.includes(patients[i])) {
+                selected+=1;
+            }
+        }
+        return selected;
     }
 
     render() {

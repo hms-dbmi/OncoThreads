@@ -28,7 +28,8 @@ class TransitionStore {
                 });
                 return timeGapStructure;
             }
-        })
+        });
+
     }
 
     setNumberOfTransitions(numberOfTransitions) {
