@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, ButtonToolbar, Col, Grid, Row, DropdownButton,MenuItem} from 'react-bootstrap';
+import {Button, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 
@@ -28,9 +28,9 @@ const MainView = observer(class MainView extends React.Component {
         this.handlePartitionSelection = this.handlePartitionSelection.bind(this);
         this.handleTimeClick = this.handleTimeClick.bind(this);
         this.handleGlobalTimeClick = this.handleGlobalTimeClick.bind(this);
-        this.handleResetAll=this.handleResetAll.bind(this);
-        this.handleResetAlignment=this.handleResetAlignment.bind(this);
-        this.handleResetSelection=this.handleResetSelection.bind(this);
+        this.handleResetAll = this.handleResetAll.bind(this);
+        this.handleResetAlignment = this.handleResetAlignment.bind(this);
+        this.handleResetSelection = this.handleResetSelection.bind(this);
 
         /*extendObservable(this, {
             timeVar: 1,
@@ -50,14 +50,17 @@ const MainView = observer(class MainView extends React.Component {
         this.props.store.globalTime = !this.props.store.globalTime;
         this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.store.globalTime);
     }
-    handleResetAll(){
+
+    handleResetAll() {
         this.props.store.rootStore.reset();
     }
-    handleResetAlignment(){
+
+    handleResetAlignment() {
         this.props.store.rootStore.resetTimepointStructure(true);
     }
-    handleResetSelection(){
-        this.props.store.selectedPatients=[]
+
+    handleResetSelection() {
+        this.props.store.selectedPatients = []
     }
 
 
@@ -165,14 +168,13 @@ const MainView = observer(class MainView extends React.Component {
 
             <Col md={1}>
                 <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue} 
-                width={250} height={svgHeight} maxTimeInDays={maxTime}/>
+                            width={250} height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
-
 
 
             <Col md={1}>
                 <GlobalTimeAxis {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue} 
-                width={150} height={svgHeight} maxTimeInDays={maxTime}/>
+                                width={150} height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
 
 
@@ -227,21 +229,8 @@ const MainView = observer(class MainView extends React.Component {
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
                 <Row>
-                    <Col md={5}>
+                    <Col md={4}>
                         <ButtonToolbar>
-                            <Button onClick={this.props.store.rootStore.undoRedoStore.undo}><FontAwesome
-                                name="undo"/></Button>
-                            <Button onClick={this.props.store.rootStore.undoRedoStore.redo}><FontAwesome
-                                name="redo"/></Button>
-                             <DropdownButton
-                                title={"Reset"}
-                                key={"ResetButton"}
-                                id={"ResetButton"}
-                            >
-                                <MenuItem eventKey="1" onClick={this.handleResetAlignment}>...timepoint alignment</MenuItem>
-                                 <MenuItem eventKey="2" onClick={this.handleResetSelection}>...selection</MenuItem>
-                                <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
-                            </DropdownButton>
                             <Button onClick={this.handleTimeClick}
                                     disabled={this.props.store.globalTime || this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
                                     key={"actualTimeline"}>
@@ -254,9 +243,29 @@ const MainView = observer(class MainView extends React.Component {
                                 {(this.props.store.globalTime) ? "Hide global timeline" : "Show global timeline"}
                             </Button>
                         </ButtonToolbar>
+
                     </Col>
-                    <Col md={7}>
+                    <Col md={5}>
                         <PatientAxis width={400} height={60}/>
+                    </Col>
+                    <Col md={3}>
+                        <ButtonToolbar>
+                            <Button onClick={this.props.store.rootStore.undoRedoStore.undo}><FontAwesome
+                                name="undo"/></Button>
+                            <Button onClick={this.props.store.rootStore.undoRedoStore.redo}><FontAwesome
+                                name="redo"/></Button>
+                            <DropdownButton
+                                title={"Reset"}
+                                key={"ResetButton"}
+                                id={"ResetButton"}
+                            >
+                                <MenuItem eventKey="1" onClick={this.handleResetAlignment}>...timepoint
+                                    alignment</MenuItem>
+                                <MenuItem eventKey="2" onClick={this.handleResetSelection}>...selection</MenuItem>
+                                <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
+                            </DropdownButton>
+
+                        </ButtonToolbar>
                     </Col>
                 </Row>
                 {view}
