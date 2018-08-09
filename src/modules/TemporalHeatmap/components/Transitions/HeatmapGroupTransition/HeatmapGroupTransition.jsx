@@ -79,7 +79,7 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
             let currXsource = sourcePartitionPos;
             const partitionLength = _self.getPartitionLength(d, primary.id);
             rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, _self.props.groupScale(partitionLength), rectHeight, primary.colorScale(d.partition), d.partition));
-            let transitionPatients = _self.getPartitionPatients(d.partition, reverse);
+            let transitionPatients = _self.sortTransitionPatients(_self.getPartitionPatients(d.partition, reverse),scale);
             if (transitionPatients.length !== 0) {
                 const transitionWidth = _self.props.groupScale(partitionLength) / partitionLength;
                 transitionPatients.forEach(function (f) {
@@ -95,6 +95,17 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
         return (
             [transitions, rects]
         )
+    }
+    sortTransitionPatients(transitionPatients,heatmapScale){
+        return transitionPatients.sort(function (a,b) {
+            if(heatmapScale(a)<heatmapScale(b)){
+                return -1;
+            }
+            else if(heatmapScale(a)>heatmapScale(b)){
+                return 1;
+            }
+            else return 0;
+        })
     }
 
     render() {
