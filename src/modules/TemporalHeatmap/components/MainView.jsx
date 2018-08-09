@@ -200,8 +200,8 @@ const MainView = observer(class MainView extends React.Component {
 
     render() {
         //the width of the heatmap cells is computed relative to the number of patients
-        let rectWidth = this.props.width / 50 - 1;
-        if (this.props.store.numberOfPatients < 50) {
+        let rectWidth = this.props.width / 300;
+        if (this.props.store.numberOfPatients < 300) {
             rectWidth = this.props.width / this.props.store.numberOfPatients - 1;
         }
         this.setVisualParameters(rectWidth);
@@ -239,7 +239,7 @@ const MainView = observer(class MainView extends React.Component {
                             </Button>
                             <Button onClick={(e) => this.handleGlobalTimeClick(e)}
                                     disabled={this.props.store.realTime}
-                                    key={this.props.store.globalTime}>
+                                    key={"globalTimeline"}>
                                 {(this.props.store.globalTime) ? "Hide global timeline" : "Show global timeline"}
                             </Button>
                         </ButtonToolbar>
@@ -264,7 +264,6 @@ const MainView = observer(class MainView extends React.Component {
                                 <MenuItem eventKey="2" onClick={this.handleResetSelection}>...selection</MenuItem>
                                 <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
                             </DropdownButton>
-
                         </ButtonToolbar>
                     </Col>
                 </Row>
