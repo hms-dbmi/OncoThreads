@@ -58,7 +58,23 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
                 i = 1;
                 d = this.props.timepoints[i];
 
-                let transform = "translate(0," + _self.props.posY[i] + ")";
+                //total number of variables before this
+
+                var numBefore=_self.props.currentVariables.between.map(function(d){return d.originalIds.length}).reduce(function(total, num){return total + num})
+
+                //calculate the position for the label by finding how much space you have before this variable
+                var gapB =_self.props.posY[i]-_self.props.posY[i-1] ;
+                //console.log(numBefore);
+
+                if(numBefore * 15 < gapB ) {
+                    gapB = gapB - numBefore * 15; //_self.props.posY[i-1] - (numBefore * 20) ;
+                }
+                else{
+                    gapB=0;
+                }
+
+                //console.log(gapB);
+                let transform = "translate(0," + (_self.props.posY[i] - gapB) + ")";
                 //Different icons and functions for grouped and ungrouped timepoints
                 rowHeader.push(<GlobalRowOperator key={i} transform={transform} timepoint={d} width={_self.state.width}
                                                   visMap={_self.props.visMap} store={_self.props.store}
