@@ -127,7 +127,16 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
         handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
-            this.props.store.removeVariable(variable, timepoint.type)
+            this.props.store.removeVariable(variable, timepoint.type);
+
+            if(this.props.store.currentVariables.sample.length>=1){
+                this.promote(timepoint, 
+                        this.props.store.currentVariables.sample[this.props.store.currentVariables.sample.length-1].id);
+            }
+            else{
+                this.props.store.rootStore.globalPrimary="";
+
+            }
         }
 
         /*getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
