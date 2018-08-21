@@ -328,7 +328,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     }
                     const transform = "translate(0," + pos + ")";
                     const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
-                    let fontSize = 12;
+                    let fontSize = 14;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
@@ -359,7 +359,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     </g>*/
 
                     return <g key={d.variable} className={"clickable"} transform={transform}>
-                        {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
+                        {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize/2) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
                         {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos + 3)}
                     </g>
 

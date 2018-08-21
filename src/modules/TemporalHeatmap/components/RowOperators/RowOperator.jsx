@@ -92,8 +92,6 @@ const RowOperator = observer(class RowOperator extends React.Component {
             const width = context.measureText(text).width;
             if (width > maxWidth) {
                 for (let i = 1; i < text.length; i++) {
-                    const context = document.createElement("canvas").getContext("2d");
-                    context.font = fontSize + " px Arial";
                     let prevText = text.substr(0, i - 1).concat("...");
                     let currText = text.substr(0, i).concat("...");
                     let prevWidth = context.measureText(prevText).width;
@@ -244,7 +242,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 }
                 const transform = "translate(0," + pos + ")";
                 const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
-                let fontSize = 12;
+                let fontSize = 14;
                 if (lineHeight < fontSize) {
                     fontSize = Math.round(lineHeight);
                 }
@@ -264,7 +262,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 }
                 return <g key={d.variable} className={"clickable"} transform={transform}>
                     {highlightRect}
-                    {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 96, fontWeight, fontSize)}
+                    {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize/2) / 2, iconScale, _self.props.width - iconScale* 24, fontWeight, fontSize)}
                     {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 96), yPos)}
                     {secondIcon}
                     {_self.getAlignIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 48), yPos)}

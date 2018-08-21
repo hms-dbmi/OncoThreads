@@ -83,6 +83,7 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
     }
     
     closeMenu(event) {
+        console.log(event.target);
         //if (!this.dropdownMenu.contains(event.target)) {
         
         this.setState({ showMenu: false }, () => {

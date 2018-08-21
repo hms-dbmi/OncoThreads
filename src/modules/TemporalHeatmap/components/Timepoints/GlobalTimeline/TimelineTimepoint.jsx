@@ -167,9 +167,11 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             //console.log(ypi);
                 let events=a2.slice();
-                _self.props.currentVariables[i].originalIds.forEach(function (d) {
-                    events=events.filter(eventElement=>eventElement.varId===d)
-                });
+                if(!_self.props.currentVariables[i].derived) {
+                    _self.props.currentVariables[i].originalIds.forEach(function (d) {
+                        events = events.filter(eventElement => eventElement.varId === d)
+                    });
+                }
             rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
