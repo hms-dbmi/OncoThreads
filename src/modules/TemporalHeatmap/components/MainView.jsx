@@ -181,7 +181,7 @@ const MainView = observer(class MainView extends React.Component {
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
             
-            <text fontSize="15px"> Legend of selected sample variable</text>
+            <p class="font-weight-bold"> <small> <b>Legend of the selected sample variable </b></small> </p>
                 <Legend {...this.props} mainWidth={svgWidth} height={svgHeight/3} width={400}
                         posY={timepointPositions.timepoint}/>
             </Col>
