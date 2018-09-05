@@ -176,10 +176,14 @@ const MainView = observer(class MainView extends React.Component {
 
 
             <Col xs={2} style={{padding: 0}}>
-                <GlobalRowOperators {...this.props} height={svgHeight} width={200}
+                <GlobalRowOperators {...this.props} height={svgHeight/3} width={300}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
+            
+            <text fontSize="15px"> Legend of selected sample variable</text>
+                <Legend {...this.props} mainWidth={svgWidth} height={svgHeight/3} width={400}
+                        posY={timepointPositions.timepoint}/>
             </Col>
 
             <Col md={1} style={{padding: 0}}>
@@ -196,9 +200,25 @@ const MainView = observer(class MainView extends React.Component {
                       onDrag={this.handlePatientSelection}/>
             </Col>
 
+           
+
         </Row>)
     }
 
+    /*
+
+    <Col xs={2} style={{padding: 0}}>
+                <GlobalRowOperators {...this.props} height={svgHeight/2} width={200}
+                                    posY={timepointPositions.timepoint}
+                                    selectedPatients={this.props.store.selectedPatients}
+                                    currentVariables={this.props.store.currentVariables}/>
+            </Col>
+
+            <Col xs={2} md={2} style={{padding: 0}}>
+                <Legend {...this.props} mainWidth={svgWidth} height={svgHeight/2} width={400}
+                        posY={timepointPositions.timepoint}/>
+            </Col>
+*/
 
     render() {
         //the width of the heatmap cells is computed relative to the number of patients

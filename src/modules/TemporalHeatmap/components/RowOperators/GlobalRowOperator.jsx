@@ -318,9 +318,15 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
                     let lineHeight;
                     let fontWeight;
-                    if (d.variable === _self.props.store.rootStore.globalPrimary||(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample")) {
+                    if (d.variable === _self.props.store.rootStore.globalPrimary)//||(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample")) 
+                    {
                        lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
                        fontWeight = "bold";
+                    }
+                    else if(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample"){
+                        _self.promote(_self.props.timepoint, d.variable);
+                        lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
+                        fontWeight = "bold";
                     }
                     else {
                         lineHeight = _self.props.visMap.secondaryHeight;
@@ -373,6 +379,9 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
             return (
                 <g transform={this.props.transform}>
+
+                   
+                    
                     {this.getRowOperator()}
                 </g>
             )

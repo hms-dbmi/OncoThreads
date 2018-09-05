@@ -1,5 +1,8 @@
 import React from "react";
 import {observer} from "mobx-react";
+//import {Button, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
+//import FontAwesome from 'react-fontawesome';
+
 
 
 /*
@@ -182,7 +185,7 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
     );*/
 
 
-        return (
+        /*return (
             <div>
 
         <div>
@@ -211,12 +214,50 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
                 )
             }
 
+
+
         </div>
 
 
 
       
             </div>
+        ); */
+
+
+        return (
+            
+
+        <div>
+
+        
+            <button onClick={this.showMenu} >
+            Show time as..
+            </button>
+            
+            {
+            this.state.showMenu
+                ? (
+                <div
+                    className="menu"
+                    ref={(element) => {
+                    this.dropdownMenu = element;
+                    }}
+                >
+                    <button id="1" value="days" onClick={e => this.handleClick(e)} > Days </button>
+                    <button id="30" value="months" onClick={e => this.handleClick(e)} > Months </button>
+                    <button id="365" value="years" onClick={e => this.handleClick(e)} > Years </button>
+                </div>
+                )
+                : (
+                null
+                )
+            }
+
+
+
+        </div>
+
         );
     }
 });

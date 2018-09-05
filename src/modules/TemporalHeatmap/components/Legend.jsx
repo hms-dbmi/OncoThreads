@@ -22,7 +22,10 @@ const Legend = observer(class Legend extends React.Component {
         let legendEntry = [];
         legendEntry.push(<rect key={"rect" + value} opacity={opacity} width={rectWidth} height={fontSize + 2}
                                x={currX} y={lineheight / 2 - fontSize / 2}
-                               fill={rectColor}/>);
+                               fill={rectColor}
+                               
+                               value={value}
+                               />);
         legendEntry.push(<text key={"text" + value} fill={textColor} style={{fontSize: fontSize}} x={currX + 2}
                                y={lineheight / 2 + fontSize / 2}>{value}</text>);
         return legendEntry;
@@ -102,14 +105,34 @@ const Legend = observer(class Legend extends React.Component {
         let currX = 0;
         let currKeys = [];
         let legendEntries = [];
-        row.data.forEach(function (f) {
-            if (!currKeys.includes(f.value) && f.value !== undefined) {
-                const rectWidth = Legend.getTextWidth(30, f.value, fontSize) + 4;
-                currKeys.push(f.value);
-                legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(f.value), "black"));
-                currX += (rectWidth + 2);
-            }
-        });
+        var rdata;
+        //change
+        if(!this.props.store.globalTime){
+             rdata=row.data;
+
+             rdata.forEach(function (f) {
+                if (!currKeys.includes(f.value) && f.value !== undefined) {
+                    const rectWidth = Legend.getTextWidth(30, f.value, fontSize) + 4;
+                    currKeys.push(f.value);
+                    legendEntries = legendEntries.concat(Legend.getLegendEntry(f.value.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(f.value), "black"));
+                    currX += (rectWidth + 2);
+                }
+            });
+
+        }
+        else{
+            rdata=row;
+
+            rdata.forEach(function (f) {
+                if (!currKeys.includes(f) && f !== undefined) {
+                    const rectWidth = Legend.getTextWidth(30, f, fontSize) + 4;
+                    currKeys.push(f);
+                    legendEntries = legendEntries.concat(Legend.getLegendEntry(f.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(f), "black"));
+                    currX += (rectWidth + 2);
+                }
+            });
+        }
+        
         return (legendEntries);
     }
 
@@ -166,42 +189,98 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let legend = [];
         let currPos = 0;
-        if (data.length !== undefined) {
-            data.forEach(function (d, i) {
-                let lineheight;
-                let opacity = 1;
-                if (primary === d.variable) {
-                    lineheight = _self.props.visMap.primaryHeight;
-                }
-                else {
-                    lineheight = _self.props.visMap.secondaryHeight;
-                    opacity = 0.5
-                }
-                let color = currentVariables[i].colorScale;
-                let legendEntries = [];
-                if (lineheight < fontSize) {
-                    fontSize = Math.round(lineheight);
-                }
-                if (currentVariables[i].datatype === "STRING") {
-                    legendEntries = _self.getCategoricalLegend(d, opacity, fontSize, lineheight, color);
-                }
-                else if (currentVariables[i].datatype === "binary") {
-                    legendEntries = Legend.getBinaryLegend(d, opacity, fontSize, lineheight, color);
-                }
-                else if (currentVariables[i].datatype === "BINNED") {
-                    legendEntries = Legend.getBinnedLegend(opacity, fontSize, lineheight, color);
-                }
-                else {
-                    legendEntries = Legend.getContinuousLegend(opacity, fontSize, lineheight, color);
-                }
-                const transform = "translate(0," + currPos + ")";
-                currPos += lineheight + _self.props.visMap.gap;
-                let highlightRect = null;
-                if (d.variable === _self.props.highlightedVariable) {
-                    highlightRect = _self.getHighlightRect(lineheight, 400)
-                }
-                legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
-            });
+
+        if(!this.props.store.globalTime){
+            if (data.length !== undefined) {
+                data.forEach(function (d, i) {
+                    let lineheight;
+                    let opacity = 1;
+                    if (primary === d.variable) {
+                        lineheight = _self.props.visMap.primaryHeight;
+                    }
+                    else {
+                        lineheight = _self.props.visMap.secondaryHeight;
+                        opacity = 0.5
+                    }
+                    let color = currentVariables[i].colorScale;
+                    let legendEntries = [];
+                    if (lineheight < fontSize) {
+                        fontSize = Math.round(lineheight);
+                    }
+                    if (currentVariables[i].datatype === "STRING") {
+                        legendEntries = _self.getCategoricalLegend(d, opacity, fontSize, lineheight, color);
+                    }
+                    else if (currentVariables[i].datatype === "binary") {
+                        legendEntries = Legend.getBinaryLegend(d, opacity, fontSize, lineheight, color);
+                    }
+                    else if (currentVariables[i].datatype === "BINNED") {
+                        legendEntries = Legend.getBinnedLegend(opacity, fontSize, lineheight, color);
+                    }
+                    else {
+                        legendEntries = Legend.getContinuousLegend(opacity, fontSize, lineheight, color);
+                    }
+                    const transform = "translate(0," + currPos + ")";
+                    currPos += lineheight + _self.props.visMap.gap;
+                    let highlightRect = null;
+                    if (d.variable === _self.props.highlightedVariable) {
+                        highlightRect = _self.getHighlightRect(lineheight, 400)
+                    }
+                    legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
+                });
+            }
+        }
+        else{
+            if (data.length !== undefined) {
+                //data.forEach(function (d, i) {
+                    let lineheight;
+                    let opacity = 1;
+                    //change
+                    if (primary === currentVariables.id) {
+                        lineheight = _self.props.visMap.primaryHeight;
+                    }
+                    else {
+                        lineheight = _self.props.visMap.secondaryHeight;
+                        opacity = 0.5
+                    }
+
+                    //change
+                    let color = currentVariables.colorScale;
+
+                    var x=[];
+
+                    data.forEach(function(l){x.push(l.value)}); //get the values
+
+                    var unique = x.filter(function(item, i, ar){ return ar.indexOf(item) === i; }); //get unique values, such as grades II, III, and IV
+
+
+
+                    let legendEntries = [];
+                    if (lineheight < fontSize) {
+                        fontSize = Math.round(lineheight);
+                    }
+                    if (currentVariables.datatype === "STRING") {
+                        legendEntries = _self.getCategoricalLegend(unique, opacity, fontSize, lineheight, color);
+                    }
+                    /*else if (currentVariables.datatype === "binary") {
+                        legendEntries = Legend.getBinaryLegend(d, opacity, fontSize, lineheight, color);
+                    }
+                    else if (currentVariables.datatype === "BINNED") {
+                        legendEntries = Legend.getBinnedLegend(opacity, fontSize, lineheight, color);
+                    }
+                    else {
+                        legendEntries = Legend.getContinuousLegend(opacity, fontSize, lineheight, color);
+                    }*/
+                    const transform = "translate(0," + currPos + ")";
+                    currPos += lineheight + _self.props.visMap.gap;
+                    let highlightRect = null;
+                    //change
+                    if (currentVariables.id === _self.props.highlightedVariable) {
+                        highlightRect = _self.getHighlightRect(lineheight, 400)
+                    }
+                    legend.push(<g key={currentVariables.id} transform={transform}>{highlightRect}{legendEntries}</g>)
+                //});
+            }
+
         }
         return legend
     }
@@ -210,18 +289,99 @@ const Legend = observer(class Legend extends React.Component {
         const textHeight = 10;
         const _self = this;
         const legends = [];
-        this.props.timepoints.forEach(function (d, i) {
-            let transform = "translate(10," + _self.props.posY[i] + ")";
-            legends.push(<g key={i + d}
-                            transform={transform}>{_self.getLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStore[d.type].currentVariables)}</g>);
 
-        });
-        let transform = "translate(0," + 20 + ")";
+        let transform="translate(0," + 20 + ")";
+
+        if(!this.props.store.globalTime){
+
+            //transform = "translate(0," + 20 + ")";
+            this.props.timepoints.forEach(function (d, i) {
+                let transform = "translate(10," + _self.props.posY[i] + ")";
+                legends.push(<g key={i + d}
+                                transform={transform}>
+                                {_self.getLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStore[d.type].currentVariables)}
+                                </g>);
+
+            });
+        }
+       else{
+
+            //transform = "translate(-20," + 20 + ")";
+            var dh=[], dp, dt=[];
+
+            var indx=0;
+
+            this.props.timepoints.forEach(function (d, i) {
+               // var i =0;
+               // var d = this.props.timepoints[i];
+                
+               //let transform = "translate(10," + _self.props.posY[i] + ")";
+
+               //console.log(d.heatmap[0]);
+
+               if(d.type==='sample'){
+                d.heatmap.forEach(function(d1, j){
+                    if(d1.variable===_self.props.store.rootStore.globalPrimary)
+                    {
+                        //console.log(i)
+                        indx=j;
+                    }
+                })
+                dh.push(d.heatmap[indx]);
+
+                //console.log(dh);
+
+                //console.log(d.primaryVariableId);
+                //dp.push(d.primaryVariableId);
+                dp=d.primaryVariableId;
+                    //console.log(dp);
+
+
+                //console.log(_self.props.store.variableStore[d.type].currentVariables[0]); 
+                dt.push(_self.props.store.variableStore[d.type].currentVariables[indx]);
+                //console.log(dt);
+
+            }
+
+            });
+
+
+
+            console.log(dh);
+            console.log(dt);
+
+
+            var dh_combined= dh[0].data.concat(dh[1].data, dh[2].data, dh[3].data);
+            
+            var d = this.props.timepoints[indx];
+            let transform = "translate(10," + _self.props.posY[0] + ")";
+
+                //var lg=_self.getLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStore[d.type].currentVariables);
+
+
+                //var lg=_self.getLegend(dh, dp, textHeight, dt);
+
+                var lg=_self.getLegend(dh_combined, dp, textHeight, dt[0]);
+
+                //lg[0].props.children[1].forEach(function(d){console.log(d.props.value)})
+
+                console.log(lg);
+                legends.push(<g key={0 + d}
+                                transform={transform}>
+                                {lg}
+                                </g>);
+
+           
+
+       } 
+        //let transform = "translate(-5," + 20 + ")";
         let viewBox = "0, 0, " + this.props.width + ", " + this.props.height;
         return (
             <div className="scrollableX">
                 <svg width={this.props.width} height={this.props.height} viewBox={viewBox}>
+              
                     <g transform={transform}>
+                                           
                         {legends}
                     </g>
                 </svg>
