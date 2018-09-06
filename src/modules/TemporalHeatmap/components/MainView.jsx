@@ -164,6 +164,13 @@ const MainView = observer(class MainView extends React.Component {
 
         let maxTime = Math.max(max1, max2);
 
+        let row_op_height=svgHeight/3;
+
+        //adjust roW oprators height
+        if( (this.props.store.currentVariables.between.length+this.props.store.currentVariables.sample.length) * 19>row_op_height){
+             row_op_height=row_op_height + ((this.props.store.currentVariables.between.length+this.props.store.currentVariables.sample.length) * 19 -row_op_height);
+            
+        }
 
         //let current_var=this.props.store.rootStore.globalPrimary;
 
@@ -182,13 +189,13 @@ const MainView = observer(class MainView extends React.Component {
 
 
             <Col xs={2} style={{padding: 0}}>
-                <GlobalRowOperators {...this.props} height={svgHeight/3} width={300}
+                <GlobalRowOperators {...this.props} height={row_op_height} width={300}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
             
             <p class="font-weight-bold"> <small> <b>Legend of selected variable </b></small> </p>
-                <Legend {...this.props} mainWidth={svgWidth} height={svgHeight/3} width={400}
+                <Legend {...this.props} mainWidth={svgWidth} height={svgHeight/4} width={400}
                         posY={timepointPositions.timepoint}/>
             </Col>
 

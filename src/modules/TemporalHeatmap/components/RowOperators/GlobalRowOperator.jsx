@@ -378,12 +378,12 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
         render() {
 
             return (
-                <g transform={this.props.transform}>
-
-                   
+                
+                <g transform={this.props.transform}>               
                     
                     {this.getRowOperator()}
                 </g>
+                
             )
         }
     }
