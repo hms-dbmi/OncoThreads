@@ -163,6 +163,12 @@ const MainView = observer(class MainView extends React.Component {
             .reduce((next, max) => next > max ? next : max, 0);
 
         let maxTime = Math.max(max1, max2);
+
+
+        //let current_var=this.props.store.rootStore.globalPrimary;
+
+        //console.log(current_var);
+
         return (<Row>
 
 
@@ -181,7 +187,7 @@ const MainView = observer(class MainView extends React.Component {
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
             
-            <p class="font-weight-bold"> <small> <b>Legend of the selected sample variable </b></small> </p>
+            <p class="font-weight-bold"> <small> <b>Legend of selected variable </b></small> </p>
                 <Legend {...this.props} mainWidth={svgWidth} height={svgHeight/3} width={400}
                         posY={timepointPositions.timepoint}/>
             </Col>

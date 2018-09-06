@@ -261,15 +261,15 @@ const Legend = observer(class Legend extends React.Component {
                     if (currentVariables.datatype === "STRING") {
                         legendEntries = _self.getCategoricalLegend(unique, opacity, fontSize, lineheight, color);
                     }
-                    /*else if (currentVariables.datatype === "binary") {
-                        legendEntries = Legend.getBinaryLegend(d, opacity, fontSize, lineheight, color);
+                    else if (currentVariables.datatype === "binary") {
+                        legendEntries = Legend.getBinaryLegend(unique, opacity, fontSize, lineheight, color);
                     }
                     else if (currentVariables.datatype === "BINNED") {
                         legendEntries = Legend.getBinnedLegend(opacity, fontSize, lineheight, color);
                     }
                     else {
                         legendEntries = Legend.getContinuousLegend(opacity, fontSize, lineheight, color);
-                    }*/
+                    }
                     const transform = "translate(0," + currPos + ")";
                     currPos += lineheight + _self.props.visMap.gap;
                     let highlightRect = null;
@@ -347,11 +347,11 @@ const Legend = observer(class Legend extends React.Component {
 
 
 
-            console.log(dh);
-            console.log(dt);
+            //console.log(dh);
+            //console.log(dt);
 
 
-            var dh_combined= dh[0].data.concat(dh[1].data, dh[2].data, dh[3].data);
+            var dh_combined = dh.reduce((concatenated, nextDh) => concatenated.concat(nextDh.data.slice()), [])//dh[0].data.concat(dh[1].data, dh[2].data, dh[3].data);
             
             var d = this.props.timepoints[indx];
             let transform = "translate(10," + _self.props.posY[0] + ")";
@@ -365,7 +365,7 @@ const Legend = observer(class Legend extends React.Component {
 
                 //lg[0].props.children[1].forEach(function(d){console.log(d.props.value)})
 
-                console.log(lg);
+                //console.log(lg);
                 legends.push(<g key={0 + d}
                                 transform={transform}>
                                 {lg}

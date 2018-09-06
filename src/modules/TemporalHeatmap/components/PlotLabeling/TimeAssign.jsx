@@ -1,7 +1,7 @@
 import React from "react";
 import {observer} from "mobx-react";
 import {ButtonToolbar,  DropdownButton,MenuItem} from 'react-bootstrap';
-import FontAwesome from 'react-fontawesome';
+//import FontAwesome from 'react-fontawesome';
 
 
 
