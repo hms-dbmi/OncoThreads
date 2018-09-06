@@ -134,6 +134,7 @@ class RootStore {
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical", this.patientOrderPerTimepoint);
         this.undoRedoStore.saveVariableHistory("ADD VARIABLE", this.clinicalSampleCategories[0].variable);
         this.parsed = true;
+        this.globalPrimary=this.clinicalSampleCategories[0].id;
     }
 
     /**
