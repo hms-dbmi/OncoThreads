@@ -55,10 +55,14 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             }
             else{
-                color = _self.props.currentVariables.filter(d=>d.id===_self.props.store.rootStore.globalPrimary)[0].colorScale;
+                //color = _self.props.currentVariables.filter(d=>d.id===_self.props.store.rootStore.globalPrimary)[0].colorScale;
+
+                color =  _self.props.currentVariables.filter(d=>d.originalIds[0]===_self.props.store.rootStore.globalPrimary)[0].colorScale;
+
+                //if(row.variable===_self.props.store.rootStore.globalPrimary){
 
 
-                if(row.variable===_self.props.store.rootStore.globalPrimary){
+                if( _self.props.store.variableStore.sample.allVariables.filter(d=>d.id===row.variable)[0].originalIds[0] ===_self.props.store.rootStore.globalPrimary){ 
                     rows.push(<g key={row.variable + i + globalIndex}>
 
                         <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}

@@ -311,6 +311,10 @@ const Legend = observer(class Legend extends React.Component {
 
             var indx=0;
 
+            //if(this.props.currentVariables.sample.length===0){
+              //  return null;
+            //}
+
             this.props.timepoints.forEach(function (d, i) {
                // var i =0;
                // var d = this.props.timepoints[i];
@@ -321,7 +325,12 @@ const Legend = observer(class Legend extends React.Component {
 
                if(d.type==='sample'){
                 d.heatmap.forEach(function(d1, j){
-                    if(d1.variable===_self.props.store.rootStore.globalPrimary)
+
+                    //if(d1.variable===_self.props.store.rootStore.globalPrimary)
+
+                    //if(_self.props.currentVariables.sample.filter(l => l.id === d1.variable)[0].id ===_self.props.store.rootStore.globalPrimary)
+                    
+                    if(_self.props.currentVariables.sample.filter(l => l.id === d1.variable)[0].originalIds[0] ===_self.props.store.rootStore.globalPrimary)
                     {
                         //console.log(i)
                         indx=j;
