@@ -37,7 +37,6 @@ const MainView = observer(class MainView extends React.Component {
             timeValue: "days"
             //timeline: []
         });*/
-
     }
 
 
@@ -175,10 +174,13 @@ const MainView = observer(class MainView extends React.Component {
             
         }
 
-        //let current_var=this.props.store.rootStore.globalPrimary;
-
+        let current_var=  this.props.store.rootStore.globalPrimary.substring(0, 14)
+        
+        if(current_var.length>=14) {
+            current_var=current_var+"...";
+        }
         //console.log(current_var);
-
+        
         return (<Row>
 
 
@@ -197,7 +199,7 @@ const MainView = observer(class MainView extends React.Component {
                                     selectedPatients={this.props.store.selectedPatients}
                                     currentVariables={this.props.store.currentVariables}/>
             
-            <p class="font-weight-bold"> <small> <b>Legend of selected variable </b></small> </p>
+            <p className="font-weight-bold"> <small> <b>{"Legend of "+current_var}</b></small> </p>
                 <Legend {...this.props} mainWidth={svgWidth} height={svgHeight/4} width={400}
                         posY={timepointPositions.timepoint}/>
             </Col>

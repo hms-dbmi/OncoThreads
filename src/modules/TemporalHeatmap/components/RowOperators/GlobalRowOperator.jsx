@@ -324,7 +324,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                        fontWeight = "bold";
                     }
                     else if(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample"){
-                        _self.promote(_self.props.timepoint, d.variable);
+                        //_self.promote(_self.props.timepoint, d.variable);
                         lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
                         fontWeight = "bold";
                     }
@@ -373,6 +373,12 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             }
             else return null;
 
+        }
+
+        componentDidMount() {
+            //if(this.props.timepoint && this.props.store.rootStore.globalPrimary===''&&this.props.timepoint.type==="sample") {
+                this.promote(this.props.timepoint, this.props.timepoint.heatmap[this.props.timepoint.heatmap.length-1].variable);
+            //}
         }
 
         render() {

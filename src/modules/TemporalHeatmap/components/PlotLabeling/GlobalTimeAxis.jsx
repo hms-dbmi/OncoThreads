@@ -221,17 +221,17 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
                     <text textAnchor="end" x="32" y="40" fontSize="10px">0</text>
 
-                    <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) / 4}
-                          fontSize="10px">{Math.round((this.props.maxTimeInDays / 4) / (this.props.store.rootStore.timeVar) *100  )/100}</text>
+                    <text textAnchor="end" x="32" y={(this.props.height - 20) / 4.0}
+                          fontSize="10px">{Math.round((this.props.maxTimeInDays / 4.0) / (this.props.store.rootStore.timeVar) *100  )/100.0}</text>
 
-                    <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 2 / 4}
-                          fontSize="10px">{Math.round((this.props.maxTimeInDays * 2 / 4)/ (this.props.store.rootStore.timeVar) *100)/100}</text>
+                    <text textAnchor="end" x="32" y={(this.props.height - 20) * 2 / 4.0}
+                          fontSize="10px">{Math.round((this.props.maxTimeInDays * 2 / 4.0)/ (this.props.store.rootStore.timeVar) *100)/100.0}</text>
 
-                    <text textAnchor="end" x="32" y={(this.props.height - 10 - 40) * 3 / 4}
-                          fontSize="10px">{Math.round((this.props.maxTimeInDays * 3 / 4)/(this.props.store.rootStore.timeVar) *100)/100}</text>
+                    <text textAnchor="end" x="32" y={(this.props.height - 20) * 3 / 4.0}
+                          fontSize="10px">{Math.round((this.props.maxTimeInDays * 3 / 4.0)/(this.props.store.rootStore.timeVar) *100)/100.0}</text>
 
                     <text textAnchor="end" x="32" y={this.props.height - 20}
-                          fontSize="10px">{Math.round(this.props.maxTimeInDays/ (this.props.store.rootStore.timeVar) *100 )/100}</text>
+                          fontSize="10px">{Math.round(this.props.maxTimeInDays/ (this.props.store.rootStore.timeVar) *100 )/100.0}</text>
 
                 </g>
 
