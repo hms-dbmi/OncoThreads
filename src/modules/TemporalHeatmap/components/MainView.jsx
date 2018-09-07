@@ -180,7 +180,7 @@ const MainView = observer(class MainView extends React.Component {
             current_var=current_var+"...";
         }
         //console.log(current_var);
-        
+         
         return (<Row>
 
 
