@@ -70,7 +70,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
            //this.props.store.rootStore.globalPrimary=variable;
 
 
-           if(this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable).length!=0){
+           if(this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable).length!==0){
             this.props.store.rootStore.globalPrimary=this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable)[0].originalIds[0];
            }
         }
@@ -131,7 +131,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             this.props.unhighlightVariable();
             this.props.hideTooltip();
             
-            if(this.props.store.currentVariables.sample.length>1){
+            //if(this.props.store.currentVariables.sample.length>1){
+            if(timepoint.type==="between"||this.props.store.currentVariables[timepoint.type].length>1) {    
                 this.props.store.removeVariable(variable, timepoint.type);
 
                 this.promote(timepoint, 
