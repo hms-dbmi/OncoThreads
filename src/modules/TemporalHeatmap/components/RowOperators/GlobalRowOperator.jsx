@@ -70,7 +70,9 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
            //this.props.store.rootStore.globalPrimary=variable;
 
 
-           this.props.store.rootStore.globalPrimary=this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable)[0].originalIds[0];
+           if(this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable).length!=0){
+            this.props.store.rootStore.globalPrimary=this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable)[0].originalIds[0];
+           }
         }
 
         /**
@@ -322,7 +324,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     let lineHeight;
                     let fontWeight;
                     //if (d.variable === _self.props.store.rootStore.globalPrimary)//||(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample")) 
-                    if(_self.props.store.variableStore.sample.allVariables.filter(d1=>d1.id===d.variable)[0].originalIds[0]=== _self.props.store.rootStore.globalPrimary)
+                    if( _self.props.store.variableStore.sample.allVariables.filter(d1=>d1.id===d.variable).length!==0 && (_self.props.store.variableStore.sample.allVariables.filter(d1=>d1.id===d.variable)[0].originalIds[0]=== _self.props.store.rootStore.globalPrimary) )
                     {
                        lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
                        fontWeight = "bold";
