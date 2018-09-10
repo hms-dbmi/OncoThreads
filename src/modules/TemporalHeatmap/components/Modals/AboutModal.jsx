@@ -14,7 +14,12 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     <Modal.Title>About</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{'maxHeight': '400px', 'overflowY': 'auto'}}>
-                    Coming soon
+                OncoThreads is a web-based visualization tool for the interactive exploration of tumor evolution 
+                designed to aid researchers in visualizing and exploring temporal patterns within a single patient 
+                and across an entire patient cohort. 
+                
+                OncoThreads allows researchers find patterns such as effect of treatments, find correlation with treatments 
+                and mutation counts, and compare the results across patient cohorts.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.close}>Close</Button>
