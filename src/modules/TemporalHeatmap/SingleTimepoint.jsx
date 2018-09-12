@@ -144,6 +144,7 @@ class SingleTimepoint {
                 }
             }
         }
+        console.log(this.grouped);
         this.isGrouped = true;
     }
 
@@ -230,7 +231,7 @@ class SingleTimepoint {
      * @param sortOrder (optional) if it is not passed, the opposite order of the previous sorting is applied
      */
     sortHeatmap(variable, sortOrder) {
-        const _self = this;
+        const previousOrder = this.heatmapOrder.slice();
         const variableIndex = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
             return d.id
         }).indexOf(variable);
@@ -276,44 +277,19 @@ class SingleTimepoint {
             //if sorting is ambiguous do additional sorting
             else {
                 //if the timepoint is sorted for the first time (no previous order)
-                if (_self.previousOrder === null) {
-                    //selected patients to the left
-                    /*
-                    if (_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && !_self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
+                    if (previousOrder.indexOf(a.patient) < previousOrder.indexOf(b.patient)) {
                         return -1;
                     }
-                    if (!_self.rootStore.timepointStore.selectedPatients.includes(a.patient) && _self.rootStore.timepointStore.selectedPatients.includes(b.patient)) {
-                        return 1;
-                    }
-                    //if still ambiguous sort after patient id
-                    else {
-                    */
-                    if (a.patient < b.patient) {
-                        return -1;
-                    }
-                    if (a.patient > b.patient) {
-                        return 1;
-                    }
-                    else return 0;
-                    //}
-                }
-                //if there is a previous order use it for the sorting
-                else {
-                    if (_self.previousOrder.indexOf(a.patient) < _self.previousOrder.indexOf(b.patient)) {
-                        return -1;
-                    }
-                    if (_self.previousOrder.indexOf(a.patient) > _self.previousOrder.indexOf(b.patient)) {
+                    if (previousOrder.indexOf(a.patient) > previousOrder.indexOf(b.patient)) {
                         return 1;
                     }
                     else {
                         return 0
                     }
-                }
             }
         }).map(function (d) {
             return d.patient;
         });
-        this.previousOrder = this.heatmapOrder.slice();
     }
 
 
