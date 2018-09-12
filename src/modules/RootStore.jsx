@@ -270,7 +270,6 @@ class RootStore {
      * updates the timepoint structure after a patient is moved up or down
      * @param patient
      * @param timepoint
-     * @param xposition
      * @param up
      */
     updateTimepointStructure(patient, timepoint, up) {
