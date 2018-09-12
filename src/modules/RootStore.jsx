@@ -601,7 +601,10 @@ class RootStore {
         let attributes = {};
         for (let patient in this.cbioAPI.clinicalEvents) {
             this.cbioAPI.clinicalEvents[patient].forEach(function (d, i) {
+
+                
                 if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis)) {
+                //if(!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis)||d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {    
                     if (!(d.eventType in attributes)) {
                         attributes[d.eventType] = {}
                     }
@@ -619,8 +622,11 @@ class RootStore {
                         }
                     })
                 }
+
             })
         }
+
+        //console.log(attributes);
         this.eventAttributes = attributes;
     }
 

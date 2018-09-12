@@ -145,8 +145,14 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
     handleMouseEnter(event, patient, value, startDay, duration) {
-        this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
+        if(duration===0){
+            this.props.showTooltip(event, patient + ": " + value + ", Event day: " + startDay)
 
+        }
+        else{
+            this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
+        }
+       
     }
 
     handleMouseLeave() {

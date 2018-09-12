@@ -216,10 +216,10 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
                    
 
 
-                    <line x1="43" y1="30" x2="43" y2={this.props.height - 18} stroke="darkgray"
+                    <line x1="43" y1="25" x2="43" y2={this.props.height - 20} stroke="darkgray"
                           markerEnd="url(#arrow)" strokeWidth="2"/>
 
-                    <text textAnchor="end" x="32" y="40" fontSize="10px">0</text>
+                    <text textAnchor="end" x="32" y="30" fontSize="10px">0</text>
 
                     <text textAnchor="end" x="32" y={(this.props.height - 20) / 4.0}
                           fontSize="10px">{Math.round((this.props.maxTimeInDays / 4.0) / (this.props.store.rootStore.timeVar) *100  )/100.0}</text>
