@@ -28,51 +28,50 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             let color;
 
-            if(_self.props.store.rootStore.globalPrimary===""){
+            if (_self.props.store.rootStore.globalPrimary === "") {
 
                 color = _self.props.currentVariables[i].colorScale;
 
 
+                //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
 
-            //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
-
-            //const transform = "translate(0," + previousYposition + ")";
+                //const transform = "translate(0," + previousYposition + ")";
 
 
-            //if (row.variable === _self.props.primaryVariable.id) {
-            rows.push(<g key={row.variable + i + globalIndex}>
+                //if (row.variable === _self.props.primaryVariable.id) {
+                rows.push(<g key={row.variable + i + globalIndex}>
 
-                <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                             height={_self.props.visMap.primaryHeight}
-                             color={color}
-                             x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                             ypi={_self.props.ypi}
-                             ht={_self.props.ht}
-                             dtype={_self.props.currentVariables[i].datatype}/>;
+                    <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
+                                 height={_self.props.visMap.primaryHeight}
+                                 color={color}
+                                 x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                                 ypi={_self.props.ypi}
+                                 ht={_self.props.ht}
+                                 dtype={_self.props.currentVariables[i].datatype}/>;
 
-            </g>);
+                </g>);
 
 
             }
-            else{
+            else {
                 //color = _self.props.currentVariables.filter(d=>d.id===_self.props.store.rootStore.globalPrimary)[0].colorScale;
 
-                if(_self.props.currentVariables.filter(d=>d.originalIds[0]===_self.props.store.rootStore.globalPrimary).length>0){
-                    color =  _self.props.currentVariables.filter(d=>d.originalIds[0]===_self.props.store.rootStore.globalPrimary)[0].colorScale;
+                if (_self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary).length > 0) {
+                    color = _self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
                     //if(row.variable===_self.props.store.rootStore.globalPrimary){
 
 
-                    if( _self.props.store.variableStore.sample.allVariables.filter(d=>d.id===row.variable)[0].originalIds[0] ===_self.props.store.rootStore.globalPrimary){ 
+                    if (_self.props.store.variableStore.sample.allVariables.filter(d => d.id === row.variable)[0].originalIds[0] === _self.props.store.rootStore.globalPrimary) {
                         rows.push(<g key={row.variable + i + globalIndex}>
 
                             <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                        height={_self.props.visMap.primaryHeight}
-                                        color={color}
-                                        x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                        ypi={_self.props.ypi}
-                                        ht={_self.props.ht}
-                                        dtype={_self.props.currentVariables[i].datatype}/>;
+                                         height={_self.props.visMap.primaryHeight}
+                                         color={color}
+                                         x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                                         ypi={_self.props.ypi}
+                                         ht={_self.props.ht}
+                                         dtype={_self.props.currentVariables[i].datatype}/>;
 
                         </g>);
 
@@ -165,21 +164,22 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             let color;
 
-            if (_self.props.currentVariables[i].datatype === "binary"&&_self.props.timepointType==='between') {
+            if (_self.props.currentVariables[i].datatype === "binary" && _self.props.timepointType === 'between') {
                 opacity = 0.5;
                 color = _self.props.visMap.globalTimelineColors;
 
 
-            //if (row.variable === _self.props.primaryVariable.id ) {
+                //if (row.variable === _self.props.primaryVariable.id ) {
 
-            //console.log(ypi);
-                let events=a2.slice();
-                if(!_self.props.currentVariables[i].derived) {
-                    _self.props.currentVariables[i].originalIds.forEach(function (d) {
-                        events = events.filter(eventElement => eventElement.varId === d)
-                    });
+                //console.log(ypi);
+                let events = [];
+                if (_self.props.currentVariables[i].derived) {
+                    events=a2.filter(eventElement => _self.props.currentVariables[i].originalIds.includes(eventElement.varId));
                 }
-            rows.push(<g key={row.variable + i + globalIndex}>
+                else{
+                    events=a2.filter(eventElement=>eventElement.varId===row.variable);
+                }
+                rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
                                  height={_self.props.visMap.primaryHeight}
@@ -192,15 +192,15 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                  events={events}
                                  opacity={opacity}
                                  dtype={_self.props.currentVariables[i].datatype}
-                                 //fillBin={fillBin}
+                        //fillBin={fillBin}
 
-                                 />
+                    />
 
                 </g>);
 
 
             }
-            else if(_self.props.store.rootStore.globalPrimary===""){
+            else if (_self.props.store.rootStore.globalPrimary === "") {
                 color = _self.props.currentVariables[i].colorScale;
 
                 rows.push(<g key={row.variable + i + globalIndex}>
@@ -208,7 +208,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
                                  height={_self.props.visMap.primaryHeight}
                                  color={color}
-                        //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                  x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
                                  ypi={_self.props.ypi}
                                  max={_self.props.max}
@@ -216,9 +215,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                  events={a2}
                                  opacity={opacity}
                                  dtype={_self.props.currentVariables[i].datatype}
-                                 //fillBin={fillBin}
-
-                                 />
+                    />
 
                 </g>);
             }
@@ -226,25 +223,25 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
                 //color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
-                if(_self.props.currentVariables.filter(d=>d.originalIds[0]===_self.props.store.rootStore.globalPrimary).length>0){
+                if (_self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary).length > 0) {
 
-                    color=_self.props.currentVariables.filter(d=>d.originalIds[0]===_self.props.store.rootStore.globalPrimary)[0].colorScale;
+                    color = _self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
                     //if (row.variable === _self.props.store.rootStore.globalPrimary) {
-                    if(row.variable === _self.props.currentVariables.filter(d=>d.originalIds[0]===_self.props.store.rootStore.globalPrimary)[0].id){    
+                    if (row.variable === _self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0].id) {
                         rows.push(<g key={row.variable + i + globalIndex}>
 
                             <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                        height={_self.props.visMap.primaryHeight}
-                                        color={color}
+                                         height={_self.props.visMap.primaryHeight}
+                                         color={color}
                                 //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
-                                        x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                        ypi={_self.props.ypi}
-                                        max={_self.props.max}
-                                        ht={_self.props.ht}
-                                        events={a2}
-                                        opacity={opacity}
-                                        dtype={_self.props.currentVariables[i].datatype}
+                                         x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                                         ypi={_self.props.ypi}
+                                         max={_self.props.max}
+                                         ht={_self.props.ht}
+                                         events={a2}
+                                         opacity={opacity}
+                                         dtype={_self.props.currentVariables[i].datatype}
                                 //fillBin={fillBin}
 
                             />

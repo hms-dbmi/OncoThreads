@@ -55,7 +55,7 @@ class RootStore {
             parsed: false,
             firstLoad: firstLoad,
 
-            globalPrimary:'',
+            globalPrimary: '',
 
             timeVar: 1,
             timeValue: "days",
@@ -134,7 +134,7 @@ class RootStore {
         this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical", this.patientOrderPerTimepoint);
         this.undoRedoStore.saveVariableHistory("ADD VARIABLE", this.clinicalSampleCategories[0].variable);
         this.parsed = true;
-        this.globalPrimary=this.clinicalSampleCategories[0].id;
+        this.globalPrimary = this.clinicalSampleCategories[0].id;
     }
 
     /**
@@ -162,7 +162,7 @@ class RootStore {
         }
         this.timepointStructure = timepointStructure;
         this.eventDetails = [];
-        if(update){
+        if (update) {
             this.sampleTimepointStore.update(this.patientOrderPerTimepoint);
             this.betweenTimepointStore.update();
         }
@@ -270,7 +270,6 @@ class RootStore {
      * updates the timepoint structure after a patient is moved up or down
      * @param patient
      * @param timepoint
-     * @param xposition
      * @param up
      */
     updateTimepointStructure(patient, timepoint, up) {
@@ -560,7 +559,7 @@ class RootStore {
     static isInCurrentRange(event, currMinDate, currMaxDate) {
         let isInRange = false;
         if (event.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
-            if (event.endNumberOfDaysSinceDiagnosis <= currMaxDate && event.startNumberOfDaysSinceDiagnosis >= currMinDate) {
+            if ((event.endNumberOfDaysSinceDiagnosis <= currMaxDate && event.endNumberOfDaysSinceDiagnosis > currMinDate) || (event.startNumberOfDaysSinceDiagnosis < currMaxDate && event.startNumberOfDaysSinceDiagnosis >= currMinDate)) {
                 isInRange = true
             }
 
@@ -601,10 +600,7 @@ class RootStore {
         let attributes = {};
         for (let patient in this.cbioAPI.clinicalEvents) {
             this.cbioAPI.clinicalEvents[patient].forEach(function (d, i) {
-
-                
-                if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis)) {
-                //if(!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis)||d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {    
+                if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
                     if (!(d.eventType in attributes)) {
                         attributes[d.eventType] = {}
                     }
