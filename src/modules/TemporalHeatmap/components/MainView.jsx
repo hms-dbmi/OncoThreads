@@ -163,7 +163,7 @@ const MainView = observer(class MainView extends React.Component {
 
         let maxTime = Math.max(max1, max2);
 
-        let row_op_height=svgHeight/3;
+        let row_op_height=svgHeight/7;
 
         //adjust roW oprators height
 
