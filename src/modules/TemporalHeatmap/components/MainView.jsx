@@ -167,8 +167,9 @@ const MainView = observer(class MainView extends React.Component {
 
         //adjust roW oprators height
 
-        var var_num=(this.props.store.variableStore.between.allVariables.length-this.props.store.currentVariables.between.length) //num of derived variables
-                    + this.props.store.variableStore.sample.allVariables.length;
+        var var_num=//(this.props.store.variableStore.between.allVariables.length-this.props.store.currentVariables.between.length) //num of derived variables
+                    this.props.store.variableStore.between.allVariables.length            
+                        + this.props.store.variableStore.sample.allVariables.length;
         if( var_num * 19>row_op_height){
              row_op_height=row_op_height + ( var_num * 19 -row_op_height);
             
