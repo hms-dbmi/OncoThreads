@@ -1,6 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import {Panel} from 'react-bootstrap';
+
 import FontAwesome from 'react-fontawesome';
 
 
@@ -46,6 +47,9 @@ const StudySummary = observer(class StudySummary extends React.Component {
                     </Panel.Body>
                 </Panel.Collapse>
             </Panel>)
+
+
+            
     }
 });
 export default StudySummary;
