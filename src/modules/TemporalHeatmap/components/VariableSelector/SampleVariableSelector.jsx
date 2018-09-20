@@ -4,8 +4,8 @@ import {Button, ButtonGroup, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 
-import {FormControl, FormGroup, ControlLabel, HelpBlock, Checkbox, Radio} from 'react-bootstrap';
-import { Navbar, Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
+import {FormGroup, ControlLabel} from 'react-bootstrap';
+import { Nav } from 'react-bootstrap';
 
 
 import Select from 'react-select';
@@ -24,6 +24,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             color: ''
            
         };
+        this.passToHandleVariableClick=this.passToHandleVariableClick.bind(this);
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
         this.toggleMutationIcon = this.toggleMutationIcon.bind(this);
@@ -79,6 +80,18 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         }
     }
 
+    passToHandleVariableClick(value){
+
+        console.log(value);
+
+
+        var id=this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].id,
+        variable= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].variable,
+        type= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].datatype;
+
+
+        this.handleVariableClick(id, variable, type);
+    }
 
     /**
      * handles a click on one of the continuous Variables
@@ -118,9 +131,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             let lb = (<div>{icon}{d.variable}</div>);
             //let vl=(<div>{d.id}{d.variable}{d.datatype}</div>)
             let vl=d.variable;
-            let obj=(<div>{d.id}{d.variable}{d.datatype}</div>);
+            //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
 
-            options.push({value: vl, label: lb})
+            options.push({value:vl, label:lb})
         });
         return options;
     }
@@ -255,7 +268,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             //onChange={this.onPickVariable.bind(this)}
                             inputRef={ el => this.inputEl=el }
                             searchable={true}
-                            componentClass="select" placeholder="select"
+                            componentClass="select" placeholder="Select..."
 
                           
                             searchPlaceholder="Search variable"                        
@@ -267,7 +280,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                             //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
 
-                            onChange={opt => console.log(opt.value, opt.label)}
+                            onChange={opt => this.passToHandleVariableClick(opt.value)}
 
                             //_self.handleVariableClick(d.id, d.variable, d.datatype)
                             //onChange={this.myOnChange}
@@ -286,133 +299,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             </Nav>
         )
 
-        /*return(
-           
-
-
-
-            <Nav>
-                    <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
-                    
-                    <div style={{backgroundColor: this.state.color }}>
-                        <FormGroup controlId="formControlsSelect">
-                        <ControlLabel>Genomic Features</ControlLabel>
-
-
-
-                         <FormControl 
-                            type="text" 
-                            onChange={this.onPickVariable.bind(this)}
-                            inputRef={ el => this.inputEl=el }
-                            searchable={true}
-                            componentClass="select" placeholder="select"
-
-                          
-                            searchPlaceholder="Search variable"
- 
-                            
-                            >
-                         {this.createClinicalAttributesListNew()}
-
-                          </FormControl>
-
-                        
-
-                        </FormGroup>
-                    </div>
-
-
-                    </Panel>
-            </Nav>
-        )*/
+     
     }
 });
 export default SampleVariableSelector;
 
-/*
 
- <Navbar>
-        <Nav>
-            
-            <NavDropdown eventKey={3} title="Clinical Features" id="basic-nav-dropdown">
-                <MenuItem eventKey={3.1}>Action</MenuItem>
-                <MenuItem eventKey={3.2}>Another action</MenuItem>
-                <MenuItem eventKey={3.3}>Something else here</MenuItem>
-                <MenuItem divider />
-                <MenuItem eventKey={3.3}>Separated link</MenuItem>
-            </NavDropdown>
-        </Nav>
-               
-</Navbar>
-
-            ----------
- <Navbar.Collapse>
-                    <Navbar.Form pullLeft>
-                    <FormGroup>
-                        <FormControl type="text" placeholder="Search" />
-                    </FormGroup>{' '}
-                    <Button type="submit">Submit</Button>
-                    </Navbar.Form>
-                </Navbar.Collapse>
-
-
-                ------------
-
-
-        <div style={{backgroundColor: this.state.color }}>
-                        <FormGroup controlId="formControlsSelect">
-                        <ControlLabel>Genomic Features</ControlLabel>
-                        <FormControl 
-                            onChange={this.onPickColor.bind(this)}
-                            inputRef={ el => this.inputEl=el }
-                            componentClass="select" placeholder="select">
-                            <option value="">select</option>
-                            <option value="red">Red</option>
-                            <option value="green">Green</option>
-                            <option value="blue">Blue</option>
-                        </FormControl>
-                        </FormGroup>
-                    </div>
-
-
-                    ---working
-
-                    <FormControl 
-                            type="text" 
-                            onChange={this.onPickVariable.bind(this)}
-                            inputRef={ el => this.inputEl=el }
-                            searchable={true}
-                            componentClass="select" placeholder="select"
-
-                          
-                            searchPlaceholder="Search variable"
- 
-                            
-                            >
-                         {this.createClinicalAttributesListNew()}
-
-                          </FormControl>
-
-
-                          ---test
-
-
-                           <Select  
-                            type="text" 
-                            //onChange={this.onPickVariable.bind(this)}
-                            inputRef={ el => this.inputEl=el }
-                            searchable={true}
-                            componentClass="select" placeholder="select"
-
-                          
-                            searchPlaceholder="Search variable"
- 
-                            
-                            
-                            options={this.createClinicalAttributesListNew()}
-
-                            onChange={opt => console.log(opt.label, opt.value)}
-
-                          />
-         
-*/
