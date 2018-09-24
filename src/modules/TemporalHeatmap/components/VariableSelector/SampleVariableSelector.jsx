@@ -28,6 +28,10 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
         this.toggleMutationIcon = this.toggleMutationIcon.bind(this);
+
+        //this.handleMouseEnter = this.handleMouseEnter.bind(this);
+        //this.handleMouseLeave = this.handleMouseLeave.bind(this);
+
         this.bin = this.bin.bind(this);
     }
 
@@ -218,6 +222,18 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         }
     }
 
+    /*handleMouseEnter() {
+       
+        //this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
+        
+        this.props.showTooltip("sample tooltip");
+       
+        console.log("sample tooltip");
+    }
+
+    handleMouseLeave() {
+        this.props.hideTooltip();
+    }*/
 
     render() {
         /*return (
@@ -260,7 +276,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                     
                     <div style={{backgroundColor: this.state.color }}>
                         <FormGroup controlId="formControlsSelect">
-                        <ControlLabel>Genomic Features</ControlLabel>
+                        <ControlLabel>Clinical Features</ControlLabel>
 
 
                         <Select  
@@ -282,6 +298,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                             onChange={opt => this.passToHandleVariableClick(opt.value)}
 
+                            //onMouseOver={(e) => this.handleMouseEnter()}
+                            //onMouseLeave={this.handleMouseLeave}
+
                             //_self.handleVariableClick(d.id, d.variable, d.datatype)
                             //onChange={this.myOnChange}
 
@@ -292,6 +311,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                         
 
                         </FormGroup>
+
+                         {this.getGenomicPanel()}
+
                     </div>
 
 

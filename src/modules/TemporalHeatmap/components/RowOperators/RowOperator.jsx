@@ -209,9 +209,13 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 </g>);
         }
 
-        getRowLabel(timepoint, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
+        getRowLabel(timepoint, variable, name_var, desc, xPos, yPos, iconScale, width, fontWeight, fontSize) {
+            if(!name_var) name_var="";
+            
             return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
+                       onMouseEnter={(e) => this.props.showTooltip(e, "Promote variable " + name_var + 
+                                                            " "
+                                                            +desc)}
                        onMouseLeave={this.props.hideTooltip}>
                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
                       onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
@@ -260,9 +264,35 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 if (d.variable === _self.props.highlightedVariable) {
                     highlightRect = RowOperator.getHighlightRect(lineHeight, 200);
                 }
+
+                
+                var desc;
+
+                var name_var;
+                
+                if(_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===d.variable)[0]){
+                    name_var=d.variable;
+                    desc=": "+_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===d.variable)[0].description;
+                }
+                else if(_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable).length===0){
+                    desc="";
+                }
+                else{
+                    name_var=_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable)[0].originalIds[0];
+                    if(_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===name_var)[0]){
+                        desc=": "+_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===name_var)[0].description;
+                    }
+                    else{
+                        desc="";
+                    }
+
+                }
+
+                
+
                 return <g key={d.variable} className={"clickable"} transform={transform}>
                     {highlightRect}
-                    {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize/2) / 2, iconScale, _self.props.width - iconScale* 24, fontWeight, fontSize)}
+                    {_self.getRowLabel(_self.props.timepoint, d.variable, name_var, desc, 0, (lineHeight + fontSize/2) / 2, iconScale, _self.props.width - iconScale* 24, fontWeight, fontSize)}
                     {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 96), yPos)}
                     {secondIcon}
                     {_self.getAlignIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 48), yPos)}

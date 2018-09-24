@@ -441,7 +441,8 @@ class RootStore {
                     id: id,
                     variable: d.clinicalAttribute.displayName,
                     originalId: d.clinicalAttributeId,
-                    datatype: d.clinicalAttribute.datatype
+                    datatype: d.clinicalAttribute.datatype,
+                    description: d.clinicalAttribute.description
                 });
             }
             if (!(id in _self.sampleMappers)) {

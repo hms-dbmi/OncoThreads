@@ -8,7 +8,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         super(props);
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
-        this.handleMouseEnter = this.handleMouseEnter.bind(this);
+        //this.handleMouseEnter = this.handleMouseEnter.bind(this);
         this.handleMouseEnter = this.handleMouseEnter.bind(this);
         this.handleClick = this.handleClick.bind(this);
     }
