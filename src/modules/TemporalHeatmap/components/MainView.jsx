@@ -175,8 +175,14 @@ const MainView = observer(class MainView extends React.Component {
             
         }
 
-        let current_var=  this.props.store.rootStore.globalPrimary.substring(0, 14)
+        var current_var = ""
         
+        if(this.props.store.rootStore.globalPrimary!==""){
+
+            current_var=this.props.currentVariables.sample.filter(d1=>d1.id===this.props.store.rootStore.globalPrimary)[0].name.substring(0, 14); //this.props.store.rootStore.globalPrimary.substring(0, 14)
+        
+        }
+
         if(current_var.length>=14) {
             current_var=current_var+"...";
         }

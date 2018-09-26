@@ -271,7 +271,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 var name_var;
                 
                 if(_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===d.variable)[0]){
-                    name_var=d.variable;
+                    name_var=_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable)[0].name; //d.variable;
                     desc=": "+_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===d.variable)[0].description;
                 }
                 else if(_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable).length===0){
