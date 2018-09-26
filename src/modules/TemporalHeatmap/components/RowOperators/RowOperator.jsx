@@ -278,7 +278,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
                     desc="";
                 }
                 else{
-                    name_var=_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable)[0].originalIds[0];
+                    //name_var=_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable)[0].originalIds[0];
+                    name_var=_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable)[0].name;
                     if(_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===name_var)[0]){
                         desc=": "+_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===name_var)[0].description;
                     }

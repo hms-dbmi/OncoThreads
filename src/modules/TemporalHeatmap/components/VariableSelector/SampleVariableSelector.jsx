@@ -273,10 +273,14 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
             <Nav>
                     <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
-                    
-                    <div style={{backgroundColor: this.state.color }}>
+                    <Panel.Heading>
+                        <Panel.Title toggle>
+                            <div > Clinical Features </div>
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <div >
                         <FormGroup controlId="formControlsSelect">
-                        <ControlLabel>Clinical Features</ControlLabel>
+                       
 
 
                         <Select  
