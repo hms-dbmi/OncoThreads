@@ -46,9 +46,25 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     handleCombineClick(addCombined) {
-        this.setState({
-            addCombined: addCombined
-        })
+        let disabled = Object.assign({}, this.state.disabled);
+        if (!addCombined) {
+            for (let checkbox in disabled) {
+                disabled[checkbox] = false;
+            }
+            this.setState({
+                disabled: disabled,
+                addCombined: addCombined
+            });
+        }
+        else {
+            this.setState({
+                buttonClicked: this.state.buttonClicked,
+                selectedValues: [],
+                selectedKey: '',
+                addCombined: addCombined,
+                defaultName: ""
+            });
+        }
     }
 
     openModal(buttonClicked) {
@@ -123,16 +139,18 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selected.splice(index, 1);
         }
         let disabled = Object.assign({}, this.state.disabled);
-        if (selected.length > 0) {
-            for (let k in disabled) {
-                if (k !== type) {
-                    disabled[k] = true;
+        if (this.state.addCombined) {
+            if (selected.length > 0) {
+                for (let k in disabled) {
+                    if (k !== type) {
+                        disabled[k] = true;
+                    }
                 }
             }
-        }
-        else {
-            for (let k in disabled) {
-                disabled[k] = false;
+            else {
+                for (let k in disabled) {
+                    disabled[k] = false;
+                }
             }
         }
         this.setState({
@@ -141,6 +159,20 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             disabled: disabled,
             defaultName: this.createCompositeName(selected)
         });
+    }
+
+    handleSelectAll(event,key) {
+        const attributes = this.props.eventAttributes[this.state.buttonClicked];
+        let selected=this.state.selectedValues.slice();
+        for(let element in attributes){
+            if(element===key){
+                attributes[key].forEach(function (d) {
+                    if(!selected.map(el=>el.id).includes(d.id)){
+                        selected.push(d)
+                    }
+                })
+            }
+        }
     }
 
     createCompositeName(selectedValues) {
@@ -156,23 +188,28 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
 
     /**
      * creates checkboxes for the different event types in modal window
-     * @param event
      * @returns {Array}
      */
-    createCheckboxes(event) {
+    createCheckboxes() {
         let elements = [];
         const _self = this;
-        const attributes = this.props.eventAttributes[event];
+
+        const attributes = this.props.eventAttributes[this.state.buttonClicked];
         for (let key in attributes) {
             let checkboxes = [];
+            let selectAll = null;
+            if (!this.state.addCombined) {
+                selectAll = <Checkbox key="selectAll" onClick={(e) => this.handleSelectAll(e,key)}>Select all</Checkbox>
+            }
             attributes[key].forEach(function (d) {
+                let isSelected = _self.state.selectedValues.map(variable => variable.id).includes(d.id);
                 checkboxes.push(
-                    <Checkbox key={d.id} disabled={_self.state.disabled[key]}
+                    <Checkbox key={d.id} disabled={_self.state.disabled[key]} checked={isSelected}
                               onClick={(e) => _self.handleCheckBoxClick(e, key, d)}>{d.name}</Checkbox>)
             });
             elements.push(<Panel key={key}>
                 <Panel.Heading>
-                    {key}
+                    {key}{selectAll}
                 </Panel.Heading>
                 <Panel.Body>
                     {checkboxes}
@@ -253,7 +290,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         if (this.state.showEmptySelectionAlert) {
             return (
                 <Alert bsStyle="warning">
-                    Please select at least one transition variable
+                    Please select at least one variable
                 </Alert>
             )
         }
@@ -335,7 +372,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     </Modal.Header>
                     <Modal.Body>
                         <FormGroup>
-                            {this.createCheckboxes(this.state.buttonClicked)}
+                            {this.createCheckboxes()}
                         </FormGroup>
                     </Modal.Body>
                     <Modal.Footer>
