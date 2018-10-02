@@ -32,20 +32,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
 
-    onPickVariable(e) {
-        //console.log('[onPickColor]', this.inputEl )
-        this.setState({color: this.inputEl.value});
-
-        const _self = this;
-
-        this.props.clinicalSampleCategories.forEach(function (d) {
-            if (_self.inputEl.value === d.variable) {
-                _self.handleVariableClick(d.id, d.variable, d.datatype)
-            }
-        });
-    }
-
-
     bin(id) {
         this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
@@ -83,15 +69,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
     passToHandleVariableClick(value) {
-
-
-
-        const id = this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].id,
-            variable = this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].variable,
-            type = this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].datatype,
-            description=this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].description;
-
-        this.handleVariableClick(id, variable, type,description);
+        this.handleVariableClick(value.id, value.variable, value.datatype,value.description);
     }
 
     /**
@@ -134,7 +112,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             let vl = d.variable;
             //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
 
-            options.push({value: vl, label: lb})
+            options.push({value: d, label: lb})
         });
         return options;
     }
