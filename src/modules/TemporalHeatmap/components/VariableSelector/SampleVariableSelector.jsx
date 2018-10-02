@@ -108,10 +108,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
             let lb = (<div>{icon}{d.variable}</div>);
-            //let vl=(<div>{d.id}{d.variable}{d.datatype}</div>)
-            let vl = d.variable;
-            //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
-
             options.push({value: d, label: lb})
         });
         return options;
