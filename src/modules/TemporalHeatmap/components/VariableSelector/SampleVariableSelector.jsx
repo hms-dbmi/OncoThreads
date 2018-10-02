@@ -108,7 +108,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
             let lb = (<div>{icon}{d.variable}</div>);
-            options.push({value: d, label: lb})
+            options.push({value: d.variable, label: lb,obj:d})
         });
         return options;
     }
@@ -127,7 +127,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
             //<option value="red">Red</option>
-            options.push(<option style={{textAlign: "left"}} bsSize="xsmall" 
+            options.push(<option style={{textAlign: "left"}} bsSize="xsmall"
                                  label = {d.variable}
                                  //value={d.variable}
                                  //onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype)}>{icon} {d.variable}</option>)
@@ -194,11 +194,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
     /*handleMouseEnter() {
-       
+
         //this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
-        
+
         this.props.showTooltip("sample tooltip");
-       
+
         console.log("sample tooltip");
     }
 
@@ -266,7 +266,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                                 //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
 
-                                onChange={opt => this.passToHandleVariableClick(opt.value)}
+                                onChange={opt => this.passToHandleVariableClick(opt.obj)}
 
                                 //onMouseOver={(e) => this.handleMouseEnter()}
                                 //onMouseLeave={this.handleMouseLeave}
