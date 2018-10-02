@@ -52,7 +52,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                 }
                 let pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 30;
                 labels.push(<text key={i} y={pos}
-                                  x={_self.state.width / 2 - TimepointLabels.getTextWidth(label, 14) / 2}>{label}</text>)
+                                  x={_self.state.width / 2 - TimepointLabels.getTextWidth(label, 14) / 2} >{label}</text>)
             }
             else {
                 let pos = _self.props.betweenTPHeight / 2 + _self.props.posY[i] + 15;

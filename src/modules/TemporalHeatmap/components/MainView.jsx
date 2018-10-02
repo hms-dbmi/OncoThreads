@@ -214,7 +214,9 @@ const MainView = observer(class MainView extends React.Component {
             <Col md={1} style={{padding: 0}}>
                 <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                 timeValue={this.props.store.rootStore.timeValue}
-                                width={150} height={svgHeight} maxTimeInDays={maxTime}/>
+                                //width={150} 
+                                width={this.props.width}
+                                height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
 
             <Col xs={8} md={7} style={{padding: 0}}>

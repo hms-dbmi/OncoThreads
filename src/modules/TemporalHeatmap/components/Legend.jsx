@@ -291,22 +291,23 @@ const Legend = observer(class Legend extends React.Component {
         return legend
     }
 
-    testToolTip(e, e_x, lg){
+    testToolTip(e, e_x, e_y, lg){
 
         const _self = this;
-        if(e_x>864)
+       if(e_x>864)
         {
-            console.log("blah");
+            //console.log("blah");
 
             var diff=Math.floor((e_x-864)/34);
-            if(diff>0)console.log(diff);
-            else console.log("blah2");
+           // if(diff>0)console.log(diff);
+            //else console.log("blah2");
+
             if(diff*2<lg[0].props.children[1].length){
-                _self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][diff*2].props.value);
+                _self.props.showTooltip(e, lg[0].props.children[1][diff*2].props.value);
             }
         }
         else {
-            _self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][0].props.value);
+            _self.props.showTooltip(e, lg[0].props.children[1][0].props.value);
         }
 
 
@@ -331,7 +332,7 @@ const Legend = observer(class Legend extends React.Component {
                 legends.push(<g key={i + d}
                                 transform={transform}
 
-                                onMouseOver={(e) => _self.testToolTip(e, e.pageX, lg)}//_self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][0].props.x)}
+                                onMouseOver={(e) => _self.testToolTip(e, e.pageX, e.pageY,lg)}//_self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][0].props.x)}
                                 onMouseOut={_self.props.hideTooltip}
                                 >
                                 {lg}

@@ -84,6 +84,11 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         this.renderAxis()
     }
 
+    make_y_gridlines(yAxis) {		
+        return  yAxis; //d3.axisLeft().scale(y);
+    }
+
+    
     renderAxis() {
 
         /*const y = d3.scaleLinear()
@@ -114,6 +119,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
             d3.selectAll(".axisLabel").remove();
 
+            
             d3.select(".axisGlobal")
             .append("text")
             .attr("class", "axisLabel")
@@ -129,51 +135,45 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .style("fill", "black")
             .text(this.props.timeValue);
             //.text(this.props.store.rootStore.timeValue);
+
+
+            d3.select(".axisGlobal2").call(yAxis);
+
+            d3.selectAll(".axisLabel2").remove();
+
+            //svg.append("g")	
+            d3.select(".axisGlobal2")	
+            .append("g")	
+            .attr("class", "grid")
+            .call(//this.make_y_gridlines(yAxis)
+             yAxis
+            .tickSize(-this.props.width*100)
+            .tickFormat("")
+            )
+            .style("stroke-width", 0.5)
+            .style("stroke", "blue")
+            .style("opacity", 0.3)
+            //.style("fill", "blue")
+
+           
+
     
     
     }
 
     render() {
-        //const translatex = "translate(0," + (this.props.height) + ")";
-        /*const translatey = "translate(0, 100)";
-
-        var timeV=this.props.maxTimeInDays;
-
-        if(this.props.store.rootStore.timeVar==="30"){
-            timeV=this.props.maxTimeInDays/30;
-        }
-        else if(this.props.store.rootStore.timeVar==="365"){
-            timeV=this.props.maxTimeInDays/365;
-        }      
-        const y = d3.scaleLinear().range([ this.props.height - 20, 0]).domain([0, timeV]);
-
-        //y.domain([0, timeV]);
-    
-       
-
-        const yAxis = d3.axisLeft()
-            .scale(y);
-            
-			
-        //const node = ReactDOM.findDOMNode(this);
-        const node = d3.select(".axisGlobal");
-        
-        d3.select(node).call(yAxis)
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Time");*/
-
-        //d3.select(this.refs.g)
-	      //.call(yAxis);  
 
         return (
             <div>
-                <svg height={this.props.height}>
+                <svg height={this.props.height} width={this.props.width}>
                     <g className="axisGlobal" transform="translate(50, 25)">
                     </g>
+
+                    <g className="axisGlobal2" transform="translate(50, 25)">
+                    </g>
                 </svg>
+
+                
             </div>
         );
     }
