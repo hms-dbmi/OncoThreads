@@ -43,11 +43,12 @@ class VariableStore {
      * @param id
      * @param name
      * @param datatype
+     * @param description
      * @param domain
      * @param range
      */
-    addOriginalVariable(id, name, datatype, domain, range) {
-        const newVariable = new OriginalVariable(id, name, datatype, domain, range);
+    addOriginalVariable(id, name, datatype, description, domain, range) {
+        const newVariable = new OriginalVariable(id, name, datatype, description,domain, range);
         this.currentVariables.push(newVariable);
         this.allVariables.push(newVariable);
     }
@@ -65,7 +66,13 @@ class VariableStore {
      */
     addCombinedEventVariable(newId, name, eventType, selectedVariables, eventSubtype, logicalOperator, domain, range) {
         const _self = this;
+        let description="";
         selectedVariables.forEach(function (f) {
+                            console.log(f);
+             if(description!==""){
+                    description+=" -"+logicalOperator+"- ";
+                }
+                description+=f.name;
             if (!_self.allVariables.map(function (d) {
                 return d.id;
             }).includes(f.id)) {
@@ -73,7 +80,7 @@ class VariableStore {
                 _self.allVariables.push(newVariable);
             }
         });
-        let combinedEvent = new DerivedVariable(newId, name, "binary", selectedVariables.map(function (d, i) {
+        let combinedEvent = new DerivedVariable(newId, name, "binary", description, selectedVariables.map(function (d, i) {
             return d.id;
         }), logicalOperator, null, domain);
         this.allVariables.push(combinedEvent);
@@ -128,8 +135,8 @@ class VariableStore {
      * @param modification
      * @param domain
      */
-    modifyVariable(id, name, datatype, originalId, modificationType, modification, domain) {
-        const newVariable = new DerivedVariable(id, name, datatype, [originalId], modificationType, modification, domain);
+    modifyVariable(id, name, datatype, description, originalId, modificationType, modification, domain) {
+        const newVariable = new DerivedVariable(id, name, datatype,description, [originalId], modificationType, modification, domain);
         const oldIndex = this.currentVariables.map(function (d) {
             return d.id;
         }).indexOf(originalId);

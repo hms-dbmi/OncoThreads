@@ -146,7 +146,7 @@ class TimepointStore {
         let oldVar = _self.variableStore[type].getById(oldId);
         let variableName = oldVar.name;
         let variableDomain = oldVar.domain;
-        _self.variableStore[type].modifyVariable(newId, _self.variableStore[type].getById(oldId).name, "BINNED", oldId, "binning", {
+        _self.variableStore[type].modifyVariable(newId, oldVar.name+"_BINNED", "BINNED", oldVar.description +" (binned)", oldId, "binning", {
             bins: bins,
             binNames: binNames
         }, variableDomain);

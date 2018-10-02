@@ -144,7 +144,6 @@ class SingleTimepoint {
                 }
             }
         }
-        console.log(this.grouped);
         this.isGrouped = true;
     }
 

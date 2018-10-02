@@ -21,16 +21,17 @@ class SampleTimepointStore {
      * @param variableId
      * @param variable
      * @param type
+     * @param description
      */
-    initialize(variableId, variable, type) {
+    initialize(variableId, variable, type, description) {
         this.rootStore.visStore.resetTransitionSpace();
         this.variableStore.constructor(this.rootStore);
         if (type === "NUMBER") {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type, minMax);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax);
         }
         else {
-            this.variableStore.addOriginalVariable(variableId, variable, type, []);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, []);
         }
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
@@ -93,14 +94,15 @@ class SampleTimepointStore {
      * @param variableId
      * @param variable
      * @param type
+     * @param description
      */
-    addVariable(variableId, variable, type) {
+    addVariable(variableId, variable, type, description) {
         if (type === "NUMBER") {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type, minMax);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax);
         }
         else {
-            this.variableStore.addOriginalVariable(variableId, variable, type, []);
+            this.variableStore.addOriginalVariable(variableId, variable, type,description, []);
         }
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();

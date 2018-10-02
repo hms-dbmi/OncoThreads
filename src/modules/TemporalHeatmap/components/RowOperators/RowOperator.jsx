@@ -213,9 +213,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             if(!name_var) name_var="";
             
             return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Promote variable " + name_var + 
-                                                            " "
-                                                            +desc)}
+                       onMouseEnter={(e) => this.props.showTooltip(e, "Promote " + name_var, desc)}
                        onMouseLeave={this.props.hideTooltip}>
                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
                       onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
@@ -266,26 +264,15 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 }
 
                 
-                var desc;
 
-                var name_var;
-                
-                if(_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===d.variable)[0]){
-                    name_var=d.variable;
-                    desc=": "+_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===d.variable)[0].description;
-                }
-                else if(_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable).length===0){
-                    desc="";
+                let currVar=_self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type);
+                let name_var=currVar.name;
+                let desc;
+                if(currVar.description!==undefined){
+                    desc="Description: "+currVar.description;
                 }
                 else{
-                    name_var=_self.props.store.currentVariables.sample.filter(d1=>d1.id===d.variable)[0].originalIds[0];
-                    if(_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===name_var)[0]){
-                        desc=": "+_self.props.store.rootStore.clinicalSampleCategories.filter(d1=>d1.id===name_var)[0].description;
-                    }
-                    else{
-                        desc="";
-                    }
-
+                    desc="Description: not available";
                 }
 
                 

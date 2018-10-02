@@ -183,7 +183,7 @@ class BetweenTimepointStore {
         this.rootStore.timepointStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping, "between");
-            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", minMax);
+            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER","Time between timepoints", minMax);
             if (isFirst) {
                 this.initialize(variableId, false);
             }
