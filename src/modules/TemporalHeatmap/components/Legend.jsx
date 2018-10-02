@@ -6,6 +6,12 @@ import uuidv4 from 'uuid/v4';
 implements the legend on the right side of the main view
  */
 const Legend = observer(class Legend extends React.Component {
+
+    constructor() {
+        super();
+        this.testToolTip=this.testToolTip.bind(this);
+    }
+
     /**
      * gets a single entry of the legend
      * @param value: text to display
@@ -285,6 +291,27 @@ const Legend = observer(class Legend extends React.Component {
         return legend
     }
 
+    testToolTip(e, e_x, lg){
+
+        const _self = this;
+        if(e_x>864)
+        {
+            console.log("blah");
+
+            var diff=Math.floor((e_x-864)/34);
+            if(diff>0)console.log(diff);
+            else console.log("blah2");
+            if(diff*2<lg[0].props.children[1].length){
+                _self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][diff*2].props.value);
+            }
+        }
+        else {
+            _self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][0].props.value);
+        }
+
+
+    }
+
     render() {
         const textHeight = 10;
         const _self = this;
@@ -292,14 +319,22 @@ const Legend = observer(class Legend extends React.Component {
 
         let transform="translate(0," + 20 + ")";
 
+        var tooltipText="see";
         if(!this.props.store.globalTime){
 
             //transform = "translate(0," + 20 + ")";
             this.props.timepoints.forEach(function (d, i) {
                 let transform = "translate(10," + _self.props.posY[i] + ")";
+
+                var lg=_self.getLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStore[d.type].currentVariables);
+
                 legends.push(<g key={i + d}
-                                transform={transform}>
-                                {_self.getLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStore[d.type].currentVariables)}
+                                transform={transform}
+
+                                onMouseOver={(e) => _self.testToolTip(e, e.pageX, lg)}//_self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][0].props.x)}
+                                onMouseOut={_self.props.hideTooltip}
+                                >
+                                {lg}
                                 </g>);
 
             });

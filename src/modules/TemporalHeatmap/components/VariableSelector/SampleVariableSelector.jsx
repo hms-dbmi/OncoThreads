@@ -4,7 +4,7 @@ import {Button, ButtonGroup, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 
-import {FormGroup, ControlLabel} from 'react-bootstrap';
+import {FormGroup} from 'react-bootstrap';
 import { Nav } from 'react-bootstrap';
 
 
@@ -24,6 +24,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             color: ''
            
         };
+        this.showToolTipRole=this.showToolTipRole(this);
         this.passToHandleVariableClick=this.passToHandleVariableClick.bind(this);
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
@@ -86,8 +87,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
     passToHandleVariableClick(value){
 
-        console.log(value);
-
+        //console.log(value);
 
         var id=this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].id,
         variable= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].variable,
@@ -97,6 +97,10 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.handleVariableClick(id, variable, type);
     }
 
+    showToolTipRole(){
+
+        console.log("hi");
+    }
     /**
      * handles a click on one of the continuous Variables
      * @param id
@@ -302,11 +306,26 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                             onChange={opt => this.passToHandleVariableClick(opt.value)}
 
-                            //onMouseOver={(e) => this.handleMouseEnter()}
+                            //onMouseOver={(e) => console.log("mouse over in drop-down")//this.handleMouseEnter()
+                                       // }
                             //onMouseLeave={this.handleMouseLeave}
 
                             //_self.handleVariableClick(d.id, d.variable, d.datatype)
                             //onChange={this.myOnChange}
+
+
+
+                            optionRenderer={(option) =>
+                                <div onMouseEnter={(e) => this.showToolTipRole(e, option)}
+                                    //onMouseLeave={this.hideToolTipRole}
+                                     //data-tip
+                                     //data-for={index}
+                                     //oldtitle="Update Person"
+                                     >
+                                     
+                                </div>
+                            }
+
 
                         />
 
