@@ -1,11 +1,7 @@
 import React from "react";
 import {observer} from "mobx-react";
-import {Button, ButtonGroup, Panel} from 'react-bootstrap';
+import {Button, ButtonGroup, ControlLabel, FormGroup, Nav, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-
-
-import {FormGroup, ControlLabel} from 'react-bootstrap';
-import { Nav } from 'react-bootstrap';
 
 
 import Select from 'react-select';
@@ -22,9 +18,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             clinicalIcon: "caret-down",
             mutationIcon: "caret-right",
             color: ''
-           
+
         };
-        this.passToHandleVariableClick=this.passToHandleVariableClick.bind(this);
+        this.passToHandleVariableClick = this.passToHandleVariableClick.bind(this);
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
         this.toggleMutationIcon = this.toggleMutationIcon.bind(this);
@@ -36,14 +32,14 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
 
-    onPickVariable(e){
+    onPickVariable(e) {
         //console.log('[onPickColor]', this.inputEl )
-        this.setState({ color: this.inputEl.value });
+        this.setState({color: this.inputEl.value});
 
-        const _self=this;
+        const _self = this;
 
         this.props.clinicalSampleCategories.forEach(function (d) {
-            if(_self.inputEl.value===d.variable){
+            if (_self.inputEl.value === d.variable) {
                 _self.handleVariableClick(d.id, d.variable, d.datatype)
             }
         });
@@ -51,7 +47,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
 
     bin(id) {
-        this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints , null);
+        this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
 
     /**
@@ -59,13 +55,14 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param id
      * @param variable
      * @param type
+     * @param description
      */
-    addVariable(id, variable, type) {
+    addVariable(id, variable, type, description) {
         if (this.props.currentVariables.length === 0) {
-            this.props.store.initialize(id, variable, type);
+            this.props.store.initialize(id, variable, type,description);
         }
         else {
-            this.props.store.addVariable(id, variable, type);
+            this.props.store.addVariable(id, variable, type,description);
         }
     }
 
@@ -75,26 +72,26 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param id
      * @param variable
      * @param type
+     * @param description
      */
-    handleVariableClick(id, variable, type) {
+    handleVariableClick(id, variable, type, description) {
         if (!(this.props.currentVariables.map(function (d) {
             return d.id
         }).includes(id))) {
-            this.addVariable(id, variable, type);
+            this.addVariable(id, variable, type, description);
         }
     }
 
-    passToHandleVariableClick(value){
-
-        console.log(value);
+    passToHandleVariableClick(value) {
 
 
-        var id=this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].id,
-        variable= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].variable,
-        type= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].datatype;
 
+        const id = this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].id,
+            variable = this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].variable,
+            type = this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].datatype,
+            description=this.props.clinicalSampleCategories.filter(d1 => d1.variable === value)[0].description;
 
-        this.handleVariableClick(id, variable, type);
+        this.handleVariableClick(id, variable, type,description);
     }
 
     /**
@@ -119,7 +116,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
             buttons.push(<Button style={{textAlign: "left"}} bsSize="xsmall" key={d.variable}
-                                 onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype)}>{icon} {d.variable}</Button>)
+                                 onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype, d.description)}>{icon} {d.variable}</Button>)
         });
         return buttons;
     }
@@ -134,10 +131,10 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             }
             let lb = (<div>{icon}{d.variable}</div>);
             //let vl=(<div>{d.id}{d.variable}{d.datatype}</div>)
-            let vl=d.variable;
+            let vl = d.variable;
             //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
 
-            options.push({value:vl, label:lb})
+            options.push({value: vl, label: lb})
         });
         return options;
     }
@@ -267,61 +264,57 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
         //const detailedOptions=this.createClinicalAttributesListNewSelect();
 
-        return(
+        return (
 
-            
 
             <Nav>
-                    <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
-                    
-                    <div style={{backgroundColor: this.state.color }}>
+                <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
+
+                    <div style={{backgroundColor: this.state.color}}>
                         <FormGroup controlId="formControlsSelect">
-                        <ControlLabel>Clinical Features</ControlLabel>
+                            <ControlLabel>Clinical Features</ControlLabel>
 
 
-                        <Select  
-                            type="text" 
-                            //onChange={this.onPickVariable.bind(this)}
-                            inputRef={ el => this.inputEl=el }
-                            searchable={true}
-                            componentClass="select" placeholder="Select..."
-
-                          
-                            searchPlaceholder="Search variable"                        
-                            
-                            options={this.createClinicalAttributesListNewSelect()}
+                            <Select
+                                type="text"
+                                //onChange={this.onPickVariable.bind(this)}
+                                inputRef={el => this.inputEl = el}
+                                searchable={true}
+                                componentClass="select" placeholder="Select..."
 
 
-                            //options={this.createClinicalAttributesListNewSelect().map(d => {return {value: d.value, label:d.label}})}
+                                searchPlaceholder="Search variable"
 
-                            //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
-
-                            onChange={opt => this.passToHandleVariableClick(opt.value)}
-
-                            //onMouseOver={(e) => this.handleMouseEnter()}
-                            //onMouseLeave={this.handleMouseLeave}
-
-                            //_self.handleVariableClick(d.id, d.variable, d.datatype)
-                            //onChange={this.myOnChange}
-
-                        />
+                                options={this.createClinicalAttributesListNewSelect()}
 
 
+                                //options={this.createClinicalAttributesListNewSelect().map(d => {return {value: d.value, label:d.label}})}
 
-                        
+                                //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
+
+                                onChange={opt => this.passToHandleVariableClick(opt.value)}
+
+                                //onMouseOver={(e) => this.handleMouseEnter()}
+                                //onMouseLeave={this.handleMouseLeave}
+
+                                //_self.handleVariableClick(d.id, d.variable, d.datatype)
+                                //onChange={this.myOnChange}
+
+                            />
+
 
                         </FormGroup>
 
-                         {this.getGenomicPanel()}
+                        {this.getGenomicPanel()}
 
                     </div>
 
 
-                    </Panel>
+                </Panel>
             </Nav>
         )
 
-     
+
     }
 });
 export default SampleVariableSelector;
