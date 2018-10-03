@@ -25,9 +25,6 @@ class VisStore {
             timepointY: [],
             transY: [],
             svgWidth: 0,
-            get betweenRectWidth() {
-                return this.sampleRectWidth / 2;
-            },
             get betweenTPHeight() {
                 return this.getTimepointHeight(this.rootStore.timepointStore.currentVariables.between.length);
             },

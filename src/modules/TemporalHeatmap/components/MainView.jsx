@@ -31,17 +31,9 @@ const MainView = observer(class MainView extends React.Component {
         this.handleResetAlignment = this.handleResetAlignment.bind(this);
         this.handleResetSelection = this.handleResetSelection.bind(this);
         this.horizontalZoom = this.horizontalZoom.bind(this);
-        this.state={
-            horizontalZoom:props.store.numberOfPatients<300?props.store.numberOfPatients:300
+        this.state = {
+            horizontalZoom: props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300
         }
-        /*extendObservable(this, {
-            timeVar: 1,
-            timeValue: "days"
-            //timeline: []
-        });*/
-    }
-    setWidth(width){
-        this.setState({width:width});
     }
     handleTimeClick() {
         this.props.store.applyPatientOrderToAll(0);
@@ -110,9 +102,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 
 
-
-
-
     getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, timepointPositions) {
         return (<Row>
             <Col md={1} style={{padding: 0}}>
@@ -144,13 +133,13 @@ const MainView = observer(class MainView extends React.Component {
 
     getGlobalView(timepointPositions) {
 
-         let sampH = this.props.visMap.getTimepointHeight(1);
+        let sampH = this.props.visMap.getTimepointHeight(1);
 
-            //var svgH = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
+        //var svgH = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
-            let svgHeight = this.props.visMap.rootStore.originalTimePointLength * (sampH + this.props.visMap.transitionSpace) * 1.5;
+        let svgHeight = this.props.visMap.rootStore.originalTimePointLength * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
-            //view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
+        //view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
         let a = this.props.store.rootStore.eventDetails;
 
         let b = a.filter(d => d.eventEndDate);
@@ -197,7 +186,7 @@ const MainView = observer(class MainView extends React.Component {
                 <p className="font-weight-bold">
                     <small><b>{"Legend of " + current_var}</b></small>
                 </p>
-                <Legend {...this.props}  height={svgHeight / 4} width={400}
+                <Legend {...this.props} height={svgHeight / 4} width={400}
                         posY={timepointPositions.timepoint}/>
             </Col>
 
@@ -220,10 +209,11 @@ const MainView = observer(class MainView extends React.Component {
         </Row>)
     }
 
-     horizontalZoom(event) {
+    horizontalZoom(event) {
         this.setState({horizontalZoom: event.target.value});
 
     }
+
     render() {
         let view;
         if (!this.props.store.globalTime) {
@@ -252,7 +242,7 @@ const MainView = observer(class MainView extends React.Component {
 
                     </Col>
                     <Col md={4}>
-                        <h5>Patients</h5>
+                        <h5>{"Patients visible: " + this.state.horizontalZoom}</h5>
                         <input type="range" onChange={this.horizontalZoom} step={1} min={10} max={300}
                                defaultValue={this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300}/>
                     </Col>
@@ -282,9 +272,6 @@ const MainView = observer(class MainView extends React.Component {
     }
 });
 MainView.defaultProps = {
-    width: (window.innerWidth
-        || document.documentElement.clientWidth
-        || document.body.clientWidth) * ((10 / 12) * (7 / 12)),
     height: 700
 };
 export default MainView;
