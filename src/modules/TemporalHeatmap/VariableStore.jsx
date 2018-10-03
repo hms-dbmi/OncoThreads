@@ -68,7 +68,6 @@ class VariableStore {
         const _self = this;
         let description="";
         selectedVariables.forEach(function (f) {
-                            console.log(f);
              if(description!==""){
                     description+=" -"+logicalOperator+"- ";
                 }
