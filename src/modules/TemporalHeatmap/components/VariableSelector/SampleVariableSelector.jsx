@@ -93,8 +93,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         variable= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].variable,
         type= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].datatype;
 
-        //this.showToolTipRole();
-
         this.handleVariableClick(id, variable, type);
 
     
