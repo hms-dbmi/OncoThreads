@@ -476,10 +476,9 @@ class RootStore {
      *creates a mapping of selected events to patients (OR)
      * @param eventType
      * @param selectedVariables
-     * @param selectedCategory
      * @returns {any[]}
      */
-    getEventMapping(eventType, selectedVariables, selectedCategory) {
+    getEventMapping(eventType, selectedVariables) {
         let mapper = {};
         const _self = this;
         for (let patient in this.cbioAPI.clinicalEvents) {
@@ -510,7 +509,7 @@ class RootStore {
                         end = this.cbioAPI.clinicalEvents[patient][i].endNumberOfDaysSinceDiagnosis;
                     }
                     if (RootStore.isInCurrentRange(this.cbioAPI.clinicalEvents[patient][i], currentStart, currentEnd)) {
-                        let matchingId = _self.doesEventMatch(eventType, selectedVariables, selectedCategory, this.cbioAPI.clinicalEvents[patient][i]);
+                        let matchingId = _self.doesEventMatch(eventType, selectedVariables, this.cbioAPI.clinicalEvents[patient][i]);
                         if (matchingId !== null) {
                             mapper[patient][counter].push({
                                 variableId: matchingId,
@@ -576,16 +575,15 @@ class RootStore {
      * check if an event has a specific attribute (key-value pair)
      * @param type: type of the event (Status/Treatment/Surgery)
      * @param values
-     * @param key
      * @param event
      * @returns {boolean}
      */
-    doesEventMatch(type, values, key, event) {
+    doesEventMatch(type, values, event) {
         let matchingId = null;
         if (type === event.eventType) {
             values.forEach(function (d, i) {
                 event.attributes.forEach(function (f) {
-                    if (f.key === key && f.value === d.name) {
+                    if (f.key === d.eventType && f.value === d.name) {
                         matchingId = d.id;
                     }
                 })
@@ -608,13 +606,13 @@ class RootStore {
                     d.attributes.forEach(function (f, j) {
                         if (!(f.key in attributes[d.eventType])) {
                             attributes[d.eventType][f.key] = [];
-                            attributes[d.eventType][f.key].push({name: f.value, id: uuidv4()});
+                            attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(), eventType:f.key});
                         }
                         else {
                             if (!attributes[d.eventType][f.key].map(function (g) {
                                 return g.name
                             }).includes(f.value)) {
-                                attributes[d.eventType][f.key].push({name: f.value, id: uuidv4()});
+                                attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(),eventType:f.key});
                             }
                         }
                     })

@@ -126,22 +126,22 @@ class BetweenTimepointStore {
         });
     }
 
-    addORVariable(type, selectedValues, selectedKey, name) {
+    addORVariable(type, selectedValues, name) {
         // create new Id
         let isFirst=this.timepoints.length===0;
         let derivedId = uuidv4();
         // add derived variable
-        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, selectedKey, "OR", []);
+        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, "OR", []);
         //initialize if the variable is the first variable to be added
         if (isFirst) {
             this.initialize(derivedId);
         }
-        const eventMapper = this.rootStore.getEventMapping(type, selectedValues, selectedKey);
+        const eventMapper = this.rootStore.getEventMapping(type, selectedValues);
         this.addHeatmapVariable(this.deriveMapper(eventMapper, "or"), derivedId);
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
     }
-    addVariablesSeperate(type, selectedValues, selectedKey){
+    addVariablesSeperate(type, selectedValues){
         let isFirst=this.timepoints.length===0;
         const _self=this;
           if (isFirst) {
@@ -149,11 +149,11 @@ class BetweenTimepointStore {
         }
         selectedValues.forEach(function (d,i) {
             if(!_self.variableStore.hasVariable(d.id)) {
-                const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]], selectedKey);
+                const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]]);
                 _self.addHeatmapVariable(_self.deriveMapper(eventMapper, "or"), d.id);
             }
         });
-        this.variableStore.addSeperateEventVariables(type, selectedValues, selectedKey);
+        this.variableStore.addSeperateEventVariables(type, selectedValues);
         //initialize if the variable is the first variable to be added
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable=>variable.name))
