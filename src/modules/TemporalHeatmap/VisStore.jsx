@@ -15,13 +15,11 @@ class VisStore {
         //gap between rows in heatmap
         this.gap = 1;
         //space for transitions
-        this.transitionSpace = 100;
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
-        this.transitionSpaces = [];
-
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
+            transitionSpace: 100,
             timepointY: [],
             transY: [],
             svgWidth: 0,
@@ -32,7 +30,21 @@ class VisStore {
                 return this.getTimepointHeight(this.rootStore.timepointStore.currentVariables.sample.length);
             },
             get timepointPositions() {
-                return this.computeTimepointPositions();
+                let timepointPositions = {"timepoint": [], "connection": []};
+                let prevY = 0;
+                for (let i = 0; i < this.rootStore.timepointStore.timepoints.length; i++) {
+                    let tpHeight;
+                    if (this.rootStore.timepointStore.timepoints[i].type === "between") {
+                        tpHeight = this.betweenTPHeight;
+                    }
+                    else {
+                        tpHeight = this.sampleTPHeight;
+                    }
+                    timepointPositions.timepoint.push(prevY);
+                    timepointPositions.connection.push(prevY + tpHeight);
+                    prevY += this.transitionSpace + tpHeight;
+                }
+                return timepointPositions;
             },
             get svgHeight() {
                 if (this.betweenTPHeight !== 0) {
@@ -115,13 +127,7 @@ class VisStore {
             }
             timepointPositions.timepoint.push(prevY);
             timepointPositions.connection.push(prevY + tpHeight);
-            if (this.transitionSpaces.length <= i) {
-                prevY += this.transitionSpace + tpHeight;
-                this.transitionSpaces.push(this.transitionSpace);
-            }
-            else {
-                prevY += this.transitionSpaces[i] + tpHeight;
-            }
+            prevY += this.transitionSpace + tpHeight;
         }
         return timepointPositions;
     }

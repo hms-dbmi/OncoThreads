@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
+import {Button, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row,Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 
@@ -13,6 +13,7 @@ import Plot from "./Plot";
 import GlobalTimeAxis from "./PlotLabeling/GlobalTimeAxis";
 import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
+import {ReactBootstrapSlider} from "react-bootstrap-slider";
 //import {extendObservable} from "mobx";
 
 /*
@@ -31,10 +32,12 @@ const MainView = observer(class MainView extends React.Component {
         this.handleResetAlignment = this.handleResetAlignment.bind(this);
         this.handleResetSelection = this.handleResetSelection.bind(this);
         this.horizontalZoom = this.horizontalZoom.bind(this);
+        this.verticalZoom=this.verticalZoom.bind(this);
         this.state = {
-            horizontalZoom: props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300
+            horizontalZoom: props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300,
         }
     }
+
     handleTimeClick() {
         this.props.store.applyPatientOrderToAll(0);
         this.props.store.realTime = !this.props.store.realTime;
@@ -210,9 +213,13 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     horizontalZoom(event) {
-        this.setState({horizontalZoom: event.target.value});
+        this.setState({horizontalZoom: parseInt(event.target.value)});
 
     }
+    verticalZoom(event) {
+        this.props.visMap.setTransitionSpace(parseInt(event.target.value));
+    }
+
 
     render() {
         let view;
@@ -225,7 +232,7 @@ const MainView = observer(class MainView extends React.Component {
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
                 <Row>
-                    <Col md={4}>
+                    <Col md={5}>
                         <ButtonToolbar>
                             <Button onClick={this.handleTimeClick}
                                     disabled={this.props.store.globalTime || this.props.store.timepoints.length === 0 || this.props.store.currentVariables.between.length > 0}
@@ -238,13 +245,25 @@ const MainView = observer(class MainView extends React.Component {
                                     key={"globalTimeline"}>
                                 {(this.props.store.globalTime) ? "Hide global timeline" : "Show global timeline"}
                             </Button>
+                            <DropdownButton
+                                title={"Zoom"}
+                                key={"zoom"}
+                                id={"zoom"}
+                            >
+                                <div style={{padding:"5px"}}>
+                                Horizontal: <input type="range" onChange={this.horizontalZoom} step={1}
+                                                               min={10} max={300}
+                                                                    defaultValue={this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300}/>
+                                <br/>
+                                    Vertical: <input type="range" onChange={this.verticalZoom} step={1}
+                                                               min={5} max={200}
+                                                     defaultValue={this.props.visMap.transitionSpace}/></div>
+                            </DropdownButton>
                         </ButtonToolbar>
 
                     </Col>
-                    <Col md={4}>
+                    <Col md={3}>
                         <h5>{"Patients visible: " + this.state.horizontalZoom}</h5>
-                        <input type="range" onChange={this.horizontalZoom} step={1} min={10} max={300}
-                               defaultValue={this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300}/>
                     </Col>
                     <Col md={4}>
                         <ButtonToolbar>
