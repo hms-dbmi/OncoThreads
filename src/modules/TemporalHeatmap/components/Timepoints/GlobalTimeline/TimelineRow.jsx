@@ -24,9 +24,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
         let ht = _self.props.ht;
 
-        let globalRectHeight;
-        let globalRectWidth;
-
 
         let xGlobal;
 
@@ -102,21 +99,16 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                 //let varName=_self.props.primaryVariable.name;
 
-                var val = d.value;
+                const val = d.value;
 
                 // globalRectHeight =ht[j];
 
-                globalRectWidth = _self.props.rectWidth;
                 //globalRectHeight= ht[j]/2;
 
-
-                globalRectWidth = _self.props.rectWidth / 2;
-                globalRectHeight = globalRectWidth;
 
                 xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x;
 
                 let duration = ht[j];
-
                 rects.push(<rect stroke={stroke}
                                  onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
                                  }
@@ -124,8 +116,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                  onDoubleClick={() => _self.handleDoubleClick(d.patient)}
                                  onClick={() => _self.handleClick(d.patient)}
                                  key={d.patient + i + j}
-                                 height={globalRectHeight}//{_self.props.height}
-                                 width={globalRectWidth}
+                                 height={_self.props.rectWidth / 2}//{_self.props.height}
+                                 width={_self.props.rectWidth / 2}
                                  x={xGlobal}
                                  y={_self.props.timeScale(_self.props.ypi[i])}
                                  fill={fill}

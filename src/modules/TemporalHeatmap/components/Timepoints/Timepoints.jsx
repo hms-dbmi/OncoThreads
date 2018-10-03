@@ -16,7 +16,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             let rectWidth;
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.timepoints[i].type === "between") {
-                rectWidth = _self.props.visMap.betweenRectWidth;
+                rectWidth = _self.props.visMap.sampleRectWidth/2;
             }
             else {
                 rectWidth = _self.props.visMap.sampleRectWidth;
@@ -97,7 +97,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             let rectWidth;
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.timepoints[i].type === "between") {
-                rectWidth = _self.props.visMap.betweenRectWidth;
+                rectWidth = _self.props.visMap.sampleRectWidth/2;
             }
             else {
                 rectWidth = _self.props.visMap.sampleRectWidth;
@@ -206,7 +206,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 transFlag = true;
                 //  return timepoints;
                 //}
-                rectWidth = _self.props.visMap.betweenRectWidth;
+                rectWidth = _self.props.visMap.sampleRectWidth/2;
                 let k;
                 if (flag) {
                     k = a.filter(d => d.time === Math.floor(i / 2));

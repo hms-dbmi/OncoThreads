@@ -80,44 +80,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 }
 
             }
-            //previousYposition += _self.props.visMap.primaryHeight + _self.props.visMap.gap;
-
-            //previousYpositions = _self.props.ypi;
-
-            //_self.drawLines4(rows);
-            //count++;
-
-            //}
-            /*else {
-
-
-              //if(count===1){
-                //ypi=ypi.map(y=>y+_self.props.rectWidth);
-              //}
-              //else{
-                //ypi=ypi.map(y=>y+_self.props.rectWidth/2);
-              //}
-
-              rows.push(<g key={row.variable  + i + globalIndex} >
-
-                    <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
-                                height={_self.props.visMap.secondaryHeight}
-                                opacity={0.5}
-                                color={color}
-                                //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
-                                x={(_self.props.visMap.sampleRectWidth-_self.props.rectWidth)/2}
-                                ypi={ypi}
-                                ht={_self.props.ht}
-                                dtype={_self.props.currentVariables[i].datatype}
-                                />;
-                </g>);
-
-                previousYposition = previousYposition + _self.props.visMap.secondaryHeight + _self.props.visMap.gap;
-
-                count++;
-
-                //_self.drawLines4(rows);
-            }*/
 
             globalIndex++;
         });
@@ -191,6 +153,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                  ht={_self.props.ht}
                                  events={events}
                                  opacity={opacity}
+                                 rectWidth={_self.props.visMap.sampleRectWidth/2}
                                  dtype={_self.props.currentVariables[i].datatype}
                         //fillBin={fillBin}
 
