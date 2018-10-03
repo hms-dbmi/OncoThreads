@@ -49,18 +49,17 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     render() {
-        let rectWidth = (this.state.width / this.props.horizontalZoom)-this.props.visMap.gap;
-        this.props.visMap.setSampleRectWidth(rectWidth);
-        const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + this.props.visMap.gap) -this.props.visMap.gap;
-        const svgWidth = heatmapWidth > this.state.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + rectWidth : this.state.width;
-        const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth,rectWidth);
+        this.props.visMap.setSampleRectWidth((this.state.width / this.props.horizontalZoom)-this.props.visMap.gap);
+        const heatmapWidth = this.props.store.numberOfPatients * (this.props.visMap.sampleRectWidth + this.props.visMap.gap) -this.props.visMap.gap;
+        const svgWidth = heatmapWidth > this.state.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + this.props.visMap.sampleRectWidth : this.state.width;
+        const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth,this.props.visMap.sampleRectWidth);
         const groupScale = this.createGroupScale(this.state.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
 
         const max = this.props.store.rootStore.actualTimeLine
             .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
             .reduce((next, max) => next > max ? next : max, 0);
-        const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.sampleRectWidth * 2, 0, max);
+        const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.primaryHeight * 2, 0, max);
 
         return (
             <div ref="plot" className="scrollableX">

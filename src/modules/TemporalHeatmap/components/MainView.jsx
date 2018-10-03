@@ -186,15 +186,9 @@ const MainView = observer(class MainView extends React.Component {
         //console.log(current_var);
 
         return (<Row>
-
-
-            <Col md={1}>
-                <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue} 
-                            width={250} height={svgHeight} maxTimeInDays={maxTime}/>
-            </Col>
-
-
             <Col xs={2} style={{padding: 0}}>
+                <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue}
+                            width={250} height={svgHeight} maxTimeInDays={maxTime}/>
                 <GlobalRowOperators {...this.props} height={row_op_height} width={300}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}
@@ -213,7 +207,7 @@ const MainView = observer(class MainView extends React.Component {
                                 width={150} height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
 
-            <Col xs={8} md={8} style={{padding: 0}}>
+            <Col xs={9} md={9} style={{padding: 0}}>
                 <Plot ref="child" {...this.props} height={svgHeight}
                       horizontalZoom={this.state.horizontalZoom}
                       timepointY={timepointPositions.timepoint}
