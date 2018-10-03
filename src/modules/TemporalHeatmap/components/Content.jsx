@@ -100,9 +100,6 @@ const Content = observer(class Content extends React.Component {
             clickedTimepoint: timepointIndex,
             clickedVariable: variable,
             contextType: type,
-            //contextX: e.pageX,
-            //contextY: e.pageY,
-            //showContextMenu: true
         });
         e.preventDefault();
     }
@@ -260,6 +257,7 @@ const Content = observer(class Content extends React.Component {
                                 store={this.props.rootStore.timepointStore}
                                 transitionStore={this.props.rootStore.transitionStore}
                                 visMap={this.props.rootStore.visStore}
+                                rectWidth={this.props.rootStore.visStore.sampleRectWidth}
                                 openBinningModal={this.openModal}
                                 showTooltip={this.showTooltip}
                                 hideTooltip={this.hideTooltip}

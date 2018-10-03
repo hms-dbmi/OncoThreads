@@ -11,8 +11,13 @@ creates the plot with timepoints and transitions
 const Plot = observer(class Plot extends React.Component {
     constructor() {
         super();
-        this.state = {width: 0};
-        //ReactMixins.call(this);
+        this.state = {width: 100};
+    }
+
+    componentDidMount() {
+        this.setState({
+            width: this.refs.plot.parentNode.clientWidth
+        });
     }
 
     /**
@@ -21,14 +26,13 @@ const Plot = observer(class Plot extends React.Component {
      * @param rectWidth: width of a heatmap cell
      * @returns any[] scales
      */
-    createSampleHeatMapScales(w, rectWidth) {
+    createSampleHeatMapScales(w,rectWidth) {
         return this.props.timepoints.map(function (d) {
             return d3.scalePoint()
                 .domain(d.heatmapOrder)
                 .range([0, w - rectWidth]);
         })
     }
-
 
 
     /**
@@ -45,8 +49,12 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     render() {
-        const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        let rectWidth = (this.state.width / this.props.horizontalZoom)-this.props.visMap.gap;
+        this.props.visMap.setSampleRectWidth(rectWidth);
+        const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + this.props.visMap.gap) -this.props.visMap.gap;
+        const svgWidth = heatmapWidth > this.state.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + rectWidth : this.state.width;
+        const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth,rectWidth);
+        const groupScale = this.createGroupScale(this.state.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
 
         const max = this.props.store.rootStore.actualTimeLine
@@ -55,8 +63,8 @@ const Plot = observer(class Plot extends React.Component {
         const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.sampleRectWidth * 2, 0, max);
 
         return (
-            <div className="scrollableX">
-                <svg width={this.props.svgWidth} height={this.props.height}>
+            <div ref="plot" className="scrollableX">
+                <svg width={svgWidth} height={this.props.height}>
                     <g transform={transform}>
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
                                      timepointData={this.props.store.timepoints}
