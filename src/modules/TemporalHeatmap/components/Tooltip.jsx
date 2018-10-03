@@ -23,6 +23,7 @@ const Tooltip = observer(class SankeyTransitionTooltip extends React.Component {
             <div className="customTooltip" style={{
                 visibility: this.props.visibility,
                 position: "absolute",
+                zIndex: 100,
                 top: this.props.y - 30,
                 left: this.props.x - textWidth / 2
             }}>

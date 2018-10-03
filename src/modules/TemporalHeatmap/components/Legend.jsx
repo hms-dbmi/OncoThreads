@@ -296,11 +296,15 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
        if(e_x>864)
         {
-            //console.log("blah");
+            console.log(e_x);
 
             var diff=Math.floor((e_x-864)/34);
            // if(diff>0)console.log(diff);
             //else console.log("blah2");
+
+            console.log(diff*2);
+
+            console.log(lg[0].props.children[1].length);
 
             if(diff*2<lg[0].props.children[1].length){
                 _self.props.showTooltip(e, lg[0].props.children[1][diff*2].props.value);

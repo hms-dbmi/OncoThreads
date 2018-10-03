@@ -147,7 +147,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .attr("class", "grid")
             .call(//this.make_y_gridlines(yAxis)
              yAxis
-            .tickSize(-this.props.width*100)
+            .tickSize(-this.props.width)
             .tickFormat("")
             )
             .style("stroke-width", 0.5)

@@ -24,7 +24,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             color: ''
            
         };
-        this.showToolTipRole=this.showToolTipRole(this);
+        
         this.passToHandleVariableClick=this.passToHandleVariableClick.bind(this);
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
@@ -93,14 +93,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         variable= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].variable,
         type= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].datatype;
 
+        //this.showToolTipRole();
 
         this.handleVariableClick(id, variable, type);
+
+    
     }
 
-    showToolTipRole(){
-
-        console.log("hi");
-    }
     /**
      * handles a click on one of the continuous Variables
      * @param id
@@ -136,7 +135,14 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             if (d.datatype === "NUMBER") {
                 icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
-            let lb = (<div>{icon}{d.variable}</div>);
+            let lb = (
+                <div onMouseOver={(e)=>{
+                    //console.log(d.variable);
+                    _self.props.showTooltip(e, d.variable);
+                }}>
+                    {icon}{d.variable}
+                </div>
+            );
             //let vl=(<div>{d.id}{d.variable}{d.datatype}</div>)
             let vl=d.variable;
             //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
@@ -282,10 +288,12 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             <div > Clinical Features </div>
                         </Panel.Title>
                     </Panel.Heading>
-                    <div >
+                   
+
+
+
                         <FormGroup controlId="formControlsSelect">
                        
-
 
                         <Select  
                             type="text" 
@@ -314,18 +322,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             //onChange={this.myOnChange}
 
 
-
-                            optionRenderer={(option) =>
-                                <div onMouseEnter={(e) => this.showToolTipRole(e, option)}
-                                    //onMouseLeave={this.hideToolTipRole}
-                                     //data-tip
-                                     //data-for={index}
-                                     //oldtitle="Update Person"
-                                     >
-                                     
-                                </div>
-                            }
-
+                            
 
                         />
 
@@ -337,7 +334,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                          {this.getGenomicPanel()}
 
-                    </div>
+                   
 
 
                     </Panel>
