@@ -14,6 +14,7 @@ class VisStore {
         this.secondaryHeight = 15;
         //gap between rows in heatmap
         this.gap = 1;
+        this.plotHeight = 700;
         //space for transitions
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
@@ -56,6 +57,29 @@ class VisStore {
                 }
             }
         })
+    }
+
+    setPlotY(y) {
+        this.plotHeight = (window.innerHeight
+            || document.documentElement.clientHeight
+            || document.body.clientHeight) - y;
+    }
+
+    fitToScreenHeight() {
+        let heightWithoutSpace;
+        if(this.betweenTPHeight===0){
+            heightWithoutSpace = this.rootStore.timepointStore.timepoints.length * this.sampleTPHeight;
+        }
+        else{
+            heightWithoutSpace=(this.rootStore.timepointStore.timepoints.length * (this.sampleTPHeight + this.betweenTPHeight) - this.betweenTPHeight)/2;
+        }
+        let remainingHeight = this.plotHeight - heightWithoutSpace;
+        if (remainingHeight > 0) {
+            this.transitionSpace = remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1)
+        }
+        else {
+            this.transitionSpace = 5;
+        }
     }
 
     setTransitionSpace(transitionSpace) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row,Panel} from 'react-bootstrap';
+import {Button, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 
@@ -13,7 +13,6 @@ import Plot from "./Plot";
 import GlobalTimeAxis from "./PlotLabeling/GlobalTimeAxis";
 import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
-import {ReactBootstrapSlider} from "react-bootstrap-slider";
 //import {extendObservable} from "mobx";
 
 /*
@@ -32,7 +31,9 @@ const MainView = observer(class MainView extends React.Component {
         this.handleResetAlignment = this.handleResetAlignment.bind(this);
         this.handleResetSelection = this.handleResetSelection.bind(this);
         this.horizontalZoom = this.horizontalZoom.bind(this);
-        this.verticalZoom=this.verticalZoom.bind(this);
+        this.setToScreenWidth = this.setToScreenWidth.bind(this);
+        this.verticalZoom = this.verticalZoom.bind(this);
+        this.setToScreenHeight = this.setToScreenHeight.bind(this);
         this.state = {
             horizontalZoom: props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300,
         }
@@ -120,7 +121,7 @@ const MainView = observer(class MainView extends React.Component {
 
             </Col>
             <Col xs={7} md={7} style={{padding: 0}}>
-                <Plot ref="child" {...this.props} height={svgHeight}
+                <Plot {...this.props} height={svgHeight}
                       horizontalZoom={this.state.horizontalZoom}
                       timepointY={timepointPositions.timepoint}
                       transY={timepointPositions.connection}
@@ -200,7 +201,7 @@ const MainView = observer(class MainView extends React.Component {
             </Col>
 
             <Col xs={9} md={9} style={{padding: 0}}>
-                <Plot ref="child" {...this.props} height={svgHeight}
+                <Plot {...this.props} height={svgHeight}
                       horizontalZoom={this.state.horizontalZoom}
                       timepointY={timepointPositions.timepoint}
                       transY={timepointPositions.connection}
@@ -213,11 +214,20 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     horizontalZoom(event) {
-        this.setState({horizontalZoom: parseInt(event.target.value)});
+        this.setState({horizontalZoom: parseInt(event.target.value,10)});
 
     }
+
     verticalZoom(event) {
-        this.props.visMap.setTransitionSpace(parseInt(event.target.value));
+        this.props.visMap.setTransitionSpace(parseInt(event.target.value,10));
+    }
+
+    setToScreenWidth() {
+        this.setState({horizontalZoom: this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300})
+    }
+
+    setToScreenHeight() {
+        this.props.visMap.fitToScreenHeight();
     }
 
 
@@ -250,20 +260,23 @@ const MainView = observer(class MainView extends React.Component {
                                 key={"zoom"}
                                 id={"zoom"}
                             >
-                                <div style={{padding:"5px"}}>
-                                Horizontal: <input type="range" onChange={this.horizontalZoom} step={1}
-                                                               min={10} max={300}
-                                                                    defaultValue={this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300}/>
-                                <br/>
-                                    Vertical: <input type="range" onChange={this.verticalZoom} step={1}
-                                                               min={5} max={200}
-                                                     defaultValue={this.props.visMap.transitionSpace}/></div>
+                                <div style={{padding: "5px"}}>
+                                    Horizontal: <input type="range" value={this.state.horizontalZoom}
+                                                       onChange={this.horizontalZoom} step={1}
+                                                       min={10} max={300}/>
+                                    <Button onClick={this.setToScreenWidth}>Set to screen width</Button>
+                                    <br/>
+                                    Vertical: <input type="range" value={this.props.visMap.transitionSpace}
+                                                     onChange={this.verticalZoom} step={1}
+                                                     min={5} max={700}/>
+                                    <Button onClick={this.setToScreenHeight}>Set to screen height</Button>
+                                </div>
                             </DropdownButton>
                         </ButtonToolbar>
 
                     </Col>
                     <Col md={3}>
-                        <h5>{"Patients visible: " + this.state.horizontalZoom}</h5>
+                        <h5>{"Patients visible: " + (this.state.horizontalZoom < this.props.store.numberOfPatients ? this.state.horizontalZoom : this.props.store.numberOfPatients) + "/" + this.props.store.numberOfPatients}</h5>
                     </Col>
                     <Col md={4}>
                         <ButtonToolbar>
@@ -290,7 +303,4 @@ const MainView = observer(class MainView extends React.Component {
 
     }
 });
-MainView.defaultProps = {
-    height: 700
-};
 export default MainView;
