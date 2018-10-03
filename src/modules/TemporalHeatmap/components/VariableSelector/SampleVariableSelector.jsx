@@ -251,7 +251,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                             <Select
                                 type="text"
-                                //onChange={this.onPickVariable.bind(this)}
                                 inputRef={el => this.inputEl = el}
                                 searchable={true}
                                 componentClass="select" placeholder="Select..."
