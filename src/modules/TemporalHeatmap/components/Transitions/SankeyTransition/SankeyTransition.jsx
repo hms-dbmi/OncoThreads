@@ -40,7 +40,7 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
             let targetPartitionPos = 0;
             _self.props.secondTimepoint.grouped.forEach(function (f) {
                 if (i === 0) {
-                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpaces[_self.props.index] - rectHeight - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)), rectHeight, _self.props.secondPrimary.colorScale(f.partition), f.partition + "target"));
+                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpace - rectHeight - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)), rectHeight, _self.props.secondPrimary.colorScale(f.partition), f.partition + "target"));
                 }
                 let transition = _self.getTransition(d.partition, f.partition);
                 if (!(f.partition in currXtarget)) {

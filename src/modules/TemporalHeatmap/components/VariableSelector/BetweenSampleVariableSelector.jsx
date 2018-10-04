@@ -122,16 +122,16 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      */
     addORVariable(name) {
         this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
-        this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
-                    this.closeModal();
+        this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, name);
+        this.closeModal();
     }
 
     /**
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.props.store.addVariablesSeperate(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey);
-                    this.closeModal();
+        this.props.store.addVariablesSeperate(this.state.buttonClicked, this.state.selectedValues);
+        this.closeModal();
     }
 
     /**
@@ -149,6 +149,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param variable
      */
     handleCheckBoxClick(event, type, variable) {
+        console.log(variable);
         let selected = this.state.selectedValues.slice();
         if (event.target.checked) {
             selected.push(variable);

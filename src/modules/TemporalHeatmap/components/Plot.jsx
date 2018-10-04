@@ -18,6 +18,7 @@ const Plot = observer(class Plot extends React.Component {
         this.setState({
             width: this.refs.plot.parentNode.clientWidth
         });
+        this.props.visMap.setPlotY(this.refs.plot.parentNode.getBoundingClientRect().top+50);
     }
 
     /**
