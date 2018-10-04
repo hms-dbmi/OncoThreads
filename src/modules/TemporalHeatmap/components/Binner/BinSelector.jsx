@@ -9,7 +9,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
     constructor(props) {
         super(props);
         this.coordX = 0;
-        this.xScale = d3.scaleLinear();
+        this.xScale=d3.scaleLinear();
         this.state = {
             dragging: false,
             x: [(props.width - 70) / 2],
@@ -28,7 +28,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
      * @param width
      * @param xScale
      */
-    handleBinAddition(e, width, xScale) {
+    handleBinAddition(e, width) {
         const stepWidth = width / e.target.value;
         let currX = 0;
         let x = [];
@@ -49,7 +49,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
     handleMouseUp() {
         this.setState({currentBin: -1, dragging: false});
         this.coordX = null;
-        this.props.handleBinChange(this.getBins(this.state.x));
+        this.props.handleBinChange(this.getBins(this.state.x,this.xScale));
     }
 
     getBins(x) {
@@ -79,13 +79,16 @@ const BinSelector = observer(class BinSelector extends React.Component {
         }
     }
 
-    handlePositionTextFieldChange(event, index, xScale) {
+    handlePositionTextFieldChange(event, index) {
         let x = this.state.x.slice();
-        x[index] = xScale.invert(event.target.value);
+        console.log(event.target.value);
+        x[index] = this.xScale((Math.round(event.target.value*10)/10));
         this.props.handleBinChange(this.getBins(x));
         this.setState({x: x});
 
     }
+
+
 
 
     render() {
@@ -93,12 +96,14 @@ const BinSelector = observer(class BinSelector extends React.Component {
             w = this.props.width - (margin.left + margin.right),
             h = this.props.height - (margin.top + margin.bottom);
         const transform = 'translate(' + margin.left + ',' + margin.top + ')';
+        let min=d3.min(this.props.data);
+        if(min===0){
+            min=1
+        }
+        this.xScale = this.props.scaleType.domain([min, d3.max(this.props.data)]).range([0, w]);
 
-        this.xScale.domain([d3.min(this.props.data) - 1, d3.max(this.props.data)]).rangeRound([0, w]);
-
-        const reverseX = d3.scaleLinear().domain([0, w]).rangeRound([d3.min(this.props.data) - 1, d3.max(this.props.data)]);
         const bins = d3.histogram()
-            .domain([d3.min(this.props.data) - 1, d3.max(this.props.data)])
+            .domain([d3.min(this.props.data), d3.max(this.props.data)])
             .thresholds(this.xScale.ticks(30))(this.props.data);
         const y = d3.scaleLinear()
             .domain([0, d3.max(bins, function (d) {
@@ -122,7 +127,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
                         <Axis h={this.props.height} axis={yAxis} axisType="y"/>
                         <Axis h={h} axis={xAxis} axisType="x"/>
                         <Histogram bins={bins} xScale={this.xScale} yScale={y} height={h}/>
-                        <Slider yPos={h + 30} width={w} x={this.state.x} reverseScale={reverseX}
+                        <Slider yPos={h + 30} width={w} x={this.state.x} xScale={this.xScale}
                                 handleMouseDown={this.handleMouseDown}
                                 handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>
                     </g>
