@@ -42,7 +42,11 @@ const Legend = observer(class Legend extends React.Component {
             if(x){
                 var ind= x.modification.binNames.indexOf(value);
 
-                str= ": " +x.modification.bins[ind] + " to " + x.modification.bins[ind+1];
+                var low=x.modification.bins[ind];
+
+                if(ind!==0){low=low+1;}
+
+                str= ": " +low + " to " + x.modification.bins[ind+1];
 
 
             }
