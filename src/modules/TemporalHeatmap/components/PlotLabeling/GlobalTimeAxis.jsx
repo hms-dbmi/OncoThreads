@@ -98,6 +98,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
             //const translatey = "translate(0, 100)";
 
+            const _self=this;
             var timeV=this.props.maxTimeInDays;
     
             if(this.props.store.rootStore.timeVar==="30"){
@@ -142,7 +143,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             d3.selectAll(".axisLabel2").remove();
 
             //svg.append("g")	
-            d3.select(".axisGlobal2")	
+            var q=d3.select(".axisGlobal2")	
             .append("g")	
             .attr("class", "grid")
             .call(//this.make_y_gridlines(yAxis)
@@ -150,12 +151,56 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .tickSize(-this.props.width)
             .tickFormat("")
             )
-            .style("stroke-width", 0.5)
-            .style("stroke", "blue")
+            .style("stroke-width", 0.6)
+            .style("stroke", "#f00")
             .style("opacity", 0.3)
+
             //.style("fill", "blue")
 
+            var rects =  d3.select(".axisGlobal2")
+                        .append('g')
+                        .attr('class', 'intBands')
            
+
+            var yval=yAxis.scale().ticks(yAxis.ticks()[0]);//[0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
+
+            yval.splice(-1,1);
+
+            console.log(yval);
+
+           /* var yval = []
+            d3.selectAll(vl).each(function(d) {
+            yval.push(d);
+            });*/
+
+           
+
+
+            var ht=this.props.height/yval.length, wd=this.props.width;
+
+            //d3.selectAll('g').selectAll('intBands').remove();
+
+
+            rects.selectAll('rect').data(yval).enter().append('rect')
+            .attr('x', 0).attr('y', function(d) {
+                return y(d)
+            }).attr('height', ht).attr('width', wd)
+                .style("fill", "#ADD8E6")
+                .style('fill-opacity', function(d, i) {
+                //if (i == 0) {
+                //return 0;
+                //}
+
+                if (i % 2 == 0) {
+                    return 0.3;
+                } 
+                else {
+                    return 0;
+                }
+
+                //return 0.5;
+
+            });
 
     
     
