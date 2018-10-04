@@ -14,11 +14,26 @@ const Plot = observer(class Plot extends React.Component {
         this.state = {width: 100};
     }
 
+    /**
+     * Add event listener
+     */
     componentDidMount() {
+        this.updateDimensions();
+        window.addEventListener("resize", this.updateDimensions.bind(this));
+    }
+
+    /**
+     * Remove event listener
+     */
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateDimensions.bind(this));
+    }
+
+    updateDimensions() {
         this.setState({
             width: this.refs.plot.parentNode.clientWidth
         });
-        this.props.visMap.setPlotY(this.refs.plot.parentNode.getBoundingClientRect().top+50);
+        this.props.visMap.setPlotY(this.refs.plot.parentNode.getBoundingClientRect().top + 50);
     }
 
     /**
@@ -27,7 +42,7 @@ const Plot = observer(class Plot extends React.Component {
      * @param rectWidth: width of a heatmap cell
      * @returns any[] scales
      */
-    createSampleHeatMapScales(w,rectWidth) {
+    createSampleHeatMapScales(w, rectWidth) {
         return this.props.timepoints.map(function (d) {
             return d3.scalePoint()
                 .domain(d.heatmapOrder)
@@ -50,10 +65,10 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     render() {
-        this.props.visMap.setSampleRectWidth((this.state.width / this.props.horizontalZoom)-this.props.visMap.gap);
-        const heatmapWidth = this.props.store.numberOfPatients * (this.props.visMap.sampleRectWidth + this.props.visMap.gap) -this.props.visMap.gap;
+        this.props.visMap.setSampleRectWidth((this.state.width / this.props.horizontalZoom) - this.props.visMap.gap);
+        const heatmapWidth = this.props.store.numberOfPatients * (this.props.visMap.sampleRectWidth + this.props.visMap.gap) - this.props.visMap.gap;
         const svgWidth = heatmapWidth > this.state.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + this.props.visMap.sampleRectWidth : this.state.width;
-        const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth,this.props.visMap.sampleRectWidth);
+        const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth, this.props.visMap.sampleRectWidth);
         const groupScale = this.createGroupScale(this.state.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
 

@@ -335,7 +335,7 @@ const Legend = observer(class Legend extends React.Component {
                         //console.log(i)
                         indx=j;
                     }
-                })
+                });
                 dh.push(d.heatmap[indx]);
 
                 //console.log(dh);
