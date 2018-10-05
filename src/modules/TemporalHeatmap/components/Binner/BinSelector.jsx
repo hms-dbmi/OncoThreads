@@ -91,7 +91,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
 
     handlePositionTextFieldChange(event, index) {
         let x = this.state.x.slice();
-        x[index] = this.xScale(Math.round(event.target.value * 10) / 10);
+        x[index] = this.xScale(event.target.value);
         this.props.handleBinChange(this.getBins(x));
         this.setState({x: x});
 

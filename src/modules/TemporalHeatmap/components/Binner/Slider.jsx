@@ -33,7 +33,7 @@ const Slider = observer(class Slider extends React.Component {
                            type="text"
                            style={{
                                width: 50 + "px"
-                           }} value={Math.round(_self.props.xScale.invert(d))}/>
+                           }} value={Math.round(_self.props.xScale.invert(d)*100)/100}/>
                 </foreignObject>)
         });
         return positionText;
