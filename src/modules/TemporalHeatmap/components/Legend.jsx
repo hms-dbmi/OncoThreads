@@ -2,17 +2,13 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 
-import Content from "./Content";
+//import Content from "./Content";
 
 /*
 implements the legend on the right side of the main view
  */
 const Legend = observer(class Legend extends React.Component {
 
-    constructor() {
-        super();
-        //this.testToolTip=this.testToolTip.bind(this);
-    }
 
     /**
      * gets a single entry of the legend
@@ -324,31 +320,6 @@ const Legend = observer(class Legend extends React.Component {
         return legend
     }
 
-    /*testToolTip(e, e_x, e_y, lg){
-
-        const _self = this;
-       if(e_x>864)
-        {
-            console.log(e_x);
-
-            var diff=Math.floor((e_x-864)/34);
-           // if(diff>0)console.log(diff);
-            //else console.log("blah2");
-
-            console.log(diff*2);
-
-            console.log(lg[0].props.children[1].length);
-
-            if(diff*2<lg[0].props.children[1].length){
-                _self.props.showTooltip(e, lg[0].props.children[1][diff*2].props.value);
-            }
-        }
-        else {
-            _self.props.showTooltip(e, lg[0].props.children[1][0].props.value);
-        }
-
-
-    }*/
 
     render() {
         const textHeight = 10;
@@ -368,9 +339,6 @@ const Legend = observer(class Legend extends React.Component {
 
                 legends.push(<g key={i + d}
                                 transform={transform}
-
-                                //onMouseOver={(e) => _self.testToolTip(e, e.pageX, e.pageY,lg)}//_self.props.showTooltip(e, e.pageX + " " + lg[0].props.children[1][0].props.x)}
-                                //onMouseOut={_self.props.hideTooltip}
                                 >
                                 {lg}
                                 </g>);

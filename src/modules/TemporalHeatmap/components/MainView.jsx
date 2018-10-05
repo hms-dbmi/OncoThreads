@@ -212,12 +212,12 @@ const MainView = observer(class MainView extends React.Component {
                         posY={timepointPositions.timepoint}/>
             </Col>
 
-            <Col md={1} style={{padding: 0}}>
+            <Col md={1} style={{padding: 0, width:100}}>
                 <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                 timeValue={this.props.store.rootStore.timeValue}
                                 //width={150} 
                                // width={this.props.width}
-                               width={svgWidth + 100}
+                               width={svgWidth+(this.props.width/12>100? this.props.width/12: 100)}
                                 height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
 

@@ -91,14 +91,6 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
     
     renderAxis() {
 
-        /*const y = d3.scaleLinear()
-            .domain([0, d3.max(bins, function (d) {
-                return d.length;
-            })]).range([h, 0]);*/
-
-            //const translatey = "translate(0, 100)";
-
-            const _self=this;
             var timeV=this.props.maxTimeInDays;
     
             if(this.props.store.rootStore.timeVar==="30"){
@@ -142,8 +134,8 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
             d3.selectAll(".axisLabel2").remove();
 
-            //svg.append("g")	
-            var q=d3.select(".axisGlobal2")	
+            	
+            d3.select(".axisGlobal2")	
             .append("g")	
             .attr("class", "grid")
             .call(//this.make_y_gridlines(yAxis)
@@ -156,6 +148,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .style("opacity", 0.3)
 
             //.style("fill", "blue")
+            d3.select(".axisGlobal2").select(".intBands").remove();
 
             var rects =  d3.select(".axisGlobal2")
                         .append('g')
@@ -176,7 +169,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
            
 
 
-            var ht=this.props.height/yval.length, wd=this.props.width;
+            var ht=(this.props.height-35)/yval.length, wd=this.props.width;
 
             //d3.selectAll('g').selectAll('intBands').remove();
 
@@ -185,13 +178,14 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .attr('x', 0).attr('y', function(d) {
                 return y(d)
             }).attr('height', ht).attr('width', wd)
-                .style("fill", "#ADD8E6")
+                //.style("fill", "#ADD8E6")
+                .style("fill", "#C2DFFF")
                 .style('fill-opacity', function(d, i) {
                 //if (i == 0) {
                 //return 0;
                 //}
 
-                if (i % 2 == 0) {
+                if (i % 2 === 0) {
                     return 0.3;
                 } 
                 else {
