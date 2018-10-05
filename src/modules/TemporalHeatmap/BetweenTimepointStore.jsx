@@ -16,6 +16,7 @@ class BetweenTimepointStore {
             timepoints: [],
         });
     }
+
     reset() {
         this.timepoints = [];
         this.variableStore.constructor(this.rootStore);
@@ -89,13 +90,17 @@ class BetweenTimepointStore {
     update() {
         const _self = this;
         this.timepoints = [];
-        if(this.variableStore.currentVariables.length>0) {
+        if (this.variableStore.currentVariables.length > 0) {
             this.initialize(this.variableStore.currentVariables[0].id);
         }
         this.variableStore.currentVariables.forEach(function (d) {
             if (!d.derived) {
-                if(d.type==='event'){
-                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(d.eventType, [{name:d.name,id:d.id}], d.eventSubType), "or"), d.id);
+                if (d.type === 'event') {
+                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(d.eventType, [{
+                        name: d.name,
+                        id: d.id,
+                        eventType: d.eventSubType
+                    }]), "or"), d.id);
                 }
                 else {
                     _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
@@ -104,18 +109,13 @@ class BetweenTimepointStore {
             else {
                 if (d.modificationType === "OR") {
                     let selectedVariables = [];
-                    let eventType;
-                    let selectedCategory;
+                    let eventType=_self.variableStore.getByIdAllVariables(d.originalIds[0]).eventType;
                     d.originalIds.forEach(function (f, i) {
                         //let variable = _self.variableStore.getByIdAllVariables(f.id);
                         let variable = _self.variableStore.getByIdAllVariables(f);
-                        if (i === 0) {
-                            eventType = variable.eventType;
-                            selectedCategory = variable.eventSubType;
-                        }
-                        selectedVariables.push({id: variable.id, name: variable.name});
+                        selectedVariables.push({id: variable.id, name: variable.name, eventType: variable.eventSubType});
                     });
-                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(eventType, selectedVariables, selectedCategory), "or"), d.id);
+                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(eventType, selectedVariables), "or"), d.id);
                 }
                 else if (d.modificationType === "binning") {
                     _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.originalIds[0]);
@@ -128,7 +128,7 @@ class BetweenTimepointStore {
 
     addORVariable(type, selectedValues, name) {
         // create new Id
-        let isFirst=this.timepoints.length===0;
+        let isFirst = this.timepoints.length === 0;
         let derivedId = uuidv4();
         // add derived variable
         this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, "OR", []);
@@ -141,14 +141,15 @@ class BetweenTimepointStore {
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
     }
-    addVariablesSeperate(type, selectedValues){
-        let isFirst=this.timepoints.length===0;
-        const _self=this;
-          if (isFirst) {
+
+    addVariablesSeperate(type, selectedValues) {
+        let isFirst = this.timepoints.length === 0;
+        const _self = this;
+        if (isFirst) {
             this.initialize(selectedValues[0].id);
         }
-        selectedValues.forEach(function (d,i) {
-            if(!_self.variableStore.hasVariable(d.id)) {
+        selectedValues.forEach(function (d, i) {
+            if (!_self.variableStore.hasVariable(d.id)) {
                 const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]]);
                 _self.addHeatmapVariable(_self.deriveMapper(eventMapper, "or"), d.id);
             }
@@ -156,7 +157,7 @@ class BetweenTimepointStore {
         this.variableStore.addSeperateEventVariables(type, selectedValues);
         //initialize if the variable is the first variable to be added
         this.rootStore.timepointStore.regroupTimepoints();
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable=>variable.name))
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable => variable.name))
     }
 
     deriveMapper(mapper, operator) {
@@ -179,15 +180,15 @@ class BetweenTimepointStore {
      * @param variableId
      */
     addTimepointDistance(variableId) {
-        let isFirst=this.timepoints.length===0;
+        let isFirst = this.timepoints.length === 0;
         this.rootStore.timepointStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping, "between");
-            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER","Time between timepoints", minMax);
+            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", "Time between timepoints", minMax);
             if (isFirst) {
                 this.initialize(variableId, false);
             }
-            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId,isFirst);
+            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId, isFirst);
             this.rootStore.timepointStore.regroupTimepoints();
         }
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
@@ -211,17 +212,15 @@ class BetweenTimepointStore {
         let indexToDelete = _self.variableStore.currentVariables.map(function (d) {
             return d.id
         }).indexOf(variableId);
-            let originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
-            originalIdsDel.forEach(
-                function (d) {
-                        for (let l =_self.rootStore.eventDetails.length-1;l>=0;l--) {
-                            if (d === _self.rootStore.eventDetails[l].varId) {
-                                _self.rootStore.eventDetails.splice(l, 1);
-                            }
+        let originalIdsDel = _self.variableStore.currentVariables[indexToDelete].originalIds;
+        originalIdsDel.forEach(
+            function (d) {
+                for (let l = _self.rootStore.eventDetails.length - 1; l >= 0; l--) {
+                    if (d === _self.rootStore.eventDetails[l].varId) {
+                        _self.rootStore.eventDetails.splice(l, 1);
                     }
-                });
-
-
+                }
+            });
 
 
         //console.log(this.rootStore.eventDetails);
