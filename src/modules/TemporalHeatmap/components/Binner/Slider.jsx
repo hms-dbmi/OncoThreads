@@ -29,11 +29,11 @@ const Slider = observer(class Slider extends React.Component {
         this.props.x.forEach(function (d, i) {
             positionText.push(
                 <foreignObject key={i} x={d}>
-                    <input onChange={(e) => _self.props.handlePositionTextFieldChange(e, i, _self.props.reverseScale)}
+                    <input onChange={(e) => _self.props.handlePositionTextFieldChange(e, i)}
                            type="text"
                            style={{
                                width: 50 + "px"
-                           }} value={_self.props.reverseScale(d)}/>
+                           }} value={Math.round(_self.props.xScale.invert(d)*100)/100}/>
                 </foreignObject>)
         });
         return positionText;

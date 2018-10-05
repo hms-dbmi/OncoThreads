@@ -287,7 +287,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         const attributes = this.props.eventAttributes[this.state.buttonClicked];
         if (!this.state.addCombined) {
             elements.push(<Checkbox key="selectAll"
-                                    onClick={(e) => this.handleSelectAll(e)}>Select all</Checkbox>);
+                                    onChange={(e) => this.handleSelectAll(e)}>Select all</Checkbox>);
         }
 
         for (let key in attributes) {
@@ -300,14 +300,14 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                 }
                 checkboxes.push(
                     <Checkbox key={d.id} disabled={_self.state.disabled[key]} checked={isSelected}
-                              onClick={(e) => _self.handleCheckBoxClick(e, key, d)}>{d.name}</Checkbox>)
+                              onChange={(e) => _self.handleCheckBoxClick(e, key, d)}>{d.name}</Checkbox>)
             });
 
             elements.push(<Panel key={key}>
                 <Panel.Heading>
                     {key}
                     <Checkbox key="selectAllInCategory" disabled={_self.state.disabled[key]} checked={allSelected}
-                              onClick={(e) => this.handleSelectAllInCatergory(e, key)}>Select all</Checkbox>
+                              onChange={(e) => this.handleSelectAllInCatergory(e, key)}>Select all</Checkbox>
                 </Panel.Heading>
                 <Panel.Body>
                     {checkboxes}

@@ -26,9 +26,8 @@ const BinSelector = observer(class BinSelector extends React.Component {
      * handles the addition of bins
      * @param e
      * @param width
-     * @param xScale
-     */
-    handleBinAddition(e, width, xScale) {
+=     */
+    handleBinAddition(e, width) {
         const stepWidth = width / e.target.value;
         let currX = 0;
         let x = [];
@@ -49,17 +48,28 @@ const BinSelector = observer(class BinSelector extends React.Component {
     handleMouseUp() {
         this.setState({currentBin: -1, dragging: false});
         this.coordX = null;
-        this.props.handleBinChange(this.getBins(this.state.x));
+        this.props.handleBinChange(this.getBins(this.state.x, this.xScale));
     }
 
     getBins(x) {
         let binValues = [];
         const _self = this;
-        binValues.push(this.xScale.domain()[0]);
-        x.forEach(function (d) {
-            binValues.push(Math.round(_self.xScale.invert(d)));
-        });
-        binValues.push(this.xScale.domain()[1]);
+        if (_self.props.isXLog) {
+            binValues.push(Math.pow(10, this.xScale.domain()[0]));
+            x.forEach(function (d) {
+                binValues.push(Math.pow(10, _self.xScale.invert(d)));
+
+            });
+            binValues.push(Math.pow(10, this.xScale.domain()[1]));
+        }
+        else {
+            binValues.push(this.xScale.domain()[0]);
+            x.forEach(function (d) {
+                binValues.push(_self.xScale.invert(d));
+
+            });
+            binValues.push(this.xScale.domain()[1]);
+        }
         binValues.sort(function (a, b) {
             return a - b
         });
@@ -79,9 +89,9 @@ const BinSelector = observer(class BinSelector extends React.Component {
         }
     }
 
-    handlePositionTextFieldChange(event, index, xScale) {
+    handlePositionTextFieldChange(event, index) {
         let x = this.state.x.slice();
-        x[index] = xScale.invert(event.target.value);
+        x[index] = this.xScale(event.target.value);
         this.props.handleBinChange(this.getBins(x));
         this.setState({x: x});
 
@@ -89,25 +99,32 @@ const BinSelector = observer(class BinSelector extends React.Component {
 
 
     render() {
-        const margin = {top: 20, right: 20, bottom: 70, left: 50},
+        const margin = {top: 20, right: 20, bottom: 90, left: 50},
             w = this.props.width - (margin.left + margin.right),
             h = this.props.height - (margin.top + margin.bottom);
         const transform = 'translate(' + margin.left + ',' + margin.top + ')';
+        let data = this.props.data.map(d => this.props.transformXFunction(d));
+        let min = d3.min(data);
+        this.xScale = d3.scaleLinear().domain([min, d3.max(data)]).range([0, w]);
 
-        this.xScale.domain([d3.min(this.props.data) - 1, d3.max(this.props.data)]).rangeRound([0, w]);
-
-        const reverseX = d3.scaleLinear().domain([0, w]).rangeRound([d3.min(this.props.data) - 1, d3.max(this.props.data)]);
         const bins = d3.histogram()
-            .domain([d3.min(this.props.data) - 1, d3.max(this.props.data)])
-            .thresholds(this.xScale.ticks(30))(this.props.data);
-        const y = d3.scaleLinear()
+            .domain([min, d3.max(data)])
+            .thresholds(this.xScale.ticks(30))(data);
+        const y = this.props.yScale
             .domain([0, d3.max(bins, function (d) {
                 return d.length;
             })]).range([h, 0]);
         const xAxis = d3.axisBottom()
             .scale(this.xScale);
         const yAxis = d3.axisLeft()
-            .scale(y);
+            .scale(y)
+            .tickFormat(function (d) {
+                return Math.round(d / data.length * 100)
+            });
+        let xLabel = this.props.variableName;
+        if (this.props.isXLog) {
+            xLabel = "log_" + this.props.variableName;
+        }
 
 
         return (
@@ -119,10 +136,10 @@ const BinSelector = observer(class BinSelector extends React.Component {
                      width={this.props.width}
                      height={this.props.height}>
                     <g transform={transform}>
-                        <Axis h={this.props.height} axis={yAxis} axisType="y"/>
-                        <Axis h={h} axis={xAxis} axisType="x"/>
+                        <Axis h={h} w={this.props.width} axis={yAxis} axisType="y" label="Percent"/>
+                        <Axis h={h} w={this.props.width} axis={xAxis} axisType="x" label={xLabel}/>
                         <Histogram bins={bins} xScale={this.xScale} yScale={y} height={h}/>
-                        <Slider yPos={h + 30} width={w} x={this.state.x} reverseScale={reverseX}
+                        <Slider yPos={h + 50} width={w} x={this.state.x} xScale={this.xScale}
                                 handleMouseDown={this.handleMouseDown}
                                 handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>
                     </g>

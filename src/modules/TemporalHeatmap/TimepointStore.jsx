@@ -12,7 +12,7 @@ class TimepointStore {
             currentVariables: {"sample": [], "between": []},
             selectedPatients: [],
             timepoints: [],
-            continuousRepresentation:'gradient',
+            continuousRepresentation: 'gradient',
             realTime: false,
             globalTime: false,
             transitionOn: false,
@@ -42,7 +42,7 @@ class TimepointStore {
         this.applyPromotingToAll = this.applyPromotingToAll.bind(this);
         this.applyPromotingToPrevious = this.applyPromotingToPrevious.bind(this);
         this.applyPromotingToNext = this.applyPromotingToNext.bind(this);
-        this.regroupTimepoints=this.regroupTimepoints.bind(this);
+        this.regroupTimepoints = this.regroupTimepoints.bind(this);
 
     }
 
@@ -146,7 +146,7 @@ class TimepointStore {
         let oldVar = _self.variableStore[type].getById(oldId);
         let variableName = oldVar.name;
         let variableDomain = oldVar.domain;
-        _self.variableStore[type].modifyVariable(newId, oldVar.name+"_BINNED", "BINNED", oldVar.description +" (binned)", oldId, "binning", {
+        _self.variableStore[type].modifyVariable(newId, oldVar.name + "_BINNED", "BINNED", oldVar.description + " (binned)", oldId, "binning", {
             bins: bins,
             binNames: binNames
         }, variableDomain);
@@ -186,8 +186,13 @@ class TimepointStore {
      */
     static getBin(bins, binNames, value) {
         for (let i = 1; i < bins.length; i++) {
-            if (value > bins[i - 1] && value <= bins[i]) {
-                return binNames[i - 1];
+            if (i === 1 && value >= bins[0] && value <= bins[1]) {
+                return binNames[0]
+            }
+            else {
+                if (value > bins[i - 1] && value <= bins[i]) {
+                    return binNames[i - 1];
+                }
             }
         }
     }
@@ -314,13 +319,13 @@ class TimepointStore {
      * applies the patient order of the current timepoint to all the other timepoints
      * @param timepointIndex
      */
-    applyPatientOrderToAll(timepointIndex,saveRealign) {
+    applyPatientOrderToAll(timepointIndex, saveRealign) {
         let sorting = this.timepoints[timepointIndex].heatmapOrder;
         this.timepoints.forEach(function (d) {
             d.heatmapOrder = sorting;
         });
-        if(saveRealign){
-                    this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+        if (saveRealign) {
+            this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
         }
         //this.rootStore.visStore.resetTransitionSpace();
     }
@@ -350,7 +355,7 @@ class TimepointStore {
                 break;
             }
         }
-        this.applyPatientOrderToAll(timepointIndex,false);
+        this.applyPatientOrderToAll(timepointIndex, false);
         this.rootStore.undoRedoStore.saveTimepointHistory("MAGICSORT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
