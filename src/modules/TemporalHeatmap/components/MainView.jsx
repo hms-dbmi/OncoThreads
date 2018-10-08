@@ -105,8 +105,18 @@ const MainView = observer(class MainView extends React.Component {
         }
     }
 
+        /**
+     * set visual parameters
+     * @param rectWidth
+     */
+    setVisualParameters(rectWidth) {
+        this.props.visMap.setSampleRectWidth(rectWidth);
+    }
 
-    getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, timepointPositions) {
+
+
+    //getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, timepointPositions) {
+    getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, svgWidth, heatmapWidth, timepointPositions) {    
         return (<Row>
             <Col md={1} style={{padding: 0}}>
                 <TimepointLabels sampleTPHeight={sampleTPHeight} betweenTPHeight={betweenTPHeight}
@@ -121,7 +131,8 @@ const MainView = observer(class MainView extends React.Component {
 
             </Col>
             <Col xs={7} md={7} style={{padding: 0}}>
-                <Plot {...this.props} height={svgHeight}
+                <Plot //{...this.props} height={svgHeight}
+                {...this.props} width={this.props.width} svgWidth={svgWidth} height={svgHeight}
                       horizontalZoom={this.state.horizontalZoom}
                       timepointY={timepointPositions.timepoint}
                       transY={timepointPositions.connection}
@@ -129,19 +140,20 @@ const MainView = observer(class MainView extends React.Component {
                       onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
             </Col>
             <Col xs={2} md={2} style={{padding: 0}}>
-                <Legend {...this.props} height={svgHeight} width={400}
+                <Legend {...this.props} height={svgHeight} width={400} mainWidth={svgWidth}
                         posY={timepointPositions.timepoint}/>
             </Col>
         </Row>);
     }
 
-    getGlobalView(timepointPositions) {
+    //getGlobalView(timepointPositions) {
+    getGlobalView(timepointPositions, svgHeight, svgWidth, heatmapWidth) {     
 
-        let sampH = this.props.visMap.getTimepointHeight(1);
+        //let sampH = this.props.visMap.getTimepointHeight(1);
 
         //var svgH = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
-        let svgHeight = this.props.visMap.rootStore.originalTimePointLength * (sampH + this.props.visMap.transitionSpace) * 1.5;
+        //let svgHeight = this.props.visMap.rootStore.originalTimePointLength * (sampH + this.props.visMap.transitionSpace) * 1.5;
 
         //view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
         let a = this.props.store.rootStore.eventDetails;
@@ -168,10 +180,22 @@ const MainView = observer(class MainView extends React.Component {
             + this.props.store.variableStore.sample.allVariables.length;
         if (var_num * 19 > row_op_height) {
             row_op_height = row_op_height + (var_num * 19 - row_op_height);
+        }    
 
+        var current_var = ""
+        
+        if(this.props.store.rootStore.globalPrimary!==""){
+
+            //current_var=this.props.currentVariables.sample.filter(d1=>d1.id===this.props.store.rootStore.globalPrimary)[0].name.substring(0, 14); //this.props.store.rootStore.globalPrimary.substring(0, 14)
+        
+            current_var=this.props.currentVariables.sample.filter(d1=>d1.originalIds[0]===this.props.store.rootStore.globalPrimary)[0].name.substring(0, 14);
         }
 
-        let current_var = this.props.store.rootStore.globalPrimary.substring(0, 14)
+        if(current_var.length>=14) {
+            current_var=current_var+"...";
+        }
+
+        //let current_var = this.props.store.rootStore.globalPrimary.substring(0, 14)
 
         if (current_var.length >= 14) {
             current_var = current_var + "...";
@@ -190,18 +214,30 @@ const MainView = observer(class MainView extends React.Component {
                 <p className="font-weight-bold">
                     <small><b>{"Legend of " + current_var}</b></small>
                 </p>
-                <Legend {...this.props} height={svgHeight / 4} width={400}
+                <Legend {...this.props} height={svgHeight / 4} 
+                        //width={400} 
+                        width={this.props.width}
+                        mainWidth={svgWidth} 
                         posY={timepointPositions.timepoint}/>
             </Col>
 
-            <Col md={1} style={{padding: 0}}>
+            <Col md={1} style={{padding: 0, width:100}}>
                 <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                 timeValue={this.props.store.rootStore.timeValue}
-                                width={150} height={svgHeight} maxTimeInDays={maxTime}/>
+                                //width={150} 
+                                width={this.props.width * 1.5}
+
+                              
+                               
+                                //width={svgWidth+(this.props.width/12>100? this.props.width/12: 100)}
+                                height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
 
             <Col xs={9} md={9} style={{padding: 0}}>
-                <Plot {...this.props} height={svgHeight}
+                <Plot {...this.props} 
+                      height={svgHeight} 
+                      svgWidth={svgWidth}  
+                      width={this.props.width}
                       horizontalZoom={this.state.horizontalZoom}
                       timepointY={timepointPositions.timepoint}
                       transY={timepointPositions.connection}
@@ -232,12 +268,40 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        let view;
+        /*let view;
         if (!this.props.store.globalTime) {
             view = this.getBlockView(this.props.visMap.sampleTPHeight, this.props.visMap.betweenTPHeight, this.props.visMap.svgHeight, this.props.visMap.timepointPositions);
         }
         else {
             view = this.getGlobalView(this.props.visMap.timepointPositions);
+        }*/
+
+
+        let rectWidth = this.props.width / 300;
+        if (this.props.store.numberOfPatients < 300) {
+            rectWidth = this.props.width / this.props.store.numberOfPatients - 1;
+        }
+        this.setVisualParameters(rectWidth);
+
+
+        const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
+        const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
+        let view;
+        if (!this.props.store.globalTime) {
+            view = this.getBlockView(this.props.visMap.sampleTPHeight, this.props.visMap.betweenTPHeight, this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
+        }
+        else {
+
+            var sampH = this.props.visMap.getTimepointHeight(1);
+
+            //var svgH = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
+
+            var svgH = this.props.visMap.rootStore.originalTimePointLength * (sampH + this.props.visMap.transitionSpace) * 1.5;
+
+            //view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
+
+            view = this.getGlobalView(this.props.visMap.timepointPositions, svgH, svgWidth, heatmapWidth);
+
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
@@ -303,4 +367,10 @@ const MainView = observer(class MainView extends React.Component {
 
     }
 });
+
+MainView.defaultProps = {
+    width: 700,
+    height: 700
+};
+
 export default MainView;

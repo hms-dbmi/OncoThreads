@@ -1,7 +1,11 @@
 import React from "react";
 import {observer} from "mobx-react";
-import {Button, ButtonGroup, ControlLabel, FormGroup, Nav, Panel} from 'react-bootstrap';
+import {Button, ButtonGroup, FormGroup, Nav, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
+
+
+//import {FormGroup} from 'react-bootstrap';
+//import { Nav } from 'react-bootstrap';
 
 
 import Select from 'react-select';
@@ -20,7 +24,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             color: ''
 
         };
-        this.passToHandleVariableClick = this.passToHandleVariableClick.bind(this);
+        
+        this.passToHandleVariableClick=this.passToHandleVariableClick.bind(this);
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
         this.toggleMutationIcon = this.toggleMutationIcon.bind(this);
@@ -107,8 +112,21 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             if (d.datatype === "NUMBER") {
                 icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
-            let lb = (<div>{icon}{d.variable}</div>);
-            options.push({value: d.variable, label: lb,obj:d})
+            //let lb = (<div>{icon}{d.variable}</div>);
+            //options.push({value: d.variable, label: lb,obj:d})
+            let lb = (
+                <div onMouseOver={(e)=>{
+                    //console.log(d.variable);
+                    _self.props.showTooltip(e, d.variable, d.description);
+                }}>
+                    {icon}{d.variable}
+                </div>
+            );
+            //let vl=(<div>{d.id}{d.variable}{d.datatype}</div>)
+            let vl=d.variable;
+            //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
+
+            options.push({value:vl, label:lb})
         });
         return options;
     }
@@ -242,18 +260,25 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
 
             <Nav>
-                <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
+                    <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
+                    <Panel.Heading>
+                        <Panel.Title toggle>
+                            <div > Clinical Features </div>
+                        </Panel.Title>
+                    </Panel.Heading>
+                   
 
-                    <div style={{backgroundColor: this.state.color}}>
+
+
                         <FormGroup controlId="formControlsSelect">
-                            <ControlLabel>Clinical Features</ControlLabel>
+                       
 
-
-                            <Select
-                                type="text"
-                                inputRef={el => this.inputEl = el}
-                                searchable={true}
-                                componentClass="select" placeholder="Select..."
+                        <Select  
+                            type="text" 
+                            //onChange={this.onPickVariable.bind(this)}
+                            inputRef={ el => this.inputEl=el }
+                            searchable={true}
+                            componentClass="select" placeholder="Select..."
 
 
                                 searchPlaceholder="Search variable"
@@ -280,7 +305,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                         {this.getGenomicPanel()}
 
-                    </div>
+                   
 
 
                 </Panel>

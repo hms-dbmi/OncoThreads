@@ -236,6 +236,7 @@ const Content = observer(class Content extends React.Component {
                             clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                             mutationCount="Mutation count"
                             currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                            showTooltip={this.showTooltip}
                             store={this.props.rootStore.sampleTimepointStore}
                             visMap={this.props.rootStore.visStore}
                         />

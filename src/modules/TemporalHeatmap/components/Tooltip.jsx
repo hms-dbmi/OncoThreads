@@ -27,6 +27,8 @@ const Tooltip = observer(class SankeyTransitionTooltip extends React.Component {
                 visibility: this.props.visibility,
                 position: "absolute",
                 top: this.props.y - (this.props.line2===undefined ? 30: 45),
+                zIndex: 100,
+                //top: this.props.y - 30,
                 left: this.props.x - textWidth / 2
             }}>
                 <svg width={textWidth + 10} height={rectHeight+5}>

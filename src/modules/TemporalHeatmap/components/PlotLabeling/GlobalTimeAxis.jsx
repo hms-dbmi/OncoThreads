@@ -84,14 +84,12 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         this.renderAxis()
     }
 
+    make_y_gridlines(yAxis) {		
+        return  yAxis; //d3.axisLeft().scale(y);
+    }
+
+    
     renderAxis() {
-
-        /*const y = d3.scaleLinear()
-            .domain([0, d3.max(bins, function (d) {
-                return d.length;
-            })]).range([h, 0]);*/
-
-            //const translatey = "translate(0, 100)";
 
             var timeV=this.props.maxTimeInDays;
     
@@ -114,6 +112,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
             d3.selectAll(".axisLabel").remove();
 
+            
             d3.select(".axisGlobal")
             .append("text")
             .attr("class", "axisLabel")
@@ -129,51 +128,91 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .style("fill", "black")
             .text(this.props.timeValue);
             //.text(this.props.store.rootStore.timeValue);
+
+
+            d3.select(".axisGlobal2").call(yAxis);
+
+            d3.selectAll(".axisLabel2").remove();
+
+            	
+            d3.select(".axisGlobal2")	
+            .append("g")	
+            .attr("class", "grid")
+            .call(//this.make_y_gridlines(yAxis)
+             yAxis
+            .tickSize(-this.props.width)
+            .tickFormat("")
+            )
+            .style("stroke-width", 0.6)
+            .style("stroke", "#f00")
+            .style("opacity", 0.3)
+
+            //.style("fill", "blue")
+            d3.select(".axisGlobal2").select(".intBands").remove();
+
+            var rects =  d3.select(".axisGlobal2")
+                        .append('g')
+                        .attr('class', 'intBands')
+           
+
+            var yval=yAxis.scale().ticks(yAxis.ticks()[0]);//[0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
+
+            yval.splice(-1,1);
+
+            //console.log(yval);
+
+           /* var yval = []
+            d3.selectAll(vl).each(function(d) {
+            yval.push(d);
+            });*/
+
+           
+
+
+            var ht=(this.props.height-35)/yval.length, wd=this.props.width;
+
+            //d3.selectAll('g').selectAll('intBands').remove();
+
+
+            rects.selectAll('rect').data(yval).enter().append('rect')
+            .attr('x', 0).attr('y', function(d) {
+                return y(d)
+            }).attr('height', ht).attr('width', wd)
+                //.style("fill", "#ADD8E6")
+                .style("fill", "#C2DFFF")
+                .style('fill-opacity', function(d, i) {
+                //if (i == 0) {
+                //return 0;
+                //}
+
+                if (i % 2 === 0) {
+                    return 0.3;
+                } 
+                else {
+                    return 0;
+                }
+
+                //return 0.5;
+
+            });
+
     
     
     }
 
     render() {
-        //const translatex = "translate(0," + (this.props.height) + ")";
-        /*const translatey = "translate(0, 100)";
-
-        var timeV=this.props.maxTimeInDays;
-
-        if(this.props.store.rootStore.timeVar==="30"){
-            timeV=this.props.maxTimeInDays/30;
-        }
-        else if(this.props.store.rootStore.timeVar==="365"){
-            timeV=this.props.maxTimeInDays/365;
-        }      
-        const y = d3.scaleLinear().range([ this.props.height - 20, 0]).domain([0, timeV]);
-
-        //y.domain([0, timeV]);
-    
-       
-
-        const yAxis = d3.axisLeft()
-            .scale(y);
-            
-			
-        //const node = ReactDOM.findDOMNode(this);
-        const node = d3.select(".axisGlobal");
-        
-        d3.select(node).call(yAxis)
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Time");*/
-
-        //d3.select(this.refs.g)
-	      //.call(yAxis);  
 
         return (
             <div>
-                <svg height={this.props.height}>
+                <svg height={this.props.height} width={this.props.width}>
                     <g className="axisGlobal" transform="translate(50, 25)">
                     </g>
+
+                    <g className="axisGlobal2" transform="translate(50, 25)">
+                    </g>
                 </svg>
+
+                
             </div>
         );
     }

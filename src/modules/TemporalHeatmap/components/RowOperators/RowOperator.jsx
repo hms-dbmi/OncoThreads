@@ -211,13 +211,30 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         getRowLabel(timepoint, variable, name_var, desc, xPos, yPos, iconScale, width, fontWeight, fontSize) {
             if(!name_var) name_var="";
+
+            /*var tooltip1="Click to promote variable",
+                tooltip2="\n" + name_var,
+                tooltip3="\n" + desc;
+
+            var tooltip=tooltip1+tooltip2+tooltip3;*/
+
+            //var tooltip=[tooltip1, tooltip2, tooltip3];
+
+            //console.log(tooltip);
+
             
             return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Promote " + name_var, desc)}
-                       onMouseLeave={this.props.hideTooltip}>
+                      onMouseEnter={(e) => this.props.showTooltip(e, "Promote variable " + name_var, 
+                                                        
+                                                       desc)}
+
+                    //onMouseEnter={(e) => this.props.showTooltip(e, tooltip.split ('\n').map ((item, i) => item))} 
+                    
+                    //onMouseEnter={(e) => this.props.showTooltip(e, tooltip)}   
+                    onMouseLeave={this.props.hideTooltip}>
                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
-                      onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
+                    onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
+                    onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
             </g>);
         }
 

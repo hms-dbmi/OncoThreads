@@ -137,12 +137,29 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
     handleMouseEnter(event, patient, value, startDay, duration) {
+
+        var timeVariable = "day";
+
+        if(this.props.store.rootStore.timeVar==="30"){
+            startDay=Math.round( (startDay/30) * 100)/100;
+            duration=Math.round( (duration/30) * 100) /100;
+            timeVariable="month";
+        }
+        else if(this.props.store.rootStore.timeVar==="365"){
+            startDay=Math.round( (startDay/365) * 100)/100;
+            duration=Math.round( (duration/365) * 100)/100;
+            timeVariable="year";
+        }
+
+
         if(duration===0){
-            this.props.showTooltip(event, patient + ": " + value + ", Event day: " + startDay)
+            this.props.showTooltip(event, patient + ": " + value + ", Event " + timeVariable + ": " + startDay)
 
         }
         else{
-            this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
+            //this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
+
+            this.props.showTooltip(event, patient + ": " + value + ", Event start " + timeVariable + ": "  + startDay + ", Duration: " + duration + " " + timeVariable)
         }
        
     }
