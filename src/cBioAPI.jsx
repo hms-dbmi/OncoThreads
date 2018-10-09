@@ -4,18 +4,22 @@ import axios from 'axios';
 class cBioAPI {
     constructor() {
         this.patients = [];
+        this.samples = [];
         this.clinicalEvents = {};
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
         this.mutationCounts = [];
+        this.selectedMutation = [];
     }
 
     initialize() {
         this.patients = [];
+        this.samples = [];
         this.clinicalEvents = {};
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
         this.mutationCounts = [];
+        this.selectedMutation = [];
     }
 
 
@@ -24,6 +28,7 @@ class cBioAPI {
          * get patient information first
          */
         this.patients = [];
+        this.samples = [];
         this.clinicalEvents = {};
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
@@ -93,6 +98,49 @@ class cBioAPI {
      */
     static getMutationCounts(studyID) {
         return axios.get("http://cbiohack.org/api/molecular-profiles/" + studyID + "_mutations/mutation-counts?sampleListId=" + studyID + "_all");
+    }
+
+    getMutation(studyId, HUGOsymbol, callback) {
+        this.selectedMutation = [];
+        const _self = this;
+        cBioAPI.mapHUGOgeneSymbol(HUGOsymbol).then(function (res) {
+            const entrezId = res.data.response.docs[0].entrez_id;
+            axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
+                "entrezGeneIds": [
+                    entrezId
+                ],
+                "sampleListId": studyId + "_all"
+            }).then(function (response) {
+                _self.selectedMutation = response.data;
+                cBioAPI.getAllSamples(studyId).then(function (response2) {
+                    _self.samples = response2.data;
+                    callback();
+                });
+            }).catch(function (error) {
+                console.log(error);
+            });
+        })
+            .catch(function (error) {
+                console.log(error)
+            });
+
+    }
+
+    static getAllSamples(studyId) {
+        return axios.get("http://www.cbiohack.org/api/sample-lists/" + studyId + "_all/sample-ids\n")
+    }
+
+    static mapHUGOgeneSymbol(symbol) {
+        return axios.get("https://rest.genenames.org/fetch/symbol/" + symbol);
+    }
+
+    static uniprotMapping(hgncId) {
+        return axios.post('https://www.uniprot.org/uploadlists',{
+            'from': 'HGNC_ID',
+            'to': 'P_ENTREZGENEID',
+            'format': 'tab',
+            'query': hgncId
+        });
     }
 
     static getMolecularProfiles(studyID) {

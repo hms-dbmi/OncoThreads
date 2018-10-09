@@ -1,14 +1,12 @@
 import React from "react";
 import {observer} from "mobx-react";
-import {Button, ButtonGroup, FormGroup, Nav, Panel} from 'react-bootstrap';
+import {Button, ButtonGroup, FormGroup, Nav, Panel,ControlLabel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
+import Select from 'react-select';
 
 
 //import {FormGroup} from 'react-bootstrap';
 //import { Nav } from 'react-bootstrap';
-
-
-import Select from 'react-select';
 
 /*
 creates the selector for sample variables (left side of main view, top)
@@ -24,11 +22,12 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             color: ''
 
         };
-        
-        this.passToHandleVariableClick=this.passToHandleVariableClick.bind(this);
+
+        this.passToHandleVariableClick = this.passToHandleVariableClick.bind(this);
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.toggleClinicalIcon = this.toggleClinicalIcon.bind(this);
         this.toggleMutationIcon = this.toggleMutationIcon.bind(this);
+        this.searchGene=this.searchGene.bind(this);
 
         //this.handleMouseEnter = this.handleMouseEnter.bind(this);
         //this.handleMouseLeave = this.handleMouseLeave.bind(this);
@@ -50,10 +49,10 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      */
     addVariable(id, variable, type, description) {
         if (this.props.currentVariables.length === 0) {
-            this.props.store.initialize(id, variable, type,description);
+            this.props.store.initialize(id, variable, type, description);
         }
         else {
-            this.props.store.addVariable(id, variable, type,description);
+            this.props.store.addVariable(id, variable, type, description);
         }
     }
 
@@ -74,7 +73,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
     passToHandleVariableClick(value) {
-        this.handleVariableClick(value.id, value.variable, value.datatype,value.description);
+        console.log(value);
+        this.handleVariableClick(value.id, value.variable, value.datatype, value.description);
     }
 
     /**
@@ -115,7 +115,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             //let lb = (<div>{icon}{d.variable}</div>);
             //options.push({value: d.variable, label: lb,obj:d})
             let lb = (
-                <div onMouseOver={(e)=>{
+                <div onMouseOver={(e) => {
                     //console.log(d.variable);
                     _self.props.showTooltip(e, d.variable, d.description);
                 }}>
@@ -123,10 +123,10 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 </div>
             );
             //let vl=(<div>{d.id}{d.variable}{d.datatype}</div>)
-            let vl=d.variable;
+            let vl = d.variable;
             //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
 
-            options.push({value:vl, label:lb})
+            options.push({value: vl, label: lb, obj:d})
         });
         return options;
     }
@@ -187,6 +187,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     toggleMutationIcon() {
         this.setState({mutationIcon: SampleVariableSelector.toggleIcon(this.state.mutationIcon)});
     }
+    searchGene(event){
+        if(event.key==='Enter'){
+            this.props.store.rootStore.getMutation(event.target.value.split(" "));
+        }
+    }
 
     getGenomicPanel() {
         if (this.props.store.rootStore.hasMutationCount) {
@@ -202,6 +207,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                         <ButtonGroup vertical block>
                             {this.createGenomicAttributesList()}
                         </ButtonGroup>
+                        <FormGroup controlId="formControlsSelect">
+                                  <ControlLabel>Seach gene(s)</ControlLabel>
+                            <textarea placeholder={"Enter HUGO Gene Symbols"}
+                                onKeyDown={this.searchGene} />
+                        </FormGroup>
                     </Panel.Body>
                 </Panel.Collapse>
             </Panel>)
@@ -260,52 +270,48 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
 
             <Nav>
-                    <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
+                <Panel id="clinicalPanel" placeholder="Search for names.." defaultExpanded>
                     <Panel.Heading>
                         <Panel.Title toggle>
-                            <div > Clinical Features </div>
+                            <div> Clinical Features</div>
                         </Panel.Title>
                     </Panel.Heading>
-                   
 
 
+                    <FormGroup controlId="formControlsSelect">
 
-                        <FormGroup controlId="formControlsSelect">
-                       
 
-                        <Select  
-                            type="text" 
+                        <Select
+                            type="text"
                             //onChange={this.onPickVariable.bind(this)}
-                            inputRef={ el => this.inputEl=el }
+                            inputRef={el => this.inputEl = el}
                             searchable={true}
                             componentClass="select" placeholder="Select..."
 
 
-                                searchPlaceholder="Search variable"
+                            searchPlaceholder="Search variable"
 
-                                options={this.createClinicalAttributesListNewSelect()}
-
-
-                                //options={this.createClinicalAttributesListNewSelect().map(d => {return {value: d.value, label:d.label}})}
-
-                                //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
-
-                                onChange={opt => this.passToHandleVariableClick(opt.obj)}
-
-                                //onMouseOver={(e) => this.handleMouseEnter()}
-                                //onMouseLeave={this.handleMouseLeave}
-
-                                //_self.handleVariableClick(d.id, d.variable, d.datatype)
-                                //onChange={this.myOnChange}
-
-                            />
+                            options={this.createClinicalAttributesListNewSelect()}
 
 
-                        </FormGroup>
+                            //options={this.createClinicalAttributesListNewSelect().map(d => {return {value: d.value, label:d.label}})}
 
-                        {this.getGenomicPanel()}
+                            //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
 
-                   
+                            onChange={opt => this.passToHandleVariableClick(opt.obj)}
+
+                            //onMouseOver={(e) => this.handleMouseEnter()}
+                            //onMouseLeave={this.handleMouseLeave}
+
+                            //_self.handleVariableClick(d.id, d.variable, d.datatype)
+                            //onChange={this.myOnChange}
+
+                        />
+
+
+                    </FormGroup>
+
+                    {this.getGenomicPanel()}
 
 
                 </Panel>

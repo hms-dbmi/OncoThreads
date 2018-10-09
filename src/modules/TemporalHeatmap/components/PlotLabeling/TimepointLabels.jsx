@@ -38,7 +38,13 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
         let labels = [];
         const _self = this;
         this.props.timepoints.forEach(function (d, i) {
-            let pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 5;
+            let pos;
+            if(d.type==='sample'){
+                pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 5;
+            }
+            else{
+                pos = _self.props.betweenTPHeight / 2 + _self.props.posY[i] + 5;
+            }
             labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField width={_self.state.width}
                                            timepoint={d}/></g>)
         });

@@ -181,7 +181,7 @@ class RootStore {
             _self.createMutationCountsMapping();
 
             // if (localStorage.getItem(_self.study.studyId) === null) {
-            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, _self.clinicalSampleCategories[0].description,"clinical");
+            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, _self.clinicalSampleCategories[0].description, "clinical");
             _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
             /*}
             else {
@@ -190,6 +190,19 @@ class RootStore {
             _self.parsed = true;
 
         });
+    }
+
+    getMutation(HUGOsymbols) {
+        const _self = this;
+        HUGOsymbols.forEach(function (HUGOsymbol) {
+            _self.cbioAPI.getMutation(_self.study.studyId, HUGOsymbol, function () {
+                if (_self.cbioAPI.selectedMutation.length !== 0) {
+                    _self.createMutationMapping(HUGOsymbol);
+                    _self.sampleTimepointStore.addVariable(HUGOsymbol, HUGOsymbol, "binary", 'mutation in ' + HUGOsymbol);
+                }
+            });
+        });
+
     }
 
     /**
@@ -473,6 +486,21 @@ class RootStore {
     }
 
     /**
+     * creates a dictionary mapping mutations (true/false) onto sample IDs
+     * @param geneId
+     */
+    createMutationMapping(geneId) {
+        if (this.cbioAPI.selectedMutation.length !== 0) {
+            const _self = this;
+            this.sampleMappers[geneId] = {};
+            const mutatedSamples = this.cbioAPI.selectedMutation.map(mutation => mutation.sampleId);
+            this.cbioAPI.samples.forEach(function (d) {
+                _self.sampleMappers[geneId][d] = mutatedSamples.includes(d)
+            });
+        }
+    }
+
+    /**
      *creates a mapping of selected events to patients (OR)
      * @param eventType
      * @param selectedVariables
@@ -606,13 +634,13 @@ class RootStore {
                     d.attributes.forEach(function (f, j) {
                         if (!(f.key in attributes[d.eventType])) {
                             attributes[d.eventType][f.key] = [];
-                            attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(), eventType:f.key});
+                            attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(), eventType: f.key});
                         }
                         else {
                             if (!attributes[d.eventType][f.key].map(function (g) {
                                 return g.name
                             }).includes(f.value)) {
-                                attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(),eventType:f.key});
+                                attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(), eventType: f.key});
                             }
                         }
                     })
