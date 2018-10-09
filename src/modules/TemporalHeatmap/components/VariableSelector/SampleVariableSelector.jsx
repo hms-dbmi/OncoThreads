@@ -74,7 +74,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
     passToHandleVariableClick(value) {
-        this.handleVariableClick(value.id, value.variable, value.datatype,value.description);
+        //this.handleVariableClick(value.id, value.variable, value.datatype,value.description);
+
+        var id=this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].id,
+        variable= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].variable,
+        type= this.props.clinicalSampleCategories.filter(d1=>d1.variable===value)[0].datatype;
+
+        this.handleVariableClick(id, variable, type);
     }
 
     /**
@@ -290,7 +296,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                                 //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
 
-                                onChange={opt => this.passToHandleVariableClick(opt.obj)}
+                                onChange={opt => this.passToHandleVariableClick(opt.value)}
 
                                 //onMouseOver={(e) => this.handleMouseEnter()}
                                 //onMouseLeave={this.handleMouseLeave}
