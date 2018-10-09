@@ -132,7 +132,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             let vl=d.variable;
             //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
 
-            options.push({value:vl, label:lb})
+            options.push({value:vl, label:lb, obj:d})
         });
         return options;
     }
