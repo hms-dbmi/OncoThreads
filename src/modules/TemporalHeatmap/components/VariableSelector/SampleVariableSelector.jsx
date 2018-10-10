@@ -129,7 +129,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             let vl = d.variable;
             //let ob=(<div>{d.id}{d.variable}{d.datatype}</div>);
 
-            options.push({value: vl, label: lb, obj: d})
+            options.push({value:vl, label:lb, obj:d})
         });
         return options;
     }
@@ -269,7 +269,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             //options={this.createClinicalAttributesListNewSelect().map(d => {return {value: d.value, label:d.label}})}
 
                             //onChange={opt => this.handleVariableClick(opt.value.props.children[0], opt.value.props.children[1], opt.value.props.children[2])}
-
                             onChange={opt => this.passToHandleVariableClick(opt.obj)}
 
                             //onMouseOver={(e) => this.handleMouseEnter()}
