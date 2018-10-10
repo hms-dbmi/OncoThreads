@@ -25,7 +25,7 @@ class RootStore {
         this.visStore = new VisStore(this);
         this.undoRedoStore = new UndoRedoStore(this);
 
-        this.hasMutationCount = false;
+        this.hasMutations = false;
 
         //maximum and minum amount of timepoints a patient has in the dataset
         this.maxTP = 0;
@@ -181,7 +181,7 @@ class RootStore {
             _self.createMutationCountsMapping();
 
             // if (localStorage.getItem(_self.study.studyId) === null) {
-            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, _self.clinicalSampleCategories[0].description,"clinical");
+            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, _self.clinicalSampleCategories[0].description, "clinical");
             _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
             /*}
             else {
@@ -190,6 +190,60 @@ class RootStore {
             _self.parsed = true;
 
         });
+    }
+
+    getMutationsSeperately(HUGOsymbols) {
+        const _self = this;
+        HUGOsymbols.forEach(function (HUGOsymbol) {
+            if (!_self.sampleTimepointStore.variableStore.hasVariable(HUGOsymbol)) {
+                _self.cbioAPI.getMutation(_self.study.studyId, HUGOsymbol, function (mutation) {
+                    if (mutation.length !== 0) {
+                        _self.createMutationCategoricalMapping(mutation, HUGOsymbol);
+                        _self.sampleTimepointStore.addVariable(HUGOsymbol, HUGOsymbol, "STRING", 'mutation in ' + HUGOsymbol);
+                    }
+                });
+            }
+        });
+
+    }
+
+    /**
+     * Gets all currently selected mutations
+     * @param HUGOsymbols
+     * @param mappingType
+     */
+    getMutationsAllAtOnce(HUGOsymbols, mappingType) {
+        const _self = this;
+        let datatype;
+        if (mappingType === "binary") {
+            datatype = "binary";
+        }
+        else if(mappingType ==="vaf"){
+            datatype = "NUMBER"
+        }
+        else {
+            datatype = "STRING"
+        }
+        _self.cbioAPI.getGeneIDs(HUGOsymbols, function (entrezIDs) {
+                _self.cbioAPI.getMutation2(_self.study.studyId, entrezIDs, function (response) {
+                    let geneDict = {};
+                    response.forEach(function (d, i) {
+                        if (!(d.entrezGeneId in geneDict)) {
+                            geneDict[d.entrezGeneId] = []
+                        }
+                        geneDict[d.entrezGeneId].push(d);
+
+                    });
+                    for (let entry in geneDict) {
+                        if (!_self.sampleTimepointStore.variableStore.hasVariable(entry + mappingType)) {
+                            _self.createMutationMapping(geneDict[entry], entry, mappingType);
+                            const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
+                            _self.sampleTimepointStore.addVariable(entry + mappingType, symbol, datatype, 'mutation in ' + symbol);
+                        }
+                    }
+                })
+            }
+        )
     }
 
     /**
@@ -463,7 +517,7 @@ class RootStore {
      */
     createMutationCountsMapping() {
         if (this.cbioAPI.mutationCounts.length !== 0) {
-            this.hasMutationCount = true;
+            this.hasMutations = true;
             const _self = this;
             this.sampleMappers[this.mutationCountId] = {};
             this.cbioAPI.mutationCounts.forEach(function (d) {
@@ -471,6 +525,59 @@ class RootStore {
             });
         }
     }
+
+    /**
+     * creates sample id mapping for mutations
+     * @param list
+     * @param geneId
+     * @param mappingType
+     */
+    createMutationMapping(list, geneId, mappingType) {
+        const _self = this;
+        let mappingFunction;
+        if (mappingType === "binary") {
+            mappingFunction = function (currentSample) {
+                return (list.filter(d => d.sampleId === currentSample).length > 0)
+            }
+        }
+        else if (mappingType === "proteinChange") {
+            mappingFunction = function (currentSample) {
+                const entry = list.filter(d => d.sampleId === currentSample)[0];
+                let proteinChange = 'wild type';
+                if (entry !== undefined) {
+                    proteinChange = entry.proteinChange;
+                }
+                return (proteinChange);
+            }
+        }
+        else if(mappingType==="mutationType"){
+            mappingFunction = function (currentSample) {
+                const entry = list.filter(d => d.sampleId === currentSample)[0];
+                let mutationType = 'wild type';
+                if (entry !== undefined) {
+                    mutationType = entry.mutationType;
+                }
+                return (mutationType);
+            }
+        }
+        else{
+            mappingFunction=function (currentSample) {
+                const entry = list.filter(d => d.sampleId === currentSample)[0];
+                let vaf = undefined;
+                if (entry !== undefined) {
+                    vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
+                }
+                return (vaf);
+            }
+        }
+        this.sampleMappers[geneId+mappingType] = {};
+        this.timepointStructure.forEach(function (d) {
+            d.forEach(function (f) {
+                _self.sampleMappers[geneId+mappingType][f.sample] = mappingFunction(f.sample);
+            });
+        });
+    }
+
 
     /**
      *creates a mapping of selected events to patients (OR)
@@ -606,13 +713,13 @@ class RootStore {
                     d.attributes.forEach(function (f, j) {
                         if (!(f.key in attributes[d.eventType])) {
                             attributes[d.eventType][f.key] = [];
-                            attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(), eventType:f.key});
+                            attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(), eventType: f.key});
                         }
                         else {
                             if (!attributes[d.eventType][f.key].map(function (g) {
                                 return g.name
                             }).includes(f.value)) {
-                                attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(),eventType:f.key});
+                                attributes[d.eventType][f.key].push({name: f.value, id: uuidv4(), eventType: f.key});
                             }
                         }
                     })

@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-
 class cBioAPI {
     constructor() {
         this.patients = [];
@@ -8,6 +7,7 @@ class cBioAPI {
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
         this.mutationCounts = [];
+        this.selectedMutation = [];
     }
 
     initialize() {
@@ -16,6 +16,7 @@ class cBioAPI {
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
         this.mutationCounts = [];
+        this.selectedMutation = [];
     }
 
 
@@ -95,6 +96,72 @@ class cBioAPI {
         return axios.get("http://cbiohack.org/api/molecular-profiles/" + studyID + "_mutations/mutation-counts?sampleListId=" + studyID + "_all");
     }
 
+    /**
+     * gets all the mutation sites of a specific mutation for all the samples in the study
+     * @param studyId
+     * @param HUGOsymbol
+     * @param callback
+     */
+    getMutation(studyId, HUGOsymbol, callback) {
+        cBioAPI.genomeNexusMapping(HUGOsymbol).then(function (res) {
+            const entrezId = res.data.entrezGeneId;
+            axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
+                "entrezGeneIds": [
+                    entrezId
+                ],
+                "sampleListId": studyId + "_all"
+            }).then(function (response) {
+                callback(response.data);
+            }).catch(function (error) {
+                console.log(error);
+            });
+        })
+            .catch(function (error) {
+                console.log(error)
+            });
+
+    }
+
+    /**
+     * maps a HUGO Symbol to a entrez gene id
+     * @param hgncSymbol
+     * @returns {AxiosPromise<any>}
+     */
+    static genomeNexusMapping(hgncSymbol) {
+        return axios.get("https://genomenexus.org/ensembl/canonical-gene/hgnc/" + hgncSymbol);
+    }
+
+    /**
+     * maps a HUGO Symbol to a entrez gene id
+     * @param hgncSymbols
+     * @returns {AxiosPromise<any>}
+     */
+    static genomeNexusMapping2(hgncSymbols) {
+        return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
+    }
+
+    getGeneIDs(hgncSymbols, callback) {
+        cBioAPI.genomeNexusMapping2(hgncSymbols).then(function (response) {
+            callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));
+        })
+    }
+
+    getMutation2(studyId, entrezIDs, callback) {
+        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
+            "entrezGeneIds":
+                entrezIDs.map(d => d.entrezGeneId)
+            ,
+            "sampleListId": studyId + "_all"
+        }).then(function (response) {
+            callback(response.data);
+        });
+    }
+
+    /**
+     * gets all the molecular profiles of a study
+     * @param studyID
+     * @returns {AxiosPromise<any>}
+     */
     static getMolecularProfiles(studyID) {
         return axios.get("http://www.cbiohack.org/api/studies/" + studyID + "/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
     }
