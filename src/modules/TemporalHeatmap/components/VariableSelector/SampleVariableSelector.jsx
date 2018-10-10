@@ -20,7 +20,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
             mutationIcon: "caret-right",
             color: '',
             geneListString: '',
-            mutationType: "binary"
+            mappingType: "binary"
 
         };
 
@@ -182,11 +182,11 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     }
 
     handleSelect(event) {
-        this.setState({mutationType: event.target.value})
+        this.setState({mappingType: event.target.value})
     }
 
     searchGenes() {
-        this.props.store.rootStore.getMutationsAllAtOnce(this.state.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, "").split(" "), this.state.mutationType);
+        this.props.store.rootStore.getMutationsAllAtOnce(this.state.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, "").split(" "), this.state.mappingType);
         this.setState({geneListString: ''});
     }
 

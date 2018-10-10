@@ -207,7 +207,11 @@ class RootStore {
 
     }
 
-
+    /**
+     * Gets all currently selected mutations
+     * @param HUGOsymbols
+     * @param mappingType
+     */
     getMutationsAllAtOnce(HUGOsymbols, mappingType) {
         const _self = this;
         let datatype;
