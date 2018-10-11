@@ -55,7 +55,7 @@ class SampleTimepointStore {
             else {
                 if (d.modificationType === "binning") {
                     _self.addHeatmapVariable(d.originalIds[0]);
-                    _self.rootStore.timepointStore.bin(d.originalIds[0],d.id, d.modification.bins, d.modification.binNames);
+                    _self.rootStore.timepointStore.bin(d.originalIds[0], d.id, d.modification.bins, d.modification.binNames);
                 }
             }
         });
@@ -82,7 +82,7 @@ class SampleTimepointStore {
                 }
             });
 
-            _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
+            _self.timepoints[i].addRow(variableId, variableData);
         });
     }
 
@@ -102,7 +102,7 @@ class SampleTimepointStore {
             this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax);
         }
         else {
-            this.variableStore.addOriginalVariable(variableId, variable, type,description, []);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, []);
         }
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();
@@ -116,7 +116,7 @@ class SampleTimepointStore {
      */
     removeVariable(variableId) {
         let variableName = this.variableStore.getById(variableId).name;
-        const _self=this;
+        const _self = this;
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
         if (this.variableStore.currentVariables.length !== 1) {
             this.timepoints.forEach(function (d) {
@@ -133,8 +133,8 @@ class SampleTimepointStore {
             this.variableStore.removeVariable(variableId);
             this.rootStore.timepointStore.regroupTimepoints();
 
-            if(_self.rootStore.globalTime===true){
-                _self.rootStore.globalPrimary=_self.variableStore.currentVariables[_self.variableStore.currentVariables.length-1].id
+            if (_self.rootStore.globalTime === true) {
+                _self.rootStore.globalPrimary = _self.variableStore.currentVariables[_self.variableStore.currentVariables.length - 1].id
             }
         }
         //case: last timepoint variableId was removed
