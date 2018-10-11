@@ -19,66 +19,59 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         }
     }
 
-    createGradientRow(boxPlotValues, numValues) {
-        let randomId = uuidv4();
-        let gradient;
-        if(numValues===2){
-            gradient= <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{stopColor: this.props.color(boxPlotValues[0])}}/>
-                    <stop offset="100%" style={{stopColor: this.props.color(boxPlotValues[4])}}/>
-                </linearGradient>
-        }
-        else if(numValues===4){
-            gradient=<linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{stopColor: this.props.color(boxPlotValues[0])}}/>
-                    <stop offset="33%" style={{stopColor: this.props.color(boxPlotValues[1])}}/>
-                    <stop offset="66%" style={{stopColor: this.props.color(boxPlotValues[3])}}/>
-                    <stop offset="100%" style={{stopColor: this.props.color(boxPlotValues[4])}}/>
-                </linearGradient>
-        }
-        else{
-            gradient=<linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{stopColor: this.props.color(boxPlotValues[0])}}/>
-                    <stop offset="25%" style={{stopColor: this.props.color(boxPlotValues[1])}}/>
-                    <stop offset="50%" style={{stopColor: this.props.color(boxPlotValues[2])}}/>
-                    <stop offset="75%" style={{stopColor: this.props.color(boxPlotValues[3])}}/>
-                    <stop offset="100%" style={{stopColor: this.props.color(boxPlotValues[4])}}/>
-                </linearGradient>
-        }
 
+    createGradientRow(values, boxPlotValues) {
+        let randomId = uuidv4();
+        const _self = this;
+        let gradient;
+        const stepwidth = 100 / (values.length - 1);
+        let stops = [];
+        let selectedScale=d3.scaleLinear().domain([0,100]).range([0,this.props.groupScale(values.length)]);
+        let selectedRects=[];
+        values.forEach(function (d, i) {
+            if(_self.props.selectedPatients.includes(d.patient)){
+                selectedRects.push(<rect key={d.patient} x={selectedScale(stepwidth*i)} y={_self.props.height/3} height={_self.props.height/3} width="1" fill="black"/>);
+            }
+            stops.push(<stop key={i} offset={stepwidth * i + "%"} style={{stopColor: _self.props.color(values[i].value)}}/>)
+        });
+        gradient = <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
+            {stops}
+        </linearGradient>;
         return (<g>
             <defs>
                 {gradient}
             </defs>
-            <rect x="0" height={this.props.height} width={this.props.groupScale(numValues)}
+            <rect x="0" height={this.props.height} width={this.props.groupScale(values.length)}
                   fill={"url(#" + randomId + ")"} opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, numValues+' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
+                  onMouseEnter={(e) => this.props.showTooltip(e, values.length + ' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
                   onMouseLeave={this.props.hideTooltip}/>
-            <rect x={this.props.groupScale(numValues)} height={this.props.height}
-                  width={this.props.groupScale(this.props.row.length - numValues)} fill={"white"} stroke="lightgray"
+            <rect x={this.props.groupScale(values.length)} height={this.props.height}
+                  width={this.props.groupScale(this.props.partition.length - values.length)} fill={"white"}
+                  stroke="lightgray"
                   opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
+                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.partition.length - values.length))}
                   onMouseLeave={this.props.hideTooltip}/>
+            {selectedRects}
         </g>);
     }
 
     createBoxPlot(boxPlotValues, numValues) {
         let intermediateStop = null;
         let boxPlotScale = d3.scaleLinear().domain(this.props.variableDomain).range([0, this.props.groupScale(numValues)]);
-        let min=this.props.color(this.props.color.domain()[0]);
+        let min = this.props.color(this.props.color.domain()[0]);
         let max;
         if (this.props.color.domain().length === 3) {
             intermediateStop = <stop offset="50%" style={{stopColor: this.props.color(this.props.color.domain()[1])}}/>;
-            max=this.props.color(this.props.color.domain()[2]);
+            max = this.props.color(this.props.color.domain()[2]);
         }
-        else{
-            max=this.props.color(this.props.color.domain()[1]);
+        else {
+            max = this.props.color(this.props.color.domain()[1]);
 
         }
         let randomId = uuidv4();
-        let boxPlot=null;
-        if(numValues!==0){
-            boxPlot=<g>
+        let boxPlot = null;
+        if (numValues !== 0) {
+            boxPlot = <g>
                 <defs>
                     <defs>
                         <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -112,31 +105,31 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             <g>
                 {boxPlot}
                 <rect x={this.props.groupScale(numValues)}
-                      width={this.props.groupScale(this.props.row.length - numValues)} height={this.props.height}
+                      width={this.props.groupScale(this.props.partition.length - numValues)} height={this.props.height}
                       fill={'white'} stroke={'lightgray'}
-                      onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
+                      onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.partition.length - numValues))}
                       onMouseLeave={this.props.hideTooltip}/>
             </g>
         )
     }
-    createMedianValue(boxPlotValues,numValues){
-         return (<g>
+
+    createMedianValue(boxPlotValues, numValues) {
+        return (<g>
             <rect x="0" height={this.props.height} width={this.props.groupScale(numValues)}
                   fill={this.props.color(boxPlotValues[2])} opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, numValues+' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
+                  onMouseEnter={(e) => this.props.showTooltip(e, numValues + ' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
                   onMouseLeave={this.props.hideTooltip}/>
             <rect x={this.props.groupScale(numValues)} height={this.props.height}
-                  width={this.props.groupScale(this.props.row.length - numValues)} fill={"white"} stroke="lightgray"
+                  width={this.props.groupScale(this.props.partition.length - numValues)} fill={"white"}
+                  stroke="lightgray"
                   opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
+                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.partition.length - numValues))}
                   onMouseLeave={this.props.hideTooltip}/>
         </g>);
     }
 
     static computeBoxPlotValues(values) {
-        values.sort(function (a, b) {
-            return (a - b);
-        });
+        values = values.map(element => element.value);
         let median = values[Math.floor((values.length - 1) / 2)];
         let lowerQuart = values[Math.floor((values.length - 1) / 4)];
         let higherQuart = values[Math.floor((values.length - 1) * (3 / 4))];
@@ -146,21 +139,23 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
     }
 
     render() {
-        let values = this.props.row.filter(function (d, i) {
+        let values = this.props.partition.filter(function (d, i) {
             return d.key !== undefined;
-        }).map(element => element.key);
+        }).map(element => ({patient: element.patients[0], value: element.key})).sort(function (a,b) {
+            return (a.value-b.value)
+        });
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
-        if(this.props.continuousRepresentation==='gradient'){
+        if (this.props.continuousRepresentation === 'gradient') {
             return (
-            this.createGradientRow(boxPlotValues, values.length)
-        )
+                this.createGradientRow(values, boxPlotValues)
+            )
         }
-        else if(this.props.continuousRepresentation==='boxplot')
-        return (
-            this.createBoxPlot(boxPlotValues,values.length)
-        );
-        else{
-            return(this.createMedianValue(boxPlotValues,values.length));
+        else if (this.props.continuousRepresentation === 'boxplot')
+            return (
+                this.createBoxPlot(boxPlotValues, values.length)
+            );
+        else {
+            return (this.createMedianValue(boxPlotValues, values.length));
         }
     }
 });

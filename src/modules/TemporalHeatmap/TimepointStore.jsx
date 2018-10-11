@@ -16,7 +16,7 @@ class TimepointStore {
             realTime: false,
             globalTime: false,
             transitionOn: false,
-            advancedSelection: false,
+            advancedSelection: true,
             get maxPartitions() {
                 let max = 0;
                 const _self = this;
