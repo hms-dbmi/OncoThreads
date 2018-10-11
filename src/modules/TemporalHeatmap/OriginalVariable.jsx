@@ -2,7 +2,7 @@ import {extendObservable} from 'mobx';
 import ColorScales from './ColorScales';
 
 class OriginalVariable {
-    constructor(id, name, datatype, domain, range) {
+    constructor(id, name, datatype,description, domain, range) {
         extendObservable(this, {
             get colorScale() {
                 let scale;
@@ -27,6 +27,7 @@ class OriginalVariable {
         this.derived = false;
         this.domain = domain;
         this.range = range;
+        this.description=description
     }
 
 }

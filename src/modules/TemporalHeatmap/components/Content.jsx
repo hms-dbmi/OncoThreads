@@ -77,12 +77,13 @@ const Content = observer(class Content extends React.Component {
         this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, followUpFunction: null});
     }
 
-    showTooltip(e, content) {
+    showTooltip(e, line1, line2) {
         this.setState({
             showTooltip: "visible",
             x: e.pageX,
             y: e.pageY,
-            tooltipContent: content,
+            line1: line1,
+            line2: line2
         })
     }
 
@@ -99,9 +100,6 @@ const Content = observer(class Content extends React.Component {
             clickedTimepoint: timepointIndex,
             clickedVariable: variable,
             contextType: type,
-            //contextX: e.pageX,
-            //contextY: e.pageY,
-            //showContextMenu: true
         });
         e.preventDefault();
     }
@@ -238,6 +236,7 @@ const Content = observer(class Content extends React.Component {
                             clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                             mutationCount="Mutation count"
                             currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                            showTooltip={this.showTooltip}
                             store={this.props.rootStore.sampleTimepointStore}
                             visMap={this.props.rootStore.visStore}
                         />
@@ -259,6 +258,7 @@ const Content = observer(class Content extends React.Component {
                                 store={this.props.rootStore.timepointStore}
                                 transitionStore={this.props.rootStore.transitionStore}
                                 visMap={this.props.rootStore.visStore}
+                                rectWidth={this.props.rootStore.visStore.sampleRectWidth}
                                 openBinningModal={this.openModal}
                                 showTooltip={this.showTooltip}
                                 hideTooltip={this.hideTooltip}
@@ -271,7 +271,7 @@ const Content = observer(class Content extends React.Component {
                 {this.getBinner()}
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
-                         y={this.state.y} content={this.state.tooltipContent}/>
+                         y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>
                 <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}
                               contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
                               clickedVariable={this.state.clickedVariable}

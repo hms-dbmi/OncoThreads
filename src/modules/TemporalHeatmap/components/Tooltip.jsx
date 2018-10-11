@@ -17,22 +17,30 @@ const Tooltip = observer(class SankeyTransitionTooltip extends React.Component {
     }
 
     render() {
-        const textWidth = Tooltip.getTextWidth(this.props.content, 14);
+        const line1Width = Tooltip.getTextWidth(this.props.line1, 14);
+        const line2Width = Tooltip.getTextWidth(this.props.line2, 14);
+        const rectHeight = this.props.line2!==undefined ? 35 : 20;
+        const textWidth = line1Width > line2Width ? line1Width: line2Width;
         let transformText = "translate(5,15)";
         return (
             <div className="customTooltip" style={{
                 visibility: this.props.visibility,
                 position: "absolute",
-                top: this.props.y - 30,
+                top: this.props.y - (this.props.line2===undefined ? 30: 45),
+                zIndex: 100,
+                //top: this.props.y - 30,
                 left: this.props.x - textWidth / 2
             }}>
-                <svg width={textWidth + 10} height="25">
+                <svg width={textWidth + 10} height={rectHeight+5}>
                     <polygon
-                        points={(((textWidth + 10) / 2) - 5) + ",20 " + (((textWidth + 10) / 2) + 5) + ",20 " + ((textWidth + 10) / 2) + ",25"}
+                        points={(((textWidth + 10) / 2) - 5) + ","+rectHeight +" "+ (((textWidth + 10) / 2) + 5) + "," + rectHeight+" "+ ((textWidth + 10) / 2) + ","+(rectHeight+5)}
                         fill="gray"/>
-                    <rect width={textWidth + 10} height="20" fill="gray"/>
-                    <text width={textWidth} height="15" fill={"white"}
-                          transform={transformText}>{this.props.content}</text>
+                    <rect width={textWidth + 10} height={rectHeight} style={{fill:"gray"}}/>
+                    <text  width={textWidth} height={rectHeight+5} style={{fill:"white"}}
+                          transform={transformText}>
+                        <tspan x="0" y="0">{this.props.line1}</tspan>
+                        <tspan x="0" y="14">{this.props.line2}</tspan>
+                    </text>
                 </svg>
             </div>
         )

@@ -45,12 +45,36 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.handleCombineClick = this.handleCombineClick.bind(this);
     }
 
+    /**
+     * handles click on combine radio button
+     * @param addCombined
+     */
     handleCombineClick(addCombined) {
-        this.setState({
-            addCombined: addCombined
-        })
+        let disabled = Object.assign({}, this.state.disabled);
+        if (!addCombined) {
+            for (let checkbox in disabled) {
+                disabled[checkbox] = false;
+            }
+            this.setState({
+                disabled: disabled,
+                addCombined: addCombined
+            });
+        }
+        else {
+            this.setState({
+                buttonClicked: this.state.buttonClicked,
+                selectedValues: [],
+                selectedKey: '',
+                addCombined: addCombined,
+                defaultName: ""
+            });
+        }
     }
 
+    /**
+     * opens modal corresponding to the clicked button
+     * @param buttonClicked
+     */
     openModal(buttonClicked) {
         let disabled = {};
         Object.keys(this.props.eventAttributes[buttonClicked]).forEach(function (d) {
@@ -65,42 +89,55 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         });
     }
 
+    /**
+     * calls functions to add a variable
+     */
     addEventVariable() {
-        if (this.state.addCombined) {
-            this.addORVariable();
+        if (this.state.selectedValues.length > 0) {
+            if (this.state.addCombined) {
+                let name = this.state.name;
+                if (this.state.name === "") {
+                    name = this.state.defaultName;
+                }
+                if (this.props.currentVariables.map(function (d) {
+                    return d.name
+                }).includes(name)) {
+                    this.setState({showUniqueNameAlert: true});
+                }
+                else {
+                    this.addORVariable(name);
+                }
+            }
+            else {
+                this.addVariablesSeperate();
+            }
         }
         else {
-            this.addVariablesSeperate();
+            this.setState({showEmptySelectionAlert: true});
         }
-        this.closeModal();
     }
 
     /**
      * adds a variable to the view
      */
-    addORVariable() {
+    addORVariable(name) {
         this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
-        let name = this.state.name;
-        if (this.state.name === "") {
-            name = this.state.defaultName;
-        }
-        if (this.props.currentVariables.map(function (d) {
-            return d.variable
-        }).includes(name)) {
-            this.setState({showUniqueNameAlert: true});
-        }
-        else if (this.state.selectedValues.length === 0) {
-            this.setState({showEmptySelectionAlert: true});
-        }
-        else {
-            this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey, name);
-        }
+        this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, name);
+        this.closeModal();
     }
 
+    /**
+     * adds variables as separate rows
+     */
     addVariablesSeperate() {
-        this.props.store.addVariablesSeperate(this.state.buttonClicked, this.state.selectedValues, this.state.selectedKey);
+        this.props.store.addVariablesSeperate(this.state.buttonClicked, this.state.selectedValues);
+        this.closeModal();
     }
 
+    /**
+     * adds the time distance variable
+     * @param id
+     */
     addTimeDistance(id) {
         this.props.store.addTimepointDistance(id)
     }
@@ -112,9 +149,11 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param variable
      */
     handleCheckBoxClick(event, type, variable) {
+        console.log(variable);
         let selected = this.state.selectedValues.slice();
         if (event.target.checked) {
             selected.push(variable);
+            this.setState({showEmptySelectionAlert: false});
         }
         else {
             let index = selected.map(function (d) {
@@ -123,16 +162,18 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selected.splice(index, 1);
         }
         let disabled = Object.assign({}, this.state.disabled);
-        if (selected.length > 0) {
-            for (let k in disabled) {
-                if (k !== type) {
-                    disabled[k] = true;
+        if (this.state.addCombined) {
+            if (selected.length > 0) {
+                for (let k in disabled) {
+                    if (k !== type) {
+                        disabled[k] = true;
+                    }
                 }
             }
-        }
-        else {
-            for (let k in disabled) {
-                disabled[k] = false;
+            else {
+                for (let k in disabled) {
+                    disabled[k] = false;
+                }
             }
         }
         this.setState({
@@ -143,6 +184,88 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         });
     }
 
+    /**
+     * Selects all values of a category
+     * @param event
+     * @param key
+     */
+    handleSelectAllInCatergory(event, key) {
+        const attributes = this.props.eventAttributes[this.state.buttonClicked];
+        let selected = this.state.selectedValues.slice();
+        let disabled = Object.assign({}, this.state.disabled);
+
+        if (event.target.checked) {
+            for (let element in attributes) {
+                if (element === key) {
+                    attributes[key].forEach(function (d) {
+                        if (!(selected.map(variable => variable.id).includes(d.id))) {
+                            selected.push(d)
+                        }
+                    })
+                }
+            }
+        }
+        else {
+            for (let element in attributes) {
+                if (element === key) {
+                    attributes[key].forEach(function (d) {
+                        let deleteIndex = selected.map(el => el.id).indexOf(d.id);
+                        selected.splice(deleteIndex, 1);
+                    })
+                }
+            }
+        }
+        if (this.state.addCombined) {
+            if (selected.length > 0) {
+                for (let k in disabled) {
+                    if (k !== key) {
+                        disabled[k] = true;
+                    }
+                }
+            }
+            else {
+                for (let k in disabled) {
+                    disabled[k] = false;
+                }
+            }
+        }
+        this.setState({
+            selectedValues: selected,
+            selectedKey: key,
+            disabled: disabled,
+            defaultName: this.createCompositeName(selected)
+        });
+    }
+
+    /**
+     * selects all values
+     * @param e
+     */
+    handleSelectAll(e) {
+        const attributes = this.props.eventAttributes[this.state.buttonClicked];
+        let selected = this.state.selectedValues.slice();
+        if (e.target.checked) {
+            for (let element in attributes) {
+                for (let i = 0; i < attributes[element].length; i++) {
+                    if (!(selected.map(variable => variable.id).includes(attributes[element][i].id))) {
+                        selected.push(attributes[element][i])
+                    }
+                }
+            }
+        }
+        else {
+            selected = []
+        }
+        this.setState({
+            selectedValues: selected,
+        });
+    }
+
+    /**
+     * Creates a name using the combined values
+     * @param selectedValues
+     * @returns {string}
+     */
     createCompositeName(selectedValues) {
         let name = "";
         selectedValues.forEach(function (d, i) {
@@ -156,23 +279,35 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
 
     /**
      * creates checkboxes for the different event types in modal window
-     * @param event
      * @returns {Array}
      */
-    createCheckboxes(event) {
+    createCheckboxes() {
         let elements = [];
         const _self = this;
-        const attributes = this.props.eventAttributes[event];
+        const attributes = this.props.eventAttributes[this.state.buttonClicked];
+        if (!this.state.addCombined) {
+            elements.push(<Checkbox key="selectAll"
+                                    onChange={(e) => this.handleSelectAll(e)}>Select all</Checkbox>);
+        }
+
         for (let key in attributes) {
             let checkboxes = [];
+            let allSelected = true;
             attributes[key].forEach(function (d) {
+                let isSelected = _self.state.selectedValues.map(variable => variable.id).includes(d.id);
+                if (!isSelected) {
+                    allSelected = false;
+                }
                 checkboxes.push(
-                    <Checkbox key={d.id} disabled={_self.state.disabled[key]}
-                              onClick={(e) => _self.handleCheckBoxClick(e, key, d)}>{d.name}</Checkbox>)
+                    <Checkbox key={d.id} disabled={_self.state.disabled[key]} checked={isSelected}
+                              onChange={(e) => _self.handleCheckBoxClick(e, key, d)}>{d.name}</Checkbox>)
             });
+
             elements.push(<Panel key={key}>
                 <Panel.Heading>
                     {key}
+                    <Checkbox key="selectAllInCategory" disabled={_self.state.disabled[key]} checked={allSelected}
+                              onChange={(e) => this.handleSelectAllInCatergory(e, key)}>Select all</Checkbox>
                 </Panel.Heading>
                 <Panel.Body>
                     {checkboxes}
@@ -253,7 +388,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         if (this.state.showEmptySelectionAlert) {
             return (
                 <Alert bsStyle="warning">
-                    Please select at least one transition variable
+                    Please select at least one variable
                 </Alert>
             )
         }
@@ -335,7 +470,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     </Modal.Header>
                     <Modal.Body>
                         <FormGroup>
-                            {this.createCheckboxes(this.state.buttonClicked)}
+                            {this.createCheckboxes()}
                         </FormGroup>
                     </Modal.Body>
                     <Modal.Footer>

@@ -34,7 +34,7 @@ class ColorScales {
     }
 
     static getCategoricalScale() {
-        return d3.scaleOrdinal().range(['#f7f7f7', '#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']).domain([undefined]);
+        return d3.scaleOrdinal().range(['#f7f7f7','lightgray', '#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']).domain([undefined,'wild type']);
     }
 
     static getBinaryScale() {

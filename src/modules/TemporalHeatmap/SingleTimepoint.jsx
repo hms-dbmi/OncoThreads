@@ -19,7 +19,12 @@ class SingleTimepoint {
             groupOrder: 1,
             isGrouped: false,
             primaryVariableId: variable,
+            name: localIndex
         });
+    }
+
+    setName(name) {
+        this.name = name;
     }
 
     setIsGrouped(boolean) {
@@ -38,11 +43,11 @@ class SingleTimepoint {
         }
         //case: the timepoint is not grouped
         else {
-            this.rootStore.realTime=false;
+            this.rootStore.realTime = false;
             this.setPrimaryVariable(this.variableSortOrder[this.variableSortOrder.length - 1]);
             const _self = this;
-            this.variableSortOrder.forEach(function (d,i) {
-                _self.sortHeatmap(d,heatmapSortings[i]);
+            this.variableSortOrder.forEach(function (d, i) {
+                _self.sortHeatmap(d, heatmapSortings[i]);
             })
         }
     }
@@ -58,7 +63,7 @@ class SingleTimepoint {
         }
         //case: the timepoint is not grouped
         else {
-            this.rootStore.realTime=false;
+            this.rootStore.realTime = false;
             this.setPrimaryVariable(variableId);
             if (!(this.variableSortOrder.includes(variableId))) {
                 this.variableSortOrder.push(variableId);
@@ -101,13 +106,13 @@ class SingleTimepoint {
      * @param variableId
      */
     setPrimaryVariable(variableId) {
-        if(!this.rootStore.globalTime){
+        if (!this.rootStore.globalTime) {
             this.primaryVariableId = variableId;
         }
-        else{
+        else {
 
-            this.rootStore.globalPrimary=variableId;
-        }     
+            this.rootStore.globalPrimary = variableId;
+        }
     }
 
     /**
@@ -136,18 +141,16 @@ class SingleTimepoint {
                 partitionIndex = currPartitionCount;
                 currPartitionCount += 1;
             }
-            this.addInstance(partitionIndex, currPartitionKey,variableIndex,this.heatmap[variableIndex].data[i].patient);
+            this.addInstance(partitionIndex, currPartitionKey, variableIndex, this.heatmap[variableIndex].data[i].patient);
             for (let row = 0; row < this.heatmap.length; row++) {
                 if (this.heatmap[row].variable !== variable) {
                     let currSecondary = this.heatmap[row].data[i].value;
-                    this.addInstance(partitionIndex, currSecondary, row,this.heatmap[row].data[i].patient,this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype==="NUMBER");
+                    this.addInstance(partitionIndex, currSecondary, row, this.heatmap[row].data[i].patient, this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype === "NUMBER");
                 }
             }
         }
-        console.log(this.grouped);
         this.isGrouped = true;
     }
-
 
 
     /**
@@ -165,11 +168,11 @@ class SingleTimepoint {
         let keyIndex = this.grouped[partitionIndex].rows[rowIndex].counts.map(function (e) {
             return e.key
         }).indexOf(currKey);
-        if (keyIndex === -1||continuous) {
+        if (keyIndex === -1 || continuous) {
             this.grouped[partitionIndex].rows[rowIndex].counts.push({
                 "key": currKey,
                 "value": 1,
-                'patients':[currPatient]
+                'patients': [currPatient]
             })
         }
         else {
@@ -277,15 +280,15 @@ class SingleTimepoint {
             //if sorting is ambiguous do additional sorting
             else {
                 //if the timepoint is sorted for the first time (no previous order)
-                    if (previousOrder.indexOf(a.patient) < previousOrder.indexOf(b.patient)) {
-                        return -1;
-                    }
-                    if (previousOrder.indexOf(a.patient) > previousOrder.indexOf(b.patient)) {
-                        return 1;
-                    }
-                    else {
-                        return 0
-                    }
+                if (previousOrder.indexOf(a.patient) < previousOrder.indexOf(b.patient)) {
+                    return -1;
+                }
+                if (previousOrder.indexOf(a.patient) > previousOrder.indexOf(b.patient)) {
+                    return 1;
+                }
+                else {
+                    return 0
+                }
             }
         }).map(function (d) {
             return d.patient;

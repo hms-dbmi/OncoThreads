@@ -24,6 +24,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
         //console.log(this.props.row.data);
 
+       
+        var x;
+
+        if(this.props.dtype==="BINNED"){
+
+            _self.props.currentVariables.filter(d=>d.derived).forEach(function(d){ if(d.id===_self.props.row.variable) x=d});
+          
+        }
+
         this.props.row.data.forEach(function (d, j) {
             let stroke = "none";
             let fill = _self.props.color(d.value);
@@ -34,7 +43,21 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";
             }
-            rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value)}
+
+            var str="";
+
+            if(x){
+                var ind= x.modification.binNames.indexOf(d.value);
+
+                var low=x.modification.bins[ind];
+
+                if(ind!==0){low=low+1;}
+
+                str= ": " +low + " to " + x.modification.bins[ind+1];
+
+            }
+
+            rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value + str)}
                              onMouseLeave={_self.handleMouseLeave}
                              onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}
                              onMouseUp={_self.handleMouseUp} onDoubleClick={() => _self.handleDoubleClick(d.patient)}
