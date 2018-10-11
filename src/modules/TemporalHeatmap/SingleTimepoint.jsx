@@ -31,7 +31,9 @@ class SingleTimepoint {
         this.isGrouped = boolean;
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
-
+    addRow(variableId,variableData){
+        this.heatmap.push({variable: variableId, sorting: 0, data: variableData});
+    }
     sortWithParameters(variables, heatmapSortings, groupSorting) {
         this.variableSortOrder = variables;
         if (this.isGrouped) {
@@ -120,14 +122,14 @@ class SingleTimepoint {
      * @param variable
      */
     groupTimepoint(variable) {
-        this.grouped = [];
+        let grouped = [];
         const variableIndex = this.rootStore.timepointStore.currentVariables[this.type].map(function (d) {
             return d.id
         }).indexOf(variable);
         let currPartitionCount = 0;
         for (let i = 0; i < this.heatmap[variableIndex].data.length; i++) {
             const currPartitionKey = this.heatmap[variableIndex].data[i].value;
-            let partitionIndex = this.grouped.map(function (e) {
+            let partitionIndex = grouped.map(function (e) {
                 return e.partition;
             }).indexOf(currPartitionKey);
             if (partitionIndex === -1) {
@@ -137,18 +139,19 @@ class SingleTimepoint {
                 let patients = this.heatmap[variableIndex].data.filter(function (d) {
                     return d.value === currPartitionKey;
                 }).map(entry => entry.patient);
-                this.grouped.push({partition: currPartitionKey, rows: rows, patients: patients});
+                grouped.push({partition: currPartitionKey, rows: rows, patients: patients});
                 partitionIndex = currPartitionCount;
                 currPartitionCount += 1;
             }
-            this.addInstance(partitionIndex, currPartitionKey, variableIndex, this.heatmap[variableIndex].data[i].patient);
+            grouped=this.addInstance(grouped,partitionIndex, currPartitionKey, variableIndex, this.heatmap[variableIndex].data[i].patient);
             for (let row = 0; row < this.heatmap.length; row++) {
                 if (this.heatmap[row].variable !== variable) {
                     let currSecondary = this.heatmap[row].data[i].value;
-                    this.addInstance(partitionIndex, currSecondary, row, this.heatmap[row].data[i].patient, this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype === "NUMBER");
+                    grouped=this.addInstance(grouped,partitionIndex, currSecondary, row, this.heatmap[row].data[i].patient, this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype === "NUMBER");
                 }
             }
         }
+        this.grouped=grouped;
         this.isGrouped = true;
     }
 
@@ -161,24 +164,25 @@ class SingleTimepoint {
      * @param currPatient
      * @param continuous
      */
-    addInstance(partitionIndex, currKey, row, currPatient, continuous) {
-        let rowIndex = this.grouped[partitionIndex].rows.map(function (e) {
+    addInstance(grouped,partitionIndex, currKey, row, currPatient, continuous) {
+        let rowIndex = grouped[partitionIndex].rows.map(function (e) {
             return e.variable;
         }).indexOf(this.heatmap[row].variable);
-        let keyIndex = this.grouped[partitionIndex].rows[rowIndex].counts.map(function (e) {
+        let keyIndex = grouped[partitionIndex].rows[rowIndex].counts.map(function (e) {
             return e.key
         }).indexOf(currKey);
         if (keyIndex === -1 || continuous) {
-            this.grouped[partitionIndex].rows[rowIndex].counts.push({
+            grouped[partitionIndex].rows[rowIndex].counts.push({
                 "key": currKey,
                 "value": 1,
                 'patients': [currPatient]
             })
         }
         else {
-            this.grouped[partitionIndex].rows[rowIndex].counts[keyIndex].value += 1;
-            this.grouped[partitionIndex].rows[rowIndex].counts[keyIndex].patients.push(currPatient);
+            grouped[partitionIndex].rows[rowIndex].counts[keyIndex].value += 1;
+            grouped[partitionIndex].rows[rowIndex].counts[keyIndex].patients.push(currPatient);
         }
+        return grouped;
     }
 
 
