@@ -133,6 +133,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             d3.select(".axisGlobal2").call(yAxis);
 
             d3.selectAll(".axisLabel2").remove();
+            d3.select(".axisGlobal2").select(".grid").remove();
 
             	
             d3.select(".axisGlobal2")	
@@ -143,7 +144,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .tickSize(-this.props.width)
             .tickFormat("")
             )
-            .style("stroke-width", 0.6)
+            .style("stroke-width", 0)
             .style("stroke", "#f00")
             .style("opacity", 0.3)
 

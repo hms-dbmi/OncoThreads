@@ -201,6 +201,7 @@ const MainView = observer(class MainView extends React.Component {
             current_var = current_var + "...";
         }
         //console.log(current_var);
+        var axisHorizontalZoom = this.state.horizontalZoom/(this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
 
         return (<Row>
             <Col xs={2} style={{padding: 0}}>
@@ -225,7 +226,7 @@ const MainView = observer(class MainView extends React.Component {
                 <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                 timeValue={this.props.store.rootStore.timeValue}
                                 //width={150} 
-                                width={this.props.width * 1.5}
+                                width={this.props.width*1.8/axisHorizontalZoom}
 
                               
                                
