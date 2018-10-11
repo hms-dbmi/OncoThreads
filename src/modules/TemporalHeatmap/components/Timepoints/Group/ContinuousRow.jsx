@@ -3,7 +3,7 @@ import {observer} from 'mobx-react';
 import uuidv4 from "uuid/v4";
 import * as d3 from 'd3';
 /*
-creates a row in a partition of a grouped timepoint
+creates a row of a continuous variable in a partition of a grouped timepoint
  */
 const ContinuousRow = observer(class ContinuousRow extends React.Component {
     static getTooltipContent(value, numPatients) {
@@ -19,7 +19,13 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         }
     }
 
-
+    /**
+     * creates a gradient representing the distribution of the values of a continuous variable
+     * @param values
+     * @param boxPlotValues
+     * @param selectedPatients
+     * @returns {*}
+     */
     createGradientRow(values, boxPlotValues, selectedPatients) {
         let randomId = uuidv4();
         const _self = this;
@@ -44,13 +50,15 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                 }
                 if (_self.props.advancedSelection) {
                     let x = selectedScale(stepwidth * i);
+                    if (i === 0) {
+                        x = x + 1;
+                    }
                     if (i === values.length - 1) {
                         x = x - 1;
                     }
                     selectedRects.push(<line key={d.patient} x1={x} x2={x} y1={_self.props.height / 3}
                                              y2={2 * (_self.props.height / 3)}
-                                             style={{strokeWidth: 1, stroke: rectColor}}
-                                             opacity={0.5}/>);
+                                             style={{strokeWidth: 1, stroke: rectColor}}/>);
                 }
             }
             stops.push(<stop key={i} offset={(stepwidth * i) + "%"}
@@ -85,6 +93,12 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         </g>);
     }
 
+    /**
+     * creates a boxplot representing the distribution of the values of a continuous variable
+     * @param boxPlotValues
+     * @param numValues
+     * @returns {*}
+     */
     createBoxPlot(boxPlotValues, numValues) {
         let intermediateStop = null;
         let boxPlotScale = d3.scaleLinear().domain(this.props.variableDomain).range([0, this.props.groupScale(numValues)]);
@@ -143,6 +157,12 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         )
     }
 
+    /**
+     * creates a rectangle colored with the median value of the set of values at the partition
+     * @param boxPlotValues
+     * @param numValues
+     * @returns {*}
+     */
     createMedianValue(boxPlotValues, numValues) {
         return (<g>
             <rect x="0" height={this.props.height} width={this.props.groupScale(numValues)}
@@ -158,6 +178,11 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         </g>);
     }
 
+    /**
+     * computes the values of the boxplot
+     * @param values
+     * @returns {*[]}
+     */
     static computeBoxPlotValues(values) {
         values = values.map(element => element.value);
         let median = values[Math.floor((values.length - 1) / 2)];
