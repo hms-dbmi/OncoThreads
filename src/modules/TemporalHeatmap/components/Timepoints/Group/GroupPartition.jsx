@@ -34,6 +34,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                                                                                    showTooltip={_self.props.showTooltip}
                                                                                    hideTooltip={_self.props.hideTooltip}
                                                                                    selectedPatients={_self.props.selectedPatients}
+                                                                                   advancedSelection={_self.props.advancedSelection}
                                                                                    continuousRepresentation={_self.props.store.continuousRepresentation}/>
                 </g>);
             }

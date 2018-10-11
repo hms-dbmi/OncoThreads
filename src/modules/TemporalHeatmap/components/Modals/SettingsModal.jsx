@@ -57,10 +57,10 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                     <form>
                           <FormGroup>
                             <h5>Selection Type</h5>
-                            <Radio checked={!this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(true)}>
+                            <Radio checked={this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(true)}>
                                 Advanced
                             </Radio>{' '}
-                            <Radio checked={this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(false)}>
+                            <Radio checked={!this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(false)}>
                                 Simplified
                             </Radio>{' '}
                         </FormGroup>

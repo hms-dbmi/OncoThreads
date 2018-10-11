@@ -20,23 +20,52 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
     }
 
 
-    createGradientRow(values, boxPlotValues) {
+    createGradientRow(values, boxPlotValues, selectedPatients) {
         let randomId = uuidv4();
         const _self = this;
         let gradient;
         const stepwidth = 100 / (values.length - 1);
         let stops = [];
-        let selectedScale=d3.scaleLinear().domain([0,100]).range([0,this.props.groupScale(values.length)]);
-        let selectedRects=[];
+        let selectedScale = d3.scaleLinear().domain([0, 100]).range([0, this.props.groupScale(values.length)]);
+        let selectedRects = [];
+        let undefinedValuesCounter = selectedPatients.length;
         values.forEach(function (d, i) {
-            if(_self.props.selectedPatients.includes(d.patient)){
-                selectedRects.push(<rect key={d.patient} x={selectedScale(stepwidth*i)} y={_self.props.height/3} height={_self.props.height/3} width="1" fill="black"/>);
+            if (selectedPatients.includes(d.patient)) {
+                undefinedValuesCounter -= 1;
+
+                const rgb = _self.props.color(d.value).replace(/[^\d,]/g, '').split(',');
+                let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+                let rectColor;
+                if (brightness < 255 / 2) {
+                    rectColor = "white";
+                }
+                else {
+                    rectColor = "black";
+                }
+                if (_self.props.advancedSelection) {
+                    let x = selectedScale(stepwidth * i);
+                    if (i === values.length - 1) {
+                        x = x - 1;
+                    }
+                    selectedRects.push(<line key={d.patient} x1={x} x2={x} y1={_self.props.height / 3}
+                                             y2={2 * (_self.props.height / 3)}
+                                             style={{strokeWidth: 1, stroke: rectColor}}
+                                             opacity={0.5}/>);
+                }
             }
-            stops.push(<stop key={i} offset={stepwidth * i + "%"} style={{stopColor: _self.props.color(values[i].value)}}/>)
+            stops.push(<stop key={i} offset={(stepwidth * i) + "%"}
+                             style={{stopColor: _self.props.color(d.value)}}/>)
         });
         gradient = <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
             {stops}
         </linearGradient>;
+        let selectUndefinedRect = null;
+        if (undefinedValuesCounter > 0 && this.props.advancedSelection) {
+            selectUndefinedRect = <rect x={this.props.groupScale(values.length) + 1} height={this.props.height}
+                                        width={this.props.groupScale(undefinedValuesCounter) - 1}
+                                        fill={"none"}
+                                        stroke="black"/>
+        }
         return (<g>
             <defs>
                 {gradient}
@@ -51,6 +80,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                   opacity={this.props.opacity}
                   onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.partition.length - values.length))}
                   onMouseLeave={this.props.hideTooltip}/>
+            {selectUndefinedRect}
             {selectedRects}
         </g>);
     }
@@ -141,13 +171,14 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
     render() {
         let values = this.props.partition.filter(function (d, i) {
             return d.key !== undefined;
-        }).map(element => ({patient: element.patients[0], value: element.key})).sort(function (a,b) {
-            return (a.value-b.value)
+        }).map(element => ({patient: element.patients[0], value: element.key})).sort(function (a, b) {
+            return (a.value - b.value)
         });
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
         if (this.props.continuousRepresentation === 'gradient') {
+            let selectedPartitionPatients = this.props.partition.map(d => d.patients[0]).filter(element => -1 !== this.props.selectedPatients.indexOf(element));
             return (
-                this.createGradientRow(values, boxPlotValues)
+                this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
             )
         }
         else if (this.props.continuousRepresentation === 'boxplot')

@@ -318,7 +318,7 @@ const MainView = observer(class MainView extends React.Component {
                             <Button onClick={(e) => this.handleGlobalTimeClick(e)}
                                     disabled={this.props.store.realTime}
                                     key={"globalTimeline"}>
-                                {(this.props.store.globalTime) ? "Hide global timeline" : "Show global timeline"}
+                                {(this.props.store.globalTime) ? "Switch to block view" : "Switch to timeline"}
                             </Button>
                             <DropdownButton
                                 title={"Zoom"}
