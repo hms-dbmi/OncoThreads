@@ -64,6 +64,7 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * computes the width of a text. Returns 30 if the text width would be shorter than 30
+     * @param min
      * @param text
      * @param fontSize
      * @returns {number}
@@ -84,6 +85,8 @@ const Legend = observer(class Legend extends React.Component {
      * @param fontSize
      * @param lineheight
      * @param color
+     * @param index
+     * @param name
      * @returns {Array}
      */
     getContinuousLegend(opacity, fontSize, lineheight, color, index, name) {
@@ -95,20 +98,20 @@ const Legend = observer(class Legend extends React.Component {
         if (color.domain().length === 3) {
             intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
             text.push(<text key={"text" + min} fill="white" style={{fontSize: fontSize}} x={0}
-                            y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
+                            y={lineheight / 2 + fontSize / 2}>{Math.round(min*100)/100}</text>,
                 <text key={"text" + 0} fill="black" style={{fontSize: fontSize}}
                       x={50 - _self.getTextWidth(0, 0, fontSize) / 2}
                       y={lineheight / 2 + fontSize / 2}>{0}</text>,
                 <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
-                      x={100 - _self.getTextWidth(0, Math.round(max), fontSize)}
-                      y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
+                      x={100 - _self.getTextWidth(0, Math.round(max*100)/100, fontSize)}
+                      y={lineheight / 2 + fontSize / 2}>{Math.round(max*100)/100}</text>)
         }
         else {
             text.push(<text key={"text" + min} fill="black" style={{fontSize: fontSize}} x={0}
-                            y={lineheight / 2 + fontSize / 2}>{Math.round(min)}</text>,
+                            y={lineheight / 2 + fontSize / 2}>{Math.round(min*100)/100}</text>,
                 <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
-                      x={100 - _self.getTextWidth(0, Math.round(max), fontSize)}
-                      y={lineheight / 2 + fontSize / 2}>{Math.round(max)}</text>)
+                      x={100 - _self.getTextWidth(0, Math.round(max*100)/100, fontSize)}
+                      y={lineheight / 2 + fontSize / 2}>{Math.round(max*100)/100}</text>)
         }
         let randomId = uuidv4();
         return <g>
@@ -131,14 +134,16 @@ const Legend = observer(class Legend extends React.Component {
      * @param fontSize
      * @param lineheight
      * @param color
+     * @param index
+     * @param name
      * @returns {Array}
      */
     getCategoricalLegend(row, opacity, fontSize, lineheight, color, index, name) {
-        let _self = this;
+        const _self = this;
         let currX = 0;
         let currKeys = [];
         let legendEntries = [];
-        var rdata;
+        let rdata;
         //change
         if(!this.props.store.globalTime){
              rdata=row.data;
