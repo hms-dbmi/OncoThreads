@@ -115,15 +115,17 @@ const MainView = observer(class MainView extends React.Component {
 
 
 
-    //getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, timepointPositions) {
-    getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, svgWidth, heatmapWidth, timepointPositions) {    
+    getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, svgWidth, heatmapWidth, timepointPositions) {
         return (<Row>
             <Col md={1} style={{padding: 0}}>
                 <TimepointLabels sampleTPHeight={sampleTPHeight} betweenTPHeight={betweenTPHeight}
                                  timepoints={this.props.store.timepoints} width={100} height={svgHeight}
-                                 posY={timepointPositions.timepoint}/>
+                                 posY={timepointPositions.timepoint}
+                                store={this.props.store}
+                                showTooltip={this.props.showTooltip}
+                                hideTooltip={this.props.hideTooltip}/>
             </Col>
-            <Col xs={2} md={2} style={{paddingLeft: 10}}>
+            <Col xs={2} md={2} style={{padding: 0}}>
                 <RowOperators {...this.props} height={svgHeight} width={200}
                               posY={timepointPositions.timepoint}
                               selectedPatients={this.props.store.selectedPatients}

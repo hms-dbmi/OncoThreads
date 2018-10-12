@@ -11,8 +11,6 @@ const PatientAxis = observer(class PatientAxis extends React.Component {
   
 
     render() {
-
-        console.log("line x2=" + this.props.width - 70);
         return (
             <svg width={this.props.width} height={this.props.height}>
                 <defs>

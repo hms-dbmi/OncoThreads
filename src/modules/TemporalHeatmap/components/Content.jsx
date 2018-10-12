@@ -237,6 +237,7 @@ const Content = observer(class Content extends React.Component {
                             mutationCount="Mutation count"
                             currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
                             showTooltip={this.showTooltip}
+                            hideTooltip={this.hideTooltip}
                             store={this.props.rootStore.sampleTimepointStore}
                             visMap={this.props.rootStore.visStore}
                         />

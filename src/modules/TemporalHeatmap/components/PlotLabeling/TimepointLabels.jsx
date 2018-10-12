@@ -1,6 +1,5 @@
 import React from "react";
 import {observer} from "mobx-react";
-import ReactMixins from './../../../../utils/ReactMixins';
 import BlockTextField from "./BlockTextField";
 
 
@@ -12,10 +11,31 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
     constructor() {
         super();
         this.state = {
-            width: 0,
+            width: 100,
             labels: []
         };
-        ReactMixins.call(this);
+        this.updateDimensions = this.updateDimensions.bind(this);
+    }
+
+    /**
+     * Add event listener
+     */
+    componentDidMount() {
+        this.updateDimensions();
+        window.addEventListener("resize", this.updateDimensions);
+    }
+
+    /**
+     * Remove event listener
+     */
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateDimensions);
+    }
+
+    updateDimensions() {
+        this.setState({
+            width: this.refs.timepointLabels.parentNode.clientWidth
+        });
     }
 
     /**
@@ -39,14 +59,36 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
         const _self = this;
         this.props.timepoints.forEach(function (d, i) {
             let pos;
-            if(d.type==='sample'){
+            if (d.type === 'sample') {
                 pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 5;
+                labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField
+                    width={_self.state.width / 3 * 2}
+                    timepoint={d}/>
+                    <g transform={"translate(" + _self.state.width / 3 * 2 + ",0)scale(1.3)"}>
+                        <path fill="gray"
+                              d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
+                        <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}
+                              width={20} height={20}
+                              fill="none"
+                              pointerEvents="visible"/>
+                    </g>
+                </g>)
             }
-            else{
+            else {
                 pos = _self.props.betweenTPHeight / 2 + _self.props.posY[i] + 5;
+                labels.push(
+                    <g key={d.globalIndex}
+                       transform={"translate(" + _self.state.width / 3 * 2 + "," + pos + ")scale(1.3)"}
+                       onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
+                       onMouseLeave={this.props.hideTooltip}>
+                        <path fill="gray"
+                              d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
+                        <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}
+                              width={20} height={20}
+                              fill="none"
+                              pointerEvents="visible"/>
+                    </g>)
             }
-            labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField width={_self.state.width}
-                                           timepoint={d}/></g>)
         });
 
         let offset;
@@ -57,12 +99,17 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
             offset = this.props.sampleTPHeight / 2 + 30;
         }
         return (
-            <div>
+            <div ref="timepointLabels">
                 <svg width={this.state.width} height={this.props.height}>
-                    <line x1={this.state.width / 2} x2={this.state.width / 2} y1={this.props.posY[0] + offset}
+                    <line x1={this.state.width / 3 - 10} x2={this.state.width / 3} y1={this.props.posY[0] + offset}
+                          y2={this.props.posY[0] + offset} stroke='lightgray'/>
+                    <line x1={this.state.width / 3} x2={this.state.width / 3} y1={this.props.posY[0] + offset}
+                          y2={this.props.posY[this.props.posY.length - 1] + offset} stroke='lightgray'/>
+                    <line x1={this.state.width / 3 - 10} x2={this.state.width / 3}
+                          y1={this.props.posY[this.props.posY.length - 1] + offset}
                           y2={this.props.posY[this.props.posY.length - 1] + offset} stroke='lightgray'/>
                     <text y={15}
-                          x={this.state.width / 2 - TimepointLabels.getTextWidth("Timepoint", 14) / 2}>Timepoint
+                          x={this.state.width / 3 - TimepointLabels.getTextWidth("Timepoint", 14) / 2}>Timepoint
                     </text>
                     {labels}
                 </svg>

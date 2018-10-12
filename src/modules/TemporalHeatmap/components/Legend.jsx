@@ -51,11 +51,10 @@ const Legend = observer(class Legend extends React.Component {
         legendEntry.push(<rect key={"rect" + value} opacity={opacity} width={rectWidth} height={fontSize + 2}
                                x={currX} y={lineheight / 2 - fontSize / 2}
                                fill={rectColor}
-                               onMouseOver={(e) => {
+                               onMouseEnter={(e) => {
                                    _self.props.showTooltip(e, value+str);
                                }}
-                               
-                               value={value}
+                               onMouseLeave={this.props.hideTooltip}
                                />);
         legendEntry.push(<text key={"text" + value} fill={textColor} style={{fontSize: fontSize}} x={currX + 2}
                                y={lineheight / 2 + fontSize / 2}>{value}</text>);

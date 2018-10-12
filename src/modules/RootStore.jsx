@@ -218,7 +218,7 @@ class RootStore {
         if (mappingType === "binary") {
             datatype = "binary";
         }
-        else if(mappingType ==="vaf"){
+        else if (mappingType === "vaf") {
             datatype = "NUMBER"
         }
         else {
@@ -238,7 +238,7 @@ class RootStore {
                         if (!_self.sampleTimepointStore.variableStore.hasVariable(entry + mappingType)) {
                             _self.createMutationMapping(geneDict[entry], entry, mappingType);
                             const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                            _self.sampleTimepointStore.addVariable(entry + mappingType, symbol, datatype, 'mutation in ' + symbol);
+                            _self.sampleTimepointStore.addVariable(entry + mappingType, symbol+"_"+mappingType, datatype, 'mutation in ' + symbol+ " "+mappingType);
                         }
                     }
                 })
@@ -327,26 +327,16 @@ class RootStore {
      * @param up
      */
     updateTimepointStructure(patient, timepoint, up) {
-        var timeline = this.timepointStructure[timepoint];
-
-        //var element = timeline[xposition];
-
-        var index = this.timepointStructure[timepoint].map(d => d.patient).indexOf(patient);
-
-
-        var indexedElements;
-
-        var element = timeline[index];
-
-        var el, el2;
-
-        el = element;
-
+        const oldSampleTimepointNames = this.sampleTimepointStore.timepoints.map(d => d.name);
+        let timeline = this.timepointStructure[timepoint];
+        const index = this.timepointStructure[timepoint].map(d => d.patient).indexOf(patient);
+        let indexedElements;
+        let element = timeline[index];
+        let el2;
         const _self = this;
-
-        if (up === 0) { //down movement
+        if (!up) { //down movement
             if (timepoint === this.timepointStore.timepoints.length - 1) {
-                _self.timepointStructure.push([el]);
+                _self.timepointStructure.push([element]);
             }
             else {
                 for (let i = timepoint; i < this.sampleTimepointStore.timepoints.length; i++) {
@@ -356,87 +346,93 @@ class RootStore {
                             .map((d, j) => {
                                 return {index: j, patient: d.patient};
                             }).find(d => d.patient === patient);
-                        //}).find(d => d.patient===element.patient);
-                        //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
                         if (indexedElements) {
                             el2 = _self.timepointStructure[i + 1][indexedElements.index];
-                            _self.timepointStructure[i + 1][indexedElements.index] = el;
-                            el = el2;
+                            _self.timepointStructure[i + 1][indexedElements.index] = element;
+                            element = el2;
                         }
                         else {
-                            //_self.timepointStructure[i + 1].push(el);
-                            //_self.patientsPerTimepoint[i + 1].push(el.patient);
-                            _self.timepointStructure[i + 1].push(el);
+                            _self.timepointStructure[i + 1].push(element);
                             _self.timepointStructure[i + 1] = _self.sortByPatientOrder(_self.timepointStructure[i + 1]);
-
                             break;
                         }
 
                     } else {
-                        _self.timepointStructure.push([el]);
+                        _self.timepointStructure.push([element]);
                     }
-
-
                 }
             }
-
-
         }
         else { //up movement
-            //if(timepoint=== 0){
-            //do nothing right now
-            //}
-            //else{
             for (let i = timepoint; i >= 0; i--) {
-
-                //el=_self.timepointStructure[i][xposition];
-
                 if ((i - 1) >= 0 && _self.timepointStructure[i - 1]) { //if the timeline exists
-
                     indexedElements = _self.timepointStructure[i - 1]
                         .filter(d => d)
                         .map((d, j) => {
                             return {index: j, patient: d.patient};
                         }).find(d => d.patient === patient);
-                    //}).find(d => d.patient===element.patient);
-                    //if(_self.timepointStructure[i+1].map(d=>d.patient).includes(patient)){
                     if (indexedElements) {
-                        //el=_self.timepointStructure[i][indexedElements.index];
                         el2 = _self.timepointStructure[i - 1][indexedElements.index];
-                        _self.timepointStructure[i - 1][indexedElements.index] = el;
-
-                        el = el2;
+                        _self.timepointStructure[i - 1][indexedElements.index] = element;
+                        element = el2;
                     }
                     else {
-                        //_self.timepointStructure[i - 1].push(el);
-                        //_self.patientsPerTimepoint[i - 1].push(el.patient);
-                        _self.timepointStructure[i - 1].push(el);
+                        _self.timepointStructure[i - 1].push(element);
                         _self.timepointStructure[i - 1] = _self.sortByPatientOrder(_self.timepointStructure[i - 1]);
                         break;
                     }
-
                 }
                 else {
-                    _self.timepointStructure.unshift([el]);
+                    _self.timepointStructure.unshift([element]);
                 }
-
-
             }
-            //}
-
-
         } //else end
-
-
         timeline.splice(index, 1);
-
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
         this.visStore.resetTransitionSpace();
         let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
         this.eventDetails = [];
-        this.sampleTimepointStore.update(heatmapOrder);
+        this.sampleTimepointStore.update(heatmapOrder, this.createNameList(up, this.sampleTimepointStore.timepoints, oldSampleTimepointNames, patient));
         this.betweenTimepointStore.update();
-        //this.timepointStore.applyPatientOrderToAll(timepoint);
+    }
+
+    createNameList(up, timepoints, oldNames, patient) {
+        let newNames = oldNames;
+        if (this.timepointStructure.length > oldNames.length) {
+            if (up) {
+                newNames.unshift("new");
+            }
+            else {
+                newNames.push("new");
+            }
+        }
+        else if (this.timepointStructure.length < oldNames.length) {
+            if (up) {
+                newNames.pop();
+            }
+            else {
+                newNames.shift();
+            }
+        }
+        else {
+            let longestPatientTimeline = true;
+            this.timepointStructure.forEach(function (d) {
+                if (!(d.map(d => d.patient).includes(patient))) {
+                    longestPatientTimeline = false;
+                }
+            });
+            if (longestPatientTimeline) {
+                if (up) {
+                    newNames.unshift("new");
+                    newNames.pop();
+                }
+                else {
+                    newNames.push("new");
+                    newNames.shift();
+                }
+            }
+        }
+        return newNames;
     }
 
 
@@ -550,7 +546,7 @@ class RootStore {
                 return (proteinChange);
             }
         }
-        else if(mappingType==="mutationType"){
+        else if (mappingType === "mutationType") {
             mappingFunction = function (currentSample) {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
                 let mutationType = 'wild type';
@@ -560,8 +556,8 @@ class RootStore {
                 return (mutationType);
             }
         }
-        else{
-            mappingFunction=function (currentSample) {
+        else {
+            mappingFunction = function (currentSample) {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
                 let vaf = undefined;
                 if (entry !== undefined) {
@@ -570,10 +566,10 @@ class RootStore {
                 return (vaf);
             }
         }
-        this.sampleMappers[geneId+mappingType] = {};
+        this.sampleMappers[geneId + mappingType] = {};
         this.timepointStructure.forEach(function (d) {
             d.forEach(function (f) {
-                _self.sampleMappers[geneId+mappingType][f.sample] = mappingFunction(f.sample);
+                _self.sampleMappers[geneId + mappingType][f.sample] = mappingFunction(f.sample);
             });
         });
     }

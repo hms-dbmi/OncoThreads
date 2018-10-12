@@ -1,6 +1,5 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import ReactMixins from './../../../../utils/ReactMixins';
 import RowOperator from './RowOperator'
 
 /*
@@ -9,10 +8,31 @@ implements the icons and their functionality on the left side of the plot
 const RowOperators = observer(class RowOperators extends React.Component {
         constructor() {
             super();
-            this.state = {highlightedVariable: "", width: 0};
-            ReactMixins.call(this);
+            this.state = {highlightedVariable: "", width: 100};
             this.highlightVariable = this.highlightVariable.bind(this);
             this.unhighlightVariable = this.unhighlightVariable.bind(this);
+            this.updateDimensions=this.updateDimensions.bind(this);
+        }
+
+        /**
+         * Add event listener
+         */
+        componentDidMount() {
+            this.updateDimensions();
+            window.addEventListener("resize", this.updateDimensions);
+        }
+
+        /**
+         * Remove event listener
+         */
+        componentWillUnmount() {
+            window.removeEventListener("resize", this.updateDimensions);
+        }
+
+        updateDimensions() {
+            this.setState({
+                width: this.refs.rowOperators.parentNode.clientWidth
+            });
         }
 
         highlightVariable(variable) {
@@ -42,7 +62,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
             });
             let transform = "translate(0," + 20 + ")";
             return (
-                <div>
+                <div ref='rowOperators'>
                     <svg width={this.state.width} height={this.props.height}>
                         <g transform={transform}>
                             {rowHeader}
