@@ -283,7 +283,9 @@ const Legend = observer(class Legend extends React.Component {
             });
         }
         else {
-            let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
+            //let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
+            
+            let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0];
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }
         return (

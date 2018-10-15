@@ -189,7 +189,10 @@ const MainView = observer(class MainView extends React.Component {
         let maxTime = Math.max(max1, max2);
 
 
-        const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
+        //const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
+        
+        const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.originalIds[0] === this.props.store.rootStore.globalPrimary)[0].name;
+        
         //console.log(current_var);
         const axisHorizontalZoom = this.state.horizontalZoom / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
 
