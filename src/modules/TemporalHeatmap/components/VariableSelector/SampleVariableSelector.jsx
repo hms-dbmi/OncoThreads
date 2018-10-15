@@ -61,6 +61,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     handleVariableClick(id, variable, type, description) {
+        this.props.hideTooltip();
         if (!(this.props.currentVariables.map(function (d) {
             return d.id
         }).includes(id))) {
@@ -90,10 +91,10 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
             }
             let lb = (
-                <div onMouseOver={(e) => {
+                <div onMouseEnter={(e) => {
                     //console.log(d.variable);
                     _self.props.showTooltip(e, d.variable, d.description);
-                }}>
+                }} onMouseLeave={_self.props.hideTooltip}>
                     {icon}{d.variable}
                 </div>
             );

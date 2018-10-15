@@ -149,7 +149,6 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param variable
      */
     handleCheckBoxClick(event, type, variable) {
-        console.log(variable);
         let selected = this.state.selectedValues.slice();
         if (event.target.checked) {
             selected.push(variable);
