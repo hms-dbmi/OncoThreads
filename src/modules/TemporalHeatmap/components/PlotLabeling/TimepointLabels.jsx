@@ -31,6 +31,12 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
     componentWillUnmount() {
         window.removeEventListener("resize", this.updateDimensions);
     }
+    componentDidUpdate(prevProps) {
+        // Typical usage (don't forget to compare props):
+        if (this.props.sidebarVisible !== prevProps.sidebarVisible) {
+            this.updateDimensions();
+        }
+    }
 
     updateDimensions() {
         this.setState({
