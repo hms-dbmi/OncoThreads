@@ -55,9 +55,9 @@ const RowOperators = observer(class RowOperators extends React.Component {
                                             showContextMenu={_self.props.showContextMenu}
                                             openBinningModal={_self.props.openBinningModal}
                                             selectedPatients={_self.props.selectedPatients}
-                                            highlightVariable={_self.highlightVariable}
-                                            unhighlightVariable={_self.unhighlightVariable}
-                                            highlightedVariable={_self.state.highlightedVariable}/>);
+                                            highlightVariable={_self.props.setHighlightedVariable}
+                                            unhighlightVariable={_self.props.removeHighlightedVariable}
+                                            highlightedVariable={_self.props.highlightedVariable}/>);
 
             });
             let transform = "translate(0," + 20 + ")";

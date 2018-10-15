@@ -61,6 +61,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     handleVariableClick(id, variable, type, description) {
+        this.props.hideTooltip();
         if (!(this.props.currentVariables.map(function (d) {
             return d.id
         }).includes(id))) {

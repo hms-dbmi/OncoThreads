@@ -64,7 +64,9 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                 labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField
                     width={_self.state.width / 3 * 2}
                     timepoint={d}/>
-                    <g transform={"translate(" + _self.state.width / 3 * 2 + ",0)scale(1.3)"}>
+                    <g transform={"translate(" + _self.state.width / 3 * 2 + ",0)scale(1.3)"}
+                       onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
+                       onMouseLeave={_self.props.hideTooltip}>
                         <path fill="gray"
                               d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
                         <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}
@@ -79,8 +81,8 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                 labels.push(
                     <g key={d.globalIndex}
                        transform={"translate(" + _self.state.width / 3 * 2 + "," + pos + ")scale(1.3)"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
-                       onMouseLeave={this.props.hideTooltip}>
+                       onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
+                       onMouseLeave={_self.props.hideTooltip}>
                         <path fill="gray"
                               d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
                         <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}

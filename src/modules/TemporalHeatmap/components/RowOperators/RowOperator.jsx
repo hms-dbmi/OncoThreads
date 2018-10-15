@@ -12,7 +12,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
             this.group = this.group.bind(this);
             this.unGroup = this.unGroup.bind(this);
             this.promote = this.promote.bind(this);
-            this.handleDeleteLeave = this.handleDeleteLeave.bind(this);
+            this.handleRowEnter=this.handleRowEnter.bind(this);
+            this.handleRowLeave=this.handleRowLeave.bind(this);
         }
 
 
@@ -106,21 +107,17 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
         /**
-         * highlights variable for deletion and shows tooltip
-         * @param e
-         * @param variable
+         * highlights variable
          */
-        handleDeleteEnter(e, variable) {
+        handleRowEnter(variable) {
             this.props.highlightVariable(variable);
-            this.props.showTooltip(e, "Delete variable from all timepoints")
         }
 
         /**
          * unhighlights variable for deletion and hides tooltip
          */
-        handleDeleteLeave() {
+        handleRowLeave() {
             this.props.unhighlightVariable();
-            this.props.hideTooltip();
         }
 
         /**
@@ -198,8 +195,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
                 <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                   onMouseEnter={(e) => this.handleDeleteEnter(e, variable)}
-                   onMouseLeave={this.handleDeleteLeave}>
+                   onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
+                   onMouseLeave={this.props.hideTooltip}>>
                     <path fill="gray"
                           d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
                     <rect onClick={() => this.handleDelete(variable, timepoint)}
@@ -220,8 +217,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
             </g>);
         }
 
-        static getHighlightRect(height, width) {
-            return <rect height={height} width={width} fill="#e8e8e8"/>
+        getHighlightRect(height) {
+            return <rect height={height} width={this.props.width} fill="#e8e8e8"/>
         }
 
         /**
@@ -243,7 +240,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 }
                 const transform = "translate(0," + pos + ")";
                 const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
-                let fontSize = 14;
+                let fontSize = 10;
                 if (lineHeight < fontSize) {
                     fontSize = Math.round(lineHeight);
                 }
@@ -259,7 +256,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 }
                 let highlightRect = null;
                 if (d.variable === _self.props.highlightedVariable) {
-                    highlightRect = RowOperator.getHighlightRect(lineHeight, 200);
+                    highlightRect = _self.getHighlightRect(lineHeight);
                 }
 
 
@@ -274,9 +271,9 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 }
 
 
-                return <g key={d.variable} className={"clickable"} transform={transform}>
+                return <g key={d.variable} className={"clickable"} onMouseEnter={()=>_self.handleRowEnter(d.variable)} onMouseLeave={_self.handleRowLeave} transform={transform}>
                     {highlightRect}
-                    {_self.getRowLabel(_self.props.timepoint, d.variable, name_var, desc, 0, (lineHeight + fontSize / 2) / 2, iconScale, _self.props.width - 3*iconScale * 24, fontWeight, fontSize)}
+                    {_self.getRowLabel(_self.props.timepoint, d.variable, name_var, desc, 0, (lineHeight + fontSize / 2) / 2, iconScale, _self.props.width - 3 * iconScale * 24, fontWeight, fontSize)}
                     {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
                     {secondIcon}
                     {/*_self.getAlignIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 48), yPos)*/}
