@@ -135,7 +135,7 @@ class SampleTimepointStore {
             this.variableStore.removeVariable(variableId);
             this.rootStore.timepointStore.regroupTimepoints();
 
-            if (_self.rootStore.globalTime === true) {
+            if (_self.rootStore.globalPrimary === variableId) {
                 _self.rootStore.globalPrimary = _self.variableStore.currentVariables[_self.variableStore.currentVariables.length - 1].id
             }
         }
