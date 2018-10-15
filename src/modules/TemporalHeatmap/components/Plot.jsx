@@ -12,7 +12,7 @@ const Plot = observer(class Plot extends React.Component {
     constructor() {
         super();
         this.state = {width: 100};
-        this.updateDimensions=this.updateDimensions.bind(this);
+        this.updateDimensions = this.updateDimensions.bind(this);
     }
 
     /**
@@ -20,7 +20,14 @@ const Plot = observer(class Plot extends React.Component {
      */
     componentDidMount() {
         this.updateDimensions();
-        window.addEventListener("resize",this.updateDimensions );
+        window.addEventListener("resize", this.updateDimensions);
+    }
+
+    componentDidUpdate(prevProps) {
+        // Typical usage (don't forget to compare props):
+        if (this.props.sidebarVisible !== prevProps.sidebarVisible) {
+            this.updateDimensions();
+        }
     }
 
     /**

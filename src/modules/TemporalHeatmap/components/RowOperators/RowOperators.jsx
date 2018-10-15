@@ -11,7 +11,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
             this.state = {highlightedVariable: "", width: 100};
             this.highlightVariable = this.highlightVariable.bind(this);
             this.unhighlightVariable = this.unhighlightVariable.bind(this);
-            this.updateDimensions=this.updateDimensions.bind(this);
+            this.updateDimensions = this.updateDimensions.bind(this);
         }
 
         /**
@@ -27,6 +27,13 @@ const RowOperators = observer(class RowOperators extends React.Component {
          */
         componentWillUnmount() {
             window.removeEventListener("resize", this.updateDimensions);
+        }
+
+        componentDidUpdate(prevProps) {
+            // Typical usage (don't forget to compare props):
+            if (this.props.sidebarVisible !== prevProps.sidebarVisible) {
+                this.updateDimensions();
+            }
         }
 
         updateDimensions() {

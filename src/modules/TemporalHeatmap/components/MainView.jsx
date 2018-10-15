@@ -125,6 +125,12 @@ const MainView = observer(class MainView extends React.Component {
 
 
     getBlockView(sampleTPHeight, betweenTPHeight, svgHeight, svgWidth, heatmapWidth, timepointPositions) {
+        let plotWidth = 7;
+        let legendWidth = 2;
+        if (!this.props.sidebarVisible) {
+            legendWidth = 1;
+            plotWidth = 8;
+        }
         return (<Row>
             <Col md={1} xs={1} style={{padding: 0}}>
                 <TimepointLabels sampleTPHeight={sampleTPHeight} betweenTPHeight={betweenTPHeight}
@@ -132,7 +138,8 @@ const MainView = observer(class MainView extends React.Component {
                                  posY={timepointPositions.timepoint}
                                  store={this.props.store}
                                  showTooltip={this.props.showTooltip}
-                                 hideTooltip={this.props.hideTooltip}/>
+                                 hideTooltip={this.props.hideTooltip}
+                                 sidebarVisible={this.props.sidebarVisible}/>
             </Col>
             <Col xs={2} md={2} style={{padding: 0}}>
                 <RowOperators {...this.props} height={svgHeight} width={200}
@@ -144,7 +151,7 @@ const MainView = observer(class MainView extends React.Component {
                               removeHighlightedVariable={this.removeHighlightedVariable}/>
 
             </Col>
-            <Col xs={7} md={7} style={{padding: 0}}>
+            <Col xs={plotWidth} md={plotWidth} style={{padding: 0}}>
                 <Plot
                     {...this.props} width={this.props.width} svgWidth={svgWidth} height={svgHeight}
                     horizontalZoom={this.state.horizontalZoom}
@@ -153,7 +160,7 @@ const MainView = observer(class MainView extends React.Component {
                     selectedPatients={this.props.store.selectedPatients}
                     onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
             </Col>
-            <Col xs={2} md={2} style={{padding: 0}}>
+            <Col xs={legendWidth} md={legendWidth} style={{padding: 0}}>
                 <Legend {...this.props} height={svgHeight} width={400} mainWidth={svgWidth}
                         posY={timepointPositions.timepoint}
                         highlightedVariable={this.state.highlightedVariable}
@@ -192,9 +199,8 @@ const MainView = observer(class MainView extends React.Component {
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
         //console.log(current_var);
         const axisHorizontalZoom = this.state.horizontalZoom / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
-
         return (<Row>
-            <Col xs={2} style={{padding: 0}}>
+            <Col xs={2} md={2} style={{padding: 0}}>
                 <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue}
                             width={250} height={svgHeight} maxTimeInDays={maxTime}/>
                 <GlobalRowOperators {...this.props} width={300}
@@ -213,14 +219,9 @@ const MainView = observer(class MainView extends React.Component {
             <Col md={1} style={{padding: 0, width: 100}}>
                 <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                 timeValue={this.props.store.rootStore.timeValue}
-                    //width={150}
                                 width={this.props.width * 1.8 / axisHorizontalZoom}
-
-
-                    //width={svgWidth+(this.props.width/12>100? this.props.width/12: 100)}
                                 height={svgHeight} maxTimeInDays={maxTime}/>
             </Col>
-
             <Col xs={9} md={9} style={{padding: 0}}>
                 <Plot {...this.props}
                       height={svgHeight}
@@ -232,8 +233,6 @@ const MainView = observer(class MainView extends React.Component {
                       selectedPatients={this.props.store.selectedPatients}
                       onDrag={this.handlePatientSelection}/>
             </Col>
-
-
         </Row>)
     }
 
@@ -263,8 +262,6 @@ const MainView = observer(class MainView extends React.Component {
         else {
             view = this.getGlobalView(this.props.visMap.timepointPositions);
         }*/
-
-
         let rectWidth = this.props.width / 300;
         if (this.props.store.numberOfPatients < 300) {
             rectWidth = this.props.width / this.props.store.numberOfPatients - 1;
@@ -290,6 +287,12 @@ const MainView = observer(class MainView extends React.Component {
 
             view = this.getGlobalView(this.props.visMap.timepointPositions, svgH, svgWidth, heatmapWidth);
 
+        }
+        let patientsVisibleWidth=4;
+        let buttonToolbarWidth=3;
+        if(!this.props.sidebarVisible){
+            patientsVisibleWidth=5;
+            buttonToolbarWidth=2;
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
@@ -325,12 +328,11 @@ const MainView = observer(class MainView extends React.Component {
                                 </div>
                             </DropdownButton>
                         </ButtonToolbar>
-
                     </Col>
-                    <Col md={3}>
+                    <Col md={patientsVisibleWidth} xs={patientsVisibleWidth}>
                         <h5>{"Patients visible: " + (this.state.horizontalZoom < this.props.store.numberOfPatients ? this.state.horizontalZoom : this.props.store.numberOfPatients) + "/" + this.props.store.numberOfPatients}</h5>
                     </Col>
-                    <Col md={4}>
+                    <Col md={buttonToolbarWidth} xs={buttonToolbarWidth}>
                         <ButtonToolbar>
                             <Button onClick={this.props.store.rootStore.undoRedoStore.undo}><FontAwesome
                                 name="undo"/></Button>

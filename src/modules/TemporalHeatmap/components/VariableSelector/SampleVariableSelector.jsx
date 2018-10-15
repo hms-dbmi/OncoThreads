@@ -182,7 +182,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                                 <option onChange={this.handleSelect} value="mutationType">Mutation type</option>
                                 <option onChange={this.handleSelect} value="vaf">Variant allele frequency</option>
                             </FormControl>
-                            <textarea placeholder={"Enter HUGO Gene Symbols"}
+                            <textarea style={{width:100+"%"}} placeholder={"Enter HUGO Gene Symbols ( e.g. TP53, IDH1)"}
                                       onKeyDown={this.handleEnterPressed} onChange={this.updateSearchValue}
                                       value={this.state.geneListString}/>
                             <br/>
@@ -207,22 +207,25 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
     render() {
         return (
-            <Panel>
-                <Panel.Heading>
-                    <Panel.Title>
-                        Clinical Features
-                    </Panel.Title>
-                </Panel.Heading>
-                <Select
-                    type="text"
-                    searchable={true}
-                    componentClass="select" placeholder="Select..."
-                    searchPlaceholder="Search variable"
-                    options={this.createClinicalAttributesList()}
-                    onChange={opt => this.handleVariableClick(opt.id, opt.value, opt.datatype, opt.description)}
-                />
-                {this.getGenomicPanel()}
-            </Panel>
+            <div>
+                <h4>Sample variables</h4>
+                <Panel>
+                    <Panel.Heading>
+                        <Panel.Title>
+                            Clinical Features
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.createClinicalAttributesList()}
+                        onChange={opt => this.handleVariableClick(opt.id, opt.value, opt.datatype, opt.description)}
+                    />
+                    {this.getGenomicPanel()}
+                </Panel>
+            </div>
         )
     }
 });
