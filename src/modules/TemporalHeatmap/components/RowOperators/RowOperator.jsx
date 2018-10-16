@@ -12,8 +12,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
             this.group = this.group.bind(this);
             this.unGroup = this.unGroup.bind(this);
             this.promote = this.promote.bind(this);
-            this.handleRowEnter=this.handleRowEnter.bind(this);
-            this.handleRowLeave=this.handleRowLeave.bind(this);
+            this.handleRowEnter = this.handleRowEnter.bind(this);
+            this.handleRowLeave = this.handleRowLeave.bind(this);
         }
 
 
@@ -227,59 +227,64 @@ const RowOperator = observer(class RowOperator extends React.Component {
         getRowOperator() {
             const _self = this;
             let pos = 0;
-            return this.props.timepoint.heatmap.map(function (d, i) {
-                let lineHeight;
-                let fontWeight;
-                if (d.variable === _self.props.timepoint.primaryVariableId) {
-                    lineHeight = _self.props.visMap.primaryHeight;
-                    fontWeight = "bold";
-                }
-                else {
-                    lineHeight = _self.props.visMap.secondaryHeight;
-                    fontWeight = "normal";
-                }
-                const transform = "translate(0," + pos + ")";
-                const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
-                let fontSize = 10;
-                if (lineHeight < fontSize) {
-                    fontSize = Math.round(lineHeight);
-                }
-                pos = pos + lineHeight + _self.props.visMap.gap;
-                const yPos = -(iconScale * 24 - lineHeight) / 2;
-                let secondIcon;
-                if (!_self.props.timepoint.isGrouped) {
-                    secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
-                }
-                else {
-                    secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+            let rowOperators = [];
+            this.props.timepoint.heatmap.forEach(function (d, i) {
+                if (!d.isUndef || _self.props.store.showUndefined || d.variable === _self.props.timepoint.primaryVariableId) {
+                    let lineHeight;
+                    let fontWeight;
+                    if (d.variable === _self.props.timepoint.primaryVariableId) {
+                        lineHeight = _self.props.visMap.primaryHeight;
+                        fontWeight = "bold";
+                    }
+                    else {
+                        lineHeight = _self.props.visMap.secondaryHeight;
+                        fontWeight = "normal";
+                    }
+                    const transform = "translate(0," + pos + ")";
+                    const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
+                    let fontSize = 10;
+                    if (lineHeight < fontSize) {
+                        fontSize = Math.round(lineHeight);
+                    }
+                    pos = pos + lineHeight + _self.props.visMap.gap;
+                    const yPos = -(iconScale * 24 - lineHeight) / 2;
+                    let secondIcon;
+                    if (!_self.props.timepoint.isGrouped) {
+                        secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
+                    }
+                    else {
+                        secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
 
-                }
-                let highlightRect = null;
-                if (d.variable === _self.props.highlightedVariable) {
-                    highlightRect = _self.getHighlightRect(lineHeight);
-                }
-
-
-                let currVar = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type);
-                let name_var = currVar.name;
-                let desc;
-                if (currVar.description !== undefined) {
-                    desc = "Description: " + currVar.description;
-                }
-                else {
-                    desc = "Description: not available";
-                }
+                    }
+                    let highlightRect = null;
+                    if (d.variable === _self.props.highlightedVariable) {
+                        highlightRect = _self.getHighlightRect(lineHeight);
+                    }
 
 
-                return <g key={d.variable} className={"clickable"} onMouseEnter={()=>_self.handleRowEnter(d.variable)} onMouseLeave={_self.handleRowLeave} transform={transform}>
-                    {highlightRect}
-                    {_self.getRowLabel(_self.props.timepoint, d.variable, name_var, desc, 0, (lineHeight + fontSize / 2) / 2, iconScale, _self.props.width - 3 * iconScale * 24, fontWeight, fontSize)}
-                    {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
-                    {secondIcon}
-                    {/*_self.getAlignIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 48), yPos)*/}
-                    {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
-                </g>
+                    let currVar = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type);
+                    let name_var = currVar.name;
+                    let desc;
+                    if (currVar.description !== undefined) {
+                        desc = "Description: " + currVar.description;
+                    }
+                    else {
+                        desc = "Description: not available";
+                    }
+
+                    rowOperators.push(<g key={d.variable} className={"clickable"}
+                                         onMouseEnter={() => _self.handleRowEnter(d.variable)}
+                                         onMouseLeave={_self.handleRowLeave} transform={transform}>
+                        {highlightRect}
+                        {_self.getRowLabel(_self.props.timepoint, d.variable, name_var, desc, 0, (lineHeight + fontSize / 2) / 2, iconScale, _self.props.width - 3 * iconScale * 24, fontWeight, fontSize)}
+                        {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
+                        {secondIcon}
+                        {/*_self.getAlignIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 48), yPos)*/}
+                        {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
+                    </g>)
+                }
             });
+            return rowOperators;
 
         }
 

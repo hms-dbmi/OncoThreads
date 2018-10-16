@@ -11,19 +11,13 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             this.promote = this.promote.bind(this);
         }
 
-        componentDidMount() {
-            this.promote(this.props.timepoint, this.props.timepoint.heatmap[this.props.timepoint.heatmap.length - 1].variable);
-        }
-
         /**
          * promotes a variable at a timepoint to a primary variable
          * @param timepoint: timepoint where the primary variable is changes
          * @param variable: variable to be the primary variable
          */
         promote(timepoint, variable) {
-            if (this.props.store.variableStore.sample.allVariables.filter(d => d.id === variable).length !== 0) {
-                this.props.store.rootStore.globalPrimary = this.props.store.variableStore.sample.allVariables.filter(d => d.id === variable)[0].originalIds[0];
-            }
+            this.props.store.rootStore.globalPrimary = variable;
         }
 
         /**
@@ -172,12 +166,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                 return this.props.timepoint.heatmap.map(function (d, i) {
                     let lineHeight;
                     let fontWeight;
-                    if (_self.props.store.variableStore.sample.allVariables.filter(d1 => d1.id === d.variable).length !== 0 && (_self.props.store.variableStore.sample.allVariables.filter(d1 => d1.id === d.variable)[0].originalIds[0] === _self.props.store.rootStore.globalPrimary)) {
-                        lineHeight = _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
-                        fontWeight = "bold";
-                    }
-                    else if (_self.props.store.rootStore.globalPrimary === '' && i === _self.props.timepoint.heatmap.length - 1 && _self.props.timepoint.type === "sample") {
-                        //_self.promote(_self.props.timepoint, d.variable);
+                    if (d.variable === _self.props.store.rootStore.globalPrimary) {
                         lineHeight = _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
                         fontWeight = "bold";
                     }

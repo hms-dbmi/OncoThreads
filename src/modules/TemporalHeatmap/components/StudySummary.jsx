@@ -25,6 +25,13 @@ const StudySummary = observer(class StudySummary extends React.Component {
     }
 
     render() {
+        let numberOfTimepoints;
+        if (this.props.minTP === this.props.maxTP) {
+            numberOfTimepoints = this.props.minTP;
+        }
+        else {
+            numberOfTimepoints = this.props.minTP + "-" + this.props.maxTP;
+        }
         return (
             <Panel id="collapsible-panel-example-2" defaultExpanded>
                 <Panel.Heading>
@@ -42,14 +49,13 @@ const StudySummary = observer(class StudySummary extends React.Component {
                         <br/>
                         <b>Number of patients:</b> {this.props.numPatients}
                         <br/>
-                        <b>Number of timepoints</b> {this.props.minTP}-{this.props.maxTP}
+                        <b>Number of timepoints</b> {numberOfTimepoints}
 
                     </Panel.Body>
                 </Panel.Collapse>
             </Panel>)
 
 
-            
     }
 });
 export default StudySummary;

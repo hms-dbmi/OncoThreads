@@ -11,7 +11,6 @@ creates the plot with timepoints and transitions
 const Plot = observer(class Plot extends React.Component {
     constructor() {
         super();
-        this.state = {width: 100};
         this.updateDimensions = this.updateDimensions.bind(this);
     }
 
@@ -20,11 +19,11 @@ const Plot = observer(class Plot extends React.Component {
      */
     componentDidMount() {
         this.updateDimensions();
+        this.props.visMap.setPlotY(this.refs.plot.parentNode.getBoundingClientRect().top + 50);
         window.addEventListener("resize", this.updateDimensions);
     }
 
     componentDidUpdate(prevProps) {
-        // Typical usage (don't forget to compare props):
         if (this.props.sidebarVisible !== prevProps.sidebarVisible) {
             this.updateDimensions();
         }
@@ -38,10 +37,7 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     updateDimensions() {
-        this.setState({
-            width: this.refs.plot.parentNode.clientWidth
-        });
-        this.props.visMap.setPlotY(this.refs.plot.parentNode.getBoundingClientRect().top + 50);
+        this.props.setPlotWidth(this.refs.plot.parentNode.clientWidth);
     }
 
     /**
@@ -73,11 +69,11 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     render() {
-        this.props.visMap.setSampleRectWidth((this.state.width / this.props.horizontalZoom) - this.props.visMap.gap);
+        this.props.visMap.setSampleRectWidth((this.props.width / this.props.horizontalZoom) - this.props.visMap.gap);
         const heatmapWidth = this.props.store.numberOfPatients * (this.props.visMap.sampleRectWidth + this.props.visMap.gap) - this.props.visMap.gap;
-        const svgWidth = heatmapWidth > this.state.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + this.props.visMap.sampleRectWidth : this.state.width;
+        const svgWidth = heatmapWidth > this.props.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + this.props.visMap.sampleRectWidth : this.props.width;
         const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.state.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
 
         const max = this.props.store.rootStore.actualTimeLine

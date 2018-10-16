@@ -66,56 +66,54 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
         this.props.timepoints.forEach(function (d, i) {
             let pos;
             if (d.type === 'sample') {
-                pos = _self.props.sampleTPHeight / 2 + _self.props.posY[i] + 5;
+                pos = _self.props.visMap.timepointPositions.timepoint[i]+_self.props.visMap.getTPHeight(d)/2+4;
                 labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField
                     width={_self.state.width / 3 * 2}
                     timepoint={d}/>
-                    <g transform={"translate(" + _self.state.width / 3 * 2 + ",0)scale(1.3)"}
+                    <g transform={"translate(" + _self.state.width / 3 * 2 + ",0)"}
                        onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
                        onMouseLeave={_self.props.hideTooltip}>
+                        <g transform={"translate(0,4)"}>
                         <path fill="gray"
                               d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
                         <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}
                               width={20} height={20}
                               fill="none"
                               pointerEvents="visible"/>
+                        </g>
                     </g>
                 </g>)
             }
             else {
-                pos = _self.props.betweenTPHeight / 2 + _self.props.posY[i] + 5;
+                pos = _self.props.visMap.timepointPositions.timepoint[i]+_self.props.visMap.getTPHeight(d)/2+4;
                 labels.push(
                     <g key={d.globalIndex}
-                       transform={"translate(" + _self.state.width / 3 * 2 + "," + pos + ")scale(1.3)"}
+                       transform={"translate(" + _self.state.width / 3 * 2 + "," + pos + ")"}
                        onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
                        onMouseLeave={_self.props.hideTooltip}>
+                        <g transform={"translate(0,4)"}>
                         <path fill="gray"
                               d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
                         <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}
                               width={20} height={20}
                               fill="none"
                               pointerEvents="visible"/>
+                        </g>
                     </g>)
             }
         });
 
-        let offset;
-        if (this.props.betweenTPHeight !== 0) {
-            offset = this.props.betweenTPHeight / 2 + 30;
-        }
-        else {
-            offset = this.props.sampleTPHeight / 2 + 30;
-        }
+        let offset=15+this.props.visMap.getTPHeight(this.props.timepoints[0])/2;
         return (
             <div ref="timepointLabels">
                 <svg width={this.state.width} height={this.props.height}>
-                    <line x1={this.state.width / 3 - 10} x2={this.state.width / 3} y1={this.props.posY[0] + offset}
-                          y2={this.props.posY[0] + offset} stroke='lightgray'/>
-                    <line x1={this.state.width / 3} x2={this.state.width / 3} y1={this.props.posY[0] + offset}
-                          y2={this.props.posY[this.props.posY.length - 1] + offset} stroke='lightgray'/>
+                    <line x1={this.state.width / 3 - 10} x2={this.state.width / 3} y1={this.props.visMap.timepointPositions.timepoint[0] + offset}
+                          y2={this.props.visMap.timepointPositions.timepoint[0] + offset} stroke='lightgray'/>
+                    <line x1={this.state.width / 3} x2={this.state.width / 3} y1={this.props.visMap.timepointPositions.timepoint[0] + offset}
+                          y2={this.props.visMap.timepointPositions.timepoint[this.props.visMap.timepointPositions.timepoint.length - 1] + offset} stroke='lightgray'/>
                     <line x1={this.state.width / 3 - 10} x2={this.state.width / 3}
-                          y1={this.props.posY[this.props.posY.length - 1] + offset}
-                          y2={this.props.posY[this.props.posY.length - 1] + offset} stroke='lightgray'/>
+                          y1={this.props.visMap.timepointPositions.timepoint[this.props.visMap.timepointPositions.timepoint.length - 1] + offset}
+                          y2={this.props.visMap.timepointPositions.timepoint[this.props.visMap.timepointPositions.timepoint.length - 1] + offset} stroke='lightgray'/>
                     <text y={15}
                           x={this.state.width / 3 - TimepointLabels.getTextWidth("Timepoint", 14) / 2}>Timepoint
                     </text>

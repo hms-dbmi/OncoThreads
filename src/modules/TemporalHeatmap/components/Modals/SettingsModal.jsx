@@ -14,6 +14,9 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
     handleSelectionSetting(advanced){
         this.props.store.advancedSelection=advanced;
     }
+    handleUndefinedRowsSetting(showUndefined){
+        this.props.store.showUndefined=showUndefined;
+    }
     handleApply(){
         this.props.store.continuousRepresentation=this.continuousRepresentation;
         this.props.close();
@@ -62,6 +65,17 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                             </Radio>{' '}
                             <Radio checked={!this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(false)}>
                                 Simplified
+                            </Radio>{' '}
+                        </FormGroup>
+                    </form>
+                     <form>
+                          <FormGroup>
+                            <h5>Show rows with only undefined values</h5>
+                            <Radio checked={!this.props.store.showUndefined} name="radioGroup" inline onChange={()=>this.handleUndefinedRowsSetting(false)}>
+                               No
+                            </Radio>{' '}
+                            <Radio checked={this.props.store.showUndefined} name="radioGroup" inline onChange={()=>this.handleUndefinedRowsSetting(true)}>
+                                Yes
                             </Radio>{' '}
                         </FormGroup>
                     </form>

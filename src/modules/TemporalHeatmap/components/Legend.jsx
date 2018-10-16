@@ -9,7 +9,7 @@ const Legend = observer(class Legend extends React.Component {
     constructor() {
         super();
         this.maxWidth = 0;
-        this.borderLeft=10;
+        this.borderLeft = 10;
     }
 
     /**
@@ -93,8 +93,8 @@ const Legend = observer(class Legend extends React.Component {
                       y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
         }
         let randomId = uuidv4();
-        this.updateMaxWidth(100);
-        return <g transform={"translate("+this.borderLeft+",0)"}>
+        this.updateMaxWidth(100 + this.borderLeft);
+        return <g transform={"translate(" + this.borderLeft + ",0)"}>
             <defs>
                 <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" style={{stopColor: color(min)}}/>
@@ -169,7 +169,7 @@ const Legend = observer(class Legend extends React.Component {
         let _self = this;
         let legendEntries = [];
         legendEntries = legendEntries.concat(_self.getLegendEntry("true", opacity, Legend.getTextWidth(30, "true", fontSize) + 4, fontSize, this.borderLeft, lineheight, color(true), "black", "true"));
-        legendEntries = legendEntries.concat(_self.getLegendEntry("false", opacity, Legend.getTextWidth(30, "false", fontSize) + 4, fontSize, this.borderLeft+Legend.getTextWidth(30, "true", fontSize) + 6, lineheight, color(false), "black", "true"));
+        legendEntries = legendEntries.concat(_self.getLegendEntry("false", opacity, Legend.getTextWidth(30, "false", fontSize) + 4, fontSize, this.borderLeft + Legend.getTextWidth(30, "true", fontSize) + 6, lineheight, color(false), "black", "true"));
         this.updateMaxWidth(74);
         return (legendEntries);
     }
@@ -194,40 +194,41 @@ const Legend = observer(class Legend extends React.Component {
         if (!this.props.store.globalTime) {
             if (data.length !== undefined) {
                 data.forEach(function (d, i) {
-
-                    let lineheight;
-                    let opacity = 1;
-                    if (primary === d.variable) {
-                        lineheight = _self.props.visMap.primaryHeight;
+                    if (!d.isUndef || _self.props.store.showUndefined || primary === d.variable) {
+                        let lineheight;
+                        let opacity = 1;
+                        if (primary === d.variable) {
+                            lineheight = _self.props.visMap.primaryHeight;
+                        }
+                        else {
+                            lineheight = _self.props.visMap.secondaryHeight;
+                            opacity = 0.5
+                        }
+                        let color = currentVariables[i].colorScale;
+                        let legendEntries = [];
+                        if (lineheight < fontSize) {
+                            fontSize = Math.round(lineheight);
+                        }
+                        if (currentVariables[i].datatype === "STRING") {
+                            legendEntries = _self.getCategoricalLegend(d.data.map(element => element.value), opacity, fontSize, lineheight, color);
+                        }
+                        else if (currentVariables[i].datatype === "binary") {
+                            legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
+                        }
+                        else if (currentVariables[i].datatype === "BINNED") {
+                            legendEntries = _self.getBinnedLegend(opacity, fontSize, lineheight, color, currentVariables[i].modification);
+                        }
+                        else {
+                            legendEntries = _self.getContinuousLegend(opacity, fontSize, lineheight, color);
+                        }
+                        const transform = "translate(0," + currPos + ")";
+                        currPos += lineheight + _self.props.visMap.gap;
+                        let highlightRect = null;
+                        if (d.variable === _self.props.highlightedVariable) {
+                            highlightRect = _self.getHighlightRect(lineheight)
+                        }
+                        legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
                     }
-                    else {
-                        lineheight = _self.props.visMap.secondaryHeight;
-                        opacity = 0.5
-                    }
-                    let color = currentVariables[i].colorScale;
-                    let legendEntries = [];
-                    if (lineheight < fontSize) {
-                        fontSize = Math.round(lineheight);
-                    }
-                    if (currentVariables[i].datatype === "STRING") {
-                        legendEntries = _self.getCategoricalLegend(d.data.map(element => element.value), opacity, fontSize, lineheight, color);
-                    }
-                    else if (currentVariables[i].datatype === "binary") {
-                        legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
-                    }
-                    else if (currentVariables[i].datatype === "BINNED") {
-                        legendEntries = _self.getBinnedLegend(opacity, fontSize, lineheight, color, currentVariables[i].modification);
-                    }
-                    else {
-                        legendEntries = _self.getContinuousLegend(opacity, fontSize, lineheight, color);
-                    }
-                    const transform = "translate(0," + currPos + ")";
-                    currPos += lineheight + _self.props.visMap.gap;
-                    let highlightRect = null;
-                    if (d.variable === _self.props.highlightedVariable) {
-                        highlightRect = _self.getHighlightRect(lineheight)
-                    }
-                    legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
                 });
             }
         }
@@ -236,9 +237,9 @@ const Legend = observer(class Legend extends React.Component {
 
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
-        const _self=this;
+        const _self = this;
         if (primaryVariable.datatype === "STRING") {
-             let allValues = [];
+            let allValues = [];
             this.props.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {
                     if (f.variable === _self.props.store.rootStore.globalPrimary) {
@@ -266,9 +267,9 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let legends = [];
 
-        let transform="";
+        let transform = "";
         if (!this.props.store.globalTime) {
-            transform="translate(0," + 20 + ")";
+            transform = "translate(0," + 20 + ")";
             this.props.timepoints.forEach(function (d, i) {
                 let transform = "translate(0," + _self.props.posY[i] + ")";
 
