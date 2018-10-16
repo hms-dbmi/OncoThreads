@@ -37,7 +37,7 @@ const MainView = observer(class MainView extends React.Component {
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.setPlotWidth = this.setPlotWidth.bind(this);
         this.state = {
-            horizontalZoom: props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300,
+            horizontalZoom: 300-(props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300),
             highlightedVariable: '',
             plotWidth: 700
         }
@@ -152,7 +152,7 @@ const MainView = observer(class MainView extends React.Component {
             <Col xs={7} md={7} style={{padding: 0}}>
                 <Plot
                     {...this.props} width={this.state.plotWidth} height={svgHeight}
-                    horizontalZoom={this.state.horizontalZoom}
+                    horizontalZoom={300 - this.state.horizontalZoom}
                     timepointY={timepointPositions.timepoint}
                     transY={timepointPositions.connection}
                     setPlotWidth={this.setPlotWidth}
@@ -185,7 +185,7 @@ const MainView = observer(class MainView extends React.Component {
 
         let maxTime = Math.max(max1, max2);
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
-        const axisHorizontalZoom = this.state.horizontalZoom / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
+        const axisHorizontalZoom = (300 - this.state.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (<Row>
             <Col xs={2} md={2} style={{padding: 0}}>
                 <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue}
@@ -212,7 +212,7 @@ const MainView = observer(class MainView extends React.Component {
                       height={svgHeight}
                       width={this.state.plotWidth}
                       setPlotWidth={this.setPlotWidth}
-                      horizontalZoom={this.state.horizontalZoom}
+                      horizontalZoom={300 - this.state.horizontalZoom}
                       timepointY={timepointPositions.timepoint}
                       transY={timepointPositions.connection}
                       selectedPatients={this.props.store.selectedPatients}
@@ -287,7 +287,7 @@ const MainView = observer(class MainView extends React.Component {
                                 <div style={{padding: "5px"}}>
                                     Horizontal: <input type="range" value={this.state.horizontalZoom}
                                                        onChange={this.horizontalZoom} step={1}
-                                                       min={10} max={300}/>
+                                                       min={0} max={290}/>
                                     <Button onClick={this.setToScreenWidth}>Set to screen width</Button>
                                     <br/>
                                     Vertical: <input type="range" value={this.props.visMap.transitionSpace}
@@ -299,7 +299,7 @@ const MainView = observer(class MainView extends React.Component {
                         </ButtonToolbar>
                     </Col>
                     <Col md={patientsVisibleWidth} xs={patientsVisibleWidth}>
-                        <h5>{"Patients visible: " + (this.state.horizontalZoom < this.props.store.numberOfPatients ? this.state.horizontalZoom : this.props.store.numberOfPatients) + "/" + this.props.store.numberOfPatients}</h5>
+                        <h5>{"Patients visible: " + (300-this.state.horizontalZoom < this.props.store.numberOfPatients ? 300-this.state.horizontalZoom : this.props.store.numberOfPatients) + "/" + this.props.store.numberOfPatients}</h5>
                     </Col>
                     <Col md={buttonToolbarWidth} xs={buttonToolbarWidth}>
                         <ButtonToolbar>
