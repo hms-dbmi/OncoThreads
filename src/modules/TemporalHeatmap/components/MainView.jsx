@@ -231,7 +231,7 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     setToScreenWidth() {
-        this.setState({horizontalZoom: this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300})
+        this.setState({horizontalZoom: 300-(this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300)})
     }
 
     setToScreenHeight() {

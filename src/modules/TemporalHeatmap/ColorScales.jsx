@@ -30,7 +30,7 @@ class ColorScales {
         for (let i = 0; i < binNames.length; i++) {
             colors.push(continuousScale((binValues[i + 1] + binValues[i]) / 2));
         }
-        return d3.scaleOrdinal().range(colors).domain(binNames).unknown('white');
+        return d3.scaleOrdinal().range(colors).domain(binNames).unknown('#f7f7f7');
     }
 
     static getCategoricalScale() {
