@@ -184,8 +184,6 @@ const MainView = observer(class MainView extends React.Component {
             .reduce((next, max) => next > max ? next : max, 0);
 
         let maxTime = Math.max(max1, max2);
-
-        console.log(this.props.store.rootStore.globalPrimary);
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
         const axisHorizontalZoom = this.state.horizontalZoom / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (<Row>
@@ -242,13 +240,6 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        /*let view;
-        if (!this.props.store.globalTime) {
-            view = this.getBlockView(this.props.visMap.sampleTPHeight, this.props.visMap.betweenTPHeight, this.props.visMap.svgHeight, this.props.visMap.timepointPositions);
-        }
-        else {
-            view = this.getGlobalView(this.props.visMap.timepointPositions);
-        }*/
         let rectWidth = this.state.width / 300;
         if (this.props.store.numberOfPatients < 300) {
             rectWidth = this.state.width / this.props.store.numberOfPatients - 1;
@@ -263,16 +254,8 @@ const MainView = observer(class MainView extends React.Component {
             view = this.getBlockView(this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
         }
         else {
-
-
-            //var svgH = 4 * (sampH + this.props.visMap.transitionSpace) * 1.5;
-
-            var svgH = this.props.visMap.svgHeight;
-
-            //view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
-
+            const svgH = this.props.visMap.svgHeight;
             view = this.getGlobalView(this.props.visMap.timepointPositions, svgH, svgWidth, heatmapWidth);
-
         }
         let patientsVisibleWidth = 4;
         let buttonToolbarWidth = 3;
