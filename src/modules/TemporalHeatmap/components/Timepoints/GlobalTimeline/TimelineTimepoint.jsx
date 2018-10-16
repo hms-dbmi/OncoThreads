@@ -27,30 +27,27 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //let color = x => { return "#ffd92f" };
 
 
+            //color = _self.props.currentVariables.filter(d=>d.id===_self.props.store.rootStore.globalPrimary)[0].colorScale;
 
-                //color = _self.props.currentVariables.filter(d=>d.id===_self.props.store.rootStore.globalPrimary)[0].colorScale;
+            let color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
-                    let color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
-
-                    //if(row.variable===_self.props.store.rootStore.globalPrimary){
-
-
-                    if (row.variable === _self.props.store.rootStore.globalPrimary) {
-                        rows.push(<g key={row.variable + i + globalIndex}>
-
-                            <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                         height={_self.props.visMap.primaryHeight}
-                                         color={color}
-                                         x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                         ypi={_self.props.ypi}
-                                         ht={_self.props.ht}
-                                         dtype={_self.props.currentVariables[i].datatype}/>;
-
-                        </g>);
-
-                    }
+            //if(row.variable===_self.props.store.rootStore.globalPrimary){
 
 
+            if (row.variable === _self.props.store.rootStore.globalPrimary) {
+                rows.push(<g key={row.variable + i + globalIndex}>
+
+                    <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
+                                 height={_self.props.visMap.primaryHeight}
+                                 color={color}
+                                 x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                                 ypi={_self.props.ypi}
+                                 ht={_self.props.ht}
+                                 dtype={_self.props.currentVariables[i].datatype}/>;
+
+                </g>);
+
+            }
 
 
             globalIndex++;
@@ -98,7 +95,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             let color;
 
-            if (_self.props.currentVariables[i].datatype === "binary" && _self.props.timepointType === 'between') {
+            if (_self.props.timepointType === 'between') {
                 opacity = 0.5;
                 color = _self.props.visMap.globalTimelineColors;
 
@@ -108,10 +105,10 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 //console.log(ypi);
                 let events = [];
                 if (_self.props.currentVariables[i].derived) {
-                    events=a2.filter(eventElement => _self.props.currentVariables[i].originalIds.includes(eventElement.varId));
+                    events = a2.filter(eventElement => _self.props.currentVariables[i].originalIds.includes(eventElement.varId));
                 }
-                else{
-                    events=a2.filter(eventElement=>eventElement.varId===row.variable);
+                else if (_self.props.currentVariables[i].type === "event") {
+                    events = a2.filter(eventElement => eventElement.varId === row.variable);
                 }
                 rows.push(<g key={row.variable + i + globalIndex}>
 
@@ -125,7 +122,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                  ht={_self.props.ht}
                                  events={events}
                                  opacity={opacity}
-                                 rectWidth={_self.props.visMap.sampleRectWidth/2}
+                                 rectWidth={_self.props.visMap.sampleRectWidth / 2}
                                  dtype={_self.props.currentVariables[i].datatype}
                         //fillBin={fillBin}
 
@@ -140,30 +137,30 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 //color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
 
-                    color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
+                color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
-                    //if (row.variable === _self.props.store.rootStore.globalPrimary) {
-                    if (row.variable === _self.props.store.rootStore.globalPrimary) {
-                        rows.push(<g key={row.variable + i + globalIndex}>
+                //if (row.variable === _self.props.store.rootStore.globalPrimary) {
+                if (row.variable === _self.props.store.rootStore.globalPrimary) {
+                    rows.push(<g key={row.variable + i + globalIndex}>
 
-                            <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                         height={_self.props.visMap.primaryHeight}
-                                         color={color}
-                                //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
-                                         x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                         ypi={_self.props.ypi}
-                                         max={_self.props.max}
-                                         ht={_self.props.ht}
-                                         events={a2}
-                                         opacity={opacity}
-                                         dtype={_self.props.currentVariables[i].datatype}
-                                //fillBin={fillBin}
+                        <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
+                                     height={_self.props.visMap.primaryHeight}
+                                     color={color}
+                            //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
+                                     x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                                     ypi={_self.props.ypi}
+                                     max={_self.props.max}
+                                     ht={_self.props.ht}
+                                     events={a2}
+                                     opacity={opacity}
+                                     dtype={_self.props.currentVariables[i].datatype}
+                            //fillBin={fillBin}
 
-                            />
+                        />
 
-                        </g>);
-                    }
+                    </g>);
                 }
+            }
             globalIndex++;
         });
         return (rows)
