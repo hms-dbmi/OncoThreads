@@ -46,6 +46,14 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     /**
+     * opens the binning modal
+     * @param id
+     */
+    bin(id) {
+        this.props.openBinningModal(id, "between", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
+    }
+
+    /**
      * handles click on combine radio button
      * @param addCombined
      */
@@ -342,8 +350,10 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
 
     createTimepointDistanceButton() {
         return (<Button style={{textAlign: "left"}} bsSize="xsmall"
-                        onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
-                        key={"timepointdistance"}>Time between timepoints</Button>)
+                        onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}><FontAwesome
+            onClick={() => this.bin(this.props.store.rootStore.timeDistanceId)
+            } name="cog"/> Time between timepoints
+        </Button>);
     }
 
     /**
