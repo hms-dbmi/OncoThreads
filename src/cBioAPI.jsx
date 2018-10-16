@@ -142,7 +142,24 @@ class cBioAPI {
 
     getGeneIDs(hgncSymbols, callback) {
         cBioAPI.genomeNexusMapping2(hgncSymbols).then(function (response) {
+            console.log(response.data);
+            if (response.data.length === 0) {
+                alert("No valid symbols found")
+            }
+            else {
+                let invalidSymbols = [];
+                hgncSymbols.forEach(function (d, i) {
+                    if (!(response.data.map(entry => entry.hugoSymbol).includes(d))) {
+                        invalidSymbols.push(d);
+                    }
+                });
+                if (invalidSymbols.length !== 0) {
+                    alert('WARNING the following symbols are not valid:' + invalidSymbols);
+                }
+            }
             callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));
+        }).catch(function (error) {
+            alert("invalid symbol")
         })
     }
 
@@ -153,8 +170,12 @@ class cBioAPI {
             ,
             "sampleListId": studyId + "_all"
         }).then(function (response) {
-            callback(response.data);
-        });
+            callback(response.data)
+        })
+            .catch(function (error) {
+                console.log(error)
+            });
+
     }
 
     /**

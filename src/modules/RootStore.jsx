@@ -183,7 +183,7 @@ class RootStore {
             // if (localStorage.getItem(_self.study.studyId) === null) {
             _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, _self.clinicalSampleCategories[0].description, "clinical");
             _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
-            _self.globalPrimary= _self.clinicalSampleCategories[0].id;
+            _self.globalPrimary = _self.clinicalSampleCategories[0].id;
             /*}
             else {
                 _self.undoRedoStore.deserializeLocalStorage();
@@ -226,23 +226,35 @@ class RootStore {
             datatype = "STRING"
         }
         _self.cbioAPI.getGeneIDs(HUGOsymbols, function (entrezIDs) {
-                _self.cbioAPI.getMutation2(_self.study.studyId, entrezIDs, function (response) {
-                    let geneDict = {};
-                    response.forEach(function (d, i) {
-                        if (!(d.entrezGeneId in geneDict)) {
-                            geneDict[d.entrezGeneId] = []
+                if (entrezIDs.length !== 0) {
+                    _self.cbioAPI.getMutation2(_self.study.studyId, entrezIDs, function (response) {
+                        let geneDict = {};
+                        let noMutationsFound = [];
+                        entrezIDs.forEach(function (d, i) {
+                            const containedIds = response.filter(entry => entry.entrezGeneId === d.entrezGeneId);
+                            geneDict[d.entrezGeneId] = containedIds;
+                            if (containedIds.length === 0) {
+                                noMutationsFound.push({hgncSymbol: d.hgncSymbol, entrezGeneId: d.entrezGeneId});
+                            }
+                        });
+                        let confirm = false;
+                        if (noMutationsFound.length > 0) {
+                            confirm = window.confirm("WARNING: No mutations found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
                         }
-                        geneDict[d.entrezGeneId].push(d);
-
-                    });
-                    for (let entry in geneDict) {
-                        if (!_self.sampleTimepointStore.variableStore.hasVariable(entry + mappingType)) {
-                            _self.createMutationMapping(geneDict[entry], entry, mappingType);
-                            const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                            _self.sampleTimepointStore.addVariable(entry + mappingType, symbol+"_"+mappingType, datatype, 'mutation in ' + symbol+ " "+mappingType);
+                        if(!confirm){
+                            noMutationsFound.forEach(function (d) {
+                               delete geneDict[d.entrezGeneId];
+                            });
                         }
-                    }
-                })
+                        for (let entry in geneDict) {
+                            if (!_self.sampleTimepointStore.variableStore.hasVariable(entry + mappingType)) {
+                                _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm);
+                                const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
+                                _self.sampleTimepointStore.addVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType);
+                            }
+                        }
+                    })
+                }
             }
         )
     }
@@ -529,7 +541,7 @@ class RootStore {
      * @param geneId
      * @param mappingType
      */
-    createMutationMapping(list, geneId, mappingType) {
+    createMutationMapping(list, geneId, mappingType, addEmptyVariables) {
         const _self = this;
         let mappingFunction;
         if (mappingType === "binary") {
@@ -570,7 +582,12 @@ class RootStore {
         this.sampleMappers[geneId + mappingType] = {};
         this.timepointStructure.forEach(function (d) {
             d.forEach(function (f) {
-                _self.sampleMappers[geneId + mappingType][f.sample] = mappingFunction(f.sample);
+                if (list.length === 0) {
+                    _self.sampleMappers[geneId + mappingType][f.sample] = undefined;
+                }
+                else {
+                    _self.sampleMappers[geneId + mappingType][f.sample] = mappingFunction(f.sample);
+                }
             });
         });
     }
