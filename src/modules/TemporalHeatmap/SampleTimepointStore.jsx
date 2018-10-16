@@ -108,6 +108,7 @@ class SampleTimepointStore {
         }
         this.addHeatmapVariable(variableId);
         this.rootStore.timepointStore.regroupTimepoints();
+        this.rootStore.globalPrimary=variableId;
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)
     }
 

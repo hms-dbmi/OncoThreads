@@ -26,43 +26,16 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
-            let color;
-
-            if (_self.props.store.rootStore.globalPrimary === "") {
-
-                color = _self.props.currentVariables[i].colorScale;
 
 
-                //if(_self.props.store.rootStore.transitionOn)  color = x => { return "#ffd92f" };
-
-                //const transform = "translate(0," + previousYposition + ")";
-
-
-                //if (row.variable === _self.props.primaryVariable.id) {
-                rows.push(<g key={row.variable + i + globalIndex}>
-
-                    <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                 height={_self.props.visMap.primaryHeight}
-                                 color={color}
-                                 x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                 ypi={_self.props.ypi}
-                                 ht={_self.props.ht}
-                                 dtype={_self.props.currentVariables[i].datatype}/>;
-
-                </g>);
-
-
-            }
-            else {
                 //color = _self.props.currentVariables.filter(d=>d.id===_self.props.store.rootStore.globalPrimary)[0].colorScale;
 
-                if (_self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary).length > 0) {
-                    color = _self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0].colorScale;
+                    let color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
                     //if(row.variable===_self.props.store.rootStore.globalPrimary){
 
 
-                    if (_self.props.store.variableStore.sample.allVariables.filter(d => d.id === row.variable)[0].originalIds[0] === _self.props.store.rootStore.globalPrimary) {
+                    if (row.variable === _self.props.store.rootStore.globalPrimary) {
                         rows.push(<g key={row.variable + i + globalIndex}>
 
                             <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -77,9 +50,8 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
                     }
 
-                }
 
-            }
+
 
             globalIndex++;
         });
@@ -163,35 +135,15 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
             }
-            else if (_self.props.store.rootStore.globalPrimary === "") {
-                color = _self.props.currentVariables[i].colorScale;
-
-                rows.push(<g key={row.variable + i + globalIndex}>
-
-                    <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                 height={_self.props.visMap.primaryHeight}
-                                 color={color}
-                                 x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                 ypi={_self.props.ypi}
-                                 max={_self.props.max}
-                                 ht={_self.props.ht}
-                                 events={a2}
-                                 opacity={opacity}
-                                 dtype={_self.props.currentVariables[i].datatype}
-                    />
-
-                </g>);
-            }
             else {
 
                 //color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
-                if (_self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary).length > 0) {
 
-                    color = _self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0].colorScale;
+                    color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
 
                     //if (row.variable === _self.props.store.rootStore.globalPrimary) {
-                    if (row.variable === _self.props.currentVariables.filter(d => d.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0].id) {
+                    if (row.variable === _self.props.store.rootStore.globalPrimary) {
                         rows.push(<g key={row.variable + i + globalIndex}>
 
                             <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -212,7 +164,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                         </g>);
                     }
                 }
-            }
             globalIndex++;
         });
         return (rows)

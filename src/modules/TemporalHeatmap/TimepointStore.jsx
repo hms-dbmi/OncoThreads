@@ -1,4 +1,4 @@
-import {extendObservable} from "mobx";
+import {extendObservable,reaction} from "mobx";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -17,6 +17,7 @@ class TimepointStore {
             globalTime: false,
             transitionOn: false,
             advancedSelection: true,
+            showUndefined: false,
             get maxPartitions() {
                 let max = 0;
                 const _self = this;
@@ -28,8 +29,12 @@ class TimepointStore {
                     }
                 });
                 return max;
-            }
+            },
+
         });
+        reaction(
+        () => this.timepoints.map(tp=>tp.heatmap.length),
+            length => rootStore.visStore.fitToScreenHeight());
         this.groupBinnedTimepoint = this.groupBinnedTimepoint.bind(this);
         this.promoteBinnedTimepoint = this.promoteBinnedTimepoint.bind(this);
         this.binVariable = this.binVariable.bind(this);

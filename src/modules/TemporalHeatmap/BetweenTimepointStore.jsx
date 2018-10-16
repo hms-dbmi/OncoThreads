@@ -61,7 +61,7 @@ class BetweenTimepointStore {
                 });
                 currentPatientIndices[f] += 1;
             });
-            _self.timepoints[i].heatmap.push({variable: variableId, sorting: 0, data: variableData});
+            _self.timepoints[i].addRow(variableId, variableData);
         });
         this.timepoints = timepoints;
     }

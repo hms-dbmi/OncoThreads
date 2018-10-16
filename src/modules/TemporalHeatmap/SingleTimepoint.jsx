@@ -32,7 +32,14 @@ class SingleTimepoint {
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
     addRow(variableId,variableData){
-        this.heatmap.push({variable: variableId, sorting: 0, data: variableData});
+        let isUndefined=true;
+        for(let i=0;i<variableData.length;i++){
+            if(variableData[i].value!==undefined){
+                isUndefined=false;
+                break;
+            }
+        }
+           this.heatmap.push({variable: variableId, sorting: 0, data: variableData, isUndef:isUndefined});
     }
     sortWithParameters(variables, heatmapSortings, groupSorting) {
         this.variableSortOrder = variables;
@@ -108,13 +115,7 @@ class SingleTimepoint {
      * @param variableId
      */
     setPrimaryVariable(variableId) {
-        if (!this.rootStore.globalTime) {
             this.primaryVariableId = variableId;
-        }
-        else {
-
-            this.rootStore.globalPrimary = variableId;
-        }
     }
 
     /**

@@ -27,6 +27,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 if (d.isGrouped) {
                     timepoints.push(<g key={i + "timepoint"} transform={transform}><GroupTimepoint
                         timepoint={d.grouped}
+                        heatmap={d.heatmap}
                         index={i}
                         currentVariables={_self.props.store.variableStore[d.type].currentVariables}
                         rectWidth={rectWidth}
