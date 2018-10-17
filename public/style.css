@@ -1,12 +1,15 @@
 
 .scrollableX {
     overflow-x: scroll;
+    z-index: 1;
 }
 
 .overlaid {
     position: absolute;
     left: 0;
     top: 0;
+    z-index: -1;
+    overflow: hidden;
 }
 
 .customTooltip{

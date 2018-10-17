@@ -221,7 +221,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
     render() {
 
         return (
-            <div>
+            <div className="overlaid">
                 <svg height={this.props.height} width={this.props.width}>
                    
 
