@@ -82,7 +82,7 @@ const Plot = observer(class Plot extends React.Component {
         const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.primaryHeight * 2, 0, max);
 
         return (
-            <div ref="plot" className="scrollableX">
+            <div ref="plot" className="scrollableX, overlaid">
                 <svg width={svgWidth} height={this.props.height}>
                     <g transform={transform}>
                         <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}

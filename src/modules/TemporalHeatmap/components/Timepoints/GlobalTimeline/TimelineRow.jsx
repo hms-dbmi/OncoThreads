@@ -53,9 +53,12 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         }
                 
                     });
+
+                    let opc1=_self.props.opacity;
                     let height=_self.props.timeScale(ev.eventEndDate-ev.eventDate);
                     if(height===0){
                         height=_self.props.rectWidth;
+                        opc1=opc1+0.3;
                     }
                     let val = _self.props.store.variableStore['between'].getByIdAllVariables(ev.varId).name;
                     rects.push(<rect onMouseEnter={(e) => _self.handleMouseEnter(e, ev.patientId, val, ev.eventDate, ev.eventEndDate - ev.eventDate)
@@ -73,7 +76,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                      //fill={_self.props.color(ev.varId)}
 
                                      fill={fillC}
-                                     opacity={_self.props.opacity}
+                                     opacity={opc1}
                             //fill={_self.props.color(_self.props.timepoint)}
                         />
                     );

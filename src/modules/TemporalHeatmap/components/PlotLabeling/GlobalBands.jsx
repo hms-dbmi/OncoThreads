@@ -6,7 +6,7 @@ import * as d3 from "d3";
 /*
  * Patient axis pointing to the right
  */
-const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
+const GlobalBands = observer(class GlobalBands extends React.Component {
 
    
     //render() {
@@ -91,7 +91,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
     
     renderAxis() {
 
-            var timeV=this.props.maxTimeInDays;
+           /* var timeV=this.props.maxTimeInDays;
     
             if(this.props.store.rootStore.timeVar==="30"){
                 timeV=this.props.maxTimeInDays/30;
@@ -129,8 +129,25 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .text(this.props.timeValue);
             //.text(this.props.store.rootStore.timeValue);
 
+            */
 
-           /* d3.select(".axisGlobal2").call(yAxis);
+
+           var timeV=this.props.maxTimeInDays;
+    
+           if(this.props.store.rootStore.timeVar==="30"){
+               timeV=this.props.maxTimeInDays/30;
+           }
+           else if(this.props.store.rootStore.timeVar==="365"){
+               timeV=this.props.maxTimeInDays/365;
+           }
+           const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.height - 35]).nice();
+       
+          
+           const yAxis = d3.axisLeft().scale(y);
+              
+               
+
+            //d3.select(".axisGlobal2").call(yAxis);
 
             d3.selectAll(".axisLabel2").remove();
             d3.select(".axisGlobal2").select(".grid").remove();
@@ -160,7 +177,12 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
             yval.splice(-1,1);
 
-           
+            //console.log(yval);
+
+           /* var yval = []
+            d3.selectAll(vl).each(function(d) {
+            yval.push(d);
+            });*/
 
            
 
@@ -190,7 +212,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
                 //return 0.5;
 
-            }); */
+            });
 
     
     
@@ -201,10 +223,10 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         return (
             <div>
                 <svg height={this.props.height} width={this.props.width}>
-                    <g className="axisGlobal" transform="translate(50, 25)">
-                    </g>
-
                    
+
+                    <g className="axisGlobal2" transform="translate(0, 25)">
+                    </g>
                 </svg>
 
                 
@@ -212,4 +234,4 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         );
     }
 });
-export default GlobalTimeAxis;
+export default GlobalBands;

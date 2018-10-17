@@ -11,6 +11,9 @@ import GlobalRowOperators from "./RowOperators/GlobalRowOperators"
 import Legend from "./Legend"
 import Plot from "./Plot";
 import GlobalTimeAxis from "./PlotLabeling/GlobalTimeAxis";
+import GlobalBands from "./PlotLabeling/GlobalBands";
+
+
 import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
 
@@ -201,23 +204,35 @@ const MainView = observer(class MainView extends React.Component {
                         mainWidth={svgWidth}/>
             </Col>
 
-            <Col md={1} style={{padding: 0, width: 100}}>
-                <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
-                                timeValue={this.props.store.rootStore.timeValue}
-                                width={this.state.plotWidth * 1.8 / axisHorizontalZoom}
-                                height={svgHeight} maxTimeInDays={maxTime}/>
+            <Col xs={10} md={10} style={{padding: 0}}>
+            <Row>
+
+                <Col xs={2} md={2} style={{padding: 0, width: 55}}>
+                    <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
+                                    timeValue={this.props.store.rootStore.timeValue}
+                                    //width={this.state.plotWidth / axisHorizontalZoom}
+
+                                    height={svgHeight} maxTimeInDays={maxTime}/>
+                </Col>
+                <Col xs={10} md={10} style={{padding: 0}}>
+
+                    <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
+                                    timeValue={this.props.store.rootStore.timeValue}
+                                    width={this.state.plotWidth / axisHorizontalZoom}
+                                    height={svgHeight} maxTimeInDays={maxTime}/>
+                    <Plot {...this.props}
+                        height={svgHeight}
+                        width={this.state.plotWidth/ axisHorizontalZoom}
+                        setPlotWidth={this.setPlotWidth}
+                        horizontalZoom={300 - this.state.horizontalZoom}
+                        timepointY={timepointPositions.timepoint}
+                        transY={timepointPositions.connection}
+                        selectedPatients={this.props.store.selectedPatients}
+                        onDrag={this.handlePatientSelection}/>
+                </Col>
+            </Row>
             </Col>
-            <Col xs={9} md={9} style={{padding: 0}}>
-                <Plot {...this.props}
-                      height={svgHeight}
-                      width={this.state.plotWidth}
-                      setPlotWidth={this.setPlotWidth}
-                      horizontalZoom={300 - this.state.horizontalZoom}
-                      timepointY={timepointPositions.timepoint}
-                      transY={timepointPositions.connection}
-                      selectedPatients={this.props.store.selectedPatients}
-                      onDrag={this.handlePatientSelection}/>
-            </Col>
+
         </Row>)
     }
 
@@ -333,3 +348,25 @@ MainView.defaultProps = {
 };
 
 export default MainView;
+
+/*
+
+
+            <Col md={1} style={{padding: 0, width: 100}}>
+                <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
+                                timeValue={this.props.store.rootStore.timeValue}
+                                width={this.state.plotWidth * 1.8 / axisHorizontalZoom}
+                                height={svgHeight} maxTimeInDays={maxTime}/>
+            </Col>
+            <Col xs={9} md={9} style={{padding: 0}}>
+                <Plot {...this.props}
+                      height={svgHeight}
+                      width={this.state.plotWidth}
+                      setPlotWidth={this.setPlotWidth}
+                      horizontalZoom={300 - this.state.horizontalZoom}
+                      timepointY={timepointPositions.timepoint}
+                      transY={timepointPositions.connection}
+                      selectedPatients={this.props.store.selectedPatients}
+                      onDrag={this.handlePatientSelection}/>
+            </Col>
+*/
