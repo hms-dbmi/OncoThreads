@@ -26,40 +26,33 @@ class SampleTimepointStore {
     initialize(variableId, variable, type, description) {
         this.rootStore.visStore.resetTransitionSpace();
         this.variableStore.constructor(this.rootStore);
+        let mapper = this.rootStore.sampleMappers[variableId];
         if (type === "NUMBER") {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax, mapper);
         }
         else {
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, []);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper);
         }
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
             this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.timepointStructure[i].map(d => d.patient), "sample", i, this.rootStore.patientOrderPerTimepoint));
         }
         this.rootStore.timepointStore.initialize();
-        this.addHeatmapVariable(variableId);
+        this.addHeatmapVariable(variableId, mapper);
     }
 
-    update(order,timepointNames) {
+    update(order, timepointNames) {
         this.timepoints = [];
         const _self = this;
         for (let j = 0; j < _self.rootStore.timepointStructure.length; j++) {
-            let newTimepoint=new SingleTimepoint(_self.rootStore, this.variableStore.currentVariables[0].id, _self.rootStore.timepointStructure[j].map(d => d.patient), "sample", j, order);
+            let newTimepoint = new SingleTimepoint(_self.rootStore, this.variableStore.currentVariables[0].id, _self.rootStore.timepointStructure[j].map(d => d.patient), "sample", j, order);
             newTimepoint.setName(timepointNames[j]);
             _self.timepoints.push(newTimepoint);
         }
         _self.rootStore.timepointStore.initialize();
         this.variableStore.currentVariables.forEach(function (d, i) {
-            if (!d.derived) {
-                _self.addHeatmapVariable(d.id);
-            }
-            else {
-                if (d.modificationType === "binning") {
-                    _self.addHeatmapVariable(d.originalIds[0]);
-                    _self.rootStore.timepointStore.bin(d.originalIds[0], d.id, d.modification.bins, d.modification.binNames);
-                }
-            }
+            _self.addHeatmapVariable(d.id, d.mapper);
         });
     }
 
@@ -67,9 +60,8 @@ class SampleTimepointStore {
      * adds variable to heatmap
      * @param variableId
      */
-    addHeatmapVariable(variableId) {
+    addHeatmapVariable(variableId, mapper) {
         const _self = this;
-        let mapper = this.rootStore.sampleMappers[variableId];
         this.rootStore.timepointStructure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
@@ -78,7 +70,8 @@ class SampleTimepointStore {
                     let value = mapper[f.sample];
                     variableData.push({
                         patient: f.patient,
-                        value: value
+                        value: value,
+                        sample: f.sample
 
                     });
                 }
@@ -99,16 +92,17 @@ class SampleTimepointStore {
      * @param description
      */
     addVariable(variableId, variable, type, description) {
+        let mapper = this.rootStore.sampleMappers[variableId];
         if (type === "NUMBER") {
             let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax, mapper);
         }
         else {
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, []);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper);
         }
-        this.addHeatmapVariable(variableId);
+        this.addHeatmapVariable(variableId, mapper);
         this.rootStore.timepointStore.regroupTimepoints();
-        this.rootStore.globalPrimary=variableId;
+        this.rootStore.globalPrimary = variableId;
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)
     }
 

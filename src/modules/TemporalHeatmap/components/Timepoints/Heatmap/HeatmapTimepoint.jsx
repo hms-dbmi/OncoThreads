@@ -24,7 +24,6 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                     height={_self.props.visMap.primaryHeight}
                                     opacity={1}
                                     color={color}
-                                    ht={_self.props.ht}
                                     x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
                                     dtype={_self.props.currentVariables[i].datatype}/>;
                     </g>);
@@ -36,7 +35,6 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
                                     height={_self.props.visMap.secondaryHeight}
                                     opacity={0.5}
                                     color={color}
-                                    ht={_self.props.ht}
                                     x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
                                     dtype={_self.props.currentVariables[i].datatype}/>;
                     </g>);

@@ -65,14 +65,14 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                              onContextMenu={(e) => _self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
                              key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
-                             x={_self.props.heatmapScale(d.patient) + _self.props.x}
+                             x={_self.props.heatmapScale(d.patient)}
                              fill={fill} opacity={_self.props.opacity}/>);
             if(d.value===undefined){
                  rects.push(<line stroke={stroke}
                                  key={d.patient + "UNDEFINED"} height={_self.props.height}
                                  width={_self.props.rectWidth}
-                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
-                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
+                                 x1={_self.props.heatmapScale(d.patient)}
+                                 x2={_self.props.heatmapScale(d.patient) +  _self.props.rectWidth}
                                  y1={0}
                                  y2={_self.props.height}
                                  opacity={_self.props.opacity}/>);

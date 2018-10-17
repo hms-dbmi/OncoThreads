@@ -151,22 +151,23 @@ class TimepointStore {
         let oldVar = _self.variableStore[type].getById(oldId);
         let variableName = oldVar.name;
         let variableDomain = oldVar.domain;
+        let binnedMapper=this.rootStore.createBinnedMapper(oldVar.mapper,bins,binNames);
         _self.variableStore[type].modifyVariable(newId, oldVar.name + "_BINNED", "BINNED", oldVar.description + " (binned)", oldId, "binning", {
             bins: bins,
             binNames: binNames
-        }, variableDomain);
-        this.bin(oldId, newId, bins, binNames);
-        this.rootStore.undoRedoStore.saveVariableModification("bin", variableName, saveToHistory);
+        }, variableDomain,[],binnedMapper);
+        this.updateValues(oldId, newId, binnedMapper);
+        this.rootStore.undoRedoStore.saveVariableModification("updateValues", variableName, saveToHistory);
     }
 
-    bin(oldId, newId, bins, binNames) {
+    updateValues(oldId, newId, mapper) {
         const _self = this;
         this.timepoints.forEach(function (d, i) {
             d.heatmap.forEach(function (f, j) {
                 if (f.variable === oldId) {
                     let newData = [];
                     f.data.forEach(function (g) {
-                        newData.push({patient: g.patient, value: TimepointStore.getBin(bins, binNames, g.value)})
+                        newData.push({patient: g.patient, value: mapper[g.sample]})
                     });
                     _self.timepoints[i].heatmap[j].data = newData;
                     f.variable = newId;
@@ -183,11 +184,11 @@ class TimepointStore {
     }
 
     /**
-     * gets a bin corresponding to value and returns the name of the bin
+     * gets a updateValues corresponding to value and returns the name of the updateValues
      * @param bins
      * @param binNames
      * @param value
-     * @returns name of bin
+     * @returns name of updateValues
      */
     static getBin(bins, binNames, value) {
         for (let i = 1; i < bins.length; i++) {

@@ -168,6 +168,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
     render() {
+        console.log(this.props.visMap.sampleRectWidth);
         if (!this.props.store.transitionOn) {
             return (
                 this.getGlobalTimepoint()

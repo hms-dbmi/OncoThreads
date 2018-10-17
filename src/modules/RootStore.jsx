@@ -91,6 +91,25 @@ class RootStore {
                 }
                 return transitionStructure;
             },
+            get transitionStructureNew() {
+                const _self = this;
+                let transitionStructure = [];
+                transitionStructure.push(this.timepointStructure[0].slice());
+                for (let i = 1; i < this.timepointStructure.length; i++) {
+                    let newEntry = this.timepointStructure[i].slice();
+                    this.timepointStructure[i - 1].forEach(function (d) {
+                        if (!(_self.timepointStructure[i].map(d => d.patient).includes(d.patient))) {
+                            newEntry.push({patient: d.patient, sample: d.sample + "_post"})
+                        }
+                    });
+                    transitionStructure.push(newEntry);
+                }
+                transitionStructure.push(this.timepointStructure[this.timepointStructure.length - 1].map(d => ({
+                    sample: d.sample + "_post",
+                    patient: d.patient
+                })));
+                return transitionStructure;
+            },
             get timeGapMapping() {
                 let timeGapMapping = {};
                 const _self = this;
@@ -117,6 +136,9 @@ class RootStore {
             }
 
         })
+    }
+    setGlobalPrimary(primary){
+        this.globalPrimary=primary;
     }
 
     /**
@@ -241,9 +263,9 @@ class RootStore {
                         if (noMutationsFound.length > 0) {
                             confirm = window.confirm("WARNING: No mutations found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
                         }
-                        if(!confirm){
+                        if (!confirm) {
                             noMutationsFound.forEach(function (d) {
-                               delete geneDict[d.entrezGeneId];
+                                delete geneDict[d.entrezGeneId];
                             });
                         }
                         for (let entry in geneDict) {
@@ -519,6 +541,47 @@ class RootStore {
         });
     }
 
+    createBinnedMapper(mapper, bins, binNames) {
+        let newMapper = {};
+        for (let entry in mapper) {
+            if (mapper[entry] === 'undefined') {
+                newMapper[entry] = undefined;
+            }
+            else {
+                for (let i = 1; i < bins.length; i++) {
+                    if (i === 1 && mapper[entry] >= bins[0] && mapper[entry] <= bins[1]) {
+                        newMapper[entry] = binNames[0];
+                        break;
+                    }
+                    else {
+                        if (mapper[entry] > bins[i - 1] && mapper[entry] <= bins[i]) {
+                            newMapper[entry] = binNames[i - 1];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return newMapper
+    }
+
+    createCombinedMapper(mappers, operator) {
+        let newMapper = {};
+        for (let entry in mappers[0]) {
+            if (operator === "or") {
+                let containedInOne = false;
+                for (let i = 0; i< mappers.length; i++) {
+                    if (mappers[i][entry]) {
+                        containedInOne = true;
+                        break;
+                    }
+                }
+                newMapper[entry] = containedInOne;
+            }
+        }
+        console.log(mappers,newMapper);
+        return newMapper;
+    }
 
     /**
      * creates a dictionary mapping sample IDs onto mutation counts
@@ -638,6 +701,7 @@ class RootStore {
                                 start: start,
                                 end: end
                             });
+
                             _self.eventDetails.push({
                                 time: counter,
                                 patientId: patient,
@@ -667,7 +731,89 @@ class RootStore {
                 }
             }
         }
+        this.getSampleEventMapping(eventType, selectedVariables);
         return mapper;
+    }
+
+    /**
+     *creates a mapping of selected events to patients (OR)
+     * @param eventType
+     * @param selectedVariable
+     * @returns {any[]}
+     */
+    getSampleEventMapping(eventType, selectedVariable) {
+        let sampleMapper = {};
+        const _self = this;
+        for (let patient in this.cbioAPI.clinicalEvents) {
+            let samples = [];
+            //extract samples for current patient
+            this.transitionStructureNew.forEach(function (g) {
+                g.forEach(function (l) {
+                    if (l.patient === patient) {
+                        if (!(l.sample in sampleMapper)) {
+                            sampleMapper[l.sample] = false;
+                        }
+                        samples.push(l.sample);
+                    }
+                });
+            });
+            if (samples.length > 0) {
+                let counter = 0;
+                let currentStart = Number.NEGATIVE_INFINITY;
+                let currentEnd = this.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
+                let i = 0;
+                while (i < this.cbioAPI.clinicalEvents[patient].length) {
+                    let start = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
+                    let end = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
+                    if (this.cbioAPI.clinicalEvents[patient][i].hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+                        end = this.cbioAPI.clinicalEvents[patient][i].endNumberOfDaysSinceDiagnosis;
+                    }
+                    if (RootStore.isInCurrentRange(this.cbioAPI.clinicalEvents[patient][i], currentStart, currentEnd)) {
+                        let matchingId = _self.doesSingleEventMatch(eventType, selectedVariable, this.cbioAPI.clinicalEvents[patient][i]);
+                        if (matchingId !== null) {
+                            sampleMapper[samples[counter]]=true;
+                            _self.eventDetails.push({
+                                time: counter,
+                                patientId: patient,
+                                eventDate: start,
+                                eventEndDate: end,
+                                varId: matchingId
+                            });
+                        }
+                        i++;
+                    }
+                    else {
+                        if (start >= currentEnd) {
+                            currentStart = _self.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
+                            if (counter + 1 < samples.length - 1) {
+                                currentEnd = _self.sampleTimelineMap[samples[counter + 1]].startNumberOfDaysSinceDiagnosis;
+                            }
+                            else {
+                                currentEnd = Number.POSITIVE_INFINITY;
+                            }
+                            counter++;
+                        }
+                        else {
+                            i++;
+                        }
+
+                    }
+                }
+            }
+        }
+        return sampleMapper;
+    }
+
+    doesSingleEventMatch(type, value, event) {
+        let matchingId = null;
+        if (type === event.eventType) {
+            event.attributes.forEach(function (f) {
+                if (f.key === value.eventType && f.value === value.name) {
+                    matchingId = value.id;
+                }
+            })
+        }
+        return matchingId;
     }
 
     /**
@@ -742,7 +888,6 @@ class RootStore {
             })
         }
 
-        //console.log(attributes);
         this.eventAttributes = attributes;
     }
 

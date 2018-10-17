@@ -17,7 +17,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * @param variable: variable to be the primary variable
          */
         promote(timepoint, variable) {
-            this.props.store.rootStore.globalPrimary = variable;
+            this.props.store.rootStore.setGlobalPrimary(variable);
         }
 
         /**

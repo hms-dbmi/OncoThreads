@@ -40,30 +40,28 @@ class BetweenTimepointStore {
     }
 
     /**
-     * adds variable to heatmap timepointData
+     * adds variable to heatmap
      * @param mapper
      * @param variableId
      */
     addHeatmapVariable(mapper, variableId) {
-        let timepoints = this.timepoints.slice();
         const _self = this;
-        let currentPatientIndices = {};
-        this.rootStore.transitionStructure.forEach(function (d, i) {
+        this.rootStore.transitionStructureNew.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
-                if (!(f in currentPatientIndices)) {
-                    currentPatientIndices[f] = 0
+                if (f) {
+                    //console.log(f.patient);
+                    let value = mapper[f.sample];
+                    variableData.push({
+                        patient: f.patient,
+                        value: value,
+                        sample: f.sample
+
+                    });
                 }
-                let value = mapper[f][currentPatientIndices[f]];
-                variableData.push({
-                    patient: f,
-                    value: value
-                });
-                currentPatientIndices[f] += 1;
             });
             _self.timepoints[i].addRow(variableId, variableData);
         });
-        this.timepoints = timepoints;
     }
 
     /**
@@ -94,35 +92,7 @@ class BetweenTimepointStore {
             this.initialize(this.variableStore.currentVariables[0].id);
         }
         this.variableStore.currentVariables.forEach(function (d) {
-            if (!d.derived) {
-                if (d.type === 'event') {
-                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(d.eventType, [{
-                        name: d.name,
-                        id: d.id,
-                        eventType: d.eventSubType
-                    }]), "or"), d.id);
-                }
-                else {
-                    _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.id);
-                }
-            }
-            else {
-                if (d.modificationType === "OR") {
-                    let selectedVariables = [];
-                    let eventType=_self.variableStore.getByIdAllVariables(d.originalIds[0]).eventType;
-                    d.originalIds.forEach(function (f, i) {
-                        //let variable = _self.variableStore.getByIdAllVariables(f.id);
-                        let variable = _self.variableStore.getByIdAllVariables(f);
-                        selectedVariables.push({id: variable.id, name: variable.name, eventType: variable.eventSubType});
-                    });
-                    _self.addHeatmapVariable(_self.deriveMapper(_self.rootStore.getEventMapping(eventType, selectedVariables), "or"), d.id);
-                }
-                else if (d.modificationType === "binning") {
-                    _self.addHeatmapVariable(_self.rootStore.timeGapMapping, d.originalIds[0]);
-                    _self.rootStore.timepointStore.bin(d.originalIds[0], d.id, d.modification.bins, d.modification.binNames);
-                }
-            }
-
+            _self.addHeatmapVariable(d.mapper,d.id);
         });
     }
 
@@ -130,14 +100,15 @@ class BetweenTimepointStore {
         // create new Id
         let isFirst = this.timepoints.length === 0;
         let derivedId = uuidv4();
+        let mappers=selectedValues.map(d => this.rootStore.getSampleEventMapping(type, d));
+        let combinedMapper = this.rootStore.createCombinedMapper(mappers, "or");
         // add derived variable
-        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, "OR", []);
+        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, "OR", combinedMapper,mappers);
         //initialize if the variable is the first variable to be added
         if (isFirst) {
             this.initialize(derivedId);
         }
-        const eventMapper = this.rootStore.getEventMapping(type, selectedValues);
-        this.addHeatmapVariable(this.deriveMapper(eventMapper, "or"), derivedId);
+        this.addHeatmapVariable(combinedMapper,derivedId);
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
     }
@@ -150,30 +121,16 @@ class BetweenTimepointStore {
         }
         selectedValues.forEach(function (d, i) {
             if (!_self.variableStore.hasVariable(d.id)) {
-                const eventMapper = _self.rootStore.getEventMapping(type, [selectedValues[i]]);
-                _self.addHeatmapVariable(_self.deriveMapper(eventMapper, "or"), d.id);
+                const eventMapper = _self.rootStore.getSampleEventMapping(type, selectedValues[i]);
+                _self.addHeatmapVariable(eventMapper, d.id);
+                _self.variableStore.addEventVariable(type,selectedValues[i],eventMapper);
             }
         });
-        this.variableStore.addSeperateEventVariables(type, selectedValues);
         //initialize if the variable is the first variable to be added
         this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable => variable.name))
     }
 
-    deriveMapper(mapper, operator) {
-        const derivedMapper = {};
-        if (operator === "or") {
-            for (let patient in mapper) {
-                if (!(patient in derivedMapper)) {
-                    derivedMapper[patient] = [];
-                }
-                mapper[patient].forEach(function (d, i) {
-                    derivedMapper[patient].push(d.length > 0);
-                })
-            }
-        }
-        return derivedMapper;
-    }
 
     /**
      *
@@ -183,12 +140,11 @@ class BetweenTimepointStore {
         let isFirst = this.timepoints.length === 0;
         this.rootStore.timepointStore.transitionOn = true;
         if (!this.variableStore.hasVariable(variableId)) {
-            let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.timeGapMapping, "between");
-            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", "Time between timepoints", minMax);
+            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", "Time between timepoints", this.rootStore.timeGapMapping);
             if (isFirst) {
                 this.initialize(variableId, false);
             }
-            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId, isFirst);
+            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
             this.rootStore.timepointStore.regroupTimepoints();
         }
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")

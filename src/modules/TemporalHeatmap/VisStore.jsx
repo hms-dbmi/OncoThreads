@@ -9,7 +9,7 @@ class VisStore {
     constructor(rootStore) {
         //width of rects in sampleTimepoints
         this.rootStore = rootStore;
-        this.sampleRectWidth = 0;
+        this.sampleRectWidth = 10;
         //height of rects in a row which is primary
         this.primaryHeight = 30;
         this.secondaryHeight = 15;

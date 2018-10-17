@@ -47,8 +47,8 @@ class VariableStore {
      * @param domain
      * @param range
      */
-    addOriginalVariable(id, name, datatype, description, domain, range) {
-        const newVariable = new OriginalVariable(id, name, datatype, description,domain, range);
+    addOriginalVariable(id, name, datatype, description, domain, range, mapper) {
+        const newVariable = new OriginalVariable(id, name, datatype, description, domain, range, mapper);
         this.currentVariables.push(newVariable);
         this.allVariables.push(newVariable);
     }
@@ -60,27 +60,27 @@ class VariableStore {
      * @param eventType
      * @param selectedVariables
      * @param logicalOperator
-     * @param domain
-     * @param range
+     * @param mapper
+     * @param singleMappers
      */
-    addCombinedEventVariable(newId, name, eventType, selectedVariables, logicalOperator, domain, range) {
+    addCombinedEventVariable(newId, name, eventType, selectedVariables, logicalOperator, mapper, singleMappers) {
         const _self = this;
-        let description="";
-        selectedVariables.forEach(function (f) {
-             if(description!==""){
-                    description+=" -"+logicalOperator+"- ";
-                }
-                description+=f.name;
+        let description = "";
+        selectedVariables.forEach(function (f, i) {
+            if (description !== "") {
+                description += " -" + logicalOperator + "- ";
+            }
+            description += f.name;
             if (!_self.allVariables.map(function (d) {
                 return d.id;
             }).includes(f.id)) {
-                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, f.eventType);
+                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, f.eventType, singleMappers[i]);
                 _self.allVariables.push(newVariable);
             }
         });
         let combinedEvent = new DerivedVariable(newId, name, "binary", description, selectedVariables.map(function (d, i) {
             return d.id;
-        }), logicalOperator, null, domain);
+        }), logicalOperator, null, mapper);
         this.allVariables.push(combinedEvent);
         this.currentVariables.push(combinedEvent);
     }
@@ -90,8 +90,8 @@ class VariableStore {
      * @param eventType
      * @param selectedVariables
      */
-    addSeperateEventVariables(eventType, selectedVariables){
-        const _self=this;
+    addSeperateEventVariables(eventType, selectedVariables) {
+        const _self = this;
         selectedVariables.forEach(function (f) {
             if (!_self.allVariables.map(function (d) {
                 return d.id;
@@ -100,11 +100,26 @@ class VariableStore {
                 _self.allVariables.push(newVariable);
                 _self.currentVariables.push(newVariable);
             }
-            else if(!_self.hasVariable(f.id)){
+            else if (!_self.hasVariable(f.id)) {
                 _self.currentVariables.push(_self.getByIdAllVariables(f.id));
 
             }
         });
+    }
+
+    addEventVariable(eventType, selectedVariable, mapper) {
+        const _self = this;
+        if (!_self.allVariables.map(function (d) {
+            return d.id;
+        }).includes(selectedVariable.id)) {
+            const newVariable = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, mapper);
+            _self.allVariables.push(newVariable);
+            _self.currentVariables.push(newVariable);
+        }
+        else if (!_self.hasVariable(selectedVariable.id)) {
+            _self.currentVariables.push(_self.getByIdAllVariables(selectedVariable.id));
+
+        }
     }
 
     /**
@@ -127,13 +142,14 @@ class VariableStore {
      * @param id
      * @param name
      * @param datatype
+     * @param description
      * @param originalId
      * @param modificationType
      * @param modification
      * @param domain
      */
-    modifyVariable(id, name, datatype, description, originalId, modificationType, modification, domain) {
-        const newVariable = new DerivedVariable(id, name, datatype,description, [originalId], modificationType, modification, domain);
+    modifyVariable(id, name, datatype, description, originalId, modificationType, modification, domain, mapper) {
+        const newVariable = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, domain, [], mapper);
         const oldIndex = this.currentVariables.map(function (d) {
             return d.id;
         }).indexOf(originalId);

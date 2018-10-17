@@ -21,7 +21,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     /**
-     * handles bin change (sliders are moved)
+     * handles updateValues change (sliders are moved)
      * @param bins
      */
     handleBinChange(bins) {
