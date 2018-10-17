@@ -109,7 +109,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 //globalRectHeight= ht[j]/2;
 
 
-                xGlobal = _self.props.heatmapScale(d.patient) + _self.props.x;
+                xGlobal = _self.props.heatmapScale(d.patient);
 
                 let duration = ht[j];
                 rects.push(<rect stroke={stroke}
