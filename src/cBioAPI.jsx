@@ -102,8 +102,8 @@ class cBioAPI {
      * @param HUGOsymbol
      * @param callback
      */
-    getMutation(studyId, HUGOsymbol, callback) {
-        cBioAPI.genomeNexusMapping(HUGOsymbol).then(function (res) {
+    getSingleMutation(studyId, HUGOsymbol, callback) {
+        cBioAPI.genomeNexusMappingSingleSymbol(HUGOsymbol).then(function (res) {
             const entrezId = res.data.entrezGeneId;
             axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
                 "entrezGeneIds": [
@@ -127,7 +127,7 @@ class cBioAPI {
      * @param hgncSymbol
      * @returns {AxiosPromise<any>}
      */
-    static genomeNexusMapping(hgncSymbol) {
+    static genomeNexusMappingSingleSymbol(hgncSymbol) {
         return axios.get("https://genomenexus.org/ensembl/canonical-gene/hgnc/" + hgncSymbol);
     }
 
@@ -136,25 +136,45 @@ class cBioAPI {
      * @param hgncSymbols
      * @returns {AxiosPromise<any>}
      */
-    static genomeNexusMapping2(hgncSymbols) {
+    static genomNexusMappingMultipleSymbols(hgncSymbols) {
         return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
     }
 
     getGeneIDs(hgncSymbols, callback) {
-        cBioAPI.genomeNexusMapping2(hgncSymbols).then(function (response) {
+        cBioAPI.genomNexusMappingMultipleSymbols(hgncSymbols).then(function (response) {
+            if (response.data.length === 0) {
+                alert("No valid symbols found")
+            }
+            else {
+                let invalidSymbols = [];
+                hgncSymbols.forEach(function (d, i) {
+                    if (!(response.data.map(entry => entry.hugoSymbol).includes(d))) {
+                        invalidSymbols.push(d);
+                    }
+                });
+                if (invalidSymbols.length !== 0) {
+                    alert('WARNING the following symbols are not valid:' + invalidSymbols);
+                }
+            }
             callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));
+        }).catch(function (error) {
+            alert("invalid symbol")
         })
     }
 
-    getMutation2(studyId, entrezIDs, callback) {
+    getAllMutations(studyId, entrezIDs, callback) {
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
             "entrezGeneIds":
                 entrezIDs.map(d => d.entrezGeneId)
             ,
             "sampleListId": studyId + "_all"
         }).then(function (response) {
-            callback(response.data);
-        });
+            callback(response.data)
+        })
+            .catch(function (error) {
+                console.log(error)
+            });
+
     }
 
     /**

@@ -71,12 +71,13 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                      <form>
                           <FormGroup>
                             <h5>Show rows with only undefined values</h5>
+                              <Radio checked={this.props.store.showUndefined} name="radioGroup" inline onChange={()=>this.handleUndefinedRowsSetting(true)}>
+                                Yes
+                            </Radio>{' '}
                             <Radio checked={!this.props.store.showUndefined} name="radioGroup" inline onChange={()=>this.handleUndefinedRowsSetting(false)}>
                                No
                             </Radio>{' '}
-                            <Radio checked={this.props.store.showUndefined} name="radioGroup" inline onChange={()=>this.handleUndefinedRowsSetting(true)}>
-                                Yes
-                            </Radio>{' '}
+
                         </FormGroup>
                     </form>
                 </Modal.Body>
