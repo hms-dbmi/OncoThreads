@@ -37,7 +37,7 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     updateDimensions() {
-        this.props.setPlotWidth(this.refs.plot.parentNode.clientWidth);
+        this.props.setPlotWidth(this.refs.plot.parentNode.getBoundingClientRect().width);
     }
 
     /**
@@ -75,7 +75,6 @@ const Plot = observer(class Plot extends React.Component {
         const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth, this.props.visMap.sampleRectWidth);
         const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
-
         const max = this.props.store.rootStore.actualTimeLine
             .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
             .reduce((next, max) => next > max ? next : max, 0);

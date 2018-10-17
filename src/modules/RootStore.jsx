@@ -197,7 +197,7 @@ class RootStore {
         const _self = this;
         HUGOsymbols.forEach(function (HUGOsymbol) {
             if (!_self.sampleTimepointStore.variableStore.hasVariable(HUGOsymbol)) {
-                _self.cbioAPI.getMutation(_self.study.studyId, HUGOsymbol, function (mutation) {
+                _self.cbioAPI.getSingleMutation(_self.study.studyId, HUGOsymbol, function (mutation) {
                     if (mutation.length !== 0) {
                         _self.createMutationCategoricalMapping(mutation, HUGOsymbol);
                         _self.sampleTimepointStore.addVariable(HUGOsymbol, HUGOsymbol, "STRING", 'mutation in ' + HUGOsymbol);
@@ -227,7 +227,7 @@ class RootStore {
         }
         _self.cbioAPI.getGeneIDs(HUGOsymbols, function (entrezIDs) {
                 if (entrezIDs.length !== 0) {
-                    _self.cbioAPI.getMutation2(_self.study.studyId, entrezIDs, function (response) {
+                    _self.cbioAPI.getAllMutations(_self.study.studyId, entrezIDs, function (response) {
                         let geneDict = {};
                         let noMutationsFound = [];
                         entrezIDs.forEach(function (d, i) {

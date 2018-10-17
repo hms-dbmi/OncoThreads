@@ -37,7 +37,7 @@ const MainView = observer(class MainView extends React.Component {
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.setPlotWidth = this.setPlotWidth.bind(this);
         this.state = {
-            horizontalZoom: 300-(props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300),
+            horizontalZoom: 300 - (props.store.numberOfPatients < 300 ? props.store.numberOfPatients : 300),
             highlightedVariable: '',
             plotWidth: 700
         }
@@ -231,7 +231,7 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     setToScreenWidth() {
-        this.setState({horizontalZoom: 300-(this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300)})
+        this.setState({horizontalZoom: 300 - (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300)})
     }
 
     setToScreenHeight() {
@@ -299,7 +299,7 @@ const MainView = observer(class MainView extends React.Component {
                         </ButtonToolbar>
                     </Col>
                     <Col md={patientsVisibleWidth} xs={patientsVisibleWidth}>
-                        <h5>{"Patients visible: " + (300-this.state.horizontalZoom < this.props.store.numberOfPatients ? 300-this.state.horizontalZoom : this.props.store.numberOfPatients) + "/" + this.props.store.numberOfPatients}</h5>
+                        <h5>{"Patients visible: " + (300 - this.state.horizontalZoom < this.props.store.numberOfPatients ? 300 - this.state.horizontalZoom : this.props.store.numberOfPatients) + "/" + this.props.store.numberOfPatients}</h5>
                     </Col>
                     <Col md={buttonToolbarWidth} xs={buttonToolbarWidth}>
                         <ButtonToolbar>

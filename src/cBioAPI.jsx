@@ -102,8 +102,8 @@ class cBioAPI {
      * @param HUGOsymbol
      * @param callback
      */
-    getMutation(studyId, HUGOsymbol, callback) {
-        cBioAPI.genomeNexusMapping(HUGOsymbol).then(function (res) {
+    getSingleMutation(studyId, HUGOsymbol, callback) {
+        cBioAPI.genomeNexusMappingSingleSymbol(HUGOsymbol).then(function (res) {
             const entrezId = res.data.entrezGeneId;
             axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
                 "entrezGeneIds": [
@@ -127,7 +127,7 @@ class cBioAPI {
      * @param hgncSymbol
      * @returns {AxiosPromise<any>}
      */
-    static genomeNexusMapping(hgncSymbol) {
+    static genomeNexusMappingSingleSymbol(hgncSymbol) {
         return axios.get("https://genomenexus.org/ensembl/canonical-gene/hgnc/" + hgncSymbol);
     }
 
@@ -136,13 +136,12 @@ class cBioAPI {
      * @param hgncSymbols
      * @returns {AxiosPromise<any>}
      */
-    static genomeNexusMapping2(hgncSymbols) {
+    static genomNexusMappingMultipleSymbols(hgncSymbols) {
         return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
     }
 
     getGeneIDs(hgncSymbols, callback) {
-        cBioAPI.genomeNexusMapping2(hgncSymbols).then(function (response) {
-            console.log(response.data);
+        cBioAPI.genomNexusMappingMultipleSymbols(hgncSymbols).then(function (response) {
             if (response.data.length === 0) {
                 alert("No valid symbols found")
             }
@@ -163,7 +162,7 @@ class cBioAPI {
         })
     }
 
-    getMutation2(studyId, entrezIDs, callback) {
+    getAllMutations(studyId, entrezIDs, callback) {
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
             "entrezGeneIds":
                 entrezIDs.map(d => d.entrezGeneId)
