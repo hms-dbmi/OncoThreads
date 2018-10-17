@@ -204,33 +204,29 @@ const MainView = observer(class MainView extends React.Component {
                         mainWidth={svgWidth}/>
             </Col>
 
-            <Col xs={10} md={10} style={{padding: 0}}>
-            <Row>
 
-                <Col xs={2} md={2} style={{padding: 0, width: 55}}>
-                    <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
-                                    timeValue={this.props.store.rootStore.timeValue}
-                                    //width={this.state.plotWidth / axisHorizontalZoom}
+            <Col xs={1} md={1} style={{padding: 0, width: 55}}>
+                <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
+                                timeValue={this.props.store.rootStore.timeValue}
+                    //width={this.state.plotWidth / axisHorizontalZoom}
 
-                                    height={svgHeight} maxTimeInDays={maxTime}/>
-                </Col>
-                <Col xs={10} md={10} style={{padding: 0}}>
+                                height={svgHeight} maxTimeInDays={maxTime}/>
+            </Col>
+            <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
 
-                    <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
-                                    timeValue={this.props.store.rootStore.timeValue}
-                                    width={this.state.plotWidth / axisHorizontalZoom}
-                                    height={svgHeight} maxTimeInDays={maxTime}/>
-                    <Plot {...this.props}
-                        height={svgHeight}
-                        width={this.state.plotWidth/ axisHorizontalZoom}
-                        setPlotWidth={this.setPlotWidth}
-                        horizontalZoom={300 - this.state.horizontalZoom}
-                        timepointY={timepointPositions.timepoint}
-                        transY={timepointPositions.connection}
-                        selectedPatients={this.props.store.selectedPatients}
-                        onDrag={this.handlePatientSelection}/>
-                </Col>
-            </Row>
+                <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
+                             timeValue={this.props.store.rootStore.timeValue}
+                             width={this.state.plotWidth / axisHorizontalZoom}
+                             height={svgHeight} maxTimeInDays={maxTime}/>
+                <Plot {...this.props}
+                      height={svgHeight}
+                      width={this.state.plotWidth / axisHorizontalZoom}
+                      setPlotWidth={this.setPlotWidth}
+                      horizontalZoom={300 - this.state.horizontalZoom}
+                      timepointY={timepointPositions.timepoint}
+                      transY={timepointPositions.connection}
+                      selectedPatients={this.props.store.selectedPatients}
+                      onDrag={this.handlePatientSelection}/>
             </Col>
 
         </Row>)
