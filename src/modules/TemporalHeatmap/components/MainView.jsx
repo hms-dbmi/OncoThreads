@@ -251,9 +251,9 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        let rectWidth = this.state.width / 300;
+        let rectWidth = this.state.plotWidth / 300;
         if (this.props.store.numberOfPatients < 300) {
-            rectWidth = this.state.width / this.props.store.numberOfPatients - 1;
+            rectWidth = this.state.plotWidth / this.props.store.numberOfPatients - 1;
         }
         this.setVisualParameters(rectWidth);
 
