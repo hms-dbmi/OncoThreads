@@ -120,23 +120,23 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                                            onMouseLeave={_self.props.hideTooltip}>
                                 <rect key={"rect"}
                                       width={fontSize} height={fontSize}
-                                      x={xT + 5} y={-fontSize+2}
+                                      x={xT + 5} y={-fontSize + 2}
                                       fill={fillC}
                                       opacity={0.5}/>
                                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
-                                    {GlobalRowOperator.cropText(originalVar.name, fontSize, fontWeight, width-iconScale*24)}
+                                    {GlobalRowOperator.cropText(originalVar.name, fontSize, fontWeight, width - iconScale * 24)}
                                 </text>
                             </g>);
                         }
 
 
                     });
-                    if(oIds.length>1) {
+                    if (oIds.length > 1) {
                         labels.push(<rect width={this.props.width}
                                           height={yPos + (oIds.length - 0.8) * _self.props.store.rootStore.visStore.secondaryHeight}
                                           strokeDasharray="5,5" strokeWidth={1} stroke={"grey"} fill={"none"}/>)
                     }
-                        labels.push(_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24,0));
+                    labels.push(_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, 0));
                     return labels;
                 }
             }
@@ -148,9 +148,9 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     <text style={{fontWeight: fontWeight, fontSize: fontSize}}
                           onClick={() => this.promote(timepoint, variable)}
                     >
-                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale*24)}
+                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
                     </text>
-                    {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24,-fontSize-2)}
+                    {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
                 </g>);
 
             }

@@ -1,6 +1,5 @@
-import {extendObservable} from "mobx";
+import {extendObservable, reaction} from "mobx";
 import * as d3 from 'd3';
-import {reaction} from "mobx";
 
 /*
 stores information about current visual parameters
@@ -22,7 +21,7 @@ class VisStore {
         extendObservable(this, {
             transitionSpace: 100,
             timepointY: [],
-            plotHeight:700,
+            plotHeight: 700,
             transY: [],
             svgWidth: 0,
             get svgHeight() {
@@ -42,7 +41,7 @@ class VisStore {
             }
         });
         reaction(
-        () => this.plotHeight,
+            () => this.plotHeight,
             length => this.fitToScreenHeight());
     }
 
@@ -59,7 +58,7 @@ class VisStore {
             heightWithoutSpace += _self.getTPHeight(d);
         });
         let remainingHeight = this.plotHeight - heightWithoutSpace;
-        let transitionSpace=remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1);
+        let transitionSpace = remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1);
         if (transitionSpace > 30) {
             this.transitionSpace = transitionSpace
         }

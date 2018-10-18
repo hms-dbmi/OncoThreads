@@ -26,7 +26,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
      * handles the addition of bins
      * @param e
      * @param width
-=     */
+     =     */
     handleBinAddition(e, width) {
         const stepWidth = width / e.target.value;
         let currX = 0;

@@ -8,13 +8,13 @@ class DerivedVariable {
                 let scale;
                 switch (this.datatype) {
                     case "NUMBER":
-                        scale = ColorScales.getContinousColorScale(this.domain, this.range);
+                        scale = ColorScales.getContinousColorScale(this.domain);
                         break;
                     case "binary":
                         scale = ColorScales.getBinaryScale();
                         break;
                     case "BINNED":
-                        scale = ColorScales.getBinnedColorScale(this.modification.binNames, this.modification.bins, this.domain, this.range);
+                        scale = ColorScales.getBinnedColorScale(this.modification.binNames, this.modification.bins, this.domain);
                         break;
                     default:
                         scale = ColorScales.getCategoricalScale(this.range);

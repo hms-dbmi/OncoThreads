@@ -1,4 +1,7 @@
-import {extendObservable,reaction} from "mobx";
+import {extendObservable, reaction} from "mobx";
+import uuidv4 from "uuid/v4";
+import SampleTimepointStore from "./SampleTimepointStore";
+import BetweenTimepointStore from "./BetweenTimepointStore";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -8,6 +11,10 @@ class TimepointStore {
         this.rootStore = rootStore;
         this.numberOfPatients = 0;
         this.variableStore = {"sample": null, "between": null};
+        this.timepointStores = {
+            "sample": new SampleTimepointStore(rootStore),
+            "between": new BetweenTimepointStore(rootStore)
+        };
         extendObservable(this, {
             currentVariables: {"sample": [], "between": []},
             selectedPatients: [],
@@ -33,20 +40,12 @@ class TimepointStore {
 
         });
         reaction(
-        () => this.timepoints.map(tp=>tp.heatmap.length),
+            () => this.timepoints.map(tp => tp.heatmap.length),
             length => rootStore.visStore.fitToScreenHeight());
-        this.groupBinnedTimepoint = this.groupBinnedTimepoint.bind(this);
-        this.promoteBinnedTimepoint = this.promoteBinnedTimepoint.bind(this);
         this.binVariable = this.binVariable.bind(this);
-        this.applyGroupingToAll = this.applyGroupingToAll.bind(this);
-        this.applyGroupingToPrevious = this.applyGroupingToPrevious.bind(this);
-        this.applyGroupingToNext = this.applyGroupingToNext.bind(this);
-        this.applyUnGroupingToAll = this.applyUnGroupingToAll.bind(this);
-        this.applyUnGroupingToPrevious = this.applyUnGroupingToPrevious.bind(this);
-        this.applyUnGroupingToNext = this.applyUnGroupingToNext.bind(this);
-        this.applyPromotingToAll = this.applyPromotingToAll.bind(this);
-        this.applyPromotingToPrevious = this.applyPromotingToPrevious.bind(this);
-        this.applyPromotingToNext = this.applyPromotingToNext.bind(this);
+        this.applyActionToAll = this.applyActionToAll.bind(this);
+        this.applyActionToPrevious = this.applyActionToPrevious.bind(this);
+        this.applyActionToNext = this.applyActionToNext.bind(this);
         this.regroupTimepoints = this.regroupTimepoints.bind(this);
 
     }
@@ -72,15 +71,22 @@ class TimepointStore {
      * initializes the datastructures
      */
     initialize() {
-        this.timepoints = TimepointStore.combineArrays(this.rootStore.betweenTimepointStore.timepoints, this.rootStore.sampleTimepointStore.timepoints);
+        this.timepointStores.between.reset();
+        this.timepointStores.sample.initialize(this.rootStore.clinicalSampleCategories[0].id, this.rootStore.clinicalSampleCategories[0].variable, this.rootStore.clinicalSampleCategories[0].datatype, "clinical", this.rootStore.patientOrderPerTimepoint)
+        this.timepoints = TimepointStore.combineArrays(this.timepointStores.between.timepoints, this.timepointStores.sample.timepoints);
         this.timepoints.forEach(function (d, i) {
             d.globalIndex = i;
         });
-        this.variableStore.sample = this.rootStore.sampleTimepointStore.variableStore;
-        this.variableStore.between = this.rootStore.betweenTimepointStore.variableStore;
+        this.variableStore.sample = this.timepointStores.sample.variableStore;
+        this.variableStore.between = this.timepointStores.between.variableStore;
         this.currentVariables.sample = this.variableStore.sample.currentVariables;
         this.currentVariables.between = this.variableStore.between.currentVariables;
         this.rootStore.transitionStore.initializeTransitions(this.timepoints.length - 1);
+    }
+
+    update(order,names) {
+        this.timepointStores.sample.update(order,names);
+        this.timepointStores.between.update();
     }
 
 
@@ -111,29 +117,20 @@ class TimepointStore {
     /**
      * gets all values of a variable, indepently of their timepoint
      * @param variable
+     * @param type
      * @returns {Array}
      */
-    getAllValues(variable) {
+    getAllValues(variable, type) {
         let allValues = [];
-        this.timepoints.forEach(function (d) {
-            d.heatmap.forEach(function (f) {
-                if (f.variable === variable) {
-                    f.data.forEach(function (g) {
-                        allValues.push(g.value)
-                    })
-                }
-            });
-        });
+        let mapper = this.variableStore[type].getByIdAllVariables(variable).mapper;
+        for (let sample in mapper) {
+            allValues.push(mapper[sample]);
+        }
         return allValues;
     }
 
     removeVariable(variableId, type) {
-        if (type === "sample") {
-            this.rootStore.sampleTimepointStore.removeVariable(variableId);
-        }
-        else {
-            this.rootStore.betweenTimepointStore.removeVariable(variableId);
-        }
+        this.timepointStores[type].removeVariable(variableId);
     }
 
 
@@ -148,16 +145,43 @@ class TimepointStore {
      */
     binVariable(newId, oldId, bins, binNames, type, saveToHistory) {
         const _self = this;
-        let oldVar = _self.variableStore[type].getById(oldId);
+        let oldVar = _self.variableStore[type].getByIdAllVariables(oldId);
         let variableName = oldVar.name;
         let variableDomain = oldVar.domain;
-        let binnedMapper=this.rootStore.createBinnedMapper(oldVar.mapper,bins,binNames);
-        _self.variableStore[type].modifyVariable(newId, oldVar.name + "_BINNED", "BINNED", oldVar.description + " (binned)", oldId, "binning", {
-            bins: bins,
-            binNames: binNames
-        }, variableDomain,[],binnedMapper);
-        this.updateValues(oldId, newId, binnedMapper);
+        let binnedMapper = this.rootStore.createBinnedMapper(oldVar.mapper, bins, binNames);
+        if (!saveToHistory) {
+            _self.variableStore[type].modifyVariable(newId, oldVar.name + "_BINNED", "BINNED", oldVar.description + " (binned)", oldId, "binning", {
+                bins: bins,
+                binNames: binNames
+            }, variableDomain, [], binnedMapper);
+            this.updateValues(oldId, newId, binnedMapper);
+        }
+        else {
+            _self.variableStore[type].addDerivedVariable(newId, oldVar.name + "_BINNED", "BINNED", oldVar.description + " (binned)", [oldId], "binning", {
+                bins: bins,
+                binNames: binNames
+            }, binnedMapper);
+            this.timepointStores[type].addHeatmapVariable(newId, binnedMapper);
+        }
+        this.regroupTimepoints();
         this.rootStore.undoRedoStore.saveVariableModification("updateValues", variableName, saveToHistory);
+    }
+
+    binaryCombineVariables(ids, name, type, operator) {
+        let derivedId = uuidv4();
+        const _self = this;
+        let mappers = ids.map(d => this.variableStore[type].getByIdAllVariables(d).mapper);
+        let description = "";
+        ids.forEach(function (f, i) {
+            if (description !== "") {
+                description += " -" + operator + "- ";
+            }
+            description += _self.variableStore[type].getByIdAllVariables(f).name;
+        });
+        let combinedMapper = this.rootStore.createBinaryCombinedMapper(mappers, operator);
+        this.variableStore[type].addDerivedVariable(derivedId, name, "binary", description, ids, operator, null, combinedMapper);
+        this.timepointStores[type].addHeatmapVariable(derivedId, combinedMapper);
+        this.regroupTimepoints();
     }
 
     updateValues(oldId, newId, mapper) {
@@ -183,48 +207,6 @@ class TimepointStore {
         return this.variableStore[type].isContinuous(variableId);
     }
 
-    /**
-     * gets a updateValues corresponding to value and returns the name of the updateValues
-     * @param bins
-     * @param binNames
-     * @param value
-     * @returns name of updateValues
-     */
-    static getBin(bins, binNames, value) {
-        for (let i = 1; i < bins.length; i++) {
-            if (i === 1 && value >= bins[0] && value <= bins[1]) {
-                return binNames[0]
-            }
-            else {
-                if (value > bins[i - 1] && value <= bins[i]) {
-                    return binNames[i - 1];
-                }
-            }
-        }
-    }
-
-    /**
-     * regroups timepoints after binning and applies promotion to current timepoint
-     * @param timepointIndex
-     * @param variable
-     */
-    promoteBinnedTimepoint(timepointIndex, variable) {
-        this.regroupTimepoints();
-        this.timepoints[timepointIndex].promote(variable);
-        this.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex);
-
-    }
-
-    /**
-     * regroups timepoints after binning and applies grouping to current timepoint
-     * @param timepointIndex
-     * @param variable
-     */
-    groupBinnedTimepoint(timepointIndex, variable) {
-        this.regroupTimepoints();
-        this.timepoints[timepointIndex].group(variable);
-        this.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex);
-    }
 
     /**
      * sorts the previous timepoint in the same way as the timepoint at timepointIndex
@@ -246,13 +228,7 @@ class TimepointStore {
         });
         const groupSorting = this.timepoints[timepointIndex].groupOrder;
         if (this.timepoints[timepointIndex].localIndex - 1 >= 0) {
-            if (this.timepoints[timepointIndex].type === "sample") {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].sortWithParameters(this.timepoints[timepointIndex].variableSortOrder, sortOrders, groupSorting);
-            }
-            else {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].sortWithParameters(this.timepoints[timepointIndex].variableSortOrder, sortOrders, groupSorting);
-
-            }
+            this.timepointStores[this.timepoints[timepointIndex].type].timepoints[this.timepoints[timepointIndex].localIndex - 1].sortWithParameters(this.timepoints[timepointIndex].variableSortOrder, sortOrders, groupSorting);
         }
         this.rootStore.undoRedoStore.saveTimepointHistory("APPLY SORT TO PREVIOUS", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
@@ -275,16 +251,9 @@ class TimepointStore {
         _self.timepoints[timepointIndex].variableSortOrder.forEach(function (d) {
             sortOrders.push(_self.timepoints[timepointIndex].getSortOrder(d));
         });
-        if (this.timepoints[timepointIndex].type === "sample") {
-            this.rootStore.sampleTimepointStore.timepoints.forEach(function (d) {
-                d.sortWithParameters(_self.timepoints[timepointIndex].variableSortOrder, sortOrders, _self.timepoints[timepointIndex].groupOrder);
-            })
-        }
-        else {
-            this.rootStore.betweenTimepointStore.timepoints.forEach(function (d) {
-                d.sortWithParameters(_self.timepoints[timepointIndex].variableSortOrder, sortOrders, _self.timepoints[timepointIndex].groupOrder);
-            })
-        }
+        this.timepointStores[this.timepoints[timepointIndex].type].timepoints.forEach(function (d) {
+            d.sortWithParameters(_self.timepoints[timepointIndex].variableSortOrder, sortOrders, _self.timepoints[timepointIndex].groupOrder);
+        });
         this.rootStore.undoRedoStore.saveTimepointHistory("APPLY SORT TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
     }
 
@@ -307,18 +276,49 @@ class TimepointStore {
             sortOrders.push(_self.timepoints[timepointIndex].getSortOrder(d));
         });
         const groupSorting = this.timepoints[timepointIndex].groupOrder;
-        if (this.timepoints[timepointIndex].type === "sample") {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.sampleTimepointStore.timepoints.length) {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].sortWithParameters(this.timepoints[timepointIndex].variableSortOrder, sortOrders, groupSorting);
-            }
-        }
-        else {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.betweenTimepointStore.timepoints.length) {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].sortWithParameters(this.timepoints[timepointIndex].variableSortOrder, sortOrders, groupSorting);
-
-            }
+        if (this.timepoints[timepointIndex].localIndex + 1 < this.timepointStores[this.timepoints[timepointIndex].type].timepoints.length) {
+            this.timepointStores[this.timepoints[timepointIndex].type].timepoints[this.timepoints[timepointIndex].localIndex + 1].sortWithParameters(this.timepoints[timepointIndex].variableSortOrder, sortOrders, groupSorting);
         }
         this.rootStore.undoRedoStore.saveTimepointHistory("APPLY SORT TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+    }
+
+    static actionFunction(action, variable, timepoint) {
+        switch (action) {
+            case "PROMOTE":
+                timepoint.promote(variable);
+                break;
+            case "GROUP":
+                timepoint.group(variable);
+                break;
+            case "UNGROUP":
+                timepoint.unGroup(variable);
+                break;
+        }
+    }
+
+    applyActionToPrevious(timepointIndex, variable, action) {
+        TimepointStore.actionFunction(action, variable, this.timepoints[timepointIndex]);
+        if (this.timepoints[timepointIndex].localIndex - 1 >= 0) {
+            TimepointStore.actionFunction(action, variable, this.timepointStores[this.timepoints[timepointIndex].type].timepoints[this.timepoints[timepointIndex].localIndex - 1]);
+        }
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+    }
+
+    applyActionToNext(timepointIndex, variable, action) {
+        TimepointStore.actionFunction(action, variable, this.timepoints[timepointIndex]);
+        if (this.timepoints[timepointIndex].localIndex + 1 < this.timepointStores[this.timepoints[timepointIndex].type].timepoints.length) {
+            TimepointStore.actionFunction(action, variable, this.timepointStores[this.timepoints[timepointIndex].type].timepoints[this.timepoints[timepointIndex].localIndex + 1]);
+        }
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+    }
+
+    applyActionToAll(timepointIndex, variable, action) {
+        const _self = this;
+        this.timepointStores[this.timepoints[timepointIndex].type].timepoints.forEach(function (d, i) {
+            TimepointStore.actionFunction(action, variable, d);
+        });
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+
     }
 
     /**
@@ -336,22 +336,6 @@ class TimepointStore {
         //this.rootStore.visStore.resetTransitionSpace();
     }
 
-    /**
-     * sets the grouping of a timepoint to the grouping of the previous timepoint of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyGroupingToPrevious(timepointIndex, variable) {
-        this.timepoints[timepointIndex].group(variable);
-        if (this.timepoints[timepointIndex].localIndex - 1 >= 0)
-            if (this.timepoints[timepointIndex].type === "sample") {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].group(variable);
-            }
-            else {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].group(variable);
-            }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY GROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-    }
 
     magicSort(timepointIndex, variable) {
         let currVar = this.currentVariables[this.timepoints[timepointIndex].type];
@@ -377,164 +361,18 @@ class TimepointStore {
         return true;
     }
 
-    /**
-     * sets the grouping of a timepoint to the grouping of the next timepoint of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyGroupingToNext(timepointIndex, variable) {
-        this.timepoints[timepointIndex].group(variable);
-        if (this.timepoints[timepointIndex].type === "sample") {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.sampleTimepointStore.timepoints.length) {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].group(variable);
+    atLeastOneGrouped(type) {
+        let timepoints = this.timepointStores[type].timepoints;
+        let oneIsGrouped = false;
+        for (let i = 0; i < timepoints.length; i++) {
+            if (!timepoints[i].isGrouped) {
+                oneIsGrouped = true;
+                break;
             }
         }
-        else {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.betweenTimepointStore.timepoints.length) {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].group(variable);
-            }
-        }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY GROUP TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-
+        return oneIsGrouped
     }
 
-    /**
-     * Sets the grouping of one timepoint as the grouping for all the other timepoints of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyGroupingToAll(timepointIndex, variable) {
-        if (this.timepoints[timepointIndex].type === "sample") {
-            this.rootStore.sampleTimepointStore.timepoints.forEach(function (d, i) {
-                d.group(variable);
-            })
-        }
-        else {
-            this.rootStore.betweenTimepointStore.timepoints.forEach(function (d, i) {
-                d.group(variable);
-            })
-        }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY GROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-
-    }
-
-    /**
-     * sets the grouping of a timepoint to the grouping of the previous timepoint of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyUnGroupingToPrevious(timepointIndex, variable) {
-        this.timepoints[timepointIndex].unGroup(variable);
-        if (this.timepoints[timepointIndex].localIndex - 1 >= 0)
-            if (this.timepoints[timepointIndex].type === "sample") {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].unGroup(variable);
-            }
-            else {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].unGroup(variable);
-            }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY UNGROUP TO PREVIOUS", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-
-    }
-
-    /**
-     * sets the grouping of a timepoint to the grouping of the next timepoint of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyUnGroupingToNext(timepointIndex, variable) {
-        this.timepoints[timepointIndex].unGroup(variable);
-        if (this.timepoints[timepointIndex].type === "sample") {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.sampleTimepointStore.timepoints.length) {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].unGroup(variable);
-            }
-        }
-        else {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.betweenTimepointStore.timepoints.length) {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].unGroup(variable);
-            }
-        }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY UNGROUP TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-
-    }
-
-    /**
-     * Sets the grouping of one timepoint as the grouping for all the other timepoints of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyUnGroupingToAll(timepointIndex, variable) {
-        if (this.timepoints[timepointIndex].type === "sample") {
-            this.rootStore.sampleTimepointStore.timepoints.forEach(function (d, i) {
-                d.unGroup(variable);
-            })
-        }
-        else {
-            this.rootStore.betweenTimepointStore.timepoints.forEach(function (d, i) {
-                d.unGroup(variable);
-            })
-        }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY UNGROUP TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-
-    }
-
-
-    /**
-     * sets the primary variable of a timepoint to the primary variable of the previous timepoint of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyPromotingToPrevious(timepointIndex, variable) {
-        this.timepoints[timepointIndex].promote(variable);
-        if (this.timepoints[timepointIndex].localIndex - 1 >= 0)
-            if (this.timepoints[timepointIndex].type === "sample") {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].promote(variable);
-            }
-            else {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex - 1].promote(variable);
-            }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY PROMOTE TO PREVIOUS", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-    }
-
-    /**
-     * sets the primary variable of a timepoint to the primary variable of the next timepoint of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyPromotingToNext(timepointIndex, variable) {
-        this.timepoints[timepointIndex].promote(variable);
-        if (this.timepoints[timepointIndex].type === "sample") {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.sampleTimepointStore.timepoints.length) {
-                this.rootStore.sampleTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].promote(variable);
-            }
-        }
-        else {
-            if (this.timepoints[timepointIndex].localIndex + 1 < this.rootStore.betweenTimepointStore.timepoints.length) {
-                this.rootStore.betweenTimepointStore.timepoints[this.timepoints[timepointIndex].localIndex + 1].promote(variable);
-            }
-        }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY PROMOTE TO NEXT", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-
-    }
-
-    /**
-     * Sets the primary variable of one timepoint as the primary variable for all the other timepoints of the same type
-     * @param timepointIndex
-     * @param variable
-     */
-    applyPromotingToAll(timepointIndex, variable) {
-        if (this.timepoints[timepointIndex].type === "sample") {
-            this.rootStore.sampleTimepointStore.timepoints.forEach(function (d) {
-                d.promote(variable);
-            })
-        }
-        else {
-            this.rootStore.betweenTimepointStore.timepoints.forEach(function (d) {
-                d.promote(variable);
-            })
-        }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY PROMOTE TO ALL", variable, this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-
-    }
 
     /**
      * regroups the timepoints. Used after something is changed (variable is removed/added/declared primary)

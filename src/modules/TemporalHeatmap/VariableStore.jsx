@@ -7,8 +7,7 @@ import EventVariable from "./EventVariable";
 Store containing information about variables
  */
 class VariableStore {
-    constructor(rootStore) {
-        this.rootStore = rootStore;
+    constructor() {
         this.allVariables = [];
         extendObservable(this, {
             currentVariables: [],
@@ -47,9 +46,11 @@ class VariableStore {
      * @param domain
      * @param range
      */
-    addOriginalVariable(id, name, datatype, description, domain, range, mapper) {
-        const newVariable = new OriginalVariable(id, name, datatype, description, domain, range, mapper);
-        this.currentVariables.push(newVariable);
+    addOriginalVariable(id, name, datatype, description, range, mapper, display) {
+        const newVariable = new OriginalVariable(id, name, datatype, description, range, mapper);
+        if (display) {
+            this.currentVariables.push(newVariable);
+        }
         this.allVariables.push(newVariable);
     }
 
@@ -85,38 +86,19 @@ class VariableStore {
         this.currentVariables.push(combinedEvent);
     }
 
-    /**
-     * adds multiple single events at once (w/o combining)
-     * @param eventType
-     * @param selectedVariables
-     */
-    addSeperateEventVariables(eventType, selectedVariables) {
-        const _self = this;
-        selectedVariables.forEach(function (f) {
-            if (!_self.allVariables.map(function (d) {
-                return d.id;
-            }).includes(f.id)) {
-                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, f.eventType);
-                _self.allVariables.push(newVariable);
-                _self.currentVariables.push(newVariable);
-            }
-            else if (!_self.hasVariable(f.id)) {
-                _self.currentVariables.push(_self.getByIdAllVariables(f.id));
 
-            }
-        });
-    }
-
-    addEventVariable(eventType, selectedVariable, mapper) {
+    addEventVariable(eventType, selectedVariable, mapper, display) {
         const _self = this;
         if (!_self.allVariables.map(function (d) {
             return d.id;
         }).includes(selectedVariable.id)) {
             const newVariable = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, mapper);
             _self.allVariables.push(newVariable);
-            _self.currentVariables.push(newVariable);
+            if (display) {
+                _self.currentVariables.push(newVariable);
+            }
         }
-        else if (!_self.hasVariable(selectedVariable.id)) {
+        else if (!_self.hasVariable(selectedVariable.id && display)) {
             _self.currentVariables.push(_self.getByIdAllVariables(selectedVariable.id));
 
         }
@@ -131,8 +113,8 @@ class VariableStore {
      * @param modificationType
      * @param modification
      */
-    addDerivedVariable(id, name, datatype, originalIds, modificationType, modification) {
-        const newVariable = new DerivedVariable(id, name, datatype, originalIds, modificationType, modification);
+    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, mapper) {
+        const newVariable = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, mapper);
         this.currentVariables.push(newVariable);
         this.allVariables.push(newVariable);
     }
@@ -164,6 +146,12 @@ class VariableStore {
      */
     hasVariable(id) {
         return this.currentVariables.map(function (d) {
+            return d.id
+        }).includes(id)
+    }
+
+    hadVariableAll(id) {
+        return this.allVariables.map(function (d) {
             return d.id
         }).includes(id)
     }

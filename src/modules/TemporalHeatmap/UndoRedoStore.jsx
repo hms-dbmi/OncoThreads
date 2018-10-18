@@ -57,12 +57,12 @@ class UndoRedoStore {
      * @param index: current index in state stack
      */
     deserialize(index) {
-        this.rootStore.sampleTimepointStore.timepoints = this.deserializeTimepoints(this.rootStore.sampleTimepointStore.timepoints.slice(), this.stateStack[index].sampleTimepoints);
-        this.rootStore.betweenTimepointStore.timepoints = this.deserializeTimepoints(this.rootStore.betweenTimepointStore.timepoints.slice(), this.stateStack[index].betweenTimepoints);
-        this.rootStore.sampleTimepointStore.variableStore.currentVariables = this.deserializeVariables(this.rootStore.sampleTimepointStore.variableStore.currentVariables.slice(), this.stateStack[index].currentSampleVar);
-        this.rootStore.betweenTimepointStore.variableStore.currentVariables = this.deserializeVariables(this.rootStore.betweenTimepointStore.variableStore.currentVariables.slice(), this.stateStack[index].currentBetweenVar);
-        this.rootStore.sampleTimepointStore.variableStore.allVariables = this.stateStack[index].allSampleVar;
-        this.rootStore.betweenTimepointStore.variableStore.allVariables = this.stateStack[index].allBetweenVar;
+        this.rootStore.timepointStore.timepointStores.sample.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.timepointStores.sample.timepoints.slice(), this.stateStack[index].sampleTimepoints);
+        this.rootStore.timepointStore.timepointStores.between.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.timepointStores.between.timepoints.slice(), this.stateStack[index].betweenTimepoints);
+        this.rootStore.timepointStore.timepointStores.sample.variableStore.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.timepointStores.sample.variableStore.currentVariables.slice(), this.stateStack[index].currentSampleVar);
+        this.rootStore.timepointStore.timepointStores.between.variableStore.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.timepointStores.between.variableStore.currentVariables.slice(), this.stateStack[index].currentBetweenVar);
+        this.rootStore.timepointStore.timepointStores.sample.variableStore.allVariables = this.stateStack[index].allSampleVar;
+        this.rootStore.timepointStore.timepointStores.between.variableStore.allVariables = this.stateStack[index].allBetweenVar;
         this.rootStore.timepointStore.transitionOn = this.stateStack[index].transitionOn;
         this.rootStore.timepointStore.globalTime = this.stateStack[index].globalTime;
         this.rootStore.eventDetails = this.stateStack[index].eventDetails;
@@ -168,12 +168,12 @@ class UndoRedoStore {
      */
     saveHistory() {
         const serializeState = createTransformer(store => ({
-            sampleTimepoints: store.rootStore.sampleTimepointStore.timepoints.map(serializeTimepoints),
-            betweenTimepoints: store.rootStore.betweenTimepointStore.timepoints.map(serializeTimepoints),
-            currentSampleVar: toJS(store.rootStore.sampleTimepointStore.variableStore.currentVariables),
-            currentBetweenVar: toJS(store.rootStore.betweenTimepointStore.variableStore.currentVariables),
-            allSampleVar: store.rootStore.sampleTimepointStore.variableStore.allVariables,
-            allBetweenVar: store.rootStore.betweenTimepointStore.variableStore.allVariables,
+            sampleTimepoints: store.rootStore.timepointStore.timepointStores.sample.timepoints.map(serializeTimepoints),
+            betweenTimepoints: store.rootStore.timepointStore.timepointStores.between.timepoints.map(serializeTimepoints),
+            currentSampleVar: toJS(store.rootStore.timepointStore.timepointStores.sample.variableStore.currentVariables),
+            currentBetweenVar: toJS(store.rootStore.timepointStore.timepointStores.between.variableStore.currentVariables),
+            allSampleVar: store.rootStore.timepointStore.timepointStores.sample.variableStore.allVariables,
+            allBetweenVar: store.rootStore.timepointStore.timepointStores.between.variableStore.allVariables,
             transitionOn: store.rootStore.timepointStore.transitionOn,
             globalTime: store.rootStore.timepointStore.globalTime,
             timepointStructure: toJS(store.rootStore.timepointStructure),

@@ -1,37 +1,25 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import SortContextMenu from './SortContextMenu'
-import GroupContextMenu from './GroupContextMenu'
-import PromoteContextMenu from './PromoteContextMenu'
-import UnGroupContextMenu from './UnGroupContextMenu'
+import ContextMenu from "./ContextMenu";
 /*
 class creating the different sorts of context menus
  */
 const ContextMenus = observer(class ContextMenus extends React.Component {
     render() {
-        let show = {sort: "hidden", group: "hidden", promote: "hidden", ungroup: "hidden"};
-        show[this.props.type] = "visible";
+        let showSort = this.props.type === "SORT" ? "visible" : "hidden";
+        let showAction = this.props.type === "SORT" || this.props.type === "" ? "hidden" : "visible";
         return (
             <div>
-                <SortContextMenu showContextMenu={show.sort} contextX={this.props.contextX}
+                <ContextMenu showContextMenu={showAction} action={this.props.type} contextX={this.props.contextX}
+                             contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
+                             clickedVariable={this.props.clickedVariable}
+                             store={this.props.store}
+                             openBinningModal={this.props.openBinningModal}/>
+                <SortContextMenu showContextMenu={showSort} contextX={this.props.contextX}
                                  contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
                                  clickedVariable={this.props.clickedVariable}
                                  store={this.props.store}/>
-                <GroupContextMenu showContextMenu={show.group} contextX={this.props.contextX}
-                                  contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
-                                  clickedVariable={this.props.clickedVariable}
-                                  store={this.props.store}
-                                  openBinningModal={this.props.openBinningModal}/>
-                <PromoteContextMenu showContextMenu={show.promote} contextX={this.props.contextX}
-                                    contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
-                                    clickedVariable={this.props.clickedVariable}
-                                    store={this.props.store}
-                                    openBinningModal={this.props.openBinningModal}/>
-                <UnGroupContextMenu showContextMenu={show.ungroup} contextX={this.props.contextX}
-                                    contextY={this.props.contextY} clickedTimepoint={this.props.clickedTimepoint}
-                                    clickedVariable={this.props.clickedVariable}
-                                    store={this.props.store}
-                                    openBinningModal={this.props.openBinningModal}/>
             </div>
         )
     }

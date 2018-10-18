@@ -31,16 +31,18 @@ class SingleTimepoint {
         this.isGrouped = boolean;
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
-    addRow(variableId,variableData){
-        let isUndefined=true;
-        for(let i=0;i<variableData.length;i++){
-            if(variableData[i].value!==undefined){
-                isUndefined=false;
+
+    addRow(variableId, variableData) {
+        let isUndefined = true;
+        for (let i = 0; i < variableData.length; i++) {
+            if (variableData[i].value !== undefined) {
+                isUndefined = false;
                 break;
             }
         }
-           this.heatmap.push({variable: variableId, sorting: 0, data: variableData, isUndef:isUndefined});
+        this.heatmap.push({variable: variableId, sorting: 0, data: variableData, isUndef: isUndefined});
     }
+
     sortWithParameters(variables, heatmapSortings, groupSorting) {
         this.variableSortOrder = variables;
         if (this.isGrouped) {
@@ -115,7 +117,7 @@ class SingleTimepoint {
      * @param variableId
      */
     setPrimaryVariable(variableId) {
-            this.primaryVariableId = variableId;
+        this.primaryVariableId = variableId;
     }
 
     /**
@@ -144,15 +146,15 @@ class SingleTimepoint {
                 partitionIndex = currPartitionCount;
                 currPartitionCount += 1;
             }
-            grouped=this.addInstance(grouped,partitionIndex, currPartitionKey, variableIndex, this.heatmap[variableIndex].data[i].patient);
+            grouped = this.addInstance(grouped, partitionIndex, currPartitionKey, variableIndex, this.heatmap[variableIndex].data[i].patient);
             for (let row = 0; row < this.heatmap.length; row++) {
                 if (this.heatmap[row].variable !== variable) {
                     let currSecondary = this.heatmap[row].data[i].value;
-                    grouped=this.addInstance(grouped,partitionIndex, currSecondary, row, this.heatmap[row].data[i].patient, this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype === "NUMBER");
+                    grouped = this.addInstance(grouped, partitionIndex, currSecondary, row, this.heatmap[row].data[i].patient, this.rootStore.timepointStore.variableStore[this.type].getById(this.heatmap[row].variable).datatype === "NUMBER");
                 }
             }
         }
-        this.grouped=grouped;
+        this.grouped = grouped;
         this.isGrouped = true;
     }
 
@@ -165,7 +167,7 @@ class SingleTimepoint {
      * @param currPatient
      * @param continuous
      */
-    addInstance(grouped,partitionIndex, currKey, row, currPatient, continuous) {
+    addInstance(grouped, partitionIndex, currKey, row, currPatient, continuous) {
         let rowIndex = grouped[partitionIndex].rows.map(function (e) {
             return e.variable;
         }).indexOf(this.heatmap[row].variable);

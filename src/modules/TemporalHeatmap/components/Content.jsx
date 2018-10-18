@@ -24,7 +24,7 @@ const Content = observer(class Content extends React.Component {
         super();
         this.state = {
             modalIsOpen: false,
-            followUpFunction: null,
+            callback: null,
             clickedVariable: "",
             clickedTimepoint: -1,
             type: "",
@@ -61,20 +61,18 @@ const Content = observer(class Content extends React.Component {
      * @param type: type of timepoint (sample/between)
      * @param fun: Function which should be executed after the binning was applied: either group or promote
      */
-    openModal(variable, type, fun, timepointIndex) {
-        let data = this.props.rootStore.timepointStore.getAllValues(variable);
+    openModal(variable, type, timepointIndex, callback) {
         this.setState({
             modalIsOpen: true,
             clickedTimepoint: timepointIndex,
             clickedVariable: variable,
             type: type,
-            followUpFunction: fun,
-            binningData: data,
+            callback: callback,
         });
     }
 
     closeModal() {
-        this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, followUpFunction: null});
+        this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, callback: null});
     }
 
     showTooltip(e, line1, line2) {
@@ -137,7 +135,7 @@ const Content = observer(class Content extends React.Component {
             return (<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
                                       variable={this.state.clickedVariable}
                                       timepointIndex={this.state.clickedTimepoint} type={this.state.type}
-                                      followUpFunction={this.state.followUpFunction}
+                                      callback={this.state.callback}
                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
                                       visMap={this.props.rootStore.visStore}
             />);
@@ -171,7 +169,7 @@ const Content = observer(class Content extends React.Component {
         }
         else {
             return <Button style={{float: 'right'}}
-                                             onClick={this.hideSidebar}><FontAwesome name="times"/></Button>
+                           onClick={this.hideSidebar}><FontAwesome name="times"/></Button>
         }
     }
 
@@ -179,9 +177,9 @@ const Content = observer(class Content extends React.Component {
     render() {
         return (
             <div>
-                <Grid fluid={true} >
+                <Grid fluid={true}>
                     <Row>
-                        <Col sm={2} xs={2} >
+                        <Col sm={2} xs={2}>
                             {this.getToggleSidebarIcons()}
                         </Col>
                     </Row>
@@ -201,7 +199,7 @@ const Content = observer(class Content extends React.Component {
                                 currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
                                 showTooltip={this.showTooltip}
                                 hideTooltip={this.hideTooltip}
-                                store={this.props.rootStore.sampleTimepointStore}
+                                store={this.props.rootStore.timepointStore.timepointStores.sample}
                                 visMap={this.props.rootStore.visStore}
                             />
                             <BetweenSampleVariableSelector
@@ -209,7 +207,7 @@ const Content = observer(class Content extends React.Component {
                                 eventCategories={this.props.rootStore.eventCategories}
                                 eventAttributes={this.props.rootStore.eventAttributes}
                                 currentVariables={this.props.rootStore.timepointStore.currentVariables.between}
-                                store={this.props.rootStore.betweenTimepointStore}
+                                store={this.props.rootStore.timepointStore.timepointStores.between}
                                 visMap={this.props.rootStore.visStore}
                             />
                         </Col>

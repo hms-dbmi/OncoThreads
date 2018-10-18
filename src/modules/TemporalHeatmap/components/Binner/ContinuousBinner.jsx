@@ -8,7 +8,8 @@ import uuidv4 from 'uuid/v4';
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        this.data = props.store.getAllValues(props.variable);
+        console.log(props);
+        this.data = props.store.getAllValues(props.variable, props.type);
         this.state = {
             bins: [d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)],
             binNames: ["Bin 1", "Bin 2"]
@@ -60,12 +61,12 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     handleApply() {
         const newId = uuidv4();
         let saveToHistory = false;
-        if (this.props.followUpFunction === null) {
+        if (this.props.callback === null) {
             saveToHistory = true;
         }
         this.props.store.binVariable(newId, this.props.variable, this.state.bins, this.state.binNames, this.props.type, saveToHistory);
         if (!saveToHistory) {
-            this.props.followUpFunction(this.props.timepointIndex, newId);
+            this.props.callback(newId);
         }
         this.close();
     }
@@ -82,10 +83,10 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     render() {
-        let variableName = this.props.store.variableStore[this.props.type].getById(this.props.variable).name;
+        let variableName = this.props.store.variableStore[this.props.type].getByIdAllVariables(this.props.variable).name;
         return (
             <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins}
-                          showAlert={this.props.timepointIndex!==null}
+                          showAlert={this.props.timepointIndex !== null}
                           variableName={variableName} variable={this.props.variable}
                           handleBinChange={this.handleBinChange}
                           handleNumberOfBinsChange={this.handleNumberOfBinsChange}

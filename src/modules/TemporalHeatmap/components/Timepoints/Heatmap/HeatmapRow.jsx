@@ -24,13 +24,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
         //console.log(this.props.row.data);
 
-       
+
         var x;
 
-        if(this.props.dtype==="BINNED"){
+        if (this.props.dtype === "BINNED") {
 
-            _self.props.currentVariables.filter(d=>d.derived).forEach(function(d){ if(d.id===_self.props.row.variable) x=d});
-          
+            _self.props.currentVariables.filter(d => d.derived).forEach(function (d) {
+                if (d.id === _self.props.row.variable) x = d
+            });
+
         }
 
         this.props.row.data.forEach(function (d, j) {
@@ -44,16 +46,18 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 stroke = "black";
             }
 
-            var str="";
+            var str = "";
 
-            if(x){
-                var ind= x.modification.binNames.indexOf(d.value);
+            if (x) {
+                var ind = x.modification.binNames.indexOf(d.value);
 
-                var low=x.modification.bins[ind];
+                var low = x.modification.bins[ind];
 
-                if(ind!==0){low=low+1;}
+                if (ind !== 0) {
+                    low = low + 1;
+                }
 
-                str= ": " +low + " to " + x.modification.bins[ind+1];
+                str = ": " + low + " to " + x.modification.bins[ind + 1];
 
             }
 
@@ -65,14 +69,14 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                              onContextMenu={(e) => _self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
                              key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
-                             x={_self.props.heatmapScale(d.patient)}
+                             x={_self.props.heatmapScale(d.patient) + _self.props.x}
                              fill={fill} opacity={_self.props.opacity}/>);
-            if(d.value===undefined){
-                 rects.push(<line stroke={stroke}
+            if (d.value === undefined) {
+                rects.push(<line stroke={stroke}
                                  key={d.patient + "UNDEFINED"} height={_self.props.height}
                                  width={_self.props.rectWidth}
-                                 x1={_self.props.heatmapScale(d.patient)}
-                                 x2={_self.props.heatmapScale(d.patient) +  _self.props.rectWidth}
+                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
+                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
                                  y1={0}
                                  y2={_self.props.height}
                                  opacity={_self.props.opacity}/>);

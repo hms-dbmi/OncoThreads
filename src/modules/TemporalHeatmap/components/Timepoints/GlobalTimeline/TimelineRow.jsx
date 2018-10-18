@@ -33,50 +33,50 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         if (_self.props.timepointType === "between") {
             if (_self.props.dtype === "binary") {
 
-                let fillC="#F00";
+                let fillC = "#F00";
 
-                
+
                 _self.props.events.forEach(function (ev, j) {
 
-                   
+
 
                     //if(fillC==="#F00"){
-                      //  fillC = _self.props.color(ev.varId);
+                    //  fillC = _self.props.color(ev.varId);
                     //}
 
 
-
-                    _self.props.store.variableStore['between'].currentVariables.forEach(function(d){
-                        if(d.originalIds.includes(ev.varId)){
+                    _self.props.store.variableStore['between'].currentVariables.forEach(function (d) {
+                        if (d.originalIds.includes(ev.varId)) {
                             //console.log(d.originalIds[0]);
                             fillC = _self.props.color(d.originalIds[0]);
                         }
-                
+
                     });
 
-                    let opc1=_self.props.opacity;
-                    let height=_self.props.timeScale(ev.eventEndDate-ev.eventDate);
-                    if(height===0){
-                        height=_self.props.rectWidth;
-                        opc1=opc1+0.3;
+                    let opc1 = _self.props.opacity;
+                    let height = _self.props.timeScale(ev.eventEndDate - ev.eventDate);
+                    if (height === 0) {
+                        height = _self.props.rectWidth;
+                        opc1 = opc1 + 0.3;
                     }
                     let val = _self.props.store.variableStore['between'].getByIdAllVariables(ev.varId).name;
-                    rects.push(<rect onMouseEnter={(e) => _self.handleMouseEnter(e, ev.patientId, val, ev.eventDate, ev.eventEndDate - ev.eventDate)
-                                     }
-                                     onMouseLeave={_self.handleMouseLeave}
-                                     onDoubleClick={() => _self.handleDoubleClick(ev.patientId)}
-                                     onClick={() => _self.handleClick(ev.patientId)}
+                    rects.push(<rect
+                            onMouseEnter={(e) => _self.handleMouseEnter(e, ev.patientId, val, ev.eventDate, ev.eventEndDate - ev.eventDate)
+                            }
+                            onMouseLeave={_self.handleMouseLeave}
+                            onDoubleClick={() => _self.handleDoubleClick(ev.patientId)}
+                            onClick={() => _self.handleClick(ev.patientId)}
                             //onMouseDown={() => _self.handleMouseDown(d.patient)}
                             //onMouseUp={_self.handleMouseUp}
-                                     key={ev.patientId + j}
-                                     height={height}//{_self.props.height}
-                                     width={_self.props.rectWidth}
-                                     x={_self.props.heatmapScale(ev.patientId)}
-                                     y={_self.props.timeScale(ev.eventDate)}
-                                     //fill={_self.props.color(ev.varId)}
+                            key={ev.patientId + j}
+                            height={height}//{_self.props.height}
+                            width={_self.props.rectWidth}
+                            x={_self.props.heatmapScale(ev.patientId)}
+                            y={_self.props.timeScale(ev.eventDate)}
+                            //fill={_self.props.color(ev.varId)}
 
-                                     fill={fillC}
-                                     opacity={opc1}
+                            fill={fillC}
+                            opacity={opc1}
                             //fill={_self.props.color(_self.props.timepoint)}
                         />
                     );
@@ -133,7 +133,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
     }
 
 
-
     handleDoubleClick(patient) {
         window.open("http://www.cbiohack.org/case.do#/patient?studyId=" + this.props.store.rootStore.study.studyId + "&caseId=" + patient);
     }
@@ -143,28 +142,28 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
         var timeVariable = "day";
 
-        if(this.props.store.rootStore.timeVar==="30"){
-            startDay=Math.round( (startDay/30) * 100)/100;
-            duration=Math.round( (duration/30) * 100) /100;
-            timeVariable="month";
+        if (this.props.store.rootStore.timeVar === "30") {
+            startDay = Math.round((startDay / 30) * 100) / 100;
+            duration = Math.round((duration / 30) * 100) / 100;
+            timeVariable = "month";
         }
-        else if(this.props.store.rootStore.timeVar==="365"){
-            startDay=Math.round( (startDay/365) * 100)/100;
-            duration=Math.round( (duration/365) * 100)/100;
-            timeVariable="year";
+        else if (this.props.store.rootStore.timeVar === "365") {
+            startDay = Math.round((startDay / 365) * 100) / 100;
+            duration = Math.round((duration / 365) * 100) / 100;
+            timeVariable = "year";
         }
 
 
-        if(duration===0){
+        if (duration === 0) {
             this.props.showTooltip(event, patient + ": " + value + ", Event " + timeVariable + ": " + startDay)
 
         }
-        else{
+        else {
             //this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
 
-            this.props.showTooltip(event, patient + ": " + value + ", Event start " + timeVariable + ": "  + startDay + ", Duration: " + duration + " " + timeVariable)
+            this.props.showTooltip(event, patient + ": " + value + ", Event start " + timeVariable + ": " + startDay + ", Duration: " + duration + " " + timeVariable)
         }
-       
+
     }
 
     handleMouseLeave() {

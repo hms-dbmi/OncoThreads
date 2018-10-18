@@ -25,7 +25,9 @@ const RowOperator = observer(class RowOperator extends React.Component {
         group(timepoint, variable) {
             //console.log(variable,timepoint.type,this.props.store.isContinuous(variable,timepoint.type));
             if (this.props.store.isContinuous(variable, timepoint.type)) {
-                this.props.openBinningModal(variable, timepoint.type, this.props.store.groupBinnedTimepoint, timepoint.globalIndex);
+                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newID) {
+                    timepoint.group(newID);
+                });
             }
             else {
                 timepoint.group(variable);
@@ -41,7 +43,9 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         sortTimepoint(timepoint, variable) {
             if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
-                this.props.openBinningModal(variable, timepoint.type, this.props.store.groupBinnedTimepoint, timepoint.globalIndex);
+                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
+                    timepoint.group(newId);
+                });
             }
             else {
                 timepoint.sort(variable, this.props.selectedPatients);
@@ -71,7 +75,9 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         promote(timepoint, variable) {
             if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
-                this.props.openBinningModal(variable, timepoint.type, this.props.store.promoteBinnedTimepoint, timepoint.globalIndex);
+                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
+                    timepoint.promote(newId)
+                });
             }
             else {
                 timepoint.promote(variable);
@@ -142,7 +148,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                        onMouseOut={this.props.hideTooltip}>
                 <path fill="gray" d="M3,13H15V11H3M3,6V8H21V6M3,18H9V16H3V18Z"/>
                 <rect onClick={() => this.sortTimepoint(timepoint, variable)}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "sort")}
+                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "SORT")}
                       width={iconScale * 24} height={24}
                       fill="none"
                       pointerEvents="visible"/>
@@ -156,7 +162,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 <path fill="gray"
                       d="M12.5,19.5V3.47H14.53V19.5H12.5M9.5,19.5V3.47H11.53V19.5H9.5M4.5,7.5L8.53,11.5L4.5,15.47V12.47H1.5V10.5H4.5V7.5M19.5,15.47L15.5,11.5L19.5,7.5V10.5H22.5V12.47H19.5V15.47Z"/>
                 <rect onClick={() => this.group(timepoint, variable)}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "group")}
+                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "GROUP")}
                       width={iconScale * 24} height={24}
                       fill="none"
                       pointerEvents="visible"/>
@@ -171,7 +177,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                     <path fill="gray"
                           d="M9,11H15V8L19,12L15,16V13H9V16L5,12L9,8V11M2,20V4H4V20H2M20,20V4H22V20H20Z"/>
                     <rect onClick={() => this.unGroup(timepoint, variable)}
-                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "ungroup")}
+                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "UNGROUP")}
                           width={iconScale * 24} height={24}
                           fill="none"
                           pointerEvents="visible"/>
@@ -212,7 +218,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote variable " + name_var, desc)}
                        onMouseLeave={this.props.hideTooltip}>
                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
+                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "PROMOTE")}
                       onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
             </g>);
         }

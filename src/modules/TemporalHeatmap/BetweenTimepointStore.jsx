@@ -1,8 +1,6 @@
 import {extendObservable} from "mobx";
 import SingleTimepoint from "./SingleTimepoint";
 import VariableStore from "./VariableStore";
-import uuidv4 from 'uuid/v4';
-import RootStore from "../RootStore";
 
 
 /*
@@ -11,7 +9,7 @@ stores information about betweenTimepoint
 class BetweenTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.variableStore = new VariableStore(rootStore);
+        this.variableStore = new VariableStore();
         extendObservable(this, {
             timepoints: [],
         });
@@ -44,7 +42,10 @@ class BetweenTimepointStore {
      * @param mapper
      * @param variableId
      */
-    addHeatmapVariable(mapper, variableId) {
+    addHeatmapVariable(variableId, mapper) {
+        if (this.timepoints.length === 0) {
+            this.initialize(variableId);
+        }
         const _self = this;
         this.rootStore.transitionStructureNew.forEach(function (d, i) {
             let variableData = [];
@@ -92,43 +93,23 @@ class BetweenTimepointStore {
             this.initialize(this.variableStore.currentVariables[0].id);
         }
         this.variableStore.currentVariables.forEach(function (d) {
-            _self.addHeatmapVariable(d.mapper,d.id);
+            _self.addHeatmapVariable(d.id, d.mapper);
         });
     }
 
-    addCombinedVariable(type, selectedValues, name, operator) {
-        // create new Id
-        let isFirst = this.timepoints.length === 0;
-        let derivedId = uuidv4();
-        let mappers=selectedValues.map(d => this.rootStore.getSampleEventMapping(type, d));
-        let combinedMapper = this.rootStore.createCombinedMapper(mappers, operator);
-        // add derived variable
-        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, operator, combinedMapper,mappers);
-        //initialize if the variable is the first variable to be added
-        if (isFirst) {
-            this.initialize(derivedId);
-        }
-        this.addHeatmapVariable(combinedMapper,derivedId);
-        this.rootStore.timepointStore.regroupTimepoints();
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", name)
-    }
 
-    addVariablesSeperate(type, selectedValues) {
+    addVariable(type, selectedValue, display) {
         let isFirst = this.timepoints.length === 0;
         const _self = this;
-        if (isFirst) {
-            this.initialize(selectedValues[0].id);
-        }
-        selectedValues.forEach(function (d, i) {
-            if (!_self.variableStore.hasVariable(d.id)) {
-                const eventMapper = _self.rootStore.getSampleEventMapping(type, selectedValues[i]);
-                _self.addHeatmapVariable(eventMapper, d.id);
-                _self.variableStore.addEventVariable(type,selectedValues[i],eventMapper);
+        if (!_self.variableStore.hadVariableAll(selectedValue.id)) {
+            const eventMapper = _self.rootStore.getSampleEventMapping(type, selectedValue);
+            _self.variableStore.addEventVariable(type, selectedValue, eventMapper, display);
+            if (display) {
+                _self.addHeatmapVariable(selectedValue.id, eventMapper);
+                this.rootStore.timepointStore.regroupTimepoints();
+                this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", selectedValue.name)
             }
-        });
-        //initialize if the variable is the first variable to be added
-        this.rootStore.timepointStore.regroupTimepoints();
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLES", selectedValues.map(variable => variable.name))
+        }
     }
 
 
@@ -144,7 +125,7 @@ class BetweenTimepointStore {
             if (isFirst) {
                 this.initialize(variableId, false);
             }
-            this.addHeatmapVariable(this.rootStore.timeGapMapping, variableId);
+            this.addHeatmapVariable(variableId, this.rootStore.timeGapMapping);
             this.rootStore.timepointStore.regroupTimepoints();
         }
         this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")

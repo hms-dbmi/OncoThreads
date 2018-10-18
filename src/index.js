@@ -10,9 +10,10 @@ import App from "./modules/TemporalHeatmap/components/App.jsx";
 
 
 const studyapi = new studyAPI();
-const cbioAPI=new cBioAPI();
+const cbioAPI = new cBioAPI();
 studyapi.getStudies();
 
-ReactDOM.render(<App studyapi={studyapi} cbioAPI={cbioAPI} parsed="false" firstload="false"/>, document.getElementById("app"));
+ReactDOM.render(<App studyapi={studyapi} cbioAPI={cbioAPI} parsed="false"
+                     firstload="false"/>, document.getElementById("app"));
 
 

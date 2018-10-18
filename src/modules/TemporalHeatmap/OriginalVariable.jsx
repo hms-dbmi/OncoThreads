@@ -31,7 +31,7 @@ class OriginalVariable {
                             min = this.mapper[sample];
                         }
                     }
-                    domain= [min, max];
+                    domain = [min, max];
                 }
                 else {
                     domain = [];

@@ -1,8 +1,5 @@
 import TransitionStore from "./TemporalHeatmap/TransitionStore.jsx"
 import TimepointStore from "./TemporalHeatmap/TimepointStore"
-import BetweenTimepointStore from "./TemporalHeatmap/BetweenTimepointStore"
-import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore"
-
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
@@ -18,8 +15,6 @@ class RootStore {
     constructor(cbioAPI, study, firstLoad) {
         this.cbioAPI = cbioAPI;
         this.study = study;
-        this.sampleTimepointStore = new SampleTimepointStore(this);
-        this.betweenTimepointStore = new BetweenTimepointStore(this);
         this.timepointStore = new TimepointStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore(this);
@@ -137,8 +132,9 @@ class RootStore {
 
         })
     }
-    setGlobalPrimary(primary){
-        this.globalPrimary=primary;
+
+    setGlobalPrimary(primary) {
+        this.globalPrimary = primary;
     }
 
     /**
@@ -152,8 +148,7 @@ class RootStore {
         this.timepointStore.selectedPatients = [];
         this.timepointStore.transitionOn = false;
         this.resetTimepointStructure(false);
-        this.betweenTimepointStore.reset();
-        this.sampleTimepointStore.initialize(this.clinicalSampleCategories[0].id, this.clinicalSampleCategories[0].variable, this.clinicalSampleCategories[0].datatype, "clinical", this.patientOrderPerTimepoint);
+        this.timepointStore.initialize();
         this.undoRedoStore.saveVariableHistory("ADD VARIABLE", this.clinicalSampleCategories[0].variable);
         this.parsed = true;
         this.globalPrimary = this.clinicalSampleCategories[0].id;
@@ -185,8 +180,7 @@ class RootStore {
         this.timepointStructure = timepointStructure;
         this.eventDetails = [];
         if (update) {
-            this.sampleTimepointStore.update(this.patientOrderPerTimepoint);
-            this.betweenTimepointStore.update();
+            this.timepointStore.update(this.patientOrderPerTimepoint);
         }
         this.timepointStore.initialize();
     }
@@ -203,7 +197,7 @@ class RootStore {
             _self.createMutationCountsMapping();
 
             // if (localStorage.getItem(_self.study.studyId) === null) {
-            _self.sampleTimepointStore.initialize(_self.clinicalSampleCategories[0].id, _self.clinicalSampleCategories[0].variable, _self.clinicalSampleCategories[0].datatype, _self.clinicalSampleCategories[0].description, "clinical");
+            _self.timepointStore.initialize();
             _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
             _self.globalPrimary = _self.clinicalSampleCategories[0].id;
             /*}
@@ -213,21 +207,6 @@ class RootStore {
             _self.parsed = true;
 
         });
-    }
-
-    getMutationsSeperately(HUGOsymbols) {
-        const _self = this;
-        HUGOsymbols.forEach(function (HUGOsymbol) {
-            if (!_self.sampleTimepointStore.variableStore.hasVariable(HUGOsymbol)) {
-                _self.cbioAPI.getSingleMutation(_self.study.studyId, HUGOsymbol, function (mutation) {
-                    if (mutation.length !== 0) {
-                        _self.createMutationCategoricalMapping(mutation, HUGOsymbol);
-                        _self.sampleTimepointStore.addVariable(HUGOsymbol, HUGOsymbol, "STRING", 'mutation in ' + HUGOsymbol);
-                    }
-                });
-            }
-        });
-
     }
 
     /**
@@ -269,10 +248,10 @@ class RootStore {
                             });
                         }
                         for (let entry in geneDict) {
-                            if (!_self.sampleTimepointStore.variableStore.hasVariable(entry + mappingType)) {
+                            if (!_self.timepointStore.variableStore.samplehasVariable(entry + mappingType)) {
                                 _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm);
                                 const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                                _self.sampleTimepointStore.addVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType);
+                                _self.timepointStore.timepointStores.sample.addVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType);
                             }
                         }
                     })
@@ -362,7 +341,7 @@ class RootStore {
      * @param up
      */
     updateTimepointStructure(patient, timepoint, up) {
-        const oldSampleTimepointNames = this.sampleTimepointStore.timepoints.map(d => d.name);
+        const oldSampleTimepointNames = this.timepointStore.timepointStores.sample.timepoints.map(d => d.name);
         let timeline = this.timepointStructure[timepoint];
         const index = this.timepointStructure[timepoint].map(d => d.patient).indexOf(patient);
         let indexedElements;
@@ -374,7 +353,7 @@ class RootStore {
                 _self.timepointStructure.push([element]);
             }
             else {
-                for (let i = timepoint; i < this.sampleTimepointStore.timepoints.length; i++) {
+                for (let i = timepoint; i < this.timepointStore.timepointStores.sample.timepoints.length; i++) {
                     if (i + 1 < _self.timepointStructure.length) {
                         indexedElements = _self.timepointStructure[i + 1]
                             .filter(d => d)
@@ -427,8 +406,8 @@ class RootStore {
         this.visStore.resetTransitionSpace();
         let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
         this.eventDetails = [];
-        this.sampleTimepointStore.update(heatmapOrder, this.createNameList(up, this.sampleTimepointStore.timepoints, oldSampleTimepointNames, patient));
-        this.betweenTimepointStore.update();
+        this.timepointStore.update(heatmapOrder, this.createNameList(up, this.timepointStore.timepointStores.sample.timepoints, oldSampleTimepointNames, patient));
+
     }
 
     createNameList(up, timepoints, oldNames, patient) {
@@ -565,12 +544,12 @@ class RootStore {
         return newMapper
     }
 
-    createCombinedMapper(mappers, operator) {
+    createBinaryCombinedMapper(mappers, operator) {
         let newMapper = {};
         for (let entry in mappers[0]) {
             if (operator === "or") {
                 let containedInOne = false;
-                for (let i = 0; i< mappers.length; i++) {
+                for (let i = 0; i < mappers.length; i++) {
                     if (mappers[i][entry]) {
                         containedInOne = true;
                         break;
@@ -578,9 +557,9 @@ class RootStore {
                 }
                 newMapper[entry] = containedInOne;
             }
-            else if(operator ==="and"){
+            else if (operator === "and") {
                 let containedInAll = true;
-                for (let i = 0; i< mappers.length; i++) {
+                for (let i = 0; i < mappers.length; i++) {
                     if (!mappers[i][entry]) {
                         containedInAll = false;
                         break;
@@ -589,7 +568,6 @@ class RootStore {
                 newMapper[entry] = containedInAll;
             }
         }
-        console.log(mappers,newMapper);
         return newMapper;
     }
 
@@ -613,6 +591,7 @@ class RootStore {
      * @param list
      * @param geneId
      * @param mappingType
+     * @param addEmptyVariables
      */
     createMutationMapping(list, geneId, mappingType, addEmptyVariables) {
         const _self = this;
@@ -781,7 +760,7 @@ class RootStore {
                     if (RootStore.isInCurrentRange(this.cbioAPI.clinicalEvents[patient][i], currentStart, currentEnd)) {
                         let matchingId = _self.doesSingleEventMatch(eventType, selectedVariable, this.cbioAPI.clinicalEvents[patient][i]);
                         if (matchingId !== null) {
-                            sampleMapper[samples[counter]]=true;
+                            sampleMapper[samples[counter]] = true;
                             _self.eventDetails.push({
                                 time: counter,
                                 patientId: patient,

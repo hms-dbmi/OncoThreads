@@ -1,7 +1,6 @@
 import {extendObservable} from "mobx";
 import SingleTimepoint from "./SingleTimepoint"
 import VariableStore from "./VariableStore";
-import RootStore from "../RootStore";
 
 /*
 stores information about sample timepoints
@@ -9,7 +8,7 @@ stores information about sample timepoints
 class SampleTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.variableStore = new VariableStore(rootStore);
+        this.variableStore = new VariableStore();
         extendObservable(this, {
             timepoints: [],
         });
@@ -27,18 +26,11 @@ class SampleTimepointStore {
         this.rootStore.visStore.resetTransitionSpace();
         this.variableStore.constructor(this.rootStore);
         let mapper = this.rootStore.sampleMappers[variableId];
-        if (type === "NUMBER") {
-            let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax, mapper);
-        }
-        else {
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper);
-        }
+        this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper, true);
         this.timepoints = [];
         for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
             this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.timepointStructure[i].map(d => d.patient), "sample", i, this.rootStore.patientOrderPerTimepoint));
         }
-        this.rootStore.timepointStore.initialize();
         this.addHeatmapVariable(variableId, mapper);
     }
 
@@ -72,11 +64,9 @@ class SampleTimepointStore {
                         patient: f.patient,
                         value: value,
                         sample: f.sample
-
                     });
                 }
             });
-
             _self.timepoints[i].addRow(variableId, variableData);
         });
     }
@@ -90,20 +80,22 @@ class SampleTimepointStore {
      * @param variable
      * @param type
      * @param description
+     * @param display
      */
-    addVariable(variableId, variable, type, description) {
+    addVariable(variableId, variable, type, description, display) {
         let mapper = this.rootStore.sampleMappers[variableId];
         if (type === "NUMBER") {
-            let minMax = RootStore.getMinMaxOfContinuous(this.rootStore.sampleMappers[variableId], "sample");
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, minMax, mapper);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper, display);
         }
         else {
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper);
+            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper, display);
         }
-        this.addHeatmapVariable(variableId, mapper);
-        this.rootStore.timepointStore.regroupTimepoints();
-        this.rootStore.globalPrimary = variableId;
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)
+        if (display) {
+            this.addHeatmapVariable(variableId, mapper);
+            this.rootStore.timepointStore.regroupTimepoints();
+            this.rootStore.globalPrimary = variableId;
+            this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)
+        }
     }
 
 
