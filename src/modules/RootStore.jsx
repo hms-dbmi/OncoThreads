@@ -578,6 +578,16 @@ class RootStore {
                 }
                 newMapper[entry] = containedInOne;
             }
+            else if(operator ==="and"){
+                let containedInAll = true;
+                for (let i = 0; i< mappers.length; i++) {
+                    if (!mappers[i][entry]) {
+                        containedInAll = false;
+                        break;
+                    }
+                }
+                newMapper[entry] = containedInAll;
+            }
         }
         console.log(mappers,newMapper);
         return newMapper;

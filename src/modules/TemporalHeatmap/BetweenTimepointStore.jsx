@@ -96,14 +96,14 @@ class BetweenTimepointStore {
         });
     }
 
-    addORVariable(type, selectedValues, name) {
+    addCombinedVariable(type, selectedValues, name, operator) {
         // create new Id
         let isFirst = this.timepoints.length === 0;
         let derivedId = uuidv4();
         let mappers=selectedValues.map(d => this.rootStore.getSampleEventMapping(type, d));
-        let combinedMapper = this.rootStore.createCombinedMapper(mappers, "or");
+        let combinedMapper = this.rootStore.createCombinedMapper(mappers, operator);
         // add derived variable
-        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, "OR", combinedMapper,mappers);
+        this.variableStore.addCombinedEventVariable(derivedId, name, type, selectedValues, operator, combinedMapper,mappers);
         //initialize if the variable is the first variable to be added
         if (isFirst) {
             this.initialize(derivedId);

@@ -57,7 +57,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * handles click on combine radio button
      * @param addCombined
      */
-    handleCombineClick(addCombined) {
+    handleCombineClick(addCombined,operator) {
         let disabled = Object.assign({}, this.state.disabled);
         if (!addCombined) {
             for (let checkbox in disabled) {
@@ -66,6 +66,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             this.setState({
                 disabled: disabled,
                 addCombined: addCombined
+
             });
         }
         else {
@@ -74,6 +75,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                 selectedValues: [],
                 selectedKey: '',
                 addCombined: addCombined,
+                operator:operator,
                 defaultName: ""
             });
         }
@@ -113,7 +115,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     this.setState({showUniqueNameAlert: true});
                 }
                 else {
-                    this.addORVariable(name);
+                    this.addCombinedVariable(name);
                 }
             }
             else {
@@ -128,9 +130,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     /**
      * adds a variable to the view
      */
-    addORVariable(name) {
+    addCombinedVariable(name) {
         this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
-        this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, name);
+        this.props.store.addCombinedVariable(this.state.buttonClicked, this.state.selectedValues, name,this.state.operator);
         this.closeModal();
     }
 
@@ -487,8 +489,12 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                         {this.getEmptySelectionAlert()}
                         <FormGroup>
                             <Radio name="radioGroup" inline checked={this.state.addCombined}
-                                   onChange={() => this.handleCombineClick(true)}>
-                                Combine
+                                   onChange={() => this.handleCombineClick(true,"or")}>
+                                Combine with -or- operator
+                            </Radio>{' '}
+                             <Radio name="radioGroup" inline checked={this.state.addCombined}
+                                   onChange={() => this.handleCombineClick(true,"and")}>
+                                Combine with -and- operator
                             </Radio>{' '}
                             <Radio name="radioGroup" inline checked={!this.state.addCombined}
                                    onChange={() => this.handleCombineClick(false)}>
