@@ -15,6 +15,7 @@ class EventVariable {
         this.eventType = eventType; //e.g. Treatment
         this.eventSubType = eventSubType; //e.g. Agent
         this.mapper = mapper;
+        this.referenced = 0;
     }
 
 }

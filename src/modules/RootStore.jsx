@@ -33,6 +33,7 @@ class RootStore {
         this.eventAttributes = [];
         this.patientOrderPerTimepoint = [];
         this.sampleTimelineMap = {};
+        this.eventTimelineMap = {};
         this.sampleMappers = {};
         this.eventDetails = [];
 
@@ -149,7 +150,6 @@ class RootStore {
         this.timepointStore.transitionOn = false;
         this.resetTimepointStructure(false);
         this.timepointStore.initialize();
-        this.undoRedoStore.saveVariableHistory("ADD VARIABLE", this.clinicalSampleCategories[0].variable);
         this.parsed = true;
         this.globalPrimary = this.clinicalSampleCategories[0].id;
     }
@@ -198,7 +198,6 @@ class RootStore {
 
             // if (localStorage.getItem(_self.study.studyId) === null) {
             _self.timepointStore.initialize();
-            _self.undoRedoStore.saveVariableHistory("ADD VARIABLE", _self.clinicalSampleCategories[0].variable);
             _self.globalPrimary = _self.clinicalSampleCategories[0].id;
             /*}
             else {
@@ -248,7 +247,7 @@ class RootStore {
                             });
                         }
                         for (let entry in geneDict) {
-                            if (!_self.timepointStore.variableStore.samplehasVariable(entry + mappingType)) {
+                            if (!_self.timepointStore.variableStore.sample.hasVariable(entry + mappingType)) {
                                 _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm);
                                 const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
                                 _self.timepointStore.timepointStores.sample.addVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType);
@@ -403,7 +402,6 @@ class RootStore {
         } //else end
         timeline.splice(index, 1);
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
-        this.visStore.resetTransitionSpace();
         let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
         this.eventDetails = [];
         this.timepointStore.update(heatmapOrder, this.createNameList(up, this.timepointStore.timepointStores.sample.timepoints, oldSampleTimepointNames, patient));
@@ -449,40 +447,6 @@ class RootStore {
         return newNames;
     }
 
-
-    /**
-     * computes the maximum and minimum of a continuous mapper
-     */
-    static getMinMaxOfContinuous(mapper, type) {
-        let max = Number.NEGATIVE_INFINITY;
-        let min = Number.POSITIVE_INFINITY;
-        if (type === "between") {
-            for (let patient in mapper) {
-                for (let i = 0; i < mapper[patient].length; i++) {
-                    if (mapper[patient][i] > max) {
-                        max = mapper[patient][i];
-                    }
-                    if (mapper[patient][i] < min) {
-                        min = mapper[patient][i];
-                    }
-                }
-            }
-        }
-        else {
-            for (let sample in mapper) {
-                if (mapper[sample] > max) {
-                    max = mapper[sample];
-                }
-                if (mapper[sample] < min) {
-                    min = mapper[sample];
-                }
-            }
-        }
-        return [min, max];
-
-    }
-
-
     /**
      * creates a dictionary mapping sample IDs onto clinical data
      * @returns {{}}
@@ -520,7 +484,7 @@ class RootStore {
         });
     }
 
-    createBinnedMapper(mapper, bins, binNames) {
+    static createBinnedMapper(mapper, bins, binNames) {
         let newMapper = {};
         for (let entry in mapper) {
             if (mapper[entry] === 'undefined') {
@@ -544,7 +508,7 @@ class RootStore {
         return newMapper
     }
 
-    createBinaryCombinedMapper(mappers, operator) {
+    static createBinaryCombinedMapper(mappers, operator) {
         let newMapper = {};
         for (let entry in mappers[0]) {
             if (operator === "or") {
@@ -648,90 +612,12 @@ class RootStore {
     /**
      *creates a mapping of selected events to patients (OR)
      * @param eventType
-     * @param selectedVariables
-     * @returns {any[]}
-     */
-    getEventMapping(eventType, selectedVariables) {
-        let mapper = {};
-        const _self = this;
-        for (let patient in this.cbioAPI.clinicalEvents) {
-            if (!(patient in mapper)) {
-                mapper[patient] = [];
-            }
-            let samples = [];
-            //extract samples for current patient
-            this.timepointStructure.forEach(function (g) {
-                g.forEach(function (l) {
-                    if (l.patient === patient) {
-                        samples.push(l.sample);
-                    }
-                });
-            });
-            if (samples.length > 0) {
-                let counter = 0;
-                let currentStart = Number.NEGATIVE_INFINITY;
-                let currentEnd = this.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
-                let i = 0;
-                while (i < this.cbioAPI.clinicalEvents[patient].length) {
-                    if (mapper[patient].length <= counter) {
-                        mapper[patient].push([]);
-                    }
-                    let start = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
-                    let end = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
-                    if (this.cbioAPI.clinicalEvents[patient][i].hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
-                        end = this.cbioAPI.clinicalEvents[patient][i].endNumberOfDaysSinceDiagnosis;
-                    }
-                    if (RootStore.isInCurrentRange(this.cbioAPI.clinicalEvents[patient][i], currentStart, currentEnd)) {
-                        let matchingId = _self.doesEventMatch(eventType, selectedVariables, this.cbioAPI.clinicalEvents[patient][i]);
-                        if (matchingId !== null) {
-                            mapper[patient][counter].push({
-                                variableId: matchingId,
-                                value: true,
-                                start: start,
-                                end: end
-                            });
-
-                            _self.eventDetails.push({
-                                time: counter,
-                                patientId: patient,
-                                eventDate: start,
-                                eventEndDate: end,
-                                varId: matchingId
-                            });
-                        }
-                        i++;
-                    }
-                    else {
-                        if (start >= currentEnd) {
-                            currentStart = _self.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
-                            if (counter + 1 < samples.length) {
-                                currentEnd = _self.sampleTimelineMap[samples[counter + 1]].startNumberOfDaysSinceDiagnosis;
-                            }
-                            else {
-                                currentEnd = Number.POSITIVE_INFINITY;
-                            }
-                            counter++;
-                        }
-                        else {
-                            i++;
-                        }
-
-                    }
-                }
-            }
-        }
-        this.getSampleEventMapping(eventType, selectedVariables);
-        return mapper;
-    }
-
-    /**
-     *creates a mapping of selected events to patients (OR)
-     * @param eventType
      * @param selectedVariable
      * @returns {any[]}
      */
     getSampleEventMapping(eventType, selectedVariable) {
         let sampleMapper = {};
+        this.eventTimelineMap[selectedVariable.id] = [];
         const _self = this;
         for (let patient in this.cbioAPI.clinicalEvents) {
             let samples = [];
@@ -758,9 +644,16 @@ class RootStore {
                         end = this.cbioAPI.clinicalEvents[patient][i].endNumberOfDaysSinceDiagnosis;
                     }
                     if (RootStore.isInCurrentRange(this.cbioAPI.clinicalEvents[patient][i], currentStart, currentEnd)) {
-                        let matchingId = _self.doesSingleEventMatch(eventType, selectedVariable, this.cbioAPI.clinicalEvents[patient][i]);
+                        let matchingId = _self.doesEventMatch(eventType, selectedVariable, this.cbioAPI.clinicalEvents[patient][i]);
                         if (matchingId !== null) {
                             sampleMapper[samples[counter]] = true;
+                            _self.eventTimelineMap[matchingId].push({
+                                    time: counter,
+                                    patientId: patient,
+                                    eventDate: start,
+                                    eventEndDate: end,
+                                    varId: matchingId
+                                });
                             _self.eventDetails.push({
                                 time: counter,
                                 patientId: patient,
@@ -793,7 +686,7 @@ class RootStore {
         return sampleMapper;
     }
 
-    doesSingleEventMatch(type, value, event) {
+    doesEventMatch(type, value, event) {
         let matchingId = null;
         if (type === event.eventType) {
             event.attributes.forEach(function (f) {
@@ -826,27 +719,6 @@ class RootStore {
         return isInRange;
     }
 
-
-    /**
-     * check if an event has a specific attribute (key-value pair)
-     * @param type: type of the event (Status/Treatment/Surgery)
-     * @param values
-     * @param event
-     * @returns {boolean}
-     */
-    doesEventMatch(type, values, event) {
-        let matchingId = null;
-        if (type === event.eventType) {
-            values.forEach(function (d, i) {
-                event.attributes.forEach(function (f) {
-                    if (f.key === d.eventType && f.value === d.name) {
-                        matchingId = d.id;
-                    }
-                })
-            })
-        }
-        return matchingId;
-    }
 
     /**
      * gets all the different attributes an event can have

@@ -173,6 +173,7 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     getGlobalView(timepointPositions, svgHeight, svgWidth) {
+        console.log(this.props.store.timepointStores.between.variableStore.getEventRelatedVariables());
         let a = this.props.store.rootStore.eventDetails;
 
         let b = a.filter(d => d.eventEndDate);
@@ -195,7 +196,7 @@ const MainView = observer(class MainView extends React.Component {
                             width={250} height={svgHeight} maxTimeInDays={maxTime}/>
                 <GlobalRowOperators {...this.props} width={300}
                                     timepointVarHeight={(this.props.currentVariables.sample.length + 1) * 19}
-                                    eventVarHeight={this.props.store.variableStore.between.allVariables.length * 19}
+                                    eventVarHeight={this.props.store.timepointStores.between.variableStore.getEventVariables().length * 19}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}/>
 

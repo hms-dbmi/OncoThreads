@@ -101,10 +101,6 @@ class VisStore {
         }
     }
 
-    resetTransitionSpace() {
-        this.transitionSpaces = [];
-    }
-
     /**
      * computes the height of a timepoint
      * @param numVar

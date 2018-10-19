@@ -1,4 +1,4 @@
-import {extendObservable} from "mobx";
+import {extendObservable, observe} from "mobx";
 import OriginalVariable from "./OriginalVariable";
 import DerivedVariable from "./DerivedVariable";
 import EventVariable from "./EventVariable";
@@ -7,10 +7,26 @@ import EventVariable from "./EventVariable";
 Store containing information about variables
  */
 class VariableStore {
-    constructor() {
-        this.allVariables = [];
+    constructor(parent, rootStore) {
+        this.parent = parent;
+        this.rootStore = rootStore;
+        this.allVariables = {};
         extendObservable(this, {
             currentVariables: [],
+        });
+        observe(this.currentVariables, (change) => {
+            if (change.type === 'splice') {
+                if (change.added.length > 0) {
+                    this.parent.addHeatmapVariable(change.added[0], this.getById(change.added[0]).mapper)
+                }
+                if (change.removed.length > 0) {
+                    this.parent.removeVariable(change.removed[0]);
+                }
+            }
+            else if (change.type === "update") {
+                this.parent.updateVariable(change.newValue, this.getById(change.newValue).mapper, change.index)
+            }
+
         });
     }
 
@@ -19,22 +35,34 @@ class VariableStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        this.currentVariables.splice(this.currentVariables.map(function (d) {
-            return d.id
-        }).indexOf(variableId), 1);
-        let isIncluded = false;
-        this.currentVariables.forEach(function (d) {
-            if (d.derived) {
-                if (d.originalIds.includes(variableId)) {
-                    isIncluded = true;
-                }
-            }
-        });
-        if (!isIncluded) {
-            this.allVariables.splice(this.allVariables.map(function (d) {
-                return d.id;
-            }).indexOf(variableId), 1);
+        let name = this.getById(variableId).name;
+        this.currentVariables.splice(this.currentVariables.indexOf(variableId), 1);
+        this.removeReferences(variableId);
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", +name, true);
+    }
+
+    removeReferences(currentId) {
+        const _self = this;
+        if (!(this.allVariables[currentId].originalIds.length === 1 && this.allVariables[currentId].originalIds[0] === currentId)) {
+            this.allVariables[currentId].originalIds.forEach(function (d) {
+                _self.removeReferences(d);
+            });
         }
+        this.allVariables[currentId].referenced -= 1;
+        if (this.allVariables[currentId].referenced === 0) {
+            delete this.allVariables[currentId];
+        }
+    }
+
+
+    updateReferences(currentId) {
+        const _self = this;
+        if (!(this.allVariables[currentId].originalIds.length === 1 && this.allVariables[currentId].originalIds[0] === currentId)) {
+            this.allVariables[currentId].originalIds.forEach(function (d) {
+                _self.updateReferences(d);
+            });
+        }
+        _self.allVariables[currentId].referenced += 1;
     }
 
     /**
@@ -43,64 +71,31 @@ class VariableStore {
      * @param name
      * @param datatype
      * @param description
-     * @param domain
      * @param range
+     * @param mapper
+     * @param display
      */
     addOriginalVariable(id, name, datatype, description, range, mapper, display) {
-        const newVariable = new OriginalVariable(id, name, datatype, description, range, mapper);
-        if (display) {
-            this.currentVariables.push(newVariable);
+        if (!this.isReferenced(id)) {
+            this.allVariables[id] = new OriginalVariable(id, name, datatype, description, range, mapper);
         }
-        this.allVariables.push(newVariable);
-    }
-
-    /**
-     * adds a derived variable consisting of a combination of event variables
-     * @param newId
-     * @param name
-     * @param eventType
-     * @param selectedVariables
-     * @param logicalOperator
-     * @param mapper
-     * @param singleMappers
-     */
-    addCombinedEventVariable(newId, name, eventType, selectedVariables, logicalOperator, mapper, singleMappers) {
-        const _self = this;
-        let description = "";
-        selectedVariables.forEach(function (f, i) {
-            if (description !== "") {
-                description += " -" + logicalOperator + "- ";
-            }
-            description += f.name;
-            if (!_self.allVariables.map(function (d) {
-                return d.id;
-            }).includes(f.id)) {
-                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, f.eventType, singleMappers[i]);
-                _self.allVariables.push(newVariable);
-            }
-        });
-        let combinedEvent = new DerivedVariable(newId, name, "binary", description, selectedVariables.map(function (d, i) {
-            return d.id;
-        }), logicalOperator, null, mapper);
-        this.allVariables.push(combinedEvent);
-        this.currentVariables.push(combinedEvent);
+        if (display && !this.isDisplayed(id)) {
+            this.updateReferences(id);
+            this.currentVariables.push(id);
+            this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
+        }
     }
 
 
     addEventVariable(eventType, selectedVariable, mapper, display) {
         const _self = this;
-        if (!_self.allVariables.map(function (d) {
-            return d.id;
-        }).includes(selectedVariable.id)) {
-            const newVariable = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, mapper);
-            _self.allVariables.push(newVariable);
-            if (display) {
-                _self.currentVariables.push(newVariable);
-            }
+        if (!this.isReferenced(selectedVariable.id)) {
+            _self.allVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, mapper);
         }
-        else if (!_self.hasVariable(selectedVariable.id && display)) {
-            _self.currentVariables.push(_self.getByIdAllVariables(selectedVariable.id));
-
+        if (!(_self.currentVariables.includes(selectedVariable.id)) && display) {
+            this.updateReferences(selectedVariable.id);
+            _self.currentVariables.push(selectedVariable.id);
+            this.rootStore.undoRedoStore.saveVariableHistory("ADD", selectedVariable.name, true);
         }
     }
 
@@ -109,14 +104,18 @@ class VariableStore {
      * @param id
      * @param name
      * @param datatype
+     * @param description
      * @param originalIds
      * @param modificationType
      * @param modification
+     * @param mapper
      */
     addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, mapper) {
-        const newVariable = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, mapper);
-        this.currentVariables.push(newVariable);
-        this.allVariables.push(newVariable);
+        this.allVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, mapper);
+        this.updateReferences(id);
+        this.currentVariables.push(id);
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
+
     }
 
     /**
@@ -128,38 +127,15 @@ class VariableStore {
      * @param originalId
      * @param modificationType
      * @param modification
-     * @param domain
+     * @param mapper
      */
-    modifyVariable(id, name, datatype, description, originalId, modificationType, modification, domain, mapper) {
-        const newVariable = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, domain, [], mapper);
-        const oldIndex = this.currentVariables.map(function (d) {
-            return d.id;
-        }).indexOf(originalId);
-        this.currentVariables[oldIndex] = newVariable;
-        this.allVariables.push(newVariable);
-    }
-
-    /**
-     * checks if a variable exists in current variables
-     * @param id
-     * @returns {boolean}
-     */
-    hasVariable(id) {
-        return this.currentVariables.map(function (d) {
-            return d.id
-        }).includes(id)
-    }
-
-    hadVariableAll(id) {
-        return this.allVariables.map(function (d) {
-            return d.id
-        }).includes(id)
-    }
-
-    getVariableIndex(id) {
-        return this.currentVariables.map(function (d) {
-            return d.id;
-        }).indexOf(id)
+    modifyVariable(id, name, datatype, description, originalId, modificationType, modification, mapper) {
+        let oldName = this.allVariables[originalId].name;
+        this.allVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, mapper);
+        this.updateReferences(id);
+        this.currentVariables[this.getIndex(originalId)] = id;
+        this.removeReferences(originalId);
+        this.rootStore.undoRedoStore.saveVariableModification(modificationType, oldName, true);
     }
 
     /**
@@ -167,33 +143,60 @@ class VariableStore {
      * @param id
      */
     getById(id) {
-        return this.currentVariables.filter(function (d) {
-            return d.id === id
-        })[0];
+        return this.allVariables[id];
     }
 
-    getByIdAllVariables(id) {
-        return this.allVariables.filter(function (d) {
-            return d.id === id
-        })[0];
+    isReferenced(id) {
+        return id in this.allVariables;
     }
 
-    getByOriginalId(id) {
-        return this.allVariables.filter(d => !d.derived).filter(function (d) {
-            return d.id === id
-        })[0];
-
+    isDisplayed(id) {
+        return this.currentVariables.includes(id);
     }
 
-    /**
-     * checks if a variable is continuous
-     * @param variableId
-     * @returns {boolean}
-     */
-    isContinuous(variableId) {
-        return this.currentVariables.filter(function (d) {
-            return d.id === variableId;
-        })[0].datatype === "NUMBER";
+    getIndex(id) {
+        return this.currentVariables.indexOf(id);
+    }
+
+    getCurrentVariables() {
+        return this.currentVariables.map(d => this.allVariables[d]);
+    }
+
+    getEventVariables() {
+        let eventVar = [];
+        for (let variableId in this.allVariables) {
+            if (this.allVariables[variableId].type === "event") {
+                eventVar.push(this.allVariables[variableId]);
+            }
+        }
+        return eventVar;
+    }
+
+    getTotalNumberOfVariables() {
+        return (Object.keys(this.allVariables).length);
+    }
+
+    getEventRelatedVariables() {
+        const _self = this;
+        let eventRelatedVariables = [];
+        this.currentVariables.forEach(function (d) {
+            if (_self.recursiveEventSearch(d)) {
+                eventRelatedVariables.push(d);
+            }
+        });
+        return eventRelatedVariables.map(d => this.allVariables[d])
+    }
+
+    recursiveEventSearch(id) {
+        if (this.allVariables[id].type === "event") {
+            return true;
+        }
+        else if (this.allVariables[id].type === "derived") {
+            return this.allVariables[id].originalIds.map(d => this.recursiveEventSearch(d)).includes(true);
+        }
+        else {
+            return false;
+        }
     }
 }
 

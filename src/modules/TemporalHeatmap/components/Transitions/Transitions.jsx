@@ -8,7 +8,7 @@ creates the transitions between timepoints
 const Transitions = observer(class Transitions extends React.Component {
 
     getFullPrimary(timepoint) {
-        return this.props.store.variableStore[timepoint.type].getById(timepoint.primaryVariableId);
+        return this.props.store.timepointStores[timepoint.type].variableStore.getById(timepoint.primaryVariableId);
     }
 
     getBlockTransitions() {

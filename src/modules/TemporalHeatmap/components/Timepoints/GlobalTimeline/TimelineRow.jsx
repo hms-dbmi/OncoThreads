@@ -45,7 +45,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                     //}
 
 
-                    _self.props.store.variableStore['between'].currentVariables.forEach(function (d) {
+                    _self.props.store.timepointStores.between.variableStore.getCurrentVariables().forEach(function (d) {
                         if (d.originalIds.includes(ev.varId)) {
                             //console.log(d.originalIds[0]);
                             fillC = _self.props.color(d.originalIds[0]);
@@ -59,7 +59,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         height = _self.props.rectWidth;
                         opc1 = opc1 + 0.3;
                     }
-                    let val = _self.props.store.variableStore['between'].getByIdAllVariables(ev.varId).name;
+                    let val = _self.props.store.timepointStores.between.variableStore.getById(ev.varId).name;
                     rects.push(<rect
                             onMouseEnter={(e) => _self.handleMouseEnter(e, ev.patientId, val, ev.eventDate, ev.eventEndDate - ev.eventDate)
                             }

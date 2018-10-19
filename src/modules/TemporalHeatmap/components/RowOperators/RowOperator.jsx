@@ -23,8 +23,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          * @param variable: Variable with which the timepoint will be grouped
          */
         group(timepoint, variable) {
-            //console.log(variable,timepoint.type,this.props.store.isContinuous(variable,timepoint.type));
-            if (this.props.store.isContinuous(variable, timepoint.type)) {
+            if (this.props.store.timepointStores[timepoint.type].variableStore.getById(variable).datatype === "NUMBER") {
                 this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newID) {
                     timepoint.group(newID);
                 });
@@ -42,7 +41,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          * @param variable: Variable with which the timepoint should be sorted
          */
         sortTimepoint(timepoint, variable) {
-            if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
+            if (timepoint.isGrouped && this.props.store.timepointStores[timepoint.type].variableStore.getById(variable).datatype === "NUMBER") {
                 this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
                     timepoint.group(newId);
                 });
@@ -74,7 +73,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          * @param variable: variable to be the primary variable
          */
         promote(timepoint, variable) {
-            if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
+            if (timepoint.isGrouped && this.props.store.timepointStores[timepoint.type].variableStore.getById(variable).datatype === "NUMBER") {
                 this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
                     timepoint.promote(newId)
                 });
@@ -134,7 +133,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
         handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
-            if (timepoint.type === "between" || this.props.store.currentVariables[timepoint.type].length > 1) {
+            if (timepoint.type === "between" || this.props.currentVariables[timepoint.type].length > 1) {
                 this.props.store.removeVariable(variable, timepoint.type)
             }
             else {
@@ -219,7 +218,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                        onMouseLeave={this.props.hideTooltip}>
                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
                       onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "PROMOTE")}
-                      onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
+                      onClick={() => this.promote(timepoint, variable)}>{RowOperator.cropText(this.props.store.timepointStores[timepoint.type].variableStore.getById(variable, timepoint.type).name, fontSize, fontWeight, width)}</text>
             </g>);
         }
 
@@ -268,7 +267,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                     }
 
 
-                    let currVar = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type);
+                    let currVar = _self.props.store.timepointStores[_self.props.timepoint.type].variableStore.getById(d.variable, _self.props.timepoint.type);
                     let name_var = currVar.name;
                     let desc;
                     if (currVar.description !== undefined) {

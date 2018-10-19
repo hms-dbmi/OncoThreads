@@ -101,13 +101,13 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
         getRowLabel(timepoint, variable, yPos, iconScale, width, fontWeight, fontSize) {
             const _self = this;
             let fillC = "#F00";
-            const currVar = this.props.store.variableStore[timepoint.type].getById(variable);
+            const currVar = this.props.store.timepointStores[timepoint.type].variableStore.getById(variable);
             if (timepoint.type === 'between') {
                 if (currVar.type === 'event' || currVar.derived) {
                     let labels = [];
                     let oIds = currVar.originalIds;
                     oIds.forEach(function (element, i) {
-                        let originalVar = _self.props.store.variableStore[timepoint.type].getByIdAllVariables(element);
+                        let originalVar = _self.props.store.timepointStores[timepoint.type].variableStore.getById(element);
                         if (originalVar.type === "event") {
                             let c1 = _self.props.visMap.globalTimelineColors;
                             if (fillC === "#F00") {
@@ -148,7 +148,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                     <text style={{fontWeight: fontWeight, fontSize: fontSize}}
                           onClick={() => this.promote(timepoint, variable)}
                     >
-                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
+                        {GlobalRowOperator.cropText(this.props.store.timepointStores[timepoint.type].variableStore.getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
                     </text>
                     {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
                 </g>);
@@ -181,7 +181,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                         fontSize = Math.round(lineHeight);
                     }
                     let numVar = 1;
-                    let variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type);
+                    let variable = _self.props.store.timepointStores[_self.props.timepoint.type].variableStore.getById(d.variable, _self.props.timepoint.type);
                     if (variable.datatype === 'binary') {
                         numVar = variable.originalIds.length;
                     }

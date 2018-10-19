@@ -57,6 +57,8 @@ class DerivedVariable {
         this.modificationType = modificationType;
         this.modification = modification;
         this.mapper = mapper;
+        this.referenced = 0;
+
     }
 }
 

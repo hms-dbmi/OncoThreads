@@ -6,8 +6,9 @@ import {Button, ButtonGroup} from 'react-bootstrap';
 context menu, appears after a right click on the variables name
  */
 const ContextMenu = observer(class ContextMenu extends React.Component {
-    constructor() {
+    constructor(props) {
         super();
+        this.type=props.store.timepoints[props.clickedTimepoint].type;
         this.applyActionToAll = this.applyActionToAll.bind(this);
         this.applyActionToPrevious = this.applyActionToPrevious.bind(this);
         this.applyActionToNext = this.applyActionToNext.bind(this);
@@ -18,7 +19,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToAll() {
         const _self = this;
-        if (this.props.store.isContinuous(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type) && this.props.action !== "UNGROUP") {
+        if (this.props.store.timepointStores[this.type].variableStore.getById(this.props.clickedVariable).dataType==="NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
                 this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
                     _self.props.store.applyActionToAll(_self.props.clickedTimepoint, newID, _self.props.action);
@@ -41,7 +42,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToPrevious() {
         const _self = this;
-        if (this.props.store.isContinuous(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type) && this.props.action !== "UNGROUP") {
+        if (this.props.store.timepointStores[this.type].variableStore.getById(this.props.clickedVariable).dataType==="NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
                 this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
                     _self.props.store.applyActionToPrevious(_self.props.clickedTimepoint, newID, _self.props.action);
@@ -64,7 +65,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToNext() {
         const _self = this;
-        if (this.props.store.isContinuous(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type) && this.props.action !== "UNGROUP") {
+        if (this.props.store.timepointStores[this.type].variableStore.getById(this.props.clickedVariable).dataType==="NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
                 this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
                     _self.props.store.applyActionToNext(_self.props.clickedTimepoint, newID, _self.props.action);
@@ -85,7 +86,6 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
     render() {
         return (
             <ButtonGroup vertical style={{
-                visibility: this.props.showContextMenu,
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX

@@ -196,7 +196,7 @@ const Content = observer(class Content extends React.Component {
                                 openBinningModal={this.openModal}
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 mutationCount="Mutation count"
-                                currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                                currentVariables={this.props.rootStore.timepointStore.timepointStores.sample.variableStore.getCurrentVariables()}
                                 showTooltip={this.showTooltip}
                                 hideTooltip={this.hideTooltip}
                                 store={this.props.rootStore.timepointStore.timepointStores.sample}
@@ -206,7 +206,7 @@ const Content = observer(class Content extends React.Component {
                                 openBinningModal={this.openModal}
                                 eventCategories={this.props.rootStore.eventCategories}
                                 eventAttributes={this.props.rootStore.eventAttributes}
-                                currentVariables={this.props.rootStore.timepointStore.currentVariables.between}
+                                currentVariables={this.props.rootStore.timepointStore.timepointStores.between.variableStore.getCurrentVariables()}
                                 store={this.props.rootStore.timepointStore.timepointStores.between}
                                 visMap={this.props.rootStore.visStore}
                             />
@@ -216,11 +216,14 @@ const Content = observer(class Content extends React.Component {
                              style={{padding: 20}}>
                             <Row>
                                 <MainView
-                                    currentVariables={this.props.rootStore.timepointStore.currentVariables}
+                                    currentVariables={{
+                                        sample: this.props.rootStore.timepointStore.timepointStores.sample.variableStore.getCurrentVariables(),
+                                        between: this.props.rootStore.timepointStore.timepointStores.between.variableStore.getCurrentVariables()
+                                    }}
                                     timepoints={this.props.rootStore.timepointStore.timepoints}
                                     store={this.props.rootStore.timepointStore}
                                     transitionStore={this.props.rootStore.transitionStore}
-                                    visMap={this.props.rootStore.visStore}
+                                    visMap={this.props.rootStore.visStore} f
                                     rectWidth={this.props.rootStore.visStore.sampleRectWidth}
                                     openBinningModal={this.openModal}
                                     showTooltip={this.showTooltip}

@@ -53,7 +53,8 @@ class OriginalVariable {
         this.derived = false;
         this.range = range;
         this.mapper = mapper;
-        this.description = description
+        this.description = description;
+        this.referenced=0;
     }
 
 }

@@ -78,7 +78,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
 
-        if (_self.props.store.rootStore.sampleTimepointStore.variableStore.allVariables.length === 0) {
+        if (_self.props.store.timepointStores.sample.variableStore.getTotalNumberOfVariables() === 0) {
             a2 = a1.filter(d => d.time === Math.floor(_self.props.index))
                 .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2))
         }

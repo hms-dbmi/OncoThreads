@@ -111,7 +111,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      */
     addEventVariable() {
         if (this.state.selectedValues.length > 0) {
-            if (this.state.addCombined) {
+            if (this.state.addCombined && this.state.selectedValues.length > 1) {
                 let name = this.state.name;
                 if (this.state.name === "") {
                     name = this.state.defaultName;

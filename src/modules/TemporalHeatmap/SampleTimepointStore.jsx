@@ -1,4 +1,4 @@
-import {extendObservable} from "mobx";
+import {extendObservable, toJS} from "mobx";
 import SingleTimepoint from "./SingleTimepoint"
 import VariableStore from "./VariableStore";
 
@@ -8,42 +8,22 @@ stores information about sample timepoints
 class SampleTimepointStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.variableStore = new VariableStore();
+        this.variableStore = new VariableStore(this,this.rootStore);
         extendObservable(this, {
             timepoints: [],
         });
     }
 
 
-    /**
-     * initialize fields, used after the fist variable is added.
-     * @param variableId
-     * @param variable
-     * @param type
-     * @param description
-     */
-    initialize(variableId, variable, type, description) {
-        this.rootStore.visStore.resetTransitionSpace();
-        this.variableStore.constructor(this.rootStore);
-        let mapper = this.rootStore.sampleMappers[variableId];
-        this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper, true);
-        this.timepoints = [];
-        for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
-            this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.timepointStructure[i].map(d => d.patient), "sample", i, this.rootStore.patientOrderPerTimepoint));
-        }
-        this.addHeatmapVariable(variableId, mapper);
-    }
-
     update(order, timepointNames) {
         this.timepoints = [];
         const _self = this;
         for (let j = 0; j < _self.rootStore.timepointStructure.length; j++) {
-            let newTimepoint = new SingleTimepoint(_self.rootStore, this.variableStore.currentVariables[0].id, _self.rootStore.timepointStructure[j].map(d => d.patient), "sample", j, order);
+            let newTimepoint = new SingleTimepoint(_self.rootStore, this.variableStore.currentVariables[0], _self.rootStore.timepointStructure[j].map(d => d.patient), "sample", j, order);
             newTimepoint.setName(timepointNames[j]);
             _self.timepoints.push(newTimepoint);
         }
-        _self.rootStore.timepointStore.initialize();
-        this.variableStore.currentVariables.forEach(function (d, i) {
+        this.variableStore.getCurrentVariables().forEach(function (d, i) {
             _self.addHeatmapVariable(d.id, d.mapper);
         });
     }
@@ -51,6 +31,7 @@ class SampleTimepointStore {
     /**
      * adds variable to heatmap
      * @param variableId
+     * @param mapper
      */
     addHeatmapVariable(variableId, mapper) {
         const _self = this;
@@ -58,7 +39,6 @@ class SampleTimepointStore {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {
-                    //console.log(f.patient);
                     let value = mapper[f.sample];
                     variableData.push({
                         patient: f.patient,
@@ -68,6 +48,26 @@ class SampleTimepointStore {
                 }
             });
             _self.timepoints[i].addRow(variableId, variableData);
+        });
+        this.rootStore.timepointStore.regroupTimepoints();
+        this.rootStore.globalPrimary = variableId;
+    }
+
+    updateVariable(variableId, mapper, index) {
+        const _self = this;
+        this.rootStore.timepointStructure.forEach(function (d, i) {
+            let variableData = [];
+            d.forEach(function (f) {
+                if (f) {
+                    let value = mapper[f.sample];
+                    variableData.push({
+                        patient: f.patient,
+                        value: value,
+                        sample: f.sample
+                    });
+                }
+            });
+            _self.timepoints[i].updateRow(index, variableId, variableData);
         });
     }
 
@@ -83,19 +83,13 @@ class SampleTimepointStore {
      * @param display
      */
     addVariable(variableId, variable, type, description, display) {
+        if (this.timepoints.length === 0) {
+            for (let i = 0; i < this.rootStore.timepointStructure.length; i++) {
+                this.timepoints.push(new SingleTimepoint(this.rootStore, variableId, this.rootStore.timepointStructure[i].map(d => d.patient), "sample", i, this.rootStore.patientOrderPerTimepoint));
+            }
+        }
         let mapper = this.rootStore.sampleMappers[variableId];
-        if (type === "NUMBER") {
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper, display);
-        }
-        else {
-            this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper, display);
-        }
-        if (display) {
-            this.addHeatmapVariable(variableId, mapper);
-            this.rootStore.timepointStore.regroupTimepoints();
-            this.rootStore.globalPrimary = variableId;
-            this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", variable)
-        }
+        this.variableStore.addOriginalVariable(variableId, variable, type, description, [], mapper, display);
     }
 
 
@@ -104,33 +98,13 @@ class SampleTimepointStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        let variableName = this.variableStore.getById(variableId).name;
         const _self = this;
-        this.rootStore.undoRedoStore.saveVariableHistory("REMOVE VARIABLE", variableName);
-        if (this.variableStore.currentVariables.length !== 1) {
-            this.timepoints.forEach(function (d) {
-                if (d.primaryVariableId === variableId) {
-                    d.adaptPrimaryVariable(variableId);
-                }
-            });
-            const index = this.variableStore.currentVariables.map(function (d) {
-                return d.id
-            }).indexOf(variableId);
-            for (let i = 0; i < this.timepoints.length; i++) {
-                this.timepoints[i].heatmap.splice(index, 1);
-            }
-            this.variableStore.removeVariable(variableId);
-            this.rootStore.timepointStore.regroupTimepoints();
-
-            if (_self.rootStore.globalPrimary === variableId) {
-                _self.rootStore.globalPrimary = _self.variableStore.currentVariables[_self.variableStore.currentVariables.length - 1].id
-            }
-        }
-        //case: last timepoint variableId was removed
-        else {
-            this.timepoints = [];
-            this.variableStore.constructor(this.rootStore);
-            this.rootStore.timepointStore.initialize();
+        let timepoints = this.timepoints.slice();
+        timepoints.forEach(d => d.removeRow(variableId));
+        this.timepoints = timepoints;
+        this.rootStore.timepointStore.regroupTimepoints();
+        if (_self.rootStore.globalPrimary === variableId) {
+            _self.rootStore.globalPrimary = _self.variableStore.currentVariables[_self.variableStore.currentVariables.length - 1]
         }
     }
 

@@ -42,7 +42,6 @@ const SortContextMenu = observer(class SortContextMenu extends React.Component {
     render() {
         return (
             <ButtonGroup vertical style={{
-                visibility: this.props.showContextMenu,
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX

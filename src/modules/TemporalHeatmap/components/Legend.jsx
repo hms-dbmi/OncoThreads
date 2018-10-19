@@ -273,7 +273,7 @@ const Legend = observer(class Legend extends React.Component {
             this.props.timepoints.forEach(function (d, i) {
                 let transform = "translate(0," + _self.props.posY[i] + ")";
 
-                const lg = _self.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStore[d.type].currentVariables);
+                const lg = _self.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.currentVariables[d.type]);
 
                 legends.push(<g key={i + d}
                                 transform={transform}
@@ -286,7 +286,7 @@ const Legend = observer(class Legend extends React.Component {
         else {
             //let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
 
-            let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0];
+            let primaryVariable = this.props.currentVariables.sample.filter(variable => variable.originalIds[0] === _self.props.store.rootStore.globalPrimary)[0];
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }
         return (

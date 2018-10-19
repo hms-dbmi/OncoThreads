@@ -213,7 +213,7 @@ class UndoRedoStore {
      * @param timepointIndex
      */
     saveTimepointHistory(operation, variableId, timepointType, timepointIndex) {
-        const variableName = this.rootStore.timepointStore.variableStore[timepointType].getById(variableId).name;
+        const variableName = this.rootStore.timepointStore.timepointStores[timepointType].variableStore.getById(variableId).name;
         let type = "Timepoint";
         if (timepointType === "between") {
             type = "Transition";
