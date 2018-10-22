@@ -173,21 +173,7 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     getGlobalView(timepointPositions, svgHeight, svgWidth) {
-        console.log(this.props.store.timepointStores.between.variableStore.getEventRelatedVariables());
-        let a = this.props.store.rootStore.eventDetails;
-
-        let b = a.filter(d => d.eventEndDate);
-        let c = b.map(d => d.eventEndDate);
-
-
-        let max1 = Math.max(...c);
-
-
-        let max2 = this.props.store.rootStore.actualTimeLine
-            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
-            .reduce((next, max) => next > max ? next : max, 0);
-
-        let maxTime = Math.max(max1, max2);
+        let maxTime = this.props.store.rootStore.maxTimeInDays;
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
         const axisHorizontalZoom = (300 - this.state.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (<Row>
@@ -196,7 +182,7 @@ const MainView = observer(class MainView extends React.Component {
                             width={250} height={svgHeight} maxTimeInDays={maxTime}/>
                 <GlobalRowOperators {...this.props} width={300}
                                     timepointVarHeight={(this.props.currentVariables.sample.length + 1) * 19}
-                                    eventVarHeight={this.props.store.timepointStores.between.variableStore.getEventVariables().length * 19}
+                                    eventVarHeight={this.props.store.timepointStores.between.variableStore.getVariablesOfType("event").length * 19}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}/>
 

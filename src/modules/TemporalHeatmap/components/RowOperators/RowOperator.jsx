@@ -134,7 +134,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
             if (timepoint.type === "between" || this.props.currentVariables[timepoint.type].length > 1) {
-                this.props.store.removeVariable(variable, timepoint.type)
+                this.props.store.timepointStores[timepoint.type].variableStore.removeVariable(variable);
             }
             else {
                 alert("Samples have to be represented by at least one variable");
@@ -233,7 +233,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             const _self = this;
             let pos = 0;
             let rowOperators = [];
-            this.props.timepoint.heatmap.forEach(function (d, i) {
+            this.props.timepoint.heatmap.forEach(function (d) {
                 if (!d.isUndef || _self.props.store.showUndefined || d.variable === _self.props.timepoint.primaryVariableId) {
                     let lineHeight;
                     let fontWeight;
@@ -265,9 +265,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
                     if (d.variable === _self.props.highlightedVariable) {
                         highlightRect = _self.getHighlightRect(lineHeight);
                     }
-
-
-                    let currVar = _self.props.store.timepointStores[_self.props.timepoint.type].variableStore.getById(d.variable, _self.props.timepoint.type);
+                    let currVar = _self.props.store.timepointStores[_self.props.timepoint.type].variableStore.getById(d.variable);
                     let name_var = currVar.name;
                     let desc;
                     if (currVar.description !== undefined) {

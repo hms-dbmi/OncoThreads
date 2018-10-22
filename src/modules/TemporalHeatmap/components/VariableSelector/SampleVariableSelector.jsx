@@ -35,7 +35,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     bin(id, name, description) {
-        this.props.store.addVariable(id, name, "NUMBER", description, false);
+        this.props.store.addVariable(id, name, "NUMBER", description, [], false);
         this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
 
@@ -47,12 +47,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     addVariable(id, variable, type, description) {
-        if (this.props.currentVariables.length === 0) {
-            this.props.store.initialize(id, variable, type, description);
-        }
-        else {
-            this.props.store.addVariable(id, variable, type, description, true);
-        }
+        this.props.store.variableStore.addOriginalVariable(id, variable, type, description, [], true);
     }
 
 

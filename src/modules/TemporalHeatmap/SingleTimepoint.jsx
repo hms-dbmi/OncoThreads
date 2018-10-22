@@ -4,7 +4,7 @@ import {extendObservable} from "mobx";
 stores information about a single timepoint
  */
 class SingleTimepoint {
-    constructor(rootStore, variable, patients, type, localIndex, order) {
+    constructor(rootStore, patients, type, localIndex, order) {
         this.rootStore = rootStore;
         this.type = type;
         this.patients = patients;
@@ -18,7 +18,7 @@ class SingleTimepoint {
             heatmapOrder: order,
             groupOrder: 1,
             isGrouped: false,
-            primaryVariableId: variable,
+            primaryVariableId: "",
             name: localIndex
         });
     }
@@ -39,6 +39,9 @@ class SingleTimepoint {
             data: variableData,
             isUndef: this.rowIsUndefined(variableData)
         });
+        if(this.primaryVariableId===""){
+            this.primaryVariableId=variableId;
+        }
     }
 
     removeRow(variableId) {

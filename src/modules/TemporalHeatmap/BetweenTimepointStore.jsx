@@ -15,8 +15,7 @@ class BetweenTimepointStore {
         });
     }
 
-    initialize(id) {
-        this.rootStore.timepointStore.transitionOn = true;
+    initialize() {
         this.rootStore.realTime = false;
         let timepoints = [];
         for (let i = 0; i < this.rootStore.transitionStructure.length; i++) {
@@ -27,7 +26,7 @@ class BetweenTimepointStore {
             else {
                 order = this.rootStore.timepointStore.timepointStores.sample.timepoints[i - 1].heatmapOrder;
             }
-            timepoints.push(new SingleTimepoint(this.rootStore, id, this.rootStore.transitionStructure[i], "between", i, order));
+            timepoints.push(new SingleTimepoint(this.rootStore, this.rootStore.transitionStructure[i].map(d=>d.patient), "between", i, order));
         }
         this.timepoints = timepoints;
     }
@@ -37,12 +36,12 @@ class BetweenTimepointStore {
      * @param mapper
      * @param variableId
      */
-    addHeatmapVariable(variableId, mapper) {
+    addHeatmapRows(variableId, mapper) {
         if (this.timepoints.length === 0) {
             this.initialize(variableId);
         }
         let timepoints = this.timepoints.slice();
-        this.rootStore.transitionStructureNew.forEach(function (d, i) {
+        this.rootStore.transitionStructure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {
@@ -58,10 +57,9 @@ class BetweenTimepointStore {
             timepoints[i].addRow(variableId, variableData);
         });
         this.timepoints = timepoints;
-        this.rootStore.timepointStore.regroupTimepoints();
     }
 
-    updateVariable(variableId, mapper, index) {
+    updateHeatmapRows(variableId, mapper, index) {
         const _self = this;
         this.rootStore.timepointStructure.forEach(function (d, i) {
             let variableData = [];
@@ -86,36 +84,8 @@ class BetweenTimepointStore {
             this.initialize(this.variableStore.currentVariables[0].id);
         }
         this.variableStore.getCurrentVariables().forEach(function (d) {
-            _self.addHeatmapVariable(d.id, d.mapper);
+            _self.addHeatmapRows(d.id, d.mapper);
         });
-    }
-
-
-    addVariable(type, selectedValue, display) {
-        const _self = this;
-        if (!_self.variableStore.isReferenced(selectedValue.id)) {
-            const eventMapper = _self.rootStore.getSampleEventMapping(type, selectedValue);
-            _self.variableStore.addEventVariable(type, selectedValue, eventMapper, display);
-        }
-    }
-
-
-    /**
-     *
-     * @param variableId
-     */
-    addTimepointDistance(variableId) {
-        let isFirst = this.timepoints.length === 0;
-        this.rootStore.timepointStore.transitionOn = true;
-        if (!this.variableStore.isDisplayed(variableId)) {
-            this.variableStore.addOriginalVariable(variableId, "Timepoint Distance", "NUMBER", "Time between timepoints", this.rootStore.timeGapMapping);
-            if (isFirst) {
-                this.initialize(variableId, false);
-            }
-            this.addHeatmapVariable(variableId, this.rootStore.timeGapMapping);
-            this.rootStore.timepointStore.regroupTimepoints();
-        }
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD VARIABLE", "Timepoint Distance")
     }
 
 
@@ -123,32 +93,12 @@ class BetweenTimepointStore {
      * Removes a variable from sample data
      * @param variableId
      */
-    removeVariable(variableId) {
-        //remove from eventDetails too;
-
-        //console.log(this.rootStore.eventDetails);
-
-        const _self = this;
-
-        let originalIdsDel = _self.variableStore.getById(variableId).originalIds;
-        originalIdsDel.forEach(
-            function (d) {
-                for (let l = _self.rootStore.eventDetails.length - 1; l >= 0; l--) {
-                    if (d === _self.rootStore.eventDetails[l].varId) {
-                        _self.rootStore.eventDetails.splice(l, 1);
-                    }
-                }
-            });
-
-
-        //console.log(this.rootStore.eventDetails);
+    removeHeatmapRows(variableId) {
         if (this.variableStore.currentVariables.length > 0) {
             this.timepoints.forEach(d => d.removeRow(variableId));
-            this.rootStore.timepointStore.regroupTimepoints();
         }
-        //case: last timepoint variableId was removed
         else {
-            this.rootStore.timepointStore.transitionOn = false;
+            this.timepoints=[];
         }
     }
 }

@@ -65,7 +65,7 @@ class UndoRedoStore {
         this.rootStore.timepointStore.timepointStores.between.variableStore.allVariables = this.stateStack[index].allBetweenVar;
         this.rootStore.timepointStore.transitionOn = this.stateStack[index].transitionOn;
         this.rootStore.timepointStore.globalTime = this.stateStack[index].globalTime;
-        this.rootStore.eventDetails = this.stateStack[index].eventDetails;
+        this.rootStore.eventTimelineMap = this.stateStack[index].eventTimelineMap;
         this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].timepointStructure);
         this.rootStore.timepointStore.initialize();
     }
@@ -177,12 +177,12 @@ class UndoRedoStore {
             transitionOn: store.rootStore.timepointStore.transitionOn,
             globalTime: store.rootStore.timepointStore.globalTime,
             timepointStructure: toJS(store.rootStore.timepointStructure),
-            eventDetails: store.rootStore.eventDetails.slice()
+            eventTimelineMap: toJS(store.rootStore.eventTimelineMap)
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({
             type: timepoint.type,
-            patients: timepoint.patients.map(d => d),
+            patients: timepoint.patients.slice(),
             globalIndex: timepoint.globalIndex,
             localIndex: timepoint.localIndex,
             previousOrder: timepoint.previousOrder,

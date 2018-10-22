@@ -139,7 +139,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      */
     addCombinedVariable(name) {
         this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
-        this.state.selectedValues.forEach(d => this.props.store.addVariable(this.state.buttonClicked, d, false));
+        this.state.selectedValues.forEach(d => this.props.store.variableStore.addEventVariable(this.state.buttonClicked, d, false));
         this.props.store.rootStore.timepointStore.binaryCombineVariables(this.state.selectedValues.map(d => d.id), name, "between", this.state.orOperator ? "or" : "and");
         this.closeModal();
     }
@@ -148,7 +148,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.state.selectedValues.forEach(d => this.props.store.addVariable(this.state.buttonClicked, d, true));
+        this.state.selectedValues.forEach(d => this.props.store.variableStore.addEventVariable(this.state.buttonClicked, d, true));
         this.closeModal();
     }
 
@@ -157,7 +157,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param id
      */
     addTimeDistance(id) {
-        this.props.store.addTimepointDistance(id)
+        this.props.store.variableStore.addOriginalVariable(id, "Timepoint Distance", "NUMBER", "Time between timepoints", [], true);
     }
 
     /**

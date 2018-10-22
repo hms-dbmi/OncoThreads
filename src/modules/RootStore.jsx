@@ -5,6 +5,9 @@ import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
+import VariableStore2 from "./TemporalHeatmap/VariableStore2";
+import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore";
+import BetweenTimepointStore from "./TemporalHeatmap/BetweenTimepointStore";
 
 
 /*
@@ -15,10 +18,6 @@ class RootStore {
     constructor(cbioAPI, study, firstLoad) {
         this.cbioAPI = cbioAPI;
         this.study = study;
-        this.timepointStore = new TimepointStore(this);
-        this.transitionStore = new TransitionStore(this);
-        this.visStore = new VisStore(this);
-        this.undoRedoStore = new UndoRedoStore(this);
 
         this.hasMutations = false;
 
@@ -34,16 +33,9 @@ class RootStore {
         this.patientOrderPerTimepoint = [];
         this.sampleTimelineMap = {};
         this.eventTimelineMap = {};
-        this.sampleMappers = {};
-        this.eventDetails = [];
+        this.staticMappers = {};
 
         this.sampleStructure = [];
-
-        //this.globalPrimary="";
-
-        this.maxTimeInDays = 0;
-
-        this.originalTimePointLength = 0;
 
         this.reset = this.reset.bind(this);
 
@@ -70,24 +62,6 @@ class RootStore {
                 return timeline;
             },
             get transitionStructure() {
-                let transitionStructure = [];
-                transitionStructure.push(this.timepointStructure[0].map(d => d.patient));
-                for (let i = 1; i < this.timepointStructure.length; i++) {
-                    const _self = this;
-                    let patients = this.timepointStructure[i - 1].map(d => d.patient);
-                    this.timepointStructure[i].map(d => d.patient).forEach(function (d) {
-                        if (!(_self.timepointStructure[i - 1].map(d => d.patient).includes(d))) {
-                            patients.push(d);
-                        }
-                    });
-                    transitionStructure.push(patients);
-                    if (i === this.timepointStructure.length - 1) {
-                        transitionStructure.push(this.timepointStructure[this.timepointStructure.length - 1].map(d => d.patient));
-                    }
-                }
-                return transitionStructure;
-            },
-            get transitionStructureNew() {
                 const _self = this;
                 let transitionStructure = [];
                 transitionStructure.push(this.timepointStructure[0].slice());
@@ -106,32 +80,28 @@ class RootStore {
                 })));
                 return transitionStructure;
             },
-            get timeGapMapping() {
-                let timeGapMapping = {};
-                const _self = this;
-                for (let i = 0; i < this.timepointStructure.length + 1; i++) {
-                    this.cbioAPI.patients.forEach(function (d, j) {
-                        if (!(d.patientId in timeGapMapping)) {
-                            timeGapMapping[d.patientId] = [];
+            get maxTimeInDays() {
+                let max = 0;
+                for (let variable in this.eventTimelineMap) {
+                    for (let i = 0; i < this.eventTimelineMap[variable].length; i++) {
+                        if (this.eventTimelineMap[variable][i].eventEndDate > max) {
+                            max = this.eventTimelineMap[variable][i].eventEndDate;
                         }
-                        if (_self.sampleStructure[d.patientId].length > i) {
-                            if (i === 0) {
-                                timeGapMapping[d.patientId].push(undefined);
-                            }
-                            else {
-                                timeGapMapping[d.patientId].push(_self.sampleTimelineMap[_self.sampleStructure[d.patientId][i][0]].startNumberOfDaysSinceDiagnosis - _self.sampleTimelineMap[_self.sampleStructure[d.patientId][i - 1][0]].startNumberOfDaysSinceDiagnosis);
-                            }
-                        }
-                        if (i === _self.timepointStructure.length && _self.sampleStructure[d.patientId].length > i - 1) {
-                            timeGapMapping[d.patientId].push(undefined);
-                        }
-
-                    });
+                    }
                 }
-                return timeGapMapping;
+                for (let sample in this.sampleTimelineMap) {
+                    if (this.sampleTimelineMap[sample].startNumberOfDaysSinceDiagnosis > max) {
+                        max = this.sampleTimelineMap[sample].startNumberOfDaysSinceDiagnosis;
+                    }
+                }
+                return max;
             }
 
-        })
+        });
+        this.timepointStore = new TimepointStore(this);
+        this.transitionStore = new TransitionStore(this);
+        this.visStore = new VisStore(this);
+        this.undoRedoStore = new UndoRedoStore(this);
     }
 
     setGlobalPrimary(primary) {
@@ -178,7 +148,6 @@ class RootStore {
             timepointStructure.push(patientSamples);
         }
         this.timepointStructure = timepointStructure;
-        this.eventDetails = [];
         if (update) {
             this.timepointStore.update(this.patientOrderPerTimepoint);
         }
@@ -228,6 +197,7 @@ class RootStore {
         _self.cbioAPI.getGeneIDs(HUGOsymbols, function (entrezIDs) {
                 if (entrezIDs.length !== 0) {
                     _self.cbioAPI.getAllMutations(_self.study.studyId, entrezIDs, function (response) {
+                        console.log(response);
                         let geneDict = {};
                         let noMutationsFound = [];
                         entrezIDs.forEach(function (d, i) {
@@ -247,10 +217,9 @@ class RootStore {
                             });
                         }
                         for (let entry in geneDict) {
-                            if (!_self.timepointStore.variableStore.sample.hasVariable(entry + mappingType)) {
-                                _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm);
+                            if (!_self.timepointStore.timepointStores.sample.variableStore.isDisplayed(entry + mappingType)) {
                                 const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                                _self.timepointStore.timepointStores.sample.addVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType);
+                                _self.timepointStore.timepointStores.sample.variableStore.addOriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType, [], _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm), true);
                             }
                         }
                     })
@@ -322,8 +291,7 @@ class RootStore {
         this.sampleStructure = sampleStructure;
         this.timepointStructure = timepointStructure;
         this.getEventAttributes(excludeDates);
-
-        this.originalTimePointLength = this.actualTimeLine.length;
+        this.staticMappers["timeGapMapping"] = this.createTimeGapMapping();
     }
 
 
@@ -403,7 +371,6 @@ class RootStore {
         timeline.splice(index, 1);
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
         let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
-        this.eventDetails = [];
         this.timepointStore.update(heatmapOrder, this.createNameList(up, this.timepointStore.timepointStores.sample.timepoints, oldSampleTimepointNames, patient));
 
     }
@@ -447,6 +414,7 @@ class RootStore {
         return newNames;
     }
 
+
     /**
      * creates a dictionary mapping sample IDs onto clinical data
      * @returns {{}}
@@ -473,66 +441,15 @@ class RootStore {
                     description: d.clinicalAttribute.description
                 });
             }
-            if (!(id in _self.sampleMappers)) {
-                _self.sampleMappers[id] = {}
+            if (!(id in _self.staticMappers)) {
+                _self.staticMappers[id] = {}
             }
             let value = d.value;
             if (d.clinicalAttribute.datatype === "NUMBER") {
                 value = parseFloat(value);
             }
-            _self.sampleMappers[id][d.sampleId] = value;
+            _self.staticMappers[id][d.sampleId] = value;
         });
-    }
-
-    static createBinnedMapper(mapper, bins, binNames) {
-        let newMapper = {};
-        for (let entry in mapper) {
-            if (mapper[entry] === 'undefined') {
-                newMapper[entry] = undefined;
-            }
-            else {
-                for (let i = 1; i < bins.length; i++) {
-                    if (i === 1 && mapper[entry] >= bins[0] && mapper[entry] <= bins[1]) {
-                        newMapper[entry] = binNames[0];
-                        break;
-                    }
-                    else {
-                        if (mapper[entry] > bins[i - 1] && mapper[entry] <= bins[i]) {
-                            newMapper[entry] = binNames[i - 1];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return newMapper
-    }
-
-    static createBinaryCombinedMapper(mappers, operator) {
-        let newMapper = {};
-        for (let entry in mappers[0]) {
-            if (operator === "or") {
-                let containedInOne = false;
-                for (let i = 0; i < mappers.length; i++) {
-                    if (mappers[i][entry]) {
-                        containedInOne = true;
-                        break;
-                    }
-                }
-                newMapper[entry] = containedInOne;
-            }
-            else if (operator === "and") {
-                let containedInAll = true;
-                for (let i = 0; i < mappers.length; i++) {
-                    if (!mappers[i][entry]) {
-                        containedInAll = false;
-                        break;
-                    }
-                }
-                newMapper[entry] = containedInAll;
-            }
-        }
-        return newMapper;
     }
 
     /**
@@ -543,12 +460,29 @@ class RootStore {
         if (this.cbioAPI.mutationCounts.length !== 0) {
             this.hasMutations = true;
             const _self = this;
-            this.sampleMappers[this.mutationCountId] = {};
+            this.staticMappers[this.mutationCountId] = {};
             this.cbioAPI.mutationCounts.forEach(function (d) {
-                _self.sampleMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
+                _self.staticMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
             });
         }
     }
+
+    createTimeGapMapping() {
+        let timeGapMapping = {};
+        const _self = this;
+        this.cbioAPI.patients.forEach(function (d) {
+            let curr = _self.sampleStructure[d.patientId];
+            for (let i = 1; i < curr.length; i++) {
+                if (i === 1) {
+                    curr[i - 1].forEach(f => timeGapMapping[f] = undefined)
+                }
+                curr[i].forEach(f => timeGapMapping[f] = _self.sampleTimelineMap[curr[i][0]].startNumberOfDaysSinceDiagnosis - _self.sampleTimelineMap[curr[i - 1][0]].startNumberOfDaysSinceDiagnosis)
+            }
+        });
+        return timeGapMapping;
+
+    }
+
 
     /**
      * creates sample id mapping for mutations
@@ -558,7 +492,6 @@ class RootStore {
      * @param addEmptyVariables
      */
     createMutationMapping(list, geneId, mappingType, addEmptyVariables) {
-        const _self = this;
         let mappingFunction;
         if (mappingType === "binary") {
             mappingFunction = function (currentSample) {
@@ -591,21 +524,23 @@ class RootStore {
                 let vaf = undefined;
                 if (entry !== undefined) {
                     vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
+                    console.log(entry.tumorAltCount, entry.tumorRefCount, vaf);
                 }
                 return (vaf);
             }
         }
-        this.sampleMappers[geneId + mappingType] = {};
+        let mapper = {};
         this.timepointStructure.forEach(function (d) {
             d.forEach(function (f) {
                 if (list.length === 0) {
-                    _self.sampleMappers[geneId + mappingType][f.sample] = undefined;
+                    mapper[f.sample] = undefined;
                 }
                 else {
-                    _self.sampleMappers[geneId + mappingType][f.sample] = mappingFunction(f.sample);
+                    mapper[f.sample] = mappingFunction(f.sample);
                 }
             });
         });
+        return mapper;
     }
 
 
@@ -622,7 +557,7 @@ class RootStore {
         for (let patient in this.cbioAPI.clinicalEvents) {
             let samples = [];
             //extract samples for current patient
-            this.transitionStructureNew.forEach(function (g) {
+            this.transitionStructure.forEach(function (g) {
                 g.forEach(function (l) {
                     if (l.patient === patient) {
                         if (!(l.sample in sampleMapper)) {
@@ -648,13 +583,6 @@ class RootStore {
                         if (matchingId !== null) {
                             sampleMapper[samples[counter]] = true;
                             _self.eventTimelineMap[matchingId].push({
-                                    time: counter,
-                                    patientId: patient,
-                                    eventDate: start,
-                                    eventEndDate: end,
-                                    varId: matchingId
-                                });
-                            _self.eventDetails.push({
                                 time: counter,
                                 patientId: patient,
                                 eventDate: start,

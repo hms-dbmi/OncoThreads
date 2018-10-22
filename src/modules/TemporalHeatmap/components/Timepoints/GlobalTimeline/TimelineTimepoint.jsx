@@ -56,8 +56,17 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
     }
 
 
-    comparePatientOrder(order, p, q) {
-        return order.indexOf(p.patientId) < order.indexOf(q.patientId) ? -1 : 1;
+    getAllEvents(variable, index, array) {
+        const _self = this;
+        if (variable.type === "event") {
+            this.props.store.rootStore.eventTimelineMap[variable.id].filter(d => d.time === index).forEach(d => array.push(d));
+        }
+        else {
+            variable.originalIds.forEach(function (f) {
+                _self.getAllEvents(_self.props.store.timepointStores[_self.props.timepointType].variableStore.allVariables[f], index, array);
+            });
+            return array;
+        }
     }
 
     getGlobalTimepointWithTransition() {
@@ -70,22 +79,15 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
         //let ypi=_self.props.ypi;
 
         let globalIndex = 0, opacity;
+        let index = _self.props.index;
 
-        var a1 = _self.props.store.rootStore.eventDetails;
-        //.sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
-
-        var a2;
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
 
-        if (_self.props.store.timepointStores.sample.variableStore.getTotalNumberOfVariables() === 0) {
-            a2 = a1.filter(d => d.time === Math.floor(_self.props.index))
-                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2))
+        if (!(_self.props.store.timepointStores.sample.variableStore.getTotalNumberOfVariables() === 0)) {
+            index = Math.floor(_self.props.index / 2);
         }
-        else {
-            a2 = a1.filter(d => d.time === Math.floor(_self.props.index / 2))
-                .sort((p1, p2) => _self.comparePatientOrder(_self.props.store.rootStore.patientOrderPerTimepoint, p1, p2));
-        }
+
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
         this.props.timepoint.forEach(function (row, i) {
@@ -98,18 +100,11 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             if (_self.props.timepointType === 'between') {
                 opacity = 0.5;
                 color = _self.props.visMap.globalTimelineColors;
-
-
-                //if (row.variable === _self.props.primaryVariable.id ) {
-
-                //console.log(ypi);
                 let events = [];
-                if (_self.props.currentVariables[i].derived) {
-                    events = a2.filter(eventElement => _self.props.currentVariables[i].originalIds.includes(eventElement.varId));
-                }
-                else if (_self.props.currentVariables[i].type === "event") {
-                    events = a2.filter(eventElement => eventElement.varId === row.variable);
-                }
+                let eventVar = _self.props.store.timepointStores[_self.props.timepointType].variableStore.getRelatedVariables("event");
+                eventVar.forEach(function (d) {
+                    events = _self.getAllEvents(d, index, events);
+                });
                 rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -151,7 +146,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                      ypi={_self.props.ypi}
                                      max={_self.props.max}
                                      ht={_self.props.ht}
-                                     events={a2}
                                      opacity={opacity}
                                      dtype={_self.props.currentVariables[i].datatype}
                             //fillBin={fillBin}

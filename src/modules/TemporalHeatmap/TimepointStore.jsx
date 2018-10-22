@@ -2,7 +2,7 @@ import {extendObservable, reaction} from "mobx";
 import uuidv4 from "uuid/v4";
 import SampleTimepointStore from "./SampleTimepointStore";
 import BetweenTimepointStore from "./BetweenTimepointStore";
-import RootStore from "../RootStore";
+import VariableStore2 from "./VariableStore2";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -14,6 +14,10 @@ class TimepointStore {
         this.timepointStores = {
             "sample": new SampleTimepointStore(rootStore),
             "between": new BetweenTimepointStore(rootStore)
+        };
+        this.variableStores={
+            sample: new VariableStore2(new SampleTimepointStore(),this.rootStore),
+            between: new VariableStore2(new BetweenTimepointStore(),this.rootStore)
         };
         extendObservable(this, {
             timepoints: [],
@@ -36,7 +40,6 @@ class TimepointStore {
                 });
                 return max;
             }
-
         });
         reaction(
             () => this.timepoints.map(tp => tp.heatmap.length),
@@ -74,7 +77,7 @@ class TimepointStore {
      * initializes the datastructures
      */
     initialize() {
-        this.timepointStores.sample.addVariable(this.rootStore.clinicalSampleCategories[0].id, this.rootStore.clinicalSampleCategories[0].variable, this.rootStore.clinicalSampleCategories[0].datatype, "clinical", this.rootStore.patientOrderPerTimepoint)
+        this.timepointStores.sample.variableStore.addOriginalVariable(this.rootStore.clinicalSampleCategories[0].id, this.rootStore.clinicalSampleCategories[0].variable, this.rootStore.clinicalSampleCategories[0].datatype, this.rootStore.clinicalSampleCategories[0].description, [], true)
     }
 
     update(order, names) {
@@ -84,26 +87,29 @@ class TimepointStore {
     }
 
 
-
     combineTimepoints() {
         let betweenTimepoints = this.timepointStores.between.timepoints.slice();
         let sampleTimepoints = this.timepointStores.sample.timepoints.slice();
         let timepoints = [];
         if (betweenTimepoints.length === 0) {
             timepoints = sampleTimepoints;
+            this.transitionOn = false;
         }
         else if (sampleTimepoints.length === 0) {
             timepoints = betweenTimepoints;
+            this.transitionOn = true;
         }
         else {
             for (let i = 0; i < sampleTimepoints.length; i++) {
                 timepoints.push(betweenTimepoints[i]);
                 timepoints.push(sampleTimepoints[i]);
+                this.transitionOn = true;
+
             }
         }
         timepoints.forEach((d, i) => d.globalIndex = i);
         this.timepoints = timepoints;
-        this.rootStore.transitionStore.initializeTransitions(timepoints.length-1);
+        this.rootStore.transitionStore.initializeTransitions(timepoints.length - 1);
 
     }
 
@@ -139,27 +145,23 @@ class TimepointStore {
     binVariable(newId, oldId, bins, binNames, type, saveToHistory) {
         const _self = this;
         let oldVar = _self.timepointStores[type].variableStore.getById(oldId);
-        let variableName = oldVar.name;
-        let binnedMapper = RootStore.createBinnedMapper(oldVar.mapper, bins, binNames);
         if (!saveToHistory) {
             _self.timepointStores[type].variableStore.modifyVariable(newId, oldVar.name + "_BINNED", "BINNED", oldVar.description + " (binned)", oldId, "binning", {
                 bins: bins,
                 binNames: binNames
-            }, binnedMapper);
+            });
         }
         else {
             _self.timepointStores[type].variableStore.addDerivedVariable(newId, oldVar.name + "_BINNED", "BINNED", oldVar.description + " (binned)", [oldId], "binning", {
                 bins: bins,
                 binNames: binNames
-            }, binnedMapper);
+            });
         }
-        this.regroupTimepoints();
     }
 
     binaryCombineVariables(ids, name, type, operator) {
         let derivedId = uuidv4();
         const _self = this;
-        let mappers = ids.map(d => this.timepointStores[type].variableStore.getById(d).mapper);
         let description = "";
         ids.forEach(function (f, i) {
             if (description !== "") {
@@ -167,28 +169,7 @@ class TimepointStore {
             }
             description += _self.timepointStores[type].variableStore.getById(f).name;
         });
-        let combinedMapper = RootStore.createBinaryCombinedMapper(mappers, operator);
-        this.timepointStores[type].variableStore.addDerivedVariable(derivedId, name, "binary", description, ids, operator, null, combinedMapper);
-        this.regroupTimepoints();
-    }
-
-    updateValues(oldId, newId, mapper) {
-        const _self = this;
-        this.timepoints.forEach(function (d, i) {
-            d.heatmap.forEach(function (f, j) {
-                if (f.variable === oldId) {
-                    let newData = [];
-                    f.data.forEach(function (g) {
-                        newData.push({patient: g.patient, value: mapper[g.sample]})
-                    });
-                    _self.timepoints[i].heatmap[j].data = newData;
-                    f.variable = newId;
-                    if (d.primaryVariableId === oldId) {
-                        d.setPrimaryVariable(newId);
-                    }
-                }
-            });
-        });
+        this.timepointStores[type].variableStore.addDerivedVariable(derivedId, name, "binary", description, ids, "binaryCombine", operator);
     }
 
 
@@ -274,7 +255,7 @@ class TimepointStore {
             case "GROUP":
                 timepoint.group(variable);
                 break;
-            case "UNGROUP":
+            default:
                 timepoint.unGroup(variable);
                 break;
         }
@@ -297,7 +278,6 @@ class TimepointStore {
     }
 
     applyActionToAll(timepointIndex, variable, action) {
-        const _self = this;
         this.timepointStores[this.timepoints[timepointIndex].type].timepoints.forEach(function (d, i) {
             TimepointStore.actionFunction(action, variable, d);
         });

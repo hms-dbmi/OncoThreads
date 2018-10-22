@@ -13,10 +13,9 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         /**
          * promotes a variable at a timepoint to a primary variable
-         * @param timepoint: timepoint where the primary variable is changes
          * @param variable: variable to be the primary variable
          */
-        promote(timepoint, variable) {
+        promote(variable) {
             this.props.store.rootStore.setGlobalPrimary(variable);
         }
 
@@ -56,11 +55,11 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          */
         handleDelete(variable, timepoint) {
             if (timepoint.type === "between" || this.props.store.currentVariables[timepoint.type].length > 1) {
-                this.props.store.removeVariable(variable, timepoint.type);
-
-                this.promote(timepoint,
-                    this.props.store.currentVariables.sample[this.props.store.currentVariables.sample.length - 1].id);
-            }
+                this.props.store.timepointStores[timepoint.type].variableStore.removeVariable(variable);
+                if(timepoint.type==="sample") {
+                    this.promote(this.props.store.timepointStores.sample.variableStore.currentVariables[this.props.store.timepointStores.sample.variableStore.currentVariables.length - 1]);
+                }
+                }
             else {
                 alert("Samples have to be represented by at least one variable");
 

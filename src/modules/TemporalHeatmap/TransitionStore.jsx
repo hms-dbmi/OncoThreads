@@ -13,16 +13,11 @@ class TransitionStore {
             transitionData: [],
             get timeGapStructure() {
                 const _self = this;
-                let currentPatientIndices = {};
                 let timeGapStructure = [];
                 this.rootStore.transitionStructure.forEach(function (d, i) {
                     let variableData = {};
                     d.forEach(function (f) {
-                        if (!(f in currentPatientIndices)) {
-                            currentPatientIndices[f] = 0
-                        }
-                        variableData[f] = _self.rootStore.timeGapMapping[f][currentPatientIndices[f]];
-                        currentPatientIndices[f] += 1;
+                        variableData[f.patient] = _self.rootStore.staticMappers.timeGapMapping[f.sample];
                     });
                     timeGapStructure.push(variableData);
                 });
