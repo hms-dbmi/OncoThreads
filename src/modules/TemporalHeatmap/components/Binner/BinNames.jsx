@@ -4,7 +4,7 @@ import {Col, ControlLabel, Form, FormControl, FormGroup} from 'react-bootstrap';
 
 
 const BinNames = observer(class BinNames extends React.Component {
-    render() {
+    render() { 
         let binNameFields = [];
         for (let i = 0; i < this.props.binNames.length; i++) {
             binNameFields.push([<Col key={"Bin" + (i + 1) + "desc"} componentClass={ControlLabel} sm={2}>

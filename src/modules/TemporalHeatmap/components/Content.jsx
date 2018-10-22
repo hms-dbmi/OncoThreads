@@ -16,6 +16,8 @@ import ContextMenus from "./RowOperators/ContextMenus";
 
 import ContextMenuHeatmapRow from "./ContextMenuHeatmapRow";
 
+import AddVarModal from "./Modals/AddVarModal";
+
 /*
 Creates all components except for the top navbar
  */
@@ -39,11 +41,19 @@ const Content = observer(class Content extends React.Component {
             contextX: 0,
             contextY: 0,
             showContextMenu: false,
-            showContextMenuHeatmapRow: false
+            showContextMenuHeatmapRow: false,
+            varList:"",
+
+            addModalIsOpen: false,
         }
         ;
         this.openModal = this.openModal.bind(this);
+        this.openAddModal = this.openAddModal.bind(this);
+
+
         this.closeModal = this.closeModal.bind(this);
+        this.closeAddModal = this.closeAddModal.bind(this);
+
         this.showTooltip = this.showTooltip.bind(this);
         this.hideTooltip = this.hideTooltip.bind(this);
         this.showContextMenu = this.showContextMenu.bind(this);
@@ -73,8 +83,28 @@ const Content = observer(class Content extends React.Component {
         });
     }
 
+    
     closeModal() {
         this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, followUpFunction: null});
+    }
+
+    openAddModal(list) {
+        //let data = this.props.rootStore.timepointStore.getAllValues(variable);
+        this.setState({
+            addModalIsOpen: true,
+            varList: list
+           // clickedTimepoint: timepointIndex,
+           // clickedVariable: variable,
+           // type: type,
+           // followUpFunction: fun,
+           // binningData: data,
+        });
+
+        console.log("In openAddModal()");
+    }
+
+    closeAddModal() {
+        this.setState({addModalIsOpen: false});
     }
 
     showTooltip(e, line1, line2) {
@@ -148,6 +178,21 @@ const Content = observer(class Content extends React.Component {
     }
 
 
+    getVarListModal() {
+        if (this.state.addModalIsOpen) {
+            return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
+                                    varList={this.state.varList}
+                                    closeAddModal={this.closeAddModal} 
+                                    //store={this.props.rootStore.timepointStore}
+                                    //visMap={this.props.rootStore.visStore}
+            />);
+        }
+        else {
+            return null;
+        }
+    }
+
+
     getContextMenuHeatmapRow() {
         if (this.state.showContextMenuHeatmapRow) {
             return (<ContextMenuHeatmapRow showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
@@ -196,6 +241,7 @@ const Content = observer(class Content extends React.Component {
                                           maxTP={this.props.rootStore.maxTP}/>
                             <SampleVariableSelector
                                 openBinningModal={this.openModal}
+                                openAddModal={this.openAddModal}
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 mutationCount="Mutation count"
                                 currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
@@ -236,6 +282,7 @@ const Content = observer(class Content extends React.Component {
                     </Row>
                 </Grid>
                 {this.getBinner()}
+                {this.getVarListModal()}
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>

@@ -80,7 +80,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         binNames[index] = e.target.value;
         this.setState({binNames: binNames})
     }
-
+ 
     render() {
         let variableName = this.props.store.variableStore[this.props.type].getById(this.props.variable).name;
         return (
