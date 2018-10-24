@@ -3,6 +3,8 @@ import {observer} from 'mobx-react';
 import {Row, Col, Button, Modal, Checkbox, FormGroup} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
+import Select from 'react-select';
+
 //import SampleVariableSelector from "../VariableSelector/SampleVariableSelector"
 
 
@@ -75,25 +77,29 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
     handleCheckBoxClick(event, variable, ind1, sel) {
 
-        console.log(ind1);
+        //console.log(ind1);
 
         let isCheckedTemp=this.state.isChecked; //.slice();
 
-        console.log(isCheckedTemp);
-        console.log(this.state.isChecked);
+        //console.log(isCheckedTemp);
+        //console.log(this.state.isChecked);
 
         isCheckedTemp[ind1]=!this.state.isChecked[ind1];
 
 
-        console.log(isCheckedTemp);
-        console.log(this.state.isChecked);
+        //console.log(isCheckedTemp);
+        //console.log(this.state.isChecked);
 
         //this.state.isChecked[ind1] = !this.state.isChecked[ind1];
 
 
-        /*this.setState({
+        this.setState({
            isChecked: isCheckedTemp
-        });*/
+        });
+
+        //console.log(isCheckedTemp);
+        //console.log(this.state.isChecked);
+
 
         //this.forceUpdate();
 
@@ -258,14 +264,18 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
        let isCheckedTemp=this.state.isChecked; 
 
-       //console.log(isCheckedTemp);
+       console.log(isCheckedTemp);
        //console.log(this.state.isChecked);
 
        isCheckedTemp=vNames.map(d=>false).concat(false);
 
 
-       console.log(isCheckedTemp);
-       console.log(this.state.isChecked);
+       //console.log(isCheckedTemp);
+       //console.log(this.state.isChecked);
+
+       //this.setState({isChecked: isCheckedTemp});
+
+      
 
        // this.setState({isChecked: vNames.map(d=>false).concat(false)});
 
@@ -282,7 +292,14 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                 </Modal.Header>
                 <Modal.Body style={{'maxHeight': '400px', 'overflowY': 'auto'}}>
                
-                
+                <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.props.varList}
+                        onChange={opt => this.handleVariableClick(opt.id, opt.value, opt.datatype, opt.description)}
+                    />
 
                {this.renderList(vNames, mutList) }
 
