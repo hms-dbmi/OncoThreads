@@ -143,9 +143,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
             <Col sm={1} >
 
-                <FontAwesome
-                //onClick={() => this.bin(this.props.store.rootStore.mutationCountId)} 
-                name="cog"/> 
+                {input.type==="STRING"? '': 
+                    (<FontAwesome
+                    //onClick={() => this.bin(this.props.store.rootStore.mutationCountId)} 
+                    name="cog"/> )
+            
+                } 
+                
             </Col>
 
 
@@ -175,6 +179,14 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
                 <h3> Clinical Features </h3>
 
+                <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.props.varList}
+                        onChange={opt => this.handleVariableClick(opt.id, opt.value, opt.datatype, opt.description)}
+                    />
                     {list.map((detailedVar, ind) => this.renderInput(detailedVar, ind))}
 
 
@@ -256,14 +268,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                 </Modal.Header>
                 <Modal.Body style={{'maxHeight': '400px', 'overflowY': 'auto'}}>
                
-                <Select
-                        type="text"
-                        searchable={true}
-                        componentClass="select" placeholder="Select..."
-                        searchPlaceholder="Search variable"
-                        options={this.props.varList}
-                        onChange={opt => this.handleVariableClick(opt.id, opt.value, opt.datatype, opt.description)}
-                    />
+                
 
                {this.renderList(vNames, mutList) }
 
