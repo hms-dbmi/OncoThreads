@@ -36,6 +36,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
             this.props.store.childStore.applyActionToAll(this.props.localIndex, this.props.clickedVariable, this.props.action);
         }
         this.props.hideContextMenu();
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO ALL", this.props.clickedVariable, this.type, this.props.localIndex)
     }
 
     /**
@@ -60,6 +61,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
             this.props.store.childStore.applyActionToPrevious(_self.props.localIndex, this.props.clickedVariable, this.props.action);
         }
         this.props.hideContextMenu();
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO PREVIOUS", this.props.clickedVariable, this.type, this.props.localIndex)
     }
 
     /**
@@ -84,18 +86,22 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
             this.props.store.childStore.applyActionToNext(this.props.localIndex, this.props.clickedVariable, this.props.action);
         }
         this.props.hideContextMenu();
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO NEXT", this.props.clickedVariable, this.type, this.props.localIndex)
+
     }
+
     magicSort() {
         this.props.store.childStore.timepoints[this.props.localIndex].magicSort(this.props.clickedVariable);
         this.props.hideContextMenu();
+        this.rootStore.undoRedoStore.saveTimepointHistory("MAGICSORT", this.props.clickedVariable, this.type, this.props.localIndex)
 
     }
 
     render() {
-        let magicSort=null;
-        if(this.props.action==="SORT"){
-            magicSort= <Button
-                    onClick={() => this.magicSort()}>{"MagicSort"}</Button>
+        let magicSort = null;
+        if (this.props.action === "SORT") {
+            magicSort = <Button
+                onClick={() => this.magicSort()}>{"MagicSort"}</Button>
         }
         return (
             <ButtonGroup vertical style={{

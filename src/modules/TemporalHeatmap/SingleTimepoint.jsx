@@ -20,8 +20,6 @@ class SingleTimepoint {
             primaryVariableId: "",
             name: localIndex
         });
-        //reaction(() => this.isGrouped, isGrouped => isGrouped ? this.group() : this.unGroup());
-        //reaction(() => this.primaryVariableId, id => this.isGrouped ? this.group():this.promote());
     }
 
     setName(name) {
@@ -316,7 +314,6 @@ class SingleTimepoint {
             }
         }
         this.rootStore.timepointStore.applyPatientOrderToAll(this.globalIndex, false);
-        this.rootStore.undoRedoStore.saveTimepointHistory("MAGICSORT", variable, this.type, this.localIndex)
     }
 }
 

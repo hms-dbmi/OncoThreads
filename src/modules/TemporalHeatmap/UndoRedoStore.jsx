@@ -58,7 +58,6 @@ class UndoRedoStore {
      * @param type
      */
     deserialize(index, type) {
-        console.log("get history " + type);
         if (type === "variable") {
             this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
             this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
@@ -70,10 +69,13 @@ class UndoRedoStore {
         else if (type === "timepoint" || type === "structure") {
             if (type === "structure") {
                 this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].state.timepointStructure);
+                this.rootStore.timepointStore.update(this.stateStack[index].state.sampleTimepoints[0].heatmapOrder, this.stateStack[index].state.sampleTimepoints.map(d => d.name));
             }
-            this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
+            this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints, type);
             this.rootStore.timepointStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
-            this.rootStore.timepointStore.regroupTimepoints();
+            if (type === "timepoint") {
+                this.rootStore.timepointStore.regroupTimepoints();
+            }
         }
         else {
             this.rootStore.timepointStore.globalTime = this.stateStack[index].state.globalTime;
@@ -168,7 +170,6 @@ class UndoRedoStore {
      * saves the history to the stateStack. For this the datastructures have to be serialized (put into a simple, non-observable object)
      */
     saveHistory(type) {
-        console.log("save history " + type);
         const serializeState = createTransformer(store => ({
             sampleTimepoints: store.rootStore.timepointStore.variableStores.sample.childStore.timepoints.map(serializeTimepoints),
             betweenTimepoints: store.rootStore.timepointStore.variableStores.between.childStore.timepoints.map(serializeTimepoints),
@@ -183,7 +184,6 @@ class UndoRedoStore {
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({
-                variableSortOrder: timepoint.variableSortOrder,
                 heatmapOrder: timepoint.heatmapOrder,
                 groupOrder: timepoint.groupOrder,
                 isGrouped: timepoint.isGrouped,

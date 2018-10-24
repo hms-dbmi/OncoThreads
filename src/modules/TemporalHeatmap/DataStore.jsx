@@ -94,7 +94,7 @@ class DataStore {
 
     update(order, names) {
         this.variableStores.sample.update(this.rootStore.timepointStructure, order, names);
-        this.variableStores.between.update(this.rootStore.transitionStructure, this.rootStore.patientOrderPerTimepoint, this.rootStore.transitionStructure.map((d, i) => i));
+        this.variableStores.between.update(this.rootStore.transitionStructure, order, this.rootStore.transitionStructure.map((d, i) => i));
         this.combineTimepoints(this.transitionOn);
 
     }

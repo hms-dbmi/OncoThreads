@@ -149,7 +149,6 @@ class MultipleTimepointsStore {
         if (timepointIndex - 1 >= 0) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex - 1], this.timepoints[timepointIndex]);
         }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO ALL", variable, this.type, timepointIndex)
     }
 
     /**
@@ -163,7 +162,6 @@ class MultipleTimepointsStore {
         if (timepointIndex + 1 < this.timepoints.length) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex + 1], this.timepoints[timepointIndex]);
         }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO NEXT", variable, this.type, timepointIndex)
     }
 
     /**
@@ -180,8 +178,6 @@ class MultipleTimepointsStore {
                 MultipleTimepointsStore.actionFunction(action, variable, d, _self.timepoints[timepointIndex]);
             }
         });
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO ALL", variable, this.type, timepointIndex)
-
     }
 
 }

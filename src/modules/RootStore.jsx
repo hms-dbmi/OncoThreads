@@ -101,7 +101,6 @@ class RootStore {
     }
 
 
-
     /**
      * resets everything
      */
@@ -184,7 +183,6 @@ class RootStore {
         _self.cbioAPI.getGeneIDs(HUGOsymbols, function (entrezIDs) {
                 if (entrezIDs.length !== 0) {
                     _self.cbioAPI.getAllMutations(_self.study.studyId, entrezIDs, function (response) {
-                        console.log(response);
                         let geneDict = {};
                         let noMutationsFound = [];
                         entrezIDs.forEach(function (d, i) {
@@ -206,7 +204,7 @@ class RootStore {
                         for (let entry in geneDict) {
                             if (!_self.timepointStore.variableStores.sample.isDisplayed(entry + mappingType)) {
                                 const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                                _self.timepointStore.variableStores.sample.addOriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType, [], true,_self.createMutationMapping(geneDict[entry], entry, mappingType, confirm), true);
+                                _self.timepointStore.variableStores.sample.addOriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType, [], true, _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm), true);
                             }
                         }
                     })
@@ -520,9 +518,8 @@ class RootStore {
             mappingFunction = function (currentSample) {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
                 let vaf = undefined;
-                if (entry !== undefined) {
+                if (entry !== undefined && entry.mutationType === "Missense_Mutation") {
                     vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
-                    console.log(entry.tumorAltCount, entry.tumorRefCount, vaf);
                 }
                 return (vaf);
             }
@@ -583,7 +580,7 @@ class RootStore {
                             _self.eventTimelineMap[matchingId].push({
                                 time: counter,
                                 patientId: patient,
-                                sampleId:samples[counter],
+                                sampleId: samples[counter],
                                 eventDate: start,
                                 eventEndDate: end,
                                 varId: matchingId
