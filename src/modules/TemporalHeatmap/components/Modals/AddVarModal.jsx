@@ -1,10 +1,9 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Row, Col, Button, Modal, Label, Checkbox} from 'react-bootstrap';
-
+import {Row, Col, Button, Modal, Checkbox, FormGroup} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
-import {FormControl, FormGroup, ControlLabel} from 'react-bootstrap';
+//import SampleVariableSelector from "../VariableSelector/SampleVariableSelector"
 
 
 const AddVarModal = observer(class AddVarModal extends React.Component {
@@ -13,10 +12,14 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         super(props);
     
         this.state = {
-          isChecked: true
+          isChecked: []
         }
     
         this.handleCheckBoxClick = this.handleCheckBoxClick.bind(this);
+
+        this.addVariable = this.addVariable.bind(this);
+        this.handleVariableClick = this.handleVariableClick.bind(this);
+        this.handleAddButton = this.handleAddButton.bind(this);
     }
 
 
@@ -36,47 +39,70 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     }*/
 
 
-    handleCheckBoxClick(event, type, variable) {
-        /*let selected = this.state.selectedValues.slice();
-        if (event.target.checked) {
-            selected.push(variable);
-            this.setState({showEmptySelectionAlert: false});
+     /**
+     * adds a variable to the view
+     * @param id
+     * @param variable
+     * @param type
+     * @param description
+     */
+    addVariable(id, variable, type, description) {
+        if (this.props.currentVariables.length === 0) {
+            this.props.store.initialize(id, variable, type, description);
         }
         else {
-            let index = selected.map(function (d) {
-                return d.id
-            }).indexOf(variable.id);
-            selected.splice(index, 1);
+            this.props.store.addVariable(id, variable, type, description);
         }
-        let disabled = Object.assign({}, this.state.disabled);
-        if (this.state.addCombined) {
-            if (selected.length > 0) {
-                for (let k in disabled) {
-                    if (k !== type) {
-                        disabled[k] = true;
-                    }
-                }
-            }
-            else {
-                for (let k in disabled) {
-                    disabled[k] = false;
-                }
-            }
-        }
-        this.setState({
-            selectedValues: selected,
-            selectedKey: type,
-            disabled: disabled,
-            defaultName: this.createCompositeName(selected)
-        });*/
     }
 
-    renderInput = (input) => {
+
+    /**
+     * handles a click on one of the categorical Variables
+     * @param id
+     * @param variable
+     * @param type
+     * @param description
+     */
+    handleVariableClick(id, variable, type, description) {
+        this.props.hideTooltip();
+        if (!(this.props.currentVariables.map(function (d) {
+            return d.id
+        }).includes(id))) {
+            this.addVariable(id, variable, type, description);
+        }
+    }
+
+
+    handleCheckBoxClick(event, variable, ind1, sel) {
+
+        console.log(ind1);
+        this.state.isChecked[ind1] = !this.state.isChecked[ind1];
+
+      // this.setState({
+        //   isChecked,});
+
+        this.forceUpdate();
+
+        //var detailedVar=this.props.varList[ind1];
+
+    }
+
+    renderInput(input, index){
         // element index as key or reference is a horrible idea
         // for example if a new input is unshifted it will have the same 
         // reference or key, which will render the idea of key, reference invalid
       
-        let isSelected=false;
+        //let isSelected=false;
+
+        /*var mutList=['Mutation Count'];
+
+        var vNames=this.props.varList.map(d=>d.value);
+
+        vNames.push(mutList);
+
+        var ind1=vNames.indexOf(input);*/
+
+
         return (
 
 
@@ -95,22 +121,22 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
            
          
 
-            <Col sm={9} key={"Bin2" +  "input"}>  
+            <Col sm={9} >  
             
            
-            <Checkbox disabled={false} checked={isSelected}
-                              onChange={(e) => this.handleCheckBoxClick(e, 0, input)}
-                              >{input}
+            <Checkbox disabled={false}
+                              onChange={(e) => this.handleCheckBoxClick(e, input.value, index)}
+                              >{input.value}
                               </Checkbox>
             </Col>
 
 
-             <Col sm={1} key={"Bin" +  "input"}>
+             <Col sm={1}>
 
-                    c 
+                    {input.type==="STRING"? 'C': 'N'} 
             </Col>
 
-            <Col sm={1} key={"Bin" +  "input"}>
+            <Col sm={1} >
 
                 <FontAwesome
                 //onClick={() => this.bin(this.props.store.rootStore.mutationCountId)} 
@@ -149,13 +175,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                 
                 <Col sm={9} style={{'maxHeight': '400px', 'overflowY': 'scroll'}}>      
 
-                <label> Clinical Features </label>
+                <h3> Clinical Features </h3>
 
-                    {list.map(this.renderInput)}
+                    {list.map((detailedVar, ind) => this.renderInput(detailedVar, ind))}
 
 
-                <label> Genomic Features  </label>  
-                    {mutList.map(this.renderInput)}
+                <h3> Genomic Features  </h3>  
+                    {mutList.map((detailedVar, ind) => this.renderInput(detailedVar, ind+list.length))}
                     
 
                 </Col>
@@ -183,11 +209,34 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             </form>
     
         )
-    }  
+    }
+
+    handleAddButton() {
+        this.props.varList.filter((detailedVar, ind) => this.state.isChecked[ind])
+            .forEach(detailedVar => this.handleVariableClick(detailedVar.id, detailedVar.value, detailedVar.datatype, detailedVar.description));
+        if(this.state.isChecked[this.props.varList.length]) {
+            this.handleVariableClick(this.props.store.rootStore.mutationCountId, "Mutation Count", "NUMBER");
+        }
+        this.props.closeAddModal();
+    }
 
     render() {
        
-        var mutList=['Mutation Count'];
+        var mutList=[{value: 'Mutation Count', type: 'NUMBER'}];
+
+        console.log(this.props.varList);
+
+        var vNames=this.props.varList.map(d=>{return {value: d.value, type: d.datatype}; });
+
+        //vNames = vNames.concat(mutList);
+
+       // this.state.isChecked=vNames.map(d=>false).concat(false);
+
+        this.setState({isChecked: vNames.map(d=>false).concat(false)});
+
+        //this.state.isChecked.push(false); //for mutation count
+
+
         return (
             <Modal
                 show={this.props.addModalIsOpen}
@@ -200,18 +249,18 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                
                 
 
-               {this.renderList(this.props.varList, mutList) }
+               {this.renderList(vNames, mutList) }
 
                 
 
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button //onClick={this.props.closeAddModal}
+                    <Button onClick={this.handleAddButton}
                     >
                         Add
                     </Button>
 
-                    <Button //onClick={this.props.closeAddModal}
+                    <Button disabled={true}//onClick={this.props.closeAddModal}
                     >
                         Combine
                     </Button>

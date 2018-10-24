@@ -182,7 +182,11 @@ const Content = observer(class Content extends React.Component {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
                                     varList={this.state.varList}
-                                    closeAddModal={this.closeAddModal} 
+                                    closeAddModal={this.closeAddModal}
+                                    currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                                    showTooltip={this.showTooltip}
+                                    hideTooltip={this.hideTooltip}
+                                    store={this.props.rootStore.sampleTimepointStore} 
                                     //store={this.props.rootStore.timepointStore}
                                     //visMap={this.props.rootStore.visStore}
             />);

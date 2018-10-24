@@ -117,7 +117,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
     createVarList() {
         let options = [];
-        const _self = this;
+        //const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
             /*let icon = null;
             if (d.datatype === "NUMBER") {
@@ -251,7 +251,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
                     <ButtonGroup vertical block>
                             <Button style={{textAlign: "left"}} bsSize="xsmall"
-                                    onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
+                                    //onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
+                                    onClick={() =>this.addVarModal(this.createClinicalAttributesList())}
                                     key={this.props.mutationCount}>{"Add Variable"}
                             </Button>
                         </ButtonGroup>
