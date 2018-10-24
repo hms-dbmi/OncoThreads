@@ -25,7 +25,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
     setCh(varList){
 
-        console.log(varList);
+       // console.log(varList);
     }
     /*handleCheckBoxChange(e) {
         const item = e.target.name;
@@ -76,21 +76,45 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     handleCheckBoxClick(event, variable, ind1, sel) {
 
         console.log(ind1);
-        this.state.isChecked[ind1] = !this.state.isChecked[ind1];
 
-      // this.setState({
-        //   isChecked,});
+        let isCheckedTemp=this.state.isChecked; //.slice();
 
-        this.forceUpdate();
+        console.log(isCheckedTemp);
+        console.log(this.state.isChecked);
+
+        isCheckedTemp[ind1]=!this.state.isChecked[ind1];
+
+
+        console.log(isCheckedTemp);
+        console.log(this.state.isChecked);
+
+        //this.state.isChecked[ind1] = !this.state.isChecked[ind1];
+
+
+        /*this.setState({
+           isChecked: isCheckedTemp
+        });*/
+
+        //this.forceUpdate();
+
+       /* var x=!this.state.isChecked[ind1];
+
+        this.setState(({isChecked}) => ({
+            isChecked: [
+                isChecked.slice(0,ind1),
+                {
+                    x,
+                },
+                isChecked.slice(ind1+1)
+            ]
+        }));*/
+        
 
         //var detailedVar=this.props.varList[ind1];
 
     }
 
     renderInput(input, index){
-        // element index as key or reference is a horrible idea
-        // for example if a new input is unshifted it will have the same 
-        // reference or key, which will render the idea of key, reference invalid
       
         //let isSelected=false;
 
@@ -224,15 +248,26 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
        
         var mutList=[{value: 'Mutation Count', type: 'NUMBER'}];
 
-        console.log(this.props.varList);
+        //console.log(this.props.varList);
 
         var vNames=this.props.varList.map(d=>{return {value: d.value, type: d.datatype}; });
 
         //vNames = vNames.concat(mutList);
 
-       // this.state.isChecked=vNames.map(d=>false).concat(false);
+       //this.state.isChecked=vNames.map(d=>false).concat(false); //working, with warning
 
-        this.setState({isChecked: vNames.map(d=>false).concat(false)});
+       let isCheckedTemp=this.state.isChecked; 
+
+       //console.log(isCheckedTemp);
+       //console.log(this.state.isChecked);
+
+       isCheckedTemp=vNames.map(d=>false).concat(false);
+
+
+       console.log(isCheckedTemp);
+       console.log(this.state.isChecked);
+
+       // this.setState({isChecked: vNames.map(d=>false).concat(false)});
 
         //this.state.isChecked.push(false); //for mutation count
 
