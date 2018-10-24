@@ -18,6 +18,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          */
         promote(variable) {
             this.props.store.setGlobalPrimary(variable);
+            this.props.store.rootStore.undoRedoStore.saveGlobalHistory("PROMOTE");
         }
 
         /**
@@ -58,7 +59,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             if (timepoint.type === "between" || this.props.store.variableStores[timepoint.type].currentVariables.length > 1) {
                 this.props.store.variableStores[timepoint.type].removeVariable(variable);
                 if (timepoint.type === "sample") {
-                    this.promote(this.props.store.variableStores.sample.currentVariables[this.props.store.variableStores.sample.currentVariables.length - 1]);
+                    this.promote(this.props.store.variableStores.sample.currentVariables[0]);
                 }
             }
             else {

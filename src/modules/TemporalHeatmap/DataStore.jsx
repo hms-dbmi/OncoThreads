@@ -80,9 +80,6 @@ class DataStore {
             between: new VariableStore(this.rootStore, this.rootStore.transitionStructure, "between")
         };
         this.combineTimepoints(false);
-        let initialVariable = this.rootStore.clinicalSampleCategories[0];
-        this.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, this.rootStore.staticMappers[initialVariable.id])
-        this.globalPrimary = initialVariable.id;
     }
 
     reset() {

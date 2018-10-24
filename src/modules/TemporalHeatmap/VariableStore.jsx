@@ -26,16 +26,16 @@ class VariableStore {
                     if (this.type === "between" && this.currentVariables.length === 1) {
                         this.rootStore.timepointStore.toggleTransition()
                     }
-                    this.childStore.addHeatmapRows(change.added[0], this.getById(change.added[0]).mapper)
+                    change.added.forEach(d => this.childStore.addHeatmapRows(d, this.getById(d).mapper))
                 }
                 if (change.removed.length > 0) {
                     if (this.type === "between" && this.currentVariables.length === 0) {
                         this.rootStore.timepointStore.toggleTransition()
                     }
-                    if(this.type.sample&&change.removed[0]===this.rootStore.timepointStore.globalPrimary){
-                        this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[this.currentVariables.length]);
+                    if (this.type==="sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
+                        this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
                     }
-                    this.childStore.removeHeatmapRows(change.removed[0]);
+                    change.removed.forEach(d => this.childStore.removeHeatmapRows(d));
                 }
             }
             else if (change.type === "update") {

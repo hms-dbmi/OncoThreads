@@ -108,7 +108,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         let variableName = this.props.store.variableStores[this.props.type].getById(this.props.variable).name;
         return (
             <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins}
-                          showAlert={this.props.timepointIndex !== null}
+                          showAlert={this.props.callback !== null}
                           variableName={variableName} variable={this.props.variable}
                           handleBinChange={this.handleBinChange}
                           handleNumberOfBinsChange={this.handleNumberOfBinsChange}

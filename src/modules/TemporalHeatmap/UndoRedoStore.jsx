@@ -34,6 +34,7 @@ class UndoRedoStore {
             this.logs.push("UNDO: " + this.logs[this.currentPointer]);
             this.deserialize(this.currentPointer - 1, this.stateStack[this.currentPointer].type);
             this.currentPointer--;
+            localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.currentPointer].state));
             this.undoRedoMode = true;
         }
     }
@@ -46,6 +47,7 @@ class UndoRedoStore {
             this.logs.push("REDO: " + this.logs[this.currentPointer + 1]);
             this.deserialize(this.currentPointer + 1, this.stateStack[this.currentPointer + 1].type);
             this.currentPointer++;
+            localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.currentPointer].state));
             this.undoRedoMode = true;
         }
 
@@ -71,11 +73,14 @@ class UndoRedoStore {
                 this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].state.timepointStructure);
                 this.rootStore.timepointStore.update(this.stateStack[index].state.sampleTimepoints[0].heatmapOrder, this.stateStack[index].state.sampleTimepoints.map(d => d.name));
             }
-            this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints, type);
+            this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
             this.rootStore.timepointStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
             if (type === "timepoint") {
                 this.rootStore.timepointStore.regroupTimepoints();
             }
+        }
+        else if (type === "timeline") {
+            this.rootStore.timepointStore.globalPrimary = this.stateStack[index].state.globalPrimary;
         }
         else {
             this.rootStore.timepointStore.globalTime = this.stateStack[index].state.globalTime;
@@ -84,27 +89,44 @@ class UndoRedoStore {
     }
 
     deserializeLocalStorage() {
-        this.stateStack = JSON.parse(localStorage.getItem(this.rootStore.study.studyId)).states;
-        this.logs = JSON.parse(localStorage.getItem(this.rootStore.study.studyId)).logs;
+        this.stateStack = [{state: JSON.parse(localStorage.getItem(this.rootStore.study.studyId))}];
+        console.log(this.stateStack);
         this.currentPointer = this.stateStack.length - 1;
-        this.deserialize(this.currentPointer)
+        this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[0].state.allSampleVar);
+        this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[0].state.allBetweenVar);
+        this.rootStore.timepointStore.variableStores.sample.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.sample.currentVariables, this.stateStack[0].state.currentSampleVar);
+        this.rootStore.timepointStore.variableStores.between.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.between.currentVariables, this.stateStack[0].state.currentBetweenVar);
+        this.rootStore.timepointStore.transitionOn = this.stateStack[0].state.transitionOn;
+        this.rootStore.eventTimelineMap = this.stateStack[0].state.eventTimelineMap;
+        this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[0].state.timepointStructure);
+        this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[0].state.sampleTimepoints);
+        this.rootStore.timepointStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[0].state.betweenTimepoints);
+        this.rootStore.timepointStore.globalTime = this.stateStack[0].state.globalTime;
+        this.rootStore.timepointStore.globalPrimary = this.stateStack[0].state.globalPrimary;
+        this.rootStore.timepointStore.regroupTimepoints();
+
     }
 
     deserializeVariables(observable, saved) {
-        //case: added
-        if (observable.length > saved.length) {
-            let addIndex = observable.indexOf(observable.filter(d => !saved.includes(d))[0]);
-            observable.splice(addIndex, 1);
+        if (observable.length === 0) {
+            saved.forEach(d => observable.push(d));
         }
-        //case: removed
-        else if (observable.length < saved.length) {
-            let removeIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
-            observable.splice(removeIndex, 0, saved[removeIndex]);
-        }
-        //case: modified
         else {
-            let modifyIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
-            observable[modifyIndex] = saved[modifyIndex];
+            //case: added
+            if (observable.length > saved.length) {
+                let addIndex = observable.indexOf(observable.filter(d => !saved.includes(d))[0]);
+                observable.splice(addIndex, 1);
+            }
+            //case: removed
+            else if (observable.length < saved.length) {
+                let removeIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
+                observable.splice(removeIndex, 0, saved[removeIndex]);
+            }
+            //case: modified
+            else {
+                let modifyIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
+                observable[modifyIndex] = saved[modifyIndex];
+            }
         }
         return observable;
     }
@@ -179,6 +201,7 @@ class UndoRedoStore {
             allBetweenVar: UndoRedoStore.serializeVariables(store.rootStore.timepointStore.variableStores.between.referencedVariables),
             transitionOn: store.rootStore.timepointStore.transitionOn,
             globalTime: store.rootStore.timepointStore.globalTime,
+            globalPrimary: store.rootStore.timepointStore.globalPrimary,
             timepointStructure: toJS(store.rootStore.timepointStructure),
             eventTimelineMap: toJS(store.rootStore.eventTimelineMap)
         }));
@@ -189,7 +212,6 @@ class UndoRedoStore {
                 isGrouped: timepoint.isGrouped,
                 heatmapSorting: timepoint.heatmapSorting,
                 primaryVariableId: timepoint.primaryVariableId,
-                name: timepoint.name
             })
         );
         if (this.undoRedoMode) {
@@ -201,7 +223,7 @@ class UndoRedoStore {
         }
         this.stateStack.push({type: type, state: serializeState(this)});
         this.currentPointer = this.stateStack.length - 1;
-        //localStorage.setItem(this.rootStore.study.studyId, JSON.stringify({states: this.stateStack, logs: this.logs}));
+        localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.stateStack.length - 1].state));
     }
 
 
@@ -267,6 +289,11 @@ class UndoRedoStore {
             this.logs.push("SWITCH TO: block view");
         }
         this.saveHistory("switch");
+    }
+
+    saveGlobalHistory(action) {
+        this.logs.push(action + ": in timeline view");
+        this.saveHistory("timeline");
     }
 
     /**

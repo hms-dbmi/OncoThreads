@@ -151,13 +151,23 @@ class RootStore {
             _self.buildPatientStructure();
             _self.createClinicalSampleMapping();
             _self.createMutationCountsMapping();
-
-            // if (localStorage.getItem(_self.study.studyId) === null) {
             _self.timepointStore.initialize();
-            /*}
-            else {
-                _self.undoRedoStore.deserializeLocalStorage();
-            }*/
+
+            if (localStorage.getItem(_self.study.studyId) !== null) {
+                const confirm = window.confirm("Load from local storage?");
+                if (confirm) {
+                    _self.undoRedoStore.deserializeLocalStorage();
+                }
+                else {
+                    let initialVariable = _self.clinicalSampleCategories[0];
+                    _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
+                    _self.timepointStore.globalPrimary = initialVariable.id;
+                }
+            } else {
+                let initialVariable = _self.clinicalSampleCategories[0];
+                _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
+                _self.timepointStore.globalPrimary = initialVariable.id;
+            }
             _self.parsed = true;
 
         });
