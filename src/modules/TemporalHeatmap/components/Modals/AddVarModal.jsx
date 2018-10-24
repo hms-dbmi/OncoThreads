@@ -75,42 +75,21 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
     handleCheckBoxClick(event, variable, ind1, sel) {
 
-        console.log(ind1);
+        //console.log(ind1);
 
         let isCheckedTemp=this.state.isChecked; //.slice();
 
-        console.log(isCheckedTemp);
-        console.log(this.state.isChecked);
+        //console.log(isCheckedTemp);
+        //console.log(this.state.isChecked);
 
         isCheckedTemp[ind1]=!this.state.isChecked[ind1];
 
 
-        console.log(isCheckedTemp);
-        console.log(this.state.isChecked);
+        //console.log(isCheckedTemp);
+        //console.log(this.state.isChecked);
 
         //this.state.isChecked[ind1] = !this.state.isChecked[ind1];
 
-
-        /*this.setState({
-           isChecked: isCheckedTemp
-        });*/
-
-        //this.forceUpdate();
-
-       /* var x=!this.state.isChecked[ind1];
-
-        this.setState(({isChecked}) => ({
-            isChecked: [
-                isChecked.slice(0,ind1),
-                {
-                    x,
-                },
-                isChecked.slice(ind1+1)
-            ]
-        }));*/
-        
-
-        //var detailedVar=this.props.varList[ind1];
 
     }
 
@@ -178,14 +157,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         );
         
 
-       /*return (
- 
-       <li>
-            {input}
-        </li>
-
-        );*/
-        //console.log(input);
+     
       }
 
     renderList(list, mutList){
@@ -265,7 +237,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
 
        console.log(isCheckedTemp);
-       console.log(this.state.isChecked);
+       //console.log(this.state.isChecked);
 
        // this.setState({isChecked: vNames.map(d=>false).concat(false)});
 
