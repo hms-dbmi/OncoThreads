@@ -1,6 +1,6 @@
 import React from "react";
 import {observer} from "mobx-react";
-import {Button, ButtonGroup, ControlLabel, FormControl, FormGroup, Panel} from 'react-bootstrap';
+import {Button, ButtonGroup, ButtonToolbar, ControlLabel, FormControl, FormGroup, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import Select from 'react-select';
 
@@ -35,7 +35,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     bin(id, name, description) {
-        this.props.store.addVariable(id, name, "NUMBER", description, [], false);
+        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
         this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
 
@@ -47,7 +47,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     addVariable(id, variable, type, description) {
-        this.props.store.variableStore.addOriginalVariable(id, variable, type, description, [], true);
+        this.props.store.addOriginalVariable(id, variable, type, description, [], true, this.props.store.rootStore.staticMappers[id]);
     }
 
 
@@ -86,17 +86,23 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.props.clinicalSampleCategories.forEach(function (d) {
             let icon = null;
             if (d.datatype === "NUMBER") {
-                icon = <FontAwesome onClick={() => _self.bin(d.id, d.variable, d.description)} name="cog"/>
+                icon = <div className="floatDiv">
+                    <FontAwesome
+                        onClick={() => _self.bin(d.id, d.variable, d.description)
+                        } name="cog"/>
+                </div>
             }
             let lb = (
                 <div onMouseEnter={(e) => {
-                    //console.log(d.variable);
-                    _self.props.showTooltip(e, d.variable, d.description);
+                    _self.props.showTooltip(e, d.description);
                 }} onMouseLeave={_self.props.hideTooltip}>
-                    {icon}{d.variable}
-                </div>
-            );
-            options.push({value: d.variable, label: lb, id: d.id, datatype: d.datatype, description: d.description})
+                    {icon}
+                    <div className="wordBreak" style={{textAlign: "left"}}
+                         onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype, d.description)}
+                         key={d.variable}> {d.variable}
+                    </div>
+                </div>);
+            options.push({value: d.variable, label: lb})
         });
         return options;
     }
@@ -187,15 +193,21 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             <br/>
                             <Button style={{textAlign: "left"}} bsSize="xsmall" onClick={this.searchGenes}>Add</Button>
                         </FormGroup>
-                        <ButtonGroup vertical block>
-                            <FontAwesome
-                                onClick={() => this.bin(this.props.store.rootStore.mutationCountId, "Mutation Count", "")
-                                } name="cog"/>
-                            <Button style={{textAlign: "left"}} bsSize="xsmall"
-                                    onClick={() => this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
-                                    key={this.props.mutationCount}> {"Add " + this.props.mutationCount}
-                            </Button>
-                        </ButtonGroup>
+                        <div>
+                            <ButtonToolbar>
+                                <ButtonGroup bsSize="xsmall">
+                                    <Button>
+                                        <FontAwesome
+                                            onClick={() => this.bin(this.props.store.rootStore.mutationCountId, "Mutation Count", "")
+                                            } name="cog"/>
+                                    </Button>
+                                    <Button style={{textAlign: "left"}}
+                                            onClick={() => this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
+                                            key={this.props.mutationCount}> {"Add " + this.props.mutationCount}
+                                    </Button>
+                                </ButtonGroup>
+                            </ButtonToolbar>
+                        </div>
                     </Panel.Body>
                 </Panel.Collapse>
             </Panel>)
@@ -221,7 +233,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                         componentClass="select" placeholder="Select..."
                         searchPlaceholder="Search variable"
                         options={this.createClinicalAttributesList()}
-                        onChange={opt => this.handleVariableClick(opt.id, opt.value, opt.datatype, opt.description)}
                     />
                     {this.getGenomicPanel()}
                 </Panel>

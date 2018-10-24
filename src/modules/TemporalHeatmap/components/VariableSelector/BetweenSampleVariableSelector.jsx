@@ -1,6 +1,8 @@
 import React from "react";
 import {observer} from "mobx-react";
 import FontAwesome from 'react-fontawesome';
+import uuidv4 from 'uuid/v4';
+
 import {
     Alert,
     Button,
@@ -13,7 +15,8 @@ import {
     FormGroup,
     Modal,
     Panel,
-    Radio
+    Radio,
+    ButtonToolbar
 } from 'react-bootstrap';
 
 
@@ -46,11 +49,15 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.handleCombineClick = this.handleCombineClick.bind(this);
     }
 
+
     /**
      * opens the binning modal
      * @param id
+     * @param name
+     * @param description
      */
-    bin(id) {
+    bin(id, name, description) {
+        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
         this.props.openBinningModal(id, "between", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
 
@@ -134,13 +141,14 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         }
     }
 
+
     /**
      * adds a variable to the view
      */
     addCombinedVariable(name) {
         this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
-        this.state.selectedValues.forEach(d => this.props.store.variableStore.addEventVariable(this.state.buttonClicked, d, false));
-        this.props.store.rootStore.timepointStore.binaryCombineVariables(this.state.selectedValues.map(d => d.id), name, "between", this.state.orOperator ? "or" : "and");
+        this.state.selectedValues.forEach(d => this.props.store.addEventVariable(this.state.buttonClicked, d, false));
+        this.props.store.addDerivedVariable(uuidv4(), name, "binary", "Binary combination of variables: " + this.state.defaultName, this.state.selectedValues.map(d => d.id), "binaryCombine", this.state.orOperator ? "or" : "and");
         this.closeModal();
     }
 
@@ -148,7 +156,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.state.selectedValues.forEach(d => this.props.store.variableStore.addEventVariable(this.state.buttonClicked, d, true));
+        this.state.selectedValues.forEach(d => this.props.store.addEventVariable(this.state.buttonClicked, d, true));
         this.closeModal();
     }
 
@@ -157,7 +165,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param id
      */
     addTimeDistance(id) {
-        this.props.store.variableStore.addOriginalVariable(id, "Timepoint Distance", "NUMBER", "Time between timepoints", [], true);
+        this.props.store.addOriginalVariable(id, "Timepoint Distance", "NUMBER", "Time between timepoints", [], true, this.props.store.rootStore.staticMappers['timeGapMapping']);
     }
 
     /**
@@ -363,11 +371,20 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     createTimepointDistanceButton() {
-        return (<Button style={{textAlign: "left"}} bsSize="xsmall"
-                        onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}><FontAwesome
-            onClick={() => this.bin(this.props.store.rootStore.timeDistanceId)
-            } name="cog"/> Time between timepoints
-        </Button>);
+        return (<ButtonToolbar>
+                <ButtonGroup bsSize="xsmall">
+                    <Button>
+                        <FontAwesome
+                            onClick={() => this.bin(this.props.store.rootStore.timeDistanceId, "Timepoint Distance", "Time between timepoints")
+                            } name="cog"/>
+                    </Button>
+                    <Button style={{textAlign: "left"}}
+                            onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
+                            key={this.props.store.rootStore.timeDistanceId}> Timepoint Distance
+                    </Button>
+                </ButtonGroup>
+            </ButtonToolbar>
+        );
     }
 
     /**

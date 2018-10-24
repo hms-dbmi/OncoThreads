@@ -59,7 +59,7 @@ const Content = observer(class Content extends React.Component {
      * @param timepointIndex: index of timepoint
      * @param variable: future primary variable
      * @param type: type of timepoint (sample/between)
-     * @param fun: Function which should be executed after the binning was applied: either group or promote
+     * @param callback: Function which should be executed after the binning was applied: either group or promote
      */
     openModal(variable, type, timepointIndex, callback) {
         this.setState({
@@ -196,18 +196,18 @@ const Content = observer(class Content extends React.Component {
                                 openBinningModal={this.openModal}
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 mutationCount="Mutation count"
-                                currentVariables={this.props.rootStore.timepointStore.timepointStores.sample.variableStore.getCurrentVariables()}
+                                currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
                                 showTooltip={this.showTooltip}
                                 hideTooltip={this.hideTooltip}
-                                store={this.props.rootStore.timepointStore.timepointStores.sample}
+                                store={this.props.rootStore.timepointStore.variableStores.sample}
                                 visMap={this.props.rootStore.visStore}
                             />
                             <BetweenSampleVariableSelector
                                 openBinningModal={this.openModal}
                                 eventCategories={this.props.rootStore.eventCategories}
                                 eventAttributes={this.props.rootStore.eventAttributes}
-                                currentVariables={this.props.rootStore.timepointStore.timepointStores.between.variableStore.getCurrentVariables()}
-                                store={this.props.rootStore.timepointStore.timepointStores.between}
+                                currentVariables={this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()}
+                                store={this.props.rootStore.timepointStore.variableStores.between}
                                 visMap={this.props.rootStore.visStore}
                             />
                         </Col>
@@ -217,8 +217,8 @@ const Content = observer(class Content extends React.Component {
                             <Row>
                                 <MainView
                                     currentVariables={{
-                                        sample: this.props.rootStore.timepointStore.timepointStores.sample.variableStore.getCurrentVariables(),
-                                        between: this.props.rootStore.timepointStore.timepointStores.between.variableStore.getCurrentVariables()
+                                        sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
+                                        between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
                                     }}
                                     timepoints={this.props.rootStore.timepointStore.timepoints}
                                     store={this.props.rootStore.timepointStore}
@@ -240,7 +240,7 @@ const Content = observer(class Content extends React.Component {
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>
-                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}
+                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} hideContextMenu={this.hideContextMenu} contextX={this.state.x}
                               contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
                               clickedVariable={this.state.clickedVariable}
                               type={this.state.contextType}

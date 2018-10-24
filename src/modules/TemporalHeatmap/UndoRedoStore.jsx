@@ -1,7 +1,7 @@
 import {createTransformer, extendObservable, toJS} from "mobx";
-import DerivedVariable from "./DerivedVariable";
 import OriginalVariable from "./OriginalVariable";
-import SingleTimepoint from "./SingleTimepoint";
+import EventVariable from "./EventVariable";
+import DerivedVariable from "./DerivedVariable";
 
 /**
  * handles undoing/redoing actions
@@ -32,7 +32,7 @@ class UndoRedoStore {
                 this.rootStore.realTime = false;
             }
             this.logs.push("UNDO: " + this.logs[this.currentPointer]);
-            this.deserialize(this.currentPointer - 1);
+            this.deserialize(this.currentPointer - 1, this.stateStack[this.currentPointer].type);
             this.currentPointer--;
             this.undoRedoMode = true;
         }
@@ -44,7 +44,7 @@ class UndoRedoStore {
     redo() {
         if (this.currentPointer !== this.stateStack.length - 1) {
             this.logs.push("REDO: " + this.logs[this.currentPointer + 1]);
-            this.deserialize(this.currentPointer + 1);
+            this.deserialize(this.currentPointer + 1, this.stateStack[this.currentPointer + 1].type);
             this.currentPointer++;
             this.undoRedoMode = true;
         }
@@ -55,19 +55,30 @@ class UndoRedoStore {
     /**
      * deserializes the saved state: map saved state to original datastructures to keep them observable
      * @param index: current index in state stack
+     * @param type
      */
-    deserialize(index) {
-        this.rootStore.timepointStore.timepointStores.sample.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.timepointStores.sample.timepoints.slice(), this.stateStack[index].sampleTimepoints);
-        this.rootStore.timepointStore.timepointStores.between.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.timepointStores.between.timepoints.slice(), this.stateStack[index].betweenTimepoints);
-        this.rootStore.timepointStore.timepointStores.sample.variableStore.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.timepointStores.sample.variableStore.currentVariables.slice(), this.stateStack[index].currentSampleVar);
-        this.rootStore.timepointStore.timepointStores.between.variableStore.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.timepointStores.between.variableStore.currentVariables.slice(), this.stateStack[index].currentBetweenVar);
-        this.rootStore.timepointStore.timepointStores.sample.variableStore.allVariables = this.stateStack[index].allSampleVar;
-        this.rootStore.timepointStore.timepointStores.between.variableStore.allVariables = this.stateStack[index].allBetweenVar;
-        this.rootStore.timepointStore.transitionOn = this.stateStack[index].transitionOn;
-        this.rootStore.timepointStore.globalTime = this.stateStack[index].globalTime;
-        this.rootStore.eventTimelineMap = this.stateStack[index].eventTimelineMap;
-        this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].timepointStructure);
-        this.rootStore.timepointStore.initialize();
+    deserialize(index, type) {
+        console.log("get history " + type);
+        if (type === "variable") {
+            this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
+            this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
+            this.rootStore.timepointStore.variableStores.sample.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.sample.currentVariables, this.stateStack[index].state.currentSampleVar);
+            this.rootStore.timepointStore.variableStores.between.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.between.currentVariables, this.stateStack[index].state.currentBetweenVar);
+            this.rootStore.timepointStore.transitionOn = this.stateStack[index].state.transitionOn;
+            this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
+        }
+        else if (type === "timepoint" || type === "structure") {
+            if (type === "structure") {
+                this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].state.timepointStructure);
+            }
+            this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
+            this.rootStore.timepointStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
+            this.rootStore.timepointStore.regroupTimepoints();
+        }
+        else {
+            this.rootStore.timepointStore.globalTime = this.stateStack[index].state.globalTime;
+
+        }
     }
 
     deserializeLocalStorage() {
@@ -77,17 +88,52 @@ class UndoRedoStore {
         this.deserialize(this.currentPointer)
     }
 
+    deserializeVariables(observable, saved) {
+        //case: added
+        if (observable.length > saved.length) {
+            let addIndex = observable.indexOf(observable.filter(d => !saved.includes(d))[0]);
+            observable.splice(addIndex, 1);
+        }
+        //case: removed
+        else if (observable.length < saved.length) {
+            let removeIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
+            observable.splice(removeIndex, 0, saved[removeIndex]);
+        }
+        //case: modified
+        else {
+            let modifyIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
+            observable[modifyIndex] = saved[modifyIndex];
+        }
+        return observable;
+    }
+
+    static deserializeReferencedVariables(observedVariables, savedVariables) {
+        for (let variable in savedVariables) {
+            if (variable in observedVariables) {
+                UndoRedoStore.remapProperties(observedVariables[variable], savedVariables[variable]);
+            }
+            else if (!(variable in observedVariables)) {
+                switch (savedVariables[variable].type) {
+                    case "original":
+                        observedVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].mapper);
+                        break;
+                    case "event":
+                        observedVariables[variable] = new EventVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].eventType, savedVariables[variable].eventSubType, savedVariables[variable].mapper);
+                        break;
+                    default:
+                        observedVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modificationType, savedVariables[variable].modification, savedVariables[variable].mapper)
+                }
+            }
+        }
+        return observedVariables;
+    }
+
     /**
      * deserializes the timepoint data structure
      * @param observable
      * @param saved
      */
     deserializeTimepoints(observable, saved) {
-        const _self = this;
-        observable = [];
-        saved.forEach(function (d) {
-            observable.push(new SingleTimepoint(_self.rootStore, d.primaryVariableId, d.patients, d.type, d.localIndex, d.heatmapOrder))
-        });
         saved.forEach(function (d, i) {
             UndoRedoStore.remapProperties(observable[i], d);
         });
@@ -107,52 +153,6 @@ class UndoRedoStore {
 
 
     /**
-     * deserializes variables (maps saved state to the observable datastructure)
-     * @param observable
-     * @param saved
-     */
-    deserializeVariables(observable, saved) {
-        let toAdd = [];
-        let toDelete = [];
-        //map the properties of the saved array to the observable array
-        observable.forEach(function (d, i) {
-            let idIndex = saved.map(function (g) {
-                return g.id;
-            }).indexOf(d.id);
-            //index to delete
-            if (idIndex === -1) {
-                toDelete.push(i);
-            }
-            else {
-                UndoRedoStore.remapProperties(d, saved[idIndex]);
-            }
-        });
-        //delete variable
-        for (let i = toDelete.length - 1; i >= 0; i--) {
-            observable.splice(toDelete[i], 1);
-        }
-        //add variable if the saved variable array is longer than the observed variable array
-        saved.forEach(function (d, i) {
-            let idIndex = observable.map(function (g) {
-                return g.id;
-            }).indexOf(d.id);
-            if (idIndex === -1) {
-                toAdd.push(i);
-            }
-        });
-        for (let i = 0; i < toAdd.length; i++) {
-            let currItem = saved[toAdd[i]];
-            if (currItem.derived) {
-                observable.splice(toAdd[i], 0, new DerivedVariable(currItem.id, currItem.name, currItem.datatype, currItem.originalIds, currItem.modificationType, currItem.modification, currItem.domain, currItem.range))
-            }
-            else {
-                observable.splice(toAdd[i], 0, new OriginalVariable(currItem.id, currItem.name, currItem.datatype, currItem.domain, currItem.range))
-            }
-        }
-        return observable;
-    }
-
-    /**
      * remaps the property the saved entry to the observable entry
      * @param observableEntry
      * @param savedEntry
@@ -163,17 +163,19 @@ class UndoRedoStore {
         }
     }
 
+
     /**
      * saves the history to the stateStack. For this the datastructures have to be serialized (put into a simple, non-observable object)
      */
-    saveHistory() {
+    saveHistory(type) {
+        console.log("save history " + type);
         const serializeState = createTransformer(store => ({
-            sampleTimepoints: store.rootStore.timepointStore.timepointStores.sample.timepoints.map(serializeTimepoints),
-            betweenTimepoints: store.rootStore.timepointStore.timepointStores.between.timepoints.map(serializeTimepoints),
-            currentSampleVar: toJS(store.rootStore.timepointStore.timepointStores.sample.variableStore.currentVariables),
-            currentBetweenVar: toJS(store.rootStore.timepointStore.timepointStores.between.variableStore.currentVariables),
-            allSampleVar: store.rootStore.timepointStore.timepointStores.sample.variableStore.allVariables,
-            allBetweenVar: store.rootStore.timepointStore.timepointStores.between.variableStore.allVariables,
+            sampleTimepoints: store.rootStore.timepointStore.variableStores.sample.childStore.timepoints.map(serializeTimepoints),
+            betweenTimepoints: store.rootStore.timepointStore.variableStores.between.childStore.timepoints.map(serializeTimepoints),
+            currentSampleVar: store.rootStore.timepointStore.variableStores.sample.currentVariables.slice(),
+            currentBetweenVar: store.rootStore.timepointStore.variableStores.between.currentVariables.slice(),
+            allSampleVar: UndoRedoStore.serializeVariables(store.rootStore.timepointStore.variableStores.sample.referencedVariables),
+            allBetweenVar: UndoRedoStore.serializeVariables(store.rootStore.timepointStore.variableStores.between.referencedVariables),
             transitionOn: store.rootStore.timepointStore.transitionOn,
             globalTime: store.rootStore.timepointStore.globalTime,
             timepointStructure: toJS(store.rootStore.timepointStructure),
@@ -181,18 +183,15 @@ class UndoRedoStore {
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({
-            type: timepoint.type,
-            patients: timepoint.patients.slice(),
-            globalIndex: timepoint.globalIndex,
-            localIndex: timepoint.localIndex,
-            previousOrder: timepoint.previousOrder,
-            heatmap: toJS(timepoint.heatmap),
-            grouped: toJS(timepoint.grouped),
-            heatmapOrder: timepoint.heatmapOrder,
-            groupOrder: timepoint.groupOrder,
-            isGrouped: timepoint.isGrouped,
-            primaryVariableId: timepoint.primaryVariableId
-        }));
+                variableSortOrder: timepoint.variableSortOrder,
+                heatmapOrder: timepoint.heatmapOrder,
+                groupOrder: timepoint.groupOrder,
+                isGrouped: timepoint.isGrouped,
+                heatmapSorting: timepoint.heatmapSorting,
+                primaryVariableId: timepoint.primaryVariableId,
+                name: timepoint.name
+            })
+        );
         if (this.undoRedoMode) {
             this.stateStack = this.stateStack.slice(0, this.currentPointer + 1);
             this.undoRedoMode = false;
@@ -200,9 +199,26 @@ class UndoRedoStore {
         if (this.stateStack.length > 15) {
             this.stateStack.shift();
         }
-        this.stateStack.push(serializeState(this));
+        this.stateStack.push({type: type, state: serializeState(this)});
         this.currentPointer = this.stateStack.length - 1;
         //localStorage.setItem(this.rootStore.study.studyId, JSON.stringify({states: this.stateStack, logs: this.logs}));
+    }
+
+
+    static serializeAttributes(object) {
+        let returnDict = {};
+        for (let attribute in object) {
+            returnDict[attribute] = toJS(object[attribute]);
+        }
+        return returnDict;
+    }
+
+    static serializeVariables(variables) {
+        let serializedVariables = {};
+        for (let variable in variables) {
+            serializedVariables[variable] = UndoRedoStore.serializeAttributes(variables[variable])
+        }
+        return serializedVariables;
     }
 
     /**
@@ -213,13 +229,13 @@ class UndoRedoStore {
      * @param timepointIndex
      */
     saveTimepointHistory(operation, variableId, timepointType, timepointIndex) {
-        const variableName = this.rootStore.timepointStore.timepointStores[timepointType].variableStore.getById(variableId).name;
+        const variableName = this.rootStore.timepointStore.variableStores[timepointType].getById(variableId).name;
         let type = "Timepoint";
         if (timepointType === "between") {
             type = "Transition";
         }
         this.logs.push(operation + ": " + variableName + " at " + type + " " + timepointIndex);
-        this.saveHistory();
+        this.saveHistory("timepoint");
     }
 
     /**
@@ -230,13 +246,13 @@ class UndoRedoStore {
      */
     saveVariableHistory(operation, variable, saveToStack) {
         this.logs.push(operation + ": " + variable);
-        this.saveHistory();
+        this.saveHistory("variable");
     }
 
     saveVariableModification(type, variable, saveToStack) {
         if (saveToStack) {
             this.logs.push("MODIFY VARIABLE: " + variable + ", Type: " + type);
-            this.saveHistory();
+            this.saveHistory("variable");
         }
         else {
             this.logs.push("(MODIFY VARIABLE: " + variable + ", Type: " + type + ")");
@@ -250,7 +266,7 @@ class UndoRedoStore {
         else {
             this.logs.push("SWITCH TO: block view");
         }
-        this.saveHistory();
+        this.saveHistory("switch");
     }
 
     /**
@@ -264,12 +280,12 @@ class UndoRedoStore {
             type = "Transition";
         }
         this.logs.push("REALIGN PATIENTS: based on " + type + " " + timepointIndex);
-        this.saveHistory();
+        this.saveHistory("timepoint");
     }
 
     saveTPMovement(dir, patient) {
         this.logs.push("MOVE PATIENT: " + patient + " " + dir);
-        this.saveHistory();
+        this.saveHistory("structure");
     }
 
 

@@ -22,8 +22,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         const _self = this;
         let j = 0;
 
-        let ht = _self.props.ht;
-
 
         let xGlobal;
 
@@ -33,33 +31,15 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         if (_self.props.timepointType === "between") {
             if (_self.props.dtype === "binary") {
 
-                let fillC = "#F00";
-
 
                 _self.props.events.forEach(function (ev, j) {
-
-
-
-                    //if(fillC==="#F00"){
-                    //  fillC = _self.props.color(ev.varId);
-                    //}
-
-
-                    _self.props.store.timepointStores.between.variableStore.getCurrentVariables().forEach(function (d) {
-                        if (d.originalIds.includes(ev.varId)) {
-                            //console.log(d.originalIds[0]);
-                            fillC = _self.props.color(d.originalIds[0]);
-                        }
-
-                    });
-
                     let opc1 = _self.props.opacity;
                     let height = _self.props.timeScale(ev.eventEndDate - ev.eventDate);
                     if (height === 0) {
                         height = _self.props.rectWidth;
                         opc1 = opc1 + 0.3;
                     }
-                    let val = _self.props.store.timepointStores.between.variableStore.getById(ev.varId).name;
+                    let val = _self.props.store.variableStores.between.getById(ev.varId).name;
                     rects.push(<rect
                             onMouseEnter={(e) => _self.handleMouseEnter(e, ev.patientId, val, ev.eventDate, ev.eventEndDate - ev.eventDate)
                             }
@@ -75,7 +55,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                             y={_self.props.timeScale(ev.eventDate)}
                             //fill={_self.props.color(ev.varId)}
 
-                            fill={fillC}
+                            fill={_self.props.color(_self.props.row.variable)}
                             opacity={opc1}
                             //fill={_self.props.color(_self.props.timepoint)}
                         />
@@ -96,7 +76,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 }
 
 
-                let startDay = _self.props.ypi[i];
                 //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
 
 
@@ -111,9 +90,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
                 xGlobal = _self.props.heatmapScale(d.patient);
 
-                let duration = ht[j];
                 rects.push(<rect stroke={stroke}
-                                 onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, startDay, duration)
+                                 onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis, 0)
                                  }
                                  onMouseLeave={_self.handleMouseLeave}
                                  onDoubleClick={() => _self.handleDoubleClick(d.patient)}
@@ -122,7 +100,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                  height={_self.props.rectWidth / 2}//{_self.props.height}
                                  width={_self.props.rectWidth / 2}
                                  x={xGlobal}
-                                 y={_self.props.timeScale(_self.props.ypi[i])}
+                                 y={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis)}
                                  fill={fill}
                                  opacity={_self.props.opacity}
                     />

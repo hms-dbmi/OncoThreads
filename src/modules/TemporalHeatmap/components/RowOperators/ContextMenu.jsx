@@ -8,7 +8,7 @@ context menu, appears after a right click on the variables name
 const ContextMenu = observer(class ContextMenu extends React.Component {
     constructor(props) {
         super();
-        this.type=props.store.timepoints[props.clickedTimepoint].type;
+        this.type = props.store.type;
         this.applyActionToAll = this.applyActionToAll.bind(this);
         this.applyActionToPrevious = this.applyActionToPrevious.bind(this);
         this.applyActionToNext = this.applyActionToNext.bind(this);
@@ -19,22 +19,23 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToAll() {
         const _self = this;
-        if (this.props.store.timepointStores[this.type].variableStore.getById(this.props.clickedVariable).dataType==="NUMBER" && this.props.action !== "UNGROUP") {
+        if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
-                    _self.props.store.applyActionToAll(_self.props.clickedTimepoint, newID, _self.props.action);
+                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                    _self.props.store.childStore.applyActionToAll(_self.props.localIndex, newID, _self.props.action);
                 });
             } else {
-                if (this.props.store.atLeastOneGrouped(this.props.store.timepoints[this.props.clickedTimepoint].type)) {
-                    this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
-                        _self.props.store.applyActionToAll(_self.props.clickedTimepoint, newID, _self.props.action);
+                if (this.props.store.childStore.atLeastOneGrouped()) {
+                    this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                        _self.props.store.childStore.applyActionToAll(_self.props.localIndex, newID, _self.props.action);
                     });
                 }
             }
         }
         else {
-            this.props.store.applyActionToAll(this.props.clickedTimepoint, this.props.clickedVariable, this.props.action);
+            this.props.store.childStore.applyActionToAll(this.props.localIndex, this.props.clickedVariable, this.props.action);
         }
+        this.props.hideContextMenu();
     }
 
     /**
@@ -42,22 +43,23 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToPrevious() {
         const _self = this;
-        if (this.props.store.timepointStores[this.type].variableStore.getById(this.props.clickedVariable).dataType==="NUMBER" && this.props.action !== "UNGROUP") {
+        if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
-                    _self.props.store.applyActionToPrevious(_self.props.clickedTimepoint, newID, _self.props.action);
+                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                    _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, _self.props.action);
                 });
             } else {
-                if (this.props.store.atLeastOneGrouped(this.props.store.timepoints[this.props.clickedTimepoint].type)) {
-                    this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
-                        _self.props.store.applyActionToPrevious(_self.props.clickedTimepoint, newID, this.props.action);
+                if (this.props.store.childStore.atLeastOneGrouped()) {
+                    this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                        _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, this.props.action);
                     });
                 }
             }
         }
         else {
-            this.props.store.applyActionToPrevious(this.props.clickedTimepoint, this.props.clickedVariable, this.props.action);
+            this.props.store.childStore.applyActionToPrevious(_self.props.localIndex, this.props.clickedVariable, this.props.action);
         }
+        this.props.hideContextMenu();
     }
 
     /**
@@ -65,25 +67,36 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToNext() {
         const _self = this;
-        if (this.props.store.timepointStores[this.type].variableStore.getById(this.props.clickedVariable).dataType==="NUMBER" && this.props.action !== "UNGROUP") {
+        if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
-                    _self.props.store.applyActionToNext(_self.props.clickedTimepoint, newID, _self.props.action);
+                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                    _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
                 });
             } else {
-                if (this.props.store.atLeastOneGrouped(this.props.store.timepoints[this.props.clickedTimepoint].type)) {
-                    this.props.openBinningModal(this.props.clickedVariable, this.props.store.timepoints[this.props.clickedTimepoint].type, this.props.clickedTimepoint, function (newID) {
-                        _self.props.store.applyActionToNext(_self.props.clickedTimepoint, newID, _self.props.action);
+                if (this.props.store.childStore.atLeastOneGrouped()) {
+                    this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                        _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
                     });
                 }
             }
         }
         else {
-            this.props.store.applyActionToNext(this.props.clickedTimepoint, this.props.clickedVariable, this.props.action);
+            this.props.store.childStore.applyActionToNext(this.props.localIndex, this.props.clickedVariable, this.props.action);
         }
+        this.props.hideContextMenu();
+    }
+    magicSort() {
+        this.props.store.childStore.timepoints[this.props.localIndex].magicSort(this.props.clickedVariable);
+        this.props.hideContextMenu();
+
     }
 
     render() {
+        let magicSort=null;
+        if(this.props.action==="SORT"){
+            magicSort= <Button
+                    onClick={() => this.magicSort()}>{"MagicSort"}</Button>
+        }
         return (
             <ButtonGroup vertical style={{
                 position: "absolute",
@@ -96,6 +109,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
                     onClick={() => this.applyActionToNext()}>{"Apply " + this.props.action + " to next timepoint"}</Button>
                 <Button
                     onClick={() => this.applyActionToAll()}>{"Apply " + this.props.action + " to all timepoints"}</Button>
+                {magicSort}
             </ButtonGroup>
         )
     }

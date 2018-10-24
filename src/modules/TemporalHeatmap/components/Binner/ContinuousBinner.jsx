@@ -8,7 +8,6 @@ import uuidv4 from 'uuid/v4';
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        console.log(props);
         this.data = props.store.getAllValues(props.variable, props.type);
         this.state = {
             bins: [d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)],
@@ -60,12 +59,18 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      */
     handleApply() {
         const newId = uuidv4();
-        let saveToHistory = false;
+        let currVar = this.props.store.variableStores[this.props.type].referencedVariables[this.props.variable];
         if (this.props.callback === null) {
-            saveToHistory = true;
+            this.props.store.variableStores[this.props.type].addDerivedVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", [currVar.id], "binning", {
+                bins: this.state.bins,
+                binNames: this.state.binNames
+            });
         }
-        this.props.store.binVariable(newId, this.props.variable, this.state.bins, this.state.binNames, this.props.type, saveToHistory);
-        if (!saveToHistory) {
+        else {
+            this.props.store.variableStores[this.props.type].modifyVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", currVar.id, "binning", {
+                bins: this.state.bins,
+                binNames: this.state.binNames
+            });
             this.props.callback(newId);
         }
         this.close();
@@ -83,7 +88,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     render() {
-        let variableName = this.props.store.timepointStores[this.props.type].variableStore.getById(this.props.variable).name;
+        let variableName = this.props.store.variableStores[this.props.type].getById(this.props.variable).name;
         return (
             <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins}
                           showAlert={this.props.timepointIndex !== null}

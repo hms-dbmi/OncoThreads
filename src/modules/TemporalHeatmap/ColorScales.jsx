@@ -41,6 +41,12 @@ class ColorScales {
         return d3.scaleOrdinal().range(['#f7f7f7', '#ffd92f', 'lightgray']).domain([undefined, true, false]);
     }
 
+    static getGlobalTimelineColors() {
+        return d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
+
+    }
+
+
 }
 
 export default ColorScales;

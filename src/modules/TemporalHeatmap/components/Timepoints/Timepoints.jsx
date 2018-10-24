@@ -160,11 +160,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             let p = _self.props.store.rootStore.patientOrderPerTimepoint;
 
-            let flag = false;
 
-            _self.props.timepoints.forEach(function (d) {
-                if (d.type !== "between") flag = true;
-            });
 
 
             let transFlag = false;

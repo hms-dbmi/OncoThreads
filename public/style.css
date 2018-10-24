@@ -11,7 +11,16 @@
     z-index: -1;
 }
 
-.customTooltip{
+.floatDiv {
+    float: left
+}
+
+.wordBreak {
+    word-break: break-all;
+
+}
+
+.customTooltip {
     pointer-events: none;
 }
 
@@ -19,19 +28,20 @@
     cursor: pointer;
 }
 
-.hidden{
+.hidden {
     display: none;
 }
 
-.defaultView{
+.defaultView {
     position: absolute;
     left: 50%;
-    top:50%;
+    top: 50%;
     margin-top: -50px;
     margin-left: -100px;
     width: 300px;
     height: 100px;
 }
+
 .noStyle {
     background: none;
     color: inherit;
@@ -43,39 +53,44 @@
     margin-left: 5px;
     margin-right: 2px;
 }
-.currentVariable{
-    background-color:#efefef;
+
+.currentVariable {
+    background-color: #efefef;
     border: 1px solid darkgray;
     border-radius: 2px;
-    margin-left:2px;
+    margin-left: 2px;
     padding: 2px;
     font-size: 10px;
 }
-.btn{
+
+.btn {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.sidebar{
-    display:inline-block;
-    width:15%;
-    margin-left:0;
+.sidebar {
+    display: inline-block;
+    width: 15%;
+    margin-left: 0;
     padding: 0;
     background-color: #efefef;
     white-space: nowrap;
 }
-.main{
-    display:inline-block;
+
+.main {
+    display: inline-block;
     white-space: nowrap;
 }
-.helperAxis{
-    float:left;
+
+.helperAxis {
+    float: left;
     white-space: nowrap;
 
 }
-.noSizeChange{
-    display:inline-block;
+
+.noSizeChange {
+    display: inline-block;
     white-space: nowrap;
 
 }

@@ -3,33 +3,58 @@ import OriginalVariable from "./OriginalVariable";
 import DerivedVariable from "./DerivedVariable";
 import EventVariable from "./EventVariable";
 import MapperCombine from "./MapperCombineFunctions";
+import MultipleTimepointsStore from "./MultipleTimepointsStore";
 
 /*
 Store containing information about variables
  */
 class VariableStore {
-    constructor(parent, rootStore) {
-        this.parent = parent;
+    constructor(rootStore, structure, type) {
+        this.childStore = new MultipleTimepointsStore(rootStore, structure, type);
         this.rootStore = rootStore;
-        this.allVariables = {};
+        this.type = type;
+        //Variables that are referenced (displayed or used to create a derived variable)
+        this.referencedVariables = {};
         extendObservable(this, {
+            //List of ids of currently displayed variables
             currentVariables: [],
         });
+        //Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
             if (change.type === 'splice') {
                 if (change.added.length > 0) {
-                    this.parent.addHeatmapRows(change.added[0], this.getById(change.added[0]).mapper)
+                    if (this.type === "between" && this.currentVariables.length === 1) {
+                        this.rootStore.timepointStore.toggleTransition()
+                    }
+                    this.childStore.addHeatmapRows(change.added[0], this.getById(change.added[0]).mapper)
                 }
                 if (change.removed.length > 0) {
-                    this.parent.removeHeatmapRows(change.removed[0]);
+                    if (this.type === "between" && this.currentVariables.length === 0) {
+                        this.rootStore.timepointStore.toggleTransition()
+                    }
+                    if(this.type.sample&&change.removed[0]===this.rootStore.timepointStore.globalPrimary){
+                        this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[this.currentVariables.length]);
+                    }
+                    this.childStore.removeHeatmapRows(change.removed[0]);
                 }
             }
             else if (change.type === "update") {
-                this.parent.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
+                this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
             }
             this.rootStore.timepointStore.regroupTimepoints();
 
         });
+    }
+
+    /**
+     * Update children if structure changes
+     * @param structure
+     * @param order
+     * @param names
+     */
+    update(structure, order, names) {
+        this.childStore.updateTimepointStructure(structure, order, names);
+        this.currentVariables.forEach(d => this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper))
     }
 
     /**
@@ -43,46 +68,53 @@ class VariableStore {
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", +name, true);
     }
 
+    /**
+     * Decrement the referenced property of all the variables which were used by the current variable (and their "child variables"). If the referenced property is 0 remove the variable
+     * @param currentId
+     */
     removeReferences(currentId) {
         const _self = this;
-        if (!(this.allVariables[currentId].originalIds.length === 1 && this.allVariables[currentId].originalIds[0] === currentId)) {
-            this.allVariables[currentId].originalIds.forEach(function (d) {
+        if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
+            this.referencedVariables[currentId].originalIds.forEach(function (d) {
                 _self.removeReferences(d);
             });
         }
-        this.allVariables[currentId].referenced -= 1;
-        if (this.allVariables[currentId].referenced === 0) {
-            if(this.allVariables[currentId].type==="event"){
+        this.referencedVariables[currentId].referenced -= 1;
+        if (this.referencedVariables[currentId].referenced === 0) {
+            if (this.referencedVariables[currentId].type === "event") {
                 delete this.rootStore.eventTimelineMap[currentId];
             }
-            delete this.allVariables[currentId];
+            delete this.referencedVariables[currentId];
         }
-    }
-
-
-    updateReferences(currentId) {
-        const _self = this;
-        if (!(this.allVariables[currentId].originalIds.length === 1 && this.allVariables[currentId].originalIds[0] === currentId)) {
-            this.allVariables[currentId].originalIds.forEach(function (d) {
-                _self.updateReferences(d);
-            });
-        }
-        _self.allVariables[currentId].referenced += 1;
     }
 
     /**
-     * adds an original variable to the current variables and to all variables
+     * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
+     * @param currentId
+     */
+    updateReferences(currentId) {
+        const _self = this;
+        if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
+            this.referencedVariables[currentId].originalIds.forEach(function (d) {
+                _self.updateReferences(d);
+            });
+        }
+        _self.referencedVariables[currentId].referenced += 1;
+    }
+
+    /**
+     * adds an original variable. If display is true the variable will be added to the current variables
      * @param id
      * @param name
      * @param datatype
      * @param description
      * @param range
-     * @param mapper
      * @param display
+     * @param mapper
      */
-    addOriginalVariable(id, name, datatype, description, range, display) {
+    addOriginalVariable(id, name, datatype, description, range, display, mapper) {
         if (!this.isReferenced(id)) {
-            this.allVariables[id] = new OriginalVariable(id, name, datatype, description, range, this.rootStore.staticMappers[id]);
+            this.referencedVariables[id] = new OriginalVariable(id, name, datatype, description, range, mapper);
         }
         if (display && !this.isDisplayed(id)) {
             this.updateReferences(id);
@@ -91,11 +123,16 @@ class VariableStore {
         }
     }
 
-
+    /**
+     * add an event variable. If display is true the variable will be added to the current variables
+     * @param eventType
+     * @param selectedVariable
+     * @param display
+     */
     addEventVariable(eventType, selectedVariable, display) {
         const _self = this;
         if (!this.isReferenced(selectedVariable.id)) {
-            _self.allVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, this.rootStore.getSampleEventMapping(eventType,selectedVariable));
+            _self.referencedVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, this.rootStore.getSampleEventMapping(eventType, selectedVariable));
         }
         if (!(_self.currentVariables.includes(selectedVariable.id)) && display) {
             this.updateReferences(selectedVariable.id);
@@ -115,7 +152,7 @@ class VariableStore {
      * @param modification
      */
     addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification) {
-        this.allVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.allVariables[d].mapper)));
+        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
         this.updateReferences(id);
         this.currentVariables.push(id);
         this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
@@ -133,8 +170,8 @@ class VariableStore {
      * @param modification
      */
     modifyVariable(id, name, datatype, description, originalId, modificationType, modification) {
-        let oldName = this.allVariables[originalId].name;
-        this.allVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, [this.allVariables[originalId].mapper]));
+        let oldName = this.referencedVariables[originalId].name;
+        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, [this.referencedVariables[originalId].mapper]));
         this.updateReferences(id);
         this.currentVariables[this.getIndex(originalId)] = id;
         this.removeReferences(originalId);
@@ -147,39 +184,72 @@ class VariableStore {
      * @param id
      */
     getById(id) {
-        return this.allVariables[id];
+        return this.referencedVariables[id];
     }
 
+    /**
+     * check if a variable is referenced (is in referencedVariables)
+     * @param id
+     * @returns {boolean}
+     */
     isReferenced(id) {
-        return id in this.allVariables;
+        return id in this.referencedVariables;
     }
 
+    /**
+     * check if a variable is displayed (is in currentVariables)
+     * @param id
+     * @returns {boolean}
+     */
     isDisplayed(id) {
         return this.currentVariables.includes(id);
     }
 
+    /**
+     * gets the index of a variable in current variables (-1 if not contained)
+     * @param id
+     * @returns {number}
+     */
     getIndex(id) {
         return this.currentVariables.indexOf(id);
     }
 
+    /**
+     * gets complete current variables (not only ids)
+     * @returns {*}
+     */
     getCurrentVariables() {
-        return this.currentVariables.map(d => this.allVariables[d]);
+        return this.currentVariables.map(d => this.referencedVariables[d]);
     }
 
+    /**
+     * gets variables of a certain type
+     * @param type
+     * @returns {Array}
+     */
     getVariablesOfType(type) {
         let typeVar = [];
-        for (let variableId in this.allVariables) {
-            if (this.allVariables[variableId].type === type) {
-                typeVar.push(this.allVariables[variableId]);
+        for (let variableId in this.referencedVariables) {
+            if (this.referencedVariables[variableId].type === type) {
+                typeVar.push(this.referencedVariables[variableId]);
             }
         }
         return typeVar;
     }
 
-    getTotalNumberOfVariables() {
-        return (Object.keys(this.allVariables).length);
+    /**
+     * gets the number of referenced Variables
+     * @returns {number}
+     */
+    getNumberOfReferencedVariables() {
+        return (Object.keys(this.referencedVariables).length);
     }
 
+    /**
+     * gets all current variables which are related by type (related = derived from)
+     * @param variableType
+     * @returns {any[]}
+     */
     getRelatedVariables(variableType) {
         const _self = this;
         let relatedVariables = [];
@@ -188,15 +258,21 @@ class VariableStore {
                 relatedVariables.push(d);
             }
         });
-        return relatedVariables.map(d => this.allVariables[d])
+        return relatedVariables.map(d => this.referencedVariables[d])
     }
 
+    /**
+     * checks is a variable is derived from a variable with a certain type
+     * @param id
+     * @param variableType
+     * @returns {boolean}
+     */
     recursiveSearch(id, variableType) {
-        if (this.allVariables[id].type === variableType) {
+        if (this.referencedVariables[id].type === variableType) {
             return true;
         }
-        else if (this.allVariables[id].type === "derived") {
-            return this.allVariables[id].originalIds.map(d => this.recursiveSearch(d, variableType)).includes(true);
+        else if (this.referencedVariables[id].type === "derived") {
+            return this.referencedVariables[id].originalIds.map(d => this.recursiveSearch(d, variableType)).includes(true);
         }
         else {
             return false;

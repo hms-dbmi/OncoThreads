@@ -75,31 +75,6 @@ class VisStore {
         this.sampleRectWidth = width;
     }
 
-    modifyTransitionSpace(number, index) {
-        if (index !== this.transitionSpaces.length - 2) {
-            console.log(index, this.rootStore.timepointStore.isAligned(index, index + 1), this.rootStore.timepointStore.isAligned(index + 1, index + 2));
-            if (this.rootStore.timepointStore.isAligned(index, index + 1)
-                && this.rootStore.timepointStore.isAligned(index + 1, index + 2)
-                && !this.rootStore.timepointStore.timepoints[index].isGrouped
-                && !this.rootStore.timepointStore.timepoints[index + 1].isGrouped
-                && !this.rootStore.timepointStore.timepoints[index + 2].isGrouped) {
-                this.transitionSpaces[index] = this.transitionSpace;
-                this.transitionSpaces[index + 1] = this.transitionSpace;
-            }
-            else {
-                this.transitionSpaces[index] = number;
-                this.transitionSpaces[index + 1] = number;
-            }
-        }
-        else {
-            if (this.rootStore.timepointStore.isAligned(index, index + 1)) {
-                this.transitionSpaces[index] = this.transitionSpace;
-            }
-            else {
-                this.transitionSpaces[index] = number;
-            }
-        }
-    }
 
     /**
      * computes the height of a timepoint

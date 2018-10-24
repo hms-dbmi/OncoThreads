@@ -1,13 +1,10 @@
 import TransitionStore from "./TemporalHeatmap/TransitionStore.jsx"
-import TimepointStore from "./TemporalHeatmap/TimepointStore"
+import DataStore from "./TemporalHeatmap/DataStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
-import VariableStore2 from "./TemporalHeatmap/VariableStore2";
-import SampleTimepointStore from "./TemporalHeatmap/SampleTimepointStore";
-import BetweenTimepointStore from "./TemporalHeatmap/BetweenTimepointStore";
 
 
 /*
@@ -27,7 +24,7 @@ class RootStore {
 
         this.clinicalSampleCategories = [];
         this.mutationCountId = "mutCount";
-        this.timeDistanceId = "timeDist";
+        this.timeDistanceId = "timeGapMapping";
         this.eventCategories = [];
         this.eventAttributes = [];
         this.patientOrderPerTimepoint = [];
@@ -43,7 +40,6 @@ class RootStore {
             parsed: false,
             firstLoad: firstLoad,
 
-            globalPrimary: '',
 
             timeVar: 1,
             timeValue: "days",
@@ -98,30 +94,22 @@ class RootStore {
             }
 
         });
-        this.timepointStore = new TimepointStore(this);
+        this.timepointStore = new DataStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore(this);
         this.undoRedoStore = new UndoRedoStore(this);
     }
 
-    setGlobalPrimary(primary) {
-        this.globalPrimary = primary;
-    }
+
 
     /**
      * resets everything
      */
     reset() {
         this.parsed = false;
-        this.timepointStore.globalTime = false;
-        this.timepointStore.realTime = false;
-        this.timepointStore.addAsGroup = false;
-        this.timepointStore.selectedPatients = [];
-        this.timepointStore.transitionOn = false;
+        this.timepointStore.reset();
         this.resetTimepointStructure(false);
-        this.timepointStore.initialize();
         this.parsed = true;
-        this.globalPrimary = this.clinicalSampleCategories[0].id;
     }
 
     /**
@@ -167,7 +155,6 @@ class RootStore {
 
             // if (localStorage.getItem(_self.study.studyId) === null) {
             _self.timepointStore.initialize();
-            _self.globalPrimary = _self.clinicalSampleCategories[0].id;
             /*}
             else {
                 _self.undoRedoStore.deserializeLocalStorage();
@@ -217,9 +204,9 @@ class RootStore {
                             });
                         }
                         for (let entry in geneDict) {
-                            if (!_self.timepointStore.timepointStores.sample.variableStore.isDisplayed(entry + mappingType)) {
+                            if (!_self.timepointStore.variableStores.sample.isDisplayed(entry + mappingType)) {
                                 const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                                _self.timepointStore.timepointStores.sample.variableStore.addOriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType, [], _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm), true);
+                                _self.timepointStore.variableStores.sample.addOriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType, [], true,_self.createMutationMapping(geneDict[entry], entry, mappingType, confirm), true);
                             }
                         }
                     })
@@ -308,7 +295,7 @@ class RootStore {
      * @param up
      */
     updateTimepointStructure(patient, timepoint, up) {
-        const oldSampleTimepointNames = this.timepointStore.timepointStores.sample.timepoints.map(d => d.name);
+        const oldSampleTimepointNames = this.timepointStore.variableStores.sample.childStore.timepoints.map(d => d.name);
         let timeline = this.timepointStructure[timepoint];
         const index = this.timepointStructure[timepoint].map(d => d.patient).indexOf(patient);
         let indexedElements;
@@ -320,7 +307,7 @@ class RootStore {
                 _self.timepointStructure.push([element]);
             }
             else {
-                for (let i = timepoint; i < this.timepointStore.timepointStores.sample.timepoints.length; i++) {
+                for (let i = timepoint; i < this.timepointStore.variableStores.sample.childStore.timepoints.length; i++) {
                     if (i + 1 < _self.timepointStructure.length) {
                         indexedElements = _self.timepointStructure[i + 1]
                             .filter(d => d)
@@ -371,10 +358,18 @@ class RootStore {
         timeline.splice(index, 1);
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
         let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
-        this.timepointStore.update(heatmapOrder, this.createNameList(up, this.timepointStore.timepointStores.sample.timepoints, oldSampleTimepointNames, patient));
+        this.timepointStore.update(heatmapOrder, this.createNameList(up, this.timepointStore.variableStores.sample.childStore.timepoints, oldSampleTimepointNames, patient));
 
     }
 
+    /**
+     * Adapts the old names of the timepoints to the new timepoint structure
+     * @param up
+     * @param timepoints
+     * @param oldNames
+     * @param patient
+     * @returns {*}
+     */
     createNameList(up, timepoints, oldNames, patient) {
         let newNames = oldNames;
         if (this.timepointStructure.length > oldNames.length) {
@@ -467,6 +462,9 @@ class RootStore {
         }
     }
 
+    /**
+     * creates a dictionary mapping sample IDs onto time between timepoints
+     */
     createTimeGapMapping() {
         let timeGapMapping = {};
         const _self = this;
@@ -545,7 +543,7 @@ class RootStore {
 
 
     /**
-     *creates a mapping of selected events to patients (OR)
+     *creates a mapping of an events to sampleIDs (events are mapped to the subsequent event)
      * @param eventType
      * @param selectedVariable
      * @returns {any[]}
@@ -585,6 +583,7 @@ class RootStore {
                             _self.eventTimelineMap[matchingId].push({
                                 time: counter,
                                 patientId: patient,
+                                sampleId:samples[counter],
                                 eventDate: start,
                                 eventEndDate: end,
                                 varId: matchingId
@@ -614,6 +613,13 @@ class RootStore {
         return sampleMapper;
     }
 
+    /**
+     * checks of the selected event matches the current event
+     * @param type
+     * @param value
+     * @param event
+     * @returns {*}
+     */
     doesEventMatch(type, value, event) {
         let matchingId = null;
         if (type === event.eventType) {

@@ -41,7 +41,6 @@ class OriginalVariable {
                         }
                     }
                 }
-                console.log(domain);
                 return domain;
             }
         });

@@ -174,7 +174,7 @@ const MainView = observer(class MainView extends React.Component {
 
     getGlobalView(timepointPositions, svgHeight, svgWidth) {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
-        const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
+        const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
         const axisHorizontalZoom = (300 - this.state.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (<Row>
             <Col xs={2} md={2} style={{padding: 0}}>
@@ -182,7 +182,7 @@ const MainView = observer(class MainView extends React.Component {
                             width={250} height={svgHeight} maxTimeInDays={maxTime}/>
                 <GlobalRowOperators {...this.props} width={300}
                                     timepointVarHeight={(this.props.currentVariables.sample.length + 1) * 19}
-                                    eventVarHeight={this.props.store.timepointStores.between.variableStore.getVariablesOfType("event").length * 19}
+                                    eventVarHeight={this.props.store.variableStores.between.getVariablesOfType("event").length * 19}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}/>
 

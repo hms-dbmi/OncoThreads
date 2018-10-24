@@ -8,66 +8,26 @@ creates a heatmap timepoint
  */
 const TimelineTimepoint = observer(class TimelineTimepoint extends React.Component {
 
-    getGlobalTimepoint() {
+
+    getAllEvents(variableId, index, array) {
         const _self = this;
-        let rows = [];
-        //let previousYposition=0;
-
-        //let count=0;
-
-        let globalIndex = 0;
-
-        //let ypi=_self.props.ypi;
-
-
-        //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
-        this.props.timepoint.forEach(function (row, i) {
-            //get the correct color scale depending on the type of the variable (STRING, continous or binary)
-            //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
-            //let color = x => { return "#ffd92f" };
-
-
-            //color = _self.props.currentVariables.filter(d=>d.id===_self.props.store.rootStore.globalPrimary)[0].colorScale;
-
-            let color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
-
-            //if(row.variable===_self.props.store.rootStore.globalPrimary){
-
-
-            if (row.variable === _self.props.store.rootStore.globalPrimary) {
-                rows.push(<g key={row.variable + i + globalIndex}>
-
-                    <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                 height={_self.props.visMap.primaryHeight}
-                                 color={color}
-                                 x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                 ypi={_self.props.ypi}
-                                 ht={_self.props.ht}
-                                 dtype={_self.props.currentVariables[i].datatype}/>;
-
-                </g>);
-
-            }
-
-
-            globalIndex++;
-        });
-        return (rows)
-    }
-
-
-    getAllEvents(variable, index, array) {
-        const _self = this;
-        if (variable.type === "event") {
-            this.props.store.rootStore.eventTimelineMap[variable.id].filter(d => d.time === index).forEach(d => array.push(d));
+        let current = this.props.store.variableStores.between.referencedVariables[variableId];
+        if (current.type === "event") {
+            this.props.store.rootStore.eventTimelineMap[variableId].filter(d => d.time === index).forEach(d => array.push(d));
+            return array;
         }
-        else {
-            variable.originalIds.forEach(function (f) {
-                _self.getAllEvents(_self.props.store.timepointStores[_self.props.timepointType].variableStore.allVariables[f], index, array);
+        else if (current.type === "derived") {
+            current.originalIds.forEach(function (f) {
+                _self.getAllEvents(f, index, array);
             });
             return array;
         }
+        else {
+            return array;
+        }
     }
+
+
 
     getGlobalTimepointWithTransition() {
         const _self = this;
@@ -84,7 +44,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
 
-        if (!(_self.props.store.timepointStores.sample.variableStore.getTotalNumberOfVariables() === 0)) {
+        if (!(_self.props.store.variableStores.sample.getNumberOfReferencedVariables() === 0)) {
             index = Math.floor(_self.props.index / 2);
         }
 
@@ -100,11 +60,8 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
             if (_self.props.timepointType === 'between') {
                 opacity = 0.5;
                 color = _self.props.visMap.globalTimelineColors;
-                let events = [];
-                let eventVar = _self.props.store.timepointStores[_self.props.timepointType].variableStore.getRelatedVariables("event");
-                eventVar.forEach(function (d) {
-                    events = _self.getAllEvents(d, index, events);
-                });
+                let events = _self.getAllEvents(row.variable, index, []);
+                events = events.filter((d) => _self.props.store.variableStores.between.referencedVariables[row.variable].mapper[d.sampleId]);
                 rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -112,9 +69,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                  color={color}
                         //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                  x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                 ypi={_self.props.ypi}
                                  max={_self.props.max}
-                                 ht={_self.props.ht}
                                  events={events}
                                  opacity={opacity}
                                  rectWidth={_self.props.visMap.sampleRectWidth / 2}
@@ -128,14 +83,8 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             }
             else {
-
-                //color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
-
-
-                color = _self.props.currentVariables.filter(d => d.id === _self.props.store.rootStore.globalPrimary)[0].colorScale;
-
-                //if (row.variable === _self.props.store.rootStore.globalPrimary) {
-                if (row.variable === _self.props.store.rootStore.globalPrimary) {
+                if (row.variable === _self.props.store.globalPrimary) {
+                    color = _self.props.currentVariables.filter(d => d.id === _self.props.store.globalPrimary)[0].colorScale;
                     rows.push(<g key={row.variable + i + globalIndex}>
 
                         <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
@@ -143,15 +92,11 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                                      color={color}
                             //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                      x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                     ypi={_self.props.ypi}
                                      max={_self.props.max}
-                                     ht={_self.props.ht}
                                      opacity={opacity}
                                      dtype={_self.props.currentVariables[i].datatype}
                             //fillBin={fillBin}
-
                         />
-
                     </g>);
                 }
             }
@@ -162,16 +107,10 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
     render() {
-        if (!this.props.store.transitionOn) {
-            return (
-                this.getGlobalTimepoint()
-            )
-        }
-        else {
-            return (
-                this.getGlobalTimepointWithTransition()
-            )
-        }
+
+        return (
+            this.getGlobalTimepointWithTransition()
+        )
 
     }
 });
