@@ -241,6 +241,17 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
+
+
+                    <ButtonGroup vertical block>
+                            <Button style={{textAlign: "left"}} bsSize="medium" color="secondary"
+                                    //onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
+                                    onClick={() =>this.addVarModal(this.createClinicalAttributesList())}
+                                    key={this.props.mutationCount}>{"Add Variables"}
+                            </Button>
+                    </ButtonGroup>
+
+
                 <h4>Sample variables</h4>
                 <Panel>
                     <Panel.Heading>
@@ -249,13 +260,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                         </Panel.Title>
                     </Panel.Heading>
 
-                    <ButtonGroup vertical block>
-                            <Button style={{textAlign: "left"}} bsSize="xsmall"
-                                    //onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
-                                    onClick={() =>this.addVarModal(this.createClinicalAttributesList())}
-                                    key={this.props.mutationCount}>{"Add Variable"}
-                            </Button>
-                        </ButtonGroup>
                     <Select
                         type="text"
                         searchable={true}
