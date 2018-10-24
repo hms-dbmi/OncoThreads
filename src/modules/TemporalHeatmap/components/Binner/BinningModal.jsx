@@ -75,7 +75,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
                 </Modal.Header>
                 <Modal.Body>
                     {alert}
-                    <BinSelector data={this.props.data} numBins={this.props.bins} width={450} height={300}
+                    <BinSelector data={this.props.data} width={450} height={300}
                                  variableName={this.props.variableName}
                                  handleBinChange={this.props.handleBinChange}
                                  transformXFunction={this.state.transformXFunction}

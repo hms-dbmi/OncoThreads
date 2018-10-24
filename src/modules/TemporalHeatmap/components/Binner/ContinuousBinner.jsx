@@ -10,7 +10,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         super(props);
         this.data = props.store.getAllValues(props.variable, props.type);
         this.state = {
-            bins: [d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)],
+            bins: this.getInitialBins(),
             binNames: ["Bin 1", "Bin 2"]
         };
         this.handleBinChange = this.handleBinChange.bind(this);
@@ -25,9 +25,26 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      * @param bins
      */
     handleBinChange(bins) {
+
         this.setState({
-            bins: bins
+            bins: bins,
         })
+    }
+     getBinNames(bins) {
+        let binNames = [];
+        for (let i = 1; i < bins.length; i++) {
+            binNames.push(Math.round(bins[i - 1]) + " - " + bins[i])
+        }
+        return binNames;
+    }
+
+    getInitialBins() {
+        let min = d3.min(this.data);
+        let max = d3.max(this.data);
+
+        let med = (d3.max(this.data) + d3.min(this.data)) / 2;
+
+        return [min, max, med];
     }
 
     handleNumberOfBinsChange(number) {

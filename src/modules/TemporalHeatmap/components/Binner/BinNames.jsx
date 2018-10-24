@@ -13,7 +13,7 @@ const BinNames = observer(class BinNames extends React.Component {
                 <Col sm={10} key={"Bin" + (i + 1) + "input"}>
                     <FormControl
                         onChange={(e) => this.props.handleBinNameChange(e, i)} type="text"
-                        defaultValue={this.props.binNames[i]}/></Col>]);
+                        placeholder={this.props.binNames[i]}/></Col>]);
         }
         return (
             <Form horizontal>
