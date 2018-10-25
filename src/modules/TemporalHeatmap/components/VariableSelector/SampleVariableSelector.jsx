@@ -12,7 +12,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         super();
         this.state = {
             buttonClicked: "",
-            clinicalOpen: true,
             mutationIcon: "caret-right",
             color: '',
             geneListString: '',
@@ -44,10 +43,10 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * opens the binning modal
      * @param id
      */
-    addVarModal(list) {
+    addVarModal() {
         console.log("show list of vars");
 
-        this.props.openAddModal(list);
+        this.props.openAddModal();
     }
 
 
@@ -115,27 +114,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                     </div>
                 </div>);
             options.push({value: d.variable, label: lb})
-        });
-        return options;
-    }
-
-    createVarList() {
-        let options = [];
-        //const _self = this;
-        this.props.clinicalSampleCategories.forEach(function (d) {
-            /*let icon = null;
-            if (d.datatype === "NUMBER") {
-                icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
-            }
-            let lb = (
-                <div onMouseEnter={(e) => {
-                    //console.log(d.variable);
-                    _self.props.showTooltip(e, d.variable, d.description);
-                }} onMouseLeave={_self.props.hideTooltip}>
-                    {icon}{d.variable}
-                </div>
-            );*/
-            options.push(d.variable)
         });
         return options;
     }
@@ -258,7 +236,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                     <ButtonGroup vertical block>
                             <Button style={{textAlign: "left"}} bsSize="small" color="secondary"
                                     //onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
-                                    onClick={() =>this.addVarModal(this.createClinicalAttributesList())}
+                                    onClick={() =>this.addVarModal()}
                                     key={this.props.mutationCount}>{"Add Variables"}
                             </Button>
                     </ButtonGroup>

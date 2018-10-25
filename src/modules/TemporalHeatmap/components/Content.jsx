@@ -42,7 +42,6 @@ const Content = observer(class Content extends React.Component {
             contextY: 0,
             showContextMenu: false,
             showContextMenuHeatmapRow: false,
-            varList:"",
 
             addModalIsOpen: false,
         }
@@ -81,21 +80,20 @@ const Content = observer(class Content extends React.Component {
         });
     }
 
-    
+
     closeModal() {
         this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, callback: null});
     }
 
-    openAddModal(list) {
+    openAddModal() {
         //let data = this.props.rootStore.timepointStore.getAllValues(variable);
         this.setState({
             addModalIsOpen: true,
-            varList: list
-           // clickedTimepoint: timepointIndex,
-           // clickedVariable: variable,
-           // type: type,
-           // followUpFunction: fun,
-           // binningData: data,
+            // clickedTimepoint: timepointIndex,
+            // clickedVariable: variable,
+            // type: type,
+            // followUpFunction: fun,
+            // binningData: data,
         });
 
         console.log("In openAddModal()");
@@ -179,14 +177,14 @@ const Content = observer(class Content extends React.Component {
     getVarListModal() {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
-                                    varList={this.state.varList}
-                                    closeAddModal={this.closeAddModal}
-                                    currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
-                                    showTooltip={this.showTooltip}
-                                    hideTooltip={this.hideTooltip}
-                                    store={this.props.rootStore.sampleTimepointStore} 
-                                    //store={this.props.rootStore.timepointStore}
-                                    //visMap={this.props.rootStore.visStore}
+                                 closeAddModal={this.closeAddModal}
+                                 varList={this.props.rootStore.clinicalSampleCategories}
+                                 currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
+                                 showTooltip={this.showTooltip}
+                                 hideTooltip={this.hideTooltip}
+                                 store={this.props.rootStore.timepointStore.variableStores.sample}
+                //store={this.props.rootStore.timepointStore}
+                //visMap={this.props.rootStore.visStore}
             />);
         }
         else {
@@ -291,7 +289,8 @@ const Content = observer(class Content extends React.Component {
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>
-                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} hideContextMenu={this.hideContextMenu} contextX={this.state.x}
+                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu}
+                              hideContextMenu={this.hideContextMenu} contextX={this.state.x}
                               contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
                               clickedVariable={this.state.clickedVariable}
                               type={this.state.contextType}
