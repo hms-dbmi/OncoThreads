@@ -22,7 +22,7 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
         this.props.timepoint.forEach(function (d, i) {
             const transform = "translate(" + previousXPosition + ",0)";
             let stroke = "none";
-            if (_self.isSelected(d.patients)&&!_self.props.advancedSelection) {
+            if (_self.isSelected(d.patients) && !_self.props.advancedSelection) {
                 stroke = "black";
             }
             partitions.push(<g key={d.partition} style={{backgroundColor: "darkgray"}}

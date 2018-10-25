@@ -1,18 +1,60 @@
-import {extendObservable} from "mobx";
+import {extendObservable, observe} from "mobx";
 import OriginalVariable from "./OriginalVariable";
 import DerivedVariable from "./DerivedVariable";
 import EventVariable from "./EventVariable";
+import MapperCombine from "./MapperCombineFunctions";
+import MultipleTimepointsStore from "./MultipleTimepointsStore";
 
 /*
 Store containing information about variables
  */
 class VariableStore {
-    constructor(rootStore) {
+    constructor(rootStore, structure, type) {
+        this.childStore = new MultipleTimepointsStore(rootStore, structure, type);
         this.rootStore = rootStore;
-        this.allVariables = [];
+        this.type = type;
+        //Variables that are referenced (displayed or used to create a derived variable)
+        this.referencedVariables = {};
         extendObservable(this, {
+            //List of ids of currently displayed variables
             currentVariables: [],
         });
+        //Observe the change and update timepoints accordingly
+        observe(this.currentVariables, (change) => {
+            if (change.type === 'splice') {
+                if (change.added.length > 0) {
+                    if (this.type === "between" && this.currentVariables.length === 1) {
+                        this.rootStore.timepointStore.toggleTransition()
+                    }
+                    change.added.forEach(d => this.childStore.addHeatmapRows(d, this.getById(d).mapper))
+                }
+                if (change.removed.length > 0) {
+                    if (this.type === "between" && this.currentVariables.length === 0) {
+                        this.rootStore.timepointStore.toggleTransition()
+                    }
+                    if (this.type==="sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
+                        this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
+                    }
+                    change.removed.forEach(d => this.childStore.removeHeatmapRows(d));
+                }
+            }
+            else if (change.type === "update") {
+                this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
+            }
+            this.rootStore.timepointStore.regroupTimepoints();
+
+        });
+    }
+
+    /**
+     * Update children if structure changes
+     * @param structure
+     * @param order
+     * @param names
+     */
+    update(structure, order, names) {
+        this.childStore.updateTimepointStructure(structure, order, names);
+        this.currentVariables.forEach(d => this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper))
     }
 
     /**
@@ -20,91 +62,83 @@ class VariableStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        this.currentVariables.splice(this.currentVariables.map(function (d) {
-            return d.id
-        }).indexOf(variableId), 1);
-        let isIncluded = false;
-        this.currentVariables.forEach(function (d) {
-            if (d.derived) {
-                if (d.originalIds.includes(variableId)) {
-                    isIncluded = true;
-                }
+        let name = this.getById(variableId).name;
+        this.currentVariables.splice(this.currentVariables.indexOf(variableId), 1);
+        this.removeReferences(variableId);
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", +name, true);
+    }
+
+    /**
+     * Decrement the referenced property of all the variables which were used by the current variable (and their "child variables"). If the referenced property is 0 remove the variable
+     * @param currentId
+     */
+    removeReferences(currentId) {
+        const _self = this;
+        if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
+            this.referencedVariables[currentId].originalIds.forEach(function (d) {
+                _self.removeReferences(d);
+            });
+        }
+        this.referencedVariables[currentId].referenced -= 1;
+        if (this.referencedVariables[currentId].referenced === 0) {
+            if (this.referencedVariables[currentId].type === "event") {
+                delete this.rootStore.eventTimelineMap[currentId];
             }
-        });
-        if (!isIncluded) {
-            this.allVariables.splice(this.allVariables.map(function (d) {
-                return d.id;
-            }).indexOf(variableId), 1);
+            delete this.referencedVariables[currentId];
         }
     }
 
     /**
-     * adds an original variable to the current variables and to all variables
+     * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
+     * @param currentId
+     */
+    updateReferences(currentId) {
+        const _self = this;
+        if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
+            this.referencedVariables[currentId].originalIds.forEach(function (d) {
+                _self.updateReferences(d);
+            });
+        }
+        _self.referencedVariables[currentId].referenced += 1;
+    }
+
+    /**
+     * adds an original variable. If display is true the variable will be added to the current variables
      * @param id
      * @param name
      * @param datatype
      * @param description
-     * @param domain
      * @param range
+     * @param display
+     * @param mapper
      */
-    addOriginalVariable(id, name, datatype, description, domain, range) {
-        const newVariable = new OriginalVariable(id, name, datatype, description,domain, range);
-        this.currentVariables.push(newVariable);
-        this.allVariables.push(newVariable);
+    addOriginalVariable(id, name, datatype, description, range, display, mapper) {
+        if (!this.isReferenced(id)) {
+            this.referencedVariables[id] = new OriginalVariable(id, name, datatype, description, range, mapper);
+        }
+        if (display && !this.isDisplayed(id)) {
+            this.updateReferences(id);
+            this.currentVariables.push(id);
+            this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
+        }
     }
 
     /**
-     * adds a derived variable consisting of a combination of event variables
-     * @param newId
-     * @param name
+     * add an event variable. If display is true the variable will be added to the current variables
      * @param eventType
-     * @param selectedVariables
-     * @param logicalOperator
-     * @param domain
-     * @param range
+     * @param selectedVariable
+     * @param display
      */
-    addCombinedEventVariable(newId, name, eventType, selectedVariables, logicalOperator, domain, range) {
+    addEventVariable(eventType, selectedVariable, display) {
         const _self = this;
-        let description="";
-        selectedVariables.forEach(function (f) {
-             if(description!==""){
-                    description+=" -"+logicalOperator+"- ";
-                }
-                description+=f.name;
-            if (!_self.allVariables.map(function (d) {
-                return d.id;
-            }).includes(f.id)) {
-                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, f.eventType);
-                _self.allVariables.push(newVariable);
-            }
-        });
-        let combinedEvent = new DerivedVariable(newId, name, "binary", description, selectedVariables.map(function (d, i) {
-            return d.id;
-        }), logicalOperator, null, domain);
-        this.allVariables.push(combinedEvent);
-        this.currentVariables.push(combinedEvent);
-    }
-
-    /**
-     * adds multiple single events at once (w/o combining)
-     * @param eventType
-     * @param selectedVariables
-     */
-    addSeperateEventVariables(eventType, selectedVariables){
-        const _self=this;
-        selectedVariables.forEach(function (f) {
-            if (!_self.allVariables.map(function (d) {
-                return d.id;
-            }).includes(f.id)) {
-                const newVariable = new EventVariable(f.id, f.name, "binary", eventType, f.eventType);
-                _self.allVariables.push(newVariable);
-                _self.currentVariables.push(newVariable);
-            }
-            else if(!_self.hasVariable(f.id)){
-                _self.currentVariables.push(_self.getByIdAllVariables(f.id));
-
-            }
-        });
+        if (!this.isReferenced(selectedVariable.id)) {
+            _self.referencedVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, this.rootStore.getSampleEventMapping(eventType, selectedVariable));
+        }
+        if (!(_self.currentVariables.includes(selectedVariable.id)) && display) {
+            this.updateReferences(selectedVariable.id);
+            _self.currentVariables.push(selectedVariable.id);
+            this.rootStore.undoRedoStore.saveVariableHistory("ADD", selectedVariable.name, true);
+        }
     }
 
     /**
@@ -112,14 +146,17 @@ class VariableStore {
      * @param id
      * @param name
      * @param datatype
+     * @param description
      * @param originalIds
      * @param modificationType
      * @param modification
      */
-    addDerivedVariable(id, name, datatype, originalIds, modificationType, modification) {
-        const newVariable = new DerivedVariable(id, name, datatype, originalIds, modificationType, modification);
-        this.currentVariables.push(newVariable);
-        this.allVariables.push(newVariable);
+    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification) {
+        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
+        this.updateReferences(id);
+        this.currentVariables.push(id);
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
+
     }
 
     /**
@@ -127,69 +164,119 @@ class VariableStore {
      * @param id
      * @param name
      * @param datatype
+     * @param description
      * @param originalId
      * @param modificationType
      * @param modification
-     * @param domain
      */
-    modifyVariable(id, name, datatype, description, originalId, modificationType, modification, domain) {
-        const newVariable = new DerivedVariable(id, name, datatype,description, [originalId], modificationType, modification, domain);
-        const oldIndex = this.currentVariables.map(function (d) {
-            return d.id;
-        }).indexOf(originalId);
-        this.currentVariables[oldIndex] = newVariable;
-        this.allVariables.push(newVariable);
+    modifyVariable(id, name, datatype, description, originalId, modificationType, modification) {
+        let oldName = this.referencedVariables[originalId].name;
+        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, [this.referencedVariables[originalId].mapper]));
+        this.updateReferences(id);
+        this.currentVariables[this.getIndex(originalId)] = id;
+        this.removeReferences(originalId);
+        this.rootStore.undoRedoStore.saveVariableModification(modificationType, oldName, true);
     }
 
-    /**
-     * checks if a variable exists in current variables
-     * @param id
-     * @returns {boolean}
-     */
-    hasVariable(id) {
-        return this.currentVariables.map(function (d) {
-            return d.id
-        }).includes(id)
-    }
-
-    getVariableIndex(id) {
-        return this.currentVariables.map(function (d) {
-            return d.id;
-        }).indexOf(id)
-    }
 
     /**
      * gets a variable by id
      * @param id
      */
     getById(id) {
-        return this.currentVariables.filter(function (d) {
-            return d.id === id
-        })[0];
-    }
-
-    getByIdAllVariables(id) {
-        return this.allVariables.filter(function (d) {
-            return d.id === id
-        })[0];
-    }
-
-    getByOriginalId(id) {
-        return this.allVariables.filter(d => !d.derived).filter(function (d) {
-            return d.id === id
-        })[0];
-
+        return this.referencedVariables[id];
     }
 
     /**
-     * checks if a variable is continuous
-     * @param variableId
+     * check if a variable is referenced (is in referencedVariables)
+     * @param id
      * @returns {boolean}
      */
-    isContinuous(variableId) {
-        return this.currentVariables.filter(function (d) {
-            return d.id === variableId;
-        })[0].datatype === "NUMBER";
+    isReferenced(id) {
+        return id in this.referencedVariables;
+    }
+
+    /**
+     * check if a variable is displayed (is in currentVariables)
+     * @param id
+     * @returns {boolean}
+     */
+    isDisplayed(id) {
+        return this.currentVariables.includes(id);
+    }
+
+    /**
+     * gets the index of a variable in current variables (-1 if not contained)
+     * @param id
+     * @returns {number}
+     */
+    getIndex(id) {
+        return this.currentVariables.indexOf(id);
+    }
+
+    /**
+     * gets complete current variables (not only ids)
+     * @returns {*}
+     */
+    getCurrentVariables() {
+        return this.currentVariables.map(d => this.referencedVariables[d]);
+    }
+
+    /**
+     * gets variables of a certain type
+     * @param type
+     * @returns {Array}
+     */
+    getVariablesOfType(type) {
+        let typeVar = [];
+        for (let variableId in this.referencedVariables) {
+            if (this.referencedVariables[variableId].type === type) {
+                typeVar.push(this.referencedVariables[variableId]);
+            }
+        }
+        return typeVar;
+    }
+
+    /**
+     * gets the number of referenced Variables
+     * @returns {number}
+     */
+    getNumberOfReferencedVariables() {
+        return (Object.keys(this.referencedVariables).length);
+    }
+
+    /**
+     * gets all current variables which are related by type (related = derived from)
+     * @param variableType
+     * @returns {any[]}
+     */
+    getRelatedVariables(variableType) {
+        const _self = this;
+        let relatedVariables = [];
+        this.currentVariables.forEach(function (d) {
+            if (_self.recursiveSearch(d, variableType)) {
+                relatedVariables.push(d);
+            }
+        });
+        return relatedVariables.map(d => this.referencedVariables[d])
+    }
+
+    /**
+     * checks is a variable is derived from a variable with a certain type
+     * @param id
+     * @param variableType
+     * @returns {boolean}
+     */
+    recursiveSearch(id, variableType) {
+        if (this.referencedVariables[id].type === variableType) {
+            return true;
+        }
+        else if (this.referencedVariables[id].type === "derived") {
+            return this.referencedVariables[id].originalIds.map(d => this.recursiveSearch(d, variableType)).includes(true);
+        }
+        else {
+            return false;
+        }
     }
 }
 

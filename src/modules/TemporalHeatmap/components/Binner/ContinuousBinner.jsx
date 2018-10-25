@@ -8,9 +8,9 @@ import uuidv4 from 'uuid/v4';
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        this.data = props.store.getAllValues(props.variable);
+        this.data = props.store.getAllValues(props.variable, props.type);
         this.state = {
-            bins: [d3.min(this.data) - 1, Math.round((d3.max(this.data) + d3.min(this.data)) / 2), d3.max(this.data)],
+            bins: this.getInitialBins(),
             binNames: ["Bin 1", "Bin 2"]
         };
         this.handleBinChange = this.handleBinChange.bind(this);
@@ -21,13 +21,30 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     /**
-     * handles bin change (sliders are moved)
+     * handles updateValues change (sliders are moved)
      * @param bins
      */
     handleBinChange(bins) {
+
         this.setState({
-            bins: bins
+            bins: bins,
         })
+    }
+     getBinNames(bins) {
+        let binNames = [];
+        for (let i = 1; i < bins.length; i++) {
+            binNames.push(Math.round(bins[i - 1]) + " - " + bins[i])
+        }
+        return binNames;
+    }
+
+    getInitialBins() {
+        let min = d3.min(this.data);
+        let max = d3.max(this.data);
+
+        let med = (d3.max(this.data) + d3.min(this.data)) / 2;
+
+        return [min, max, med];
     }
 
     handleNumberOfBinsChange(number) {
@@ -59,13 +76,19 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      */
     handleApply() {
         const newId = uuidv4();
-        let saveToHistory = false;
-        if (this.props.followUpFunction === null) {
-            saveToHistory = true;
+        let currVar = this.props.store.variableStores[this.props.type].referencedVariables[this.props.variable];
+        if (this.props.callback === null) {
+            this.props.store.variableStores[this.props.type].addDerivedVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", [currVar.id], "binning", {
+                bins: this.state.bins,
+                binNames: this.state.binNames
+            });
         }
-        this.props.store.binVariable(newId, this.props.variable, this.state.bins, this.state.binNames, this.props.type, saveToHistory);
-        if (!saveToHistory) {
-            this.props.followUpFunction(this.props.timepointIndex, newId);
+        else {
+            this.props.store.variableStores[this.props.type].modifyVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", currVar.id, "binning", {
+                bins: this.state.bins,
+                binNames: this.state.binNames
+            });
+            this.props.callback(newId);
         }
         this.close();
     }
@@ -82,10 +105,10 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
  
     render() {
-        let variableName = this.props.store.variableStore[this.props.type].getById(this.props.variable).name;
+        let variableName = this.props.store.variableStores[this.props.type].getById(this.props.variable).name;
         return (
             <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins}
-                          showAlert={this.props.timepointIndex!==null}
+                          showAlert={this.props.callback !== null}
                           variableName={variableName} variable={this.props.variable}
                           handleBinChange={this.handleBinChange}
                           handleNumberOfBinsChange={this.handleNumberOfBinsChange}

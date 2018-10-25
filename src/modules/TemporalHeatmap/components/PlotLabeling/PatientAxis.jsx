@@ -8,8 +8,6 @@ import {observer} from "mobx-react";
 const PatientAxis = observer(class PatientAxis extends React.Component {
 
 
-  
-
     render() {
         return (
             <svg width={this.props.width} height={this.props.height}>
