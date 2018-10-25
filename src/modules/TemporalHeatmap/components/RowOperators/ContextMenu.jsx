@@ -21,12 +21,12 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
         const _self = this;
         if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                this.props.openBinningModal(this.props.clickedVariable, this.type, true,true, function (newID) {
                     _self.props.store.childStore.applyActionToAll(_self.props.localIndex, newID, _self.props.action);
                 });
             } else {
                 if (this.props.store.childStore.atLeastOneGrouped()) {
-                    this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                    this.props.openBinningModal(this.props.clickedVariable, this.type, true,true, function (newID) {
                         _self.props.store.childStore.applyActionToAll(_self.props.localIndex, newID, _self.props.action);
                     });
                 }
@@ -46,12 +46,12 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
         const _self = this;
         if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                this.props.openBinningModal(this.props.clickedVariable, this.type, true,true, function (newID) {
                     _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, _self.props.action);
                 });
             } else {
                 if (this.props.store.childStore.atLeastOneGrouped()) {
-                    this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                    this.props.openBinningModal(this.props.clickedVariable, this.type, true,true, function (newID) {
                         _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, this.props.action);
                     });
                 }
@@ -71,12 +71,12 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
         const _self = this;
         if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                this.props.openBinningModal(this.props.clickedVariable, this.type, true, true, function (newID) {
                     _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
                 });
             } else {
                 if (this.props.store.childStore.atLeastOneGrouped()) {
-                    this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                    this.props.openBinningModal(this.props.clickedVariable, this.type, true, true, function (newID) {
                         _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
                     });
                 }

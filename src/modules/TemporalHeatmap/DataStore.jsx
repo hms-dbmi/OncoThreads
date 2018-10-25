@@ -127,6 +127,7 @@ class DataStore {
      */
     getAllValues(variable, type) {
         let allValues = [];
+        console.log(variable,type,this.variableStores[type].getById(variable));
         let mapper = this.variableStores[type].getById(variable).mapper;
         let structure = type === "sample" ? this.rootStore.timepointStructure : this.rootStore.transitionStructure;
         structure.forEach(d => d.forEach(f => allValues.push(mapper[f.sample])));

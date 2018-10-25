@@ -67,5 +67,12 @@ class MapperCombine {
         }
         return newMapper;
     }
+    static modifyCategories(mapper,categoryMapping){
+        let newMapper={};
+        for (let entry in mapper){
+            mapper[entry]=categoryMapping[mapper[entry]];
+        }
+        return newMapper;
+    }
 }
 export default MapperCombine;

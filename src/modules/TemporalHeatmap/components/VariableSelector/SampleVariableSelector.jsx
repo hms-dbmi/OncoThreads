@@ -36,7 +36,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      */
     bin(id, name, description) {
         this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
-        this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
+        this.props.openBinningModal(id, "sample", null);
     }
 
      /**
@@ -231,11 +231,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
-
-
                     <ButtonGroup vertical block>
                             <Button style={{textAlign: "left"}} bsSize="small" color="secondary"
-                                    //onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
                                     onClick={() =>this.addVarModal()}
                                     key={this.props.mutationCount}>{"Add Variables"}
                             </Button>

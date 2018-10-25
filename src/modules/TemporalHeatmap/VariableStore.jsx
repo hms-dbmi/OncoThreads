@@ -32,7 +32,7 @@ class VariableStore {
                     if (this.type === "between" && this.currentVariables.length === 0) {
                         this.rootStore.timepointStore.toggleTransition()
                     }
-                    if (this.type==="sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
+                    if (this.type === "sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
                         this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
                     }
                     change.removed.forEach(d => this.childStore.removeHeatmapRows(d));
@@ -150,13 +150,23 @@ class VariableStore {
      * @param originalIds
      * @param modificationType
      * @param modification
+     * @param display
      */
-    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification) {
+    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, display) {
         this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
+        console.log(id);
+        if (display) {
+            this.updateReferences(id);
+            this.currentVariables.push(id);
+            this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
+        }
+
+    }
+
+    addDerivedToCurrent(id){
+        console.log(id);
         this.updateReferences(id);
         this.currentVariables.push(id);
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
-
     }
 
     /**

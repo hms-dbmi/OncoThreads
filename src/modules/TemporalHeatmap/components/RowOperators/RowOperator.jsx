@@ -24,7 +24,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         group(timepoint, variable) {
             if (this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newID) {
+                this.props.openBinningModal(variable, timepoint.type, true,true, function (newID) {
                     timepoint.group(newID);
                 });
             }
@@ -42,7 +42,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         sortTimepoint(timepoint, variable) {
             if (timepoint.isGrouped && this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
+                this.props.openBinningModal(variable, timepoint.type, true,true, function (newId) {
                     timepoint.group(newId);
                 });
             }
@@ -74,7 +74,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         promote(timepoint, variable) {
             if (timepoint.isGrouped && this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
+                this.props.openBinningModal(variable, timepoint.type,true,true, function (newId) {
                     timepoint.promote(newId)
                 });
             }

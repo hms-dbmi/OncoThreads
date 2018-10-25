@@ -9,14 +9,14 @@ import FontAwesome from 'react-fontawesome';
 import SampleVariableSelector from "./VariableSelector/SampleVariableSelector"
 import BetweenSampleVariableSelector from "./VariableSelector/BetweenSampleVariableSelector"
 import MainView from "./MainView"
-import ContinuousBinner from "./Binner/ContinuousBinner"
+import ContinuousBinner from "./VariableModals/Binner/ContinuousBinner"
 import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
 
 import ContextMenuHeatmapRow from "./ContextMenuHeatmapRow";
 
-import AddVarModal from "./Modals/AddVarModal";
+import AddVarModal from "./VariableModals/AddVarModal";
 
 /*
 Creates all components except for the top navbar
@@ -29,6 +29,8 @@ const Content = observer(class Content extends React.Component {
             callback: null,
             clickedVariable: "",
             clickedTimepoint: -1,
+            display:false,
+            modify:false,
             type: "",
             x: 0,
             y: 0,
@@ -70,12 +72,13 @@ const Content = observer(class Content extends React.Component {
      * @param type: type of timepoint (sample/between)
      * @param callback: Function which should be executed after the binning was applied: either group or promote
      */
-    openModal(variable, type, timepointIndex, callback) {
+    openModal(variable, type, display, modify,callback) {
         this.setState({
             modalIsOpen: true,
-            clickedTimepoint: timepointIndex,
             clickedVariable: variable,
             type: type,
+            display:display,
+            modify:modify,
             callback: callback,
         });
     }
@@ -162,7 +165,9 @@ const Content = observer(class Content extends React.Component {
         if (this.state.modalIsOpen) {
             return (<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
                                       variable={this.state.clickedVariable}
-                                      timepointIndex={this.state.clickedTimepoint} type={this.state.type}
+                                      type={this.state.type}
+                                      display={this.state.display}
+                                      modify={this.state.modify}
                                       callback={this.state.callback}
                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
                                       visMap={this.props.rootStore.visStore}
@@ -178,6 +183,7 @@ const Content = observer(class Content extends React.Component {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
                                  closeAddModal={this.closeAddModal}
+                                 openBinningModal={this.openModal}
                                  varList={this.props.rootStore.clinicalSampleCategories}
                                  currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
                                  showTooltip={this.showTooltip}

@@ -30,7 +30,8 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
             bins: bins,
         })
     }
-     getBinNames(bins) {
+
+    getBinNames(bins) {
         let binNames = [];
         for (let i = 1; i < bins.length; i++) {
             binNames.push(Math.round(bins[i - 1]) + " - " + bins[i])
@@ -77,17 +78,19 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     handleApply() {
         const newId = uuidv4();
         let currVar = this.props.store.variableStores[this.props.type].referencedVariables[this.props.variable];
-        if (this.props.callback === null) {
+        if (!this.props.modify) {
             this.props.store.variableStores[this.props.type].addDerivedVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", [currVar.id], "binning", {
                 bins: this.state.bins,
                 binNames: this.state.binNames
-            });
+            }, this.props.display);
         }
         else {
             this.props.store.variableStores[this.props.type].modifyVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", currVar.id, "binning", {
                 bins: this.state.bins,
                 binNames: this.state.binNames
-            });
+            }, this.props.display);
+        }
+        if(this.props.callback!==null){
             this.props.callback(newId);
         }
         this.close();
@@ -103,7 +106,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         binNames[index] = e.target.value;
         this.setState({binNames: binNames})
     }
- 
+
     render() {
         let variableName = this.props.store.variableStores[this.props.type].getById(this.props.variable).name;
         return (

@@ -58,7 +58,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      */
     bin(id, name, description) {
         this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
-        this.props.openBinningModal(id, "between", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
+        this.props.openBinningModal(id, "between", null);
     }
 
     /**
