@@ -8,71 +8,17 @@ implements the icons and their functionality on the left side of the plot
 const GlobalRowOperator = observer(class GlobalRowOperator extends React.Component {
         constructor() {
             super();
-            //this.sortTimepoint = this.sortTimepoint.bind(this);
-            //this.group = this.group.bind(this);
-            //this.unGroup = this.unGroup.bind(this);
             this.promote = this.promote.bind(this);
-            this.handleDeleteLeave = this.handleDeleteLeave.bind(this);
+            this.position = 0;
         }
-
-
-        /**
-         * calls the store function to group a timepoint
-         * @param timepoint: timepoint to be grouped
-         * @param variable: Variable with which the timepoint will be grouped
-         */
-        /*group(timepoint, variable) {
-            console.log(variable,timepoint.type,this.props.store.isContinuous(variable,timepoint.type));
-            if (this.props.store.isContinuous(variable, timepoint.type)) {
-                this.props.openBinningModal(variable, timepoint.type, this.props.store.groupBinnedTimepoint, timepoint.globalIndex);
-            }
-            else {
-                timepoint.group(variable);
-            }
-        }*/
-
-        /**
-         * sorts a timepoint
-         * the variable has to be declared a primary variable, then the timepoint is sorted
-         * @param timepoint: timepoint to be sorted
-         * @param variable: Variable with which the timepoint should be sorted
-         */
-        /*sortTimepoint(timepoint, variable) {
-            if (timepoint.isGrouped && this.props.store.isContinuous(variable, timepoint.type)) {
-                this.props.openBinningModal(variable, timepoint.type, this.props.store.groupBinnedTimepoint, timepoint.globalIndex);
-            }
-            else {
-                timepoint.sort(variable, this.props.selectedPatients);
-                //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
-                if (this.props.store.rootStore.realTime) {
-                    this.props.store.applyPatientOrderToAll(timepoint.globalIndex);
-                }
-            }
-        }*/
-
-
-        /**
-         * ungoups a grouped timepoint
-         * @param timepoint: timepoint to be regrouped
-         * @param variable: variable which will be the future primary variable
-         */
-        /*unGroup(timepoint, variable) {
-            timepoint.unGroup(variable);
-        }*/
 
         /**
          * promotes a variable at a timepoint to a primary variable
-         * @param timepoint: timepoint where the primary variable is changes
          * @param variable: variable to be the primary variable
          */
-
-        promote(timepoint, variable) {
-           //this.props.store.rootStore.globalPrimary=variable;
-
-
-           if(this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable).length!==0){
-            this.props.store.rootStore.globalPrimary=this.props.store.variableStore.sample.allVariables.filter(d=>d.id===variable)[0].originalIds[0];
-           }
+        promote(variable) {
+            this.props.store.setGlobalPrimary(variable);
+            this.props.store.rootStore.undoRedoStore.saveGlobalHistory("PROMOTE");
         }
 
         /**
@@ -105,93 +51,28 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
         }
 
         /**
-         * highlights variable for deletion and shows tooltip
-         * @param e
-         * @param variable
-         */
-        handleDeleteEnter(e, variable) {
-            this.props.highlightVariable(variable);
-            this.props.showTooltip(e, "Delete variable from all timepoints")
-        }
-
-        /**
-         * unhighlights variable for deletion and hides tooltip
-         */
-        handleDeleteLeave() {
-            this.props.unhighlightVariable();
-            this.props.hideTooltip();
-        }
-
-        /**
          * handle click on delete button
          * @param variable
          * @param timepoint
          */
         handleDelete(variable, timepoint) {
-            this.props.unhighlightVariable();
-            this.props.hideTooltip();
-            
-            //if(this.props.store.currentVariables.sample.length>1){
-            if(timepoint.type==="between"||this.props.store.currentVariables[timepoint.type].length>1) {    
-                this.props.store.removeVariable(variable, timepoint.type);
-
-                this.promote(timepoint, 
-                        this.props.store.currentVariables.sample[this.props.store.currentVariables.sample.length-1].id);
+            if (timepoint.type === "between" || this.props.store.variableStores[timepoint.type].currentVariables.length > 1) {
+                this.props.store.variableStores[timepoint.type].removeVariable(variable);
+                if (timepoint.type === "sample") {
+                    this.promote(this.props.store.variableStores.sample.currentVariables[0]);
+                }
             }
-            else{
-                //this.props.store.rootStore.globalPrimary="";
+            else {
                 alert("Samples have to be represented by at least one variable");
 
             }
         }
 
-        /*getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseOver={(e) => this.props.showTooltip(e, "Sort timepoint after this variable")}
-                       onMouseOut={this.props.hideTooltip}>
-                <path fill="gray" d="M3,13H15V11H3M3,6V8H21V6M3,18H9V16H3V18Z"/>
-                <rect onClick={() => this.sortTimepoint(timepoint, variable)}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "sort")}
-                      width={iconScale * 24} height={24}
-                      fill="none"
-                      pointerEvents="visible"/>
-            </g>);
-        }*/
-
-        /*getGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Group timepoint after this variable")}
-                       onMouseLeave={this.props.hideTooltip}>
-                <path fill="gray"
-                      d="M12.5,19.5V3.47H14.53V19.5H12.5M9.5,19.5V3.47H11.53V19.5H9.5M4.5,7.5L8.53,11.5L4.5,15.47V12.47H1.5V10.5H4.5V7.5M19.5,15.47L15.5,11.5L19.5,7.5V10.5H22.5V12.47H19.5V15.47Z"/>
-                <rect onClick={() => this.group(timepoint, variable)}
-                      onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "group")}
-                      width={iconScale * 24} height={24}
-                      fill="none"
-                      pointerEvents="visible"/>
-            </g>);
-        }
-
-        getUnGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (
-                <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                   onMouseEnter={(e) => this.props.showTooltip(e, "Ungroup timepoint")}
-                   onMouseLeave={this.props.hideTooltip}>
-                    <path fill="gray"
-                          d="M9,11H15V8L19,12L15,16V13H9V16L5,12L9,8V11M2,20V4H4V20H2M20,20V4H22V20H20Z"/>
-                    <rect onClick={() => this.unGroup(timepoint, variable)}
-                          onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "group")}
-                          width={iconScale * 24} height={24}
-                          fill="none"
-                          pointerEvents="visible"/>
-                </g>);
-        }*/
-
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                   onMouseEnter={(e) => this.handleDeleteEnter(e, variable)}
-                   onMouseLeave={this.handleDeleteLeave}>
+                <g key={"delete" + variable} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                   onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
+                   onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
                           d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
                     <rect onClick={() => this.handleDelete(variable, timepoint)}
@@ -218,162 +99,106 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             else return minWidth;
         }
 
-        getRowLabel(timepoint, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
-            /* return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote this variable")}
-                        onMouseLeave={this.props.hideTooltip}>
-                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                       onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable,"promote")}
-                       onClick={() => this.promote(timepoint, variable)}>{GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}</text>
-             </g>);*/
-
+        getRowLabel(timepoint, variable, yPos, iconScale, width, fontWeight, fontSize) {
             const _self = this;
+            const currVar = this.props.store.variableStores[timepoint.type].getById(variable);
+            let label;
+            if (timepoint.type === 'between') {
+                if (currVar.type === 'event' || currVar.derived) {
+                    //let labels = [];
+                    //let oIds = currVar.originalIds;
+                    label = <g key={currVar.id}
+                               onMouseEnter={(e) => _self.props.showTooltip(e, currVar.name, currVar.description)}
+                               onMouseLeave={_self.props.hideTooltip}>
 
-            let fillC="#F00";
-            if (this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).datatype === "binary") {
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
+                            {GlobalRowOperator.cropText(currVar.name, fontSize, fontWeight, width - iconScale * 24 - fontSize)}
+                        </text>
+                        {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
+                        <rect key={"rect"}
+                              width={fontSize} height={fontSize}
+                              x={this.props.width - iconScale * 24 - fontSize}
+                              y={-fontSize + 2}
+                              fill={this.props.visMap.globalTimelineColors(currVar.id)}
+                              opacity={0.5}/>
+                    </g>;
+                    /*
+                    oIds.forEach(function (element, i) {
+                        let originalVar = _self.props.store.variableStores[timepoint.type].getById(element);
+                        if (originalVar.type === "event") {
+                            let c1 = ColorScales.getGlobalTimelineColors();
+                            let fillC = c1(currVar.id);
+                            let xT = GlobalRowOperator.getTextWidth(originalVar.name, fontSize);
+                            labels.push(<g key={element}
+                                           transform={"translate(0," + _self.position + ")"}
+                                           onMouseEnter={(e) => _self.props.showTooltip(e, originalVar.name, originalVar.description)}
+                                           onMouseLeave={_self.props.hideTooltip}>
+                                <rect key={"rect"}
+                                      width={fontSize} height={fontSize}
+                                      x={xT + 5} y={-fontSize + 2}
+                                      fill={fillC}
+                                      opacity={0.5}/>
+                                <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
+                                    {GlobalRowOperator.cropText(originalVar.name, fontSize, fontWeight, width - iconScale * 24)}
+                                </text>
+                            </g>);
+                        }
+                        _self.position += i * _self.props.store.rootStore.visStore.secondaryHeight;
 
-                let labels = [];
-                //var txtR=[];
-                let oIds = _self.props.store.variableStore[timepoint.type].getById(variable).originalIds;
 
-                //console.log(variable);
-
-                oIds.forEach(function (element, i) {
-
-                    let name = _self.props.store.variableStore[timepoint.type].getByIdAllVariables(element).name;
-
-
-                    //console.log(name1);
-
-                    //console.log(orId);
-                    let c1 = _self.props.visMap.globalTimelineColors;
-                    //let fillC = c1(element);
-
-                    if(fillC==="#F00"){
-                        fillC = c1(element);
+                    });
+                    if (oIds.length > 1) {
+                        labels.push(<rect key={variable} width={this.props.width}
+                                          height={yPos + (oIds.length - 0.8) * _self.props.store.rootStore.visStore.secondaryHeight}
+                                          strokeDasharray="5,5" strokeWidth={1} stroke={"grey"} fill={"none"}/>)
                     }
-
-                    //console.log(fillC);
-
-                    let xT = GlobalRowOperator.getTextWidth(name, fontSize);
-
-                    //console.log(xT);
-
-
-                    labels.push(<g key={element}
-                        transform={"translate(" + xPos + "," + (yPos + i * _self.props.store.rootStore.visStore.secondaryHeight) + ")scale(" + iconScale + ")"}
-
-                        onMouseLeave={_self.props.hideTooltip}>
-
-                        <rect key={"rect"} 
-                              width={15} height={15}
-                              x={xPos + xT + 5} y={yPos - 25}
-                              fill={fillC}
-                              opacity={0.5}
-                              
-                              />
-                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                             //onClick={() => this.promote(timepoint, variable)}
-                             > 
-                             {GlobalRowOperator.cropText(name, fontSize, fontWeight, width)}
-                           
-                           
-                            </text>
-                    </g>);
-
-
-                });
-
-                return labels;
-
+                    labels.push(_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, 0));
+                    return labels;*/
+                }
             }
 
             else {
-                return (<g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-
-                           onMouseLeave={this.props.hideTooltip}>
-
-                    <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                         // onContextMenu={(e) => this.props.showContextMenu(e, timepoint.globalIndex, variable, "promote")}
-
-
-                          onClick={() => this.promote(timepoint, variable)}
-                          >
-                          {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable,timepoint.type).name, fontSize, fontWeight, width)}
-                       
-                       
+                label =
+                    <g onMouseEnter={(e) => _self.props.showTooltip(e, "Promote variable " + currVar.name, currVar.description)}
+                       onMouseLeave={_self.props.hideTooltip}>>
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}
+                              onClick={() => this.promote(variable)}
+                        >
+                            {GlobalRowOperator.cropText(this.props.store.variableStores[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
                         </text>
-                </g>);
-
+                        {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
+                    </g>;
             }
+            this.position += this.props.visMap.secondaryHeight;
+            return label
         }
-
-        static getHighlightRect(height, width) {
-            return <rect height={height} width={width} fill="#e8e8e8"/>
-        }
-
 
         /**
          * Creates the Row operator for a timepoint
          */
         getRowOperator() {
+            this.position = this.props.visMap.secondaryHeight;
             const _self = this;
-            let pos = 0;
             if (this.props.timepoint) {
                 return this.props.timepoint.heatmap.map(function (d, i) {
-
                     let lineHeight;
                     let fontWeight;
-                    //if (d.variable === _self.props.store.rootStore.globalPrimary)//||(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample")) 
-                    if( _self.props.store.variableStore.sample.allVariables.filter(d1=>d1.id===d.variable).length!==0 && (_self.props.store.variableStore.sample.allVariables.filter(d1=>d1.id===d.variable)[0].originalIds[0]=== _self.props.store.rootStore.globalPrimary) )
-                    {
-                       lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
-                       fontWeight = "bold";
-                    }
-                    else if(_self.props.store.rootStore.globalPrimary===''&&i===_self.props.timepoint.heatmap.length-1&&_self.props.timepoint.type==="sample"){
-                        //_self.promote(_self.props.timepoint, d.variable);
-                        lineHeight =  _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
+                    if (d.variable === _self.props.store.globalPrimary) {
+                        lineHeight = _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
                         fontWeight = "bold";
                     }
                     else {
                         lineHeight = _self.props.visMap.secondaryHeight;
                         fontWeight = "normal";
                     }
-                    const transform = "translate(0," + pos + ")";
+                    const transform = "translate(0," + _self.position + ")";
                     const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
-                    let fontSize = 14;
+                    let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
-                    let numVar = 1;
-                    let variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type)
-                    if (variable.datatype === 'binary') {
-                        numVar = variable.originalIds.length;
-                    }
-                    pos = pos + (lineHeight + _self.props.visMap.gap) * numVar;
-                    const yPos = -(iconScale * 24 - lineHeight) / 2;
-                    /*if (!_self.props.timepoint.isGrouped) {
-                        secondIcon = _self.getGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
-                    }
-                    else {
-                        secondIcon = _self.getUnGroupIcon(_self.props.timepoint, d.variable, iconScale, _self.props.width - iconScale * 48, yPos)
-
-                    }*/
-                    //let highlightRect = null;
-                    //if (d.variable === _self.props.highlightedVariable) {
-                    //  highlightRect = GlobalRowOperator.getHighlightRect(lineHeight, 200);
-                    //}
-                    /*return <g key={d.variable} className={"clickable"} transform={transform}>
-                        {highlightRect}
-                        {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
-                        {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
-                        {secondIcon}
-                        {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
-                    </g>*/
-
                     return <g key={d.variable} className={"clickable"} transform={transform}>
-                        {_self.getRowLabel(_self.props.timepoint, d.variable, 0, (lineHeight + fontSize/2) / 2, iconScale, _self.props.width - iconScale * 72, fontWeight, fontSize)}
-                        {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos + 3)}
+                        {_self.getRowLabel(_self.props.timepoint, d.variable, (lineHeight + fontSize / 2) / 2, iconScale, _self.props.width, fontWeight, fontSize)}
                     </g>
 
                 });
@@ -382,21 +207,13 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         }
 
-        componentDidMount() {
-            //if(this.props.timepoint && this.props.store.rootStore.globalPrimary===''&&this.props.timepoint.type==="sample") {
-                this.promote(this.props.timepoint, this.props.timepoint.heatmap[this.props.timepoint.heatmap.length-1].variable);
-            //}
-        }
-
         render() {
-
             return (
-                
-                <g transform={this.props.transform}>               
-                    
-                    {this.getRowOperator()}
-                </g>
-                
+                <svg width={this.props.width} height={this.props.height}>
+                    <g transform={this.props.transform}>
+                        {this.getRowOperator()}
+                    </g>
+                </svg>
             )
         }
     }

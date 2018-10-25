@@ -1,6 +1,5 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import ReactMixins from './../../../../utils/ReactMixins';
 import RowOperator from './RowOperator'
 
 /*
@@ -9,10 +8,38 @@ implements the icons and their functionality on the left side of the plot
 const RowOperators = observer(class RowOperators extends React.Component {
         constructor() {
             super();
-            this.state = {highlightedVariable: "", width: 0};
-            ReactMixins.call(this);
+            this.state = {highlightedVariable: "", width: 100};
             this.highlightVariable = this.highlightVariable.bind(this);
             this.unhighlightVariable = this.unhighlightVariable.bind(this);
+            this.updateDimensions = this.updateDimensions.bind(this);
+        }
+
+        /**
+         * Add event listener
+         */
+        componentDidMount() {
+            this.updateDimensions();
+            window.addEventListener("resize", this.updateDimensions);
+        }
+
+        /**
+         * Remove event listener
+         */
+        componentWillUnmount() {
+            window.removeEventListener("resize", this.updateDimensions);
+        }
+
+        componentDidUpdate(prevProps) {
+            // Typical usage (don't forget to compare props):
+            if (this.props.sidebarVisible !== prevProps.sidebarVisible) {
+                this.updateDimensions();
+            }
+        }
+
+        updateDimensions() {
+            this.setState({
+                width: this.refs.rowOperators.parentNode.clientWidth
+            });
         }
 
         highlightVariable(variable) {
@@ -30,19 +57,20 @@ const RowOperators = observer(class RowOperators extends React.Component {
                 let transform = "translate(0," + _self.props.posY[i] + ")";
                 //Different icons and functions for grouped and ungrouped timepoints
                 rowHeader.push(<RowOperator key={i} transform={transform} timepoint={d} width={_self.state.width}
+                                            currentVariables={_self.props.currentVariables}
                                             visMap={_self.props.visMap} store={_self.props.store}
                                             showTooltip={_self.props.showTooltip} hideTooltip={_self.props.hideTooltip}
                                             showContextMenu={_self.props.showContextMenu}
                                             openBinningModal={_self.props.openBinningModal}
                                             selectedPatients={_self.props.selectedPatients}
-                                            highlightVariable={_self.highlightVariable}
-                                            unhighlightVariable={_self.unhighlightVariable}
-                                            highlightedVariable={_self.state.highlightedVariable}/>);
+                                            highlightVariable={_self.props.setHighlightedVariable}
+                                            unhighlightVariable={_self.props.removeHighlightedVariable}
+                                            highlightedVariable={_self.props.highlightedVariable}/>);
 
             });
             let transform = "translate(0," + 20 + ")";
             return (
-                <div>
+                <div ref='rowOperators'>
                     <svg width={this.state.width} height={this.props.height}>
                         <g transform={transform}>
                             {rowHeader}

@@ -1,8 +1,7 @@
 import React from "react";
 import {observer} from "mobx-react";
-import {ButtonToolbar,  DropdownButton,MenuItem} from 'react-bootstrap';
+import {ButtonToolbar, DropdownButton, MenuItem} from 'react-bootstrap';
 //import FontAwesome from 'react-fontawesome';
-
 
 
 /*
@@ -54,48 +53,45 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
 */
 
 
-
-
     constructor() {
         super();
-        
-        this.state = {
-        showMenu: false
-       
-        };
-        
 
-       /* extendObservable(this, {
-            timeVar: this.props.timeVar,
-            timeValue: this.props.timeValue
-            //timeline: []
-        });*/
+        this.state = {
+            showMenu: false
+
+        };
+
+
+        /* extendObservable(this, {
+             timeVar: this.props.timeVar,
+             timeValue: this.props.timeValue
+             //timeline: []
+         });*/
 
 
         this.showMenu = this.showMenu.bind(this);
         this.closeMenu = this.closeMenu.bind(this);
-        
+
     }
-    
+
     showMenu(event) {
         event.preventDefault();
-        
-        this.setState({ showMenu: true }, () => {
-        document.addEventListener('click', this.closeMenu);
+
+        this.setState({showMenu: true}, () => {
+            document.addEventListener('click', this.closeMenu);
         });
     }
-    
+
     closeMenu(event) {
         console.log(event.target);
         //if (!this.dropdownMenu.contains(event.target)) {
-        
-        this.setState({ showMenu: false }, () => {
+
+        this.setState({showMenu: false}, () => {
             document.removeEventListener('click', this.closeMenu);
-        });  
-        
+        });
+
         //}
     }
-
 
 
     /*handleClick(e) {
@@ -109,11 +105,11 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
     handleClick2(id, value) {
         //e.preventDefault();
         //console.log(e.target.id);
-        this.props.store.rootStore.timeVar=id;
-        this.props.store.rootStore.timeValue=value;
+        this.props.store.rootStore.timeVar = id;
+        this.props.store.rootStore.timeValue = value;
     }
-      
-      
+
+
     render() {
 
 
@@ -162,29 +158,35 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
 
 
         return (
-            
 
-        <div>
+
+            <div>
 
                 <ButtonToolbar>
-                
-                  
+
+
                     <DropdownButton
 
-                                bsSize="xsmall"
+                        bsSize="xsmall"
 
-                                title={"Show Time As"}
-                                key={"ShowTime"}
-                                id={"ShowTime"}
-                            >
-                            
-                                <MenuItem eventKey="1" onClick={e=>this.handleClick2("1", "days")} > <small> Days </small></MenuItem>
-                                <MenuItem eventKey="2" onClick={e=>this.handleClick2("30", "months")} > <small> Months </small> </MenuItem>
-                                <MenuItem eventKey="3" onClick={e=>this.handleClick2("365", "years")} > <small> Years </small> </MenuItem>
+                        title={"Show Time As"}
+                        key={"ShowTime"}
+                        id={"ShowTime"}
+                    >
+
+                        <MenuItem eventKey="1" onClick={e => this.handleClick2("1", "days")}>
+                            <small> Days</small>
+                        </MenuItem>
+                        <MenuItem eventKey="2" onClick={e => this.handleClick2("30", "months")}>
+                            <small> Months</small>
+                        </MenuItem>
+                        <MenuItem eventKey="3" onClick={e => this.handleClick2("365", "years")}>
+                            <small> Years</small>
+                        </MenuItem>
                     </DropdownButton>
                 </ButtonToolbar>
 
-        </div>
+            </div>
 
         );
     }

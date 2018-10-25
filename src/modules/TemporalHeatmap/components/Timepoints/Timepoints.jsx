@@ -16,7 +16,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             let rectWidth;
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.timepoints[i].type === "between") {
-                rectWidth = _self.props.visMap.sampleRectWidth/2;
+                rectWidth = _self.props.visMap.sampleRectWidth / 2;
             }
             else {
                 rectWidth = _self.props.visMap.sampleRectWidth;
@@ -27,8 +27,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 if (d.isGrouped) {
                     timepoints.push(<g key={i + "timepoint"} transform={transform}><GroupTimepoint
                         timepoint={d.grouped}
+                        heatmap={d.heatmap}
                         index={i}
-                        currentVariables={_self.props.store.variableStore[d.type].currentVariables}
+                        currentVariables={_self.props.currentVariables[d.type]}
                         rectWidth={rectWidth}
                         width={_self.props.heatmapWidth}
                         store={_self.props.store}
@@ -46,7 +47,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                         <HeatmapTimepoint
                             timepoint={d.heatmap}
                             index={i}
-                            currentVariables={_self.props.store.variableStore[d.type].currentVariables}
+                            currentVariables={_self.props.currentVariables[d.type]}
                             rectWidth={rectWidth}
                             width={_self.props.heatmapWidth}
                             store={_self.props.store}
@@ -74,22 +75,6 @@ const Timepoints = observer(class Timepoints extends React.Component {
         let timepoints = [];
 
 
-        let a = _self.props.store.rootStore.eventDetails;
-
-        let b = a.filter(d => d.eventDate);
-        let c = b.map(d => d.eventDate);
-
-
-        let max1 = Math.max(...c);
-
-
-        let max2 = _self.props.allYPositions
-            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
-            .reduce((next, max) => next > max ? next : max, 0);
-
-        const max = Math.max(max1, max2);
-
-        _self.props.store.rootStore.maxTimeInDays = max;
 
         let globalIndex = 0;
 
@@ -97,7 +82,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             let rectWidth;
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (_self.props.timepoints[i].type === "between") {
-                rectWidth = _self.props.visMap.sampleRectWidth/2;
+                rectWidth = _self.props.visMap.sampleRectWidth / 2;
             }
             else {
                 rectWidth = _self.props.visMap.sampleRectWidth;
@@ -129,7 +114,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     ht={ht}
                     timeScale={_self.props.timeScale}
                     numEventsForEachPatient={numEventsForEachPatient}
-                    currentVariables={_self.props.store.currentVariables[d.type]}
+                    currentVariables={_self.props.currentVariables[d.type]}
                     rectWidth={rectWidth}
                     selectPatient={_self.props.onDrag}
                     width={_self.props.heatmapWidth}
@@ -140,7 +125,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     showTooltip={_self.props.showTooltip}
                     hideTooltip={_self.props.hideTooltip}
                     primaryVariableId={d.primaryVariableId}
-                    />
+                />
                 </g>);
                 globalIndex++;
             }
@@ -159,22 +144,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
         let timepoints = [];
 
 
-        let a = _self.props.store.rootStore.eventDetails;
 
-        let b = a.filter(d => d.eventEndDate);
-        let c = b.map(d => d.eventEndDate);
-
-
-        let max1 = Math.max(...c);
-
-
-        let max2 = _self.props.allYPositions
-            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
-            .reduce((next, max) => next > max ? next : max, 0);
-
-        const max = Math.max(max1, max2);
-
-        _self.props.store.rootStore.maxTimeInDays = max;
 
         let globalIndex = 0;
 
@@ -190,11 +160,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             let p = _self.props.store.rootStore.patientOrderPerTimepoint;
 
-            let flag = false;
 
-            _self.props.timepoints.forEach(function (d) {
-                if (d.type !== "between") flag = true;
-            });
 
 
             let transFlag = false;
@@ -206,44 +172,14 @@ const Timepoints = observer(class Timepoints extends React.Component {
                 transFlag = true;
                 //  return timepoints;
                 //}
-                rectWidth = _self.props.visMap.sampleRectWidth/2;
-                let k;
-                if (flag) {
-                    k = a.filter(d => d.time === Math.floor(i / 2));
-                }
-                else {
-                    k = a.filter(d => d.time === Math.floor(i));
-                }
-                k.sort((p1, p2) => _self.comparePatientOrder(p, p1, p2));
-                yp = k.map(d => d.eventDate);
+                rectWidth = _self.props.visMap.sampleRectWidth / 2;
 
-
-                //console.log(yp);
-
-                ht = k.map(d => d.eventEndDate - d.eventDate);
 
                 //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
 
                 transform = "translate(0, 0)";
 
 
-                count = 0;
-                k = Object.values(k);
-
-                p.forEach(function (d1, j) {
-                    k.forEach(function (l) {
-                        //console.log(p);
-
-                        if (l.patientId === p[j]) {
-                            count++;
-                        }
-                    });
-
-                    numEventsForEachPatient.push(count);
-
-                    count = 0;
-
-                });
 
                 //arr;
             }
@@ -290,7 +226,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             ht={ht}
                             timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
-                            currentVariables={_self.props.store.currentVariables[heatmapd.type]}
+                            currentVariables={_self.props.currentVariables[heatmapd.type]}
                             rectWidth={rectWidth}
                             selectPatient={_self.props.onDrag}
                             width={_self.props.heatmapWidth}
@@ -312,7 +248,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             ht={ht}
                             timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
-                            currentVariables={_self.props.store.currentVariables[heatmapd.type]}
+                            currentVariables={_self.props.currentVariables[heatmapd.type]}
                             rectWidth={rectWidth}
                             selectPatient={_self.props.onDrag}
                             width={_self.props.heatmapWidth}

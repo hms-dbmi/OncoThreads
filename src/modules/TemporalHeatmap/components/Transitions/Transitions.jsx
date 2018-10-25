@@ -8,7 +8,7 @@ creates the transitions between timepoints
 const Transitions = observer(class Transitions extends React.Component {
 
     getFullPrimary(timepoint) {
-        return this.props.store.variableStore[timepoint.type].getById(timepoint.primaryVariableId);
+        return this.props.store.variableStores[timepoint.type].getById(timepoint.primaryVariableId);
     }
 
     getBlockTransitions() {
@@ -48,18 +48,18 @@ const Transitions = observer(class Transitions extends React.Component {
             let to = this.props.timepoints[i].patients;
             transitions.push(
                 <GlobalTransition
-                                    key={i}
-                                    from={from}
-                                  to={to}
-                                  timeScale={this.props.timeScale}
-                                  patientScale={this.props.heatmapScales[0]}
-                                  allYPositionsy1={this.props.allYPositions[counter]}
-                                  allYPositionsy2={this.props.allYPositions[counter + 1]}
-                                  max={this.props.max}
-                                  selectedPatients={this.props.selectedPatients}
-                                  showTooltip={this.props.showTooltip}
-                                  hideTooltip={this.props.hideTooltip}
-                                  visMap={this.props.visMap}/>
+                    key={i}
+                    from={from}
+                    to={to}
+                    timeScale={this.props.timeScale}
+                    patientScale={this.props.heatmapScales[0]}
+                    allYPositionsy1={this.props.allYPositions[counter]}
+                    allYPositionsy2={this.props.allYPositions[counter + 1]}
+                    max={this.props.max}
+                    selectedPatients={this.props.selectedPatients}
+                    showTooltip={this.props.showTooltip}
+                    hideTooltip={this.props.hideTooltip}
+                    visMap={this.props.visMap}/>
             );
             counter++;
 

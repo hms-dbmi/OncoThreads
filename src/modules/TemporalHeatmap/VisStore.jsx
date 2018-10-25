@@ -1,4 +1,4 @@
-import {extendObservable} from "mobx";
+import {extendObservable, reaction} from "mobx";
 import * as d3 from 'd3';
 
 /*
@@ -8,13 +8,12 @@ class VisStore {
     constructor(rootStore) {
         //width of rects in sampleTimepoints
         this.rootStore = rootStore;
-        this.sampleRectWidth = 0;
+        this.sampleRectWidth = 10;
         //height of rects in a row which is primary
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
         //gap between rows in heatmap
         this.gap = 1;
-        this.plotHeight = 700;
         //space for transitions
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
@@ -22,41 +21,28 @@ class VisStore {
         extendObservable(this, {
             transitionSpace: 100,
             timepointY: [],
+            plotHeight: 700,
             transY: [],
             svgWidth: 0,
-            get betweenTPHeight() {
-                return this.getTimepointHeight(this.rootStore.timepointStore.currentVariables.between.length);
-            },
-            get sampleTPHeight() {
-                return this.getTimepointHeight(this.rootStore.timepointStore.currentVariables.sample.length);
+            get svgHeight() {
+                return (this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.getTPHeight(this.rootStore.timepointStore.timepoints[this.rootStore.timepointStore.timepoints.length - 1]));
             },
             get timepointPositions() {
                 let timepointPositions = {"timepoint": [], "connection": []};
                 let prevY = 0;
-                for (let i = 0; i < this.rootStore.timepointStore.timepoints.length; i++) {
-                    let tpHeight;
-                    if (this.rootStore.timepointStore.timepoints[i].type === "between") {
-                        tpHeight = this.betweenTPHeight;
-                    }
-                    else {
-                        tpHeight = this.sampleTPHeight;
-                    }
+                const _self = this;
+                this.rootStore.timepointStore.timepoints.forEach(function (d) {
+                    let tpHeight = _self.getTPHeight(d);
                     timepointPositions.timepoint.push(prevY);
                     timepointPositions.connection.push(prevY + tpHeight);
-                    prevY += this.transitionSpace + tpHeight;
-                }
+                    prevY += _self.transitionSpace + tpHeight
+                });
                 return timepointPositions;
-            },
-            get svgHeight() {
-                if (this.betweenTPHeight !== 0) {
-                    return this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.betweenTPHeight;
-                }
-                else {
-                    return this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.sampleTPHeight;
-
-                }
             }
-        })
+        });
+        reaction(
+            () => this.plotHeight,
+            length => this.fitToScreenHeight());
     }
 
     setPlotY(y) {
@@ -66,19 +52,18 @@ class VisStore {
     }
 
     fitToScreenHeight() {
-        let heightWithoutSpace;
-        if(this.betweenTPHeight===0){
-            heightWithoutSpace = this.rootStore.timepointStore.timepoints.length * this.sampleTPHeight;
-        }
-        else{
-            heightWithoutSpace=(this.rootStore.timepointStore.timepoints.length * (this.sampleTPHeight + this.betweenTPHeight) - this.betweenTPHeight)/2;
-        }
+        let heightWithoutSpace = 0;
+        const _self = this;
+        this.rootStore.timepointStore.timepoints.forEach(function (d) {
+            heightWithoutSpace += _self.getTPHeight(d);
+        });
         let remainingHeight = this.plotHeight - heightWithoutSpace;
-        if (remainingHeight > 0) {
-            this.transitionSpace = remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1)
+        let transitionSpace = remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1);
+        if (transitionSpace > 30) {
+            this.transitionSpace = transitionSpace
         }
         else {
-            this.transitionSpace = 5;
+            this.transitionSpace = 30;
         }
     }
 
@@ -90,35 +75,6 @@ class VisStore {
         this.sampleRectWidth = width;
     }
 
-    modifyTransitionSpace(number, index) {
-        if (index !== this.transitionSpaces.length - 2) {
-            console.log(index, this.rootStore.timepointStore.isAligned(index, index + 1), this.rootStore.timepointStore.isAligned(index + 1, index + 2));
-            if (this.rootStore.timepointStore.isAligned(index, index + 1)
-                && this.rootStore.timepointStore.isAligned(index + 1, index + 2)
-                && !this.rootStore.timepointStore.timepoints[index].isGrouped
-                && !this.rootStore.timepointStore.timepoints[index + 1].isGrouped
-                && !this.rootStore.timepointStore.timepoints[index + 2].isGrouped) {
-                this.transitionSpaces[index] = this.transitionSpace;
-                this.transitionSpaces[index + 1] = this.transitionSpace;
-            }
-            else {
-                this.transitionSpaces[index] = number;
-                this.transitionSpaces[index + 1] = number;
-            }
-        }
-        else {
-            if (this.rootStore.timepointStore.isAligned(index, index + 1)) {
-                this.transitionSpaces[index] = this.transitionSpace;
-            }
-            else {
-                this.transitionSpaces[index] = number;
-            }
-        }
-    }
-
-    resetTransitionSpace() {
-        this.transitionSpaces = [];
-    }
 
     /**
      * computes the height of a timepoint
@@ -132,6 +88,24 @@ class VisStore {
         else {
             return (this.primaryHeight + this.gap + (numVar - 1) * (this.secondaryHeight + this.gap));
         }
+    }
+
+    getTPHeight(timepoint) {
+        const _self = this;
+        let height = 0;
+        let varCount = 0;
+        timepoint.heatmap.forEach(function (d, i) {
+            if (!d.isUndef || _self.rootStore.timepointStore.showUndefined || d.variable === timepoint.primaryVariableId) {
+                varCount += 1;
+                if (d.variable === timepoint.primaryVariableId) {
+                    height += _self.primaryHeight;
+                }
+                else {
+                    height += _self.secondaryHeight;
+                }
+            }
+        });
+        return height + (varCount - 1) * this.gap;
     }
 
     /**

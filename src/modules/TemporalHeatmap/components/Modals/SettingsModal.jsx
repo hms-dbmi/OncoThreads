@@ -8,28 +8,35 @@ import Radio from "react-bootstrap/es/Radio";
 const SettingsModal = observer(class SettingsModal extends React.Component {
 
 
-    handleContiuousRepresentationSetting(type){
-        this.props.store.continuousRepresentation=type;
+    handleContiuousRepresentationSetting(type) {
+        this.props.store.continuousRepresentation = type;
     }
-    handleSelectionSetting(advanced){
-        this.props.store.advancedSelection=advanced;
+
+    handleSelectionSetting(advanced) {
+        this.props.store.advancedSelection = advanced;
     }
-    handleApply(){
-        this.props.store.continuousRepresentation=this.continuousRepresentation;
+
+    handleUndefinedRowsSetting(showUndefined) {
+        this.props.store.showUndefined = showUndefined;
+    }
+
+    handleApply() {
+        this.props.store.continuousRepresentation = this.continuousRepresentation;
         this.props.close();
     }
+
     render() {
-        let gradient=false;
-        let boxplot=false;
-        let median=false;
-        if(this.props.store.continuousRepresentation==="gradient"){
-            gradient=true;
+        let gradient = false;
+        let boxplot = false;
+        let median = false;
+        if (this.props.store.continuousRepresentation === "gradient") {
+            gradient = true;
         }
-        else if(this.props.store.continuousRepresentation==="boxplot"){
-            boxplot=true;
+        else if (this.props.store.continuousRepresentation === "boxplot") {
+            boxplot = true;
         }
-        else{
-            median=true;
+        else {
+            median = true;
         }
         return (
             <Modal
@@ -43,26 +50,45 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                     <form>
                         <FormGroup>
                             <h5>Show continuous variable distributions in groups as</h5>
-                            <Radio checked={gradient} name="radioGroup" inline onChange={()=>this.handleContiuousRepresentationSetting('gradient')}>
+                            <Radio checked={gradient} name="radioGroup" inline
+                                   onChange={() => this.handleContiuousRepresentationSetting('gradient')}>
                                 Color Gradients
                             </Radio>{' '}
-                            <Radio checked={boxplot} name="radioGroup" inline onChange={()=>this.handleContiuousRepresentationSetting('boxplot')}>
+                            <Radio checked={boxplot} name="radioGroup" inline
+                                   onChange={() => this.handleContiuousRepresentationSetting('boxplot')}>
                                 Boxplots
                             </Radio>{' '}
-                            <Radio checked={median} name="radioGroup" inline onChange={()=>this.handleContiuousRepresentationSetting('median')}>
+                            <Radio checked={median} name="radioGroup" inline
+                                   onChange={() => this.handleContiuousRepresentationSetting('median')}>
                                 Median Color
                             </Radio>
                         </FormGroup>
                     </form>
                     <form>
-                          <FormGroup>
+                        <FormGroup>
                             <h5>Selection Type</h5>
-                            <Radio checked={!this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(false)}>
-                                Normal
-                            </Radio>{' '}
-                            <Radio checked={this.props.store.advancedSelection} name="radioGroup" inline onChange={()=>this.handleSelectionSetting(true)}>
+                            <Radio checked={this.props.store.advancedSelection} name="radioGroup" inline
+                                   onChange={() => this.handleSelectionSetting(true)}>
                                 Advanced
                             </Radio>{' '}
+                            <Radio checked={!this.props.store.advancedSelection} name="radioGroup" inline
+                                   onChange={() => this.handleSelectionSetting(false)}>
+                                Simplified
+                            </Radio>{' '}
+                        </FormGroup>
+                    </form>
+                    <form>
+                        <FormGroup>
+                            <h5>Show rows with only undefined values</h5>
+                            <Radio checked={this.props.store.showUndefined} name="radioGroup" inline
+                                   onChange={() => this.handleUndefinedRowsSetting(true)}>
+                                Yes
+                            </Radio>{' '}
+                            <Radio checked={!this.props.store.showUndefined} name="radioGroup" inline
+                                   onChange={() => this.handleUndefinedRowsSetting(false)}>
+                                No
+                            </Radio>{' '}
+
                         </FormGroup>
                     </form>
                 </Modal.Body>
