@@ -22,6 +22,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.addVariable = this.addVariable.bind(this);
         this.handleVariableClick = this.handleVariableClick.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
+
+        this.handleContinousClick = this.handleContinousClick.bind(this);
     }
 
 
@@ -55,6 +57,16 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         else {
             this.props.store.addVariable(id, variable, type, description);
         }
+    }
+
+
+      /**
+     * handles a click on one of the continuous Variables
+     * @param id
+     * @param variable
+     */
+    handleContinousClick(id, variable) {
+        this.handleVariableClick(id, variable, "NUMBER")
     }
 
 
@@ -108,6 +120,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         var ind1=vNames.indexOf(input);*/
 
 
+        const _self=this;
+
         return (
 
 
@@ -145,7 +159,16 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
                 {input.type==="STRING"? '': 
                     (<FontAwesome
-                    //onClick={() => this.bin(this.props.store.rootStore.mutationCountId)} 
+                    onClick={
+                        () => {
+                            console.log(input);  
+                            _self.handleCheckBoxClick("", input.value, index)
+
+                            _self.handleContinousClick(input.id, input.value)
+                            _self.props.updateVariable(input.id);
+                            _self.props.openBinningModal(input.id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
+                        }
+                    } 
                     name="cog"/> )
             
                 } 
@@ -190,9 +213,15 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     {list.map((detailedVar, ind) => this.renderInput(detailedVar, ind))}
 
 
+                {  this.props.store.rootStore.cbioAPI.mutationCounts.length!==0 ?
+                
+                <div> 
+               
                 <h3> Genomic Features  </h3>  
                     {mutList.map((detailedVar, ind) => this.renderInput(detailedVar, ind+list.length))}
-                    
+
+                </div>  
+                : ''}
 
                 </Col>
 
@@ -232,11 +261,11 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
     render() {
        
-        var mutList=[{value: 'Mutation Count', type: 'NUMBER'}];
+        var mutList=[{value: 'Mutation Count', type: 'NUMBER', id: this.props.store.rootStore.mutationCountId}];
 
         //console.log(this.props.varList);
 
-        var vNames=this.props.varList.map(d=>{return {value: d.value, type: d.datatype}; });
+        var vNames=this.props.varList.map(d=>{return {value: d.value, type: d.datatype, id: d.id}; });
 
         //vNames = vNames.concat(mutList);
 

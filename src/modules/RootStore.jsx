@@ -508,12 +508,24 @@ class RootStore {
                     description: d.clinicalAttribute.description
                 });
             }
+
+            
             if (!(id in _self.sampleMappers)) {
+                //console.log(id);
                 _self.sampleMappers[id] = {}
             }
             let value = d.value;
             if (d.clinicalAttribute.datatype === "NUMBER") {
+
+                //console.log("here ............");
+                //console.log(id);
+
+                //console.log(d);
+
                 value = parseFloat(value);
+                if(id==='mutCount'){
+                    console.log(id);
+                }
             }
             _self.sampleMappers[id][d.sampleId] = value;
         });
@@ -532,6 +544,9 @@ class RootStore {
             this.cbioAPI.mutationCounts.forEach(function (d) {
                 _self.sampleMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
             });
+        }
+        else{
+            console.log("test.....");
         }
     }
 
