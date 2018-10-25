@@ -34,7 +34,7 @@ class UndoRedoStore {
             this.logs.push("UNDO: " + this.logs[this.currentPointer]);
             this.deserialize(this.currentPointer - 1, this.stateStack[this.currentPointer].type);
             this.currentPointer--;
-            localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.currentPointer].state));
+            //localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.currentPointer].state));
             this.undoRedoMode = true;
         }
     }
@@ -47,7 +47,7 @@ class UndoRedoStore {
             this.logs.push("REDO: " + this.logs[this.currentPointer + 1]);
             this.deserialize(this.currentPointer + 1, this.stateStack[this.currentPointer + 1].type);
             this.currentPointer++;
-            localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.currentPointer].state));
+            //localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.currentPointer].state));
             this.undoRedoMode = true;
         }
 
@@ -223,7 +223,7 @@ class UndoRedoStore {
         }
         this.stateStack.push({type: type, state: serializeState(this)});
         this.currentPointer = this.stateStack.length - 1;
-        localStorage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.stateStack.length - 1].state));
+        //torage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.stateStack.length - 1].state));
     }
 
 

@@ -153,7 +153,7 @@ class RootStore {
             _self.createMutationCountsMapping();
             _self.timepointStore.initialize();
 
-            if (localStorage.getItem(_self.study.studyId) !== null) {
+            /*if (localStorage.getItem(_self.study.studyId) !== null) {
                 const confirm = window.confirm("Load from local storage?");
                 if (confirm) {
                     _self.undoRedoStore.deserializeLocalStorage();
@@ -163,11 +163,11 @@ class RootStore {
                     _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
                     _self.timepointStore.globalPrimary = initialVariable.id;
                 }
-            } else {
+            } else {*/
                 let initialVariable = _self.clinicalSampleCategories[0];
                 _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
                 _self.timepointStore.globalPrimary = initialVariable.id;
-            }
+            //}
             _self.parsed = true;
 
         });
