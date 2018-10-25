@@ -18,8 +18,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             variableList: this.createVariableList()
         };
 
-        this.handleCheckBoxClick = this.handleCheckBoxClick.bind(this);
-
+        this.handleSelect = this.handleSelect.bind(this);
+        this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
         this.addVariable = this.addVariable.bind(this);
         this.addModified = this.addModified.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
@@ -45,29 +45,53 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @returns {Array}
      */
     createOptions() {
+
         let options = [];
         const _self = this;
         this.state.variableList.forEach(function (d, i) {
-            let icon = null;
-            if (d.value.datatype === "NUMBER") {
-                icon = <div className="floatDiv">
-                    <FontAwesome
-                        onClick={() => _self.bin(d.value.id, d.value.variable, d.value.description)
-                        } name="cog"/>
-                </div>
+            let label = null;
+            if (d.modified) {
+                label = <Label bsStyle="warning">
+                    Modified
+                </Label>
             }
+            let datatypeLabel;
+            switch (d.value.datatype) {
+                case "STRING":
+                    datatypeLabel = "C";
+                    break;
+                case "BINNED":
+                    datatypeLabel = "O";
+                    break;
+                case "BINARY":
+                    datatypeLabel = "B";
+                    break;
+                default:
+                    datatypeLabel = "N";
+            }
+            let icon = null;
+            icon =
+                <FontAwesome
+                    onClick={() => _self.bin(d.value.id, d.value.variable, d.value.description)
+                    } name="cog"/>;
             let lb = (
                 <div onMouseEnter={(e) => {
                     _self.props.showTooltip(e, d.value.description);
                 }} onMouseLeave={_self.props.hideTooltip}>
                     <div className="wordBreak" style={{textAlign: "left"}}
-                         onClick={() => _self.handleCheckBoxClick(i)}
+                         onClick={() => _self.handleSelect(i, true)}
                          key={d.label}> {d.label}
                     </div>
-                    {icon}
+                    <div>
+                        {icon}
+                        {datatypeLabel}
+                        {label}
+                    </div>
+
                 </div>);
             options.push({value: d, label: lb})
         });
+        console.log(options);
         return options;
     }
 
@@ -86,6 +110,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             console.log(newVar);
             varList[varList.map(d => d.value.id).indexOf(id)].modified = true;
             varList[varList.map(d => d.value.id).indexOf(id)].value.datatype = newVar.datatype;
+            varList[varList.map(d => d.value.id).indexOf(id)].value.description = newVar.description;
             varList[varList.map(d => d.value.id).indexOf(id)].value.name = newVar.name;
             varList[varList.map(d => d.value.id).indexOf(id)].label = newVar.name;
             varList[varList.map(d => d.value.id).indexOf(id)].value.id = newId;
@@ -110,15 +135,22 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     }
 
 
-    handleCheckBoxClick(index) {
+    handleSelect(index, value) {
 
         //console.log(ind1);
         let variableList = this.state.variableList.slice();
-        variableList[index].checked = !variableList[index].checked;
+        variableList[index].checked = value;
         this.setState({variableList: variableList});
 
 
     }
+
+    handleCogWheelClick(index) {
+        if (this.state.variableList[index].value.datatype === "NUMBER") {
+            this.bin(this.state.variableList[index].value.id, this.state.variableList[index].value.variable, this.state.variableList[index].value.description)
+        }
+    }
+
 
     renderInput(input, index) {
         let label = null;
@@ -146,7 +178,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                 <Row>
                     <Col sm={9} md={9}>
                         <Checkbox disabled={false}
-                                  onChange={() => this.handleCheckBoxClick(index)}
+                                  onChange={() => this.handleSelect(index)}
                         >{input.value.variable}
                         </Checkbox>
                     </Col>
@@ -155,10 +187,9 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                         {label}
                     </Col>
                     <Col sm={1} md={1}>
-                        {input.value.datatype === "NUMBER" ? (<FontAwesome
-                            onClick={() => this.bin(input.value.id, input.value.variable, input.value.description)}
-                            name="cog"/>) : ''
-                        }
+                        <FontAwesome
+                            onClick={() => this.handleCogWheelClick(index)}
+                            name="cog"/>
                     </Col>
                 </Row>
             </div>
@@ -169,6 +200,60 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
     }
 
+    showChecked() {
+        let checked = [];
+        const _self = this;
+        this.state.variableList.forEach(function (d, i) {
+            if (d.checked) {
+                let label = null;
+                if (d.modified) {
+                    label = <Label bsStyle="warning">
+                        Modified
+                    </Label>
+                }
+                let datatypeLabel;
+                switch (d.value.datatype) {
+                    case "STRING":
+                        datatypeLabel = "C";
+                        break;
+                    case "BINNED":
+                        datatypeLabel = "O";
+                        break;
+                    case "BINARY":
+                        datatypeLabel = "B";
+                        break;
+                    default:
+                        datatypeLabel = "N";
+                }
+                checked.push(
+                    <div>
+                        <Row>
+                            <Col sm={7} md={7}>
+                                {d.label}
+                            </Col>
+                            <Col sm={2} md={2}>
+                                {label}
+                            </Col>
+                            <Col sm={1} md={1}>
+                                {datatypeLabel}
+                            </Col>
+                            <Col sm={1} md={1}>
+                                <FontAwesome onClick={() => _self.handleCogWheelClick(i)}
+                                             name="cog"/>
+                            </Col>
+                            <Col sm={1} md={1}>
+                                <FontAwesome onClick={() => _self.handleSelect(i, false)}
+                                             name="times"/>
+                            </Col>
+                        </Row>
+                    </div>)
+
+            }
+        });
+        return checked;
+
+    }
+
     renderList(list) {
         // var mutList=['Mutation Count'];
         return (
@@ -176,7 +261,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                 <Row>
 
 
-                    <Col sm={9} style={{'maxHeight': '400px', 'overflowY': 'scroll'}}>
+                    <Col sm={9}>
 
                         <h3>Features </h3>
 
@@ -186,9 +271,9 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                             componentClass="select" placeholder="Select..."
                             searchPlaceholder="Search variable"
                             options={this.createOptions()}
-                            onChange={opt => this.handleVariableClick(opt.id, opt.value, opt.datatype, opt.description)}
                         />
-                        {list.map((detailedVar, ind) => this.renderInput(detailedVar, ind))}
+                        <h3>Currently selected</h3>
+                        {this.showChecked()}
 
 
                     </Col>
@@ -235,7 +320,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                 <Modal.Header closeButton>
                     <Modal.Title>Add Variables</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{'maxHeight': '400px', 'overflowY': 'auto'}}>
+                <Modal.Body style={{'height': '400px', 'overflowY': 'auto'}}>
 
 
                     {this.renderList(this.state.variableList)}
