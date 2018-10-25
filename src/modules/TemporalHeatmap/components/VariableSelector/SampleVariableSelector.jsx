@@ -26,6 +26,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.bin = this.bin.bind(this);
+        this.addVarModal = this.addVarModal.bind(this);
     }
 
     /**
@@ -38,6 +39,17 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
         this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
+
+     /**
+     * opens the binning modal
+     * @param id
+     */
+    addVarModal(list) {
+        console.log("show list of vars");
+
+        this.props.openAddModal(list);
+    }
+
 
     /**
      * adds a variable to the view
@@ -103,6 +115,27 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                     </div>
                 </div>);
             options.push({value: d.variable, label: lb})
+        });
+        return options;
+    }
+
+    createVarList() {
+        let options = [];
+        //const _self = this;
+        this.props.clinicalSampleCategories.forEach(function (d) {
+            /*let icon = null;
+            if (d.datatype === "NUMBER") {
+                icon = <FontAwesome onClick={() => _self.bin(d.id)} name="cog"/>
+            }
+            let lb = (
+                <div onMouseEnter={(e) => {
+                    //console.log(d.variable);
+                    _self.props.showTooltip(e, d.variable, d.description);
+                }} onMouseLeave={_self.props.hideTooltip}>
+                    {icon}{d.variable}
+                </div>
+            );*/
+            options.push(d.variable)
         });
         return options;
     }
@@ -220,6 +253,17 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
+
+
+                    <ButtonGroup vertical block>
+                            <Button style={{textAlign: "left"}} bsSize="small" color="secondary"
+                                    //onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
+                                    onClick={() =>this.addVarModal(this.createClinicalAttributesList())}
+                                    key={this.props.mutationCount}>{"Add Variables"}
+                            </Button>
+                    </ButtonGroup>
+
+
                 <h4>Sample variables</h4>
                 <Panel>
                     <Panel.Heading>
@@ -227,6 +271,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             Clinical Features
                         </Panel.Title>
                     </Panel.Heading>
+
                     <Select
                         type="text"
                         searchable={true}

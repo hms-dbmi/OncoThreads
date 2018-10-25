@@ -66,6 +66,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
             </Alert>;
         }
         return (
+            
             <Modal
                 show={this.props.modalIsOpen}
                 onHide={this.props.close}
