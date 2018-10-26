@@ -51,7 +51,9 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @param description
      */
     addVariable(id, variable, type, description) {
-            this.props.store.addOriginalVariable(id,variable,type,description,[],true,this.props.store.rootStore.staticMappers[id]);
+            //this.props.store.addOriginalVariable(id,variable,type,description,[],true,this.props.store.rootStore.staticMappers[id]);
+    
+            this.props.store.timepointStore.variableStores.sample.addOriginalVariable(id,variable,type,description,[],true,this.props.store.rootStore.staticMappers[id]);
     }
 
 
@@ -158,7 +160,11 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
                             _self.handleContinousClick(input.id, input.value)
                             _self.props.updateVariable(input.id);
-                            _self.props.openBinningModal(input.id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
+                            //_self.props.openBinningModal(input.id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
+
+                            _self.props.openBinningModal(input.id, "sample", this.props.store.timepointStore.regroupTimepoints, null);
+
+                            
                         }
                     } 
                     name="cog"/> )
@@ -205,7 +211,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     {list.map((detailedVar, ind) => this.renderInput(detailedVar, ind))}
 
 
-                {  this.props.store.rootStore.cbioAPI.mutationCounts.length!==0 ?
+                {  this.props.store.cbioAPI.mutationCounts.length!==0 ?
                 
                 <div> 
                
@@ -246,20 +252,21 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.props.varList.filter((detailedVar, ind) => this.state.isChecked[ind])
             .forEach(detailedVar => this.handleVariableClick(detailedVar.id, detailedVar.variable, detailedVar.datatype, detailedVar.description));
         if(this.state.isChecked[this.props.varList.length]) {
-            this.handleVariableClick(this.props.store.rootStore.mutationCountId, "Mutation Count", "NUMBER");
+            this.handleVariableClick(this.props.store.mutationCountId, "Mutation Count", "NUMBER");
         }
         this.props.closeAddModal();
     }
 
     render() {
 
-        var mutList=[{label: 'Mutation Count',value:{id:this.props.store.rootStore.mutationCountId,datatype: 'NUMBER',variable:"Mutation Count"}}];
+        var mutList=[{label: 'Mutation Count',value:{id:this.props.store.mutationCountId,datatype: 'NUMBER',variable:"Mutation Count"}}];
         let clinList=[];
         this.props.varList.forEach(d=>clinList.push({value:d,label:d.variable}));
         //console.log(this.props.varList);
 
         var vNames=this.props.varList.map(d=>{return {value: d.value, type: d.datatype, id: d.id}; });
 
+        console.log(vNames);
         //vNames = vNames.concat(mutList);
 
        //this.state.isChecked=vNames.map(d=>false).concat(false); //working, with warning

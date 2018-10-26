@@ -44,6 +44,7 @@ const Content = observer(class Content extends React.Component {
             showContextMenuHeatmapRow: false,
 
             addModalIsOpen: false,
+            varList:[]
         }
         ;
         this.openModal = this.openModal.bind(this);
@@ -187,10 +188,13 @@ const Content = observer(class Content extends React.Component {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
                                     varList={this.state.varList}
                                     closeAddModal={this.closeAddModal}
-                                    currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                                    //currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                                    currentVariables={this.props.rootStore.timepointStore.variableStores.sample.currentVariables}
                                     showTooltip={this.showTooltip}
                                     hideTooltip={this.hideTooltip}
-                                    store={this.props.rootStore.sampleTimepointStore} 
+                                    //store={this.props.rootStore.sampleTimepointStore} 
+
+                                    store={this.props.rootStore} 
                                     variable={this.state.clickedVariable}
                                     updateVariable={this.updateVariable}
                                     openBinningModal={this.openModal}
