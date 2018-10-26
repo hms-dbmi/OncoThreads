@@ -108,6 +108,9 @@ class RootStore {
         this.parsed = false;
         this.timepointStore.reset();
         this.resetTimepointStructure(false);
+        let initialVariable = this.clinicalSampleCategories[0];
+        this.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, this.staticMappers[initialVariable.id]);
+        this.timepointStore.globalPrimary = initialVariable.id;
         this.parsed = true;
     }
 
@@ -164,9 +167,9 @@ class RootStore {
                     _self.timepointStore.globalPrimary = initialVariable.id;
                 }
             } else {*/
-                let initialVariable = _self.clinicalSampleCategories[0];
-                _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
-                _self.timepointStore.globalPrimary = initialVariable.id;
+            let initialVariable = _self.clinicalSampleCategories[0];
+            _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
+            _self.timepointStore.globalPrimary = initialVariable.id;
             //}
             _self.parsed = true;
 
