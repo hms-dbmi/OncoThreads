@@ -11,10 +11,10 @@ class OriginalVariable {
                         scale = ColorScales.getContinousColorScale(this.domain);
                         break;
                     case "binary":
-                        scale = ColorScales.getBinaryScale(this.range);
+                        scale = ColorScales.getBinaryScale();
                         break;
                     default:
-                        scale = ColorScales.getCategoricalScale(this.range);
+                        scale = ColorScales.getCategoricalScale(this.domain);
                 }
                 return scale;
             },
@@ -41,6 +41,8 @@ class OriginalVariable {
                         }
                     }
                 }
+                console.log(this.datatype, domain);
+
                 return domain;
             }
         });
@@ -53,7 +55,7 @@ class OriginalVariable {
         this.range = range;
         this.mapper = mapper;
         this.description = description;
-        this.referenced=0;
+        this.referenced = 0;
     }
 
 }

@@ -6,6 +6,8 @@ class MapperCombine {
         }
         else if (modificationType === "binning") {
             mapper = MapperCombine.createBinnedMapper(mappers[0], modification.bins, modification.binNames);
+        }else if(modificationType==="modifyCategorical"){
+            mapper =MapperCombine.createModifyCategoriesMapper(mappers[0],modification)
         }
         return mapper;
     }
@@ -67,10 +69,10 @@ class MapperCombine {
         }
         return newMapper;
     }
-    static modifyCategories(mapper,categoryMapping){
+    static createModifyCategoriesMapper(mapper,categoryMapping){
         let newMapper={};
         for (let entry in mapper){
-            mapper[entry]=categoryMapping[mapper[entry]];
+            newMapper[entry]=categoryMapping[mapper[entry]];
         }
         return newMapper;
     }

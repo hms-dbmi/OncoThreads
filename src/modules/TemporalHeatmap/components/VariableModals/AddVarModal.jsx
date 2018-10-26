@@ -4,6 +4,7 @@ import {Button, Checkbox, Col, Label, Modal, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 import Select from 'react-select';
+import ModifyCategorical from "./ModifyCategorical";
 
 //import SampleVariableSelector from "../VariableSelector/SampleVariableSelector"
 
@@ -15,6 +16,9 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
         this.state = {
             isChecked: [],
+            modifyCategoricalIsOpen: false,
+            currentVariable: '',
+            callback: '',
             variableList: this.createVariableList()
         };
 
@@ -23,6 +27,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.addVariable = this.addVariable.bind(this);
         this.addModified = this.addModified.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
+        this.closeCategoricalModal=this.closeCategoricalModal.bind(this);
         this.bin = this.bin.bind(this);
     }
 
@@ -118,6 +123,31 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         });
     }
 
+    modifyCategorical(id, name, description) {
+        const _self = this;
+        this.props.store.addOriginalVariable(id, name, "STRING", description, [], false, this.props.store.rootStore.staticMappers[id]);
+        this.openCategoricalModal(id, function (newId) {
+            let varList = _self.state.variableList;
+            let newVar = _self.props.store.getById(newId);
+            varList[varList.map(d => d.value.id).indexOf(id)].modified = true;
+            varList[varList.map(d => d.value.id).indexOf(id)].value.datatype = newVar.datatype;
+            varList[varList.map(d => d.value.id).indexOf(id)].value.description = newVar.description;
+            varList[varList.map(d => d.value.id).indexOf(id)].value.name = newVar.name;
+            varList[varList.map(d => d.value.id).indexOf(id)].label = newVar.name;
+            varList[varList.map(d => d.value.id).indexOf(id)].value.id = newId;
+            _self.setState({variableList: varList});
+        });
+    }
+
+    openCategoricalModal(id, callback) {
+        this.setState({modifyCategoricalIsOpen: true, currentVariable: id, callback: callback});
+    }
+
+    closeCategoricalModal() {
+        this.setState({modifyCategoricalIsOpen: false});
+
+    }
+
 
     /**
      * adds a variable to the view
@@ -146,59 +176,17 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     }
 
     handleCogWheelClick(index) {
-        if (this.state.variableList[index].value.datatype === "NUMBER") {
-            this.bin(this.state.variableList[index].value.id, this.state.variableList[index].value.variable, this.state.variableList[index].value.description)
-        }
-    }
-
-
-    renderInput(input, index) {
-        let label = null;
-        if (input.modified) {
-            label = <Label bsStyle="warning">
-                Modified
-            </Label>
-        }
-        let datatypeLabel;
-        switch (input.value.datatype) {
+        switch (this.state.variableList[index].value.datatype) {
+            case "NUMBER":
+                this.bin(this.state.variableList[index].value.id, this.state.variableList[index].value.variable, this.state.variableList[index].value.description);
+                break;
             case "STRING":
-                datatypeLabel = "C";
+                this.modifyCategorical(this.state.variableList[index].value.id, this.state.variableList[index].value.variable, this.state.variableList[index].value.description);
                 break;
-            case "BINNED":
-                datatypeLabel = "O";
-                break;
-            case "BINARY":
-                datatypeLabel = "B";
-                break;
-            default:
-                datatypeLabel = "N";
         }
-        return (
-            <div>
-                <Row>
-                    <Col sm={9} md={9}>
-                        <Checkbox disabled={false}
-                                  onChange={() => this.handleSelect(index)}
-                        >{input.value.variable}
-                        </Checkbox>
-                    </Col>
-                    <Col sm={2} md={2}>
-                        {datatypeLabel}
-                        {label}
-                    </Col>
-                    <Col sm={1} md={1}>
-                        <FontAwesome
-                            onClick={() => this.handleCogWheelClick(index)}
-                            name="cog"/>
-                    </Col>
-                </Row>
-            </div>
-
-
-        );
-
 
     }
+
 
     showChecked() {
         let checked = [];
@@ -309,18 +297,30 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.props.closeAddModal();
     }
 
-    render() {
-
-
+    getCategoricalModal() {
+        let modal = null;
+        if (this.state.modifyCategoricalIsOpen) {
+            modal = <ModifyCategorical modalIsOpen={this.state.modifyCategoricalIsOpen}
+                                       variable={this.state.currentVariable}
+                                       callback={this.state.callback}
+                                       store={this.props.store}
+                                        closeModal={this.closeCategoricalModal}/>
+        }
         return (
-            <Modal
+            modal
+        )
+    }
+
+    render() {
+        return (
+            [<Modal
                 show={this.props.addModalIsOpen}
                 onHide={this.props.closeAddModal}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Add Variables</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{'height': '400px', 'overflowY': 'auto'}}>
+                <Modal.Body style={{minHeight: "400px"}}>
 
 
                     {this.renderList(this.state.variableList)}
@@ -344,7 +344,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
                     </Button>
                 </Modal.Footer>
-            </Modal>
+            </Modal>, this.getCategoricalModal()]
         )
     }
 });

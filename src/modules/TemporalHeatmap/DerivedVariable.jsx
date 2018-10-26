@@ -17,7 +17,7 @@ class DerivedVariable {
                         scale = ColorScales.getBinnedColorScale(this.modification.binNames, this.modification.bins, this.domain);
                         break;
                     default:
-                        scale = ColorScales.getCategoricalScale(this.range);
+                        scale = ColorScales.getCategoricalScale(this.domain);
                 }
                 return scale;
             },
