@@ -39,7 +39,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         this.props.openBinningModal(id, "sample", null);
     }
 
-     /**
+    /**
      * opens the binning modal
      * @param id
      */
@@ -231,14 +231,12 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
-                    <ButtonGroup vertical block>
-                            <Button style={{textAlign: "left"}} bsSize="small" color="secondary"
-                                    onClick={() =>this.addVarModal()}
-                                    key={this.props.mutationCount}>{"Add Variables"}
-                            </Button>
-                    </ButtonGroup>
-
-
+                <ButtonGroup vertical block>
+                    <Button style={{textAlign: "left"}} bsSize="small" color="secondary"
+                            onClick={() => this.addVarModal()}
+                            key={this.props.mutationCount}>{"Add Variables"}
+                    </Button>
+                </ButtonGroup>
                 <h4>Sample variables</h4>
                 <Panel>
                     <Panel.Heading>

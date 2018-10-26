@@ -1,10 +1,11 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, Checkbox, Col, Label, Modal, Row} from 'react-bootstrap';
+import {Button, Col, Label, Modal, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 import Select from 'react-select';
 import ModifyCategorical from "./ModifyCategorical";
+import OriginalVariable from "../../OriginalVariable";
 
 //import SampleVariableSelector from "../VariableSelector/SampleVariableSelector"
 
@@ -21,13 +22,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             callback: '',
             variableList: this.createVariableList()
         };
+        this.variablesToReference = [];
+        this.variablesToDisplay = [];
 
         this.handleSelect = this.handleSelect.bind(this);
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
-        this.addVariable = this.addVariable.bind(this);
-        this.addModified = this.addModified.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
-        this.closeCategoricalModal=this.closeCategoricalModal.bind(this);
+        this.closeCategoricalModal = this.closeCategoricalModal.bind(this);
         this.bin = this.bin.bind(this);
     }
 
@@ -108,60 +109,49 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     bin(id, name, description) {
         const _self = this;
-        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
-        this.props.openBinningModal(id, "sample", false, false, function (newId) {
-            let varList = _self.state.variableList;
-            let newVar = _self.props.store.getById(newId);
-            console.log(newVar);
-            varList[varList.map(d => d.value.id).indexOf(id)].modified = true;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.datatype = newVar.datatype;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.description = newVar.description;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.name = newVar.name;
-            varList[varList.map(d => d.value.id).indexOf(id)].label = newVar.name;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.id = newId;
-            _self.setState({variableList: varList});
+        let variable = this.getVariable(id, name, description);
+        this.props.openBinningModal(variable, "sample", function (derivedVariable) {
+            _self.modifyVarList(_self.state.variableList.map(d => d.value.id).indexOf(id), variable, derivedVariable);
         });
     }
 
     modifyCategorical(id, name, description) {
         const _self = this;
-        this.props.store.addOriginalVariable(id, name, "STRING", description, [], false, this.props.store.rootStore.staticMappers[id]);
-        this.openCategoricalModal(id, function (newId) {
-            let varList = _self.state.variableList;
-            let newVar = _self.props.store.getById(newId);
-            varList[varList.map(d => d.value.id).indexOf(id)].modified = true;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.datatype = newVar.datatype;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.description = newVar.description;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.name = newVar.name;
-            varList[varList.map(d => d.value.id).indexOf(id)].label = newVar.name;
-            varList[varList.map(d => d.value.id).indexOf(id)].value.id = newId;
-            _self.setState({variableList: varList});
+        let variable = this.getVariable(id, name, description);
+        this.openCategoricalModal(variable, function (derivedVariable) {
+            _self.modifyVarList(_self.state.variableList.map(d => d.value.id).indexOf(id), variable, derivedVariable);
         });
     }
 
-    openCategoricalModal(id, callback) {
-        this.setState({modifyCategoricalIsOpen: true, currentVariable: id, callback: callback});
+    getVariable(id, name, description) {
+        if (this.props.store.isReferenced(id)) {
+            return this.props.store.referencedVariables[id];
+        }
+        else {
+            return new OriginalVariable(id, name, "STRING", description, [], this.props.store.rootStore.staticMappers[id]);
+        }
+    }
+
+    modifyVarList(index, variable, derivedVariable) {
+        let varList = this.state.variableList;
+        varList[index].modified = true;
+        varList[index].value.datatype = derivedVariable.datatype;
+        varList[index].value.description = derivedVariable.description;
+        varList[index].value.name = derivedVariable.name;
+        varList[index].label = derivedVariable.name;
+        varList[index].value.id = derivedVariable;
+        this.setState({variableList: varList});
+        this.variablesToReference.push(variable);
+        this.variablesToDisplay.push(derivedVariable);
+    }
+
+    openCategoricalModal(variable, callback) {
+        this.setState({modifyCategoricalIsOpen: true, currentVariable: variable, callback: callback});
     }
 
     closeCategoricalModal() {
         this.setState({modifyCategoricalIsOpen: false});
 
-    }
-
-
-    /**
-     * adds a variable to the view
-     * @param id
-     * @param variable
-     * @param type
-     * @param description
-     */
-    addVariable(id, variable, type, description) {
-        this.props.store.addOriginalVariable(id, variable, type, description, [], true, this.props.store.rootStore.staticMappers[id]);
-    }
-
-    addModified(id) {
-        this.props.store.addDerivedToCurrent(id);
     }
 
 
@@ -289,11 +279,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         const _self = this;
         this.state.variableList.filter(d => d.checked).forEach(function (d) {
             if (!d.modified) {
-                _self.addVariable(d.value.id, d.value.variable, d.value.datatype, d.value.description)
-            } else {
-                _self.addModified(d.value.id);
+                let variable = new OriginalVariable(d.value.id, d.value.variable, d.value.datatype, d.value.description, [], this.props.store.rootStore.staticMappers[d.value.id]);
+                _self.variablesToReference.push(variable);
+                _self.variablesToDisplay.push(variable);
             }
         });
+        this.variablesToReference.forEach(d => this.props.store.addVariableToBeReferenced(d));
+        this.variablesToDisplay.forEach(d => this.props.store.addVariableToBeDisplayed(d));
         this.props.closeAddModal();
     }
 
@@ -304,7 +296,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                                        variable={this.state.currentVariable}
                                        callback={this.state.callback}
                                        store={this.props.store}
-                                        closeModal={this.closeCategoricalModal}/>
+                                       closeModal={this.closeCategoricalModal}/>
         }
         return (
             modal

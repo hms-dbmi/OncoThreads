@@ -72,13 +72,11 @@ const Content = observer(class Content extends React.Component {
      * @param type: type of timepoint (sample/between)
      * @param callback: Function which should be executed after the binning was applied: either group or promote
      */
-    openModal(variable, type, display, modify,callback) {
+    openModal(variable, type, callback) {
         this.setState({
             modalIsOpen: true,
             clickedVariable: variable,
             type: type,
-            display:display,
-            modify:modify,
             callback: callback,
         });
     }
@@ -166,8 +164,6 @@ const Content = observer(class Content extends React.Component {
             return (<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
                                       variable={this.state.clickedVariable}
                                       type={this.state.type}
-                                      display={this.state.display}
-                                      modify={this.state.modify}
                                       callback={this.state.callback}
                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
                                       visMap={this.props.rootStore.visStore}

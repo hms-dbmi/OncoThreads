@@ -122,6 +122,14 @@ class VariableStore {
             this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
         }
     }
+    addVariableToBeReferenced(variable){
+        this.referencedVariables[variable.id]=variable;
+    }
+    addVariableToBeDisplayed(variable){
+        this.referencedVariables[variable.id]=variable;
+        this.updateReferences(variable.id);
+        this.currentVariables.push(variable.id);
+    }
 
     /**
      * add an event variable. If display is true the variable will be added to the current variables

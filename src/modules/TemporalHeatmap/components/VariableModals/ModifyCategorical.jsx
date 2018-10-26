@@ -2,6 +2,8 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Glyphicon, Modal, Table} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
+import DerivedVariable from "../../DerivedVariable";
+import MapperCombine from "../../MapperCombineFunctions";
 
 //import SampleVariableSelector from "../VariableSelector/SampleVariableSelector"
 
@@ -11,21 +13,22 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     constructor(props) {
         super(props);
         this.state =
-            {currentData: this.createCurrentData(), name: props.store.referencedVariables[props.variable].name,ordinal:false};
+            {currentData: this.createCurrentData(), name: props.variable.name,ordinal:false};
         this.merge = this.merge.bind(this);
         this.handleNameChane=this.handleNameChane.bind(this);
         this.handleApply=this.handleApply.bind(this);
     }
 
-    getPercentOccurences(mapper) {
+    getPercentOccurences() {
+        const _self=this;
         let occurences = {};
         this.state.currentData.forEach(function (d) {
             const mapEntry = d.categories.toString();
             occurences[mapEntry] = 0;
             d.categories.forEach(function (f) {
-                for (let entry in mapper) {
-                    if (mapper[entry] === f) {
-                        occurences[mapEntry] += 1 / Object.keys(mapper).length * 100;
+                for (let entry in _self.props.variable.mapper) {
+                    if (_self.props.variable.mapper[entry] === f) {
+                        occurences[mapEntry] += 1 / Object.keys(_self.props.variable.mapper).length * 100;
                     }
                 }
             })
@@ -53,7 +56,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     handleApply(){
         let categoryMapping={};
         const _self=this;
-        this.props.store.referencedVariables[this.props.variable].domain.forEach(function (d,i) {
+        this.props.variable.domain.forEach(function (d,i) {
             _self.state.currentData.forEach(function (f) {
                 if(f.categories.includes(d)){
                     categoryMapping[d]=f.name;
@@ -62,20 +65,21 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         });
         let newId=uuidv4();
         let datatype=this.state.ordinal?"ORDINAL":"STRING";
-        this.props.store.addDerivedVariable(newId,this.state.name,datatype, this.props.store.referencedVariables[this.props.variable].description, [this.props.store.referencedVariables[this.props.variable].id],"modifyCategorical",categoryMapping,false)
-        this.props.callback(newId);
+        let variable=new DerivedVariable(newId,this.state.name,datatype, this.props.variable.description, [this.props.variable.id],"modifyCategorical",categoryMapping,MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
+        this.props.callback(variable);
         this.props.closeModal();
     }
 
     createCurrentData() {
         let currentData = [];
-        const variable = this.props.store.referencedVariables[this.props.variable];
-        variable.domain.forEach(d => currentData.push({
+        const _self=this;
+        this.props.variable.domain.forEach(d => currentData.push({
             selected: false,
             name: d,
             categories: [d],
-            color: variable.colorScale(d)
+            color: _self.props.variable.colorScale(d)
         }));
+        console.log(this.props.variable.mapper,currentData);
         return currentData;
     }
 
@@ -128,7 +132,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
 
     displayCategories() {
         const _self = this;
-        const occuranceMapper = this.getPercentOccurences(this.props.store.referencedVariables[this.props.variable].mapper);
+        const occuranceMapper = this.getPercentOccurences();
         return this.state.currentData.map(function (d, i) {
             let bgColor = "white";
             if (d.selected) {
@@ -154,7 +158,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                 <td>
                     <svg width="10" height="10">
                         <rect width="10" height="10"
-                              fill={_self.props.store.referencedVariables[_self.props.variable].colorScale(d.categories[0])}/>
+                              fill={_self.props.variable.colorScale(d.categories[0])}/>
                     </svg>
                 </td>
             </tr>)

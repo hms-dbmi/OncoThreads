@@ -3,12 +3,14 @@ import {observer} from 'mobx-react';
 import BinningModal from './BinningModal';
 import * as d3 from 'd3';
 import uuidv4 from 'uuid/v4';
+import DerivedVariable from "../../../DerivedVariable";
+import MapperCombine from "../../../MapperCombineFunctions";
 
 
 const ContinuousBinner = observer(class ContinuousBinner extends React.Component {
     constructor(props) {
         super(props);
-        this.data = props.store.getAllValues(props.variable, props.type);
+        this.data = props.store.getAllValues(props.variable.mapper, props.type);
         this.state = {
             bins: this.getInitialBins(),
             binNames: ["Bin 1", "Bin 2"]
@@ -77,22 +79,11 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
      */
     handleApply() {
         const newId = uuidv4();
-        let currVar = this.props.store.variableStores[this.props.type].referencedVariables[this.props.variable];
-        if (!this.props.modify) {
-            this.props.store.variableStores[this.props.type].addDerivedVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", [currVar.id], "binning", {
-                bins: this.state.bins,
-                binNames: this.state.binNames
-            }, this.props.display);
-        }
-        else {
-            this.props.store.variableStores[this.props.type].modifyVariable(newId, currVar.name + "_BINNED", "BINNED", currVar.description + " (binned)", currVar.id, "binning", {
-                bins: this.state.bins,
-                binNames: this.state.binNames
-            }, this.props.display);
-        }
-        if(this.props.callback!==null){
-            this.props.callback(newId);
-        }
+        let derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINNED", this.props.variable.description + " (binned)", [this.props.variable.id], "binning", {
+            bins: this.state.bins,
+            binNames: this.state.binNames
+        }, MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames));
+        this.props.callback(derivedVariable);
         this.close();
     }
 
@@ -108,11 +99,10 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
     }
 
     render() {
-        let variableName = this.props.store.variableStores[this.props.type].getById(this.props.variable).name;
         return (
             <BinningModal data={this.data} binNames={this.state.binNames} bins={this.state.bins}
                           showAlert={this.props.callback !== null}
-                          variableName={variableName} variable={this.props.variable}
+                          variable={this.props.variable}
                           handleBinChange={this.handleBinChange}
                           handleNumberOfBinsChange={this.handleNumberOfBinsChange}
                           handleBinNameChange={this.handleBinNameChange}
