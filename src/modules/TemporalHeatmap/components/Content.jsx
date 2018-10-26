@@ -43,8 +43,8 @@ const Content = observer(class Content extends React.Component {
             showContextMenu: false,
             showContextMenuHeatmapRow: false,
 
-            addModalIsOpen: false,
-            varList:[]
+            addModalIsOpen: false
+            //varList:[]
         }
         ;
         this.openModal = this.openModal.bind(this);
@@ -164,7 +164,7 @@ const Content = observer(class Content extends React.Component {
     getBinner() {
         if (this.state.modalIsOpen) {
             return (<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
-                                      variable={this.state.clickedVariable}
+                                      variable= {this.state.clickedVariable}
                                       timepointIndex={this.state.clickedTimepoint} type={this.state.type}
                                       callback={this.state.callback}
                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
@@ -186,7 +186,9 @@ const Content = observer(class Content extends React.Component {
     getVarListModal() {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
-                                    varList={this.state.varList}
+                                    //varList={this.state.varList}
+
+                                    varList={this.props.rootStore.clinicalSampleCategories}
                                     closeAddModal={this.closeAddModal}
                                     //currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
                                     currentVariables={this.props.rootStore.timepointStore.variableStores.sample.currentVariables}

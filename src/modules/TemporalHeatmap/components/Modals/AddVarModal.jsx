@@ -53,7 +53,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     addVariable(id, variable, type, description) {
             //this.props.store.addOriginalVariable(id,variable,type,description,[],true,this.props.store.rootStore.staticMappers[id]);
     
-            this.props.store.timepointStore.variableStores.sample.addOriginalVariable(id,variable,type,description,[],true,this.props.store.rootStore.staticMappers[id]);
+            this.props.store.timepointStore.variableStores.sample.addOriginalVariable(id,variable,type,description,[],true,this.props.store.staticMappers[id]);
     }
 
 
@@ -158,11 +158,12 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                             console.log(input);  
                             _self.handleCheckBoxClick("", input.value, index)
 
-                            _self.handleContinousClick(input.id, input.value)
-                            _self.props.updateVariable(input.id);
+                            _self.handleContinousClick(input.value.id, input.value.variable)
+                            //_self.props.updateVariable(input.id);
+                            _self.props.updateVariable(input.value.id);
                             //_self.props.openBinningModal(input.id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
 
-                            _self.props.openBinningModal(input.id, "sample", this.props.store.timepointStore.regroupTimepoints, null);
+                            _self.props.openBinningModal(input.value.id, "sample", this.props.store.timepointStore.regroupTimepoints, null);
 
                             
                         }
@@ -264,7 +265,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.props.varList.forEach(d=>clinList.push({value:d,label:d.variable}));
         //console.log(this.props.varList);
 
-        var vNames=this.props.varList.map(d=>{return {value: d.value, type: d.datatype, id: d.id}; });
+        var vNames=this.props.varList.map(d=>{return {value: d.variable, type: d.datatype, id: d.id}; });
 
         console.log(vNames);
         //vNames = vNames.concat(mutList);

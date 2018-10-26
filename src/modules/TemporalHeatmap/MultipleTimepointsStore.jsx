@@ -37,6 +37,10 @@ class MultipleTimepointsStore {
      * @param mapper
      */
     addHeatmapRows(variableId, mapper) {
+
+        console.log(variableId);
+        console.log(mapper);
+        
         const _self = this;
         this.structure.forEach(function (d, i) {
             let variableData = [];
