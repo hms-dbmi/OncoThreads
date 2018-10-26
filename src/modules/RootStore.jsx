@@ -510,7 +510,7 @@ class RootStore {
         else if (mappingType === "proteinChange") {
             mappingFunction = function (currentSample) {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
-                let proteinChange = 'wild type';
+                let proteinChange = undefined;
                 if (entry !== undefined) {
                     proteinChange = entry.proteinChange;
                 }
@@ -520,7 +520,7 @@ class RootStore {
         else if (mappingType === "mutationType") {
             mappingFunction = function (currentSample) {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
-                let mutationType = 'wild type';
+                let mutationType = undefined;
                 if (entry !== undefined) {
                     mutationType = entry.mutationType;
                 }
