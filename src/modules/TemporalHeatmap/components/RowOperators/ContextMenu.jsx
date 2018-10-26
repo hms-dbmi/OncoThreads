@@ -19,7 +19,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToAll() {
         const _self = this;
-        if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
+        if (this.props.store.getById(this.props.clickedVariable).datatype === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
                 this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
                     _self.props.store.childStore.applyActionToAll(_self.props.localIndex, newID, _self.props.action);
@@ -44,7 +44,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToPrevious() {
         const _self = this;
-        if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
+        if (this.props.store.getById(this.props.clickedVariable).datatype === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
                 this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
                     _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, _self.props.action);
@@ -69,7 +69,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToNext() {
         const _self = this;
-        if (this.props.store.getById(this.props.clickedVariable).dataType === "NUMBER" && this.props.action !== "UNGROUP") {
+        if (this.props.store.getById(this.props.clickedVariable).datatype === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
                 this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
                     _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
