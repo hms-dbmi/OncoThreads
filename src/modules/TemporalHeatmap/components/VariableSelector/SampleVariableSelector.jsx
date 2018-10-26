@@ -162,7 +162,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * searches for the genes entered in the search field
      */
     searchGenes() {
-        this.props.store.rootStore.getMutationsAllAtOnce(this.state.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, "").split(" "), this.state.mappingType);
+        let geneList=this.state.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, "").toUpperCase().split(" ");
+        geneList.forEach(function (d,i) {
+            if(d.includes("ORF")){
+                geneList[i]=d.replace("ORF","orf")
+            }
+        });
+        this.props.store.rootStore.getMutationsAllAtOnce(geneList, this.state.mappingType);
         this.setState({geneListString: ''});
     }
 
