@@ -13,12 +13,15 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     constructor(props) {
         super(props);
         this.state =
-            {currentData: this.createCurrentData(), name: props.variable.name,ordinal:false};
+            {currentData: this.createCurrentData(), name: props.variable.name+"_MODIFIED",ordinal:false};
         this.merge = this.merge.bind(this);
-        this.handleNameChane=this.handleNameChane.bind(this);
+        this.handleNameChange=this.handleNameChange.bind(this);
         this.handleApply=this.handleApply.bind(this);
     }
 
+    /**
+     * computes the percent occurance
+     */
     getPercentOccurences() {
         const _self=this;
         let occurences = {};
@@ -36,15 +39,30 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         return occurences;
     }
 
+    /**
+     * handles renaming a category
+     * @param index
+     * @param e
+     */
     handleRenameCategory(index, e) {
         e.stopPropagation();
         let currentData = this.state.currentData.slice();
         currentData[index].name = e.target.value;
         this.setState({currentData: currentData});
     }
-    handleNameChane(event){
-        this.setState({name:event.taget.value});
+
+    /**
+     * handles the name change
+     * @param event
+     */
+    handleNameChange(event){
+        this.setState({name:event.target.value});
     }
+
+    /**
+     * handles convert to ordinal event
+     * @param event
+     */
     handleConvertToOrdinal(event){
         if(event.target.checked){
             this.setState({ordinal:true})
@@ -53,6 +71,10 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             this.setState({ordinal:false})
         }
     }
+
+    /**
+     * handles pressing apply
+     */
     handleApply(){
         let categoryMapping={};
         const _self=this;
@@ -70,6 +92,10 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.props.closeModal();
     }
 
+    /**
+     * creates the initial list of current categories
+     * @returns {Array}
+     */
     createCurrentData() {
         let currentData = [];
         const _self=this;
@@ -79,10 +105,15 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             categories: [d],
             color: _self.props.variable.colorScale(d)
         }));
-        console.log(this.props.variable.mapper,currentData);
         return currentData;
     }
 
+    /**
+     * moves a category up or down
+     * @param event
+     * @param index
+     * @param moveUp
+     */
     move(event, index, moveUp) {
         event.stopPropagation();
         let currentData = this.state.currentData.slice();
@@ -98,6 +129,9 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({currentData: currentData});
     }
 
+    /**
+     * merges the selected categories
+     */
     merge() {
         let currentData = this.state.currentData.slice();
         let mergedEntry = {selected: false, name: '', categories: [], color: ''};
@@ -124,12 +158,21 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({currentData: currentData});
     }
 
+    /**
+     * toggles selecting categories
+     * @param e
+     * @param index
+     */
     toggleSelect(e, index) {
         let currentData = this.state.currentData.slice();
         currentData[index].selected = !currentData[index].selected;
         this.setState({currentData: currentData});
     }
 
+    /**
+     * shows the current categories in a table
+     * @returns {any[]}
+     */
     displayCategories() {
         const _self = this;
         const occuranceMapper = this.getPercentOccurences();
@@ -185,6 +228,8 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                             onChange={this.handleNameChange}
                         />
                     </form>
+                    <h5>Description</h5>
+                    <p>{this.props.variable.description}</p>
                     <Table bordered condensed responsive>
                         <thead>
                         <tr>
@@ -200,10 +245,10 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     </Table>
                     <form>
                         <Button onClick={this.merge}>Merge Selected</Button>
-                        <Checkbox onClick={this.handleConvertToOrdinal}>Convert to ordinal</Checkbox>
+                        {/*
+                            <Checkbox onClick={this.handleConvertToOrdinal}>Convert to ordinal</Checkbox>
+                       */}
                     </form>
-
-
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.closeModal}
