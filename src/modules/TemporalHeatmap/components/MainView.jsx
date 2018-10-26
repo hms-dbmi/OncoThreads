@@ -173,21 +173,8 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     getGlobalView(timepointPositions, svgHeight, svgWidth) {
-        let a = this.props.store.rootStore.eventDetails;
-
-        let b = a.filter(d => d.eventEndDate);
-        let c = b.map(d => d.eventEndDate);
-
-
-        let max1 = Math.max(...c);
-
-
-        let max2 = this.props.store.rootStore.actualTimeLine
-            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
-            .reduce((next, max) => next > max ? next : max, 0);
-
-        let maxTime = Math.max(max1, max2);
-        const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.rootStore.globalPrimary)[0].name;
+        let maxTime = this.props.store.rootStore.maxTimeInDays;
+        const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
         const axisHorizontalZoom = (300 - this.state.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (<Row>
             <Col xs={2} md={2} style={{padding: 0}}>
@@ -195,7 +182,7 @@ const MainView = observer(class MainView extends React.Component {
                             width={250} height={svgHeight} maxTimeInDays={maxTime}/>
                 <GlobalRowOperators {...this.props} width={300}
                                     timepointVarHeight={(this.props.currentVariables.sample.length + 1) * 19}
-                                    eventVarHeight={this.props.store.variableStore.between.allVariables.length * 19}
+                                    eventVarHeight={this.props.store.variableStores.between.getVariablesOfType("event").length * 19}
                                     posY={timepointPositions.timepoint}
                                     selectedPatients={this.props.store.selectedPatients}/>
 
@@ -203,8 +190,6 @@ const MainView = observer(class MainView extends React.Component {
                 <Legend {...this.props} height={svgHeight / 4}
                         mainWidth={svgWidth}/>
             </Col>
-
-
             <Col xs={1} md={1} style={{padding: 0, width: 55}}>
                 <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                 timeValue={this.props.store.rootStore.timeValue}

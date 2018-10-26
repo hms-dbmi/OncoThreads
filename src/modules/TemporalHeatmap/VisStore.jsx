@@ -1,6 +1,5 @@
-import {extendObservable} from "mobx";
+import {extendObservable, reaction} from "mobx";
 import * as d3 from 'd3';
-import {reaction} from "mobx";
 
 /*
 stores information about current visual parameters
@@ -9,7 +8,7 @@ class VisStore {
     constructor(rootStore) {
         //width of rects in sampleTimepoints
         this.rootStore = rootStore;
-        this.sampleRectWidth = 0;
+        this.sampleRectWidth = 10;
         //height of rects in a row which is primary
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
@@ -22,7 +21,7 @@ class VisStore {
         extendObservable(this, {
             transitionSpace: 100,
             timepointY: [],
-            plotHeight:700,
+            plotHeight: 700,
             transY: [],
             svgWidth: 0,
             get svgHeight() {
@@ -42,7 +41,7 @@ class VisStore {
             }
         });
         reaction(
-        () => this.plotHeight,
+            () => this.plotHeight,
             length => this.fitToScreenHeight());
     }
 
@@ -59,7 +58,7 @@ class VisStore {
             heightWithoutSpace += _self.getTPHeight(d);
         });
         let remainingHeight = this.plotHeight - heightWithoutSpace;
-        let transitionSpace=remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1);
+        let transitionSpace = remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1);
         if (transitionSpace > 30) {
             this.transitionSpace = transitionSpace
         }
@@ -76,35 +75,6 @@ class VisStore {
         this.sampleRectWidth = width;
     }
 
-    modifyTransitionSpace(number, index) {
-        if (index !== this.transitionSpaces.length - 2) {
-            console.log(index, this.rootStore.timepointStore.isAligned(index, index + 1), this.rootStore.timepointStore.isAligned(index + 1, index + 2));
-            if (this.rootStore.timepointStore.isAligned(index, index + 1)
-                && this.rootStore.timepointStore.isAligned(index + 1, index + 2)
-                && !this.rootStore.timepointStore.timepoints[index].isGrouped
-                && !this.rootStore.timepointStore.timepoints[index + 1].isGrouped
-                && !this.rootStore.timepointStore.timepoints[index + 2].isGrouped) {
-                this.transitionSpaces[index] = this.transitionSpace;
-                this.transitionSpaces[index + 1] = this.transitionSpace;
-            }
-            else {
-                this.transitionSpaces[index] = number;
-                this.transitionSpaces[index + 1] = number;
-            }
-        }
-        else {
-            if (this.rootStore.timepointStore.isAligned(index, index + 1)) {
-                this.transitionSpaces[index] = this.transitionSpace;
-            }
-            else {
-                this.transitionSpaces[index] = number;
-            }
-        }
-    }
-
-    resetTransitionSpace() {
-        this.transitionSpaces = [];
-    }
 
     /**
      * computes the height of a timepoint

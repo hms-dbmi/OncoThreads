@@ -153,7 +153,7 @@ class cBioAPI {
                     }
                 });
                 if (invalidSymbols.length !== 0) {
-                    alert('WARNING the following symbols are not valid:' + invalidSymbols);
+                    alert('WARNING the following symbols are not valid: ' + invalidSymbols);
                 }
             }
             callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));

@@ -26,7 +26,7 @@ const Content = observer(class Content extends React.Component {
         super();
         this.state = {
             modalIsOpen: false,
-            followUpFunction: null,
+            callback: null,
             clickedVariable: "",
             clickedTimepoint: -1,
             type: "",
@@ -42,7 +42,6 @@ const Content = observer(class Content extends React.Component {
             contextY: 0,
             showContextMenu: false,
             showContextMenuHeatmapRow: false,
-            varList:"",
 
             addModalIsOpen: false,
         }
@@ -71,35 +70,32 @@ const Content = observer(class Content extends React.Component {
      * @param timepointIndex: index of timepoint
      * @param variable: future primary variable
      * @param type: type of timepoint (sample/between)
-     * @param fun: Function which should be executed after the binning was applied: either group or promote
+     * @param callback: Function which should be executed after the binning was applied: either group or promote
      */
-    openModal(variable, type, fun, timepointIndex) {
-        let data = this.props.rootStore.timepointStore.getAllValues(variable);
+    openModal(variable, type, timepointIndex, callback) {
         this.setState({
             modalIsOpen: true,
             clickedTimepoint: timepointIndex,
             clickedVariable: variable,
             type: type,
-            followUpFunction: fun,
-            binningData: data,
+            callback: callback,
         });
     }
 
-    
+
     closeModal() {
-        this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, followUpFunction: null});
+        this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, callback: null});
     }
 
-    openAddModal(list) {
+    openAddModal() {
         //let data = this.props.rootStore.timepointStore.getAllValues(variable);
         this.setState({
             addModalIsOpen: true,
-            varList: list
-           // clickedTimepoint: timepointIndex,
-           // clickedVariable: variable,
-           // type: type,
-           // followUpFunction: fun,
-           // binningData: data,
+            // clickedTimepoint: timepointIndex,
+            // clickedVariable: variable,
+            // type: type,
+            // followUpFunction: fun,
+            // binningData: data,
         });
 
         console.log("In openAddModal()");
@@ -169,7 +165,7 @@ const Content = observer(class Content extends React.Component {
             return (<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
                                       variable={this.state.clickedVariable}
                                       timepointIndex={this.state.clickedTimepoint} type={this.state.type}
-                                      followUpFunction={this.state.followUpFunction}
+                                      callback={this.state.callback}
                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
                                       visMap={this.props.rootStore.visStore}
             />);
@@ -231,7 +227,7 @@ const Content = observer(class Content extends React.Component {
         }
         else {
             return <Button style={{float: 'right'}}
-                                             onClick={this.hideSidebar}><FontAwesome name="times"/></Button>
+                           onClick={this.hideSidebar}><FontAwesome name="times"/></Button>
         }
     }
 
@@ -239,9 +235,9 @@ const Content = observer(class Content extends React.Component {
     render() {
         return (
             <div>
-                <Grid fluid={true} >
+                <Grid fluid={true}>
                     <Row>
-                        <Col sm={2} xs={2} >
+                        <Col sm={2} xs={2}>
                             {this.getToggleSidebarIcons()}
                         </Col>
                     </Row>
@@ -259,18 +255,18 @@ const Content = observer(class Content extends React.Component {
                                 openAddModal={this.openAddModal}
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 mutationCount="Mutation count"
-                                currentVariables={this.props.rootStore.timepointStore.currentVariables.sample}
+                                currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
                                 showTooltip={this.showTooltip}
                                 hideTooltip={this.hideTooltip}
-                                store={this.props.rootStore.sampleTimepointStore}
+                                store={this.props.rootStore.timepointStore.variableStores.sample}
                                 visMap={this.props.rootStore.visStore}
                             />
                             <BetweenSampleVariableSelector
                                 openBinningModal={this.openModal}
                                 eventCategories={this.props.rootStore.eventCategories}
                                 eventAttributes={this.props.rootStore.eventAttributes}
-                                currentVariables={this.props.rootStore.timepointStore.currentVariables.between}
-                                store={this.props.rootStore.betweenTimepointStore}
+                                currentVariables={this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()}
+                                store={this.props.rootStore.timepointStore.variableStores.between}
                                 visMap={this.props.rootStore.visStore}
                             />
                         </Col>
@@ -279,11 +275,14 @@ const Content = observer(class Content extends React.Component {
                              style={{padding: 20}}>
                             <Row>
                                 <MainView
-                                    currentVariables={this.props.rootStore.timepointStore.currentVariables}
+                                    currentVariables={{
+                                        sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
+                                        between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
+                                    }}
                                     timepoints={this.props.rootStore.timepointStore.timepoints}
                                     store={this.props.rootStore.timepointStore}
                                     transitionStore={this.props.rootStore.transitionStore}
-                                    visMap={this.props.rootStore.visStore}
+                                    visMap={this.props.rootStore.visStore} f
                                     rectWidth={this.props.rootStore.visStore.sampleRectWidth}
                                     openBinningModal={this.openModal}
                                     showTooltip={this.showTooltip}
@@ -301,7 +300,8 @@ const Content = observer(class Content extends React.Component {
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>
-                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu} contextX={this.state.x}
+                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu}
+                              hideContextMenu={this.hideContextMenu} contextX={this.state.x}
                               contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
                               clickedVariable={this.state.clickedVariable}
                               type={this.state.contextType}

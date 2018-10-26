@@ -1,6 +1,8 @@
 import React from "react";
 import {observer} from "mobx-react";
 import FontAwesome from 'react-fontawesome';
+import uuidv4 from 'uuid/v4';
+
 import {
     Alert,
     Button,
@@ -13,7 +15,8 @@ import {
     FormGroup,
     Modal,
     Panel,
-    Radio
+    Radio,
+    ButtonToolbar
 } from 'react-bootstrap';
 
 
@@ -29,6 +32,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             buttonClicked: "",
             selectedKey: "",
             name: "",
+            orOperator: true,
             defaultName: "",
             disabled: {},
             selectedValues: [],
@@ -45,11 +49,15 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         this.handleCombineClick = this.handleCombineClick.bind(this);
     }
 
+
     /**
      * opens the binning modal
      * @param id
+     * @param name
+     * @param description
      */
-    bin(id) {
+    bin(id, name, description) {
+        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
         this.props.openBinningModal(id, "between", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
 
@@ -66,6 +74,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             this.setState({
                 disabled: disabled,
                 addCombined: addCombined
+
             });
         }
         else {
@@ -77,6 +86,13 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                 defaultName: ""
             });
         }
+    }
+
+    handleOperatorSelection(orOperator) {
+        this.setState({
+            orOperator: orOperator,
+            defaultName: this.createCompositeName(this.state.selectedValues, orOperator)
+        });
     }
 
     /**
@@ -102,7 +118,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      */
     addEventVariable() {
         if (this.state.selectedValues.length > 0) {
-            if (this.state.addCombined) {
+            if (this.state.addCombined && this.state.selectedValues.length > 1) {
                 let name = this.state.name;
                 if (this.state.name === "") {
                     name = this.state.defaultName;
@@ -113,7 +129,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     this.setState({showUniqueNameAlert: true});
                 }
                 else {
-                    this.addORVariable(name);
+                    this.addCombinedVariable(name);
                 }
             }
             else {
@@ -125,12 +141,14 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
         }
     }
 
+
     /**
      * adds a variable to the view
      */
-    addORVariable(name) {
+    addCombinedVariable(name) {
         this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
-        this.props.store.addORVariable(this.state.buttonClicked, this.state.selectedValues, name);
+        this.state.selectedValues.forEach(d => this.props.store.addEventVariable(this.state.buttonClicked, d, false));
+        this.props.store.addDerivedVariable(uuidv4(), name, "binary", "Binary combination of variables: " + this.state.defaultName, this.state.selectedValues.map(d => d.id), "binaryCombine", this.state.orOperator ? "or" : "and");
         this.closeModal();
     }
 
@@ -138,7 +156,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.props.store.addVariablesSeperate(this.state.buttonClicked, this.state.selectedValues);
+        this.state.selectedValues.forEach(d => this.props.store.addEventVariable(this.state.buttonClicked, d, true));
         this.closeModal();
     }
 
@@ -147,7 +165,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param id
      */
     addTimeDistance(id) {
-        this.props.store.addTimepointDistance(id)
+        this.props.store.addOriginalVariable(id, "Timepoint Distance", "NUMBER", "Time between timepoints", [], true, this.props.store.rootStore.staticMappers['timeGapMapping']);
     }
 
     /**
@@ -187,7 +205,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selectedValues: selected,
             selectedKey: type,
             disabled: disabled,
-            defaultName: this.createCompositeName(selected)
+            defaultName: this.createCompositeName(selected, this.state.orOperator)
         });
     }
 
@@ -240,7 +258,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
             selectedValues: selected,
             selectedKey: key,
             disabled: disabled,
-            defaultName: this.createCompositeName(selected)
+            defaultName: this.createCompositeName(selected, this.state.orOperator)
         });
     }
 
@@ -273,11 +291,15 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param selectedValues
      * @returns {string}
      */
-    createCompositeName(selectedValues) {
+    createCompositeName(selectedValues, operator) {
         let name = "";
+        let operatorSymbol = "-or-";
+        if (!operator) {
+            operatorSymbol = "-and-";
+        }
         selectedValues.forEach(function (d, i) {
             if (i !== 0) {
-                name += "/";
+                name += operatorSymbol;
             }
             name += d.name;
         });
@@ -349,11 +371,20 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     createTimepointDistanceButton() {
-        return (<Button style={{textAlign: "left"}} bsSize="xsmall"
-                        onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}><FontAwesome
-            onClick={() => this.bin(this.props.store.rootStore.timeDistanceId)
-            } name="cog"/> Time between timepoints
-        </Button>);
+        return (<ButtonToolbar>
+                <ButtonGroup bsSize="xsmall">
+                    <Button>
+                        <FontAwesome
+                            onClick={() => this.bin(this.props.store.rootStore.timeDistanceId, "Timepoint Distance", "Time between timepoints")
+                            } name="cog"/>
+                    </Button>
+                    <Button style={{textAlign: "left"}}
+                            onClick={() => this.addTimeDistance(this.props.store.rootStore.timeDistanceId)}
+                            key={this.props.store.rootStore.timeDistanceId}> Timepoint Distance
+                    </Button>
+                </ButtonGroup>
+            </ButtonToolbar>
+        );
     }
 
     /**
@@ -485,16 +516,30 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
                     <Modal.Footer>
                         {this.getUniqueNameAlert()}
                         {this.getEmptySelectionAlert()}
-                        <FormGroup>
-                            <Radio name="radioGroup" inline checked={this.state.addCombined}
-                                   onChange={() => this.handleCombineClick(true)}>
-                                Combine
-                            </Radio>{' '}
-                            <Radio name="radioGroup" inline checked={!this.state.addCombined}
-                                   onChange={() => this.handleCombineClick(false)}>
-                                Add as separate rows
-                            </Radio>{' '}
-                        </FormGroup>
+                        <Form horizontal>
+                            <FormGroup>
+                                <Radio name="radioGroup" inline checked={this.state.addCombined}
+                                       onChange={() => this.handleCombineClick(true)}>
+                                    Add Combined
+                                </Radio>{' '}
+                                <Radio name="radioGroup" inline checked={!this.state.addCombined}
+                                       onChange={() => this.handleCombineClick(false)}>
+                                    Add as separate rows
+                                </Radio>{' '}
+                            </FormGroup>
+                        </Form>
+                        <Form horizontal style={{display: !this.state.addCombined ? "none" : ""}}>
+                            <FormGroup>
+                                <Radio name="radioGroup" inline checked={this.state.orOperator}
+                                       onChange={() => this.handleOperatorSelection(true)}>
+                                    OR operator
+                                </Radio>{' '}
+                                <Radio name="radioGroup" inline checked={!this.state.orOperator}
+                                       onChange={() => this.handleOperatorSelection(false)}>
+                                    AND operator
+                                </Radio>{' '}
+                            </FormGroup>
+                        </Form>
                         <Form horizontal>
                             <FormGroup>
                                 {namefield}

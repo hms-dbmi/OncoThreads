@@ -43,18 +43,11 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
                 i = 0;
             }
             const d = this.props.timepoints[i];
-            return <svg width={this.state.width} height={this.props.timepointVarHeight}>
-                <GlobalRowOperator timepoint={d} width={this.state.width}
-                                   visMap={this.props.visMap} store={this.props.store}
-                                   showTooltip={this.props.showTooltip}
-                                   hideTooltip={this.props.hideTooltip}
-                                   showContextMenu={this.props.showContextMenu}
-                                   openBinningModal={this.props.openBinningModal}
-                                   selectedPatients={this.props.selectedPatients}
-                                   highlightVariable={this.highlightVariable}
-                                   unhighlightVariable={this.unhighlightVariable}
-                                   highlightedVariable={this.state.highlightedVariable}/>
-            </svg>
+            return <GlobalRowOperator timepoint={d} width={this.state.width}
+                                      height={this.props.store.variableStores.sample.currentVariables.length*20}
+                               visMap={this.props.visMap} store={this.props.store}
+                               showTooltip={this.props.showTooltip}
+                               hideTooltip={this.props.hideTooltip}/>
         }
 
         getEventRowHeader() {
@@ -62,17 +55,11 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
             if (this.props.store.transitionOn) {
                 i = 0;
                 const d = this.props.timepoints[i];
-                return <svg width={this.state.width} height={this.props.eventVarHeight}>
-                    <GlobalRowOperator timepoint={d} width={this.state.width}
-                                       visMap={this.props.visMap} store={this.props.store}
-                                       showTooltip={this.props.showTooltip}
-                                       hideTooltip={this.props.hideTooltip}
-                                       showContextMenu={this.props.showContextMenu}
-                                       openBinningModal={this.props.openBinningModal}
-                                       selectedPatients={this.props.selectedPatients}
-                                       highlightVariable={this.highlightVariable}
-                                       unhighlightVariable={this.unhighlightVariable}
-                                       highlightedVariable={this.state.highlightedVariable}/></svg>
+                return <GlobalRowOperator timepoint={d} width={this.state.width}
+                                          height={this.props.store.variableStores.between.getRelatedVariables("event").length*20}
+                                          visMap={this.props.visMap} store={this.props.store}
+                                          showTooltip={this.props.showTooltip}
+                                          hideTooltip={this.props.hideTooltip}/>
             }
             else {
                 return "-"

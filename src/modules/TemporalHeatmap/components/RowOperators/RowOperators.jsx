@@ -57,6 +57,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
                 let transform = "translate(0," + _self.props.posY[i] + ")";
                 //Different icons and functions for grouped and ungrouped timepoints
                 rowHeader.push(<RowOperator key={i} transform={transform} timepoint={d} width={_self.state.width}
+                                            currentVariables={_self.props.currentVariables}
                                             visMap={_self.props.visMap} store={_self.props.store}
                                             showTooltip={_self.props.showTooltip} hideTooltip={_self.props.hideTooltip}
                                             showContextMenu={_self.props.showContextMenu}

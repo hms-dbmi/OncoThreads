@@ -10,7 +10,7 @@ const BlockTextField = observer(class BlockTextField extends React.Component {
 
 
     setName(event) {
-        this.props.timepoint.setName(event.target.value)
+        this.props.timepoint.setName(event.target.value);
     }
 
     render() {

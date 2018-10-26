@@ -13,6 +13,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
         this.setXScaleType = this.setXScaleType.bind(this);
         this.setYScaleType = this.setYScaleType.bind(this);
     }
+
     setXScaleType(event) {
         let scale, isLog;
         if (event.target.value === 'linear') {
@@ -24,7 +25,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
         else {
             isLog = true;
             scale = function (d) {
-                return Math.log10(d+1);
+                return Math.log10(d + 1);
             };
         }
         this.setState({transformXFunction: scale, isXLog: isLog});
@@ -40,6 +41,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
         }
         this.setState({yScale: scale});
     }
+
     getRadio() {
         if (d3.min(this.props.data) >= 0) {
             return (<FormGroup>
@@ -74,7 +76,7 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
                 </Modal.Header>
                 <Modal.Body>
                     {alert}
-                    <BinSelector data={this.props.data} numBins={this.props.bins} width={450} height={300}
+                    <BinSelector data={this.props.data} width={450} height={300}
                                  variableName={this.props.variableName}
                                  handleBinChange={this.props.handleBinChange}
                                  transformXFunction={this.state.transformXFunction}

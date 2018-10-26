@@ -9,15 +9,16 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
         constructor() {
             super();
             this.promote = this.promote.bind(this);
+            this.position = 0;
         }
 
         /**
          * promotes a variable at a timepoint to a primary variable
-         * @param timepoint: timepoint where the primary variable is changes
          * @param variable: variable to be the primary variable
          */
-        promote(timepoint, variable) {
-            this.props.store.rootStore.globalPrimary = variable;
+        promote(variable) {
+            this.props.store.setGlobalPrimary(variable);
+            this.props.store.rootStore.undoRedoStore.saveGlobalHistory("PROMOTE");
         }
 
         /**
@@ -55,11 +56,11 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * @param timepoint
          */
         handleDelete(variable, timepoint) {
-            if (timepoint.type === "between" || this.props.store.currentVariables[timepoint.type].length > 1) {
-                this.props.store.removeVariable(variable, timepoint.type);
-
-                this.promote(timepoint,
-                    this.props.store.currentVariables.sample[this.props.store.currentVariables.sample.length - 1].id);
+            if (timepoint.type === "between" || this.props.store.variableStores[timepoint.type].currentVariables.length > 1) {
+                this.props.store.variableStores[timepoint.type].removeVariable(variable);
+                if (timepoint.type === "sample") {
+                    this.promote(this.props.store.variableStores.sample.currentVariables[0]);
+                }
             }
             else {
                 alert("Samples have to be represented by at least one variable");
@@ -69,7 +70,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g key={"delete" + variable} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
@@ -100,73 +101,89 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         getRowLabel(timepoint, variable, yPos, iconScale, width, fontWeight, fontSize) {
             const _self = this;
-            let fillC = "#F00";
-            const currVar = this.props.store.variableStore[timepoint.type].getById(variable);
+            const currVar = this.props.store.variableStores[timepoint.type].getById(variable);
+            let label;
             if (timepoint.type === 'between') {
                 if (currVar.type === 'event' || currVar.derived) {
-                    let labels = [];
-                    let oIds = currVar.originalIds;
+                    //let labels = [];
+                    //let oIds = currVar.originalIds;
+                    label = <g key={currVar.id}
+                               onMouseEnter={(e) => _self.props.showTooltip(e, currVar.name, currVar.description)}
+                               onMouseLeave={_self.props.hideTooltip}>
+
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
+                            {GlobalRowOperator.cropText(currVar.name, fontSize, fontWeight, width - iconScale * 24 - fontSize)}
+                        </text>
+                        {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
+                        <rect key={"rect"}
+                              width={fontSize} height={fontSize}
+                              x={this.props.width - iconScale * 24 - fontSize}
+                              y={-fontSize + 2}
+                              fill={this.props.visMap.globalTimelineColors(currVar.id)}
+                              opacity={0.5}/>
+                    </g>;
+                    /*
                     oIds.forEach(function (element, i) {
-                        let originalVar = _self.props.store.variableStore[timepoint.type].getByIdAllVariables(element);
+                        let originalVar = _self.props.store.variableStores[timepoint.type].getById(element);
                         if (originalVar.type === "event") {
-                            let c1 = _self.props.visMap.globalTimelineColors;
-                            if (fillC === "#F00") {
-                                fillC = c1(element);
-                            }
+                            let c1 = ColorScales.getGlobalTimelineColors();
+                            let fillC = c1(currVar.id);
                             let xT = GlobalRowOperator.getTextWidth(originalVar.name, fontSize);
                             labels.push(<g key={element}
-                                           transform={"translate(0," + (yPos + i * _self.props.store.rootStore.visStore.secondaryHeight) + ")"}
+                                           transform={"translate(0," + _self.position + ")"}
                                            onMouseEnter={(e) => _self.props.showTooltip(e, originalVar.name, originalVar.description)}
                                            onMouseLeave={_self.props.hideTooltip}>
                                 <rect key={"rect"}
                                       width={fontSize} height={fontSize}
-                                      x={xT + 5} y={-fontSize+2}
+                                      x={xT + 5} y={-fontSize + 2}
                                       fill={fillC}
                                       opacity={0.5}/>
                                 <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
-                                    {GlobalRowOperator.cropText(originalVar.name, fontSize, fontWeight, width-iconScale*24)}
+                                    {GlobalRowOperator.cropText(originalVar.name, fontSize, fontWeight, width - iconScale * 24)}
                                 </text>
                             </g>);
                         }
+                        _self.position += i * _self.props.store.rootStore.visStore.secondaryHeight;
 
 
                     });
-                    if(oIds.length>1) {
-                        labels.push(<rect width={this.props.width}
+                    if (oIds.length > 1) {
+                        labels.push(<rect key={variable} width={this.props.width}
                                           height={yPos + (oIds.length - 0.8) * _self.props.store.rootStore.visStore.secondaryHeight}
                                           strokeDasharray="5,5" strokeWidth={1} stroke={"grey"} fill={"none"}/>)
                     }
-                        labels.push(_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24,0));
-                    return labels;
+                    labels.push(_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, 0));
+                    return labels;*/
                 }
             }
 
             else {
-                return (<g transform={"translate(0," + yPos + ")"}
-                           onMouseEnter={(e) => _self.props.showTooltip(e, "Promote variable " + currVar.name, currVar.description)}
-                           onMouseLeave={_self.props.hideTooltip}>>
-                    <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                          onClick={() => this.promote(timepoint, variable)}
-                    >
-                        {GlobalRowOperator.cropText(this.props.store.variableStore[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale*24)}
-                    </text>
-                    {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24,-fontSize-2)}
-                </g>);
-
+                label =
+                    <g onMouseEnter={(e) => _self.props.showTooltip(e, "Promote variable " + currVar.name, currVar.description)}
+                       onMouseLeave={_self.props.hideTooltip}>>
+                        <text style={{fontWeight: fontWeight, fontSize: fontSize}}
+                              onClick={() => this.promote(variable)}
+                        >
+                            {GlobalRowOperator.cropText(this.props.store.variableStores[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
+                        </text>
+                        {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
+                    </g>;
             }
+            this.position += this.props.visMap.secondaryHeight;
+            return label
         }
 
         /**
          * Creates the Row operator for a timepoint
          */
         getRowOperator() {
+            this.position = this.props.visMap.secondaryHeight;
             const _self = this;
-            let pos = 0;
             if (this.props.timepoint) {
                 return this.props.timepoint.heatmap.map(function (d, i) {
                     let lineHeight;
                     let fontWeight;
-                    if (d.variable === _self.props.store.rootStore.globalPrimary) {
+                    if (d.variable === _self.props.store.globalPrimary) {
                         lineHeight = _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
                         fontWeight = "bold";
                     }
@@ -174,18 +191,12 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                         lineHeight = _self.props.visMap.secondaryHeight;
                         fontWeight = "normal";
                     }
-                    const transform = "translate(0," + pos + ")";
+                    const transform = "translate(0," + _self.position + ")";
                     const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
                     let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
-                    let numVar = 1;
-                    let variable = _self.props.store.variableStore[_self.props.timepoint.type].getById(d.variable, _self.props.timepoint.type);
-                    if (variable.datatype === 'binary') {
-                        numVar = variable.originalIds.length;
-                    }
-                    pos = pos + (lineHeight + _self.props.visMap.gap) * numVar;
                     return <g key={d.variable} className={"clickable"} transform={transform}>
                         {_self.getRowLabel(_self.props.timepoint, d.variable, (lineHeight + fontSize / 2) / 2, iconScale, _self.props.width, fontWeight, fontSize)}
                     </g>
@@ -198,9 +209,11 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         render() {
             return (
-                <g transform={this.props.transform}>
-                    {this.getRowOperator()}
-                </g>
+                <svg width={this.props.width} height={this.props.height}>
+                    <g transform={this.props.transform}>
+                        {this.getRowOperator()}
+                    </g>
+                </svg>
             )
         }
     }

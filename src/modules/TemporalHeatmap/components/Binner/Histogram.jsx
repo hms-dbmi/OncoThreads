@@ -8,7 +8,7 @@ const Histogram = observer(class Histogram extends React.Component {
             return (
                 <rect key={i} x={_self.props.xScale(d.x0)} y={_self.props.yScale(d.length)}
                       width={_self.props.xScale(d.x1) - _self.props.xScale(d.x0)}
-                      style={{stroke:'white'}}
+                      style={{stroke: 'white'}}
                       height={_self.props.height - _self.props.yScale(d.length)} fill="lightblue"/>
             );
         });
