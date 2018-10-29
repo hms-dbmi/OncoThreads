@@ -7,14 +7,11 @@ import Select from 'react-select';
 import ModifyCategorical from "./ModifyCategorical";
 import OriginalVariable from "../../OriginalVariable";
 
-//import SampleVariableSelector from "../VariableSelector/SampleVariableSelector"
-
 
 const AddVarModal = observer(class AddVarModal extends React.Component {
 
     constructor(props) {
         super(props);
-
         this.state = {
             isChecked: [],
             modifyCategoricalIsOpen: false,
@@ -107,7 +104,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             return this.props.store.referencedVariables[id];
         }
         else {
-            return new OriginalVariable(id, name, "STRING", description, [], this.props.store.rootStore.staticMappers[id]);
+            return new OriginalVariable(id, name, "STRING", description, [],[], this.props.store.rootStore.staticMappers[id]);
         }
     }
 
@@ -190,12 +187,11 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     handleCogWheelClick(index) {
         const variable = this.combinedList.filter(d => d.id === this.state.selectedVariables[index].originalId)[0];
-
         switch (this.state.selectedVariables[index].datatype) {
             case "NUMBER":
                 this.bin(variable.id, variable.variable, variable.description, this.state.selectedVariables[index].id);
                 break;
-            case "STRING":
+            default:
                 this.modifyCategorical(variable.id, variable.variable, variable.description, this.state.selectedVariables[index].id);
                 break;
         }
@@ -311,7 +307,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         const _self = this;
         this.state.selectedVariables.forEach(function (d) {
             if (!d.modified) {
-                let variable = new OriginalVariable(d.id, d.name, d.datatype, d.description, [], _self.props.store.rootStore.staticMappers[d.id]);
+                let variable = new OriginalVariable(d.id, d.name, d.datatype, d.description, [],[], _self.props.store.rootStore.staticMappers[d.id]);
                 _self.props.store.addVariableToBeReferenced(variable);
                 _self.props.store.addVariableToBeDisplayed(variable);
             }
@@ -347,7 +343,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             description: "Sum of all mutations"
         });
         return (
-            <Modal
+            <Modal backdrop={"static"}
                 show={this.props.addModalIsOpen}
                 onHide={this.props.closeAddModal}
             >
@@ -355,10 +351,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     <Modal.Title>Add Variables</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{minHeight: "400px"}}>
-
-
                     {this.renderList()}
-
                     {this.getCategoricalModal()}
                 </Modal.Body>
                 <Modal.Footer>

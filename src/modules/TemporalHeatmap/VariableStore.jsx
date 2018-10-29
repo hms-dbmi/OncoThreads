@@ -114,7 +114,7 @@ class VariableStore {
      */
     addOriginalVariable(id, name, datatype, description, range, display, mapper) {
         if (!this.isReferenced(id)) {
-            this.referencedVariables[id] = new OriginalVariable(id, name, datatype, description, range, mapper);
+            this.referencedVariables[id] = new OriginalVariable(id, name, datatype, description, range, [], mapper);
         }
         if (display && !this.isDisplayed(id)) {
             this.updateReferences(id);
@@ -140,7 +140,7 @@ class VariableStore {
     addEventVariable(eventType, selectedVariable, display) {
         const _self = this;
         if (!this.isReferenced(selectedVariable.id)) {
-            _self.referencedVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, this.rootStore.getSampleEventMapping(eventType, selectedVariable));
+            _self.referencedVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, [],this.rootStore.getSampleEventMapping(eventType, selectedVariable));
         }
         if (!(_self.currentVariables.includes(selectedVariable.id)) && display) {
             this.updateReferences(selectedVariable.id);
@@ -161,7 +161,7 @@ class VariableStore {
      * @param display
      */
     addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, display) {
-        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
+        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, [],[],MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
         console.log(id);
         if (display) {
             this.updateReferences(id);
@@ -189,7 +189,7 @@ class VariableStore {
      */
     modifyVariable(id, name, datatype, description, originalId, modificationType, modification) {
         let oldName = this.referencedVariables[originalId].name;
-        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, MapperCombine.getModificationMapper(modificationType, modification, [this.referencedVariables[originalId].mapper]));
+        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, [],[],MapperCombine.getModificationMapper(modificationType, modification, [this.referencedVariables[originalId].mapper]));
         this.updateReferences(id);
         this.currentVariables[this.getIndex(originalId)] = id;
         this.removeReferences(originalId);

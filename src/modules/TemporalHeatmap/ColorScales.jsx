@@ -33,12 +33,19 @@ class ColorScales {
         return d3.scaleOrdinal().range(colors).domain(binNames).unknown('#f7f7f7');
     }
 
-    static getCategoricalScale(domain) {
-        return d3.scaleOrdinal().range(['#f7f7f7', 'lightgray', '#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']).domain([undefined, 'wild type'].concat(domain));
+    static getCategoricalScale(range, domain) {
+        console.log(range,domain);
+        if (range.length === 0) {
+            range = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'];
+        }
+        return d3.scaleOrdinal().range(['#f7f7f7'].concat(range)).domain([undefined].concat(domain));
     }
 
-    static getBinaryScale() {
-        return d3.scaleOrdinal().range(['#f7f7f7', '#ffd92f', 'lightgray']).domain([undefined, true, false]);
+    static getBinaryScale(range) {
+        if (range.length === 0) {
+            range = ['#ffd92f', 'lightgray'];
+        }
+        return d3.scaleOrdinal().range(['#f7f7f7'].concat(range)).domain([undefined, true, false]);
     }
 
     static getGlobalTimelineColors() {

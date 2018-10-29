@@ -1,7 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, Checkbox, ControlLabel, FormControl, Glyphicon, Modal, Table} from 'react-bootstrap';
+import {Button, Checkbox, ControlLabel, FormControl, Glyphicon, Modal, Table,Popover,OverlayTrigger} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
+import {SketchPicker} from 'react-color';
 import DerivedVariable from "../../DerivedVariable";
 import MapperCombine from "../../MapperCombineFunctions";
 
@@ -13,17 +14,18 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     constructor(props) {
         super(props);
         this.state =
-            {currentData: this.createCurrentData(), name: props.variable.name+"_MODIFIED",ordinal:false};
+            {currentData: this.createCurrentData(), name: props.variable.name + "_MODIFIED", ordinal: false};
         this.merge = this.merge.bind(this);
-        this.handleNameChange=this.handleNameChange.bind(this);
-        this.handleApply=this.handleApply.bind(this);
+        this.handleNameChange = this.handleNameChange.bind(this);
+        this.handleConvertToOrdinal=this.handleConvertToOrdinal.bind(this);
+        this.handleApply = this.handleApply.bind(this);
     }
 
     /**
      * computes the percent occurance
      */
     getPercentOccurences() {
-        const _self=this;
+        const _self = this;
         let occurences = {};
         this.state.currentData.forEach(function (d) {
             const mapEntry = d.categories.toString();
@@ -55,39 +57,39 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * handles the name change
      * @param event
      */
-    handleNameChange(event){
-        this.setState({name:event.target.value});
+    handleNameChange(event) {
+        this.setState({name: event.target.value});
     }
 
     /**
      * handles convert to ordinal event
      * @param event
      */
-    handleConvertToOrdinal(event){
-        if(event.target.checked){
-            this.setState({ordinal:true})
+    handleConvertToOrdinal(event) {
+        if (event.target.checked) {
+            this.setState({ordinal: true})
         }
-        else{
-            this.setState({ordinal:false})
+        else {
+            this.setState({ordinal: false})
         }
     }
 
     /**
      * handles pressing apply
      */
-    handleApply(){
-        let categoryMapping={};
-        const _self=this;
-        this.props.variable.domain.forEach(function (d,i) {
+    handleApply() {
+        let categoryMapping = {};
+        const _self = this;
+        this.props.variable.domain.forEach(function (d, i) {
             _self.state.currentData.forEach(function (f) {
-                if(f.categories.includes(d)){
-                    categoryMapping[d]=f.name;
+                if (f.categories.includes(d)) {
+                    categoryMapping[d] = f.name;
                 }
             });
         });
-        let newId=uuidv4();
-        let datatype=this.state.ordinal?"ORDINAL":"STRING";
-        let variable=new DerivedVariable(newId,this.state.name,datatype, this.props.variable.description, [this.props.variable.id],"modifyCategorical",categoryMapping,MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
+        let newId = uuidv4();
+        let datatype = this.state.ordinal ? "ORDINAL" : "STRING";
+        let variable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, this.state.currentData.map(d => d.color), this.state.currentData.map(d => d.name), MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
         this.props.callback(variable);
         this.props.closeModal();
     }
@@ -98,7 +100,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      */
     createCurrentData() {
         let currentData = [];
-        const _self=this;
+        const _self = this;
         this.props.variable.domain.forEach(d => currentData.push({
             selected: false,
             name: d,
@@ -140,10 +142,12 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             if (d.selected) {
                 indicesToDelete.push(i);
                 if (mergedEntry.name !== '') {
-                    mergedEntry.color = d.color;
                     mergedEntry.name += (',' + d.name)
                 }
-                else mergedEntry.name = d.name;
+                else {
+                    mergedEntry.color = d.color;
+                    mergedEntry.name = d.name;
+                }
                 mergedEntry.categories = mergedEntry.categories.concat(d.categories)
             }
         });
@@ -169,6 +173,18 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({currentData: currentData});
     }
 
+    handleColorChange(color, index) {
+        let currentData = this.state.currentData.slice();
+        currentData[index].color = color.hex;
+        this.setState({currentData: currentData});
+
+    }
+    handleOverlayClick(event){
+        event.stopPropagation();
+        document.body.click();
+    }
+
+
     /**
      * shows the current categories in a table
      * @returns {any[]}
@@ -181,6 +197,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             if (d.selected) {
                 bgColor = "lightgrey";
             }
+            const popover = (
+                <Popover id="popover-positioned-right" title="Choose color">
+                    <SketchPicker
+                        color={d.color}
+                        onChangeComplete={(color) => _self.handleColorChange(color, i)}
+                    />
+                </Popover>);
             return (<tr bgcolor={bgColor} onClick={(e) => _self.toggleSelect(e, i)}>
                 <td>{i}
                     <Button bsSize="xsmall" onClick={(e) => _self.move(e, i, true)}><Glyphicon
@@ -199,10 +222,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                 </td>
                 <td>{Math.round(occuranceMapper[d.categories.toString()] * 100) / 100}</td>
                 <td>
-                    <svg width="10" height="10">
-                        <rect width="10" height="10"
-                              fill={_self.props.variable.colorScale(d.categories[0])}/>
-                    </svg>
+                    <OverlayTrigger rootClose={true} onClick={(e)=>_self.handleOverlayClick(e)} trigger="click" placement="right" overlay={popover}>
+                        <svg width="10" height="10">
+                            <rect width="10" height="10"
+                                  fill={d.color}/>
+                        </svg>
+                    </OverlayTrigger>
+
                 </td>
             </tr>)
         })
@@ -210,8 +236,9 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
 
 
     render() {
+        console.log(this.props.variable);
         return (
-            <Modal
+            <Modal backdrop={"static"}
                 show={this.props.modalIsOpen}
                 onHide={this.props.closeModal}
             >
@@ -245,9 +272,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     </Table>
                     <form>
                         <Button onClick={this.merge}>Merge Selected</Button>
-                        {/*
-                            <Checkbox onClick={this.handleConvertToOrdinal}>Convert to ordinal</Checkbox>
-                       */}
+                        {<Checkbox onClick={this.handleConvertToOrdinal}>Convert to ordinal</Checkbox>}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
