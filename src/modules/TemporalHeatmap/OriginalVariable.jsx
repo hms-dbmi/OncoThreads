@@ -14,7 +14,7 @@ class OriginalVariable {
                         scale = ColorScales.getBinaryScale(this.range);
                         break;
                     default:
-                        scale = ColorScales.getCategoricalScale(this.range);
+                        scale = ColorScales.getCategoricalScale(this.domain,this.range);
                 }
                 return scale;
             },
