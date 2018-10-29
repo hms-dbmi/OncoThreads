@@ -285,6 +285,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             Clinical Features
                         </Panel.Title>
                     </Panel.Heading>
+                    <h5>Sample-specific</h5>
                     <Select
                         type="text"
                         searchable={true}
@@ -292,6 +293,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                         searchPlaceholder="Search variable"
                         options={this.createClinicalAttributesList()}
                     />
+                    <h5>Patient-specific</h5>
                     <Select
                         type="text"
                         searchable={true}
