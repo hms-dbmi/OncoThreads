@@ -82,7 +82,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
         let derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINNED", this.props.variable.description + " (binned)", [this.props.variable.id], "binning", {
             bins: this.state.bins,
             binNames: this.state.binNames
-        }, MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames));
+        },[],this.state.binNames, MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames));
         this.props.callback(derivedVariable);
         this.close();
     }

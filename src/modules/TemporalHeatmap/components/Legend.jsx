@@ -209,7 +209,7 @@ const Legend = observer(class Legend extends React.Component {
                         if (lineheight < fontSize) {
                             fontSize = Math.round(lineheight);
                         }
-                        if (currentVariables[i].datatype === "STRING") {
+                        if (currentVariables[i].datatype === "STRING"||currentVariables[i].datatype==="ORDINAL") {
                             legendEntries = _self.getCategoricalLegend(d.data.map(element => element.value), opacity, fontSize, lineheight, color);
                         }
                         else if (currentVariables[i].datatype === "binary") {
@@ -238,7 +238,7 @@ const Legend = observer(class Legend extends React.Component {
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
         const _self = this;
-        if (primaryVariable.datatype === "STRING") {
+        if (primaryVariable.datatype === "STRING"||primaryVariable.datatype==="ORDINAL") {
             let allValues = [];
             this.props.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {
@@ -286,7 +286,7 @@ const Legend = observer(class Legend extends React.Component {
         else {
             //let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
 
-            let primaryVariable = this.props.currentVariables.sample.filter(variable => variable.originalIds[0] === _self.props.store.globalPrimary)[0];
+            let primaryVariable = this.props.currentVariables.sample.filter(variable => variable.id === _self.props.store.globalPrimary)[0];
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }
         return (

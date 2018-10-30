@@ -174,7 +174,6 @@ const MainView = observer(class MainView extends React.Component {
 
     getGlobalView(timepointPositions, svgHeight, svgWidth) {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
-        console.log(this.props.store.globalPrimary);
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
         const axisHorizontalZoom = (300 - this.state.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (<Row>

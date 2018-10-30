@@ -55,7 +55,6 @@ class OriginalVariable {
                     }
                 }
             }
-            console.log(currDomain);
         }
         return currDomain;
     }

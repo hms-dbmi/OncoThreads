@@ -25,6 +25,9 @@ class DerivedVariable {
             case "NUMBER":
                 scale = ColorScales.getContinousColorScale(this.domain);
                 break;
+            case "BINNED":
+                scale = ColorScales.getBinnedColorScale(this.domain,this.modification.bins);
+                break;
             case "binary":
                 scale = ColorScales.getBinaryScale(this.range);
                 break;

@@ -34,7 +34,6 @@ class ColorScales {
     }
 
     static getCategoricalScale(range, domain) {
-        console.log(range,domain);
         if (range.length === 0) {
             range = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'];
         }
