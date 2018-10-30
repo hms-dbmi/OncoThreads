@@ -43,19 +43,20 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
     }
 
     getRadio() {
-        if (d3.min(this.props.data) >= 0) {
+        let disabled=false;
+        if (d3.min(this.props.data) < 0) {
+            disabled=true;
+        }
             return (<FormGroup>
-                <Radio defaultChecked onClick={this.setXScaleType} value={'linear'} name="XradioGroup" inline>
+                <Radio defaultChecked onClick={this.setXScaleType} disabled={disabled} value={'linear'} name="XradioGroup" inline>
                     Linear
                 </Radio>{' '}
-                <Radio onClick={this.setXScaleType} value={'log'} name="XradioGroup" inline>
+                <Radio onClick={this.setXScaleType} value={'log'} disabled={disabled} name="XradioGroup" inline>
                     Log
                 </Radio>{' '}
             </FormGroup>);
-        }
-        else {
-            return null;
-        }
+
+
     }
 
     render() {

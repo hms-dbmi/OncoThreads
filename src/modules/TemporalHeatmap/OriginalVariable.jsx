@@ -11,10 +11,10 @@ class OriginalVariable {
                         scale = ColorScales.getContinousColorScale(this.domain);
                         break;
                     case "binary":
-                        scale = ColorScales.getBinaryScale(this.range);
+                        scale = ColorScales.getBinaryScale();
                         break;
                     default:
-                        scale = ColorScales.getCategoricalScale(this.range);
+                        scale = ColorScales.getCategoricalScale();
                 }
                 return scale;
             },

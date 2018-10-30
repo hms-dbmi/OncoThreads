@@ -243,6 +243,7 @@ const Content = observer(class Content extends React.Component {
                                 openBinningModal={this.openModal}
                                 openAddModal={this.openAddModal}
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
+                                clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
                                 mutationCount="Mutation count"
                                 currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
                                 showTooltip={this.showTooltip}

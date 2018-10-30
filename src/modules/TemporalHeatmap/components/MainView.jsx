@@ -175,7 +175,6 @@ const MainView = observer(class MainView extends React.Component {
     getGlobalView(timepointPositions, svgHeight, svgWidth) {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
-        const axisHorizontalZoom = (300 - this.state.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (<Row>
             <Col xs={2} md={2} style={{padding: 0}}>
                 <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue}
@@ -201,11 +200,11 @@ const MainView = observer(class MainView extends React.Component {
 
                 <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                              timeValue={this.props.store.rootStore.timeValue}
-                             width={this.state.plotWidth / axisHorizontalZoom}
+                             width={this.state.plotWidth}
                              height={svgHeight} maxTimeInDays={maxTime}/>
                 <Plot {...this.props}
                       height={svgHeight}
-                      width={this.state.plotWidth / axisHorizontalZoom}
+                      width={this.state.plotWidth}
                       setPlotWidth={this.setPlotWidth}
                       horizontalZoom={300 - this.state.horizontalZoom}
                       timepointY={timepointPositions.timepoint}
