@@ -7,7 +7,6 @@ class cBioAPI {
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
         this.mutationCounts = [];
-        this.selectedMutation = [];
     }
 
     initialize() {
@@ -16,7 +15,6 @@ class cBioAPI {
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
         this.mutationCounts = [];
-        this.selectedMutation = [];
     }
 
 
@@ -76,7 +74,7 @@ class cBioAPI {
                                 });
                             })
                     })
-            })
+            });
 
     }
 

@@ -117,6 +117,36 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         });
         return options;
     }
+     /**
+     * creates a searchable list of clinical attributes
+     * @returns {Array}
+     */
+    createClinicalPatientAttributesList() {
+        let options = [];
+        const _self = this;
+        this.props.clinicalPatientCategories.forEach(function (d) {
+            let icon = null;
+            if (d.datatype === "NUMBER") {
+                icon = <div className="floatDiv">
+                    <FontAwesome
+                        onClick={() => _self.bin(d.id, d.variable, d.description)
+                        } name="cog"/>
+                </div>
+            }
+            let lb = (
+                <div onMouseEnter={(e) => {
+                    _self.props.showTooltip(e, d.description);
+                }} onMouseLeave={_self.props.hideTooltip}>
+                    {icon}
+                    <div className="wordBreak" style={{textAlign: "left"}}
+                         onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype, d.description)}
+                         key={d.variable}> {d.variable}
+                    </div>
+                </div>);
+            options.push({value: d.variable, label: lb})
+        });
+        return options;
+    }
 
     /**
      * toggles an arrow icon (right and down)
@@ -255,13 +285,21 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             Clinical Features
                         </Panel.Title>
                     </Panel.Heading>
-
+                    <h5>Sample-specific</h5>
                     <Select
                         type="text"
                         searchable={true}
                         componentClass="select" placeholder="Select..."
                         searchPlaceholder="Search variable"
                         options={this.createClinicalAttributesList()}
+                    />
+                    <h5>Patient-specific</h5>
+                    <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.createClinicalPatientAttributesList()}
                     />
                     {this.getGenomicPanel()}
                 </Panel>

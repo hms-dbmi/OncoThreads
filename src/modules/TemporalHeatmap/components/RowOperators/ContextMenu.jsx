@@ -25,10 +25,13 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
                     _self.props.store.childStore.applyActionToAll(_self.props.localIndex, newID, _self.props.action);
                 });
             } else {
-                if (this.props.store.childStore.atLeastOneGrouped()) {
+                if (this.props.store.childStore.atLeastOneGrouped(0, this.props.store.childStore.timepoints.length - 1)) {
                     this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
                         _self.props.store.childStore.applyActionToAll(_self.props.localIndex, newID, _self.props.action);
                     });
+                }
+                else {
+                    this.props.store.childStore.applyActionToAll(this.props.localIndex, this.props.clickedVariable, this.props.action);
                 }
             }
         }
@@ -44,24 +47,29 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToPrevious() {
         const _self = this;
-        if (this.props.store.getById(this.props.clickedVariable).datatype === "NUMBER" && this.props.action !== "UNGROUP") {
-            if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
-                    _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, _self.props.action);
-                });
-            } else {
-                if (this.props.store.childStore.atLeastOneGrouped()) {
+        if(this.props.localIndex>0) {
+            if (this.props.store.getById(this.props.clickedVariable).datatype === "NUMBER" && this.props.action !== "UNGROUP") {
+                if (this.props.action === "GROUP") {
                     this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
-                        _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, this.props.action);
+                        _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, _self.props.action);
                     });
+                } else {
+                    if (this.props.store.childStore.atLeastOneGrouped(this.props.localIndex - 1, this.props.localIndex)) {
+                        this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                            _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, newID, this.props.action);
+                        });
+                    }
+                    else {
+                        _self.props.store.childStore.applyActionToPrevious(_self.props.localIndex, this.props.clickedVariable, this.props.action);
+                    }
                 }
             }
+            else {
+                this.props.store.childStore.applyActionToPrevious(_self.props.localIndex, this.props.clickedVariable, this.props.action);
+            }
+            this.props.hideContextMenu();
+            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO PREVIOUS", this.props.clickedVariable, this.type, this.props.localIndex)
         }
-        else {
-            this.props.store.childStore.applyActionToPrevious(_self.props.localIndex, this.props.clickedVariable, this.props.action);
-        }
-        this.props.hideContextMenu();
-        this.props.store.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO PREVIOUS", this.props.clickedVariable, this.type, this.props.localIndex)
     }
 
     /**
@@ -69,25 +77,29 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      */
     applyActionToNext() {
         const _self = this;
-        if (this.props.store.getById(this.props.clickedVariable).datatype === "NUMBER" && this.props.action !== "UNGROUP") {
-            if (this.props.action === "GROUP") {
-                this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
-                    _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
-                });
-            } else {
-                if (this.props.store.childStore.atLeastOneGrouped()) {
+        if(this.props.localIndex<this.props.store.childStore.timepoints.length-1) {
+            if (this.props.store.getById(this.props.clickedVariable).datatype === "NUMBER" && this.props.action !== "UNGROUP") {
+                if (this.props.action === "GROUP") {
                     this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
                         _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
                     });
+                } else {
+                    if (this.props.store.childStore.atLeastOneGrouped(this.props.localIndex, this.props.localIndex + 1)) {
+                        this.props.openBinningModal(this.props.clickedVariable, this.type, this.props.clickedTimepoint, function (newID) {
+                            _self.props.store.childStore.applyActionToNext(_self.props.localIndex, newID, _self.props.action);
+                        });
+                    }
+                    else {
+                        _self.props.store.childStore.applyActionToNext(_self.props.localIndex, this.props.clickedVariable, _self.props.action);
+                    }
                 }
             }
+            else {
+                this.props.store.childStore.applyActionToNext(this.props.localIndex, this.props.clickedVariable, this.props.action);
+            }
+            this.props.hideContextMenu();
+            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO NEXT", this.props.clickedVariable, this.type, this.props.localIndex)
         }
-        else {
-            this.props.store.childStore.applyActionToNext(this.props.localIndex, this.props.clickedVariable, this.props.action);
-        }
-        this.props.hideContextMenu();
-        this.props.store.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO NEXT", this.props.clickedVariable, this.type, this.props.localIndex)
-
     }
 
     magicSort() {
