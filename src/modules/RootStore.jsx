@@ -424,35 +424,27 @@ class RootStore {
      * creates a dictionary mapping sample IDs onto clinical data
      * @returns {{}}
      */
-    createClinicalSampleMapping() {
+      createClinicalSampleMapping() {
         const _self = this;
-        _self.cbioAPI.clinicalSampleData.forEach(function (d) {
-            let id;
-            let hasId = _self.clinicalSampleCategories.map(function (f) {
-                return f.originalId
-            }).includes(d.clinicalAttributeId);
-            if (hasId) {
-                id = _self.clinicalSampleCategories.filter(function (f) {
-                    return f.originalId === d.clinicalAttributeId;
-                })[0].id;
+        this.cbioAPI.clinicalSampleData.forEach(function (d) {
+            if (d)
+                if (!(d.clinicalAttributeId in _self.staticMappers)) {
+                    _self.clinicalSampleCategories.push({
+                        id: d.clinicalAttributeId,
+                        variable: d.clinicalAttribute.displayName,
+                        datatype: d.clinicalAttribute.datatype,
+                        description: d.clinicalAttribute.description
+                    });
+                    _self.staticMappers[d.clinicalAttributeId] = {}
+                }
+            if (_self.sampleStructure[d.patientId].includes(d.sampleId)) {
+                if (d.clinicalAttribute.datatype !== "NUMBER") {
+                    return _self.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
+                }
+                else {
+                    return _self.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
+                }
             }
-            else {
-                id = d.clinicalAttributeId;
-                _self.clinicalSampleCategories.push({
-                    id: id,
-                    variable: d.clinicalAttribute.displayName,
-                    datatype: d.clinicalAttribute.datatype,
-                    description: d.clinicalAttribute.description
-                });
-            }
-            if (!(id in _self.staticMappers)) {
-                _self.staticMappers[id] = {}
-            }
-            let value = d.value;
-            if (d.clinicalAttribute.datatype === "NUMBER") {
-                value = parseFloat(value);
-            }
-            _self.staticMappers[id][d.sampleId] = value;
         });
     }
 
