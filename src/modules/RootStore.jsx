@@ -6,8 +6,6 @@ import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 
-import axios from "axios/index";
-
 
 /*
 gets the data with the cBioAPI and gives it to the other stores
@@ -118,36 +116,46 @@ class RootStore {
           });
       }*/
     exportSVG(){
-        var tmp = document.getElementById("block-view");
+        var tmp;
+        if(this.timepointStore.globalTime) {
+            tmp = document.getElementById("timeline-view");
+        } else {
+            tmp = document.getElementById("block-view");
+        }
         var svg_all = tmp.getElementsByTagName("svg");
 
         var print_svg='';
-        var global_w=0, global_h=svg_all[0].height.baseVal.value;
+        var minW=null, minH=null, maxW=null, maxH=null;
+
 
         for(var i=0; i<svg_all.length; i++){
-            var temp=svg_all[i];
-
-            let temp_w=svg_all[i].width.baseVal.value,
-            temp_h=svg_all[i].height.baseVal.value;
-
             var t = "";
             for(var c = 0; c<svg_all[i].children.length; c++) {
                 var child = svg_all[i].children[c];
-                t = t + (new XMLSerializer).serializeToString(child);
+                t = t + (new XMLSerializer()).serializeToString(child);
             };
-            
+            var boundingRect = svg_all[i].getBoundingClientRect();
+            if(minW==null || boundingRect.left<minW) {
+                minW = boundingRect.left;
+            }
+            if(maxW==null || boundingRect.right>maxW) {
+                maxW = boundingRect.right;
+            }
+            if(minH==null || boundingRect.top>minH) {
+                minH = boundingRect.top;
+            }
+            if(maxH==null || boundingRect.bottom>maxH) {
+                maxH = boundingRect.bottom;
+            }
             print_svg= print_svg + 
-                    '<g width=\"' +temp_w + '\" height= \"' + temp_h + '\" transform=\"translate(' + global_w + ',0)\" >' +
+                    '<g width="' +boundingRect.width + '" height= "' + boundingRect.height + '" transform="translate(' + boundingRect.x + ','+boundingRect.y+')" >' +
                     
                       t  +
 
                     '</g>';
-
-            global_w = global_w + temp_w;   
-
         }
 
-        var svg_xml = '<svg xmlns=\"http://www.w3.org/2000/svg\" width = \"' +global_w.toString() + '\" height= \"' + global_h.toString() + '\">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' +(minW+maxW).toString() + '" height= "' + (minH+maxH).toString() + '">' +
                     
                         print_svg  +
 
@@ -162,9 +170,18 @@ class RootStore {
 
         form[0].value = "svg";
         form[1].value = svg_xml ;
-        //form.submit();
+        this.downloadFile(svg_xml);
     }
-    
+
+
+    downloadFile(content) {
+        var element = document.createElement("a");
+        var file = new Blob([content], {type: 'image/svg+xml'});
+        element.href = URL.createObjectURL(file);
+        element.download = "download.svg";
+        //element.target = "_blank";
+        element.click();
+    }
     /**
      * resets everything
      */

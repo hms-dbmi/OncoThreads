@@ -135,57 +135,50 @@ const MainView = observer(class MainView extends React.Component {
 
     getBlockView(svgHeight, svgWidth, heatmapWidth, timepointPositions) {
         return (
-        <div>
+            <div>
+                <div className="view" id="block-view">    
+                    <Row>
+                        <Col md={1} xs={1} style={{padding: 0}}>
+                            <TimepointLabels timepoints={this.props.store.timepoints} height={svgHeight}
+                                            store={this.props.store}
+                                            showTooltip={this.props.showTooltip}
+                                            hideTooltip={this.props.hideTooltip}
+                                            visMap={this.props.visMap}
+                                            sidebarVisible={this.props.sidebarVisible}/>
+                        </Col>
+                        <Col xs={2} md={2} style={{padding: 0}}>
+                            <RowOperators {...this.props} height={svgHeight}
+                                        posY={timepointPositions.timepoint}
+                                        selectedPatients={this.props.store.selectedPatients}
+                                        highlightedVariable={this.state.highlightedVariable}
+                                        setHighlightedVariable={this.setHighlightedVariable}
+                                        removeHighlightedVariable={this.removeHighlightedVariable}/>
 
-        <div className="view" id="block-view">    
-        <Row>
-            <Col md={1} xs={1} style={{padding: 0}}>
-                <TimepointLabels timepoints={this.props.store.timepoints} height={svgHeight}
-                                 store={this.props.store}
-                                 showTooltip={this.props.showTooltip}
-                                 hideTooltip={this.props.hideTooltip}
-                                 visMap={this.props.visMap}
-                                 sidebarVisible={this.props.sidebarVisible}/>
-            </Col>
-            <Col xs={2} md={2} style={{padding: 0}}>
-                <RowOperators {...this.props} height={svgHeight}
-                              posY={timepointPositions.timepoint}
-                              selectedPatients={this.props.store.selectedPatients}
-                              highlightedVariable={this.state.highlightedVariable}
-                              setHighlightedVariable={this.setHighlightedVariable}
-                              removeHighlightedVariable={this.removeHighlightedVariable}/>
-
-            </Col>
-            <Col xs={7} md={7} style={{padding: 0}}>
-                <Plot
-                    {...this.props} width={this.state.plotWidth} height={svgHeight}
-                    horizontalZoom={300 - this.state.horizontalZoom}
-                    timepointY={timepointPositions.timepoint}
-                    transY={timepointPositions.connection}
-                    setPlotWidth={this.setPlotWidth}
-                    selectedPatients={this.props.store.selectedPatients}
-                    onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
-            </Col>
-            <Col xs={2} md={2} style={{padding: 0}}>
-                <Legend {...this.props} height={svgHeight} mainWidth={svgWidth}
-                        posY={timepointPositions.timepoint}
-                        highlightedVariable={this.state.highlightedVariable}
-                        setHighlightedVariable={this.setHighlightedVariable}
-                        removeHighlightedVariable={this.removeHighlightedVariable}/>
-            </Col>
-        </Row>
-
-         </div>   
-          <form id="svgform" method="post" action="download.pl" >
-           
-                        <input type="hidden" id="output_format" name="output_format" value=""/> 
-                        <input type="hidden" id="data" name="data" value=""/> 
-
-                    
-            </form>
-                   
-        </div>
-    
+                        </Col>
+                        <Col xs={7} md={7} style={{padding: 0}}>
+                            <Plot
+                                {...this.props} width={this.state.plotWidth} height={svgHeight}
+                                horizontalZoom={300 - this.state.horizontalZoom}
+                                timepointY={timepointPositions.timepoint}
+                                transY={timepointPositions.connection}
+                                setPlotWidth={this.setPlotWidth}
+                                selectedPatients={this.props.store.selectedPatients}
+                                onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
+                        </Col>
+                        <Col xs={2} md={2} style={{padding: 0}}>
+                            <Legend {...this.props} height={svgHeight} mainWidth={svgWidth}
+                                    posY={timepointPositions.timepoint}
+                                    highlightedVariable={this.state.highlightedVariable}
+                                    setHighlightedVariable={this.setHighlightedVariable}
+                                    removeHighlightedVariable={this.removeHighlightedVariable}/>
+                        </Col>
+                    </Row>
+                </div>   
+                <form id="svgform" method="post" >
+                    <input type="hidden" id="output_format" name="output_format" value=""/>
+                    <input type="hidden" id="data" name="data" value=""/>
+                </form>
+            </div>
         );
     }
 
@@ -193,45 +186,54 @@ const MainView = observer(class MainView extends React.Component {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
         const axisHorizontalZoom = (300 - this.state.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
-        return (<Row>
-            <Col xs={2} md={2} style={{padding: 0}}>
-                <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue}
-                            width={250} height={svgHeight} maxTimeInDays={maxTime}/>
-                <GlobalRowOperators {...this.props} width={300}
-                                    timepointVarHeight={(this.props.currentVariables.sample.length + 1) * 19}
-                                    eventVarHeight={this.props.store.variableStores.between.getVariablesOfType("event").length * 19}
-                                    posY={timepointPositions.timepoint}
-                                    selectedPatients={this.props.store.selectedPatients}/>
+        return (
+            <div>
+                <div className="view" id="timeline-view">
+                    <Row>
+                        <Col xs={2} md={2} style={{padding: 0}}>
+                            <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue}
+                                        width={250} height={svgHeight} maxTimeInDays={maxTime}/>
+                            <GlobalRowOperators {...this.props} width={300}
+                                                timepointVarHeight={(this.props.currentVariables.sample.length + 1) * 19}
+                                                eventVarHeight={this.props.store.variableStores.between.getVariablesOfType("event").length * 19}
+                                                posY={timepointPositions.timepoint}
+                                                selectedPatients={this.props.store.selectedPatients}/>
 
-                <h5>{"Legend of " + globalPrimaryName}</h5>
-                <Legend {...this.props} height={svgHeight / 4}
-                        mainWidth={svgWidth}/>
-            </Col>
-            <Col xs={1} md={1} style={{padding: 0, width: 55}}>
-                <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
-                                timeValue={this.props.store.rootStore.timeValue}
-                    //width={this.state.plotWidth / axisHorizontalZoom}
+                            <h5>{"Legend of " + globalPrimaryName}</h5>
+                            <Legend {...this.props} height={svgHeight / 4}
+                                    mainWidth={svgWidth}/>
+                        </Col>
+                        <Col xs={1} md={1} style={{padding: 0, width: 55}}>
+                            <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
+                                            timeValue={this.props.store.rootStore.timeValue}
+                                //width={this.state.plotWidth / axisHorizontalZoom}
 
-                                height={svgHeight} maxTimeInDays={maxTime}/>
-            </Col>
-            <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
+                                            height={svgHeight} maxTimeInDays={maxTime}/>
+                        </Col>
+                        <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
 
-                <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
-                             timeValue={this.props.store.rootStore.timeValue}
-                             width={this.state.plotWidth / axisHorizontalZoom}
-                             height={svgHeight} maxTimeInDays={maxTime}/>
-                <Plot {...this.props}
-                      height={svgHeight}
-                      width={this.state.plotWidth / axisHorizontalZoom}
-                      setPlotWidth={this.setPlotWidth}
-                      horizontalZoom={300 - this.state.horizontalZoom}
-                      timepointY={timepointPositions.timepoint}
-                      transY={timepointPositions.connection}
-                      selectedPatients={this.props.store.selectedPatients}
-                      onDrag={this.handlePatientSelection}/>
-            </Col>
-
-        </Row>)
+                            <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
+                                        timeValue={this.props.store.rootStore.timeValue}
+                                        width={this.state.plotWidth / axisHorizontalZoom}
+                                        height={svgHeight} maxTimeInDays={maxTime}/>
+                            <Plot {...this.props}
+                                height={svgHeight}
+                                width={this.state.plotWidth / axisHorizontalZoom}
+                                setPlotWidth={this.setPlotWidth}
+                                horizontalZoom={300 - this.state.horizontalZoom}
+                                timepointY={timepointPositions.timepoint}
+                                transY={timepointPositions.connection}
+                                selectedPatients={this.props.store.selectedPatients}
+                                onDrag={this.handlePatientSelection}/>
+                        </Col>
+                    </Row>
+                </div>   
+                <form id="svgform" method="post" >
+                    <input type="hidden" id="output_format" name="output_format" value=""/> 
+                    <input type="hidden" id="data" name="data" value=""/>
+                </form>
+            </div>
+        );
     }
 
     horizontalZoom(event) {
