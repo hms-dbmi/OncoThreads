@@ -134,7 +134,11 @@ const MainView = observer(class MainView extends React.Component {
 
 
     getBlockView(svgHeight, svgWidth, heatmapWidth, timepointPositions) {
-        return (<Row>
+        return (
+        <div>
+
+        <div className="view" id="block-view">    
+        <Row>
             <Col md={1} xs={1} style={{padding: 0}}>
                 <TimepointLabels timepoints={this.props.store.timepoints} height={svgHeight}
                                  store={this.props.store}
@@ -169,7 +173,20 @@ const MainView = observer(class MainView extends React.Component {
                         setHighlightedVariable={this.setHighlightedVariable}
                         removeHighlightedVariable={this.removeHighlightedVariable}/>
             </Col>
-        </Row>);
+        </Row>
+
+         </div>   
+          <form id="svgform" method="post" action="download.pl" >
+           
+                        <input type="hidden" id="output_format" name="output_format" value=""/> 
+                        <input type="hidden" id="data" name="data" value=""/> 
+
+                    
+            </form>
+                   
+        </div>
+    
+        );
     }
 
     getGlobalView(timepointPositions, svgHeight, svgWidth) {
@@ -299,6 +316,8 @@ const MainView = observer(class MainView extends React.Component {
                     </Col>
                     <Col md={buttonToolbarWidth} xs={buttonToolbarWidth}>
                         <ButtonToolbar>
+                            <Button onClick={this.props.store.rootStore.exportSVG}>Export
+                                </Button>
                             <Button onClick={this.props.store.rootStore.undoRedoStore.undo}><FontAwesome
                                 name="undo"/></Button>
                             <Button onClick={this.props.store.rootStore.undoRedoStore.redo}><FontAwesome
@@ -315,8 +334,16 @@ const MainView = observer(class MainView extends React.Component {
                             </DropdownButton>
                         </ButtonToolbar>
                     </Col>
+
+                   
                 </Row>
                 {view}
+
+
+
+               
+               
+
             </Grid>
         )
 

@@ -6,6 +6,8 @@ import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 
+import axios from "axios/index";
+
 
 /*
 gets the data with the cBioAPI and gives it to the other stores
@@ -35,6 +37,9 @@ class RootStore {
         this.sampleStructure = [];
 
         this.reset = this.reset.bind(this);
+
+        this.exportSVG = this.exportSVG.bind(this);
+        //this.onSubmit = this.onSubmit.bind(this);
 
         extendObservable(this, {
             parsed: false,
@@ -101,6 +106,65 @@ class RootStore {
     }
 
 
+    /*onSubmit = (e) => {
+        e.preventDefault();
+        // get our form data out of state
+        const {results} = this.state;
+
+        axios.post('/', { results })
+          .then((result) => {
+            //access the results here....
+            console.log(result)
+          });
+      }*/
+    exportSVG(){
+        var tmp = document.getElementById("block-view");
+        var svg_all = tmp.getElementsByTagName("svg");
+
+        var print_svg='';
+        var global_w=0, global_h=svg_all[0].height.baseVal.value;
+
+        for(var i=0; i<svg_all.length; i++){
+            var temp=svg_all[i];
+
+            let temp_w=svg_all[i].width.baseVal.value,
+            temp_h=svg_all[i].height.baseVal.value;
+
+            var t = "";
+            for(var c = 0; c<svg_all[i].children.length; c++) {
+                var child = svg_all[i].children[c];
+                t = t + (new XMLSerializer).serializeToString(child);
+            };
+            
+            print_svg= print_svg + 
+                    '<g width=\"' +temp_w + '\" height= \"' + temp_h + '\" transform=\"translate(' + global_w + ',0)\" >' +
+                    
+                      t  +
+
+                    '</g>';
+
+            global_w = global_w + temp_w;   
+
+        }
+
+        var svg_xml = '<svg xmlns=\"http://www.w3.org/2000/svg\" width = \"' +global_w.toString() + '\" height= \"' + global_h.toString() + '\">' +
+                    
+                        print_svg  +
+
+                    '</svg>';
+
+
+        // Submit the <FORM> to the server.
+        // The result will be an attachment file to download.
+        var form = document.getElementById("svgform");
+       // form['output_format'].value = output_format;
+        //form['data'].value = svg_xml ;
+
+        form[0].value = "svg";
+        form[1].value = svg_xml ;
+        //form.submit();
+    }
+    
     /**
      * resets everything
      */

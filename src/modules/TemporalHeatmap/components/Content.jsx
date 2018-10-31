@@ -313,6 +313,9 @@ const Content = observer(class Content extends React.Component {
                               type={this.state.contextType}
                               store={this.props.rootStore.timepointStore}
                               openBinningModal={this.openModal}/>
+
+
+                          
             </div>
         )
     }
