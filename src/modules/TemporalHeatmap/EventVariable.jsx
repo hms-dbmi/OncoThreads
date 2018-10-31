@@ -1,4 +1,3 @@
-import {extendObservable} from "mobx";
 import ColorScales from "./ColorScales";
 
 class EventVariable {

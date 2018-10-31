@@ -157,7 +157,7 @@ class DataStore {
         this.timepoints.forEach(function (d, i) {
             if (d.isGrouped) {
                 d.group(d.primaryVariableId);
-                d.sortGroup(d.groupOrder);
+                d.sortGroup(d.primaryVariableId,d.groupOrder);
             }
             _self.rootStore.transitionStore.adaptTransitions(i);
         })

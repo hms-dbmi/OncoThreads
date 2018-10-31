@@ -120,7 +120,6 @@ const Legend = observer(class Legend extends React.Component {
     getCategoricalLegend(domain, row, opacity, fontSize, lineheight, color) {
         const _self = this;
         let currX = this.borderLeft;
-        let currKeys = [];
         let legendEntries = [];
         domain.forEach(d => {
             if (row.includes(d)) {

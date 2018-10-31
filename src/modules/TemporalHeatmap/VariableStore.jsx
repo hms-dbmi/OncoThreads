@@ -173,6 +173,15 @@ class VariableStore {
 
     }
 
+    replaceDisplayedVariable(oldId, newVariable) {
+        if (!this.isReferenced(newVariable.id)) {
+            this.referencedVariables[newVariable.id] = newVariable;
+        }
+        this.updateReferences(newVariable.id);
+        this.removeReferences(oldId);
+        this.currentVariables[this.currentVariables.indexOf(oldId)] = newVariable.id;
+    }
+
     addDerivedToCurrent(id) {
         console.log(id);
         this.updateReferences(id);

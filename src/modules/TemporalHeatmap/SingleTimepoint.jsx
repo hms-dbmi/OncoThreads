@@ -122,7 +122,7 @@ class SingleTimepoint {
                 this.setPrimaryVariable(variableId);
                 this.groupTimepoint(variableId);
             }
-            this.sortGroup(-this.groupOrder);
+            this.sortGroup(variableId,-this.groupOrder);
         }
         //case: the timepoint is not grouped
         else {
@@ -143,7 +143,7 @@ class SingleTimepoint {
     group(variable) {
         this.setPrimaryVariable(variable);
         this.groupTimepoint(variable);
-        this.sortGroup(1);
+        this.sortGroup(variable,1);
     }
 
     /**
@@ -154,7 +154,7 @@ class SingleTimepoint {
         this.setPrimaryVariable(variableId);
         if (this.isGrouped) {
             this.groupTimepoint(variableId);
-            this.sortGroup(this.groupOrder);
+            this.sortGroup(variableId,this.groupOrder);
         }
     }
 
@@ -247,13 +247,15 @@ class SingleTimepoint {
      * sorts groups
      * @param order: 1 ascending, -1 descending
      */
-    sortGroup(order) {
+    sortGroup(variable,order) {
         this.groupOrder = order;
+        let domain=this.rootStore.timepointStore.variableStores[this.type].getById(variable).domain;
+        console.log(domain);
         this.grouped = this.grouped.sort(function (a, b) {
-            if (a.partition < b.partition) {
+            if (domain.indexOf(a.partition) < domain.indexOf(b.partition)) {
                 return -order;
             }
-            if (a.partition > b.partition) {
+            if (domain.indexOf(a.partition) > domain.indexOf(b.partition)) {
                 return order;
             }
             if (a.partition === undefined && b.partition !== undefined) {
