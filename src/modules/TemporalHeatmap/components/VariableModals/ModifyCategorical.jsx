@@ -2,7 +2,6 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {
     Button,
-    Checkbox,
     ControlLabel,
     FormControl,
     FormGroup,
@@ -19,6 +18,7 @@ import DerivedVariable from "../../DerivedVariable";
 import MapperCombine from "../../MapperCombineFunctions";
 import FontAwesome from 'react-fontawesome';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
+import * as d3 from "d3";
 
 
 const ModifyCategorical = observer(class ModifyCategorical extends React.Component {
@@ -30,11 +30,10 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                 currentData: this.createCurrentData(),
                 name: props.variable.name + "_MODIFIED",
                 ordinal: false,
-                ordinalColorScale: d3ScaleChromatic.interpolateGreys
+                colorScale: d3ScaleChromatic.interpolateGreys
             };
         this.merge = this.merge.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
-        this.handleConvertToOrdinal = this.handleConvertToOrdinal.bind(this);
         this.handleApply = this.handleApply.bind(this);
     }
 
@@ -78,26 +77,6 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({name: event.target.value});
     }
 
-    /**
-     * handles convert to ordinal event
-     * @param event
-     */
-    handleConvertToOrdinal(event) {
-        let currentData = this.state.currentData.slice();
-        const _self = this;
-        if (event.target.checked) {
-            currentData.forEach((d, i) => {
-                d.color = this.state.ordinalColorScale((i * 2 + 1) / (currentData.length * 2 + 1));
-            });
-            this.setState({ordinal: true, currentData: currentData})
-        }
-        else {
-            currentData.forEach(d => {
-                d.color = this.props.variable.colorScale(d.name);
-            });
-            this.setState({ordinal: false, currentData: currentData});
-        }
-    }
 
     /**
      * handles pressing apply
@@ -112,8 +91,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             });
         });
         let newId = uuidv4();
-        let datatype = this.state.ordinal ? "ORDINAL" : "STRING";
-        let variable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, this.state.currentData.map(d => d.color), this.state.currentData.map(d => d.name), MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
+        let variable = new DerivedVariable(newId, this.state.name, "STRING", this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, this.state.currentData.map(d => d.color), this.state.currentData.map(d => d.name), MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
         this.props.callback(variable);
         this.props.closeModal();
     }
@@ -154,7 +132,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         }
         if (this.state.ordinal) {
             currentData.forEach((d, i) => {
-                d.color = this.state.ordinalColorScale((i * 2 + 1) / (currentData.length * 2 + 1));
+                d.color = this.state.colorScale((i * 2 + 1) / (currentData.length * 2 + 1));
             });
         }
         this.setState({currentData: currentData});
@@ -272,54 +250,59 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         })
     }
 
-    handleColorScaleChange(scale) {
+    handleColorScaleChange(scale, ordinal) {
         let currentData = this.state.currentData.slice();
         currentData.forEach((d, i) => {
             d.color = scale((i * 2 + 1) / (currentData.length * 2 + 1));
         });
-        this.setState({ordinalColorScale: scale, currentData: currentData});
+        this.setState({colorScale: scale, currentData: currentData, ordinal: ordinal});
+    }
+
+    static getOrdinalRects(scale, rectDim, numRect) {
+        let rects = [];
+        for (let i = 1; i < numRect + 1; i++) {
+            rects.push(<rect fill={scale((1 / (numRect + 1)) * i)} width={rectDim}
+                             height={rectDim}
+                             x={(i - 1) * rectDim}/>)
+        }
+        return rects;
+    }
+
+    static getCategoricalRects(scale, rectDim, numRect) {
+        let rects = [];
+        for (let i = 0; i < numRect; i++) {
+            rects.push(<rect fill={scale.range()[i]} width={rectDim}
+                             height={rectDim}
+                             x={i * rectDim}/>)
+        }
+        return rects;
     }
 
     getColorScalePopover() {
         let rectDim = 20;
-        const blues = d3ScaleChromatic.schemeBlues[5].map((d, i) => <rect fill={d} width={rectDim} height={rectDim}
-                                                                          x={i * rectDim}/>);
-        const greens = d3ScaleChromatic.schemeGreens[5].map((d, i) => <rect fill={d} width={rectDim} height={rectDim}
-                                                                            x={i * rectDim}/>);
-        const greys = d3ScaleChromatic.schemeGreys[5].map((d, i) => <rect fill={d} width={rectDim} height={rectDim}
-                                                                          x={i * rectDim}/>);
-        const oranges = d3ScaleChromatic.schemeOranges[5].map((d, i) => <rect fill={d} width={rectDim} height={rectDim}
-                                                                              x={i * rectDim}/>);
-        const purples = d3ScaleChromatic.schemePurples[5].map((d, i) => <rect fill={d} width={rectDim} height={rectDim}
-                                                                              x={i * rectDim}/>);
-        const reds = d3ScaleChromatic.schemeReds[5].map((d, i) => <rect fill={d} width={rectDim} height={rectDim}
-                                                                        x={i * rectDim}/>);
-        return <form><FormGroup>
-            <Radio onChange={() => this.handleColorScaleChange(d3ScaleChromatic.interpolateGreys)}
-                   name="ColorScaleGroup">
-                <svg width={rectDim * 5} height={rectDim}>{greys}</svg>
-            </Radio>
-            <Radio onChange={() => this.handleColorScaleChange(d3ScaleChromatic.interpolateBlues)}
-                   name="ColorScaleGroup">
-                <svg width={rectDim * 5} height={rectDim}>{blues}</svg>
-            </Radio>
-            <Radio onChange={() => this.handleColorScaleChange(d3ScaleChromatic.interpolateGreens)}
-                   name="ColorScaleGroup">
-                <svg width={rectDim * 5} height={rectDim}>{greens}</svg>
-            </Radio>
-            <Radio onChange={() => this.handleColorScaleChange(d3ScaleChromatic.interpolateOranges)}
-                   name="ColorScaleGroup">
-                <svg width={rectDim * 5} height={rectDim}>{oranges}</svg>
-            </Radio>
-            <Radio onChange={() => this.handleColorScaleChange(d3ScaleChromatic.interpolatePurples)}
-                   name="ColorScaleGroup">
-                <svg width={rectDim * 5} height={rectDim}>{purples}</svg>
-            </Radio>
-            <Radio onChange={() => this.handleColorScaleChange(d3ScaleChromatic.interpolateReds)}
-                   name="ColorScaleGroup">
-                <svg width={rectDim * 5} height={rectDim}>{reds}</svg>
-            </Radio>
-        </FormGroup></form>
+        let numRect = 5;
+        let ordinalScales = [d3ScaleChromatic.interpolateBlues, d3ScaleChromatic.interpolateGreens, d3ScaleChromatic.interpolateGreys, d3ScaleChromatic.interpolateOranges, d3ScaleChromatic.interpolatePurples, d3ScaleChromatic.interpolateReds];
+        let categoricalScales = [d3.scaleOrdinal().range(['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']),
+            d3.scaleOrdinal().range(['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f']),
+            d3.scaleOrdinal().range(['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec']),
+            d3.scaleOrdinal().range(['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666'])];
+        return <form>
+            <FormGroup>
+                <ControlLabel>Ordinal Scales</ControlLabel>
+                {ordinalScales.map(d => <Radio onChange={() => this.handleColorScaleChange(d, true)}
+                                               name="ColorScaleGroup">
+                    <svg width={rectDim * numRect}
+                         height={rectDim}>{ModifyCategorical.getOrdinalRects(d, rectDim, numRect)}</svg>
+                </Radio>)}
+                <ControlLabel>Categorical Scales</ControlLabel>
+                {categoricalScales.map(d => <Radio onChange={() => this.handleColorScaleChange(d, false)}
+                                                   name="ColorScaleGroup">
+                    <svg width={rectDim * numRect}
+                         height={rectDim}>{ModifyCategorical.getCategoricalRects(d, rectDim, numRect)}</svg>
+                    {"  Colors: " + d.range().length}
+                </Radio>)}
+            </FormGroup>
+        </form>
 
     }
 
@@ -356,7 +339,6 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                                 <OverlayTrigger rootClose={true} onClick={(e) => this.handleOverlayClick(e)}
                                                 trigger="click"
                                                 placement="right" overlay={colorScalePopOver}><FontAwesome
-                                    style={{visibility: this.state.ordinal ? "visible" : "hidden"}}
                                     name="paint-brush"/></OverlayTrigger></th>
                         </tr>
                         </thead>
@@ -365,8 +347,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                         </tbody>
                     </Table>
                     <form>
-                        <Button onClick={this.merge}>Merge Selected</Button>
-                        {<Checkbox onClick={this.handleConvertToOrdinal}>Convert to ordinal</Checkbox>}
+                        <Button onClick={this.merge}>Merge selected</Button>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

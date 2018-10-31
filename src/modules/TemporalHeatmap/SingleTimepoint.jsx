@@ -311,7 +311,7 @@ class SingleTimepoint {
         });
         //first sort after primary variable values
         this.heatmapOrder = helper.sort(function (a, b) {
-            if (varToSort.datatype !== "ORDINAL" && varToSort.datatype !== "BINNED") {
+            if (varToSort.datatype === "NUMBER") {
                 if (a.value < b.value)
                     return -order;
                 if (a.value > b.value)
