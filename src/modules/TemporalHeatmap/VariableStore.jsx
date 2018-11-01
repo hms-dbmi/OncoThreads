@@ -169,17 +169,12 @@ class VariableStore {
      * @param originalIds
      * @param modificationType
      * @param modification
-     * @param display
      */
-    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, display) {
+    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification) {
         this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, [], [], MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
-        console.log(id);
-        if (display) {
-            this.updateReferences(id);
-            this.currentVariables.push(id);
-            this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
-        }
-
+        this.updateReferences(id);
+        this.currentVariables.push(id);
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
     }
 
 
