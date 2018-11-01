@@ -176,13 +176,7 @@ class VariableStore {
         this.currentVariables.push(id);
         this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
     }
-
-
-    addDerivedToCurrent(id) {
-        console.log(id);
-        this.updateReferences(id);
-        this.currentVariables.push(id);
-    }
+    
 
     /**
      * replaces a variable with a variable derived from it
