@@ -47,7 +47,7 @@ const ContinuousBinner = observer(class ContinuousBinner extends React.Component
 
         let med = (d3.max(this.data) + d3.min(this.data)) / 2;
 
-        return [min, max, med];
+        return [min, med, max];
     }
 
     handleNumberOfBinsChange(number) {

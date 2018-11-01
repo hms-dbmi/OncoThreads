@@ -72,39 +72,44 @@ const Legend = observer(class Legend extends React.Component {
     getContinuousLegend(opacity, fontSize, lineheight, color) {
         const min = color.domain()[0];
         const max = color.domain()[color.domain().length - 1];
-        let intermediateStop = null;
-        let text = [];
-        if (color.domain().length === 3) {
-            intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
-            text.push(<text key={"text" + min} fill="white" style={{fontSize: fontSize}} x={0}
-                            y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
-                <text key={"text" + 0} fill="black" style={{fontSize: fontSize}}
-                      x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
-                      y={lineheight / 2 + fontSize / 2}>{0}</text>,
-                <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
-                      x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
-                      y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
+        if (min !== Number.NEGATIVE_INFINITY && max !== Number.POSITIVE_INFINITY) {
+            let intermediateStop = null;
+            let text = [];
+            if (color.domain().length === 3) {
+                intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
+                text.push(<text key={"text" + min} fill="white" style={{fontSize: fontSize}} x={0}
+                                y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
+                    <text key={"text" + 0} fill="black" style={{fontSize: fontSize}}
+                          x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
+                          y={lineheight / 2 + fontSize / 2}>{0}</text>,
+                    <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
+                          x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
+                          y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
+            }
+            else {
+                text.push(<text key={"text" + min} fill="black" style={{fontSize: fontSize}} x={0}
+                                y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
+                    <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
+                          x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
+                          y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
+            }
+            let randomId = uuidv4();
+            this.updateMaxWidth(100 + this.borderLeft);
+            return <g transform={"translate(" + this.borderLeft + ",0)"}>
+                <defs>
+                    <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style={{stopColor: color(min)}}/>
+                        {intermediateStop}
+                        <stop offset="100%" style={{stopColor: color(max)}}/>
+                    </linearGradient>
+                </defs>
+                <rect opacity={opacity} x="0" y="0" width={100} height={lineheight} fill={"url(#" + randomId + ")"}/>
+                {text}
+            </g>;
         }
-        else {
-            text.push(<text key={"text" + min} fill="black" style={{fontSize: fontSize}} x={0}
-                            y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
-                <text key={"text" + max} fill="white" style={{fontSize: fontSize}}
-                      x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
-                      y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
+        else{
+            return null
         }
-        let randomId = uuidv4();
-        this.updateMaxWidth(100 + this.borderLeft);
-        return <g transform={"translate(" + this.borderLeft + ",0)"}>
-            <defs>
-                <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{stopColor: color(min)}}/>
-                    {intermediateStop}
-                    <stop offset="100%" style={{stopColor: color(max)}}/>
-                </linearGradient>
-            </defs>
-            <rect opacity={opacity} x="0" y="0" width={100} height={lineheight} fill={"url(#" + randomId + ")"}/>
-            {text}
-        </g>;
     }
 
     /**
@@ -147,7 +152,7 @@ const Legend = observer(class Legend extends React.Component {
                 textColor = "black";
             }
             const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
-            const tooltipText = d + ": " + modification.bins[i] + " to " + modification.bins[i + 1];
+            const tooltipText = d + ": " + Math.round(modification.bins[i] * 100) / 100 + " to " + Math.round(modification.bins[i + 1] * 100) / 100;
             legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), textColor, tooltipText));
             currX += (rectWidth + 2);
         });

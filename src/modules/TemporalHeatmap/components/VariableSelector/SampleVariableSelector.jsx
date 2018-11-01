@@ -117,6 +117,36 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         });
         return options;
     }
+     /**
+     * creates a searchable list of clinical attributes
+     * @returns {Array}
+     */
+    createClinicalPatientAttributesList() {
+        let options = [];
+        const _self = this;
+        this.props.clinicalPatientCategories.forEach(function (d) {
+            let icon = null;
+            if (d.datatype === "NUMBER") {
+                icon = <div className="floatDiv">
+                    <FontAwesome
+                        onClick={() => _self.bin(d.id, d.variable, d.description)
+                        } name="cog"/>
+                </div>
+            }
+            let lb = (
+                <div onMouseEnter={(e) => {
+                    _self.props.showTooltip(e, d.description);
+                }} onMouseLeave={_self.props.hideTooltip}>
+                    {icon}
+                    <div className="wordBreak" style={{textAlign: "left"}}
+                         onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype, d.description)}
+                         key={d.variable}> {d.variable}
+                    </div>
+                </div>);
+            options.push({value: d.variable, label: lb})
+        });
+        return options;
+    }
 
     /**
      * toggles an arrow icon (right and down)
@@ -162,7 +192,13 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * searches for the genes entered in the search field
      */
     searchGenes() {
-        this.props.store.rootStore.getMutationsAllAtOnce(this.state.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, "").split(" "), this.state.mappingType);
+        let geneList=this.state.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, "").toUpperCase().split(" ");
+        geneList.forEach(function (d,i) {
+            if(d.includes("ORF")){
+                geneList[i]=d.replace("ORF","orf")
+            }
+        });
+        this.props.store.rootStore.getMutationsAllAtOnce(geneList, this.state.mappingType);
         this.setState({geneListString: ''});
     }
 
@@ -244,13 +280,21 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             Clinical Features
                         </Panel.Title>
                     </Panel.Heading>
-
+                    <h5>Sample-specific</h5>
                     <Select
                         type="text"
                         searchable={true}
                         componentClass="select" placeholder="Select..."
                         searchPlaceholder="Search variable"
                         options={this.createClinicalAttributesList()}
+                    />
+                    <h5>Patient-specific</h5>
+                    <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.createClinicalPatientAttributesList()}
                     />
                     {this.getGenomicPanel()}
                 </Panel>
