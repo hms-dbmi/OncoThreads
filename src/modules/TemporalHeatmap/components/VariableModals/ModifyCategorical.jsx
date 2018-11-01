@@ -274,7 +274,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                         </svg>
                     </OverlayTrigger>
             }
-            return (<tr bgcolor={bgColor} onClick={(e) => _self.toggleSelect(e, i)}>
+            return (<tr key={d.name} bgcolor={bgColor} onClick={(e) => _self.toggleSelect(e, i)}>
                 <td>{i}
                     <Button bsSize="xsmall" onClick={(e) => _self.move(e, i, true)}><Glyphicon
                         glyph="chevron-up"/></Button>
@@ -309,7 +309,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     static getOrdinalRects(scale, rectDim, numRect) {
         let rects = [];
         for (let i = 1; i < numRect + 1; i++) {
-            rects.push(<rect fill={scale((1 / (numRect + 1)) * i)} width={rectDim}
+            rects.push(<rect key={i} fill={scale((1 / (numRect + 1)) * i)} width={rectDim}
                              height={rectDim}
                              x={(i - 1) * rectDim}/>)
         }
@@ -319,7 +319,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     static getCategoricalRects(scale, rectDim, numRect) {
         let rects = [];
         for (let i = 0; i < numRect; i++) {
-            rects.push(<rect fill={scale.range()[i]} width={rectDim}
+            rects.push(<rect key={i} fill={scale.range()[i]} width={rectDim}
                              height={rectDim}
                              x={i * rectDim}/>)
         }
@@ -337,13 +337,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         return <form>
             <FormGroup>
                 <ControlLabel>Ordinal Scales</ControlLabel>
-                {ordinalScales.map(d => <Radio onChange={() => this.handleColorScaleChange(d, true)}
+                {ordinalScales.map((d,i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, true)}
                                                name="ColorScaleGroup">
                     <svg width={rectDim * numRect}
                          height={rectDim}>{ModifyCategorical.getOrdinalRects(d, rectDim, numRect)}</svg>
                 </Radio>)}
                 <ControlLabel>Categorical Scales</ControlLabel>
-                {categoricalScales.map(d => <Radio onChange={() => this.handleColorScaleChange(d, false)}
+                {categoricalScales.map((d,i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, false)}
                                                    name="ColorScaleGroup">
                     <svg width={rectDim * numRect}
                          height={rectDim}>{ModifyCategorical.getCategoricalRects(d, rectDim, numRect)}</svg>

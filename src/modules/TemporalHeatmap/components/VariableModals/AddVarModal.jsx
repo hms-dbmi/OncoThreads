@@ -39,7 +39,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     createOptions() {
         let options = [];
         const _self = this;
-        this.combinedList.forEach(function (d, i) {
+        this.combinedList.forEach(function (d) {
             const tooltip = <Tooltip id="tooltip">
                 {d.description}
             </Tooltip>;
@@ -155,6 +155,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     /**
      * opens the modal for modification of categorical variables
      * @param variable
+     * @param derivedVariable
      * @param callback
      */
     openCategoricalModal(variable, derivedVariable, callback) {
@@ -254,7 +255,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     datatypeLabel = "N";
             }
             checked.push(
-                <Row>
+                <Row key={d.originalId}>
                     <OverlayTrigger placement="top" overlay={tooltip}>
                         <Col sm={7} md={7}>
                             {d.name}

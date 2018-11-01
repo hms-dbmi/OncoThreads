@@ -29,8 +29,8 @@ const Content = observer(class Content extends React.Component {
             callback: null,
             clickedVariable: "",
             clickedTimepoint: -1,
-            display:false,
-            modify:false,
+            display: false,
+            modify: false,
             type: "",
             x: 0,
             y: 0,
@@ -87,17 +87,9 @@ const Content = observer(class Content extends React.Component {
     }
 
     openAddModal() {
-        //let data = this.props.rootStore.timepointStore.getAllValues(variable);
         this.setState({
             addModalIsOpen: true,
-            // clickedTimepoint: timepointIndex,
-            // clickedVariable: variable,
-            // type: type,
-            // followUpFunction: fun,
-            // binningData: data,
         });
-
-        console.log("In openAddModal()");
     }
 
     closeAddModal() {
