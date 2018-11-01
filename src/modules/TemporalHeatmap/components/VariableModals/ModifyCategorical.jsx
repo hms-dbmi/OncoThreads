@@ -27,12 +27,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         super(props);
         this.state =
             {
+                colorScale: d3.scaleOrdinal().range(['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']),
                 currentData: this.createCurrentData(),
-                name: props.variable.name + "_MODIFIED",
+                name: props.variable.derived ? props.variable.name : props.variable.name + "_MODIFIED",
                 ordinal: false,
-                colorScale: d3ScaleChromatic.interpolateGreys
             };
         this.merge = this.merge.bind(this);
+        this.unMerge = this.unMerge.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
     }
@@ -41,15 +42,14 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * computes the percent occurance
      */
     getPercentOccurences() {
-        const _self = this;
         let occurences = {};
         this.state.currentData.forEach(d => {
             const mapEntry = d.categories.toString();
             occurences[mapEntry] = 0;
             d.categories.forEach(f => {
-                for (let entry in _self.props.variable.mapper) {
-                    if (_self.props.variable.mapper[entry] === f) {
-                        occurences[mapEntry] += 1 / Object.keys(_self.props.variable.mapper).length * 100;
+                for (let entry in this.props.variable.mapper) {
+                    if (this.props.variable.mapper[entry] === f) {
+                        occurences[mapEntry] += 1 / Object.keys(this.props.variable.mapper).length * 100;
                     }
                 }
             })
@@ -102,13 +102,29 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      */
     createCurrentData() {
         let currentData = [];
-        const _self = this;
-        this.props.variable.domain.forEach(d => currentData.push({
-            selected: false,
-            name: d,
-            categories: [d],
-            color: _self.props.variable.colorScale(d)
-        }));
+        if (this.props.derivedVariable !== null) {
+            for (let key in this.props.derivedVariable.modification) {
+                if (!(currentData.map(d => d.name).includes(this.props.derivedVariable.modification[key]))) {
+                    currentData.push({
+                        selected: false,
+                        name: this.props.derivedVariable.modification[key],
+                        categories: [],
+                        color: this.props.derivedVariable.colorScale(this.props.derivedVariable.modification[key])
+                    })
+                }
+                currentData[currentData.map(d => d.name).indexOf(this.props.derivedVariable.modification[key])].categories.push(key);
+            }
+        }
+        else {
+            this.props.variable.domain.forEach(d => {
+                currentData.push({
+                    selected: false,
+                    name: d,
+                    categories: [d],
+                    color: this.props.variable.colorScale(d)
+                })
+            });
+        }
         return currentData;
     }
 
@@ -166,6 +182,38 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                 currentData.splice(indicesToDelete[i], 1);
             }
         }
+        this.setState({currentData: currentData});
+    }
+
+    unMerge() {
+        let currentData = this.state.currentData.slice();
+        let unmergedEntries = [];
+        let mergedIndeces = [];
+        currentData.forEach((d, i) => {
+            if (d.selected && d.categories.length > 1) {
+                let currentEntries = d.categories.map((d) => {
+                    return ({
+                        selected: false,
+                        name: d,
+                        categories: [d],
+                        color: this.state.colorScale(d)
+                    })
+                });
+                mergedIndeces.push(i);
+                unmergedEntries.push(currentEntries);
+            }
+        });
+        for (let i = mergedIndeces.length - 1; i >= 0; i--) {
+            currentData.splice(mergedIndeces[i], 1);
+            unmergedEntries[i].forEach((d, j) => currentData.splice(mergedIndeces[i] + j, 0, d));
+        }
+        currentData.forEach((d, i) => {
+            let value = d.name;
+            if (this.state.ordinal) {
+                value = (i * 2 + 1) / (currentData.length * 2 + 1);
+            }
+            d.color = this.state.colorScale(value);
+        });
         this.setState({currentData: currentData});
     }
 
@@ -348,11 +396,12 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     </Table>
                     <form>
                         <Button onClick={this.merge}>Merge selected</Button>
+                        <Button onClick={this.unMerge}>Split selected</Button>
+
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.props.closeModal}
-                    >
+                    <Button onClick={this.props.closeModal}>
                         Cancel
                     </Button>
 

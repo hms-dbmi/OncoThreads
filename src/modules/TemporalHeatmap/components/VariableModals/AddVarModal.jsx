@@ -16,6 +16,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             isChecked: [],
             modifyCategoricalIsOpen: false,
             currentVariable: '',
+            mapper: {},
             callback: '',
             selectedVariables: []
         };
@@ -60,16 +61,21 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * 2. creates a derived variable (without adding it in the variable store)
      * 3. adds the variables to the referenced variables and displayed variables arrays
      *    (the arrays will be added to the variable store later)
-     * @param id
-     * @param name
-     * @param description
-     * @param modifiedId
+     * @param index
      */
-    bin(id, name, description, modifiedId) {
+    bin(index) {
         const _self = this;
-        let variable = this.getVariable(id, name, description);
-        this.props.openBinningModal(variable, "sample", function (derivedVariable) {
-            _self.modifyVarList(_self.state.selectedVariables.map(d => d.id).indexOf(modifiedId), variable, derivedVariable, modifiedId);
+        let variable = this.getOriginalVariable(index);
+        let modifiedId=this.state.selectedVariables[index].id;
+        this.props.openBinningModal(variable, "sample", newVariable => {
+            _self.modifyVarList(index,newVariable);
+            if (this.derivedVariables.map(d => d.id).includes(modifiedId)) {
+                this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(modifiedId), 1)
+            }
+            else {
+                this.referencedVariables.push(variable);
+            }
+            this.derivedVariables.push(newVariable);
         });
     }
 
@@ -79,57 +85,71 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * 2. creates a derived variable (without adding it in the variable store)
      * 3. adds the variables to the referenced variables and displayed variables arrays
      *    (the arrays will be added to the variable store later)
-     * @param id
-     * @param name
-     * @param description
-     * @param modifiedId
+     * @param index
      */
-    modifyCategorical(id, name, description, modifiedId) {
-        const _self = this;
-        let variable = this.getVariable(id, name, description);
-        this.openCategoricalModal(variable, function (derivedVariable) {
-            _self.modifyVarList(_self.state.selectedVariables.map(d => d.id).indexOf(modifiedId), variable, derivedVariable, modifiedId);
+    modifyCategorical(index) {
+        let originalVariable = this.getOriginalVariable(index);
+        const derivedVariable = this.getDerivedVariable(index);
+        this.openCategoricalModal(originalVariable, derivedVariable, newVar => {
+            this.modifyVarList(index,newVar);
+            if (derivedVariable !== null) {
+                this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(derivedVariable.id), 1, newVar)
+            }
+            else {
+                this.derivedVariables.push(newVar);
+            }
+            if (!this.referencedVariables.map(d => d.id).includes(originalVariable.id)) {
+                this.referencedVariables.push(originalVariable);
+            }
         });
     }
 
     /**
      * gets a variable. If already referenced, get the variable from the referenced variable, else create it
-     * @param id
-     * @param name
-     * @param description
      * @returns {*}
+     * @param index
      */
-    getVariable(id, name, description) {
-        if (this.props.store.isReferenced(id)) {
-            return this.props.store.referencedVariables[id];
+    getOriginalVariable(index) {
+        const referencedIndex = this.referencedVariables.map(d => d.id).indexOf(this.state.selectedVariables[index].id);
+        if (referencedIndex !== -1) {
+            return this.referencedVariables[referencedIndex];
         }
         else {
-            return new OriginalVariable(id, name, "STRING", description, [],[], this.props.store.rootStore.staticMappers[id]);
+            const originalEntry = this.combinedList.filter(d => d.id === this.state.selectedVariables[index].originalId)[0];
+            return new OriginalVariable(originalEntry.id, originalEntry.variable, "STRING", originalEntry.description, [], [], this.props.store.rootStore.staticMappers[originalEntry.id]);
         }
     }
 
     /**
-     * modofies an entry of the current variable list and adds variables to arrays
+     * gets the derived variable at the index of the selected variables. returns null if it does not exist
      * @param index
-     * @param variable
-     * @param derivedVariable
-     * @param modifiedId
+     * @returns {*}
      */
-    modifyVarList(index, variable, derivedVariable, modifiedId) {
+    getDerivedVariable(index) {
+        if (this.state.selectedVariables[index].modified) {
+            if (this.derivedVariables.map(d => d.id).includes(this.state.selectedVariables[index].id)) {
+                return this.derivedVariables.filter(d => d.id === this.state.selectedVariables[index].id)[0];
+            }
+            else {
+                return this.store.getById(this.state.selectedVariables[index].id);
+            }
+        }
+        else return null;
+    }
+
+    /**
+     * modifies an entry of the current variable list and adds variables to arrays
+     * @param index
+     * @param newVariable
+     */
+    modifyVarList(index,newVariable) {
         let varList = this.state.selectedVariables;
         varList[index].modified = true;
-        varList[index].datatype = derivedVariable.datatype;
-        varList[index].name = derivedVariable.name;
-        varList[index].description = derivedVariable.description;
-        varList[index].id = derivedVariable;
+        varList[index].datatype = newVariable.datatype;
+        varList[index].name = newVariable.name;
+        varList[index].description = newVariable.description;
+        varList[index].id = newVariable.id;
         this.setState({selectedVariables: varList});
-        if (this.derivedVariables.map(d=>d.id).includes(modifiedId)) {
-            this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(modifiedId), 1)
-        }
-        else {
-            this.referencedVariables.push(variable);
-        }
-        this.derivedVariables.push(derivedVariable);
     }
 
     /**
@@ -137,8 +157,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @param variable
      * @param callback
      */
-    openCategoricalModal(variable, callback) {
-        this.setState({modifyCategoricalIsOpen: true, currentVariable: variable, callback: callback});
+    openCategoricalModal(variable, derivedVariable, callback) {
+        this.setState({
+            modifyCategoricalIsOpen: true,
+            derivedVariable: derivedVariable,
+            currentVariable: variable,
+            callback: callback
+        });
     }
 
     /**
@@ -186,13 +211,12 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @param index
      */
     handleCogWheelClick(index) {
-        const variable = this.combinedList.filter(d => d.id === this.state.selectedVariables[index].originalId)[0];
         switch (this.state.selectedVariables[index].datatype) {
             case "NUMBER":
-                this.bin(variable.id, variable.variable, variable.description, this.state.selectedVariables[index].id);
+                //this.bin(index);
                 break;
             default:
-                this.modifyCategorical(variable.id, variable.variable, variable.description, this.state.selectedVariables[index].id);
+                this.modifyCategorical(index);
                 break;
         }
 
@@ -307,7 +331,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         const _self = this;
         this.state.selectedVariables.forEach(function (d) {
             if (!d.modified) {
-                let variable = new OriginalVariable(d.id, d.name, d.datatype, d.description, [],[], _self.props.store.rootStore.staticMappers[d.id]);
+                let variable = new OriginalVariable(d.id, d.name, d.datatype, d.description, [], [], _self.props.store.rootStore.staticMappers[d.id]);
                 _self.props.store.addVariableToBeReferenced(variable);
                 _self.props.store.addVariableToBeDisplayed(variable);
             }
@@ -327,7 +351,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             modal = <ModifyCategorical modalIsOpen={this.state.modifyCategoricalIsOpen}
                                        variable={this.state.currentVariable}
                                        callback={this.state.callback}
-                                       store={this.props.store}
+                                       derivedVariable={this.state.derivedVariable}
                                        closeModal={this.closeCategoricalModal}/>
         }
         return (
@@ -344,9 +368,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         });
         return (
             <Modal backdrop={"static"}
-                show={this.props.addModalIsOpen}
-                onHide={this.props.closeAddModal}
-            >
+                   show={this.props.addModalIsOpen}
+                   onHide={this.props.closeAddModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Add Variables</Modal.Title>
                 </Modal.Header>
@@ -355,20 +378,14 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     {this.getCategoricalModal()}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleAddButton}
-                    >
-                        Add
+                    <Button onClick={this.props.closeAddModal}>
+                        Close
                     </Button>
-
-                    <Button disabled={true}//onClick={this.props.closeAddModal}
-                    >
+                    <Button disabled={true}>
                         Combine
                     </Button>
-
-                    <Button onClick={this.props.closeAddModal}
-                    >
-                        Close
-
+                    <Button onClick={this.handleAddButton}>
+                        Add
                     </Button>
                 </Modal.Footer>
             </Modal>

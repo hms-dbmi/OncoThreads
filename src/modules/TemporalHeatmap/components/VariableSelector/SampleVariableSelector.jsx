@@ -3,6 +3,7 @@ import {observer} from "mobx-react";
 import {Button, ButtonGroup, ButtonToolbar, ControlLabel, FormControl, FormGroup, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import Select from 'react-select';
+import OriginalVariable from "../../OriginalVariable";
 
 /*
 creates the selector for sample variables (left side of main view, top)
@@ -35,8 +36,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     bin(id, name, description) {
-        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
-        this.props.openBinningModal(id, "sample", null);
+        let variable=new OriginalVariable(id,name,"NUMBER",description,[],[],this.props.store.rootStore.staticMappers[id]);
+        this.props.store.addVariableToBeReferenced(variable);
+        this.props.openBinningModal(variable, "sample", newVariable=>this.props.store.addVariableToBeDisplayed(newVariable));
     }
 
     /**
@@ -44,8 +46,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param id
      */
     addVarModal() {
-        console.log("show list of vars");
-
         this.props.openAddModal();
     }
 
