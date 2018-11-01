@@ -127,6 +127,8 @@ class RootStore {
         var print_svg='';
         var minW=null, minH=null, maxW=null, maxH=null;
 
+        var prev_right=0, new_x, new_right, prev_x=0;
+
 
         for(var i=0; i<svg_all.length; i++){
             var t = "";
@@ -135,11 +137,15 @@ class RootStore {
                 t = t + (new XMLSerializer()).serializeToString(child);
             };
             var boundingRect = svg_all[i].getBoundingClientRect();
+
+            new_x=boundingRect.x, new_right=boundingRect.right;
+
             if(minW==null || boundingRect.left<minW) {
                 minW = boundingRect.left;
             }
             if(maxW==null || boundingRect.right>maxW) {
                 maxW = boundingRect.right;
+                new_x=maxW;
             }
             if(minH==null || boundingRect.top>minH) {
                 minH = boundingRect.top;
@@ -147,8 +153,21 @@ class RootStore {
             if(maxH==null || boundingRect.bottom>maxH) {
                 maxH = boundingRect.bottom;
             }
+
+            new_x= boundingRect.x;
+            new_right=boundingRect.right;
+
+            if(boundingRect.x<prev_right){
+                
+                new_right=prev_right+boundingRect.width;
+                new_x=prev_right;
+            }
+
+            prev_right=new_right-1;
+            prev_x=new_x-1;
+
             print_svg= print_svg + 
-                    '<g width="' +boundingRect.width + '" height= "' + boundingRect.height + '" transform="translate(' + boundingRect.x + ','+boundingRect.y+')" >' +
+                    '<g width="' +boundingRect.width + '" height= "' + boundingRect.height + '" transform="translate(' + new_x+ ','+boundingRect.y+')" >' +
                     
                       t  +
 
