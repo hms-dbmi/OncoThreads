@@ -136,17 +136,33 @@ class RootStore {
                 var child = svg_all[i].children[c];
                 t = t + (new XMLSerializer()).serializeToString(child);
             };
-            var boundingRect = svg_all[i].getBoundingClientRect();
+            var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
-            new_x=boundingRect.x;
-            new_right=boundingRect.right;
+            if(this.timepointStore.globalTime && this.timepointStore.transitionOn && (i===0 || i===1) ) {
+                boundingRect = svg_all[i].getBoundingClientRect();
+            }
+            else{
+                boundingRect = svg_all[i].parentElement.getBoundingClientRect();
+            }
+            var width = svg_all[i].getBoundingClientRect().width;
+            var height = svg_all[i].getBoundingClientRect().height;
 
+            new_x= boundingRect.x;
+            new_right=new_x+width;
+
+            if(boundingRect.x<prev_right && !this.timepointStore.globalTime){
+                
+                new_right=prev_right+width;
+                new_x=prev_right;
+            }
+
+            prev_right=new_right-1;
+            
             if(minW==null || boundingRect.left<minW) {
                 minW = boundingRect.left;
             }
-            if(maxW==null || boundingRect.right>maxW) {
-                maxW = boundingRect.right;
-                new_x=maxW;
+            if(maxW==null || new_right>maxW) {
+                maxW = new_right;
             }
             if(minH==null || boundingRect.top>minH) {
                 minH = boundingRect.top;
@@ -155,23 +171,39 @@ class RootStore {
                 maxH = boundingRect.bottom;
             }
 
-            new_x= boundingRect.x;
-            new_right=boundingRect.right;
+            var scaleX=1;
 
-            if(boundingRect.x<prev_right && !this.timepointStore.globalTime){
-                
-                new_right=prev_right+boundingRect.width;
-                new_x=prev_right;
-            }
+            if(this.timepointStore.globalTime && this.timepointStore.transitionOn && i===4) {
+               // if(this.timepointStore.transitionOn && i===4){
 
-            prev_right=new_right-1;
-            
-            print_svg= print_svg + 
-                    '<g width="' +boundingRect.width + '" height= "' + boundingRect.height + '" transform="translate(' + new_x+ ','+boundingRect.y+')" >' +
+                    scaleX = svg_all[i+1].getBoundingClientRect().width/width;
+                    print_svg= print_svg + 
+                    '<g width="' +width + '" height= "' + height + '" transform="translate(' + new_x+ ','+boundingRect.y+') scale('+scaleX+', 1)" >' +
                     
                       t  +
-
+    
                     '</g>';
+
+            }
+            else if(this.timepointStore.globalTime && !this.timepointStore.transitionOn && i===3){
+
+                    scaleX = svg_all[i+1].getBoundingClientRect().width/width;
+                    print_svg= print_svg + 
+                    '<g width="' +width + '" height= "' + height + '" transform="translate(' + new_x+ ','+boundingRect.y+') scale('+scaleX+', 1)" >' +
+                    
+                      t  +
+    
+                    '</g>';
+                //}
+              
+            } else {
+                print_svg= print_svg + 
+                '<g width="' +width + '" height= "' + height + '" transform="translate(' + new_x+ ','+boundingRect.y+')" >' +
+                
+                  t  +
+
+                '</g>';
+            }
         }
 
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' +(minW+maxW).toString() + '" height= "' + (minH+maxH).toString() + '">' +

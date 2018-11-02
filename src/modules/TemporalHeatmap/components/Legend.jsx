@@ -72,7 +72,7 @@ const Legend = observer(class Legend extends React.Component {
     getContinuousLegend(opacity, fontSize, lineheight, color) {
         const min = color.domain()[0];
         const max = color.domain()[color.domain().length - 1];
-        console.log(min,max);
+        //console.log(min,max);
         if (min !== Number.NEGATIVE_INFINITY && max !== Number.POSITIVE_INFINITY) {
             let intermediateStop = null;
             let text = [];
