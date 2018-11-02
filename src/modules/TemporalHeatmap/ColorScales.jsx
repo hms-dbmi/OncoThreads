@@ -5,27 +5,28 @@ stores information about current visual parameters
  */
 class ColorScales {
     static getContinousColorScale(range, domain) {
-        if (range.length === 0) {
-            let min = Math.min(...domain);
-            let max = Math.max(...domain);
-            if (min < 0) {
-                let lowerLimit, upperLimit;
-                if (-min > max) {
-                    lowerLimit = min;
-                    upperLimit = -min;
-                }
-                else {
-                    lowerLimit = -max;
-                    upperLimit = max;
-                }
-                return d3.scaleLinear().range(['#0571b0', '#f7f7f7', '#ca0020']).domain([lowerLimit, 0, upperLimit]);
+        let min = Math.min(...domain);
+        let max = Math.max(...domain);
+        if (min < 0) {
+            let lowerLimit, upperLimit;
+            if (-min > max) {
+                lowerLimit = min;
+                upperLimit = -min;
             }
             else {
-                return d3.scaleLinear().range(['#e6e6e6', '#000000']).domain([min, max])
+                lowerLimit = -max;
+                upperLimit = max;
             }
+            if (range.length === 0) {
+                range=['#0571b0', '#f7f7f7', '#ca0020'];
+            }
+            return d3.scaleLinear().range(range).domain([lowerLimit, 0, upperLimit]);
         }
         else {
-            return d3.scaleLinear().range(range).domain(domain)
+            if(range.length===0){
+                range=['#e6e6e6', '#000000'];
+            }
+            return d3.scaleLinear().range(range).domain([min, max])
         }
     }
 

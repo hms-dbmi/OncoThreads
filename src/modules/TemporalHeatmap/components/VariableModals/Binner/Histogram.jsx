@@ -24,7 +24,7 @@ const Histogram = observer(class Histogram extends React.Component {
         return (
             <g>
                 <Axis h={this.props.h} w={this.props.w} axis={yAxis} axisType="y" label="Percent"/>
-                <Axis h={this.props.h} w={this.props.w} axis={xAxis} axisType="x" xlabel={this.props.xLabel}/>
+                <Axis h={this.props.h} w={this.props.w} axis={xAxis} axisType="x" label={this.props.xLabel}/>
                 {bars}
             </g>
         )

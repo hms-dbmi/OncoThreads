@@ -30,7 +30,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
         this.closeCategoricalModal = this.closeCategoricalModal.bind(this);
-        this.closeContinuousModal=this.closeContinuousModal.bind(this);
+        this.closeContinuousModal = this.closeContinuousModal.bind(this);
         this.modifyContinuous = this.modifyContinuous.bind(this);
     }
 
@@ -68,7 +68,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     modifyContinuous(index) {
         const _self = this;
-        let originalVariable = this.getOriginalVariable(index);
+        let originalVariable = this.getOriginalVariable(index, "NUMBER");
         const derivedVariable = this.getDerivedVariable(index);
         this.openContinuousModal(originalVariable, derivedVariable, newVariable => {
             _self.modifyVarList(index, newVariable);
@@ -93,7 +93,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @param index
      */
     modifyCategorical(index) {
-        let originalVariable = this.getOriginalVariable(index);
+        let originalVariable = this.getOriginalVariable(index, "STRING");
         const derivedVariable = this.getDerivedVariable(index);
         this.openCategoricalModal(originalVariable, derivedVariable, newVar => {
             this.modifyVarList(index, newVar);
@@ -114,14 +114,14 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @returns {*}
      * @param index
      */
-    getOriginalVariable(index) {
+    getOriginalVariable(index, datatype) {
         const referencedIndex = this.referencedVariables.map(d => d.id).indexOf(this.state.selectedVariables[index].id);
         if (referencedIndex !== -1) {
             return this.referencedVariables[referencedIndex];
         }
         else {
             const originalEntry = this.combinedList.filter(d => d.id === this.state.selectedVariables[index].originalId)[0];
-            return new OriginalVariable(originalEntry.id, originalEntry.variable, "STRING", originalEntry.description, [], [], this.props.store.rootStore.staticMappers[originalEntry.id]);
+            return new OriginalVariable(originalEntry.id, originalEntry.variable, datatype, originalEntry.description, [], [], this.props.store.rootStore.staticMappers[originalEntry.id]);
         }
     }
 
@@ -240,7 +240,19 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @param index
      */
     handleCogWheelClick(index) {
-        switch (this.state.selectedVariables[index].datatype) {
+        let originalDatatype;
+        if (this.state.selectedVariables[index].modified) {
+            if (this.props.store.isReferenced(this.state.selectedVariables[index].id)) {
+                originalDatatype = this.props.store.getById(this.state.selectedVariables[index].id);
+            }
+            else {
+                originalDatatype = this.referencedVariables.filter(d => d.id === this.state.selectedVariables[index].originalId)[0].datatype
+            }
+        }
+        else {
+            originalDatatype = this.state.selectedVariables[index].datatype;
+        }
+        switch (originalDatatype) {
             case "NUMBER":
                 this.modifyContinuous(index);
                 break;

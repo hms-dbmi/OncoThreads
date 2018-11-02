@@ -13,15 +13,14 @@ import MapperCombine from "../../../MapperCombineFunctions";
 const ContinuousModificationModal = observer(class ContinuousModificationModal extends React.Component {
     constructor(props) {
         super(props);
-        this.data = Object.values(props.variable.mapper);
+        this.data = this.getInitialData();
         this.state = {
             bins: this.getInitialBins(),
-            binNames: ["Bin 1", "Bin 2"],
-            name: props.variable.name,
-            colorRange: props.variable.colorRange,
-            transformXFunction: d3.scaleLinear(),
-            isXLog: false,
-            bin: false,
+            binNames: this.getInitialBinNames(),
+            name: props.derivedVariable !== null ? props.derivedVariable.name : props.variable.name + "_MODIFIED",
+            colorRange: props.variable.colorScale.range(),
+            isXLog: !(props.derivedVariable === null || !props.derivedVariable.modification.logTransform),
+            bin: !(props.derivedVariable === null || !props.derivedVariable.modification.binning),
         };
         this.setXScaleType = this.setXScaleType.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
@@ -49,28 +48,51 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
     }
 
     getInitialBins() {
-        let min = d3.min(this.data);
-        let max = d3.max(this.data);
+        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
+            let min = d3.min(this.data);
+            let max = d3.max(this.data);
+            let med = (d3.max(this.data) + d3.min(this.data)) / 2;
+            if (min < 0) {
+                med = 0;
+            }
+            return [min, med, max];
+        }
+        else {
+            return this.props.derivedVariable.modification.binning.bins;
+        }
+    }
 
-        let med = (d3.max(this.data) + d3.min(this.data)) / 2;
-        return [min, med, max];
+    getInitialBinNames() {
+        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
+            return ["Bin 1", "Bin 2"];
+        }
+        else {
+            return this.props.derivedVariable.modification.binning.binNames;
+        }
+    }
+
+    getInitialData() {
+        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform) {
+            return Object.values(this.props.variable.mapper);
+        }
+        else {
+            return Object.values(this.props.variable.mapper).map(d => this.props.derivedVariable.modification.logTransform(d));
+
+        }
     }
 
     setXScaleType(event) {
-        let scale, isLog;
+        let isLog;
         if (event.target.value === 'linear') {
             isLog = false;
-            scale = function (d) {
-                return d;
-            };
+            this.data = Object.values(this.props.variable.mapper)
         }
         else {
             isLog = true;
-            scale = function (d) {
-                return Math.log10(d + 1);
-            };
+            this.data = Object.values(this.props.variable.mapper).map(d => Math.log10(d));
+
         }
-        this.setState({transformXFunction: scale, isXLog: isLog});
+        this.setState({isXLog: isLog, bins: this.getInitialBins()});
     }
 
 
@@ -85,7 +107,7 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
     handleApply() {
         const newId = uuidv4();
         let modification = {
-            logTransform: this.state.isXLog ? this.state.transformXFunction : false, binning: this.state.bin ? {
+            logTransform: this.state.isXLog ? Math.log10 : false, binning: this.state.bin ? {
                 bins: this.state.bins,
                 binNames: this.state.binNames
             } : false
@@ -123,25 +145,24 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
     getBinning() {
         const width = 350;
         const height = 200;
-        let data = this.data.map(d => this.state.transformXFunction(d));
-        const min = Math.min(...data);
-        const max = Math.max(...data);
+        const min = Math.min(...this.data);
+        const max = Math.max(...this.data);
         let xScale = d3.scaleLinear().domain([min, max]).range([0, width]);
         const bins = d3.histogram()
             .domain([min, max])
-            .thresholds(xScale.ticks(30))(data);
+            .thresholds(xScale.ticks(30))(this.data);
         const yScale = d3.scaleLinear()
             .domain([0, d3.max(bins, function (d) {
                 return d.length;
             })]).range([height, 0]);
         if (this.state.bin) {
-            return <Binner data={data}
+            return <Binner data={this.data}
                            variable={this.props.variable}
-                           isXLog={this.state.isXLog}
                            bins={this.state.bins}
                            binNames={this.state.binNames}
                            xScale={xScale}
                            yScale={yScale}
+                           xLabel={this.state.name}
                            width={width}
                            height={height}
                            histBins={bins}
@@ -156,8 +177,8 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
             return <svg width={w} height={h}>
                 <g transform={transform}><Histogram bins={bins} xScale={xScale} yScale={yScale}
                                                     h={height}
-                                                    w={width} xLabel={this.props.variable.name}
-                                                    numValues={data.length}/></g>
+                                                    w={width} xLabel={this.state.name}
+                                                    numValues={this.data.length}/></g>
             </svg>
         }
     }
@@ -181,22 +202,25 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         document.body.click();
     }
 
-    static getGradient(range, width, height, steps) {
+    static getGradient(range, width, height) {
         let intermediateStop = null;
-        if (steps === 3) {
+        if (range.length === 3) {
             intermediateStop = <stop offset="50%" style={{stopColor: range[1]}}/>;
         }
         let randomId = uuidv4();
-        return <g>
-            <defs>
-                <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{stopColor: range[0]}}/>
-                    {intermediateStop}
-                    <stop offset="100%" style={{stopColor: range[range.length - 1]}}/>
-                </linearGradient>
-            </defs>
-            <rect width={width} height={height} fill={"url(#" + randomId + ")"}/>
-        </g>;
+        return <svg width={width}
+                    height={height}>
+            <g>
+                <defs>
+                    <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style={{stopColor: range[0]}}/>
+                        {intermediateStop}
+                        <stop offset="100%" style={{stopColor: range[range.length - 1]}}/>
+                    </linearGradient>
+                </defs>
+                <rect width={width} height={height} fill={"url(#" + randomId + ")"}/>
+            </g>
+        </svg>;
     }
 
     getColorScalePopover() {
@@ -225,9 +249,8 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         return <form>
             <FormGroup>
                 {linearColorRange.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d)}
-                                                        name="ColorScaleGroup">
-                    <svg width={width}
-                         height={height}>{ContinuousModificationModal.getGradient(d, width, height, steps)}</svg>
+                                                       name="ColorScaleGroup">
+                    {ContinuousModificationModal.getGradient(d, width, height, steps)}
                 </Radio>)}
             </FormGroup>
         </form>
@@ -249,20 +272,20 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
                 </Modal.Header>
                 <Modal.Body>
                     <form>
-                        <ControlLabel>Variable name<OverlayTrigger rootClose={true}
-                                                                   onClick={(e) => this.handleOverlayClick(e)}
-                                                                   trigger="click"
-                                                                   placement="right"
-                                                                   overlay={colorScalePopOver}><FontAwesome
-                            name="paint-brush"/></OverlayTrigger></ControlLabel>
+                        <ControlLabel>Variable name</ControlLabel>
                         <FormControl
                             type="text"
                             value={this.state.name}
                             onChange={this.handleNameChange}/>
-                    </form>
-                    <h5>Description</h5>
-                    <p>{this.props.variable.description}</p>
-                    <form>
+                        <ControlLabel>Description</ControlLabel>
+                        <p>{this.props.variable.description}</p>
+                        <ControlLabel>Color Scale <OverlayTrigger rootClose={true}
+                                                        onClick={(e) => this.handleOverlayClick(e)}
+                                                        trigger="click"
+                                                        placement="right"
+                                                        overlay={colorScalePopOver}><FontAwesome
+                            name="paint-brush"/></OverlayTrigger></ControlLabel>
+                        <p>{ContinuousModificationModal.getGradient(this.state.colorRange, 100, 20)}</p>
                         <ControlLabel>Transform data</ControlLabel>
                         {this.getRadio()}
                     </form>

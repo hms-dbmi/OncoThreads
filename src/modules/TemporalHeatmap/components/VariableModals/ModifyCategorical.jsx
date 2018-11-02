@@ -39,7 +39,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     }
 
     /**
-     * computes the percent occurance
+     * computes the percent occurrence
      */
     getPercentOccurences() {
         let occurences = {};
@@ -109,7 +109,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                         selected: false,
                         name: this.props.derivedVariable.modification[key],
                         categories: [],
-                        color: this.props.derivedVariable.colorRange(this.props.derivedVariable.modification[key])
+                        color: this.props.derivedVariable.colorScale(this.props.derivedVariable.modification[key])
                     })
                 }
                 currentData[currentData.map(d => d.name).indexOf(this.props.derivedVariable.modification[key])].categories.push(key);
@@ -121,7 +121,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     selected: false,
                     name: d,
                     categories: [d],
-                    color: this.props.variable.colorRange(d)
+                    color: this.props.variable.colorScale(d)
                 })
             });
         }
@@ -303,7 +303,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         currentData.forEach((d, i) => {
             d.color = scale((i * 2 + 1) / (currentData.length * 2 + 1));
         });
-        this.setState({colorRange: scale, currentData: currentData, ordinal: ordinal});
+        this.setState({colorScale: scale, currentData: currentData, ordinal: ordinal});
     }
 
     static getOrdinalRects(scale, rectDim, numRect) {
@@ -367,7 +367,6 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     <Modal.Title>Modify Categorical Variable</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{minHeight: "400px"}}>
-
                     <form>
                         <ControlLabel>Variable name</ControlLabel>
                         <FormControl

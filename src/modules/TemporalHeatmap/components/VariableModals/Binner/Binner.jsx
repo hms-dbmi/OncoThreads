@@ -52,12 +52,12 @@ const Binner = observer(class Binner extends React.Component {
         return (
             <div style={{position:"static"}}>
                 <BinSelector data={this.props.data} width={this.props.width} height={this.props.height}
-                             variableName={this.props.variable.name}
+                             xLabel={this.props.xLabel}
                              handleBinChange={this.props.handleBinChange}
                              xScale={this.props.xScale}
                              yScale={this.props.yScale}
                              histBins={this.props.histBins}
-                             isXLog={this.props.isXLog}
+                             bins={this.props.bins}
                              handleNumberOfBinsChange={this.handleNumberOfBinsChange}/>
                 <BinNames binNames={this.props.binNames} handleBinNameChange={this.handleBinNameChange}/>
             </div>
