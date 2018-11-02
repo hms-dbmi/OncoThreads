@@ -45,7 +45,8 @@ const Content = observer(class Content extends React.Component {
             showContextMenu: false,
             showContextMenuHeatmapRow: false,
 
-            addModalIsOpen: false,
+            addModalIsOpen: false
+            //varList:[]
         }
         ;
         this.openModal = this.openModal.bind(this);
@@ -61,6 +62,8 @@ const Content = observer(class Content extends React.Component {
         this.hideContextMenu = this.hideContextMenu.bind(this);
         this.showSidebar = this.showSidebar.bind(this);
         this.hideSidebar = this.hideSidebar.bind(this);
+
+        this.updateVariable=this.updateVariable.bind(this);
 
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
     }
@@ -167,6 +170,12 @@ const Content = observer(class Content extends React.Component {
     }
 
 
+    updateVariable(variable){
+        //this.state.clickedVariable=variable;
+
+        this.setState({clickedVariable: variable});
+        console.log(this.state.clickedVariable);
+    }
     getVarListModal() {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
@@ -291,6 +300,9 @@ const Content = observer(class Content extends React.Component {
                               type={this.state.contextType}
                               store={this.props.rootStore.timepointStore}
                               openBinningModal={this.openModal}/>
+
+
+                          
             </div>
         )
     }
