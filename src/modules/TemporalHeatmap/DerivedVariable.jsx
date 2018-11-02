@@ -23,10 +23,10 @@ class DerivedVariable {
         let scale;
         switch (this.datatype) {
             case "NUMBER":
-                scale = ColorScales.getContinousColorScale(this.domain);
+                scale = ColorScales.getContinousColorScale(this.range, this.domain);
                 break;
             case "BINNED":
-                scale = ColorScales.getBinnedColorScale(this.domain,this.modification.bins);
+                scale = ColorScales.getBinnedColorScale(this.range, this.domain, this.modification.binning.bins);
                 break;
             case "binary":
                 scale = ColorScales.getBinaryScale(this.range);
@@ -37,7 +37,7 @@ class DerivedVariable {
         return scale;
     }
 
-      getDomain(domain) {
+    getDomain(domain) {
         let currDomain = domain;
         if (domain.length === 0) {
             if (this.datatype === 'NUMBER') {

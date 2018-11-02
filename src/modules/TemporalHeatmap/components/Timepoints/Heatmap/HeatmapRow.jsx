@@ -49,15 +49,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             var str = "";
 
             if (x) {
-                var ind = x.modification.binNames.indexOf(d.value);
+                var ind = x.modification.binning.binNames.indexOf(d.value);
 
-                var low = x.modification.bins[ind];
+                var low = x.modification.binning.bins[ind];
 
                 if (ind !== 0) {
                     low = low + 1;
                 }
 
-                str = ": " + low + " to " + x.modification.bins[ind + 1];
+                str = ": " + low + " to " + x.modification.binning.bins[ind + 1];
 
             }
 

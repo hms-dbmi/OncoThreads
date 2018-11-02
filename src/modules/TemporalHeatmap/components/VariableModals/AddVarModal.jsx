@@ -6,6 +6,7 @@ import FontAwesome from 'react-fontawesome';
 import Select from 'react-select';
 import ModifyCategorical from "./ModifyCategorical";
 import OriginalVariable from "../../OriginalVariable";
+import ContinuousModificationModal from "./Binner/ContinuousModificationModal";
 
 
 const AddVarModal = observer(class AddVarModal extends React.Component {
@@ -15,6 +16,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.state = {
             isChecked: [],
             modifyCategoricalIsOpen: false,
+            modifyContinuousIsOpen: false,
             currentVariable: '',
             mapper: {},
             callback: '',
@@ -28,7 +30,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
         this.closeCategoricalModal = this.closeCategoricalModal.bind(this);
-        this.bin = this.bin.bind(this);
+        this.closeContinuousModal=this.closeContinuousModal.bind(this);
+        this.modifyContinuous = this.modifyContinuous.bind(this);
     }
 
 
@@ -63,19 +66,21 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      *    (the arrays will be added to the variable store later)
      * @param index
      */
-    bin(index) {
+    modifyContinuous(index) {
         const _self = this;
-        let variable = this.getOriginalVariable(index);
-        let modifiedId=this.state.selectedVariables[index].id;
-        this.props.openBinningModal(variable, "sample", newVariable => {
-            _self.modifyVarList(index,newVariable);
-            if (this.derivedVariables.map(d => d.id).includes(modifiedId)) {
-                this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(modifiedId), 1)
+        let originalVariable = this.getOriginalVariable(index);
+        const derivedVariable = this.getDerivedVariable(index);
+        this.openContinuousModal(originalVariable, derivedVariable, newVariable => {
+            _self.modifyVarList(index, newVariable);
+            if (derivedVariable !== null) {
+                this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(derivedVariable.id), 1, newVariable)
             }
             else {
-                this.referencedVariables.push(variable);
+                this.derivedVariables.push(newVariable);
             }
-            this.derivedVariables.push(newVariable);
+            if (!this.referencedVariables.map(d => d.id).includes(originalVariable.id)) {
+                this.referencedVariables.push(originalVariable);
+            }
         });
     }
 
@@ -91,7 +96,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         let originalVariable = this.getOriginalVariable(index);
         const derivedVariable = this.getDerivedVariable(index);
         this.openCategoricalModal(originalVariable, derivedVariable, newVar => {
-            this.modifyVarList(index,newVar);
+            this.modifyVarList(index, newVar);
             if (derivedVariable !== null) {
                 this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(derivedVariable.id), 1, newVar)
             }
@@ -142,7 +147,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @param index
      * @param newVariable
      */
-    modifyVarList(index,newVariable) {
+    modifyVarList(index, newVariable) {
         let varList = this.state.selectedVariables;
         varList[index].modified = true;
         varList[index].datatype = newVariable.datatype;
@@ -172,6 +177,29 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     closeCategoricalModal() {
         this.setState({modifyCategoricalIsOpen: false});
+
+    }
+
+    /**
+     * opens the modal for modification of categorical variables
+     * @param variable
+     * @param derivedVariable
+     * @param callback
+     */
+    openContinuousModal(variable, derivedVariable, callback) {
+        this.setState({
+            modifyContinuousIsOpen: true,
+            derivedVariable: derivedVariable,
+            currentVariable: variable,
+            callback: callback
+        });
+    }
+
+    /**
+     * closes the categorical modal
+     */
+    closeContinuousModal() {
+        this.setState({modifyContinuousIsOpen: false});
 
     }
 
@@ -214,7 +242,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     handleCogWheelClick(index) {
         switch (this.state.selectedVariables[index].datatype) {
             case "NUMBER":
-                //this.bin(index);
+                this.modifyContinuous(index);
                 break;
             default:
                 this.modifyCategorical(index);
@@ -255,7 +283,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     datatypeLabel = "N";
             }
             checked.push(
-                <Row key={d.originalId}>
+                <Row key={d.id}>
                     <OverlayTrigger placement="top" overlay={tooltip}>
                         <Col sm={7} md={7}>
                             {d.name}
@@ -360,6 +388,20 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         )
     }
 
+    getContinuousModal() {
+        let modal = null;
+        if (this.state.modifyContinuousIsOpen) {
+            modal = <ContinuousModificationModal modalIsOpen={this.state.modifyContinuousIsOpen}
+                                                 variable={this.state.currentVariable}
+                                                 callback={this.state.callback}
+                                                 derivedVariable={this.state.derivedVariable}
+                                                 closeModal={this.closeContinuousModal}/>
+        }
+        return (
+            modal
+        )
+    }
+
     render() {
         this.combinedList = this.props.varList.concat({
             variable: "Mutation Count",
@@ -377,6 +419,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                 <Modal.Body style={{minHeight: "400px"}}>
                     {this.renderList()}
                     {this.getCategoricalModal()}
+                    {this.getContinuousModal()}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.closeAddModal}>

@@ -136,30 +136,6 @@ const Legend = observer(class Legend extends React.Component {
         this.updateMaxWidth(currX);
         return legendEntries;
     }
-
-    getBinnedLegend(opacity, fontSize, lineheight, color, modification) {
-        let legendEntries = [];
-        const _self = this;
-        let currX = this.borderLeft;
-        color.domain().forEach(function (d, i) {
-            let rgb = color.range()[i].replace(/[^\d,]/g, '').split(',');
-            let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
-            let textColor;
-            if (brightness < 255 / 2) {
-                textColor = "white";
-            }
-            else {
-                textColor = "black";
-            }
-            const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
-            const tooltipText = d + ": " + Math.round(modification.bins[i] * 100) / 100 + " to " + Math.round(modification.bins[i + 1] * 100) / 100;
-            legendEntries = legendEntries.concat(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), textColor, tooltipText));
-            currX += (rectWidth + 2);
-        });
-        this.updateMaxWidth(currX);
-        return legendEntries;
-    }
-
     /**
      * gets a legend for a binary variable
      * @param opacity
@@ -212,14 +188,11 @@ const Legend = observer(class Legend extends React.Component {
                         if (lineheight < fontSize) {
                             fontSize = Math.round(lineheight);
                         }
-                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "ORDINAL") {
+                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "BINNED") {
                             legendEntries = _self.getCategoricalLegend(currentVariables[i].domain, d.data.map(element => element.value), opacity, fontSize, lineheight, color);
                         }
                         else if (currentVariables[i].datatype === "binary") {
                             legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
-                        }
-                        else if (currentVariables[i].datatype === "BINNED") {
-                            legendEntries = _self.getBinnedLegend(opacity, fontSize, lineheight, color, currentVariables[i].modification);
                         }
                         else {
                             legendEntries = _self.getContinuousLegend(opacity, fontSize, lineheight, color);
@@ -241,7 +214,7 @@ const Legend = observer(class Legend extends React.Component {
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
         const _self = this;
-        if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "ORDINAL") {
+        if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "BINNED") {
             let allValues = [];
             this.props.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {
@@ -254,9 +227,6 @@ const Legend = observer(class Legend extends React.Component {
         }
         else if (primaryVariable.datatype === "binary") {
             legend = this.getBinaryLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
-        }
-        else if (primaryVariable.datatype === "BINNED") {
-            legend = this.getBinnedLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale, primaryVariable.modification);
         }
         else {
             legend = this.getContinuousLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);

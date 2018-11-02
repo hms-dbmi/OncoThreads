@@ -4,29 +4,34 @@ import * as d3 from 'd3';
 stores information about current visual parameters
  */
 class ColorScales {
-    static getContinousColorScale(domain) {
-        let min = Math.min(...domain);
-        let max = Math.max(...domain);
-        if (min < 0) {
-            let lowerLimit, upperLimit;
-            if (-min > max) {
-                lowerLimit = min;
-                upperLimit = -min;
+    static getContinousColorScale(range, domain) {
+        if (range.length === 0) {
+            let min = Math.min(...domain);
+            let max = Math.max(...domain);
+            if (min < 0) {
+                let lowerLimit, upperLimit;
+                if (-min > max) {
+                    lowerLimit = min;
+                    upperLimit = -min;
+                }
+                else {
+                    lowerLimit = -max;
+                    upperLimit = max;
+                }
+                return d3.scaleLinear().range(['#0571b0', '#f7f7f7', '#ca0020']).domain([lowerLimit, 0, upperLimit]);
             }
             else {
-                lowerLimit = -max;
-                upperLimit = max;
+                return d3.scaleLinear().range(['#e6e6e6', '#000000']).domain([min, max])
             }
-            return d3.scaleLinear().range(['#0571b0', '#f7f7f7', '#ca0020']).domain([lowerLimit, 0, upperLimit]);
         }
         else {
-            return d3.scaleLinear().range(['#e6e6e6', '#000000']).domain([min, max])
+            return d3.scaleLinear().range(range).domain(domain)
         }
     }
 
-    static getBinnedColorScale(binNames, binValues) {
+    static getBinnedColorScale(range, binNames, binValues) {
         let colors = [];
-        let continuousScale = ColorScales.getContinousColorScale([binValues[0], binValues[binValues.length - 1]]);
+        let continuousScale = ColorScales.getContinousColorScale(range, [binValues[0], binValues[binValues.length - 1]]);
         for (let i = 0; i < binNames.length; i++) {
             colors.push(continuousScale((binValues[i + 1] + binValues[i]) / 2));
         }
