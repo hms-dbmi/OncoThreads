@@ -43,19 +43,20 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
     }
 
     getRadio() {
-        if (d3.min(this.props.data) >= 0) {
+        let disabled=false;
+        if (d3.min(this.props.data) < 0) {
+            disabled=true;
+        }
             return (<FormGroup>
-                <Radio defaultChecked onClick={this.setXScaleType} value={'linear'} name="XradioGroup" inline>
+                <Radio defaultChecked onClick={this.setXScaleType} disabled={disabled} value={'linear'} name="XradioGroup" inline>
                     Linear
                 </Radio>{' '}
-                <Radio onClick={this.setXScaleType} value={'log'} name="XradioGroup" inline>
+                <Radio onClick={this.setXScaleType} value={'log'} disabled={disabled} name="XradioGroup" inline>
                     Log
                 </Radio>{' '}
             </FormGroup>);
-        }
-        else {
-            return null;
-        }
+
+
     }
 
     render() {
@@ -72,12 +73,12 @@ const BinningModal = observer(class ContinuousBinner extends React.Component {
                 onHide={this.props.close}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Bin {this.props.variableName}</Modal.Title>
+                    <Modal.Title>Bin {this.props.variable.name}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {alert}
                     <BinSelector data={this.props.data} width={450} height={300}
-                                 variableName={this.props.variableName}
+                                 variableName={this.props.variable.name}
                                  handleBinChange={this.props.handleBinChange}
                                  transformXFunction={this.state.transformXFunction}
                                  isXLog={this.state.isXLog}

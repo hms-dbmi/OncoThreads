@@ -125,9 +125,8 @@ class DataStore {
      * @param type
      * @returns {Array}
      */
-    getAllValues(variable, type) {
+    getAllValues(mapper, type) {
         let allValues = [];
-        let mapper = this.variableStores[type].getById(variable).mapper;
         let structure = type === "sample" ? this.rootStore.timepointStructure : this.rootStore.transitionStructure;
         structure.forEach(d => d.forEach(f => allValues.push(mapper[f.sample])));
         return allValues;
@@ -158,7 +157,7 @@ class DataStore {
         this.timepoints.forEach(function (d, i) {
             if (d.isGrouped) {
                 d.group(d.primaryVariableId);
-                d.sortGroup(d.groupOrder);
+                d.sortGroup(d.primaryVariableId,d.groupOrder);
             }
             _self.rootStore.transitionStore.adaptTransitions(i);
         })

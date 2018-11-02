@@ -92,10 +92,10 @@ class MultipleTimepointsStore {
      * checks if at least one of the timepoints is grouped
      * @returns {boolean}
      */
-    atLeastOneGrouped() {
+    atLeastOneGrouped(startIndex,endIndex) {
         let oneIsGrouped = false;
-        for (let i = 0; i < this.timepoints.length; i++) {
-            if (!this.timepoints[i].isGrouped) {
+        for (let i = startIndex; i <= endIndex; i++) {
+            if (this.timepoints[i].isGrouped) {
                 oneIsGrouped = true;
                 break;
             }
@@ -126,7 +126,7 @@ class MultipleTimepointsStore {
                     timepoint.promote(variable)
                 }
                 if (timepoint.isGrouped) {
-                    timepoint.sortGroup(originalTimepoint.groupOrder)
+                    timepoint.sortGroup(variable,originalTimepoint.groupOrder)
                 }
                 else {
                     timepoint.sortHeatmap(variable, originalTimepoint.heatmapSorting.order)

@@ -72,7 +72,6 @@ const Legend = observer(class Legend extends React.Component {
     getContinuousLegend(opacity, fontSize, lineheight, color) {
         const min = color.domain()[0];
         const max = color.domain()[color.domain().length - 1];
-        console.log(min,max);
         if (min !== Number.NEGATIVE_INFINITY && max !== Number.POSITIVE_INFINITY) {
             let intermediateStop = null;
             let text = [];
@@ -115,6 +114,7 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * gets a legend for a categorical variable
+     * @param domain
      * @param row
      * @param opacity
      * @param fontSize
@@ -122,17 +122,14 @@ const Legend = observer(class Legend extends React.Component {
      * @param color
      * @returns {Array}
      */
-    getCategoricalLegend(row, opacity, fontSize, lineheight, color) {
+    getCategoricalLegend(domain, row, opacity, fontSize, lineheight, color) {
         const _self = this;
         let currX = this.borderLeft;
-        let currKeys = [];
         let legendEntries = [];
-        //change
-        row.forEach(function (f) {
-            if (!currKeys.includes(f) && f !== undefined) {
-                const rectWidth = Legend.getTextWidth(30, f, fontSize) + 4;
-                currKeys.push(f);
-                legendEntries = legendEntries.concat(_self.getLegendEntry(f.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(f), "black", f));
+        domain.forEach(d => {
+            if (row.includes(d)) {
+                const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
+                legendEntries.push(_self.getLegendEntry(d.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(d), "black", d));
                 currX += (rectWidth + 2);
             }
         });
@@ -215,8 +212,8 @@ const Legend = observer(class Legend extends React.Component {
                         if (lineheight < fontSize) {
                             fontSize = Math.round(lineheight);
                         }
-                        if (currentVariables[i].datatype === "STRING") {
-                            legendEntries = _self.getCategoricalLegend(d.data.map(element => element.value), opacity, fontSize, lineheight, color);
+                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "ORDINAL") {
+                            legendEntries = _self.getCategoricalLegend(currentVariables[i].domain, d.data.map(element => element.value), opacity, fontSize, lineheight, color);
                         }
                         else if (currentVariables[i].datatype === "binary") {
                             legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
@@ -244,7 +241,7 @@ const Legend = observer(class Legend extends React.Component {
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
         const _self = this;
-        if (primaryVariable.datatype === "STRING") {
+        if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "ORDINAL") {
             let allValues = [];
             this.props.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {
@@ -253,7 +250,7 @@ const Legend = observer(class Legend extends React.Component {
                     }
                 })
             });
-            legend = this.getCategoricalLegend(allValues, 1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
+            legend = this.getCategoricalLegend(primaryVariable.domain, allValues, 1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
         }
         else if (primaryVariable.datatype === "binary") {
             legend = this.getBinaryLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
@@ -292,7 +289,7 @@ const Legend = observer(class Legend extends React.Component {
         else {
             //let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
 
-            let primaryVariable = this.props.currentVariables.sample.filter(variable => variable.originalIds[0] === _self.props.store.globalPrimary)[0];
+            let primaryVariable = this.props.currentVariables.sample.filter(variable => variable.id === _self.props.store.globalPrimary)[0];
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }
         return (

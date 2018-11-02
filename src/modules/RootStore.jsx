@@ -23,6 +23,7 @@ class RootStore {
         this.minTP = Number.POSITIVE_INFINITY;
 
         this.clinicalSampleCategories = [];
+        this.clinicalPatientCategories = [];
         this.mutationCountId = "mutCount";
         this.timeDistanceId = "timeGapMapping";
         this.eventCategories = [];
@@ -154,6 +155,7 @@ class RootStore {
             _self.buildPatientStructure();
             _self.createClinicalSampleMapping();
             _self.createMutationCountsMapping();
+            _self.createClinicalPatientMappers();
             _self.timepointStore.initialize();
 
             /*if (localStorage.getItem(_self.study.studyId) !== null) {
@@ -259,16 +261,13 @@ class RootStore {
                         "startNumberOfDaysSinceDiagnosis": e.startNumberOfDaysSinceDiagnosis
                     };
                     if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
-                        sampleStructure[d.patientId].push([e.attributes[1].value]);
+                        sampleStructure[d.patientId].push(e.attributes[1].value);
                         if (timepointStructure.length <= currTP) {
                             timepointStructure.push([]);
                         }
                         timepointStructure[currTP].push({patient: d.patientId, sample: e.attributes[1].value});
                         currTP += 1;
 
-                    }
-                    else {
-                        sampleStructure[d.patientId][currTP - 1].push(e.attributes[1].value);
                     }
                     previousDate = e.startNumberOfDaysSinceDiagnosis;
                 }
@@ -425,36 +424,27 @@ class RootStore {
      * creates a dictionary mapping sample IDs onto clinical data
      * @returns {{}}
      */
-    createClinicalSampleMapping() {
+      createClinicalSampleMapping() {
         const _self = this;
-        _self.cbioAPI.clinicalSampleData.forEach(function (d) {
-            let id;
-            let hasId = _self.clinicalSampleCategories.map(function (f) {
-                return f.originalId
-            }).includes(d.clinicalAttributeId);
-            if (hasId) {
-                id = _self.clinicalSampleCategories.filter(function (f) {
-                    return f.originalId === d.clinicalAttributeId;
-                })[0].id;
+        this.cbioAPI.clinicalSampleData.forEach(function (d) {
+            if (d)
+                if (!(d.clinicalAttributeId in _self.staticMappers)) {
+                    _self.clinicalSampleCategories.push({
+                        id: d.clinicalAttributeId,
+                        variable: d.clinicalAttribute.displayName,
+                        datatype: d.clinicalAttribute.datatype,
+                        description: d.clinicalAttribute.description
+                    });
+                    _self.staticMappers[d.clinicalAttributeId] = {}
+                }
+            if (_self.sampleStructure[d.patientId].includes(d.sampleId)) {
+                if (d.clinicalAttribute.datatype !== "NUMBER") {
+                    return _self.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
+                }
+                else {
+                    return _self.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
+                }
             }
-            else {
-                id = d.clinicalAttributeId;
-                _self.clinicalSampleCategories.push({
-                    id: id,
-                    variable: d.clinicalAttribute.displayName,
-                    originalId: d.clinicalAttributeId,
-                    datatype: d.clinicalAttribute.datatype,
-                    description: d.clinicalAttribute.description
-                });
-            }
-            if (!(id in _self.staticMappers)) {
-                _self.staticMappers[id] = {}
-            }
-            let value = d.value;
-            if (d.clinicalAttribute.datatype === "NUMBER") {
-                value = parseFloat(value);
-            }
-            _self.staticMappers[id][d.sampleId] = value;
         });
     }
 
@@ -483,9 +473,9 @@ class RootStore {
             let curr = _self.sampleStructure[d.patientId];
             for (let i = 1; i < curr.length; i++) {
                 if (i === 1) {
-                    curr[i - 1].forEach(f => timeGapMapping[f] = undefined)
+                    timeGapMapping[curr[i - 1]] = undefined
                 }
-                curr[i].forEach(f => timeGapMapping[f] = _self.sampleTimelineMap[curr[i][0]].startNumberOfDaysSinceDiagnosis - _self.sampleTimelineMap[curr[i - 1][0]].startNumberOfDaysSinceDiagnosis)
+                timeGapMapping[curr[i]] = _self.sampleTimelineMap[curr[i]].startNumberOfDaysSinceDiagnosis - _self.sampleTimelineMap[curr[i - 1]].startNumberOfDaysSinceDiagnosis;
             }
         });
         return timeGapMapping;
@@ -510,7 +500,7 @@ class RootStore {
         else if (mappingType === "proteinChange") {
             mappingFunction = function (currentSample) {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
-                let proteinChange = 'wild type';
+                let proteinChange = undefined;
                 if (entry !== undefined) {
                     proteinChange = entry.proteinChange;
                 }
@@ -520,7 +510,7 @@ class RootStore {
         else if (mappingType === "mutationType") {
             mappingFunction = function (currentSample) {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
-                let mutationType = 'wild type';
+                let mutationType = undefined;
                 if (entry !== undefined) {
                     mutationType = entry.mutationType;
                 }
@@ -549,6 +539,32 @@ class RootStore {
             });
         });
         return mapper;
+    }
+
+    createClinicalPatientMappers() {
+        const _self = this;
+        this.cbioAPI.clinicalPatientData.forEach(function (d) {
+            d.forEach(function (d) {
+                if (d)
+                    if (!(d.clinicalAttributeId in _self.staticMappers)) {
+                        _self.clinicalPatientCategories.push({
+                            id: d.clinicalAttributeId,
+                            variable: d.clinicalAttribute.displayName,
+                            datatype: d.clinicalAttribute.datatype,
+                            description: d.clinicalAttribute.description
+                        });
+                        _self.staticMappers[d.clinicalAttributeId] = {}
+                    }
+                _self.sampleStructure[d.patientId].forEach(function (f) {
+                    if(d.clinicalAttribute.datatype!=="NUMBER") {
+                        return _self.staticMappers[d.clinicalAttributeId][f] = d.value;
+                    }
+                    else{
+                        return _self.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
+                    }
+                });
+            })
+        });
     }
 
 
@@ -615,7 +631,6 @@ class RootStore {
                         else {
                             i++;
                         }
-
                     }
                 }
             }

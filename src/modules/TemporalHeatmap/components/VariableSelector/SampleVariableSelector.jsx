@@ -3,6 +3,7 @@ import {observer} from "mobx-react";
 import {Button, ButtonGroup, ButtonToolbar, ControlLabel, FormControl, FormGroup, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import Select from 'react-select';
+import OriginalVariable from "../../OriginalVariable";
 
 /*
 creates the selector for sample variables (left side of main view, top)
@@ -35,8 +36,9 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     bin(id, name, description) {
-        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
-        this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
+        let variable=new OriginalVariable(id,name,"NUMBER",description,[],[],this.props.store.rootStore.staticMappers[id]);
+        this.props.store.addVariableToBeReferenced(variable);
+        this.props.openBinningModal(variable, "sample", newVariable=>this.props.store.addVariableToBeDisplayed(newVariable));
     }
 
     /**
@@ -44,8 +46,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param id
      */
     addVarModal() {
-        console.log("show list of vars");
-
         this.props.openAddModal();
     }
 
@@ -95,6 +95,36 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
         let options = [];
         const _self = this;
         this.props.clinicalSampleCategories.forEach(function (d) {
+            let icon = null;
+            if (d.datatype === "NUMBER") {
+                icon = <div className="floatDiv">
+                    <FontAwesome
+                        onClick={() => _self.bin(d.id, d.variable, d.description)
+                        } name="cog"/>
+                </div>
+            }
+            let lb = (
+                <div onMouseEnter={(e) => {
+                    _self.props.showTooltip(e, d.description);
+                }} onMouseLeave={_self.props.hideTooltip}>
+                    {icon}
+                    <div className="wordBreak" style={{textAlign: "left"}}
+                         onClick={() => _self.handleVariableClick(d.id, d.variable, d.datatype, d.description)}
+                         key={d.variable}> {d.variable}
+                    </div>
+                </div>);
+            options.push({value: d.variable, label: lb})
+        });
+        return options;
+    }
+     /**
+     * creates a searchable list of clinical attributes
+     * @returns {Array}
+     */
+    createClinicalPatientAttributesList() {
+        let options = [];
+        const _self = this;
+        this.props.clinicalPatientCategories.forEach(function (d) {
             let icon = null;
             if (d.datatype === "NUMBER") {
                 icon = <div className="floatDiv">
@@ -255,13 +285,21 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                             Clinical Features
                         </Panel.Title>
                     </Panel.Heading>
-
+                    <h5>Sample-specific</h5>
                     <Select
                         type="text"
                         searchable={true}
                         componentClass="select" placeholder="Select..."
                         searchPlaceholder="Search variable"
                         options={this.createClinicalAttributesList()}
+                    />
+                    <h5>Patient-specific</h5>
+                    <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.createClinicalPatientAttributesList()}
                     />
                     {this.getGenomicPanel()}
                 </Panel>
