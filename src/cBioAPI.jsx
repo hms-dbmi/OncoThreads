@@ -6,6 +6,7 @@ class cBioAPI {
         this.clinicalEvents = {};
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
+        this.molecularProfiles=[];
         this.mutationCounts = [];
     }
 
@@ -14,6 +15,7 @@ class cBioAPI {
         this.clinicalEvents = {};
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
+        this.molecularProfiles = [];
         this.mutationCounts = [];
     }
 
@@ -56,7 +58,8 @@ class cBioAPI {
                                 axios.all([cBioAPI.getClinicalData(studyID), cBioAPI.getMolecularProfiles(studyID)])
                                     .then(axios.spread(function (clinicalData, molecularProfiles) {
                                         _self.clinicalSampleData = clinicalData.data;
-                                        let index = molecularProfiles.data.map(function (d, i) {
+                                        _self.molecularProfiles = molecularProfiles.data;
+                                        let index = _self.molecularProfiles.map(d=> {
                                             return d.molecularAlterationType;
                                         }).indexOf("MUTATION_EXTENDED");
                                         if (index !== -1) {
@@ -94,40 +97,6 @@ class cBioAPI {
         return axios.get("http://cbiohack.org/api/molecular-profiles/" + studyID + "_mutations/mutation-counts?sampleListId=" + studyID + "_all");
     }
 
-    /**
-     * gets all the mutation sites of a specific mutation for all the samples in the study
-     * @param studyId
-     * @param HUGOsymbol
-     * @param callback
-     */
-    getSingleMutation(studyId, HUGOsymbol, callback) {
-        cBioAPI.genomeNexusMappingSingleSymbol(HUGOsymbol).then(function (res) {
-            const entrezId = res.data.entrezGeneId;
-            axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
-                "entrezGeneIds": [
-                    entrezId
-                ],
-                "sampleListId": studyId + "_all"
-            }).then(function (response) {
-                callback(response.data);
-            }).catch(function (error) {
-                console.log(error);
-            });
-        })
-            .catch(function (error) {
-                console.log(error)
-            });
-
-    }
-
-    /**
-     * maps a HUGO Symbol to a entrez gene id
-     * @param hgncSymbol
-     * @returns {AxiosPromise<any>}
-     */
-    static genomeNexusMappingSingleSymbol(hgncSymbol) {
-        return axios.get("https://genomenexus.org/ensembl/canonical-gene/hgnc/" + hgncSymbol);
-    }
 
     /**
      * maps a HUGO Symbol to a entrez gene id
