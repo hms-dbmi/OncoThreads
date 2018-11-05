@@ -245,12 +245,12 @@ class SingleTimepoint {
 
     /**
      * sorts groups
+     * @param variable
      * @param order: 1 ascending, -1 descending
      */
     sortGroup(variable,order) {
         this.groupOrder = order;
         let domain=this.rootStore.timepointStore.variableStores[this.type].getById(variable).domain;
-        console.log(domain);
         this.grouped = this.grouped.sort(function (a, b) {
             if (domain.indexOf(a.partition) < domain.indexOf(b.partition)) {
                 return -order;

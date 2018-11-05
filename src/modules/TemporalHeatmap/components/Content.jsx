@@ -9,7 +9,7 @@ import FontAwesome from 'react-fontawesome';
 import SampleVariableSelector from "./VariableSelector/SampleVariableSelector"
 import BetweenSampleVariableSelector from "./VariableSelector/BetweenSampleVariableSelector"
 import MainView from "./MainView"
-import ContinuousBinner from "./VariableModals/Binner/ContinuousBinner"
+import GroupBinningModal from "./VariableModals/Binner/GroupBinningModal"
 import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
@@ -156,12 +156,12 @@ const Content = observer(class Content extends React.Component {
 
     getBinner() {
         if (this.state.modalIsOpen) {
-            return (<ContinuousBinner modalIsOpen={this.state.modalIsOpen}
-                                      variable={this.state.clickedVariable}
-                                      type={this.state.type}
-                                      callback={this.state.callback}
-                                      closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
-                                      visMap={this.props.rootStore.visStore}
+            return (<GroupBinningModal modalIsOpen={this.state.modalIsOpen}
+                                       variable={this.state.clickedVariable}
+                                       type={this.state.type}
+                                       callback={this.state.callback}
+                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
+                                       visMap={this.props.rootStore.visStore}
             />);
         }
         else {

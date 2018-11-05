@@ -39,7 +39,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     }
 
     /**
-     * computes the percent occurance
+     * computes the percent occurrence
      */
     getPercentOccurences() {
         let occurences = {};
@@ -103,17 +103,21 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     createCurrentData() {
         let currentData = [];
         if (this.props.derivedVariable !== null) {
-            for (let key in this.props.derivedVariable.modification) {
-                if (!(currentData.map(d => d.name).includes(this.props.derivedVariable.modification[key]))) {
-                    currentData.push({
-                        selected: false,
-                        name: this.props.derivedVariable.modification[key],
-                        categories: [],
-                        color: this.props.derivedVariable.colorScale(this.props.derivedVariable.modification[key])
-                    })
+            this.props.derivedVariable.domain.forEach(d=> {
+                for (let key in this.props.derivedVariable.modification) {
+                    if(this.props.derivedVariable.modification[key]===d) {
+                        if (!(currentData.map(d => d.name).includes(d))) {
+                            currentData.push({
+                                selected: false,
+                                name: d,
+                                categories: [],
+                                color: this.props.derivedVariable.colorScale(d)
+                            })
+                        }
+                        currentData[currentData.map(d => d.name).indexOf(d)].categories.push(key);
+                    }
                 }
-                currentData[currentData.map(d => d.name).indexOf(this.props.derivedVariable.modification[key])].categories.push(key);
-            }
+            });
         }
         else {
             this.props.variable.domain.forEach(d => {
@@ -185,6 +189,9 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({currentData: currentData});
     }
 
+    /**
+     * unmerges all the currently selected merged categories
+     */
     unMerge() {
         let currentData = this.state.currentData.slice();
         let unmergedEntries = [];
@@ -228,6 +235,11 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({currentData: currentData});
     }
 
+    /**
+     * handles the change of a single color
+     * @param color
+     * @param index
+     */
     handleColorChange(color, index) {
         let currentData = this.state.currentData.slice();
         currentData[index].color = color.hex;
@@ -298,6 +310,11 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         })
     }
 
+    /**
+     * handle the change of color scale. Changes ordinal state depending on the chosen scale
+     * @param scale
+     * @param ordinal
+     */
     handleColorScaleChange(scale, ordinal) {
         let currentData = this.state.currentData.slice();
         currentData.forEach((d, i) => {
@@ -306,6 +323,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({colorScale: scale, currentData: currentData, ordinal: ordinal});
     }
 
+    /**
+     * gets the rects representing an ordinal scale
+     * @param scale
+     * @param rectDim
+     * @param numRect
+     * @returns {Array}
+     */
     static getOrdinalRects(scale, rectDim, numRect) {
         let rects = [];
         for (let i = 1; i < numRect + 1; i++) {
@@ -316,6 +340,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         return rects;
     }
 
+    /**
+     * gets the rects representing a categorical scale
+     * @param scale
+     * @param rectDim
+     * @param numRect
+     * @returns {Array}
+     */
     static getCategoricalRects(scale, rectDim, numRect) {
         let rects = [];
         for (let i = 0; i < numRect; i++) {
@@ -326,6 +357,10 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         return rects;
     }
 
+    /**
+     * gets the popover for the color scale selection
+     * @returns {*}
+     */
     getColorScalePopover() {
         let rectDim = 20;
         let numRect = 5;
@@ -337,14 +372,14 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         return <form>
             <FormGroup>
                 <ControlLabel>Ordinal Scales</ControlLabel>
-                {ordinalScales.map((d,i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, true)}
-                                               name="ColorScaleGroup">
+                {ordinalScales.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, true)}
+                                                    name="ColorScaleGroup">
                     <svg width={rectDim * numRect}
                          height={rectDim}>{ModifyCategorical.getOrdinalRects(d, rectDim, numRect)}</svg>
                 </Radio>)}
                 <ControlLabel>Categorical Scales</ControlLabel>
-                {categoricalScales.map((d,i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, false)}
-                                                   name="ColorScaleGroup">
+                {categoricalScales.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, false)}
+                                                        name="ColorScaleGroup">
                     <svg width={rectDim * numRect}
                          height={rectDim}>{ModifyCategorical.getCategoricalRects(d, rectDim, numRect)}</svg>
                     {"  Colors: " + d.range().length}
@@ -367,7 +402,6 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     <Modal.Title>Modify Categorical Variable</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{minHeight: "400px"}}>
-
                     <form>
                         <ControlLabel>Variable name</ControlLabel>
                         <FormControl

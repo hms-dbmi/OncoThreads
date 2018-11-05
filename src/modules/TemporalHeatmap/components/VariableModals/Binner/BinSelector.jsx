@@ -1,7 +1,5 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import * as d3 from 'd3';
-import Axis from './Axis';
 import Histogram from './Histogram';
 import Slider from './Slider';
 
@@ -9,35 +7,66 @@ const BinSelector = observer(class BinSelector extends React.Component {
     constructor(props) {
         super(props);
         this.coordX = 0;
-        this.xScale = d3.scaleLinear();
         this.state = {
             dragging: false,
-            x: [(props.width - 70) / 2],
+            x: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1).map(d => props.xScale(d)),
             currentBin: 0
         };
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleBinAddition = this.handleBinAddition.bind(this);
+        this.handleBinRemoval = this.handleBinRemoval.bind(this);
+        this.handleNumberChange = this.handleNumberChange.bind(this);
         this.handlePositionTextFieldChange = this.handlePositionTextFieldChange.bind(this);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({x: nextProps.bins.filter((d, i) => i !== 0 && i !== nextProps.bins.length - 1).map(d => nextProps.xScale(d))})
     }
 
     /**
      * handles the addition of bins
-     * @param e
-     * @param width
-     =     */
-    handleBinAddition(e, width) {
-        const stepWidth = width / e.target.value;
-        let currX = 0;
-        let x = [];
-        for (let i = 0; i < e.target.value - 1; i++) {
-            currX += stepWidth;
-            x.push(Math.round(currX))
+     */
+    handleBinAddition() {
+        let xSorted = this.state.x.slice().sort((a, b) => a - b);
+        let biggestGap = xSorted[0];
+        let newPos = biggestGap / 2;
+        if (xSorted.length === 1) {
+            if (biggestGap < this.props.width - xSorted[0]) {
+                biggestGap = this.props.width - xSorted[0];
+                newPos = (this.props.width + xSorted[0]) / 2;
+            }
         }
+        for (let i = 1; i < xSorted.length; i++) {
+            if (i === xSorted.length - 1 && biggestGap < (this.props.width - xSorted[i])) {
+                biggestGap = this.props.width - xSorted[i];
+                newPos = (this.props.width + xSorted[i]) / 2;
+            }
+            if (xSorted[i] - xSorted[i - 1] > biggestGap) {
+                biggestGap = xSorted[i] - xSorted[i - 1];
+                newPos = (xSorted[i] + xSorted[i - 1]) / 2;
+            }
+        }
+        let newX = this.state.x.slice().concat(newPos);
+        this.setState({x: newX});
+        this.props.handleBinChange(this.getBins(newX));
+    }
+
+    handleBinRemoval() {
+        let x = this.state.x.slice();
+        x.pop();
         this.setState({x: x});
-        this.props.handleNumberOfBinsChange(e.target.value);
         this.props.handleBinChange(this.getBins(x));
+    }
+
+    handleNumberChange(e) {
+        if (e.target.value > this.state.x.length) {
+            this.handleBinAddition();
+        }
+        else {
+            this.handleBinRemoval();
+        }
     }
 
     handleMouseDown(e, index) {
@@ -48,32 +77,18 @@ const BinSelector = observer(class BinSelector extends React.Component {
     handleMouseUp() {
         this.setState({currentBin: -1, dragging: false});
         this.coordX = null;
-        this.props.handleBinChange(this.getBins(this.state.x, this.xScale));
+        this.props.handleBinChange(this.getBins(this.state.x, this.props.xScale));
     }
 
     getBins(x) {
         let binValues = [];
-        const _self = this;
-        if (_self.props.isXLog) {
-            binValues.push(Math.pow(10, this.xScale.domain()[0]));
-            x.forEach(function (d) {
-                binValues.push(Math.pow(10, _self.xScale.invert(d)));
+        binValues.push(this.props.xScale.domain()[0]);
+        x.forEach(d => {
+            binValues.push(this.props.xScale.invert(d));
 
-            });
-            binValues.push(Math.pow(10, this.xScale.domain()[1]));
-        }
-        else {
-            binValues.push(this.xScale.domain()[0]);
-            x.forEach(function (d) {
-                binValues.push(_self.xScale.invert(d));
-
-            });
-            binValues.push(this.xScale.domain()[1]);
-        }
-        binValues.sort(function (a, b) {
-            return a - b
         });
-        return binValues;
+        binValues.push(this.props.xScale.domain()[1]);
+        return binValues.sort((a, b) => a - b);
     }
 
     handleMouseMove(e, width) {
@@ -91,7 +106,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
 
     handlePositionTextFieldChange(event, index) {
         let x = this.state.x.slice();
-        x[index] = this.xScale(event.target.value);
+        x[index] = this.props.xScale(event.target.value);
         this.props.handleBinChange(this.getBins(x));
         this.setState({x: x});
 
@@ -100,50 +115,31 @@ const BinSelector = observer(class BinSelector extends React.Component {
 
     render() {
         const margin = {top: 20, right: 20, bottom: 90, left: 50},
-            w = this.props.width - (margin.left + margin.right),
-            h = this.props.height - (margin.top + margin.bottom);
+            w = this.props.width + (margin.left + margin.right),
+            h = this.props.height + (margin.top + margin.bottom);
         const transform = 'translate(' + margin.left + ',' + margin.top + ')';
-        let data = this.props.data.map(d => this.props.transformXFunction(d));
-        let min = d3.min(data);
-        this.xScale = d3.scaleLinear().domain([min, d3.max(data)]).range([0, w]);
-
-        const bins = d3.histogram()
-            .domain([min, d3.max(data)])
-            .thresholds(this.xScale.ticks(30))(data);
-        const y = this.props.yScale
-            .domain([0, d3.max(bins, function (d) {
-                return d.length;
-            })]).range([h, 0]);
-        const xAxis = d3.axisBottom()
-            .scale(this.xScale);
-        const yAxis = d3.axisLeft()
-            .scale(y)
-            .tickFormat(function (d) {
-                return Math.round(d / data.length * 100)
-            });
-        let xLabel = this.props.variableName;
-        if (this.props.isXLog) {
-            xLabel = "log_" + this.props.variableName;
-        }
-
 
         return (
             <div>
-                <label>Number of bins: <input onChange={(e) => this.handleBinAddition(e, w, this.xScale)} type="number"
-                                              name="points"
-                                              step="1" min="2" defaultValue="2"/></label>
-                <svg onMouseMove={(e) => this.handleMouseMove(e, w)} onMouseUp={() => this.handleMouseUp(this.xScale)}
-                     width={this.props.width}
-                     height={this.props.height}>
+                <svg onMouseMove={(e) => this.handleMouseMove(e, w)}
+                     onMouseUp={() => this.handleMouseUp(this.props.xScale)}
+                     width={w}
+                     height={h}>
                     <g transform={transform}>
-                        <Axis h={h} w={this.props.width} axis={yAxis} axisType="y" label="Percent"/>
-                        <Axis h={h} w={this.props.width} axis={xAxis} axisType="x" label={xLabel}/>
-                        <Histogram bins={bins} xScale={this.xScale} yScale={y} height={h}/>
-                        <Slider yPos={h + 50} width={w} x={this.state.x} xScale={this.xScale}
+                        <Histogram bins={this.props.histBins} xScale={this.props.xScale} yScale={this.props.yScale}
+                                   h={this.props.height}
+                                   w={this.props.width} xLabel={this.props.xLabel}
+                                   numValues={this.props.data.length}/>
+                        <Slider yPos={this.props.height + 50} width={this.props.width} x={this.state.x}
+                                xScale={this.props.xScale}
                                 handleMouseDown={this.handleMouseDown}
                                 handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>
                     </g>
                 </svg>
+                <label>Number of bins: <input onChange={(e) => this.handleNumberChange(e)}
+                                              type="number"
+                                              name="points"
+                                              step="1" min="2" defaultValue="2"/></label>
             </div>
         )
     }

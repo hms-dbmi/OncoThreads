@@ -20,7 +20,7 @@ class OriginalVariable {
         let scale;
         switch (this.datatype) {
             case "NUMBER":
-                scale = ColorScales.getContinousColorScale(this.domain);
+                scale = ColorScales.getContinousColorScale(this.range, this.domain);
                 break;
             case "binary":
                 scale = ColorScales.getBinaryScale(this.range);
