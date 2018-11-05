@@ -69,7 +69,6 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
                 }
             }
             this.setState({bins: bins, binNames: binNames})
-            console.log(binNames)
         }
         else {
             let binNames = [];

@@ -12,39 +12,58 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         constructor(props) {
             super(props);
             this.data = Object.values(props.variable.mapper);
-            this.state = {
-                bins: this.getInitialBins(),
-                binNames: ["Bin 1", "Bin 2"],
-            };
+            this.state = this.setInitialState();
             this.handleBinChange = this.handleBinChange.bind(this);
             this.handleBinNameChange = this.handleBinNameChange.bind(this);
             this.handleApply = this.handleApply.bind(this);
             this.close = this.close.bind(this);
         }
 
+        setInitialState() {
+            let bins, binNames;
+                let min = d3.min(this.data);
+                let max = d3.max(this.data);
+                let med = (max + min) / 2;
+                if (min < 0) {
+                    med = 0;
+                }
+                bins = [min, med, max];
+                binNames = [{name: min + " to " + med, modified: false}, {name: med + " to " + max, modified: false}];
+            return {
+                bins: bins,
+                binNames: binNames,
+            }
+        }
 
         handleBinChange(bins) {
-            let binNames = [];
-            for (let i = 1; i < bins.length; i++) {
-                binNames.push(Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100);
+            if (bins.length === this.state.bins.length) {
+                let binNames = this.state.binNames.slice();
+                for (let i = 1; i < bins.length; i++) {
+                    if (!binNames[i - 1].modified) {
+                        binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+                    }
+                }
+                this.setState({bins: bins, binNames: binNames})
             }
-            this.setState({bins: bins, binNames: binNames});
+            else {
+                let binNames = [];
+                for (let i = 1; i < bins.length; i++) {
+                    binNames.push({
+                        name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
+                        modified: false
+                    });
+                }
+                this.setState({bins: bins, binNames: binNames})
+            }
+
         }
 
         handleBinNameChange(e, index) {
             let binNames = this.state.binNames.slice();
-            binNames[index] = e.target.value;
+            binNames[index] = {name: e.target.value, modified: true};
+            this.setState({binNames: binNames});
         }
 
-        getInitialBins() {
-            let min = d3.min(this.data);
-            let max = d3.max(this.data);
-            let med = (d3.max(this.data) + d3.min(this.data)) / 2;
-            if (min < 0) {
-                med = 0;
-            }
-            return [min, med, max];
-        }
 
         close() {
             this.props.closeModal();
@@ -61,7 +80,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                     bins: this.state.bins,
                     binNames: this.state.binNames
                 }
-            }, [], this.state.binNames, MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames));
+            }, [], this.state.binNames.map(d=>d.name), MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames));
             this.props.callback(derivedVariable);
             this.props.closeModal();
         }
