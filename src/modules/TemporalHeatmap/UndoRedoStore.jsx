@@ -88,11 +88,9 @@ class UndoRedoStore {
         }
     }
 
-    /**
-     * deserialized the state saved in local storage
-     */
     deserializeLocalStorage() {
         this.stateStack = [{state: JSON.parse(localStorage.getItem(this.rootStore.study.studyId))}];
+        console.log(this.stateStack);
         this.currentPointer = this.stateStack.length - 1;
         this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[0].state.allSampleVar);
         this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[0].state.allBetweenVar);
@@ -109,12 +107,6 @@ class UndoRedoStore {
 
     }
 
-    /**
-     * writes saved attributes to observable datastructure
-     * @param observable
-     * @param saved
-     * @returns {*}
-     */
     deserializeVariables(observable, saved) {
         if (observable.length === 0) {
             saved.forEach(d => observable.push(d));
@@ -139,12 +131,6 @@ class UndoRedoStore {
         return observable;
     }
 
-    /**
-     * updates observed variables to the state of saved variables. If necessary, new variables are added (if saved contains a variable not contained in observed)
-     * @param observedVariables
-     * @param savedVariables
-     * @returns {*}
-     */
     static deserializeReferencedVariables(observedVariables, savedVariables) {
         for (let variable in savedVariables) {
             if (variable in observedVariables) {
@@ -153,13 +139,13 @@ class UndoRedoStore {
             else if (!(variable in observedVariables)) {
                 switch (savedVariables[variable].type) {
                     case "original":
-                        observedVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper);
+                        observedVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].mapper);
                         break;
                     case "event":
                         observedVariables[variable] = new EventVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].eventType, savedVariables[variable].eventSubType, savedVariables[variable].mapper);
                         break;
                     default:
-                        observedVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modificationType, savedVariables[variable].modification, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper)
+                        observedVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modificationType, savedVariables[variable].modification, savedVariables[variable].mapper)
                 }
             }
         }
@@ -240,10 +226,7 @@ class UndoRedoStore {
         //torage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.stateStack.length - 1].state));
     }
 
-    /**
-     * makes an object non-observable by transforming each attribute
-     * @param object
-     */
+
     static serializeAttributes(object) {
         let returnDict = {};
         for (let attribute in object) {
@@ -252,10 +235,6 @@ class UndoRedoStore {
         return returnDict;
     }
 
-    /**
-     * makes a variable non-observable
-     * @param variables
-     */
     static serializeVariables(variables) {
         let serializedVariables = {};
         for (let variable in variables) {
@@ -292,12 +271,6 @@ class UndoRedoStore {
         this.saveHistory("variable");
     }
 
-    /**
-     * saves the modification of a variable
-     * @param type
-     * @param variable
-     * @param saveToStack
-     */
     saveVariableModification(type, variable, saveToStack) {
         if (saveToStack) {
             this.logs.push("MODIFY VARIABLE: " + variable + ", Type: " + type);
@@ -308,10 +281,6 @@ class UndoRedoStore {
         }
     }
 
-    /**
-     * Saves when the view has been switched
-     * @param globalTL
-     */
     saveSwitchHistory(globalTL) {
         if (globalTL) {
             this.logs.push("SWITCH TO: global timeline");
@@ -322,10 +291,6 @@ class UndoRedoStore {
         this.saveHistory("switch");
     }
 
-    /**
-     * saves actions happening in the timeline view
-     * @param action
-     */
     saveGlobalHistory(action) {
         this.logs.push(action + ": in timeline view");
         this.saveHistory("timeline");
@@ -345,11 +310,6 @@ class UndoRedoStore {
         this.saveHistory("timepoint");
     }
 
-    /**
-     * saves moving patients up/down
-     * @param dir
-     * @param patient
-     */
     saveTPMovement(dir, patient) {
         this.logs.push("MOVE PATIENT: " + patient + " " + dir);
         this.saveHistory("structure");

@@ -126,7 +126,7 @@ class MultipleTimepointsStore {
                     timepoint.promote(variable)
                 }
                 if (timepoint.isGrouped) {
-                    timepoint.sortGroup(variable,originalTimepoint.groupOrder)
+                    timepoint.sortGroup(originalTimepoint.groupOrder)
                 }
                 else {
                     timepoint.sortHeatmap(variable, originalTimepoint.heatmapSorting.order)

@@ -3,7 +3,6 @@ import {observer} from "mobx-react";
 import {Button, ButtonGroup, ButtonToolbar, ControlLabel, FormControl, FormGroup, Panel} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import Select from 'react-select';
-import OriginalVariable from "../../OriginalVariable";
 
 /*
 creates the selector for sample variables (left side of main view, top)
@@ -36,9 +35,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     bin(id, name, description) {
-        let variable=new OriginalVariable(id,name,"NUMBER",description,[],[],this.props.store.rootStore.staticMappers[id]);
-        this.props.store.addVariableToBeReferenced(variable);
-        this.props.openBinningModal(variable, "sample", newVariable=>this.props.store.addVariableToBeDisplayed(newVariable));
+        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
+        this.props.openBinningModal(id, "sample", this.props.store.rootStore.timepointStore.regroupTimepoints, null);
     }
 
     /**
@@ -46,6 +44,8 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param id
      */
     addVarModal() {
+        console.log("show list of vars");
+
         this.props.openAddModal();
     }
 
@@ -267,12 +267,17 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
     render() {
         return (
             <div>
-                <ButtonGroup vertical block>
-                    <Button style={{textAlign: "left"}} bsSize="small" color="secondary"
-                            onClick={() => this.addVarModal()}
-                            key={this.props.mutationCount}>{"Add Variables"}
-                    </Button>
-                </ButtonGroup>
+
+                {/*
+                    <ButtonGroup vertical block>
+                            <Button style={{textAlign: "left"}} bsSize="small" color="secondary"
+                                    //onClick={() =>this.addVarModal(this.createVarList())}//this.handleContinousClick(this.props.store.rootStore.mutationCountId, "Mutation Count")}
+                                    onClick={() =>this.addVarModal()}
+                                    key={this.props.mutationCount}>{"Add Variables"}
+                            </Button>
+                    </ButtonGroup>
+*/}
+
                 <h4>Sample variables</h4>
                 <Panel>
                     <Panel.Heading>

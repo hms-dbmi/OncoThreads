@@ -22,35 +22,19 @@ class SingleTimepoint {
         });
     }
 
-    /**
-     * sets the name of the timepoint
-     * @param name
-     */
     setName(name) {
         this.name = name;
     }
 
-    /**
-     * sets this isGrouped field and adapts transitions
-     * @param boolean
-     */
     setIsGrouped(boolean) {
         this.isGrouped = boolean;
         this.rootStore.transitionStore.adaptTransitions(this.globalIndex);
     }
 
-    /**
-     * resets the heatmap
-     */
     reset() {
         this.heatmap = [];
     }
 
-    /**
-     * adds a row
-     * @param variableId
-     * @param variableData
-     */
     addRow(variableId, variableData) {
         this.heatmap.push({
             variable: variableId,
@@ -62,10 +46,6 @@ class SingleTimepoint {
         }
     }
 
-    /**
-     * removes a row
-     * @param variableId
-     */
     removeRow(variableId) {
         let deleteIndex = -1;
         for (let i = 0; i < this.heatmap.length; i++) {
@@ -83,23 +63,12 @@ class SingleTimepoint {
         }
     }
 
-    /**
-     * updates a row
-     * @param index
-     * @param variableId
-     * @param variableData
-     */
     updateRow(index, variableId, variableData) {
         this.heatmap[index].variable = variableId;
         this.heatmap[index].data = variableData;
         this.heatmap[index].isUndef = this.rowIsUndefined(variableData);
     }
 
-    /**
-     * checks if a row is undefined
-     * @param rowData
-     * @returns {boolean}
-     */
     rowIsUndefined(rowData) {
         let isUndefined = true;
         for (let i = 0; i < rowData.length; i++) {
@@ -111,10 +80,16 @@ class SingleTimepoint {
         return isUndefined;
     }
 
-    /**
-     * sorts the timepoint by a variable (handled differently for grouped and ungrouped timepoints)
-     * @param variableId
-     */
+    group2(variable) {
+        this.primaryVariableId = variable;
+        this.isGrouped = true;
+    }
+
+    promote2(variable) {
+        this.primaryVariableId = variable
+    }
+
+
     sort(variableId) {
         //case: the timepoint is grouped
         if (this.isGrouped) {
@@ -122,7 +97,7 @@ class SingleTimepoint {
                 this.setPrimaryVariable(variableId);
                 this.groupTimepoint(variableId);
             }
-            this.sortGroup(variableId,-this.groupOrder);
+            this.sortGroup(-this.groupOrder);
         }
         //case: the timepoint is not grouped
         else {
@@ -136,25 +111,17 @@ class SingleTimepoint {
         }
     }
 
-    /**
-     * groups a timepoint
-     * @param variable
-     */
     group(variable) {
         this.setPrimaryVariable(variable);
         this.groupTimepoint(variable);
-        this.sortGroup(variable,1);
+        this.sortGroup(1);
     }
 
-    /**
-     * promotes a timepoint
-     * @param variableId
-     */
     promote(variableId) {
         this.setPrimaryVariable(variableId);
         if (this.isGrouped) {
             this.groupTimepoint(variableId);
-            this.sortGroup(variableId,this.groupOrder);
+            this.sortGroup(this.groupOrder);
         }
     }
 
@@ -245,17 +212,15 @@ class SingleTimepoint {
 
     /**
      * sorts groups
-     * @param variable
      * @param order: 1 ascending, -1 descending
      */
-    sortGroup(variable,order) {
+    sortGroup(order) {
         this.groupOrder = order;
-        let domain=this.rootStore.timepointStore.variableStores[this.type].getById(variable).domain;
         this.grouped = this.grouped.sort(function (a, b) {
-            if (domain.indexOf(a.partition) < domain.indexOf(b.partition)) {
+            if (a.partition < b.partition) {
                 return -order;
             }
-            if (domain.indexOf(a.partition) > domain.indexOf(b.partition)) {
+            if (a.partition > b.partition) {
                 return order;
             }
             if (a.partition === undefined && b.partition !== undefined) {
@@ -297,8 +262,7 @@ class SingleTimepoint {
      * @param order
      */
     sortHeatmap(variable, order) {
-        const _self = this;
-        let varToSort = this.rootStore.timepointStore.variableStores[this.type].getById(variable);
+        const _self=this;
         this.heatmapSorting = {variable: variable, order: order};
         const previousOrder = this.heatmapOrder.slice();
         const variableIndex = this.rootStore.timepointStore.variableStores[this.type].currentVariables.indexOf(variable);
@@ -313,20 +277,10 @@ class SingleTimepoint {
         });
         //first sort after primary variable values
         this.heatmapOrder = helper.sort(function (a, b) {
-            if (varToSort.datatype === "NUMBER") {
-                if (a.value < b.value)
-                    return -order;
-                if (a.value > b.value)
-                    return order;
-            }
-            else {
-                if (varToSort.domain.indexOf(a.value) < varToSort.domain.indexOf(b.value)) {
-                    return -order;
-                }
-                if (varToSort.domain.indexOf(a.value) > varToSort.domain.indexOf(b.value)) {
-                    return order;
-                }
-            }
+            if (a.value < b.value)
+                return -order;
+            if (a.value > b.value)
+                return order;
             //undefined values accumulate on the right
             if (a.value === undefined && b.value !== undefined) {
                 return 1;
