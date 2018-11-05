@@ -5,6 +5,7 @@ import VisStore from "./TemporalHeatmap/VisStore.jsx"
 import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
+import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
 
 
 /*
@@ -26,6 +27,7 @@ class RootStore {
         this.clinicalPatientCategories = [];
         this.mutationCountId = "mutCount";
         this.timeDistanceId = "timeGapMapping";
+        this.mutationOrder = ["Nonsense_Mutation", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice_Site", "Splice_Region", "In_Frame_Del", "In_Frame_Ins", "De_novo_Start_InFrame", "Missense_Mutation", "Translation_Start_Site", "Nonstop_Mutation", "Targeted_Region", "De_novo_Start_OutOfFrame", "Unknown"];
         this.eventCategories = [];
         this.eventAttributes = [];
         this.patientOrderPerTimepoint = [];
@@ -116,112 +118,113 @@ class RootStore {
             console.log(result)
           });
       }*/
-    exportSVG(){
+    exportSVG() {
         var tmp;
-        if(this.timepointStore.globalTime) {
+        if (this.timepointStore.globalTime) {
             tmp = document.getElementById("timeline-view");
         } else {
             tmp = document.getElementById("block-view");
         }
         var svg_all = tmp.getElementsByTagName("svg");
 
-        var print_svg='';
-        var minW=null, minH=null, maxW=null, maxH=null;
+        var print_svg = '';
+        var minW = null, minH = null, maxW = null, maxH = null;
 
-        var prev_right=0, new_x, new_right;
+        var prev_right = 0, new_x, new_right;
 
 
-        for(var i=0; i<svg_all.length; i++){
+        for (var i = 0; i < svg_all.length; i++) {
             var t = "";
-            for(var c = 0; c<svg_all[i].children.length; c++) {
+            for (var c = 0; c < svg_all[i].children.length; c++) {
                 var child = svg_all[i].children[c];
                 t = t + (new XMLSerializer()).serializeToString(child);
-            };
+            }
+            ;
             var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
-            if(this.timepointStore.globalTime && this.timepointStore.transitionOn && (i===0 || i===1) ) {
+            if (this.timepointStore.globalTime && this.timepointStore.transitionOn && (i === 0 || i === 1)) {
                 boundingRect = svg_all[i].getBoundingClientRect();
             }
-            else{
+            else {
                 boundingRect = svg_all[i].parentElement.getBoundingClientRect();
             }
             var width = svg_all[i].getBoundingClientRect().width;
             var height = svg_all[i].getBoundingClientRect().height;
 
-            new_x= boundingRect.x;
-            new_right=new_x+width;
+            new_x = boundingRect.x;
+            new_right = new_x + width;
 
-            if(boundingRect.x<prev_right && !this.timepointStore.globalTime){
-                
-                new_right=prev_right+width;
-                new_x=prev_right;
+            if (boundingRect.x < prev_right && !this.timepointStore.globalTime) {
+
+                new_right = prev_right + width;
+                new_x = prev_right;
             }
 
-            prev_right=new_right-1;
-            
-            if(minW==null || boundingRect.left<minW) {
+            prev_right = new_right - 1;
+
+            if (minW == null || boundingRect.left < minW) {
                 minW = boundingRect.left;
             }
-            if(maxW==null || new_right>maxW) {
+            if (maxW == null || new_right > maxW) {
                 maxW = new_right;
             }
-            if(minH==null || boundingRect.top>minH) {
+            if (minH == null || boundingRect.top > minH) {
                 minH = boundingRect.top;
             }
-            if(maxH==null || boundingRect.bottom>maxH) {
+            if (maxH == null || boundingRect.bottom > maxH) {
                 maxH = boundingRect.bottom;
             }
 
-            var scaleX=1;
+            var scaleX = 1;
 
-            if(this.timepointStore.globalTime && this.timepointStore.transitionOn && i===4) {
-               // if(this.timepointStore.transitionOn && i===4){
+            if (this.timepointStore.globalTime && this.timepointStore.transitionOn && i === 4) {
+                // if(this.timepointStore.transitionOn && i===4){
 
-                    scaleX = svg_all[i+1].getBoundingClientRect().width/width;
-                    print_svg= print_svg + 
-                    '<g width="' +width + '" height= "' + height + '" transform="translate(' + new_x+ ','+boundingRect.y+') scale('+scaleX+', 1)" >' +
-                    
-                      t  +
-    
+                scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
+                print_svg = print_svg +
+                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + boundingRect.y + ') scale(' + scaleX + ', 1)" >' +
+
+                    t +
+
                     '</g>';
 
             }
-            else if(this.timepointStore.globalTime && !this.timepointStore.transitionOn && i===3){
+            else if (this.timepointStore.globalTime && !this.timepointStore.transitionOn && i === 3) {
 
-                    scaleX = svg_all[i+1].getBoundingClientRect().width/width;
-                    print_svg= print_svg + 
-                    '<g width="' +width + '" height= "' + height + '" transform="translate(' + new_x+ ','+boundingRect.y+') scale('+scaleX+', 1)" >' +
-                    
-                      t  +
-    
+                scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
+                print_svg = print_svg +
+                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + boundingRect.y + ') scale(' + scaleX + ', 1)" >' +
+
+                    t +
+
                     '</g>';
                 //}
-              
-            } else {
-                print_svg= print_svg + 
-                '<g width="' +width + '" height= "' + height + '" transform="translate(' + new_x+ ','+boundingRect.y+')" >' +
-                
-                  t  +
 
-                '</g>';
+            } else {
+                print_svg = print_svg +
+                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + boundingRect.y + ')" >' +
+
+                    t +
+
+                    '</g>';
             }
         }
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' +(minW+maxW).toString() + '" height= "' + (minH+maxH).toString() + '">' +
-                    
-                        print_svg  +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
-                    '</svg>';
+            print_svg +
+
+            '</svg>';
 
 
         // Submit the <FORM> to the server.
         // The result will be an attachment file to download.
         var form = document.getElementById("svgform");
-       // form['output_format'].value = output_format;
+        // form['output_format'].value = output_format;
         //form['data'].value = svg_xml ;
 
         form[0].value = "svg";
-        form[1].value = svg_xml ;
+        form[1].value = svg_xml;
         this.downloadFile(svg_xml);
     }
 
@@ -234,6 +237,7 @@ class RootStore {
         //element.target = "_blank";
         element.click();
     }
+
     /**
      * resets everything
      */
@@ -265,7 +269,7 @@ class RootStore {
                     }
                 }
                 if (_self.sampleStructure[d.patientId].length > i) {
-                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i][0]})
+                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i]})
                 }
             });
             timepointStructure.push(patientSamples);
@@ -315,7 +319,7 @@ class RootStore {
      * @param HUGOsymbols
      * @param mappingType
      */
-    getMutationsAllAtOnce(HUGOsymbols, mappingType) {
+    getMutationsProfile(HUGOsymbols, mappingType) {
         const _self = this;
         let datatype;
         if (mappingType === "binary") {
@@ -351,13 +355,71 @@ class RootStore {
                         for (let entry in geneDict) {
                             if (!_self.timepointStore.variableStores.sample.isDisplayed(entry + mappingType)) {
                                 const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                                _self.timepointStore.variableStores.sample.addOriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, 'mutation in ' + symbol + " " + mappingType, [], true, _self.createMutationMapping(geneDict[entry], entry, mappingType, confirm), true);
+                                let domain = [];
+                                if (mappingType === "mutationType") {
+                                    domain = _self.mutationOrder;
+                                }
+                                const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, _self.createMutationMapping(geneDict[entry], mappingType));
+                                _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
+                                _self.undoRedoStore.saveVariableHistory("ADD mutation " + mappingType, HUGOsymbols, true)
                             }
                         }
                     })
                 }
             }
         )
+    }
+
+    getMolecularProfile(profileId, HUGOsymbols) {
+        const profile = this.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0];
+        this.cbioAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
+            if (entrezIDs.length !== 0) {
+                this.cbioAPI.getAllMolecularValues(this.study.studyId, profileId, entrezIDs, response => {
+                    let geneDict = {};
+                    let noMutationsFound = [];
+                    entrezIDs.forEach(function (d, i) {
+                        const containedIds = response.filter(entry => entry.entrezGeneId === d.entrezGeneId);
+                        geneDict[d.entrezGeneId] = containedIds;
+                        if (containedIds.length === 0) {
+                            noMutationsFound.push({hgncSymbol: d.hgncSymbol, entrezGeneId: d.entrezGeneId});
+                        }
+                    });
+                    let confirm = false;
+                    if (noMutationsFound.length > 0) {
+                        confirm = window.confirm("WARNING: No mutations found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
+                    }
+                    if (!confirm) {
+                        noMutationsFound.forEach(function (d) {
+                            delete geneDict[d.entrezGeneId];
+                        });
+                    }
+                    for (let entry in geneDict) {
+                        if (!this.timepointStore.variableStores.sample.isDisplayed(entry)) {
+                            const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
+                            let domain = [];
+                            let datatype = "NUMBER";
+                            if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
+                                domain = ["-2", "-1", "0", "1", "2"];
+                                datatype = "ORDINAL";
+                            }
+                            const variable = new OriginalVariable(entry + "_" + profileId, symbol, datatype, profile.name + ": " + symbol, [], domain, this.createMolecularMapping(geneDict[entry], datatype));
+                            this.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
+                            this.undoRedoStore.saveVariableHistory("ADD " + profile.name, HUGOsymbols, true)
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    getMutations(profileId, HUGOsymbols, mappingType) {
+        if (this.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
+            this.getMutationsProfile(HUGOsymbols, mappingType);
+        }
+        else {
+            this.getMolecularProfile(profileId, HUGOsymbols);
+        }
+
     }
 
     /**
@@ -556,7 +618,7 @@ class RootStore {
      * creates a dictionary mapping sample IDs onto clinical data
      * @returns {{}}
      */
-      createClinicalSampleMapping() {
+    createClinicalSampleMapping() {
         const _self = this;
         this.cbioAPI.clinicalSampleData.forEach(function (d) {
             if (d)
@@ -593,7 +655,7 @@ class RootStore {
                 _self.staticMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
             });
         }
-        else{
+        else {
             console.log("test.....");
         }
     }
@@ -621,19 +683,15 @@ class RootStore {
     /**
      * creates sample id mapping for mutations
      * @param list
-     * @param geneId
      * @param mappingType
-     * @param addEmptyVariables
      */
-    createMutationMapping(list, geneId, mappingType, addEmptyVariables) {
+    createMutationMapping(list, mappingType) {
         let mappingFunction;
         if (mappingType === "binary") {
-            mappingFunction = function (currentSample) {
-                return (list.filter(d => d.sampleId === currentSample).length > 0)
-            }
+            mappingFunction = currentSample => (list.filter(d => d.sampleId === currentSample).length > 0)
         }
         else if (mappingType === "proteinChange") {
-            mappingFunction = function (currentSample) {
+            mappingFunction = currentSample => {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
                 let proteinChange = undefined;
                 if (entry !== undefined) {
@@ -643,17 +701,18 @@ class RootStore {
             }
         }
         else if (mappingType === "mutationType") {
-            mappingFunction = function (currentSample) {
-                const entry = list.filter(d => d.sampleId === currentSample)[0];
+            mappingFunction = currentSample => {
+                const entries = list.filter(d => d.sampleId === currentSample);
                 let mutationType = undefined;
-                if (entry !== undefined) {
-                    mutationType = entry.mutationType;
+                if (entries.length > 0) {
+                    let indices = entries.map(d => this.mutationOrder.indexOf(d.mutationType));
+                    mutationType = this.mutationOrder[Math.max(...indices)];
                 }
-                return (mutationType);
+                return mutationType;
             }
         }
         else {
-            mappingFunction = function (currentSample) {
+            mappingFunction = currentSample => {
                 const entry = list.filter(d => d.sampleId === currentSample)[0];
                 let vaf = undefined;
                 if (entry !== undefined && entry.mutationType === "Missense_Mutation") {
@@ -676,6 +735,25 @@ class RootStore {
         return mapper;
     }
 
+    createMolecularMapping(list, datatype) {
+        let mapper = {};
+        this.timepointStructure.forEach(function (d) {
+            d.forEach(function (f) {
+                if (list.length === 0) {
+                    mapper[f.sample] = undefined;
+                }
+                else {
+                    let value = list.filter(d => d.sampleId === f.sample)[0].value;
+                    if (datatype === "NUMBER") {
+                        value = parseFloat(value);
+                    }
+                    mapper[f.sample] = value;
+                }
+            });
+        });
+        return mapper;
+    }
+
     createClinicalPatientMappers() {
         const _self = this;
         this.cbioAPI.clinicalPatientData.forEach(function (d) {
@@ -691,10 +769,10 @@ class RootStore {
                         _self.staticMappers[d.clinicalAttributeId] = {}
                     }
                 _self.sampleStructure[d.patientId].forEach(function (f) {
-                    if(d.clinicalAttribute.datatype!=="NUMBER") {
+                    if (d.clinicalAttribute.datatype !== "NUMBER") {
                         return _self.staticMappers[d.clinicalAttributeId][f] = d.value;
                     }
-                    else{
+                    else {
                         return _self.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
                     }
                 });

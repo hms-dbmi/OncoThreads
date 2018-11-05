@@ -131,14 +131,15 @@ const Legend = observer(class Legend extends React.Component {
                 let tooltipText;
                 if (variable.datatype === "BINNED") {
                     tooltipText = d + ": " + Math.round(variable.modification.binning.bins[i] * 100) / 100 + " to " + Math.round(variable.modification.binning.bins[i + 1] * 100) / 100;
-
                 }
                 else {
                     tooltipText = d;
                 }
                 const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
-                legendEntries.push(_self.getLegendEntry(d.toString(), opacity, rectWidth, fontSize, currX, lineheight, color(d), Legend.getTextColor(color(d)), tooltipText));
-                currX += (rectWidth + 2);
+                if(d!==undefined) {
+                    legendEntries.push(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), Legend.getTextColor(color(d)), tooltipText));
+                    currX += (rectWidth + 2);
+                }
             }
         });
         this.updateMaxWidth(currX);
@@ -213,7 +214,7 @@ const Legend = observer(class Legend extends React.Component {
                         if (lineheight < fontSize) {
                             fontSize = Math.round(lineheight);
                         }
-                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "BINNED") {
+                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "BINNED"||currentVariables[i].datatype==="ORDINAL") {
                             legendEntries = _self.getCategoricalLegend(currentVariables[i], d.data.map(element => element.value), opacity, fontSize, lineheight, color);
                         }
                         else if (currentVariables[i].datatype === "binary") {

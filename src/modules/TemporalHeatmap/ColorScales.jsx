@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import * as d3ScaleChromatic from "d3-scale-chromatic";
 
 /*
 stores information about current visual parameters
@@ -42,6 +43,15 @@ class ColorScales {
     static getCategoricalScale(range, domain) {
         if (range.length === 0) {
             range = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'];
+        }
+        return d3.scaleOrdinal().range(['#f7f7f7'].concat(range)).domain([undefined].concat(domain));
+    }
+      static getOrdinalScale(range, domain) {
+        if (range.length === 0) {
+            let step=1/domain.length;
+            domain.forEach((d,i)=>{
+                range.push(d3ScaleChromatic.interpolateGreys(i*step));
+            });
         }
         return d3.scaleOrdinal().range(['#f7f7f7'].concat(range)).domain([undefined].concat(domain));
     }

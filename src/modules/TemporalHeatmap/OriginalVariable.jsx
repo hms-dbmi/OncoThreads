@@ -25,6 +25,9 @@ class OriginalVariable {
             case "binary":
                 scale = ColorScales.getBinaryScale(this.range);
                 break;
+            case "ORDINAL":
+                scale =ColorScales.getOrdinalScale(this.range,this.domain);
+                break;
             default:
                 scale = ColorScales.getCategoricalScale(this.range, this.domain);
         }
