@@ -29,8 +29,8 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             {
                 colorScale: d3.scaleOrdinal().range(['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']),
                 currentData: this.createCurrentData(),
-                name: props.variable.derived ? props.variable.name : props.variable.name + "_MODIFIED",
-                ordinal: false,
+                name: props.derivedVariable!==null ? props.derivedVariable.name : props.variable.name + "_MODIFIED",
+                ordinal: props.derivedVariable!==null ? props.derivedVariable.datatype==="ORDINAL" : false,
             };
         this.merge = this.merge.bind(this);
         this.unMerge = this.unMerge.bind(this);
@@ -91,7 +91,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             });
         });
         let newId = uuidv4();
-        let variable = new DerivedVariable(newId, this.state.name, "STRING", this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, this.state.currentData.map(d => d.color), this.state.currentData.map(d => d.name), MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
+        let variable = new DerivedVariable(newId, this.state.name, this.state.ordinal ? "ORDINAL" : "STRING", this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, this.state.currentData.map(d => d.color), this.state.currentData.map(d => d.name), MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
         this.props.callback(variable);
         this.props.closeModal();
     }
@@ -103,9 +103,9 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     createCurrentData() {
         let currentData = [];
         if (this.props.derivedVariable !== null) {
-            this.props.derivedVariable.domain.forEach(d=> {
+            this.props.derivedVariable.domain.forEach(d => {
                 for (let key in this.props.derivedVariable.modification) {
-                    if(this.props.derivedVariable.modification[key]===d) {
+                    if (this.props.derivedVariable.modification[key] === d) {
                         if (!(currentData.map(d => d.name).includes(d))) {
                             currentData.push({
                                 selected: false,

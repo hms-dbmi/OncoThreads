@@ -113,6 +113,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * gets a variable. If already referenced, get the variable from the referenced variable, else create it
      * @returns {*}
      * @param index
+     * @param datatype
      */
     getOriginalVariable(index, datatype) {
         const referencedIndex = this.referencedVariables.map(d => d.id).indexOf(this.state.selectedVariables[index].id);
@@ -286,6 +287,9 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     datatypeLabel = "C";
                     break;
                 case "BINNED":
+                    datatypeLabel = "O";
+                    break;
+                case "ORDINAL":
                     datatypeLabel = "O";
                     break;
                 case "BINARY":
