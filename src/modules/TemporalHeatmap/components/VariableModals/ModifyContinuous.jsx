@@ -1,21 +1,21 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import Binner from './Binner';
+import Binner from './Binner/Binner';
 import * as d3 from 'd3';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, OverlayTrigger, Popover, Radio} from "react-bootstrap";
 import FontAwesome from 'react-fontawesome';
-import Histogram from "./Histogram";
-import DerivedVariable from "../../../DerivedVariable";
+import Histogram from "./Binner/Histogram";
+import DerivedVariable from "../../DerivedVariable";
 import uuidv4 from "uuid/v4";
-import MapperCombine from "../../../MapperCombineFunctions";
+import MapperCombine from "../../MapperCombineFunctions";
 
 
-const ContinuousModificationModal = observer(class ContinuousModificationModal extends React.Component {
+const ModifyContinuous = observer(class ModifyContinuous extends React.Component {
     constructor(props) {
         super(props);
         this.data = this.getInitialData();
         this.state = this.setInitialState();
-        this.setXScaleType = this.setXScaleType.bind(this);
+        this.changeTransformation = this.changeTransformation.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleBinChange = this.handleBinChange.bind(this);
         this.toggleBinningActive = this.toggleBinningActive.bind(this);
@@ -24,6 +24,10 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         this.close = this.close.bind(this);
     }
 
+    /**
+     * sets the initial state depending on the existance of an already derived variable
+     * @returns {{bins: *, binNames: *, bin: boolean, colorRange: *, isXLog: boolean, name: string}}
+     */
     setInitialState() {
         let bins, binNames, bin;
         if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
@@ -60,6 +64,10 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         this.setState({name: event.target.value});
     }
 
+    /**
+     * handles the change of bins
+     * @param bins
+     */
     handleBinChange(bins) {
         if (bins.length === this.state.bins.length) {
             let binNames = this.state.binNames.slice();
@@ -83,13 +91,21 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
 
     }
 
+    /**
+     * handles the change of a bin name
+     * @param e
+     * @param index
+     */
     handleBinNameChange(e, index) {
         let binNames = this.state.binNames.slice();
         binNames[index] = {name: e.target.value, modified: true};
         this.setState({binNames: binNames});
     }
 
-
+    /**
+     * gets the initial data depending on the existence and modification type of a derived variable
+     * @returns {any[]}
+     */
     getInitialData() {
         if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform) {
             return Object.values(this.props.variable.mapper);
@@ -100,7 +116,11 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         }
     }
 
-    setXScaleType(event) {
+    /**
+     * changes the transformation of the data
+     * @param event
+     */
+    changeTransformation(event) {
         let isLog;
         if (event.target.value === 'linear') {
             isLog = false;
@@ -154,17 +174,21 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         this.props.closeModal();
     }
 
+    /**
+     * gets the radio buttons for selecting the transformation
+     * @returns {*}
+     */
     getRadio() {
         let disabled = false;
         if (d3.min(this.data) < 0) {
             disabled = true;
         }
         return (<FormGroup>
-            <Radio defaultChecked onClick={this.setXScaleType} disabled={disabled} value={'linear'} name="XradioGroup"
+            <Radio defaultChecked onClick={this.changeTransformation} disabled={disabled} value={'linear'} name="XradioGroup"
                    inline>
                 None
             </Radio>{' '}
-            <Radio onClick={this.setXScaleType} value={'log'} disabled={disabled} name="XradioGroup" inline>
+            <Radio onClick={this.changeTransformation} value={'log'} disabled={disabled} name="XradioGroup" inline>
                 Log
             </Radio>{' '}
         </FormGroup>);
@@ -172,7 +196,10 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
 
     }
 
-
+    /**
+     * gets a histogram or a Binner if in binning mode
+     * @returns {*}
+     */
     getBinning() {
         const width = 350;
         const height = 200;
@@ -214,10 +241,17 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         }
     }
 
+    /**
+     * toggles the bin state
+     */
     toggleBinningActive() {
         this.setState({bin: !this.state.bin});
     }
 
+    /**
+     * gets the button for binning
+     * @returns {*}
+     */
     getBinButton() {
         if (this.state.bin) {
             return <Button onClick={this.toggleBinningActive} bsStyle="primary">{"<< Cancel Binning"}</Button>
@@ -233,6 +267,13 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         document.body.click();
     }
 
+    /**
+     * gets the gradient of the color scale
+     * @param range
+     * @param width
+     * @param height
+     * @returns {*}
+     */
     static getGradient(range, width, height) {
         let intermediateStop = null;
         if (range.length === 3) {
@@ -254,13 +295,15 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         </svg>;
     }
 
+    /**
+     * gets the popover for the selection of a color scale
+     * @returns {*}
+     */
     getColorScalePopover() {
-        let steps = 2;
         const width = 100;
         const height = 20;
         let linearColorRange = [];
         if (Math.min(...this.data) < 0) {
-            steps = 3;
             linearColorRange = [
                 ['#0571b0', '#f7f7f7', '#ca0020'],
                 ['#08ff00', '#000000', '#ff0000']
@@ -281,12 +324,16 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
             <FormGroup>
                 {linearColorRange.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d)}
                                                        name="ColorScaleGroup">
-                    {ContinuousModificationModal.getGradient(d, width, height, steps)}
+                    {ModifyContinuous.getGradient(d, width, height)}
                 </Radio>)}
             </FormGroup>
         </form>
     }
 
+    /**
+     * handles the change of the color scale
+     * @param scale
+     */
     handleColorScaleChange(scale,) {
         this.setState({colorRange: scale});
     }
@@ -316,7 +363,7 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
                                                                   placement="right"
                                                                   overlay={colorScalePopOver}><FontAwesome
                             name="paint-brush"/></OverlayTrigger></ControlLabel>
-                        <p>{ContinuousModificationModal.getGradient(this.state.colorRange, 100, 20)}</p>
+                        <p>{ModifyContinuous.getGradient(this.state.colorRange, 100, 20)}</p>
                         <ControlLabel>Transform data</ControlLabel>
                         {this.getRadio()}
                     </form>
@@ -336,4 +383,4 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         )
     }
 });
-export default ContinuousModificationModal;
+export default ModifyContinuous;

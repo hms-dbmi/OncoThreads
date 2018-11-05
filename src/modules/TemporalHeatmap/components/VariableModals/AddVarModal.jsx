@@ -6,7 +6,7 @@ import FontAwesome from 'react-fontawesome';
 import Select from 'react-select';
 import ModifyCategorical from "./ModifyCategorical";
 import OriginalVariable from "../../OriginalVariable";
-import ContinuousModificationModal from "./Binner/ContinuousModificationModal";
+import ModifyContinuous from "./ModifyContinuous";
 
 
 const AddVarModal = observer(class AddVarModal extends React.Component {
@@ -400,14 +400,18 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         )
     }
 
+    /**
+     * creates the modal for continuous modification
+     * @returns {*}
+     */
     getContinuousModal() {
         let modal = null;
         if (this.state.modifyContinuousIsOpen) {
-            modal = <ContinuousModificationModal modalIsOpen={this.state.modifyContinuousIsOpen}
-                                                 variable={this.state.currentVariable}
-                                                 callback={this.state.callback}
-                                                 derivedVariable={this.state.derivedVariable}
-                                                 closeModal={this.closeContinuousModal}/>
+            modal = <ModifyContinuous modalIsOpen={this.state.modifyContinuousIsOpen}
+                                      variable={this.state.currentVariable}
+                                      callback={this.state.callback}
+                                      derivedVariable={this.state.derivedVariable}
+                                      closeModal={this.closeContinuousModal}/>
         }
         return (
             modal

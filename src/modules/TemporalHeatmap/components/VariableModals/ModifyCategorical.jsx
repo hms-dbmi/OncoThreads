@@ -189,6 +189,9 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({currentData: currentData});
     }
 
+    /**
+     * unmerges all the currently selected merged categories
+     */
     unMerge() {
         let currentData = this.state.currentData.slice();
         let unmergedEntries = [];
@@ -232,6 +235,11 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({currentData: currentData});
     }
 
+    /**
+     * handles the change of a single color
+     * @param color
+     * @param index
+     */
     handleColorChange(color, index) {
         let currentData = this.state.currentData.slice();
         currentData[index].color = color.hex;
@@ -302,6 +310,11 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         })
     }
 
+    /**
+     * handle the change of color scale. Changes ordinal state depending on the chosen scale
+     * @param scale
+     * @param ordinal
+     */
     handleColorScaleChange(scale, ordinal) {
         let currentData = this.state.currentData.slice();
         currentData.forEach((d, i) => {
@@ -310,6 +323,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({colorScale: scale, currentData: currentData, ordinal: ordinal});
     }
 
+    /**
+     * gets the rects representing an ordinal scale
+     * @param scale
+     * @param rectDim
+     * @param numRect
+     * @returns {Array}
+     */
     static getOrdinalRects(scale, rectDim, numRect) {
         let rects = [];
         for (let i = 1; i < numRect + 1; i++) {
@@ -320,6 +340,13 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         return rects;
     }
 
+    /**
+     * gets the rects representing a categorical scale
+     * @param scale
+     * @param rectDim
+     * @param numRect
+     * @returns {Array}
+     */
     static getCategoricalRects(scale, rectDim, numRect) {
         let rects = [];
         for (let i = 0; i < numRect; i++) {
@@ -330,6 +357,10 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         return rects;
     }
 
+    /**
+     * gets the popover for the color scale selection
+     * @returns {*}
+     */
     getColorScalePopover() {
         let rectDim = 20;
         let numRect = 5;
