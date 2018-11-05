@@ -12,7 +12,7 @@
 }
 
 .floatDiv {
-    float: right;
+    float: left
 }
 
 .wordBreak {
@@ -22,7 +22,6 @@
 
 .customTooltip {
     pointer-events: none;
-    z-index: 100;
 }
 
 .clickable:hover {

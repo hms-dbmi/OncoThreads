@@ -20,21 +20,18 @@ const RowOperator = observer(class RowOperator extends React.Component {
         /**
          * calls the store function to group a timepoint
          * @param timepoint: timepoint to be grouped
-         * @param variableId
+         * @param variable: Variable with which the timepoint will be grouped
          */
-        group(timepoint, variableId) {
-            const _self=this;
-            const variable=this.props.store.variableStores[timepoint.type].getById(variableId);
-            if (variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, function (derivedVariable) {
-                    _self.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variableId,derivedVariable);
-                    timepoint.group(derivedVariable.id);
+        group(timepoint, variable) {
+            if (this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
+                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newID) {
+                    timepoint.group(newID);
                 });
             }
             else {
-                timepoint.group(variable.id);
+                timepoint.group(variable);
             }
-            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variableId, timepoint.type, timepoint.localIndex)
+            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -45,7 +42,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         sortTimepoint(timepoint, variable) {
             if (timepoint.isGrouped && this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, true,true, function (newId) {
+                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
                     timepoint.group(newId);
                 });
             }
@@ -77,7 +74,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         promote(timepoint, variable) {
             if (timepoint.isGrouped && this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type,true,true, function (newId) {
+                this.props.openBinningModal(variable, timepoint.type, timepoint.globalIndex, function (newId) {
                     timepoint.promote(newId)
                 });
             }
