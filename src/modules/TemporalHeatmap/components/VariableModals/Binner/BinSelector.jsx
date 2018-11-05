@@ -21,37 +21,43 @@ const BinSelector = observer(class BinSelector extends React.Component {
         this.handlePositionTextFieldChange = this.handlePositionTextFieldChange.bind(this);
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({x: nextProps.bins.filter((d, i) => i !== 0 && i !== nextProps.bins.length - 1).map(d => nextProps.xScale(d))})
+    }
+
     /**
      * handles the addition of bins
      */
     handleBinAddition() {
-        let x = this.state.x.slice().sort((a, b) => a - b);
-        let biggestGap = x[0];
+        let xSorted = this.state.x.slice().sort((a, b) => a - b);
+        let biggestGap = xSorted[0];
         let newPos = biggestGap / 2;
-        if (x.length === 1) {
-            if (biggestGap < this.props.width - x[0]) {
-                biggestGap = this.props.width - x[0];
-                newPos = (this.props.width + x[0]) / 2;
+        if (xSorted.length === 1) {
+            if (biggestGap < this.props.width - xSorted[0]) {
+                biggestGap = this.props.width - xSorted[0];
+                newPos = (this.props.width + xSorted[0]) / 2;
             }
         }
-        for (let i = 1; i < x.length; i++) {
-            if (i === x.length - 1 && biggestGap < (this.props.width - x[i])) {
-                biggestGap = this.props.width - x[i];
-                newPos = (this.props.width + x[i]) / 2;
+        for (let i = 1; i < xSorted.length; i++) {
+            if (i === xSorted.length - 1 && biggestGap < (this.props.width - xSorted[i])) {
+                biggestGap = this.props.width - xSorted[i];
+                newPos = (this.props.width + xSorted[i]) / 2;
             }
-            if (x[i] - x[i - 1] > biggestGap) {
-                biggestGap = x[i] - x[i - 1];
-                newPos = (x[i] + x[i - 1]) / 2;
+            if (xSorted[i] - xSorted[i - 1] > biggestGap) {
+                biggestGap = xSorted[i] - xSorted[i - 1];
+                newPos = (xSorted[i] + xSorted[i - 1]) / 2;
             }
         }
-        this.setState({x: this.state.x.slice().concat(newPos)});
-        this.props.handleBinChange(this.getBins(x));
+        let newX = this.state.x.slice().concat(newPos);
+        this.setState({x: newX});
+        this.props.handleBinChange(this.getBins(newX));
     }
 
     handleBinRemoval() {
         let x = this.state.x.slice();
         x.pop();
         this.setState({x: x});
+        this.props.handleBinChange(this.getBins(x));
     }
 
     handleNumberChange(e) {
@@ -61,8 +67,6 @@ const BinSelector = observer(class BinSelector extends React.Component {
         else {
             this.handleBinRemoval();
         }
-        this.props.handleNumberOfBinsChange(e.target.value);
-
     }
 
     handleMouseDown(e, index) {

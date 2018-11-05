@@ -14,14 +14,7 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
     constructor(props) {
         super(props);
         this.data = this.getInitialData();
-        this.state = {
-            bins: this.getInitialBins(),
-            binNames: this.getInitialBinNames(),
-            name: props.derivedVariable !== null ? props.derivedVariable.name : props.variable.name + "_MODIFIED",
-            colorRange: props.variable.colorScale.range(),
-            isXLog: !(props.derivedVariable === null || !props.derivedVariable.modification.logTransform),
-            bin: !(props.derivedVariable === null || !props.derivedVariable.modification.binning),
-        };
+        this.state = this.setInitialState();
         this.setXScaleType = this.setXScaleType.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleBinChange = this.handleBinChange.bind(this);
@@ -29,6 +22,34 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         this.handleBinNameChange = this.handleBinNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.close = this.close.bind(this);
+    }
+
+    setInitialState() {
+        let bins, binNames, bin;
+        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
+            let min = d3.min(this.data);
+            let max = d3.max(this.data);
+            let med = (max + min) / 2;
+            if (min < 0) {
+                med = 0;
+            }
+            bins = [min, med, max];
+            binNames = [{name: min + " to " + med, modified: false}, {name: med + " to " + max, modified: false}];
+            bin = false;
+        }
+        else {
+            bins = this.props.derivedVariable.modification.binning.bins;
+            binNames = this.props.derivedVariable.modification.binning.binNames;
+            bin = true;
+        }
+        return {
+            bins: bins,
+            binNames: binNames,
+            bin: bin,
+            colorRange: this.props.derivedVariable === null ? this.props.variable.colorScale.range() : this.props.derivedVariable.range,
+            isXLog: !(this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform),
+            name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name + "_MODIFIED"
+        }
     }
 
     /**
@@ -40,36 +61,35 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
     }
 
     handleBinChange(bins) {
-        this.setState({bins: bins});
+        if (bins.length === this.state.bins.length) {
+            let binNames = this.state.binNames.slice();
+            for (let i = 1; i < bins.length; i++) {
+                if (!binNames[i - 1].modified) {
+                    binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+                }
+            }
+            this.setState({bins: bins, binNames: binNames})
+            console.log(binNames)
+        }
+        else {
+            let binNames = [];
+            for (let i = 1; i < bins.length; i++) {
+                binNames.push({
+                    name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
+                    modified: false
+                });
+            }
+            this.setState({bins: bins, binNames: binNames})
+        }
+
     }
 
-    handleBinNameChange(binNames) {
+    handleBinNameChange(e, index) {
+        let binNames = this.state.binNames.slice();
+        binNames[index] = {name: e.target.value, modified: true};
         this.setState({binNames: binNames});
     }
 
-    getInitialBins() {
-        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
-            let min = d3.min(this.data);
-            let max = d3.max(this.data);
-            let med = (d3.max(this.data) + d3.min(this.data)) / 2;
-            if (min < 0) {
-                med = 0;
-            }
-            return [min, med, max];
-        }
-        else {
-            return this.props.derivedVariable.modification.binning.bins;
-        }
-    }
-
-    getInitialBinNames() {
-        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
-            return ["Bin 1", "Bin 2"];
-        }
-        else {
-            return this.props.derivedVariable.modification.binning.binNames;
-        }
-    }
 
     getInitialData() {
         if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform) {
@@ -90,9 +110,21 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         else {
             isLog = true;
             this.data = Object.values(this.props.variable.mapper).map(d => Math.log10(d));
-
         }
-        this.setState({isXLog: isLog, bins: this.getInitialBins()});
+        let min = d3.min(this.data);
+        let max = d3.max(this.data);
+        let med = (max + min) / 2;
+        if (min < 0) {
+            med = 0;
+        }
+        this.setState({
+            isXLog: isLog,
+            bins: [min, med, max],
+            binNames: [{
+                name: Math.round(min * 100) / 100 + " to " + Math.round(med * 100) / 100,
+                modified: false
+            }, {name: Math.round(med * 100) / 100 + " to " + Math.round(max * 100) / 100, modified: false}]
+        });
     }
 
 
@@ -114,7 +146,7 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
         };
         let derivedVariable;
         if (this.state.bin) {
-            derivedVariable = new DerivedVariable(newId, this.state.name, "BINNED", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, this.state.binNames, MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]));
+            derivedVariable = new DerivedVariable(newId, this.state.name, "BINNED", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]));
         }
         else {
             derivedVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]));
@@ -280,10 +312,10 @@ const ContinuousModificationModal = observer(class ContinuousModificationModal e
                         <ControlLabel>Description</ControlLabel>
                         <p>{this.props.variable.description}</p>
                         <ControlLabel>Color Scale <OverlayTrigger rootClose={true}
-                                                        onClick={(e) => this.handleOverlayClick(e)}
-                                                        trigger="click"
-                                                        placement="right"
-                                                        overlay={colorScalePopOver}><FontAwesome
+                                                                  onClick={(e) => this.handleOverlayClick(e)}
+                                                                  trigger="click"
+                                                                  placement="right"
+                                                                  overlay={colorScalePopOver}><FontAwesome
                             name="paint-brush"/></OverlayTrigger></ControlLabel>
                         <p>{ContinuousModificationModal.getGradient(this.state.colorRange, 100, 20)}</p>
                         <ControlLabel>Transform data</ControlLabel>

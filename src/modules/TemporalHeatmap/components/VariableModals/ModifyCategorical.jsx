@@ -103,17 +103,21 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     createCurrentData() {
         let currentData = [];
         if (this.props.derivedVariable !== null) {
-            for (let key in this.props.derivedVariable.modification) {
-                if (!(currentData.map(d => d.name).includes(this.props.derivedVariable.modification[key]))) {
-                    currentData.push({
-                        selected: false,
-                        name: this.props.derivedVariable.modification[key],
-                        categories: [],
-                        color: this.props.derivedVariable.colorScale(this.props.derivedVariable.modification[key])
-                    })
+            this.props.derivedVariable.domain.forEach(d=> {
+                for (let key in this.props.derivedVariable.modification) {
+                    if(this.props.derivedVariable.modification[key]===d) {
+                        if (!(currentData.map(d => d.name).includes(d))) {
+                            currentData.push({
+                                selected: false,
+                                name: d,
+                                categories: [],
+                                color: this.props.derivedVariable.colorScale(d)
+                            })
+                        }
+                        currentData[currentData.map(d => d.name).indexOf(d)].categories.push(key);
+                    }
                 }
-                currentData[currentData.map(d => d.name).indexOf(this.props.derivedVariable.modification[key])].categories.push(key);
-            }
+            });
         }
         else {
             this.props.variable.domain.forEach(d => {

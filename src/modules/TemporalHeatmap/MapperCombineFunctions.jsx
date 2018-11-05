@@ -37,12 +37,12 @@ class MapperCombine {
             else {
                 for (let i = 1; i < bins.length; i++) {
                     if (i === 1 && mapper[entry] >= bins[0] && mapper[entry] <= bins[1]) {
-                        newMapper[entry] = binNames[0];
+                        newMapper[entry] = binNames[0].name;
                         break;
                     }
                     else {
                         if (mapper[entry] > bins[i - 1] && mapper[entry] <= bins[i]) {
-                            newMapper[entry] = binNames[i - 1];
+                            newMapper[entry] = binNames[i - 1].name;
                             break;
                         }
                     }

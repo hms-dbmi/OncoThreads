@@ -25,7 +25,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         //console.log(this.props.row.data);
 
 
-        var x;
+        let x;
 
         if (this.props.dtype === "BINNED") {
 
@@ -46,12 +46,12 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                 stroke = "black";
             }
 
-            var str = "";
+            let str = "";
 
             if (x) {
-                var ind = x.modification.binning.binNames.indexOf(d.value);
+                let ind = x.modification.binning.binNames.map(d=>d.name).indexOf(d.value);
 
-                var low = x.modification.binning.bins[ind];
+                let low = x.modification.binning.bins[ind];
 
                 if (ind !== 0) {
                     low = low + 1;
