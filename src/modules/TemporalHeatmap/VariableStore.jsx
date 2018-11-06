@@ -16,6 +16,8 @@ class VariableStore {
         //Variables that are referenced (displayed or used to create a derived variable)
         this.referencedVariables = {};
         extendObservable(this, {
+            //Saves the shared domain (min,max) of continuous molecular profile data
+            profileDomains: new Map(),
             //List of ids of currently displayed variables
             currentVariables: [],
         });
@@ -42,8 +44,17 @@ class VariableStore {
                 this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
             }
             this.rootStore.timepointStore.regroupTimepoints();
-
         });
+        //observe change in profileDomains and update domains of corresponding variables
+        observe(this.profileDomains, change => {
+            if (change.type === "update") {
+                for (let id in this.referencedVariables) {
+                    if (this.referencedVariables[id].profile === change.name) {
+                        this.referencedVariables[id].domain = change.newValue;
+                    }
+                }
+            }
+        })
     }
 
     /**
@@ -63,9 +74,10 @@ class VariableStore {
      */
     removeVariable(variableId) {
         let name = this.getById(variableId).name;
+        this.removeFromProfileDomain(variableId);
         this.currentVariables.splice(this.currentVariables.indexOf(variableId), 1);
         this.removeReferences(variableId);
-        this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", +name, true);
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
     }
 
     /**
@@ -85,6 +97,74 @@ class VariableStore {
                 delete this.rootStore.eventTimelineMap[currentId];
             }
             delete this.referencedVariables[currentId];
+        }
+    }
+
+    /**
+     * updates shared profile domain of variableId to the new min/max
+     * @param variableId
+     */
+    removeFromProfileDomain(variableId) {
+        if (this.referencedVariables[variableId].datatype === "NUMBER") {
+            if (this.profileDomains.has(this.referencedVariables[variableId].profile)) {
+                let isMin = Math.min(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[0];
+                let isMax = Math.max(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[1];
+                if (isMin || isMax) {
+                    let currMin = Number.POSITIVE_INFINITY;
+                    let currMax = Number.NEGATIVE_INFINITY;
+                    let profileVariables = this.getCurrentVariables().filter(d => d.profile === this.referencedVariables[variableId].profile && d.id !== variableId);
+                    if (profileVariables.length > 0) {
+                        profileVariables.forEach(d => {
+                            const min = Math.min(...Object.values(d.mapper));
+                            const max = Math.max(...Object.values(d.mapper));
+                            if (min < currMin) {
+                                currMin = min;
+                            }
+                            if (max > currMax) {
+                                currMax = max;
+                            }
+                        });
+                        let newDomain = this.profileDomains.get(this.referencedVariables[variableId].profile);
+                        if (isMin) {
+                            newDomain[0] = currMin;
+                        }
+                        if (isMax) {
+                            newDomain[1] = currMax;
+                        }
+                        this.profileDomains.set(this.referencedVariables[variableId].profile, newDomain);
+                    }
+                    else {
+                        this.profileDomains.delete(this.referencedVariables[variableId].profile);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * updates shared profile domain with domain of variable
+     * @param variable
+     */
+    addToProfileDomain(variable) {
+        let profileChanged = false;
+        let newDomain = [];
+        if (variable.datatype === "NUMBER") {
+            if (!(this.profileDomains.has(variable.profile))) {
+                this.profileDomains.set(variable.profile, variable.domain);
+            }
+            newDomain = [this.profileDomains.get(variable.profile)[0], this.profileDomains.get(variable.profile)[1]];
+            if (this.profileDomains.get(variable.profile)[0] > variable.domain[0]) {
+                newDomain[0] = variable.domain[0];
+                profileChanged = true;
+            }
+            if (this.profileDomains.get(variable.profile)[1] < variable.domain[1]) {
+                newDomain[1] = variable.domain[1];
+                profileChanged = true;
+            }
+            if (profileChanged) {
+                this.profileDomains.set(variable.profile, newDomain);
+            }
+            variable.domain = this.profileDomains.get(variable.profile);
         }
     }
 
@@ -128,6 +208,7 @@ class VariableStore {
     }
 
     addVariableToBeDisplayed(variable) {
+        this.addToProfileDomain(variable);
         this.referencedVariables[variable.id] = variable;
         this.updateReferences(variable.id);
         this.currentVariables.push(variable.id);
@@ -176,7 +257,7 @@ class VariableStore {
         this.currentVariables.push(id);
         this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
     }
-    
+
 
     /**
      * replaces a variable with a variable derived from it

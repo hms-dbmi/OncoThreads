@@ -361,15 +361,21 @@ class RootStore {
                                 }
                                 const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, _self.createMutationMapping(geneDict[entry], mappingType));
                                 _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
-                                _self.undoRedoStore.saveVariableHistory("ADD mutation " + mappingType, HUGOsymbols, true)
                             }
                         }
+                        _self.undoRedoStore.saveVariableHistory("ADD mutation " + mappingType, HUGOsymbols, true)
+
                     })
                 }
             }
         )
     }
 
+    /**
+     * gets data corresponding to selected HUGOsymbols in a molecular profile
+     * @param profileId
+     * @param HUGOsymbols
+     */
     getMolecularProfile(profileId, HUGOsymbols) {
         const profile = this.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0];
         this.cbioAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
@@ -386,7 +392,7 @@ class RootStore {
                     });
                     let confirm = false;
                     if (noMutationsFound.length > 0) {
-                        confirm = window.confirm("WARNING: No mutations found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
+                        confirm = window.confirm("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
                     }
                     if (!confirm) {
                         noMutationsFound.forEach(function (d) {
@@ -402,11 +408,12 @@ class RootStore {
                                 domain = ["-2", "-1", "0", "1", "2"];
                                 datatype = "ORDINAL";
                             }
-                            const variable = new OriginalVariable(entry + "_" + profileId, symbol, datatype, profile.name + ": " + symbol, [], domain, this.createMolecularMapping(geneDict[entry], datatype));
+                            const variable = new OriginalVariable(entry + "_" + profileId, symbol + "_" + profile.molecularAlterationType, datatype, profile.name + ": " + symbol, [], domain, this.createMolecularMapping(geneDict[entry], datatype), profileId);
                             this.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
-                            this.undoRedoStore.saveVariableHistory("ADD " + profile.name, HUGOsymbols, true)
                         }
                     }
+                    this.undoRedoStore.saveVariableHistory("ADD " + profile.name, HUGOsymbols, true)
+
                 });
             }
         });
@@ -713,9 +720,9 @@ class RootStore {
         }
         else {
             mappingFunction = currentSample => {
-                const entry = list.filter(d => d.sampleId === currentSample)[0];
+                const entry = list.filter(d => d.sampleId === currentSample && d.mutationType === "Missense_Mutation")[0];
                 let vaf = undefined;
-                if (entry !== undefined && entry.mutationType === "Missense_Mutation") {
+                if (entry !== undefined) {
                     vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
                 }
                 return (vaf);

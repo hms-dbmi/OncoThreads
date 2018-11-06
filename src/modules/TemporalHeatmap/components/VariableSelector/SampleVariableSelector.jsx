@@ -197,7 +197,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * searches for the genes entered in the search field
      */
     searchGenes(profileId, index) {
-        console.log(this.state.geneListStrings,index,profileId);
         let geneList = this.state.geneListStrings[index].slice().replace(/(\r\n\t|\n|\r\t)/gm, "").toUpperCase().split(" ");
         geneList.forEach(function (d, i) {
             if (d.includes("ORF")) {
@@ -249,7 +248,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                                   onChange={(e)=>this.updateSearchValue(e,i)}
                                   value={this.state.geneListStrings[i]}/>
                         <br/>
-                        <Button style={{textAlign: "left"}} bsSize="xsmall" onClick={()=>this.searchGenes(prof,i)}>Add</Button>
+                        <Button style={{textAlign: "left"}} bsSize="xsmall" onClick={()=>this.searchGenes(prof.molecularProfileId,i)}>Add</Button>
                     </FormGroup>
                     <div>
                         <ButtonToolbar>
@@ -289,7 +288,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                                   onChange={(e) => this.updateSearchValue(e, i)}
                                   value={this.state.geneListStrings[i]}/>
                         <br/>
-                        <Button style={{textAlign: "left"}} bsSize="xsmall" onClick={()=>this.searchGenes(prof,i)}>Add</Button>
+                        <Button style={{textAlign: "left"}} bsSize="xsmall" onClick={()=>this.searchGenes(prof.molecularProfileId,i)}>Add</Button>
                     </FormGroup>
                 </Panel.Body>
             </Panel.Collapse>

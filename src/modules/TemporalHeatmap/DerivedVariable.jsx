@@ -1,4 +1,5 @@
 import ColorScales from "./ColorScales";
+import {extendObservable} from "mobx";
 
 class DerivedVariable {
     constructor(id, name, datatype, description, originalIds, modificationType, modification, range, domain, mapper) {
@@ -13,32 +14,33 @@ class DerivedVariable {
         this.modification = modification;
         this.mapper = mapper;
         this.range = range;
-        this.domain = this.getDomain(domain);
-        this.colorScale = this.getColorScale();
         this.referenced = 0;
+        extendObservable(this, {
+            domain: this.getDomain(domain),
+            get colorScale() {
+                let scale;
+                switch (this.datatype) {
+                    case "NUMBER":
+                        scale = ColorScales.getContinousColorScale(this.range, this.domain);
+                        break;
+                    case "BINNED":
+                        scale = ColorScales.getBinnedColorScale(this.range, this.domain, this.modification.binning.bins);
+                        break;
+                    case "ORDINAL":
+                        scale = ColorScales.getOrdinalScale(this.range, this.domain);
+                        break;
+                    case "binary":
+                        scale = ColorScales.getBinaryScale(this.range);
+                        break;
+                    default:
+                        scale = ColorScales.getCategoricalScale(this.range, this.domain);
+                }
+                return scale;
+            }
+        });
 
     }
 
-    getColorScale() {
-        let scale;
-        switch (this.datatype) {
-            case "NUMBER":
-                scale = ColorScales.getContinousColorScale(this.range, this.domain);
-                break;
-            case "BINNED":
-                scale = ColorScales.getBinnedColorScale(this.range, this.domain, this.modification.binning.bins);
-                break;
-            case "ORDINAL":
-                scale = ColorScales.getOrdinalScale(this.range, this.domain);
-                break;
-            case "binary":
-                scale = ColorScales.getBinaryScale(this.range);
-                break;
-            default:
-                scale = ColorScales.getCategoricalScale(this.range, this.domain);
-        }
-        return scale;
-    }
 
     getDomain(domain) {
         let currDomain = domain;
