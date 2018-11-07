@@ -23,8 +23,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             selectedVariables: []
         };
         this.combinedList = [];
-        this.referencedVariables = [];
-        this.derivedVariables = [];
+        this.originalVariables = [];
+        this.modifiedVariables = [];
 
         this.handleSelect = this.handleSelect.bind(this);
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
@@ -32,6 +32,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.closeCategoricalModal = this.closeCategoricalModal.bind(this);
         this.closeContinuousModal = this.closeContinuousModal.bind(this);
         this.modifyContinuous = this.modifyContinuous.bind(this);
+        this.changeRange = this.changeRange.bind(this);
     }
 
 
@@ -58,6 +59,11 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         return options;
     }
 
+    changeRange(range, variableId) {
+        this.originalVariables[this.originalVariables.map(d => d.id).indexOf(variableId)].range = range;
+        console.log(this.originalVariables[this.originalVariables.map(d => d.id).indexOf(variableId)].colorScale.range(),range);
+    }
+
     /**
      * opens the binning modal
      * 1. creates the original variable (without adding it in the variable store)
@@ -68,18 +74,18 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     modifyContinuous(index) {
         const _self = this;
-        let originalVariable = this.getOriginalVariable(index, "NUMBER");
+        let originalVariable = this.getOriginalVariable(index);
         const derivedVariable = this.getDerivedVariable(index);
         this.openContinuousModal(originalVariable, derivedVariable, newVariable => {
             _self.modifyVarList(index, newVariable);
             if (derivedVariable !== null) {
-                this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(derivedVariable.id), 1, newVariable)
+                this.modifiedVariables.splice(this.modifiedVariables.map(d => d.id).indexOf(derivedVariable.id), 1, newVariable)
             }
             else {
-                this.derivedVariables.push(newVariable);
+                this.modifiedVariables.push(newVariable);
             }
-            if (!this.referencedVariables.map(d => d.id).includes(originalVariable.id)) {
-                this.referencedVariables.push(originalVariable);
+            if (!this.originalVariables.map(d => d.id).includes(originalVariable.id)) {
+                this.originalVariables.push(originalVariable);
             }
         });
     }
@@ -93,18 +99,18 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * @param index
      */
     modifyCategorical(index) {
-        let originalVariable = this.getOriginalVariable(index, "STRING");
+        let originalVariable = this.getOriginalVariable(index);
         const derivedVariable = this.getDerivedVariable(index);
         this.openCategoricalModal(originalVariable, derivedVariable, newVar => {
             this.modifyVarList(index, newVar);
             if (derivedVariable !== null) {
-                this.derivedVariables.splice(this.derivedVariables.map(d => d.id).indexOf(derivedVariable.id), 1, newVar)
+                this.modifiedVariables.splice(this.modifiedVariables.map(d => d.id).indexOf(derivedVariable.id), 1, newVar)
             }
             else {
-                this.derivedVariables.push(newVar);
+                this.modifiedVariables.push(newVar);
             }
-            if (!this.referencedVariables.map(d => d.id).includes(originalVariable.id)) {
-                this.referencedVariables.push(originalVariable);
+            if (!this.originalVariables.map(d => d.id).includes(originalVariable.id)) {
+                this.originalVariables.push(originalVariable);
             }
         });
     }
@@ -113,16 +119,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * gets a variable. If already referenced, get the variable from the referenced variable, else create it
      * @returns {*}
      * @param index
-     * @param datatype
      */
-    getOriginalVariable(index, datatype) {
-        const referencedIndex = this.referencedVariables.map(d => d.id).indexOf(this.state.selectedVariables[index].id);
-        if (referencedIndex !== -1) {
-            return this.referencedVariables[referencedIndex];
+    getOriginalVariable(index) {
+        if (this.originalVariables.map(d => d.id).includes(this.state.selectedVariables[index].originalId)) {
+            return this.originalVariables.filter(d => d.id === this.state.selectedVariables[index].originalId)[0];
         }
         else {
-            const originalEntry = this.combinedList.filter(d => d.id === this.state.selectedVariables[index].originalId)[0];
-            return new OriginalVariable(originalEntry.id, originalEntry.variable, datatype, originalEntry.description, [], [], this.props.store.rootStore.staticMappers[originalEntry.id]);
+            return this.store.getById(this.state.selectedVariables[index].id);
         }
     }
 
@@ -133,8 +136,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     getDerivedVariable(index) {
         if (this.state.selectedVariables[index].modified) {
-            if (this.derivedVariables.map(d => d.id).includes(this.state.selectedVariables[index].id)) {
-                return this.derivedVariables.filter(d => d.id === this.state.selectedVariables[index].id)[0];
+            if (this.modifiedVariables.map(d => d.id).includes(this.state.selectedVariables[index].id)) {
+                return this.modifiedVariables.filter(d => d.id === this.state.selectedVariables[index].id)[0];
             }
             else {
                 return this.store.getById(this.state.selectedVariables[index].id);
@@ -215,21 +218,22 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             if (!(selectedVariables.map(d => d.id).includes(variable.id))) {
                 selectedVariables.push({
                     id: variable.id,
-                    name: variable.variable,
-                    datatype: variable.datatype,
-                    description: variable.description,
                     modified: false,
                     originalId: variable.id
                 });
             }
+            this.originalVariables.push(new OriginalVariable(variable.id, variable.variable, variable.datatype, variable.description, [], [], this.props.store.rootStore.staticMappers[variable.id]))
         }
         if (!select) {
             const index = selectedVariables.map(d => d.id).indexOf(variable.id);
             if (variable.modified) {
-                let derivedIndex = this.derivedVariables.map(d => d.id).indexOf(variable.id);
-                let referenceIndex = this.referencedVariables.map(d => d.id).indexOf(this.derivedVariables[derivedIndex].originalIds[0]);
-                this.referencedVariables.splice(referenceIndex, 1);
-                this.derivedVariables.splice(referenceIndex, 1);
+                let derivedIndex = this.modifiedVariables.map(d => d.id).indexOf(variable.id);
+                let referenceIndex = this.originalVariables.map(d => d.id).indexOf(this.modifiedVariables[derivedIndex].originalIds[0]);
+                this.originalVariables.splice(referenceIndex, 1);
+                this.modifiedVariables.splice(referenceIndex, 1);
+            }
+            else {
+                this.originalVariables.splice(this.originalVariables.map(d => d.id).indexOf(variable.id), 1)
             }
             selectedVariables.splice(index, 1);
         }
@@ -242,16 +246,11 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     handleCogWheelClick(index) {
         let originalDatatype;
-        if (this.state.selectedVariables[index].modified) {
-            if (this.props.store.isReferenced(this.state.selectedVariables[index].id)) {
-                originalDatatype = this.props.store.getById(this.state.selectedVariables[index].id);
-            }
-            else {
-                originalDatatype = this.referencedVariables.filter(d => d.id === this.state.selectedVariables[index].originalId)[0].datatype
-            }
+        if (this.props.store.isReferenced(this.state.selectedVariables[index].originalId)) {
+            originalDatatype = this.props.store.getById(this.state.selectedVariables[index].originalId);
         }
         else {
-            originalDatatype = this.state.selectedVariables[index].datatype;
+            originalDatatype = this.originalVariables.filter(d => d.id === this.state.selectedVariables[index].originalId)[0].datatype
         }
         switch (originalDatatype) {
             case "NUMBER":
@@ -271,18 +270,19 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     showSelected() {
         let checked = [];
         const _self = this;
-        this.state.selectedVariables.forEach(function (d, i) {
+        this.state.selectedVariables.forEach((d, i) => {
+            let fullVariable = d.modified ? this.modifiedVariables.filter(f => d.id === f.id)[0] : this.originalVariables.filter(f => f.id === d.id)[0];
             const tooltip = <Tooltip id="tooltip">
-                {d.description}
+                {fullVariable.description}
             </Tooltip>;
             let label = null;
             if (d.modified) {
                 label = <Label bsStyle="warning">
-                    Modified
+                    Data modified
                 </Label>
             }
             let datatypeLabel;
-            switch (d.datatype) {
+            switch (fullVariable.datatype) {
                 case "STRING":
                     datatypeLabel = "C";
                     break;
@@ -301,12 +301,12 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
             checked.push(
                 <Row key={d.id}>
                     <OverlayTrigger placement="top" overlay={tooltip}>
-                        <Col sm={7} md={7}>
-                            {d.name}
+                        <Col sm={6} md={6}>
+                            {fullVariable.name}
                         </Col>
                     </OverlayTrigger>
 
-                    <Col sm={2} md={2}>
+                    <Col sm={3} md={3}>
                         {label}
                     </Col>
                     <Col sm={1} md={1}>
@@ -374,20 +374,20 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     handleAddButton() {
         const _self = this;
-        this.state.selectedVariables.forEach(function (d) {
+        this.state.selectedVariables.forEach(d => {
             if (!d.modified) {
-                let variable = new OriginalVariable(d.id, d.name, d.datatype, d.description, [], [], _self.props.store.rootStore.staticMappers[d.id]);
-                _self.props.store.addVariableToBeReferenced(variable);
-                _self.props.store.addVariableToBeDisplayed(variable);
+                _self.props.store.addVariableToBeDisplayed(this.originalVariables.filter(f => f.id === d.id)[0]);
+            }
+            else{
+                _self.props.store.addVariableToBeReferenced(this.originalVariables.filter(f => f.id === d.originalId)[0]);
             }
         });
-        this.referencedVariables.forEach(d => this.props.store.addVariableToBeReferenced(d));
-        this.derivedVariables.forEach(d => this.props.store.addVariableToBeDisplayed(d));
+        this.modifiedVariables.forEach(d => this.props.store.addVariableToBeDisplayed(d));
         this.props.closeAddModal();
     }
 
     /**
-     * creates the modal for categorical modification
+     * creates the modal for categoxrical modification
      * @returns {*}
      */
     getCategoricalModal() {
@@ -397,6 +397,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                                        variable={this.state.currentVariable}
                                        callback={this.state.callback}
                                        derivedVariable={this.state.derivedVariable}
+                                       changeRange={this.changeRange}
                                        closeModal={this.closeCategoricalModal}/>
         }
         return (
@@ -415,6 +416,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                                       variable={this.state.currentVariable}
                                       callback={this.state.callback}
                                       derivedVariable={this.state.derivedVariable}
+                                      changeRange={this.changeRange}
                                       closeModal={this.closeContinuousModal}/>
         }
         return (

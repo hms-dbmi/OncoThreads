@@ -7,6 +7,7 @@ import {
     Alert,
     Button,
     ButtonGroup,
+    ButtonToolbar,
     Checkbox,
     Col,
     ControlLabel,
@@ -15,9 +16,12 @@ import {
     FormGroup,
     Modal,
     Panel,
-    Radio,
-    ButtonToolbar
+    Radio
 } from 'react-bootstrap';
+import OriginalVariable from "../../OriginalVariable";
+import EventVariable from "../../EventVariable";
+import DerivedVariable from "../../DerivedVariable";
+import MapperCombine from "../../MapperCombineFunctions";
 
 
 /*
@@ -57,8 +61,9 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param description
      */
     bin(id, name, description) {
-        this.props.store.addOriginalVariable(id, name, "NUMBER", description, [], false, this.props.store.rootStore.staticMappers[id]);
-        this.props.openBinningModal(id, "between", null);
+        let variable = new OriginalVariable(id, name, "NUMBER", description, [], [], this.props.store.rootStore.staticMappers[id]);
+        this.props.store.addVariableToBeReferenced(variable);
+        this.props.openBinningModal(variable, "between", newVariable => this.props.store.addVariableToBeDisplayed(newVariable));
     }
 
     /**
@@ -147,8 +152,10 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      */
     addCombinedVariable(name) {
         this.setState({showUniqueNameAlert: false, showEmptySelectionAlert: false});
-        this.state.selectedValues.forEach(d => this.props.store.addEventVariable(this.state.buttonClicked, d, false));
-        this.props.store.addDerivedVariable(uuidv4(), name, "binary", "Binary combination of variables: " + this.state.defaultName, this.state.selectedValues.map(d => d.id), "binaryCombine", this.state.orOperator ? "or" : "and");
+        const operator=this.state.orOperator ? "or" : "and";
+        let originalVariables = this.state.selectedValues.map(d => new EventVariable(d.id, d.name, this.state.buttonClicked, d.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.buttonClicked, d)));
+        originalVariables.forEach(d => this.props.store.addVariableToBeReferenced(d));
+        this.props.store.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), name, "BINARY", "Binary combination of variables: " + this.state.defaultName, this.state.selectedValues.map(d => d.id), "binaryCombine", operator, [], [], MapperCombine.createBinaryCombinedMapper(originalVariables.map(d => d.mapper), operator)));
         this.closeModal();
     }
 
@@ -156,7 +163,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.state.selectedValues.forEach(d => this.props.store.addEventVariable(this.state.buttonClicked, d, true));
+        this.state.selectedValues.forEach(d => this.props.store.addVariableToBeDisplayed(new EventVariable(d.id, d.name, this.state.buttonClicked, d.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.buttonClicked, d))));
         this.closeModal();
     }
 
@@ -165,7 +172,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
      * @param id
      */
     addTimeDistance(id) {
-        this.props.store.addOriginalVariable(id, "Timepoint Distance", "NUMBER", "Time between timepoints", [], true, this.props.store.rootStore.staticMappers['timeGapMapping']);
+        this.props.store.addVariableToBeDisplayed(new OriginalVariable(id, "Timepoint Distance", "NUMBER", "Time between timepoints", [], [], this.props.store.rootStore.staticMappers["timeGapMapping"]));
     }
 
     /**

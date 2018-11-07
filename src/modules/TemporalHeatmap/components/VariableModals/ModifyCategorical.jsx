@@ -27,10 +27,11 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         super(props);
         this.state =
             {
-                colorScale: d3.scaleOrdinal().range(['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']),
+                colorScale: d3.scaleOrdinal().range(props.derivedVariable !== null ? props.derivedVariable.range : props.variable.range),
                 currentData: this.createCurrentData(),
-                name: props.derivedVariable!==null ? props.derivedVariable.name : props.variable.name + "_MODIFIED",
-                ordinal: props.derivedVariable!==null ? props.derivedVariable.datatype==="ORDINAL" : false,
+                name: props.derivedVariable !== null ? props.derivedVariable.name : props.variable.name,
+                nameChanged: false,
+                ordinal: props.derivedVariable !== null ? props.derivedVariable.datatype === "ORDINAL" : false,
             };
         this.merge = this.merge.bind(this);
         this.unMerge = this.unMerge.bind(this);
@@ -74,7 +75,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * @param event
      */
     handleNameChange(event) {
-        this.setState({name: event.target.value});
+        this.setState({name: event.target.value, nameChanged: true});
     }
 
 
@@ -91,9 +92,32 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             });
         });
         let newId = uuidv4();
-        let variable = new DerivedVariable(newId, this.state.name, this.state.ordinal ? "ORDINAL" : "STRING", this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, this.state.currentData.map(d => d.color), this.state.currentData.map(d => d.name), MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
-        this.props.callback(variable);
+        const datatype = this.state.ordinal ? "ORDINAL" : "STRING";
+        const range=this.state.currentData.map(d => d.color);
+        const domain=this.state.currentData.map(d => d.name);
+        let variable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping,range, domain, MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
+        console.log(this.state.currentData.map(d => d.color), variable.range.slice());
+        if (this.state.ordinal || this.categoriesChanged(variable)) {
+            if (!this.state.nameChanged && this.props.derivedVariable === null) {
+                variable.name = this.state.name + "_MODIFIED";
+            }
+            this.props.callback(variable);
+        }
+        else {
+            this.props.changeRange(range, this.props.variable.id);
+        }
         this.props.closeModal();
+    }
+
+    categoriesChanged(newVariable) {
+        let categoriesChanged = false;
+        for (let i = 0; i < this.props.variable.domain.length; i++) {
+            if (this.props.variable.domain[i] !== newVariable.domain[i]) {
+                categoriesChanged = true;
+                break;
+            }
+        }
+        return categoriesChanged;
     }
 
     /**
@@ -247,7 +271,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
 
     }
 
-    handleOverlayClick(event) {
+    static handleOverlayClick(event) {
         event.stopPropagation();
         document.body.click();
     }
@@ -278,7 +302,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             </svg>;
             if (!_self.state.ordinal) {
                 colorRect =
-                    <OverlayTrigger rootClose={true} onClick={(e) => _self.handleOverlayClick(e)} trigger="click"
+                    <OverlayTrigger rootClose={true} onClick={(e) => ModifyCategorical.handleOverlayClick(e)} trigger="click"
                                     placement="right" overlay={popover}>
                         <svg width="10" height="10">
                             <rect stroke="black" width="10" height="10"
@@ -418,7 +442,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                             <th>Category</th>
                             <th>% Occurence</th>
                             <th>Color
-                                <OverlayTrigger rootClose={true} onClick={(e) => this.handleOverlayClick(e)}
+                                <OverlayTrigger rootClose={true} onClick={(e) => ModifyCategorical.handleOverlayClick(e)}
                                                 trigger="click"
                                                 placement="right" overlay={colorScalePopOver}><FontAwesome
                                     name="paint-brush"/></OverlayTrigger></th>

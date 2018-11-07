@@ -52,7 +52,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             bin: bin,
             colorRange: this.props.derivedVariable === null ? this.props.variable.colorScale.range() : this.props.derivedVariable.range,
             isXLog: !(this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform),
-            name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name + "_MODIFIED"
+            name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name
         }
     }
 
@@ -170,9 +170,18 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         else {
             derivedVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]));
         }
-        this.props.callback(derivedVariable);
+        if(this.isModified()) {
+            this.props.callback(derivedVariable);
+        }
+        else{
+            this.props.changeRange(this.state.colorRange,this.props.variable.id);
+        }
         this.props.closeModal();
     }
+    isModified(){
+        return this.state.bin || this.state.isXLog || this.state.name!==this.props.variable.name;
+    }
+
 
     /**
      * gets the radio buttons for selecting the transformation
@@ -262,7 +271,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         }
     }
 
-    handleOverlayClick(event) {
+    static handleOverlayClick(event) {
         event.stopPropagation();
         document.body.click();
     }
@@ -358,7 +367,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                         <ControlLabel>Description</ControlLabel>
                         <p>{this.props.variable.description}</p>
                         <ControlLabel>Color Scale <OverlayTrigger rootClose={true}
-                                                                  onClick={(e) => this.handleOverlayClick(e)}
+                                                                  onClick={(e) => ModifyContinuous.handleOverlayClick(e)}
                                                                   trigger="click"
                                                                   placement="right"
                                                                   overlay={colorScalePopOver}><FontAwesome

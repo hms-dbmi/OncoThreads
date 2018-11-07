@@ -77,7 +77,8 @@ const Legend = observer(class Legend extends React.Component {
             let text = [];
             if (color.domain().length === 3) {
                 intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
-                text.push(<text key={"text" + min} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}} x={0}
+                text.push(<text key={"text" + min} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
+                                x={0}
                                 y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
                     <text key={"text" + 0} fill={Legend.getTextColor(color(0))} style={{fontSize: fontSize}}
                           x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
@@ -87,7 +88,8 @@ const Legend = observer(class Legend extends React.Component {
                           y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
             }
             else {
-                text.push(<text key={"text" + min} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}} x={0}
+                text.push(<text key={"text" + min} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
+                                x={0}
                                 y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
                     <text key={"text" + max} fill={Legend.getTextColor(color(max))} style={{fontSize: fontSize}}
                           x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
@@ -119,14 +121,13 @@ const Legend = observer(class Legend extends React.Component {
      * @param opacity
      * @param fontSize
      * @param lineheight
-     * @param color
      * @returns {Array}
      */
-    getCategoricalLegend(variable, row, opacity, fontSize, lineheight, color) {
+    getCategoricalLegend(variable, row, opacity, fontSize, lineheight) {
         const _self = this;
         let currX = this.borderLeft;
         let legendEntries = [];
-        variable.domain.forEach((d,i) => {
+        variable.domain.forEach((d, i) => {
             if (row.includes(d)) {
                 let tooltipText;
                 if (variable.datatype === "BINNED") {
@@ -136,8 +137,8 @@ const Legend = observer(class Legend extends React.Component {
                     tooltipText = d;
                 }
                 const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
-                if(d!==undefined) {
-                    legendEntries.push(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, color(d), Legend.getTextColor(color(d)), tooltipText));
+                if (d !== undefined) {
+                    legendEntries.push(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, variable.colorScale(d), Legend.getTextColor(variable.colorScale(d)), tooltipText));
                     currX += (rectWidth + 2);
                 }
             }
@@ -153,13 +154,13 @@ const Legend = observer(class Legend extends React.Component {
      */
     static getTextColor(backgroundColor) {
         let rgb = backgroundColor.replace(/[^\d,]/g, '').split(',');
-        let brightness= 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
-         if (brightness < 255 / 2) {
-                return "white";
-            }
-            else {
-                return "black";
-            }
+        let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+        if (brightness < 255 / 2) {
+            return "white";
+        }
+        else {
+            return "black";
+        }
     }
 
     /**
@@ -214,10 +215,10 @@ const Legend = observer(class Legend extends React.Component {
                         if (lineheight < fontSize) {
                             fontSize = Math.round(lineheight);
                         }
-                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "BINNED"||currentVariables[i].datatype==="ORDINAL") {
+                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "BINNED" || currentVariables[i].datatype === "ORDINAL") {
                             legendEntries = _self.getCategoricalLegend(currentVariables[i], d.data.map(element => element.value), opacity, fontSize, lineheight, color);
                         }
-                        else if (currentVariables[i].datatype === "binary") {
+                        else if (currentVariables[i].datatype === "BINARY") {
                             legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
                         }
                         else {
@@ -249,7 +250,7 @@ const Legend = observer(class Legend extends React.Component {
                     }
                 })
             });
-            legend = this.getCategoricalLegend(primaryVariable.domain, allValues, 1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
+            legend = this.getCategoricalLegend(primaryVariable, allValues, 1, fontSize, this.props.visMap.primaryHeight);
         }
         else if (primaryVariable.datatype === "binary") {
             legend = this.getBinaryLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);

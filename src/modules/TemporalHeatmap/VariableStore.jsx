@@ -1,8 +1,4 @@
 import {extendObservable, observe} from "mobx";
-import OriginalVariable from "./OriginalVariable";
-import DerivedVariable from "./DerivedVariable";
-import EventVariable from "./EventVariable";
-import MapperCombine from "./MapperCombineFunctions";
 import MultipleTimepointsStore from "./MultipleTimepointsStore";
 
 /*
@@ -47,6 +43,7 @@ class VariableStore {
         });
         //observe change in profileDomains and update domains of corresponding variables
         observe(this.profileDomains, change => {
+            console.log(change);
             if (change.type === "update") {
                 for (let id in this.referencedVariables) {
                     if (this.referencedVariables[id].profile === change.name) {
@@ -105,37 +102,35 @@ class VariableStore {
      * @param variableId
      */
     removeFromProfileDomain(variableId) {
-        if (this.referencedVariables[variableId].datatype === "NUMBER") {
-            if (this.profileDomains.has(this.referencedVariables[variableId].profile)) {
-                let isMin = Math.min(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[0];
-                let isMax = Math.max(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[1];
-                if (isMin || isMax) {
-                    let currMin = Number.POSITIVE_INFINITY;
-                    let currMax = Number.NEGATIVE_INFINITY;
-                    let profileVariables = this.getCurrentVariables().filter(d => d.profile === this.referencedVariables[variableId].profile && d.id !== variableId);
-                    if (profileVariables.length > 0) {
-                        profileVariables.forEach(d => {
-                            const min = Math.min(...Object.values(d.mapper));
-                            const max = Math.max(...Object.values(d.mapper));
-                            if (min < currMin) {
-                                currMin = min;
-                            }
-                            if (max > currMax) {
-                                currMax = max;
-                            }
-                        });
-                        let newDomain = this.profileDomains.get(this.referencedVariables[variableId].profile);
-                        if (isMin) {
-                            newDomain[0] = currMin;
+        if (this.referencedVariables[variableId].profile !== undefined && this.referencedVariables[variableId].datatype === "NUMBER") {
+            let isMin = Math.min(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[0];
+            let isMax = Math.max(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[1];
+            if (isMin || isMax) {
+                let currMin = Number.POSITIVE_INFINITY;
+                let currMax = Number.NEGATIVE_INFINITY;
+                let profileVariables = this.getCurrentVariables().filter(d => d.profile === this.referencedVariables[variableId].profile && d.id !== variableId);
+                if (profileVariables.length > 0) {
+                    profileVariables.forEach(d => {
+                        const min = Math.min(...Object.values(d.mapper).filter(d => d !== undefined));
+                        const max = Math.max(...Object.values(d.mapper).filter(d => d !== undefined));
+                        if (min < currMin) {
+                            currMin = min;
                         }
-                        if (isMax) {
-                            newDomain[1] = currMax;
+                        if (max > currMax) {
+                            currMax = max;
                         }
-                        this.profileDomains.set(this.referencedVariables[variableId].profile, newDomain);
+                    });
+                    let newDomain = this.profileDomains.get(this.referencedVariables[variableId].profile).slice();
+                    if (isMin) {
+                        newDomain[0] = currMin;
                     }
-                    else {
-                        this.profileDomains.delete(this.referencedVariables[variableId].profile);
+                    if (isMax) {
+                        newDomain[1] = currMax;
                     }
+                    this.profileDomains.set(this.referencedVariables[variableId].profile, newDomain);
+                }
+                else {
+                    this.profileDomains.delete(this.referencedVariables[variableId].profile);
                 }
             }
         }
@@ -148,7 +143,7 @@ class VariableStore {
     addToProfileDomain(variable) {
         let profileChanged = false;
         let newDomain = [];
-        if (variable.datatype === "NUMBER") {
+        if (variable.profile !== undefined && variable.datatype === "NUMBER") {
             if (!(this.profileDomains.has(variable.profile))) {
                 this.profileDomains.set(variable.profile, variable.domain);
             }
@@ -182,26 +177,6 @@ class VariableStore {
         _self.referencedVariables[currentId].referenced += 1;
     }
 
-    /**
-     * adds an original variable. If display is true the variable will be added to the current variables
-     * @param id
-     * @param name
-     * @param datatype
-     * @param description
-     * @param range
-     * @param display
-     * @param mapper
-     */
-    addOriginalVariable(id, name, datatype, description, range, display, mapper) {
-        if (!this.isReferenced(id)) {
-            this.referencedVariables[id] = new OriginalVariable(id, name, datatype, description, range, [], mapper);
-        }
-        if (display && !this.isDisplayed(id)) {
-            this.updateReferences(id);
-            this.currentVariables.push(id);
-            this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
-        }
-    }
 
     addVariableToBeReferenced(variable) {
         this.referencedVariables[variable.id] = variable;
@@ -223,61 +198,6 @@ class VariableStore {
         this.currentVariables[this.currentVariables.indexOf(oldId)] = newVariable.id;
     }
 
-    /**
-     * add an event variable. If display is true the variable will be added to the current variables
-     * @param eventType
-     * @param selectedVariable
-     * @param display
-     */
-    addEventVariable(eventType, selectedVariable, display) {
-        const _self = this;
-        if (!this.isReferenced(selectedVariable.id)) {
-            _self.referencedVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, [], this.rootStore.getSampleEventMapping(eventType, selectedVariable));
-        }
-        if (!(_self.currentVariables.includes(selectedVariable.id)) && display) {
-            this.updateReferences(selectedVariable.id);
-            _self.currentVariables.push(selectedVariable.id);
-            this.rootStore.undoRedoStore.saveVariableHistory("ADD", selectedVariable.name, true);
-        }
-    }
-
-    /**
-     * adds a derived variable to current and all variables
-     * @param id
-     * @param name
-     * @param datatype
-     * @param description
-     * @param originalIds
-     * @param modificationType
-     * @param modification
-     */
-    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification) {
-        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, [], [], MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
-        this.updateReferences(id);
-        this.currentVariables.push(id);
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
-    }
-
-
-    /**
-     * replaces a variable with a variable derived from it
-     * @param id
-     * @param name
-     * @param datatype
-     * @param description
-     * @param originalId
-     * @param modificationType
-     * @param modification
-     */
-    modifyVariable(id, name, datatype, description, originalId, modificationType, modification) {
-        let oldName = this.referencedVariables[originalId].name;
-        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, [], [], MapperCombine.getModificationMapper(modificationType, modification, [this.referencedVariables[originalId].mapper]));
-        this.updateReferences(id);
-        this.currentVariables[this.getIndex(originalId)] = id;
-        this.removeReferences(originalId);
-        this.rootStore.undoRedoStore.saveVariableModification(modificationType, oldName, true);
-    }
-
 
     /**
      * gets a variable by id
@@ -288,7 +208,7 @@ class VariableStore {
     }
 
     /**
-     * check if a variable is referenced (is in referencedVariables)
+     * check if a variable is referenced (is in originalVariables)
      * @param id
      * @returns {boolean}
      */

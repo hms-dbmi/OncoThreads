@@ -306,7 +306,7 @@ class RootStore {
                 }
             } else {*/
             let initialVariable = _self.clinicalSampleCategories[0];
-            _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
+            _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id]));
             _self.timepointStore.globalPrimary = initialVariable.id;
             //}
             _self.parsed = true;
@@ -359,7 +359,7 @@ class RootStore {
                                 if (mappingType === "mutationType") {
                                     domain = _self.mutationOrder;
                                 }
-                                const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, _self.createMutationMapping(geneDict[entry], mappingType));
+                                const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, _self.createMutationMapping(geneDict[entry], mappingType),mappingType);
                                 _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
                             }
                         }

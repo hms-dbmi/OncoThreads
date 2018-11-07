@@ -43,7 +43,6 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
 
     /**
      * opens the binning modal
-     * @param id
      */
     addVarModal() {
         this.props.openAddModal();
@@ -58,7 +57,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
      * @param description
      */
     addVariable(id, variable, type, description) {
-        this.props.store.addOriginalVariable(id, variable, type, description, [], true, this.props.store.rootStore.staticMappers[id]);
+        this.props.store.addVariableToBeDisplayed(new OriginalVariable(id,variable,type,description,[],[],this.props.store.rootStore.staticMappers[id]));
     }
 
 
