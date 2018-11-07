@@ -12,6 +12,7 @@ class EventVariable {
         this.eventType = eventType; //e.g. Treatment
         this.eventSubType = eventSubType; //e.g. Agent
         this.mapper = mapper;
+        this.domain=[true,false,undefined];
         this.colorScale=ColorScales.getBinaryScale(range);
         this.referenced = 0;
     }
