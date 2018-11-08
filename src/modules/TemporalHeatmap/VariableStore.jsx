@@ -43,7 +43,6 @@ class VariableStore {
         });
         //observe change in profileDomains and update domains of corresponding variables
         observe(this.profileDomains, change => {
-            console.log(change);
             if (change.type === "update") {
                 for (let id in this.referencedVariables) {
                     if (this.referencedVariables[id].profile === change.name) {
