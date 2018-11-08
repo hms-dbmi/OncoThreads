@@ -133,7 +133,7 @@ class RootStore {
                     }
                 }
                 if (_self.sampleStructure[d.patientId].length > i) {
-                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i][0]})
+                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i]})
                 }
             });
             timepointStructure.push(patientSamples);
