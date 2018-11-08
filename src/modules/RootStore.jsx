@@ -28,7 +28,6 @@ class RootStore {
         this.clinicalPatientCategories = [];
         this.mutationCountId = "mutCount";
         this.timeDistanceId = "timeGapMapping";
-        this.mutationOrder = ["Nonsense_Mutation", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice_Site", "Splice_Region", "In_Frame_Del", "In_Frame_Ins", "De_novo_Start_InFrame", "Missense_Mutation", "Translation_Start_Site", "Nonstop_Mutation", "Targeted_Region", "De_novo_Start_OutOfFrame", "Unknown"];
         this.eventCategories = [];
         this.eventAttributes = [];
         this.patientOrderPerTimepoint = [];
@@ -101,7 +100,7 @@ class RootStore {
             }
 
         });
-        this.molProfileMapping=new MolProfileMapping(this);
+        this.molProfileMapping = new MolProfileMapping(this);
         this.timepointStore = new DataStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore(this);

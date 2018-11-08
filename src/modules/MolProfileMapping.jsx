@@ -7,7 +7,7 @@ gets the data with the cBioAPI and gives it to the other stores
 class MolProfileMapping {
     constructor(rootStore) {
         this.rootStore = rootStore;
-         this.mutationOrder = ["Nonsense_Mutation", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice_Site", "Splice_Region", "In_Frame_Del", "In_Frame_Ins", "De_novo_Start_InFrame", "Missense_Mutation", "Translation_Start_Site", "Nonstop_Mutation", "Targeted_Region", "De_novo_Start_OutOfFrame", "Unknown"];
+        this.mutationOrder = ['trunc', 'inframe', 'promoter', 'missense', 'other'];
 
     }
 
@@ -29,7 +29,7 @@ class MolProfileMapping {
         }
         this.rootStore.cbioAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
                 if (entrezIDs.length !== 0) {
-                    this.rootStore.cbioAPI.getAllMutations(this.rootStore.study.studyId, entrezIDs, response=> {
+                    this.rootStore.cbioAPI.getAllMutations(this.rootStore.study.studyId, entrezIDs, response => {
                         let geneDict = {};
                         let noMutationsFound = [];
                         entrezIDs.forEach(d => {
@@ -53,10 +53,9 @@ class MolProfileMapping {
                                 const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
                                 let domain = [];
                                 if (mappingType === "mutationType") {
-                                    domain = this.rootStore.mutationOrder;
+                                    domain = this.mutationOrder;
                                 }
-                                const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, this.rootStore.createMutationMapping(geneDict[entry], mappingType), mappingType);
-                                console.log(variable);
+                                const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, this.createMutationMapping(geneDict[entry], mappingType), mappingType);
                                 this.rootStore.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
                             }
                         }
@@ -92,7 +91,7 @@ class MolProfileMapping {
                         confirm = window.confirm("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
                     }
                     if (!confirm) {
-                        noMutationsFound.forEach(d=> {
+                        noMutationsFound.forEach(d => {
                             delete geneDict[d.entrezGeneId];
                         });
                     }
@@ -152,25 +151,43 @@ class MolProfileMapping {
                 const entries = list.filter(d => d.sampleId === currentSample);
                 let mutationType = undefined;
                 if (entries.length > 0) {
-                    let indices = entries.map(d => this.mutationOrder.indexOf(d.mutationType));
-                    mutationType = this.mutationOrder[Math.max(...indices)];
+                    let indices = [];
+                    entries.forEach(d => {
+                        if ((d.proteinChange || "").toLowerCase() === "promoter") {
+                            // promoter mutations aren't labeled as such in mutationType, but in proteinChange, so we must detect it there
+                            indices.push(this.mutationOrder.indexOf("promoter"));
+                        }
+                        else {
+                            const simplifiedMutationType = MolProfileMapping.getMutationType(d.mutationType);
+                            if (simplifiedMutationType !== "fusion") {
+                                indices.push(this.mutationOrder.indexOf(simplifiedMutationType));
+                            }
+                        }
+                    });
+                    if (indices.length > 0) {
+                        mutationType = this.mutationOrder[Math.min(...indices)];
+                    }
                 }
                 return mutationType;
             }
         }
         else {
             mappingFunction = currentSample => {
-                const entry = list.filter(d => d.sampleId === currentSample && d.mutationType === "Missense_Mutation")[0];
-                let vaf = undefined;
-                if (entry !== undefined) {
-                    vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
+                const entries = list.filter(d => d.sampleId === currentSample && d.mutationType === "Missense_Mutation");
+                let vaf = 0;
+                if (entries.length === 0) {
+                    vaf = undefined;
                 }
-                return (vaf);
+                entries.forEach(entry => {
+                    vaf += entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
+
+                });
+                return vaf === undefined ? vaf : vaf / entries.length;
             }
         }
         let mapper = {};
-        this.rootStore.timepointStructure.forEach(d=> {
-            d.forEach(f=> {
+        this.rootStore.timepointStructure.forEach(d => {
+            d.forEach(f => {
                 if (list.length === 0) {
                     mapper[f.sample] = undefined;
                 }
@@ -241,21 +258,16 @@ class MolProfileMapping {
                 ret = "other";
                 break;
         }
-        switch (ret) {
-            case "missense":
-            case "inframe":
-            case "fusion":
-            case "other":
-            default:
-                ret = "trunc";
+        if (ret !== "missense" && ret !== "inframe" && ret !== "fusion" && ret !== "other") {
+            ret = "trunc"
         }
         return ret;
     }
 
     createMolecularMapping(list, datatype) {
         let mapper = {};
-        this.rootStore.timepointStructure.forEach(d=> {
-            d.forEach(f=> {
+        this.rootStore.timepointStructure.forEach(d => {
+            d.forEach(f => {
                 if (list.length === 0) {
                     mapper[f.sample] = undefined;
                 }

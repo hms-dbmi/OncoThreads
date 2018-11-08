@@ -23,7 +23,6 @@ class OriginalVariable {
     initializeObservable(domain, range) {
         let currDomain = this.getDefaultDomain(domain);
         let currRange = this.getDefaultRange(currDomain, range);
-        console.log(currDomain,currRange);
         return {
             domain: currDomain,
             range: currRange,
