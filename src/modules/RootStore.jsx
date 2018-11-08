@@ -6,6 +6,7 @@ import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
+import MolProfileMapping from "./MolProfileMapping";
 
 
 /*
@@ -100,6 +101,7 @@ class RootStore {
             }
 
         });
+        this.molProfileMapping=new MolProfileMapping(this);
         this.timepointStore = new DataStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore(this);
@@ -314,120 +316,6 @@ class RootStore {
         });
     }
 
-    /**
-     * Gets all currently selected mutations
-     * @param HUGOsymbols
-     * @param mappingType
-     */
-    getMutationsProfile(HUGOsymbols, mappingType) {
-        const _self = this;
-        let datatype;
-        if (mappingType === "binary") {
-            datatype = "binary";
-        }
-        else if (mappingType === "vaf") {
-            datatype = "NUMBER"
-        }
-        else {
-            datatype = "STRING"
-        }
-        _self.cbioAPI.getGeneIDs(HUGOsymbols, function (entrezIDs) {
-                if (entrezIDs.length !== 0) {
-                    _self.cbioAPI.getAllMutations(_self.study.studyId, entrezIDs, function (response) {
-                        let geneDict = {};
-                        let noMutationsFound = [];
-                        entrezIDs.forEach(function (d, i) {
-                            const containedIds = response.filter(entry => entry.entrezGeneId === d.entrezGeneId);
-                            geneDict[d.entrezGeneId] = containedIds;
-                            if (containedIds.length === 0) {
-                                noMutationsFound.push({hgncSymbol: d.hgncSymbol, entrezGeneId: d.entrezGeneId});
-                            }
-                        });
-                        let confirm = false;
-                        if (noMutationsFound.length > 0) {
-                            confirm = window.confirm("WARNING: No mutations found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
-                        }
-                        if (!confirm) {
-                            noMutationsFound.forEach(function (d) {
-                                delete geneDict[d.entrezGeneId];
-                            });
-                        }
-                        for (let entry in geneDict) {
-                            if (!_self.timepointStore.variableStores.sample.isDisplayed(entry + mappingType)) {
-                                const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                                let domain = [];
-                                if (mappingType === "mutationType") {
-                                    domain = _self.mutationOrder;
-                                }
-                                const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, _self.createMutationMapping(geneDict[entry], mappingType),mappingType);
-                                _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
-                            }
-                        }
-                        _self.undoRedoStore.saveVariableHistory("ADD mutation " + mappingType, HUGOsymbols, true)
-
-                    })
-                }
-            }
-        )
-    }
-
-    /**
-     * gets data corresponding to selected HUGOsymbols in a molecular profile
-     * @param profileId
-     * @param HUGOsymbols
-     */
-    getMolecularProfile(profileId, HUGOsymbols) {
-        const profile = this.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0];
-        this.cbioAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
-            if (entrezIDs.length !== 0) {
-                this.cbioAPI.getAllMolecularValues(this.study.studyId, profileId, entrezIDs, response => {
-                    let geneDict = {};
-                    let noMutationsFound = [];
-                    entrezIDs.forEach(function (d, i) {
-                        const containedIds = response.filter(entry => entry.entrezGeneId === d.entrezGeneId);
-                        geneDict[d.entrezGeneId] = containedIds;
-                        if (containedIds.length === 0) {
-                            noMutationsFound.push({hgncSymbol: d.hgncSymbol, entrezGeneId: d.entrezGeneId});
-                        }
-                    });
-                    let confirm = false;
-                    if (noMutationsFound.length > 0) {
-                        confirm = window.confirm("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + "\n Add anyway?");
-                    }
-                    if (!confirm) {
-                        noMutationsFound.forEach(function (d) {
-                            delete geneDict[d.entrezGeneId];
-                        });
-                    }
-                    for (let entry in geneDict) {
-                        if (!this.timepointStore.variableStores.sample.isDisplayed(entry)) {
-                            const symbol = entrezIDs.filter(d => d.entrezGeneId === parseInt(entry, 10))[0].hgncSymbol;
-                            let domain = [];
-                            let datatype = "NUMBER";
-                            if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
-                                domain = ["-2", "-1", "0", "1", "2"];
-                                datatype = "ORDINAL";
-                            }
-                            const variable = new OriginalVariable(entry + "_" + profileId, symbol + "_" + profile.molecularAlterationType, datatype, profile.name + ": " + symbol, [], domain, this.createMolecularMapping(geneDict[entry], datatype), profileId);
-                            this.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
-                        }
-                    }
-                    this.undoRedoStore.saveVariableHistory("ADD " + profile.name, HUGOsymbols, true)
-
-                });
-            }
-        });
-    }
-
-    getMutations(profileId, HUGOsymbols, mappingType) {
-        if (this.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
-            this.getMutationsProfile(HUGOsymbols, mappingType);
-        }
-        else {
-            this.getMolecularProfile(profileId, HUGOsymbols);
-        }
-
-    }
 
     /**
      * combines clinical events of sort "SPECIMEN" and clinical data in one datastructure,
@@ -686,80 +574,6 @@ class RootStore {
 
     }
 
-
-    /**
-     * creates sample id mapping for mutations
-     * @param list
-     * @param mappingType
-     */
-    createMutationMapping(list, mappingType) {
-        let mappingFunction;
-        if (mappingType === "binary") {
-            mappingFunction = currentSample => (list.filter(d => d.sampleId === currentSample).length > 0)
-        }
-        else if (mappingType === "proteinChange") {
-            mappingFunction = currentSample => {
-                const entry = list.filter(d => d.sampleId === currentSample)[0];
-                let proteinChange = undefined;
-                if (entry !== undefined) {
-                    proteinChange = entry.proteinChange;
-                }
-                return (proteinChange);
-            }
-        }
-        else if (mappingType === "mutationType") {
-            mappingFunction = currentSample => {
-                const entries = list.filter(d => d.sampleId === currentSample);
-                let mutationType = undefined;
-                if (entries.length > 0) {
-                    let indices = entries.map(d => this.mutationOrder.indexOf(d.mutationType));
-                    mutationType = this.mutationOrder[Math.max(...indices)];
-                }
-                return mutationType;
-            }
-        }
-        else {
-            mappingFunction = currentSample => {
-                const entry = list.filter(d => d.sampleId === currentSample && d.mutationType === "Missense_Mutation")[0];
-                let vaf = undefined;
-                if (entry !== undefined) {
-                    vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
-                }
-                return (vaf);
-            }
-        }
-        let mapper = {};
-        this.timepointStructure.forEach(function (d) {
-            d.forEach(function (f) {
-                if (list.length === 0) {
-                    mapper[f.sample] = undefined;
-                }
-                else {
-                    mapper[f.sample] = mappingFunction(f.sample);
-                }
-            });
-        });
-        return mapper;
-    }
-
-    createMolecularMapping(list, datatype) {
-        let mapper = {};
-        this.timepointStructure.forEach(function (d) {
-            d.forEach(function (f) {
-                if (list.length === 0) {
-                    mapper[f.sample] = undefined;
-                }
-                else {
-                    let value = list.filter(d => d.sampleId === f.sample)[0].value;
-                    if (datatype === "NUMBER") {
-                        value = parseFloat(value);
-                    }
-                    mapper[f.sample] = value;
-                }
-            });
-        });
-        return mapper;
-    }
 
     createClinicalPatientMappers() {
         const _self = this;

@@ -23,12 +23,13 @@ class OriginalVariable {
     initializeObservable(domain, range) {
         let currDomain = this.getDefaultDomain(domain);
         let currRange = this.getDefaultRange(currDomain, range);
+        console.log(currDomain,currRange);
         return {
             domain: currDomain,
             range: currRange,
             get colorScale() {
                 let scale;
-                if (this.datatype === "ORDINAL" || this.datatype === "STRING" || this.datatype === "binary") {
+                if (this.datatype === "ORDINAL" || this.datatype === "STRING" || this.datatype === "BINARY") {
                     scale = ColorScales.getOrdinalScale(this.range, this.domain);
                 }
                 else if (this.datatype === "NUMBER") {
@@ -70,28 +71,30 @@ class OriginalVariable {
         return currDomain;
     }
 
-    getDefaultRange(domain, range) {
-        if (range.length === 0) {
+      getDefaultRange(domain, range) {
+        let currRange=range;
+        if (currRange.length === 0) {
             if (this.datatype === "ORDINAL") {
                 let step = 1 / domain.length;
-                return domain.map((d, i) => d3ScaleChromatic.interpolateGreys(i * step));
+                currRange= domain.map((d, i) => d3ScaleChromatic.interpolateGreys(i * step));
             }
             else if (this.datatype === "STRING") {
-                return ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'].slice(0, domain.length);
+                currRange= ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']
             }
             else if (this.datatype === "BINARY") {
-                return ['#ffd92f', 'lightgray']
+                currRange= ['#ffd92f', 'lightgray']
             }
             else if (this.datatype === "NUMBER") {
                 let min = Math.min(...domain);
                 if (min < 0) {
-                    return ['#0571b0', '#f7f7f7', '#ca0020'];
+                    currRange= ['#0571b0', '#f7f7f7', '#ca0020'];
                 }
                 else {
-                    return ['#e6e6e6', '#000000'];
+                    currRange= ['#e6e6e6', '#000000'];
                 }
             }
         }
+        return currRange;
     }
 }
 

@@ -202,7 +202,7 @@ const SampleVariableSelector = observer(class SampleVariableSelector extends Rea
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.store.rootStore.getMutations(profileId, geneList, this.state.mappingType);
+        this.props.store.rootStore.molProfileMapping.getMutations(profileId, geneList, this.state.mappingType);
         let geneListStrings = this.state.geneListStrings.slice();
         geneListStrings[index] = '';
         this.setState({geneListStrings: geneListStrings});
