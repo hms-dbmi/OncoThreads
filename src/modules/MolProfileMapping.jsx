@@ -158,8 +158,11 @@ class MolProfileMapping {
                             indices.push(this.mutationOrder.indexOf("promoter"));
                         }
                         else {
-                            const simplifiedMutationType = MolProfileMapping.getMutationType(d.mutationType);
+                            let simplifiedMutationType = MolProfileMapping.getMutationType(d.mutationType);
                             if (simplifiedMutationType !== "fusion") {
+                                if (simplifiedMutationType !== "missense" && simplifiedMutationType !== "inframe" && simplifiedMutationType !== "fusion" && simplifiedMutationType !== "other") {
+                                    simplifiedMutationType = "trunc"
+                                }
                                 indices.push(this.mutationOrder.indexOf(simplifiedMutationType));
                             }
                         }
@@ -173,7 +176,7 @@ class MolProfileMapping {
         }
         else {
             mappingFunction = currentSample => {
-                const entries = list.filter(d => d.sampleId === currentSample && d.mutationType === "Missense_Mutation");
+                const entries = list.filter(d => d.sampleId === currentSample && (MolProfileMapping.getMutationType(d.mutationType) === "missense" || MolProfileMapping.getMutationType(d.mutationType) === "nonsense"));
                 let vaf = 0;
                 if (entries.length === 0) {
                     vaf = undefined;
@@ -258,9 +261,7 @@ class MolProfileMapping {
                 ret = "other";
                 break;
         }
-        if (ret !== "missense" && ret !== "inframe" && ret !== "fusion" && ret !== "other") {
-            ret = "trunc"
-        }
+
         return ret;
     }
 
