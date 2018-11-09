@@ -59,15 +59,17 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                             opacity={opc1}
                             //fill={_self.props.color(_self.props.timepoint)}
                         />);
+                    }
+                );
+            }
         }
-    );
-}
-}
-else
-{
-    this.props.row.data.forEach(function (d, i) {
+        else
+        {
+            this.props.row.data.forEach(function (d, i) { 
+           
 
-        if(_self.props.store.rootStore.timepointStore.timepoints.length!==_self.props.index){
+            if(_self.props.store.rootStore.timepointStore.timepoints.length!==_self.props.index){
+            //if(_self.props.store.rootStore.timepointStore.timepoints.length!==-1){  
                 let stroke = "none";
                 let fill = _self.props.color(d.value);
                 if (d.value === undefined) {
@@ -121,21 +123,21 @@ else
             
     
     
-        }
-        else{
-
-
+            }
+            else{
+            
             let stroke = "none";
             let fill = "black";
 
 
-            const val = d.value;
+            //const val = d.value;
 
             // globalRectHeight =ht[j];
 
             //globalRectHeight= ht[j]/2;
 
 
+            //console.log( _self.props.ypi);
             xGlobal = _self.props.heatmapScale(d.patient);
 
             if(_self.props.ypi[i]!=='undefined' && _self.props.ypi[i]>0){
@@ -168,10 +170,10 @@ else
                             }*/
         
 
-        }
+           }
     
-    });
-}
+        });
+    }
 return rects;
 }
 

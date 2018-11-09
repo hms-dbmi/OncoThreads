@@ -173,14 +173,14 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         let ht = tod.map(d => 0);
 
-        let i=this.props.timepoints.length;
+        //let i=this.props.timepoints.length;
 
         //if (d.heatmap.length > 0) {
-            timepoints.push(<g key={i + "timepoint" + globalIndex}><TimelineTimepoint
+            timepoints.push(<g key={this.props.timepoints.length+ "timepoint" + globalIndex}><TimelineTimepoint
                 timepoint={this.props.timepoints[0].heatmap}
                 timepointType={this.props.timepoints[0].type}
                 primaryVariable={this.props.timepoints[0].primaryVariable}
-                index={i}
+                index={this.props.timepoints.length}
                 ypi={tod}
                 ht={ht}
                 timeScale={_self.props.timeScale}
@@ -215,6 +215,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
 
         let globalIndex = 0;
+
+        //var timepoint_sample, heatmapScale_sample, ind_sample;
 
         this.props.timepoints.forEach(function (d, i) {
             let rectWidth;
@@ -272,7 +274,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
                 });
 
-
+                //timepoint_sample=d;
+                //ind_sample=i;
+                //heatmapScale_sample=_self.props.heatmapScales[i];
             }
 
 
@@ -336,6 +340,154 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             //}
         });
+
+
+        //new code for time of death
+
+
+        let rectWidth;
+        let count, ht;
+
+        let transform;
+
+        let numEventsForEachPatient = [];
+
+        //var sampleEventLengthForThisTimeLine=[];
+
+        let p = _self.props.store.rootStore.patientOrderPerTimepoint;
+
+
+
+
+        var tod=[];
+        let transFlag = false;
+
+        //if(_self.props.timepoints[i].primaryVariable.datatype!=="NUMBER"){
+        //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
+        /*if (_self.props.timepoints[0].type === "between") {
+
+            transFlag = true;
+            //  return timepoints;
+            //}
+            rectWidth = _self.props.visMap.sampleRectWidth / 2;
+
+
+            //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
+
+            transform = "translate(0, 0)";
+
+
+
+            //arr;
+        }*/
+
+
+        //else {
+            transFlag = false;
+            rectWidth = _self.props.visMap.sampleRectWidth;
+            //yp = _self.props.allYPositions[Math.floor(i / 2)];
+            //ht = yp.map(d => 0);
+            //transform= "translate(0, 350)";
+            transform = "translate(0, 0)";
+
+
+            //p=_self.props.store.rootStore.patientOrderPerTimepoint;
+            p.forEach(function (d1, j) {
+                count = 1;
+
+                numEventsForEachPatient.push(count);
+
+                //count=0;
+
+            });
+
+
+           
+            _self.props.store.rootStore.patientOrderPerTimepoint.forEach(function(d){
+                var k;
+                if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"] && _self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]==="DECEASED"){
+                    k=_self.props.store.rootStore.staticMappers["OS_MONTHS"][d+"_Pri"] * 30; 
+                    tod.push(k);
+                }
+                else{
+                    k=-1;
+                    tod.push(k);
+                }    
+    
+                })
+    
+            //let yp = _self.props.allYPositions[0]; //.map(x=>x.timeGapBetweenSample);
+    
+             ht = tod.map(d => 0);
+
+
+        let d=_self.props.timepoints[1];
+        let i=this.props.timepoints.length;
+
+       if (d.heatmap.length > 0) {
+
+            let heatmapd = d;
+            let heatmapi = i;
+
+            if (!transFlag) {
+                timepoints.push(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}>
+                    <TimelineTimepoint
+                        timepoint={d.heatmap}
+                        timepointType={d.type}
+                        primaryVariable={d.primaryVariable} 
+                        index= {_self.props.timepoints.length}
+                        //index={heatmapi}
+                        ypi={tod}
+                        ht={ht}
+                        timeScale={_self.props.timeScale}
+                        numEventsForEachPatient={numEventsForEachPatient}
+                        currentVariables={_self.props.currentVariables[heatmapd.type]}
+                        rectWidth={rectWidth}
+                        selectPatient={_self.props.onDrag}
+                        width={_self.props.heatmapWidth}
+                        store={_self.props.store}
+                        visMap={_self.props.visMap}
+                        heatmapScale={_self.props.heatmapScales[0]}
+                        selectedPatients={_self.props.selectedPatients}
+                        showTooltip={_self.props.showTooltip}
+                        hideTooltip={_self.props.hideTooltip}/>
+                </g>);
+            }
+            else {
+                timepoints.unshift(<g key={heatmapi + "timepoint" + globalIndex} transform={transform}>
+                    <TimelineTimepoint
+                        timepoint={d.heatmap}
+                        timepointType={d.type}
+                        primaryVariable={d.primaryVariable} //index={heatmapi}
+                        index= {_self.props.timepoints.length}
+                        ypi={tod}
+                        ht={ht}
+                        timeScale={_self.props.timeScale}
+                        numEventsForEachPatient={numEventsForEachPatient}
+                        currentVariables={_self.props.currentVariables[heatmapd.type]}
+                        rectWidth={rectWidth}
+                        selectPatient={_self.props.onDrag}
+                        width={_self.props.heatmapWidth}
+                        store={_self.props.store}
+                        visMap={_self.props.visMap}
+                        heatmapScale={_self.props.heatmapScales[0]}
+                        selectedPatients={_self.props.selectedPatients}
+                        showTooltip={_self.props.showTooltip}
+                        hideTooltip={_self.props.hideTooltip}/>
+                </g>);
+            }
+        
+
+            globalIndex++;
+        }
+
+
+
+
+        //end
+
+
+
 
         return timepoints;
     }
