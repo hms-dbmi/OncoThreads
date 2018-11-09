@@ -72,7 +72,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
     getGlobalTimepoints() {
         const _self = this;
-        let timepoints = [];
+        var timepoints = [];
 
 
 
@@ -158,14 +158,15 @@ const Timepoints = observer(class Timepoints extends React.Component {
         var tod=[];
         _self.props.store.rootStore.patientOrderPerTimepoint.forEach(function(d){
             var k;
-            if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"] && _self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]==="DECEASED"){
+            //if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"] && _self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]==="DECEASED"){
+            //if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]){  
                 k=_self.props.store.rootStore.staticMappers["OS_MONTHS"][d+"_Pri"] * 30; 
                 tod.push(k);
-            }
-            else{
+            //}
+            /*else{
                 k=-1;
                 tod.push(k);
-            }    
+            } */   
 
             })
 
@@ -405,7 +406,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
            
             _self.props.store.rootStore.patientOrderPerTimepoint.forEach(function(d){
                 var k;
-                if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"] && _self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]==="DECEASED"){
+                //if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"] && _self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]==="DECEASED"){
+                if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]){ 
                     k=_self.props.store.rootStore.staticMappers["OS_MONTHS"][d+"_Pri"] * 30; 
                     tod.push(k);
                 }

@@ -127,7 +127,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
             else{
             
             let stroke = "none";
-            let fill = "black";
+            
 
 
             //const val = d.value;
@@ -141,22 +141,52 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
             xGlobal = _self.props.heatmapScale(d.patient);
 
             if(_self.props.ypi[i]!=='undefined' && _self.props.ypi[i]>0){
-                rects.push(<rect stroke={stroke}
-                                onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, "Approximate Time of Death", _self.props.ypi[i], 0)
-                                }
-                                onMouseLeave={_self.handleMouseLeave}
-                                onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                onClick={() => _self.handleClick(d.patient)}
-                                key={d.patient + i + j}
-                                height={_self.props.rectWidth / 6}//{_self.props.height}
-                                width={_self.props.rectWidth / 2}
-                                x={xGlobal}
-                            // y={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis)}
-                                y={_self.props.timeScale(_self.props.ypi[i])}
-                                fill={fill}
-                                opacity={_self.props.opacity}
+
+                if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d.patient+"_Pri"]==="DECEASED"){
+
+                    let fill = "black";
+
+                    rects.push(<rect stroke={stroke}
+                            onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, "Approximate Time of Death", _self.props.ypi[i], 0)
+                            }
+                            onMouseLeave={_self.handleMouseLeave}
+                            onDoubleClick={() => _self.handleDoubleClick(d.patient)}
+                            onClick={() => _self.handleClick(d.patient)}
+                            key={d.patient + i + j}
+                            height={_self.props.rectWidth / 6}//{_self.props.height}
+                            width={_self.props.rectWidth / 2}
+                            x={xGlobal}
+                        // y={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis)}
+                            y={_self.props.timeScale(_self.props.ypi[i])}
+                            fill={fill}
+                            opacity={_self.props.opacity}
+                        />
+                    );
+                }
+                else{
+
+                    let fill = "grey";
+
+                    rects.push(<rect stroke={stroke}
+                        onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, "Last known status: Living", _self.props.ypi[i], 0)
+                        }
+                        onMouseLeave={_self.handleMouseLeave}
+                        onDoubleClick={() => _self.handleDoubleClick(d.patient)}
+                        onClick={() => _self.handleClick(d.patient)}
+                        key={d.patient + i + j}
+                        height={_self.props.rectWidth / 6}//{_self.props.height}
+                        width={_self.props.rectWidth / 2}
+                        x={xGlobal}
+                    // y={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis)}
+                        y={_self.props.timeScale(_self.props.ypi[i])}
+                        fill={fill}
+                        opacity={_self.props.opacity}
                     />
                 );
+
+
+                }
+               
             }
             /*if (d.value === undefined) {
                                 rects.push(<line stroke={"lightgrey"}
