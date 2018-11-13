@@ -16,7 +16,7 @@ class MolProfileMapping {
      * @param HUGOsymbols
      * @param mappingType
      */
-    getMutationsProfile(HUGOsymbols, mappingType) {
+    getMutationsProfile(HUGOsymbols, mappingType, callback) {
         let datatype;
         if (mappingType === "binary") {
             datatype = "BINARY";
@@ -55,8 +55,7 @@ class MolProfileMapping {
                                 if (mappingType === "mutationType") {
                                     domain = this.mutationOrder;
                                 }
-                                const variable = new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, this.createMutationMapping(geneDict[entry], mappingType), mappingType);
-                                this.rootStore.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
+                                callback(new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, this.createMutationMapping(geneDict[entry], mappingType), mappingType));
                             }
                         }
                         this.rootStore.undoRedoStore.saveVariableHistory("ADD mutation " + mappingType, HUGOsymbols, true)
@@ -72,7 +71,7 @@ class MolProfileMapping {
      * @param profileId
      * @param HUGOsymbols
      */
-    getMolecularProfile(profileId, HUGOsymbols) {
+    getMolecularProfile(profileId, HUGOsymbols, callback) {
         const profile = this.rootStore.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0];
         this.rootStore.cbioAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
             if (entrezIDs.length !== 0) {
@@ -104,8 +103,7 @@ class MolProfileMapping {
                                 domain = ["-2", "-1", "0", "1", "2"];
                                 datatype = "ORDINAL";
                             }
-                            const variable = new OriginalVariable(entry + "_" + profileId, symbol + "_" + profile.molecularAlterationType, datatype, profile.name + ": " + symbol, [], domain, this.createMolecularMapping(geneDict[entry], datatype), profileId);
-                            this.rootStore.timepointStore.variableStores.sample.addVariableToBeDisplayed(variable);
+                            callback(new OriginalVariable(entry + "_" + profileId, symbol + "_" + profile.molecularAlterationType, datatype, profile.name + ": " + symbol, [], domain, this.createMolecularMapping(geneDict[entry], datatype), profileId));
                         }
                     }
                     this.rootStore.undoRedoStore.saveVariableHistory("ADD " + profile.name, HUGOsymbols, true)
@@ -115,12 +113,12 @@ class MolProfileMapping {
         });
     }
 
-    getMutations(profileId, HUGOsymbols, mappingType) {
+    getMutations(profileId, HUGOsymbols, mappingType,callback) {
         if (this.rootStore.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
-            this.getMutationsProfile(HUGOsymbols, mappingType);
+            this.getMutationsProfile(HUGOsymbols, mappingType,callback);
         }
         else {
-            this.getMolecularProfile(profileId, HUGOsymbols);
+            this.getMolecularProfile(profileId, HUGOsymbols,callback);
         }
 
     }

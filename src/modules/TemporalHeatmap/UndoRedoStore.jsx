@@ -122,13 +122,17 @@ class UndoRedoStore {
         else {
             //case: added
             if (observable.length > saved.length) {
-                let addIndex = observable.indexOf(observable.filter(d => !saved.includes(d))[0]);
-                observable.splice(addIndex, 1);
+                let addIndices = observable.filter(d => !saved.includes(d)).map(d => observable.indexOf(d));
+                for (let i = addIndices.length - 1; i >= 0; i--) {
+                    observable.splice(addIndices[i], 1);
+                }
             }
             //case: removed
             else if (observable.length < saved.length) {
-                let removeIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
-                observable.splice(removeIndex, 0, saved[removeIndex]);
+                let removeIndices = saved.filter(d => !observable.includes(d)).map(d => saved.indexOf(d));
+                for (let i = 0; i < removeIndices.length; i++) {
+                    observable.splice(removeIndices[i], 0, saved[removeIndices[i]]);
+                }
             }
             //case: modified
             else {
@@ -153,7 +157,7 @@ class UndoRedoStore {
             else if (!(variable in observedVariables)) {
                 switch (savedVariables[variable].type) {
                     case "original":
-                        observedVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper,savedVariables[variable].profile);
+                        observedVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile);
                         break;
                     case "event":
                         observedVariables[variable] = new EventVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].eventType, savedVariables[variable].eventSubType, savedVariables[variable].mapper);
@@ -237,6 +241,7 @@ class UndoRedoStore {
         }
         this.stateStack.push({type: type, state: serializeState(this)});
         this.currentPointer = this.stateStack.length - 1;
+        console.log(this.stateStack);
         //torage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.stateStack.length - 1].state));
     }
 

@@ -58,6 +58,9 @@ class OriginalVariable {
                 }
                 currDomain = [min, max];
             }
+            else if (this.datatype === "BINARY") {
+                currDomain = [true, false];
+            }
             else {
                 currDomain = [];
                 for (let sample in this.mapper) {

@@ -138,7 +138,7 @@ const MainView = observer(class MainView extends React.Component {
             <div>
                 <div className="view" id="block-view">    
                     <Row>
-                        <Col md={1} xs={1} style={{padding: 0}}>
+                        <Col lg={1} md={1} xs={1} style={{padding: 0}}>
                             <TimepointLabels timepoints={this.props.store.timepoints} height={svgHeight}
                                             store={this.props.store}
                                             showTooltip={this.props.showTooltip}
@@ -146,7 +146,7 @@ const MainView = observer(class MainView extends React.Component {
                                             visMap={this.props.visMap}
                                             sidebarVisible={this.props.sidebarVisible}/>
                         </Col>
-                        <Col xs={2} md={2} style={{padding: 0}}>
+                        <Col lg={2} xs={2} md={2} style={{padding: 0}}>
                             <RowOperators {...this.props} height={svgHeight}
                                         posY={timepointPositions.timepoint}
                                         selectedPatients={this.props.store.selectedPatients}
@@ -155,7 +155,7 @@ const MainView = observer(class MainView extends React.Component {
                                         removeHighlightedVariable={this.removeHighlightedVariable}/>
 
                         </Col>
-                        <Col xs={7} md={7} style={{padding: 0}}>
+                        <Col lg={7} xs={7} md={7} style={{padding: 0}}>
                             <Plot
                                 {...this.props} width={this.state.plotWidth} height={svgHeight}
                                 horizontalZoom={300 - this.state.horizontalZoom}
@@ -165,7 +165,7 @@ const MainView = observer(class MainView extends React.Component {
                                 selectedPatients={this.props.store.selectedPatients}
                                 onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
                         </Col>
-                        <Col xs={2} md={2} style={{padding: 0}}>
+                        <Col lg={2} xs={2} md={2} style={{padding: 0}}>
                             <Legend {...this.props} height={svgHeight} mainWidth={svgWidth}
                                     posY={timepointPositions.timepoint}
                                     highlightedVariable={this.state.highlightedVariable}

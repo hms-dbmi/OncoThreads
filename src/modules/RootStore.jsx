@@ -309,6 +309,7 @@ class RootStore {
             let initialVariable = _self.clinicalSampleCategories[0];
             _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id]));
             _self.timepointStore.globalPrimary = initialVariable.id;
+            _self.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
             //}
             _self.parsed = true;
 
@@ -534,6 +535,14 @@ class RootStore {
                 }
             }
         });
+        if (this.cbioAPI.molecularProfiles.map(d => d.molecularAlterationType).includes("MUTATION_EXTENDED")) {
+            this.clinicalSampleCategories.push({
+                id: this.mutationCountId,
+                variable: "Muatation Counts",
+                datatype: "NUMBER",
+                description: "Sum of mutation counts"
+            })
+        }
     }
 
     /**

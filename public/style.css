@@ -95,5 +95,31 @@
     white-space: nowrap;
 
 }
+.Select-input {
+  position: absolute !important;
+  top: 0 !important;
+}
+
+.Select-value-label {
+  display: block !important;
+}
+
+.Select-value {
+  position: relative !important;
+}
+
+.Select-menu-outer {
+  width: auto;
+  min-width: 100%;
+}
+
+.Select-option {
+  white-space: nowrap;
+}
+
+.Select-control {
+  min-width: 100%;
+  width: auto;
+}
 
 

@@ -158,7 +158,6 @@ class VariableStore {
             if (profileChanged) {
                 this.profileDomains.set(variable.profile, newDomain);
             }
-            variable.domain = this.profileDomains.get(variable.profile);
         }
     }
 
@@ -173,19 +172,47 @@ class VariableStore {
                 _self.updateReferences(d);
             });
         }
-        _self.referencedVariables[currentId].referenced += 1;
+        this.referencedVariables[currentId].referenced += 1;
     }
 
 
     addVariableToBeReferenced(variable) {
-        this.referencedVariables[variable.id] = variable;
+        if (!(variable.id in this.referencedVariables)) {
+            this.referencedVariables[variable.id] = variable;
+        }
     }
 
     addVariableToBeDisplayed(variable) {
-        this.addToProfileDomain(variable);
-        this.referencedVariables[variable.id] = variable;
-        this.updateReferences(variable.id);
-        this.currentVariables.push(variable.id);
+        this.addVariableToBeReferenced(variable);
+        if (!this.currentVariables.includes(variable.id)) {
+            this.addToProfileDomain(variable);
+            this.updateReferences(variable.id);
+            this.currentVariables.push(variable.id);
+        }
+    }
+
+    addVariablesToBeReferenced(variables) {
+        variables.forEach(variable => {
+            if (!this.currentVariables.includes(variable.id)) {
+                this.addToProfileDomain(variable);
+                this.updateReferences(variable.id);
+                this.currentVariables.push(variable.id);
+            }
+        });
+    }
+
+    addVariablesToBeDisplayed(variables) {
+        let addedVariables = [];
+        variables.forEach(variable => {
+            this.addVariableToBeReferenced(variable);
+            if (!this.currentVariables.includes(variable.id)) {
+                this.addToProfileDomain(variable);
+                this.updateReferences(variable.id);
+                this.currentVariables.push(variable.id);
+                addedVariables.push(variable.name);
+            }
+        });
+        this.rootStore.undoRedoStore.saveVariableHistory("ADD", addedVariables,true);
     }
 
     replaceDisplayedVariable(oldId, newVariable) {

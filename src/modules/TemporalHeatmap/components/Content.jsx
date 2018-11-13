@@ -5,14 +5,12 @@ import React from "react";
 import {observer} from 'mobx-react';
 import {Button, Col, Grid, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-
-import SampleVariableSelector from "./VariableSelector/SampleVariableSelector"
-import BetweenSampleVariableSelector from "./VariableSelector/BetweenSampleVariableSelector"
 import MainView from "./MainView"
 import GroupBinningModal from "./VariableModals/Binner/GroupBinningModal"
 import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
+import QuickAddVariable from "./VariableSelector/QuickAddVariable"
 
 import ContextMenuHeatmapRow from "./ContextMenuHeatmapRow";
 
@@ -34,9 +32,9 @@ const Content = observer(class Content extends React.Component {
             type: "",
             x: 0,
             y: 0,
-            sidebarSize: 2,
-            displaySidebar: "",
-            displayShowButton: "none",
+            sidebarSize: 0,
+            displaySidebar: "none",
+            displayShowButton: "",
             tooltipContent: "",
             showTooltip: "hidden",
             contextType: "",
@@ -63,14 +61,13 @@ const Content = observer(class Content extends React.Component {
         this.showSidebar = this.showSidebar.bind(this);
         this.hideSidebar = this.hideSidebar.bind(this);
 
-        this.updateVariable=this.updateVariable.bind(this);
+        this.updateVariable = this.updateVariable.bind(this);
 
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
     }
 
     /**
      * Opens the modal window and sets the state parameters which are passed to the ContinousBinner
-     * @param timepointIndex: index of timepoint
      * @param variable: future primary variable
      * @param type: type of timepoint (sample/between)
      * @param callback: Function which should be executed after the binning was applied: either group or promote
@@ -170,22 +167,23 @@ const Content = observer(class Content extends React.Component {
     }
 
 
-    updateVariable(variable){
+    updateVariable(variable) {
         //this.state.clickedVariable=variable;
 
         this.setState({clickedVariable: variable});
         console.log(this.state.clickedVariable);
     }
+
     getVarListModal() {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
-                                 closeAddModal={this.closeAddModal}
-                                 openBinningModal={this.openModal}
-                                 varList={this.props.rootStore.clinicalSampleCategories}
-                                 currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
-                                 showTooltip={this.showTooltip}
-                                 hideTooltip={this.hideTooltip}
-                                 store={this.props.rootStore.timepointStore.variableStores.sample}
+                                        closeAddModal={this.closeAddModal}
+                                        openBinningModal={this.openModal}
+                                        clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
+                                        clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
+                                        molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
+                                        currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
+                                        store={this.props.rootStore.timepointStore.variableStores.sample}
                 //store={this.props.rootStore.timepointStore}
                 //visMap={this.props.rootStore.visStore}
             />);
@@ -229,8 +227,23 @@ const Content = observer(class Content extends React.Component {
             <div>
                 <Grid fluid={true}>
                     <Row>
+                        <Col sm={1} xs={1}>
+                            <h5>Add Variables</h5>
+                        </Col>
+                        <Col md={9} xs={9}>
+                            <QuickAddVariable
+                                clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
+                                clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
+                                molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
+                                store={this.props.rootStore.timepointStore}
+                                eventCategories={this.props.rootStore.eventCategories}
+                                eventAttributes={this.props.rootStore.eventAttributes}
+                            />
+                        </Col>
                         <Col sm={2} xs={2}>
-                            {this.getToggleSidebarIcons()}
+                            <Button color="secondary"
+                                    onClick={this.openAddModal}>Advanced variable selection
+                            </Button>
                         </Col>
                     </Row>
                     <Row>
@@ -242,6 +255,7 @@ const Content = observer(class Content extends React.Component {
                                           numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
                                           minTP={this.props.rootStore.minTP}
                                           maxTP={this.props.rootStore.maxTP}/>
+                            {/*
                             <SampleVariableSelector
                                 openBinningModal={this.openModal}
                                 openAddModal={this.openAddModal}
@@ -262,10 +276,11 @@ const Content = observer(class Content extends React.Component {
                                 store={this.props.rootStore.timepointStore.variableStores.between}
                                 visMap={this.props.rootStore.visStore}
                             />
+                                */}
                         </Col>
                         <Col sm={12 - this.state.sidebarSize} md={12 - this.state.sidebarSize}
                              onMouseEnter={this.hideContextMenu}
-                             style={{padding: 20}}>
+                             style={{paddingTop: 0}}>
                             <Row>
                                 <MainView
                                     currentVariables={{
@@ -302,7 +317,6 @@ const Content = observer(class Content extends React.Component {
                               openBinningModal={this.openModal}/>
 
 
-                          
             </div>
         )
     }
