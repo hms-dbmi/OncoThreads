@@ -593,9 +593,6 @@ class RootStore {
                 _self.staticMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
             });
         }
-        else{
-            console.log("test.....");
-        }
     }
 
     /**
