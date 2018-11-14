@@ -54,7 +54,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
 
 
     handleOptionSelect(selectedOption) {
-        this.props.handleVariableSelect(selectedOption.object, this.state.category, true)
+        this.props.handleVariableAddRemove(selectedOption.object, this.state.category, true)
     }
 
     /**

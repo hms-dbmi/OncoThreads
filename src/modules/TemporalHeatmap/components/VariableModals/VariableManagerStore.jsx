@@ -3,14 +3,14 @@ import {extendObservable} from "mobx";
 /*
 Store containing information about variables
  */
-class ReducedVariableStore {
+class VariableManagerStore {
     constructor(referencedVariables, currentVariables) {
         //Variables that are referenced (displayed or used to create a derived variable)
         this.referencedVariables = referencedVariables;
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: currentVariables.map(d => {
-                return {id: d, isModified: false, isNew: false}
+                return {id: d, isModified: false, isNew: false, isSelected: false}
             }),
         });
     }
@@ -21,7 +21,6 @@ class ReducedVariableStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        let name = this.getById(variableId).name;
         let spliceIndex = this.currentVariables.map(d => d.id).indexOf(variableId);
         this.currentVariables.splice(spliceIndex, 1);
         this.removeReferences(variableId);
@@ -72,7 +71,7 @@ class ReducedVariableStore {
         this.addVariableToBeReferenced(variable);
         if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
             this.updateReferences(variable.id);
-            this.currentVariables.push({id: variable.id, isNew: true, isModified: false});
+            this.currentVariables.push({id: variable.id, isNew: true, isModified: false, isSelected: false});
         }
     }
 
@@ -84,7 +83,16 @@ class ReducedVariableStore {
         this.updateReferences(newVariable.id);
         this.removeReferences(oldId);
         const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
-        this.currentVariables[replaceIndex] = {id: newVariable.id, isModified: true, isNew: this.currentVariables[replaceIndex].isNew};
+        this.currentVariables[replaceIndex] = {
+            id: newVariable.id,
+            isModified: true,
+            isNew: this.currentVariables[replaceIndex].isNew,
+            isSelected: this.currentVariables[replaceIndex].isSelected
+        };
+    }
+
+    toggleSelected(id){
+        this.currentVariables[this.currentVariables.map(d=>d.id).indexOf(id)].isSelected=!this.currentVariables[this.currentVariables.map(d=>d.id).indexOf(id)].isSelected;
     }
 
     sortBySource(profileOrder) {
@@ -112,19 +120,21 @@ class ReducedVariableStore {
             }
         ))
     }
-    sortAlphabetically(){
-         this.currentVariables.replace(this.currentVariables.sort((a,b)=>{
-              if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
-                    return -1
-                }
-                if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
-                    return 1;
-                }
-                else return 0;
-         }));
+
+    sortAlphabetically() {
+        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+            if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
+                return -1
+            }
+            if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
+                return 1;
+            }
+            else return 0;
+        }));
     }
-    sortByDatatype(){
-         this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+
+    sortByDatatype() {
+        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                 if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
                     return -1
                 }
@@ -177,7 +187,10 @@ class ReducedVariableStore {
      * @returns {*}
      */
     getCurrentVariables() {
-        return this.currentVariables.map(d => this.referencedVariables[d]);
+        return this.currentVariables.map(d => this.referencedVariables[d.id]);
+    }
+    getSelectedVariables(){
+        return this.currentVariables.filter(d=>d.isSelected).map(d=>this.referencedVariables[d.id]);
     }
 
 
@@ -200,4 +213,4 @@ class ReducedVariableStore {
     }
 }
 
-export default ReducedVariableStore;
+export default VariableManagerStore;

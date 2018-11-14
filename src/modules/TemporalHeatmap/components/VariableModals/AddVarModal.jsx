@@ -72,9 +72,6 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                     <Button onClick={this.props.closeAddModal}>
                         Close
                     </Button>
-                    <Button disabled={true}>
-                        Combine selected
-                    </Button>
                     <Button onClick={this.handleAddButton}>
                         Apply changes
                     </Button>
@@ -83,12 +80,4 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         )
     }
 });
-/*
-<Col sm={3}>
-                        <p> C: Categorical </p>
-                        <p> O: Ordinal </p>
-                        <p> N: Numerical </p>
-                        <p> B: Binary </p>
-                    </Col>
- */
 export default AddVarModal;

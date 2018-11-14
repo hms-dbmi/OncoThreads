@@ -75,6 +75,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * @param event
      */
     handleNameChange(event) {
+        event.stopPropagation();
         this.setState({name: event.target.value, nameChanged: true});
     }
 

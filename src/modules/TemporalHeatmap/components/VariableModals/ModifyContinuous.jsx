@@ -50,7 +50,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             bins: bins,
             binNames: binNames,
             bin: bin,
-            colorRange: this.props.derivedVariable === null ? this.props.variable.colorScale.range() : this.props.derivedVariable.range,
+            colorRange: this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range,
             isXLog: !(this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform),
             name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name
         }
