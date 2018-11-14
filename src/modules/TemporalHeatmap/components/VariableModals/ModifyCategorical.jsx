@@ -95,8 +95,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         const datatype = this.state.ordinal ? "ORDINAL" : "STRING";
         const range=this.state.currentData.map(d => d.color);
         const domain=this.state.currentData.map(d => d.name);
-        let variable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping,range, domain, MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]));
-        console.log(this.state.currentData.map(d => d.color), variable.range.slice());
+        let variable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping,range, domain, MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]),this.props.variable.profile);
         if (this.state.ordinal || this.categoriesChanged(variable)) {
             if (!this.state.nameChanged && this.props.derivedVariable === null) {
                 variable.name = this.state.name + "_MODIFIED";
@@ -127,7 +126,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     createCurrentData() {
         let currentData = [];
         if (this.props.derivedVariable !== null) {
-            this.props.derivedVariable.domain.forEach(d => {
+            this.props.derivedVariable.domain.forEach((d,i) => {
                 for (let key in this.props.derivedVariable.modification) {
                     if (this.props.derivedVariable.modification[key] === d) {
                         if (!(currentData.map(d => d.name).includes(d))) {
@@ -135,7 +134,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                                 selected: false,
                                 name: d,
                                 categories: [],
-                                color: this.props.derivedVariable.colorScale(d)
+                                color: this.props.derivedVariable.range[i]
                             })
                         }
                         currentData[currentData.map(d => d.name).indexOf(d)].categories.push(key);
@@ -144,12 +143,12 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             });
         }
         else {
-            this.props.variable.domain.forEach(d => {
+            this.props.variable.domain.forEach((d,i) => {
                 currentData.push({
                     selected: false,
                     name: d,
                     categories: [d],
-                    color: this.props.variable.colorScale(d)
+                    color: this.props.variable.range[i]
                 })
             });
         }

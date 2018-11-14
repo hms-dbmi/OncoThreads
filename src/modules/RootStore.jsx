@@ -26,6 +26,7 @@ class RootStore {
 
         this.clinicalSampleCategories = [];
         this.clinicalPatientCategories = [];
+        this.availableProfiles=[];
         this.mutationCountId = "mutCount";
         this.timeDistanceId = "timeGapMapping";
         this.eventCategories = [];
@@ -293,6 +294,7 @@ class RootStore {
             _self.createClinicalSampleMapping();
             _self.createMutationCountsMapping();
             _self.createClinicalPatientMappers();
+            _self.availableProfiles=[{id:"clinSample",name:"Clinical Sample Data"},{id:"clinPatient",name:"Clincial Patient Data"}].concat(_self.cbioAPI.molecularProfiles.map(d=>{return {name:d.name,id:d.molecularProfileId}}));
             _self.timepointStore.initialize();
 
             /*if (localStorage.getItem(_self.study.studyId) !== null) {
@@ -307,7 +309,7 @@ class RootStore {
                 }
             } else {*/
             let initialVariable = _self.clinicalSampleCategories[0];
-            _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id]));
+            _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id],"clinSample"));
             _self.timepointStore.globalPrimary = initialVariable.id;
             _self.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
             //}

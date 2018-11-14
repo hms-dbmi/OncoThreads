@@ -113,6 +113,7 @@ class MultipleTimepointsStore {
      * @param action
      * @param variable
      * @param timepoint
+     * @param originalTimepoint
      */
     static actionFunction(action, variable, timepoint, originalTimepoint) {
         switch (action) {

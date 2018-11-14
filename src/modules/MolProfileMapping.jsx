@@ -15,6 +15,7 @@ class MolProfileMapping {
      * Gets all currently selected mutations
      * @param HUGOsymbols
      * @param mappingType
+     * @param callback
      */
     getMutationsProfile(HUGOsymbols, mappingType, callback) {
         let datatype;
@@ -58,7 +59,6 @@ class MolProfileMapping {
                                 callback(new OriginalVariable(entry + mappingType, symbol + "_" + mappingType, datatype, "mutation in" + symbol, [], domain, this.createMutationMapping(geneDict[entry], mappingType), mappingType));
                             }
                         }
-                        this.rootStore.undoRedoStore.saveVariableHistory("ADD mutation " + mappingType, HUGOsymbols, true)
 
                     })
                 }
@@ -70,6 +70,7 @@ class MolProfileMapping {
      * gets data corresponding to selected HUGOsymbols in a molecular profile
      * @param profileId
      * @param HUGOsymbols
+     * @param callback
      */
     getMolecularProfile(profileId, HUGOsymbols, callback) {
         const profile = this.rootStore.cbioAPI.molecularProfiles.filter(d => d.molecularProfileId === profileId)[0];
@@ -106,8 +107,6 @@ class MolProfileMapping {
                             callback(new OriginalVariable(entry + "_" + profileId, symbol + "_" + profile.molecularAlterationType, datatype, profile.name + ": " + symbol, [], domain, this.createMolecularMapping(geneDict[entry], datatype), profileId));
                         }
                     }
-                    this.rootStore.undoRedoStore.saveVariableHistory("ADD " + profile.name, HUGOsymbols, true)
-
                 });
             }
         });

@@ -63,8 +63,8 @@ class UndoRedoStore {
         if (type === "variable") {
             this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
             this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
-            this.rootStore.timepointStore.variableStores.sample.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.sample.currentVariables, this.stateStack[index].state.currentSampleVar);
-            this.rootStore.timepointStore.variableStores.between.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.between.currentVariables, this.stateStack[index].state.currentBetweenVar);
+            this.rootStore.timepointStore.variableStores.sample.currentVariables.replace(this.stateStack[index].state.currentSampleVar);
+            this.rootStore.timepointStore.variableStores.between.currentVariables.replace(this.stateStack[index].state.currentBetweenVar);
             this.rootStore.timepointStore.transitionOn = this.stateStack[index].state.transitionOn;
             this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
         }
@@ -96,8 +96,8 @@ class UndoRedoStore {
         this.currentPointer = this.stateStack.length - 1;
         this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[0].state.allSampleVar);
         this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[0].state.allBetweenVar);
-        this.rootStore.timepointStore.variableStores.sample.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.sample.currentVariables, this.stateStack[0].state.currentSampleVar);
-        this.rootStore.timepointStore.variableStores.between.currentVariables = this.deserializeVariables(this.rootStore.timepointStore.variableStores.between.currentVariables, this.stateStack[0].state.currentBetweenVar);
+        this.rootStore.timepointStore.variableStores.sample.currentVariables.replace(this.stateStack[0].state.currentSampleVar);
+        this.rootStore.timepointStore.variableStores.between.currentVariables.replace(this.stateStack[0].state.currentBetweenVar);
         this.rootStore.timepointStore.transitionOn = this.stateStack[0].state.transitionOn;
         this.rootStore.eventTimelineMap = this.stateStack[0].state.eventTimelineMap;
         this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[0].state.timepointStructure);
@@ -115,31 +115,8 @@ class UndoRedoStore {
      * @param saved
      * @returns {*}
      */
-    deserializeVariables(observable, saved) {
-        if (observable.length === 0) {
-            saved.forEach(d => observable.push(d));
-        }
-        else {
-            //case: added
-            if (observable.length > saved.length) {
-                let addIndices = observable.filter(d => !saved.includes(d)).map(d => observable.indexOf(d));
-                for (let i = addIndices.length - 1; i >= 0; i--) {
-                    observable.splice(addIndices[i], 1);
-                }
-            }
-            //case: removed
-            else if (observable.length < saved.length) {
-                let removeIndices = saved.filter(d => !observable.includes(d)).map(d => saved.indexOf(d));
-                for (let i = 0; i < removeIndices.length; i++) {
-                    observable.splice(removeIndices[i], 0, saved[removeIndices[i]]);
-                }
-            }
-            //case: modified
-            else {
-                let modifyIndex = saved.indexOf(saved.filter(d => !observable.includes(d))[0]);
-                observable[modifyIndex] = saved[modifyIndex];
-            }
-        }
+    static deserializeVariables(observable, saved) {
+        observable.replace(saved);
         return observable;
     }
 

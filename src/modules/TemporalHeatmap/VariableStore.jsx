@@ -19,12 +19,17 @@ class VariableStore {
         });
         //Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
+            console.log(change);
             if (change.type === 'splice') {
                 if (change.added.length > 0) {
                     if (this.type === "between" && this.currentVariables.length === 1) {
                         this.rootStore.timepointStore.toggleTransition()
                     }
-                    change.added.forEach(d => this.childStore.addHeatmapRows(d, this.getById(d).mapper))
+                    change.added.forEach(d => {
+                        this.addToProfileDomain(d);
+                        this.updateReferences(d);
+                        this.childStore.addHeatmapRows(d, this.getById(d).mapper)
+                    })
                 }
                 if (change.removed.length > 0) {
                     if (this.type === "between" && this.currentVariables.length === 0) {
@@ -33,10 +38,15 @@ class VariableStore {
                     if (this.type === "sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
                         this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
                     }
-                    change.removed.forEach(d => this.childStore.removeHeatmapRows(d));
+                    change.removed.forEach(d => {
+                        this.removeFromProfileDomain(d);
+                        this.removeReferences(d);
+                        this.childStore.removeHeatmapRows(d)});
                 }
             }
             else if (change.type === "update") {
+                this.updateReferences(change.newValue);
+                this.removeReferences(change.newValue);
                 this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
             }
             this.rootStore.timepointStore.regroupTimepoints();
@@ -70,9 +80,7 @@ class VariableStore {
      */
     removeVariable(variableId) {
         let name = this.getById(variableId).name;
-        this.removeFromProfileDomain(variableId);
         this.currentVariables.splice(this.currentVariables.indexOf(variableId), 1);
-        this.removeReferences(variableId);
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
     }
 
@@ -101,7 +109,7 @@ class VariableStore {
      * @param variableId
      */
     removeFromProfileDomain(variableId) {
-        if (this.referencedVariables[variableId].profile !== undefined && this.referencedVariables[variableId].datatype === "NUMBER") {
+        if (this.rootStore.cbioAPI.molecularProfiles.includes(this.referencedVariables[variableId].profile) && this.referencedVariables[variableId].datatype === "NUMBER") {
             let isMin = Math.min(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[0];
             let isMax = Math.max(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[1];
             if (isMin || isMax) {
@@ -137,12 +145,13 @@ class VariableStore {
 
     /**
      * updates shared profile domain with domain of variable
-     * @param variable
+     * @param variableId
      */
-    addToProfileDomain(variable) {
+    addToProfileDomain(variableId) {
         let profileChanged = false;
         let newDomain = [];
-        if (variable.profile !== undefined && variable.datatype === "NUMBER") {
+        let variable=this.getById(variableId);
+        if (this.rootStore.cbioAPI.molecularProfiles.map(d => d.molecularProfileId).includes(variable.profile) && variable.datatype === "NUMBER") {
             if (!(this.profileDomains.has(variable.profile))) {
                 this.profileDomains.set(variable.profile, variable.domain);
             }
@@ -158,6 +167,7 @@ class VariableStore {
             if (profileChanged) {
                 this.profileDomains.set(variable.profile, newDomain);
             }
+            variable.domain=this.profileDomains.get(variable.profile);
         }
     }
 
@@ -185,42 +195,15 @@ class VariableStore {
     addVariableToBeDisplayed(variable) {
         this.addVariableToBeReferenced(variable);
         if (!this.currentVariables.includes(variable.id)) {
-            this.addToProfileDomain(variable);
-            this.updateReferences(variable.id);
             this.currentVariables.push(variable.id);
         }
     }
 
-    addVariablesToBeReferenced(variables) {
-        variables.forEach(variable => {
-            if (!this.currentVariables.includes(variable.id)) {
-                this.addToProfileDomain(variable);
-                this.updateReferences(variable.id);
-                this.currentVariables.push(variable.id);
-            }
-        });
-    }
-
-    addVariablesToBeDisplayed(variables) {
-        let addedVariables = [];
-        variables.forEach(variable => {
-            this.addVariableToBeReferenced(variable);
-            if (!this.currentVariables.includes(variable.id)) {
-                this.addToProfileDomain(variable);
-                this.updateReferences(variable.id);
-                this.currentVariables.push(variable.id);
-                addedVariables.push(variable.name);
-            }
-        });
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD", addedVariables,true);
-    }
 
     replaceDisplayedVariable(oldId, newVariable) {
         if (!this.isReferenced(newVariable.id)) {
             this.referencedVariables[newVariable.id] = newVariable;
         }
-        this.updateReferences(newVariable.id);
-        this.removeReferences(oldId);
         this.currentVariables[this.currentVariables.indexOf(oldId)] = newVariable.id;
     }
 

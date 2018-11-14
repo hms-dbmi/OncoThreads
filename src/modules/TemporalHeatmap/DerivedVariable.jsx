@@ -3,7 +3,7 @@ import {extendObservable} from "mobx";
 import * as d3ScaleChromatic from "d3-scale-chromatic";
 
 class DerivedVariable {
-    constructor(id, name, datatype, description, originalIds, modificationType, modification, range, domain, mapper) {
+    constructor(id, name, datatype, description, originalIds, modificationType, modification, range, domain, mapper, profile) {
         this.id = id;
         this.name = name;
         this.datatype = datatype;
@@ -14,16 +14,17 @@ class DerivedVariable {
         this.modificationType = modificationType;
         this.modification = modification;
         this.mapper = mapper;
+        this.profile = profile;
         this.referenced = 0;
         extendObservable(this,
-            this.initializeObservable(domain,range))
+            this.initializeObservable(domain, range))
 
     }
 
-    initializeObservable(domain,range) {
+    initializeObservable(domain, range) {
         let currDomain = this.getDefaultDomain(domain);
-        let currRange = this.getDefaultRange(currDomain,range);
-        console.log(currDomain,currRange);
+        let currRange = this.getDefaultRange(currDomain, range);
+        console.log(currDomain, currRange);
         return {
             domain: currDomain,
             range: currRange,
@@ -76,25 +77,25 @@ class DerivedVariable {
     }
 
     getDefaultRange(domain, range) {
-        let currRange=range;
+        let currRange = range;
         if (currRange.length === 0) {
             if (this.datatype === "ORDINAL") {
                 let step = 1 / domain.length;
-                currRange= domain.map((d, i) => d3ScaleChromatic.interpolateGreys(i * step));
+                currRange = domain.map((d, i) => d3ScaleChromatic.interpolateGreys(i * step));
             }
             else if (this.datatype === "STRING") {
-                currRange= ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']
+                currRange = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']
             }
             else if (this.datatype === "BINARY") {
-                currRange= ['#ffd92f', 'lightgray']
+                currRange = ['#ffd92f', 'lightgray']
             }
             else if (this.datatype === "NUMBER") {
                 let min = Math.min(...domain);
                 if (min < 0) {
-                    currRange= ['#0571b0', '#f7f7f7', '#ca0020'];
+                    currRange = ['#0571b0', '#f7f7f7', '#ca0020'];
                 }
                 else {
-                    currRange= ['#e6e6e6', '#000000'];
+                    currRange = ['#e6e6e6', '#000000'];
                 }
             }
         }

@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, Modal, Tab, Tabs} from 'react-bootstrap';
 import AddTimepointVarTab from "./AddTimepointVarTab"
+import UndoRedoStore from "../../UndoRedoStore";
 
 
 const AddVarModal = observer(class AddVarModal extends React.Component {
@@ -9,58 +10,34 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            timepoint: {selectedVariables: [], originalVariables: [], modifiedVariables: []},
+            timepoint:{
+                currentVariables:[],
+                referencedVariables:{},
+            },
             eventData: []
-        };
+    }
+        ;
         this.setTimepointData = this.setTimepointData.bind(this);
-        this.changeRange = this.changeRange.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
     }
 
-    setTimepointData(selectedVariables, originalVariables, modifiedVariables) {
+    setTimepointData(currentVariables, referencedVariables) {
         this.setState({
             timepoint: {
-                selectedVariables: selectedVariables,
-                originalVariables: originalVariables,
-                modifiedVariables: modifiedVariables,
+                currentVariables: currentVariables.map(d=>d.id),
+                referencedVariables: referencedVariables,
             }
         })
     }
 
-    changeRange(range, variableId) {
-        let originalVariables = this.state.timepoint.originalVariables.slice();
-        originalVariables[this.state.timepoint.originalVariables.map(d => d.id).indexOf(variableId)].range = range;
-        this.setState({
-            timepoint: {
-                selectedVariables: this.state.timepoint.selectedVariables,
-                modifiedVariables: this.state.timepoint.modifiedVariables,
-                originalVariables: originalVariables
-            }
-        })
-    }
 
     /**
      * handles clicking the add button
      */
     handleAddButton() {
-        const _self = this;
-        this.state.timepoint.selectedVariables.forEach(d => {
-            if (!d.modified) {
-                _self.props.store.addVariableToBeDisplayed(this.state.timepoint.originalVariables.filter(f => f.id === d.id)[0]);
-            }
-            else {
-                _self.props.store.addVariableToBeReferenced(this.state.timepoint.originalVariables.filter(f => f.id === d.originalId)[0]);
-            }
-        });
-        this.state.timepoint.modifiedVariables.forEach(d => this.props.store.addVariableToBeDisplayed(d));
-        this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD",this.state.timepoint.selectedVariables.map(d=>{
-            if(d.modified){
-                return this.state.timepoint.modifiedVariables.filter(f=>f.id===d.id)[0].name;
-            }
-            else{
-                return this.state.timepoint.originalVariables.filter(f=>f.id===d.id)[0].name;
-            }
-        }),true);
+        this.props.store.referencedVariables=UndoRedoStore.deserializeReferencedVariables(this.props.store.referencedVariables,this.state.timepoint.referencedVariables);
+        this.props.store.currentVariables.replace(this.state.timepoint.currentVariables);
+        this.props.store.rootStore.undoRedoStore.saveVariableHistory("VARIABLE MANAGER",this.props.store.currentVariables.map(d=>this.props.store.getById(d).name),true);
         this.props.closeAddModal();
     }
 
@@ -71,17 +48,18 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                    show={this.props.addModalIsOpen}
                    onHide={this.props.closeAddModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Create custom variables</Modal.Title>
+                    <Modal.Title>Variable Manager</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{minHeight: "400px"}}>
                     <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
                         <Tab eventKey={1} title="Timepoint Variables">
                             <AddTimepointVarTab {...this.props}
+                                                currentVariables={this.props.store.currentVariables}
+                                                referencedVariables={this.props.store.referencedVariables}
                                                 selectedVariables={this.state.timepoint.selectedVariables}
                                                 originalVariables={this.state.timepoint.originalVariables}
                                                 modifiedVariables={this.state.timepoint.modifiedVariables}
-                                                setTimepointData={this.setTimepointData}
-                                                changeRange={this.changeRange}/>
+                                                setTimepointData={this.setTimepointData}/>
                         </Tab>
                         <Tab eventKey={2} title="Event Variables">
                             Tab 2 content
@@ -96,7 +74,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                         Combine selected
                     </Button>
                     <Button onClick={this.handleAddButton}>
-                        Add all
+                        Apply changes
                     </Button>
                 </Modal.Footer>
             </Modal>

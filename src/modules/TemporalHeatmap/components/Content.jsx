@@ -177,13 +177,15 @@ const Content = observer(class Content extends React.Component {
     getVarListModal() {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
-                                        closeAddModal={this.closeAddModal}
-                                        openBinningModal={this.openModal}
-                                        clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
-                                        clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
-                                        molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
-                                        currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
-                                        store={this.props.rootStore.timepointStore.variableStores.sample}
+                                 closeAddModal={this.closeAddModal}
+                                 openBinningModal={this.openModal}
+                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
+                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
+                                 molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
+                                 currentVariables={{
+                                     sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
+                                     between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
+                                 }} store={this.props.rootStore.timepointStore.variableStores.sample}
                 //store={this.props.rootStore.timepointStore}
                 //visMap={this.props.rootStore.visStore}
             />);
@@ -242,7 +244,7 @@ const Content = observer(class Content extends React.Component {
                         </Col>
                         <Col sm={2} xs={2}>
                             <Button color="secondary"
-                                    onClick={this.openAddModal}>Advanced variable selection
+                                    onClick={this.openAddModal}>Variable manager
                             </Button>
                         </Col>
                     </Row>

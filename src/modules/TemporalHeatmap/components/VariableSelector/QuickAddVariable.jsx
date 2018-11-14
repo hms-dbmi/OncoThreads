@@ -140,7 +140,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id]));
+                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id],this.state.category));
             });
             this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
             this.setState({selectedValues: []})
@@ -291,7 +291,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
                         <FormControl style={{height: 38}} componentClass="select" onChange={this.handleSelect}
                                      placeholder="Select Category">
                             <optgroup label="Timepoint Variables">
-                                {this.getTimepointVariableOptions().map((d) => <option value={d.id}
+                                {this.props.store.rootStore.availableProfiles.map((d) => <option value={d.id}
                                                                                        key={d.id}>{d.name}</option>)}
                             </optgroup>
                             <optgroup label="Event Variables">

@@ -90,9 +90,13 @@ class SingleTimepoint {
      * @param variableData
      */
     updateRow(index, variableId, variableData) {
+        const isPrimary=this.heatmap[index].variable===this.primaryVariableId;
         this.heatmap[index].variable = variableId;
         this.heatmap[index].data = variableData;
         this.heatmap[index].isUndef = this.rowIsUndefined(variableData);
+        if(isPrimary){
+            this.primaryVariableId=variableId;
+        }
     }
 
     /**

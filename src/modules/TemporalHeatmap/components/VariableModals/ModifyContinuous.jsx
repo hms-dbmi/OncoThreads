@@ -165,10 +165,10 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         };
         let derivedVariable;
         if (this.state.bin) {
-            derivedVariable = new DerivedVariable(newId, this.state.name, "BINNED", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]));
+            derivedVariable = new DerivedVariable(newId, this.state.name, "BINNED", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper],this.props.variable.profile));
         }
         else {
-            derivedVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]));
+            derivedVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper],this.props.variable.profile));
         }
         if(this.isModified()) {
             this.props.callback(derivedVariable);
