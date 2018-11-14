@@ -241,7 +241,7 @@ const Legend = observer(class Legend extends React.Component {
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
         const _self = this;
-        if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "BINNED") {
+        if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "BINNED" || primaryVariable.datatype === "ORDINAL") {
             let allValues = [];
             this.props.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {
@@ -252,7 +252,7 @@ const Legend = observer(class Legend extends React.Component {
             });
             legend = this.getCategoricalLegend(primaryVariable, allValues, 1, fontSize, this.props.visMap.primaryHeight);
         }
-        else if (primaryVariable.datatype === "binary") {
+        else if (primaryVariable.datatype === "BINARY") {
             legend = this.getBinaryLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
         }
         else {

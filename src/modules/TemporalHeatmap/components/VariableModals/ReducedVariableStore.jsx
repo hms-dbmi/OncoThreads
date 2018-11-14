@@ -10,7 +10,7 @@ class ReducedVariableStore {
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: currentVariables.map(d => {
-                return {id: d.id, isModified: false, isNew: false}
+                return {id: d, isModified: false, isNew: false}
             }),
         });
     }
@@ -22,7 +22,7 @@ class ReducedVariableStore {
      */
     removeVariable(variableId) {
         let name = this.getById(variableId).name;
-        let spliceIndex = this.currentVariables.map(d=>d.id).indexOf(variableId);
+        let spliceIndex = this.currentVariables.map(d => d.id).indexOf(variableId);
         this.currentVariables.splice(spliceIndex, 1);
         this.removeReferences(variableId);
     }
@@ -70,9 +70,9 @@ class ReducedVariableStore {
 
     addVariableToBeDisplayed(variable) {
         this.addVariableToBeReferenced(variable);
-        if (!this.currentVariables.map(d=>d.id).includes(variable.id)) {
+        if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
             this.updateReferences(variable.id);
-            this.currentVariables.push({id:variable.id,isNew:true,isModified:false});
+            this.currentVariables.push({id: variable.id, isNew: true, isModified: false});
         }
     }
 
@@ -83,9 +83,8 @@ class ReducedVariableStore {
         }
         this.updateReferences(newVariable.id);
         this.removeReferences(oldId);
-        const replaceIndex = this.currentVariables.map(d=>d.id).indexOf(oldId);
-        this.currentVariables[replaceIndex] = {id:newVariable.id,isModified:true,isNew:false};
-        this.isModified[replaceIndex] = true;
+        const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
+        this.currentVariables[replaceIndex] = {id: newVariable.id, isModified: true, isNew: this.currentVariables[replaceIndex].isNew};
     }
 
     sortBySource(profileOrder) {
@@ -94,6 +93,42 @@ class ReducedVariableStore {
                     return -1
                 }
                 if (profileOrder.indexOf(this.referencedVariables[a.id].profile) > profileOrder.indexOf(this.referencedVariables[b.id].profile)) {
+                    return 1;
+                }
+                else return 0;
+            }
+        ))
+    }
+
+    sortByAddOrder(addOrder) {
+        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+                if (addOrder.indexOf(a.id) < addOrder.indexOf(b.id)) {
+                    return -1
+                }
+                if (addOrder.indexOf(a.id) > addOrder.indexOf(b.id)) {
+                    return 1;
+                }
+                else return 0;
+            }
+        ))
+    }
+    sortAlphabetically(){
+         this.currentVariables.replace(this.currentVariables.sort((a,b)=>{
+              if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
+                    return -1
+                }
+                if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
+                    return 1;
+                }
+                else return 0;
+         }));
+    }
+    sortByDatatype(){
+         this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+                if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
+                    return -1
+                }
+                if (this.referencedVariables[a.id].datatype > this.referencedVariables[b.id].datatype) {
                     return 1;
                 }
                 else return 0;

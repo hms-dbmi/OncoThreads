@@ -11,8 +11,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         super(props);
         this.state = {
             timepoint:{
-                currentVariables:[],
-                referencedVariables:{},
+                currentVariables:props.store.currentVariables,
+                referencedVariables:props.store.referencedVariables,
             },
             eventData: []
     }
@@ -36,7 +36,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      */
     handleAddButton() {
         this.props.store.referencedVariables=UndoRedoStore.deserializeReferencedVariables(this.props.store.referencedVariables,this.state.timepoint.referencedVariables);
-        this.props.store.currentVariables.replace(this.state.timepoint.currentVariables);
+
+        this.props.store.currentVariables.replace(this.state.timepoint.currentVariables.slice());
         this.props.store.rootStore.undoRedoStore.saveVariableHistory("VARIABLE MANAGER",this.props.store.currentVariables.map(d=>this.props.store.getById(d).name),true);
         this.props.closeAddModal();
     }
@@ -44,13 +45,14 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
 
     render() {
         return (
-            <Modal backdrop={"static"}
+            <Modal bsSize={"large"}
+                backdrop={"static"}
                    show={this.props.addModalIsOpen}
                    onHide={this.props.closeAddModal}>
-                <Modal.Header closeButton>
+                <Modal.Header closeButton >
                     <Modal.Title>Variable Manager</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{minHeight: "400px"}}>
+                <Modal.Body>
                     <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
                         <Tab eventKey={1} title="Timepoint Variables">
                             <AddTimepointVarTab {...this.props}

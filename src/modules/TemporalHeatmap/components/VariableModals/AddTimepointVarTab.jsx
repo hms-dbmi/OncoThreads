@@ -1,5 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import {toJS} from "mobx"
 import {ControlLabel, Form, FormControl, FormGroup, Label, OverlayTrigger, Table, Tooltip} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import ModifyCategorical from "./ModifyCategorical";
@@ -22,8 +23,8 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
             derivedVariable: '',
             callback: ''
         };
-        this.allVariables = [];
         this.variableOptions = props.store.rootStore.availableProfiles;
+        this.addOrder = props.currentVariables.slice();
 
         this.handleVariableSelect = this.handleVariableSelect.bind(this);
         this.handleGeneSelect = this.handleGeneSelect.bind(this);
@@ -46,7 +47,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
             else {
                 this.reducedVariableStore.replaceDisplayedVariable(originalVariable.id, newVariable);
             }
-            this.props.setTimepointData(this.reducedVariableStore.currentVariables, this.reducedVariableStore.referencedVariables);
+            this.props.setTimepointData(toJS(this.reducedVariableStore.currentVariables), this.reducedVariableStore.referencedVariables);
         });
 
     }
@@ -88,12 +89,14 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
         if (select) {
             if (!(this.reducedVariableStore.currentVariables.includes(variable.id))) {
                 this.reducedVariableStore.addVariableToBeDisplayed(new OriginalVariable(variable.id, variable.variable, variable.datatype, variable.description, [], [], this.props.store.rootStore.staticMappers[variable.id], category));
+                this.addOrder.push(variable.id);
             }
         }
         if (!select) {
-            this.reducedVariableStore.removeVariable(variable.id)
+            this.reducedVariableStore.removeVariable(variable.id);
+            this.addOrder.splice(this.addOrder.indexOf(variable.id), 1);
         }
-        this.props.setTimepointData(this.reducedVariableStore.currentVariables, this.reducedVariableStore.referencedVariables);
+        this.props.setTimepointData(toJS(this.reducedVariableStore.currentVariables), this.reducedVariableStore.referencedVariables);
     }
 
     /**
@@ -121,7 +124,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     showSelected() {
         let elements = [];
         this.reducedVariableStore.currentVariables.forEach((d, i) => {
-            let fullVariable=this.reducedVariableStore.getById(d.id);
+            let fullVariable = this.reducedVariableStore.getById(d.id);
             const tooltip = <Tooltip id="tooltip">
                 {fullVariable.description}
             </Tooltip>;
@@ -162,21 +165,25 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                     <td>
                         <FontAwesome onClick={() => this.handleCogWheelClick(d.id)}
                                      name="cog"/>
-                    </td>
-                    <td>
+                        {"\t"}
                         <FontAwesome onClick={() => this.handleVariableSelect(fullVariable, "", false)}
                                      name="times"/>
                     </td>
                 </tr>);
         });
-        return <Table>
+        return <Table className="fixed_header">
+            <thead>
             <tr>
                 <th>Position</th>
-                <th colSpan={2}>Variable</th>
+                <th>Variable</th>
+                <th/>
                 <th>Datatype</th>
-                <th colSpan={2}>Actions</th>
+                <th>Actions</th>
             </tr>
-            {elements}</Table>;
+            </thead>
+            <tbody>
+            {elements}</tbody>
+        </Table>;
     }
 
 
@@ -211,6 +218,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                                       callback={this.state.callback}
                                       derivedVariable={this.state.derivedVariable}
                                       changeRange={this.props.changeRange}
+                                      availableProfiles={this.variableOptions}
                                       closeModal={this.closeContinuousModal}/>
         }
         return (
@@ -221,14 +229,24 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
 
     handleGeneSelect(variable) {
         this.reducedVariableStore.addVariableToBeDisplayed(variable);
-        console.log(variable);
-        this.props.setTimepointData(this.reducedVariableStore.currentVariables, this.reducedVariableStore.referencedVariables);
+        this.addOrder.push(variable.id);
+        this.props.setTimepointData(toJS(this.reducedVariableStore.currentVariables), this.reducedVariableStore.referencedVariables);
     }
 
     handleSort(e) {
         if (e.target.value === "source") {
             this.reducedVariableStore.sortBySource(this.props.store.rootStore.availableProfiles.map(d => d.id));
         }
+        else if (e.target.value === "addOrder") {
+            this.reducedVariableStore.sortByAddOrder(this.addOrder);
+        }
+        else if (e.target.value === "alphabet") {
+            this.reducedVariableStore.sortAlphabetically();
+        }
+        else {
+            this.reducedVariableStore.sortByDatatype();
+        }
+        this.props.setTimepointData(this.reducedVariableStore.currentVariables,this.reducedVariableStore.referencedVariables);
     }
 
 
@@ -246,14 +264,16 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                         <FormControl style={{height: 38}} componentClass="select"
                                      onChange={this.handleSort}
                                      placeholder="Select Category">
-                            <option value="source">add order</option>
+                            <option value="addOrder">add order</option>
                             <option value="source">data source</option>
                             <option value="alphabet">alphabet</option>
                             <option value="datatype">datatype</option>
                         </FormControl>
                     </FormGroup>
                 </Form>
+                <div >
                 {this.showSelected()}
+                </div>
                 {this.getCategoricalModal()}
                 {this.getContinuousModal()}
             </div>
