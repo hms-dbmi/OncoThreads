@@ -248,7 +248,7 @@ const Legend = observer(class Legend extends React.Component {
                     }
                 })
             });
-            legend = this.getCategoricalLegend(primaryVariable.domain, allValues, 1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
+            legend = this.getCategoricalLegend(primaryVariable, allValues, 1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
         }
         else if (primaryVariable.datatype === "binary") {
             legend = this.getBinaryLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
