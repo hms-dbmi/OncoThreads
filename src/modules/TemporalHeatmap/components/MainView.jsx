@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
+import {Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row, Tab, Tabs} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 
@@ -136,23 +136,23 @@ const MainView = observer(class MainView extends React.Component {
     getBlockView(svgHeight, svgWidth, heatmapWidth, timepointPositions) {
         return (
             <div>
-                <div className="view" id="block-view">    
+                <div className="view" id="block-view">
                     <Row>
                         <Col lg={1} md={1} xs={1} style={{padding: 0}}>
                             <TimepointLabels timepoints={this.props.store.timepoints} height={svgHeight}
-                                            store={this.props.store}
-                                            showTooltip={this.props.showTooltip}
-                                            hideTooltip={this.props.hideTooltip}
-                                            visMap={this.props.visMap}
-                                            sidebarVisible={this.props.sidebarVisible}/>
+                                             store={this.props.store}
+                                             showTooltip={this.props.showTooltip}
+                                             hideTooltip={this.props.hideTooltip}
+                                             visMap={this.props.visMap}
+                                             sidebarVisible={this.props.sidebarVisible}/>
                         </Col>
                         <Col lg={2} xs={2} md={2} style={{padding: 0}}>
                             <RowOperators {...this.props} height={svgHeight}
-                                        posY={timepointPositions.timepoint}
-                                        selectedPatients={this.props.store.selectedPatients}
-                                        highlightedVariable={this.state.highlightedVariable}
-                                        setHighlightedVariable={this.setHighlightedVariable}
-                                        removeHighlightedVariable={this.removeHighlightedVariable}/>
+                                          posY={timepointPositions.timepoint}
+                                          selectedPatients={this.props.store.selectedPatients}
+                                          highlightedVariable={this.state.highlightedVariable}
+                                          setHighlightedVariable={this.setHighlightedVariable}
+                                          removeHighlightedVariable={this.removeHighlightedVariable}/>
 
                         </Col>
                         <Col lg={7} xs={7} md={7} style={{padding: 0}}>
@@ -173,8 +173,8 @@ const MainView = observer(class MainView extends React.Component {
                                     removeHighlightedVariable={this.removeHighlightedVariable}/>
                         </Col>
                     </Row>
-                </div>   
-                <form id="svgform" method="post" >
+                </div>
+                <form id="svgform" method="post">
                     <input type="hidden" id="output_format" name="output_format" value=""/>
                     <input type="hidden" id="data" name="data" value=""/>
                 </form>
@@ -207,29 +207,29 @@ const MainView = observer(class MainView extends React.Component {
                             <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                             timeValue={this.props.store.rootStore.timeValue}
                                 //width={this.state.plotWidth / axisHorizontalZoom}
-                                            width={55}    
+                                            width={55}
                                             height={svgHeight} maxTimeInDays={maxTime}/>
                         </Col>
                         <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
 
                             <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
-                                        timeValue={this.props.store.rootStore.timeValue}
-                                        width={this.state.plotWidth / axisHorizontalZoom}
-                                        height={svgHeight} maxTimeInDays={maxTime}/>
+                                         timeValue={this.props.store.rootStore.timeValue}
+                                         width={this.state.plotWidth / axisHorizontalZoom}
+                                         height={svgHeight} maxTimeInDays={maxTime}/>
                             <Plot {...this.props}
-                                height={svgHeight}
-                                width={this.state.plotWidth / axisHorizontalZoom}
-                                setPlotWidth={this.setPlotWidth}
-                                horizontalZoom={300 - this.state.horizontalZoom}
-                                timepointY={timepointPositions.timepoint}
-                                transY={timepointPositions.connection}
-                                selectedPatients={this.props.store.selectedPatients}
-                                onDrag={this.handlePatientSelection}/>
+                                  height={svgHeight}
+                                  width={this.state.plotWidth / axisHorizontalZoom}
+                                  setPlotWidth={this.setPlotWidth}
+                                  horizontalZoom={300 - this.state.horizontalZoom}
+                                  timepointY={timepointPositions.timepoint}
+                                  transY={timepointPositions.connection}
+                                  selectedPatients={this.props.store.selectedPatients}
+                                  onDrag={this.handlePatientSelection}/>
                         </Col>
                     </Row>
-                </div>   
-                <form id="svgform" method="post" >
-                    <input type="hidden" id="output_format" name="output_format" value=""/> 
+                </div>
+                <form id="svgform" method="post">
+                    <input type="hidden" id="output_format" name="output_format" value=""/>
                     <input type="hidden" id="data" name="data" value=""/>
                 </form>
             </div>
@@ -269,8 +269,7 @@ const MainView = observer(class MainView extends React.Component {
             view = this.getBlockView(this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
         }
         else {
-            const svgH = this.props.visMap.svgHeight;
-            view = this.getGlobalView(this.props.visMap.timepointPositions, svgH, svgWidth, heatmapWidth);
+            view = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
         }
         let patientsVisibleWidth = 4;
         let buttonToolbarWidth = 3;
@@ -283,34 +282,36 @@ const MainView = observer(class MainView extends React.Component {
                 <Row>
                     <Col md={5}>
                         <ButtonToolbar>
-                            <Button onClick={this.handleTimeClick}
-                                    disabled={this.props.store.globalTime || this.props.store.timepoints.length === 0 || this.props.currentVariables.between.length > 0}
-                                    key={"actualTimeline"}>
-                                <FontAwesome
-                                    name="clock"/> {(this.props.store.realTime) ? "Hide relative time" : "Show relative time"}
-                            </Button>
-                            <Button onClick={(e) => this.handleGlobalTimeClick(e)}
-                                    disabled={this.props.store.realTime}
-                                    key={"globalTimeline"}>
-                                {(this.props.store.globalTime) ? "Switch to block view" : "Switch to timeline"}
-                            </Button>
-                            <DropdownButton
-                                title={"Zoom"}
-                                key={"zoom"}
-                                id={"zoom"}
-                            >
-                                <div style={{padding: "5px"}}>
-                                    Horizontal: <input type="range" value={this.state.horizontalZoom}
-                                                       onChange={this.horizontalZoom} step={1}
-                                                       min={0} max={290}/>
-                                    <Button onClick={this.setToScreenWidth}>Set to screen width</Button>
-                                    <br/>
-                                    Vertical: <input type="range" value={this.props.visMap.transitionSpace}
-                                                     onChange={this.verticalZoom} step={1}
-                                                     min={5} max={700}/>
-                                    <Button onClick={this.setToScreenHeight}>Set to screen height</Button>
-                                </div>
-                            </DropdownButton>
+                            <ButtonGroup>
+                                <Button onClick={this.handleTimeClick}
+                                        disabled={this.props.store.globalTime || this.props.store.timepoints.length === 0 || this.props.currentVariables.between.length > 0}
+                                        key={"actualTimeline"}>
+                                    <FontAwesome
+                                        name="clock"/> {(this.props.store.realTime) ? "Hide relative time" : "Show relative time"}
+                                </Button>
+                                <Button onClick={(e) => this.handleGlobalTimeClick(e)}
+                                        disabled={this.props.store.realTime}
+                                        key={"globalTimeline"}>
+                                    {(this.props.store.globalTime) ? "Switch to block view" : "Switch to timeline"}
+                                </Button>
+                                <DropdownButton
+                                    title={"Zoom"}
+                                    key={"zoom"}
+                                    id={"zoom"}
+                                >
+                                    <div style={{padding: "5px"}}>
+                                        Horizontal: <input type="range" value={this.state.horizontalZoom}
+                                                           onChange={this.horizontalZoom} step={1}
+                                                           min={0} max={290}/>
+                                        <Button onClick={this.setToScreenWidth}>Set to screen width</Button>
+                                        <br/>
+                                        Vertical: <input type="range" value={this.props.visMap.transitionSpace}
+                                                         onChange={this.verticalZoom} step={1}
+                                                         min={5} max={700}/>
+                                        <Button onClick={this.setToScreenHeight}>Set to screen height</Button>
+                                    </div>
+                                </DropdownButton>
+                            </ButtonGroup>
                         </ButtonToolbar>
                     </Col>
                     <Col md={patientsVisibleWidth} xs={patientsVisibleWidth}>
@@ -318,8 +319,9 @@ const MainView = observer(class MainView extends React.Component {
                     </Col>
                     <Col md={buttonToolbarWidth} xs={buttonToolbarWidth}>
                         <ButtonToolbar>
-                            <Button onClick={this.props.store.rootStore.exportSVG}>Export
-                                </Button>
+                            <ButtonGroup>
+                                {/*<Button onClick={this.props.store.rootStore.exportSVG}>Export
+                            </Button>*/}
                             <Button onClick={this.props.store.rootStore.undoRedoStore.undo}><FontAwesome
                                 name="undo"/></Button>
                             <Button onClick={this.props.store.rootStore.undoRedoStore.redo}><FontAwesome
@@ -334,18 +336,11 @@ const MainView = observer(class MainView extends React.Component {
                                 <MenuItem eventKey="2" onClick={this.handleResetSelection}>...selection</MenuItem>
                                 <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
                             </DropdownButton>
+                            </ButtonGroup>
                         </ButtonToolbar>
                     </Col>
-
-                   
                 </Row>
                 {view}
-
-
-
-               
-               
-
             </Grid>
         )
 
@@ -358,25 +353,3 @@ MainView.defaultProps = {
 };
 
 export default MainView;
-
-/*
-
-
-            <Col md={1} style={{padding: 0, width: 100}}>
-                <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
-                                timeValue={this.props.store.rootStore.timeValue}
-                                width={this.state.plotWidth * 1.8 / axisHorizontalZoom}
-                                height={svgHeight} maxTimeInDays={maxTime}/>
-            </Col>
-            <Col xs={9} md={9} style={{padding: 0}}>
-                <Plot {...this.props}
-                      height={svgHeight}
-                      width={this.state.plotWidth}
-                      setPlotWidth={this.setPlotWidth}
-                      horizontalZoom={300 - this.state.horizontalZoom}
-                      timepointY={timepointPositions.timepoint}
-                      transY={timepointPositions.connection}
-                      selectedPatients={this.props.store.selectedPatients}
-                      onDrag={this.handlePatientSelection}/>
-            </Col>
-*/

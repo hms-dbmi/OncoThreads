@@ -512,35 +512,35 @@ class RootStore {
     }
 
     createAvailableProfiles() {
-        this.availableProfiles = [{name: "Clinical Sample Data", id: "clinSample", type:"clinical",profile: "clinSample"}, {
+        this.availableProfiles = [{
+            name: "Clinical Sample Data",
+            id: "clinSample",
+            type: "clinical",
+            profile: "clinSample"
+        }, {
             id: "clinPatient",
             profile: "clinPatient",
-            type:"clinical",
+            type: "clinical",
             name: "Clincial Patient Data"
         }];
-        this.cbioAPI.molecularProfiles.forEach(d => {
-            if (d.molecularAlterationType !== "MUTATION_EXTENDED") {
+        this.cbioAPI.molecularProfiles.filter(d => d.molecularAlterationType === "MUTATION_EXTENDED").forEach(d => {
+            this.mutationMappingTypes.forEach(f => {
                 this.availableProfiles.push({
-                    name: d.name,
-                    id: d.molecularProfileId,
-                    type:"molecular",
-                    profile: d.molecularProfileId,
+                    name: d.name + " - " + f,
+                    id: f,
+                    type: "mutation",
+                    profile: d.molecularProfileId
                 });
-            }
-            else {
-                this.mutationMappingTypes.forEach(f => {
-                    this.availableProfiles.push({
-                        name: d.name + " - " + f,
-                        id: f,
-                        type:"mutation",
-                        profile: d.molecularProfileId
-                    });
-                });
-
-            }
-
+            });
         });
-
+        this.cbioAPI.molecularProfiles.filter(d => d.molecularAlterationType !== "MUTATION_EXTENDED").forEach(d => {
+            this.availableProfiles.push({
+                name: d.name,
+                id: d.molecularProfileId,
+                type: "molecular",
+                profile: d.molecularProfileId,
+            });
+        });
     }
 
 

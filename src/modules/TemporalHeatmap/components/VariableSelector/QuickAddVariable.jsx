@@ -12,11 +12,13 @@ import MapperCombine from "../../MapperCombineFunctions";
 creates the selector for sample variables (left side of main view, top)
  */
 const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Component {
-    constructor() {
+    constructor(props) {
         super();
         this.state = {
+            category:"clinical",
+            profile:props.availableProfiles.filter(d=>d.type!=="clinical")[0].profile,
+            mappingType:props.availableProfiles.filter(d=>d.type!=="clinical")[0].id,
             geneListString: "",
-            category: 'clinSample',
             selectedValues: [],
             isClinical: true,
             isEvent: false,
@@ -27,6 +29,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
+        this.handleMappingSelect=this.handleMappingSelect.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.addVariablesEnter = this.addVariablesEnter.bind(this);
     }
@@ -148,23 +151,27 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
     }
 
     createTimepointOptions() {
-        let options = [];
-        let list = [];
-        if (this.state.category === "clinSample") {
-            list = this.props.clinicalSampleCategories;
-        }
-        else {
-            list = this.props.clinicalPatientCategories;
-        }
-        list.forEach(d => {
+        let sampleOptions = [];
+        this.props.clinicalSampleCategories.forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
-                     key={d.variable}> {d.variable}
+                     key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            options.push({value: d.id, label: lb, object: d})
+            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
         });
-        return options;
+        let patientOptions = [];
+        this.props.clinicalPatientCategories.forEach(d => {
+            let lb = (
+                <div className="wordBreak" style={{textAlign: "left"}}
+                     key={d.variable}><b>{d.variable}</b>{": " + d.description}
+                </div>);
+            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, profile: "clinPatient"})
+        });
+        return [{label: "Sample", options: sampleOptions}, {
+            label: "Patient", options: patientOptions
+        }];
     }
+
 
     createOptions() {
         if (this.state.isEvent) {
@@ -197,10 +204,10 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.store.rootStore.molProfileMapping.getMutations(this.props.store.rootStore.availableProfiles[this.props.store.rootStore.availableProfiles.map(d => d.id).indexOf(this.state.category)].profile,
-            geneList, this.state.category, newVariables => {
+        console.log(geneList,this.state.profile,this.state.mappingType);
+        this.props.store.rootStore.molProfileMapping.getMutations(this.state.profile,
+            geneList, this.state.mappingType, newVariables => {
                 this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
-                //newVariables.forEach((d) => this.props.store.variableStores.sample.addVariableToBeDisplayed(d));
             });
         this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
         this.setState({geneListString: ""});
@@ -216,11 +223,23 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
 
     handleSelect(e) {
         this.setState({
-            isEvent: this.props.eventCategories.includes(e.target.value),
+            isEvent: e.target.value !== "genomic" && e.target.value !== "clinical",
             category: e.target.value,
             geneListString: "",
-            isClinical: e.target.value === "clinSample" || e.target.value === "clinPatient"
+            isClinical: e.target.value === "clinical"
         });
+    }
+
+    handleMappingSelect(e) {
+        let profile = this.props.availableProfiles.filter(d => d.id === e.target.value)[0];
+        let mappingType = "";
+        if (profile.type === "mutation") {
+            mappingType = profile.id;
+        }
+        this.setState({
+            mappingType: mappingType,
+            profile: profile.profile,
+        })
     }
 
 
@@ -252,7 +271,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
     }
 
     getSearchField() {
-        if (this.state.category === "clinSample" || this.state.category === "clinPatient" || this.props.eventCategories.includes(this.state.category)) {
+        if (this.state.category === "clinical"|| this.props.eventCategories.includes(this.state.category)) {
             return <Select
                 value={this.state.selectedValues}
                 type="text"
@@ -276,6 +295,19 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
     }
 
     render() {
+        let selectMappingType = null;
+        let colSize = 0;
+        if (this.state.category === "genes") {
+            colSize = 2;
+            selectMappingType = <Col sm={colSize} style={{padding: 0}}>
+                <FormControl style={{height: 38}} componentClass="select" onChange={this.handleMappingSelect}
+                             placeholder="Select Category">
+                    {this.props.availableProfiles.filter(d => d.type !== "clinical").map(d => <option value={d.id}
+                                                                                                      key={d.id}>{d.name}</option>)}
+                </FormControl>
+            </Col>
+
+        }
         return (
             <Form horizontal>
                 <FormGroup>
@@ -283,8 +315,8 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
                         <FormControl style={{height: 38}} componentClass="select" onChange={this.handleSelect}
                                      placeholder="Select Category">
                             <optgroup label="Timepoint Variables">
-                                {this.props.store.rootStore.availableProfiles.map((d) => <option value={d.id}
-                                                                                                 key={d.id}>{d.name}</option>)}
+                                <option value={"clinical"}>Clinical Data</option>
+                                <option value={"genes"}>Genomic Data</option>
                             </optgroup>
                             <optgroup label="Event Variables">
                                 {this.props.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option value={d}
@@ -292,9 +324,10 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
                             </optgroup>
                         </FormControl>
                     </Col>
-                    <Col sm={9} style={{padding: 0}}>
+                    <Col sm={9 - colSize} style={{padding: 0}}>
                         {this.getSearchField()}
                     </Col>
+                    {selectMappingType}
                     <Col sm={1} style={{paddingLeft: 0}}>
                         <Button style={{height: 38}} onClick={this.handleAdd}>
                             Add

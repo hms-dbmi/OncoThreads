@@ -188,7 +188,6 @@ class UndoRedoStore {
         }
         this.stateStack.push({type: type, state: serializeState(this)});
         this.currentPointer = this.stateStack.length - 1;
-        console.log(this.stateStack);
         //storage.setItem(this.rootStore.study.studyId, JSON.stringify(this.stateStack[this.stateStack.length - 1].state));
     }
 

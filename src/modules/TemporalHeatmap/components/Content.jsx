@@ -205,22 +205,11 @@ const Content = observer(class Content extends React.Component {
         }
     }
 
-    getToggleSidebarIcons() {
-        if (this.state.displayShowButton !== "none") {
-            return <Button onClick={this.showSidebar}><FontAwesome
-                name="bars"/></Button>
-        }
-        else {
-            return <Button style={{float: 'right'}}
-                           onClick={this.hideSidebar}><FontAwesome name="times"/></Button>
-        }
-    }
-
 
     render() {
         return (
             <div>
-                <Grid fluid={true}>
+                <Grid fluid={true} style={{paddingLeft:20}}>
                     <Row>
                         <Col sm={1} xs={1}>
                             <h5>Add Variables</h5>
@@ -230,6 +219,7 @@ const Content = observer(class Content extends React.Component {
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
                                 molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
+                                availableProfiles={this.props.rootStore.availableProfiles}
                                 store={this.props.rootStore.timepointStore}
                                 eventCategories={this.props.rootStore.eventCategories}
                                 eventAttributes={this.props.rootStore.eventAttributes}
@@ -250,28 +240,6 @@ const Content = observer(class Content extends React.Component {
                                           numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
                                           minTP={this.props.rootStore.minTP}
                                           maxTP={this.props.rootStore.maxTP}/>
-                            {/*
-                            <SampleVariableSelector
-                                openBinningModal={this.openModal}
-                                openAddModal={this.openAddModal}
-                                clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
-                                clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
-                                mutationCount="Mutation count"
-                                currentVariables={this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables()}
-                                showTooltip={this.showTooltip}
-                                hideTooltip={this.hideTooltip}
-                                store={this.props.rootStore.timepointStore.variableStores.sample}
-                                visMap={this.props.rootStore.visStore}
-                            />
-                            <BetweenSampleVariableSelector
-                                openBinningModal={this.openModal}
-                                eventCategories={this.props.rootStore.eventCategories}
-                                eventAttributes={this.props.rootStore.eventAttributes}
-                                currentVariables={this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()}
-                                store={this.props.rootStore.timepointStore.variableStores.between}
-                                visMap={this.props.rootStore.visStore}
-                            />
-                                */}
                         </Col>
                         <Col sm={12 - this.state.sidebarSize} md={12 - this.state.sidebarSize}
                              onMouseEnter={this.hideContextMenu}

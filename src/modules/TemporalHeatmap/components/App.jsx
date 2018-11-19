@@ -3,7 +3,7 @@
  */
 import React from "react";
 import {observer} from 'mobx-react';
-import {Nav, Navbar, NavItem} from 'react-bootstrap';
+import {Nav, Navbar, NavDropdown, NavItem} from 'react-bootstrap';
 
 import GetStudy from "./GetStudy";
 import Content from "./Content"
@@ -60,8 +60,11 @@ const App = observer(class App extends React.Component {
             return ([
                     <GetStudy key="getStudy" setRoot={this.setRootStore} cbioAPI={this.props.cbioAPI}
                               studies={this.props.studyapi.studies}/>,
-                    <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
+                    <NavDropdown eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
+                        <NavItem key="export" onClick={this.rootStore.exportSVG}>...as SVG</NavItem>
+                    </NavDropdown>,
                     <NavItem key='settings' onClick={() => this.openModal('settings')}>Settings</NavItem>,
+                    <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
                     <NavItem key='about' onClick={() => this.openModal('about')}>About</NavItem>
                 ]
             )
@@ -101,7 +104,7 @@ const App = observer(class App extends React.Component {
 
     render() {
         return (
-            <div><Navbar style={{margin: 0}}>
+            <div><Navbar fluid>
                 <Navbar.Header>
                     <Navbar.Brand>
                         <a>OncoThreads</a>

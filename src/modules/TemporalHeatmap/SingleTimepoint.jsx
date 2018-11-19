@@ -109,7 +109,7 @@ class SingleTimepoint {
             }
             else return 0;
         });
-        if(this.isGrouped){
+        if (this.isGrouped) {
             this.group(this.primaryVariableId);
         }
     }
@@ -379,7 +379,7 @@ class SingleTimepoint {
             }
         }
         this.rootStore.timepointStore.applyPatientOrderToAll(this.globalIndex, false);
-        this.rootStore.undoRedoStore.saveTimepointHistory("MAGIC SORT",variable,this.type,this.globalIndex);
+        this.rootStore.undoRedoStore.saveTimepointHistory("MAGIC SORT", variable, this.type, this.globalIndex);
     }
 }
 

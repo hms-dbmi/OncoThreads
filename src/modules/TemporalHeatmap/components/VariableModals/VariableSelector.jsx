@@ -10,6 +10,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
     constructor(props) {
         super(props);
         this.state = {
+            geneListString:"",
             selectionType: "clinical",
             mutationOptions: [],
             molecularOptions: [],
@@ -96,7 +97,6 @@ const VariableSelector = observer(class VariableSelector extends React.Component
                 molecularOptions.splice(molecularOptions.map(d => d.id).indexOf(profile), 1);
             }
         }
-        console.log(molecularOptions);
         this.setState({molecularOptions: molecularOptions, showCheckBoxOptions: true});
     }
 
