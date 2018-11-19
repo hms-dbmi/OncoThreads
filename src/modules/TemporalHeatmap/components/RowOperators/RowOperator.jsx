@@ -23,40 +23,44 @@ const RowOperator = observer(class RowOperator extends React.Component {
          * @param variableId
          */
         group(timepoint, variableId) {
-            const _self=this;
-            const variable=this.props.store.variableStores[timepoint.type].getById(variableId);
+            const variable = this.props.store.variableStores[timepoint.type].getById(variableId);
             if (variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, function (derivedVariable) {
-                    _self.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variableId,derivedVariable);
+                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
+                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variableId, derivedVariable);
                     timepoint.group(derivedVariable.id);
+                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variableId, timepoint.type, timepoint.localIndex)
                 });
             }
             else {
                 timepoint.group(variable.id);
+                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variableId, timepoint.type, timepoint.localIndex)
             }
-            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variableId, timepoint.type, timepoint.localIndex)
         }
 
         /**
          * sorts a timepoint
          * the variable has to be declared a primary variable, then the timepoint is sorted
          * @param timepoint: timepoint to be sorted
-         * @param variable: Variable with which the timepoint should be sorted
+         * @param variableId
          */
-        sortTimepoint(timepoint, variable) {
-            if (timepoint.isGrouped && this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, true,true, function (newId) {
-                    timepoint.group(newId);
+        sortTimepoint(timepoint, variableId) {
+            const variable = this.props.store.variableStores[timepoint.type].getById(variableId);
+            if (timepoint.isGrouped && variable.datatype === "NUMBER") {
+                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
+                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variableId, derivedVariable);
+                    timepoint.group(derivedVariable.id);
+                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variableId, timepoint.type, timepoint.localIndex)
+
                 });
             }
             else {
-                timepoint.sort(variable, this.props.selectedPatients);
+                timepoint.sort(variableId, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
                 if (this.props.store.rootStore.realTime) {
                     this.props.store.applyPatientOrderToAll(timepoint.globalIndex, false);
                 }
+                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variableId, timepoint.type, timepoint.localIndex)
             }
-            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable, timepoint.type, timepoint.localIndex)
         }
 
 
@@ -73,18 +77,21 @@ const RowOperator = observer(class RowOperator extends React.Component {
         /**
          * promotes a variable at a timepoint to a primary variable
          * @param timepoint: timepoint where the primary variable is changes
-         * @param variable: variable to be the primary variable
+         * @param variableId
          */
-        promote(timepoint, variable) {
-            if (timepoint.isGrouped && this.props.store.variableStores[timepoint.type].getById(variable).datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type,true,true, function (newId) {
-                    timepoint.promote(newId)
+        promote(timepoint, variableId) {
+            const variable = this.props.store.variableStores[timepoint.type].getById(variableId);
+            if (timepoint.isGrouped && variable.datatype === "NUMBER") {
+                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
+                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variableId, derivedVariable);
+                    timepoint.promote(derivedVariable.id)
+                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variableId, timepoint.type, timepoint.localIndex)
                 });
             }
             else {
-                timepoint.promote(variable);
+                timepoint.promote(variableId);
+                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variableId, timepoint.type, timepoint.localIndex)
             }
-            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -186,20 +193,6 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 </g>);
         }
 
-        getAlignIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (
-                <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
-                   onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
-                   onMouseLeave={this.props.hideTooltip}>
-                    <path fill="gray"
-                          d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
-                    <rect onClick={() => this.props.store.applyPatientOrderToAll(timepoint.globalIndex, true)}
-                          width={iconScale * 24} height={24}
-                          fill="none"
-                          pointerEvents="visible"/>
-                </g>);
-        }
-
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
                 <g transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
@@ -285,7 +278,6 @@ const RowOperator = observer(class RowOperator extends React.Component {
                         {_self.getRowLabel(_self.props.timepoint, d.variable, name_var, desc, 0, (lineHeight + fontSize / 2) / 2, iconScale, _self.props.width - 3 * iconScale * 24, fontWeight, fontSize)}
                         {_self.getSortIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 72), yPos)}
                         {secondIcon}
-                        {/*_self.getAlignIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 48), yPos)*/}
                         {_self.getDeleteIcon(_self.props.timepoint, d.variable, iconScale, (_self.props.width - iconScale * 24), yPos)}
                     </g>)
                 }

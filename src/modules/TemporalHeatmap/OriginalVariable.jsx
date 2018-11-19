@@ -34,9 +34,6 @@ class OriginalVariable {
                 else if (this.datatype === "NUMBER") {
                     scale = ColorScales.getContinousColorScale(this.range, this.domain);
                 }
-                else if (this.datatype === "BINNED") {
-                    scale = ColorScales.getBinnedColorScale(this.range, this.domain, this.modification.binning.bins);
-                }
                 return scale;
             }
         };

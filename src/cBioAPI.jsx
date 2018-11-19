@@ -129,7 +129,7 @@ class cBioAPI {
         })
     }
 
-    getAllMutations(studyId, entrezIDs, callback) {
+    getMutations(studyId, entrezIDs, callback) {
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC", {
             "entrezGeneIds":
                 entrezIDs.map(d => d.entrezGeneId)
@@ -143,7 +143,7 @@ class cBioAPI {
             });
     }
 
-    getAllMolecularValues(studyId, profileId, entrezIDs, callback) {
+    getMolecularValues(studyId, profileId, entrezIDs, callback) {
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + profileId + "/molecular-data/fetch?projection=SUMMARY", {
             "entrezGeneIds":
                 entrezIDs.map(d => d.entrezGeneId)

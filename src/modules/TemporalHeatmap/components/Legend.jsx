@@ -130,7 +130,7 @@ const Legend = observer(class Legend extends React.Component {
         variable.domain.forEach((d, i) => {
             if (row.includes(d)) {
                 let tooltipText;
-                if (variable.datatype === "BINNED") {
+                if (variable.derived && variable.datatype === "ORDINAL" && variable.modificationType === "continuousTransform") {
                     tooltipText = d + ": " + Math.round(variable.modification.binning.bins[i] * 100) / 100 + " to " + Math.round(variable.modification.binning.bins[i + 1] * 100) / 100;
                 }
                 else {
@@ -196,52 +196,47 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let legend = [];
         let currPos = 0;
-
-        if (!this.props.store.globalTime) {
-            if (data.length !== undefined) {
-                data.forEach(function (d, i) {
-                    if (!d.isUndef || _self.props.store.showUndefined || primary === d.variable) {
-                        let lineheight;
-                        let opacity = 1;
-                        if (primary === d.variable) {
-                            lineheight = _self.props.visMap.primaryHeight;
-                        }
-                        else {
-                            lineheight = _self.props.visMap.secondaryHeight;
-                            opacity = 0.5
-                        }
-                        let color = currentVariables[i].colorScale;
-                        let legendEntries = [];
-                        if (lineheight < fontSize) {
-                            fontSize = Math.round(lineheight);
-                        }
-                        if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "BINNED" || currentVariables[i].datatype === "ORDINAL") {
-                            legendEntries = _self.getCategoricalLegend(currentVariables[i], d.data.map(element => element.value), opacity, fontSize, lineheight, color);
-                        }
-                        else if (currentVariables[i].datatype === "BINARY") {
-                            legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
-                        }
-                        else {
-                            legendEntries = _self.getContinuousLegend(opacity, fontSize, lineheight, color);
-                        }
-                        const transform = "translate(0," + currPos + ")";
-                        currPos += lineheight + _self.props.visMap.gap;
-                        let highlightRect = null;
-                        if (d.variable === _self.props.highlightedVariable) {
-                            highlightRect = _self.getHighlightRect(lineheight)
-                        }
-                        legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
-                    }
-                });
+        data.forEach(function (d, i) {
+            if (!d.isUndef || _self.props.store.showUndefined || primary === d.variable) {
+                let lineheight;
+                let opacity = 1;
+                if (primary === d.variable) {
+                    lineheight = _self.props.visMap.primaryHeight;
+                }
+                else {
+                    lineheight = _self.props.visMap.secondaryHeight;
+                    opacity = 0.5
+                }
+                let color = currentVariables[i].colorScale;
+                let legendEntries = [];
+                if (lineheight < fontSize) {
+                    fontSize = Math.round(lineheight);
+                }
+                if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "ORDINAL") {
+                    legendEntries = _self.getCategoricalLegend(currentVariables[i], d.data.map(element => element.value), opacity, fontSize, lineheight);
+                }
+                else if (currentVariables[i].datatype === "BINARY") {
+                    legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
+                }
+                else {
+                    legendEntries = _self.getContinuousLegend(opacity, fontSize, lineheight, color);
+                }
+                const transform = "translate(0," + currPos + ")";
+                currPos += lineheight + _self.props.visMap.gap;
+                let highlightRect = null;
+                if (d.variable === _self.props.highlightedVariable) {
+                    highlightRect = _self.getHighlightRect(lineheight)
+                }
+                legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
             }
-        }
+        });
         return legend
     }
 
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
         const _self = this;
-        if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "BINNED" || primaryVariable.datatype === "ORDINAL") {
+        if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "ORDINAL") {
             let allValues = [];
             this.props.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {

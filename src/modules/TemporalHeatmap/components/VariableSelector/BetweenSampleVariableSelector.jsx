@@ -217,7 +217,7 @@ const BetweenSampleVariableSelector = observer(class BetweenSampleVariableSelect
     }
 
     /**
-     * Selects all values of a category
+     * Selects all values of a profile
      * @param event
      * @param key
      */

@@ -1,4 +1,4 @@
-import {extendObservable} from "mobx";
+import {extendObservable,observe} from "mobx";
 
 /*
 Store containing information about variables
@@ -10,8 +10,11 @@ class VariableManagerStore {
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: currentVariables.map(d => {
-                return {id: d, isModified: false, isNew: false, isSelected: false}
+                return {id: d, isNew: false, isSelected: false}
             }),
+        });
+         observe(this.currentVariables, () => {
+            this.updateReferences();
         });
     }
 
@@ -21,43 +24,33 @@ class VariableManagerStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        let spliceIndex = this.currentVariables.map(d => d.id).indexOf(variableId);
-        this.currentVariables.splice(spliceIndex, 1);
-        this.removeReferences(variableId);
+        this.currentVariables.remove(this.currentVariables.filter(d=>d.id===variableId)[0]);
     }
 
-    /**
-     * Decrement the referenced property of all the variables which were used by the current variable (and their "child variables"). If the referenced property is 0 remove the variable
-     * @param currentId
-     */
-    removeReferences(currentId) {
-        const _self = this;
-        if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
-            this.referencedVariables[currentId].originalIds.forEach(function (d) {
-                _self.removeReferences(d);
-            });
-        }
-        this.referencedVariables[currentId].referenced -= 1;
-        if (this.referencedVariables[currentId].referenced === 0) {
-            if (this.referencedVariables[currentId].type === "event") {
-                delete this.rootStore.eventTimelineMap[currentId];
-            }
-            delete this.referencedVariables[currentId];
-        }
-    }
-
-    /**
+     /**
      * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
      * @param currentId
      */
-    updateReferences(currentId) {
+    setReferences(currentId) {
         const _self = this;
         if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
             this.referencedVariables[currentId].originalIds.forEach(function (d) {
-                _self.updateReferences(d);
+                _self.setReferences(d);
             });
         }
         this.referencedVariables[currentId].referenced += 1;
+    }
+
+    updateReferences() {
+        for (let variable in this.referencedVariables) {
+            this.referencedVariables[variable].referenced = 0;
+        }
+        this.currentVariables.forEach(d => this.setReferences(d.id));
+        for (let variable in this.referencedVariables) {
+            if (!this.referencedVariables[variable].derived && this.referencedVariables[variable].referenced === 0) {
+                delete this.referencedVariables[variable]
+            }
+        }
     }
 
 
@@ -70,8 +63,7 @@ class VariableManagerStore {
     addVariableToBeDisplayed(variable) {
         this.addVariableToBeReferenced(variable);
         if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
-            this.updateReferences(variable.id);
-            this.currentVariables.push({id: variable.id, isNew: true, isModified: false, isSelected: false});
+            this.currentVariables.push({id: variable.id, isNew: true, isSelected: false});
         }
     }
 
@@ -80,19 +72,16 @@ class VariableManagerStore {
         if (!this.isReferenced(newVariable.id)) {
             this.referencedVariables[newVariable.id] = newVariable;
         }
-        this.updateReferences(newVariable.id);
-        this.removeReferences(oldId);
         const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
         this.currentVariables[replaceIndex] = {
             id: newVariable.id,
-            isModified: true,
             isNew: this.currentVariables[replaceIndex].isNew,
             isSelected: this.currentVariables[replaceIndex].isSelected
         };
     }
 
-    toggleSelected(id){
-        this.currentVariables[this.currentVariables.map(d=>d.id).indexOf(id)].isSelected=!this.currentVariables[this.currentVariables.map(d=>d.id).indexOf(id)].isSelected;
+    toggleSelected(id) {
+        this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected = !this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected;
     }
 
     sortBySource(profileOrder) {
@@ -189,8 +178,9 @@ class VariableManagerStore {
     getCurrentVariables() {
         return this.currentVariables.map(d => this.referencedVariables[d.id]);
     }
-    getSelectedVariables(){
-        return this.currentVariables.filter(d=>d.isSelected).map(d=>this.referencedVariables[d.id]);
+
+    getSelectedVariables() {
+        return this.currentVariables.filter(d => d.isSelected).map(d => this.referencedVariables[d.id]);
     }
 
 

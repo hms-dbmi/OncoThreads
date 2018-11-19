@@ -12,55 +12,48 @@ class VariableStore {
         //Variables that are referenced (displayed or used to create a derived variable)
         this.referencedVariables = {};
         extendObservable(this, {
-            //Saves the shared domain (min,max) of continuous molecular profile data
-            profileDomains: new Map(),
             //List of ids of currently displayed variables
             currentVariables: [],
+
         });
         //Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
-            console.log(change);
             if (change.type === 'splice') {
-                if (change.added.length > 0) {
-                    if (this.type === "between" && this.currentVariables.length === 1) {
-                        this.rootStore.timepointStore.toggleTransition()
+                change.added.forEach(d => {
+                    if (!change.removed.includes(d)) {
+                        this.childStore.addHeatmapRows(d, this.getById(d).mapper);
                     }
-                    change.added.forEach(d => {
-                        this.addToProfileDomain(d);
-                        this.updateReferences(d);
-                        this.childStore.addHeatmapRows(d, this.getById(d).mapper)
-                    })
+                });
+                change.removed.forEach(d => {
+                    if (!change.added.includes(d)) {
+                        this.childStore.removeHeatmapRows(d);
+                    }
+                });
+                if (change.removedCount > 0 && change.addedCount > 0) {
+                    this.childStore.resortHeatmapRows(this.currentVariables);
                 }
-                if (change.removed.length > 0) {
+                if (change.removedCount > 0 && change.added === 0) {
                     if (this.type === "between" && this.currentVariables.length === 0) {
                         this.rootStore.timepointStore.toggleTransition()
                     }
                     if (this.type === "sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
                         this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
                     }
-                    change.removed.forEach(d => {
-                        this.removeFromProfileDomain(d);
-                        this.removeReferences(d);
-                        this.childStore.removeHeatmapRows(d)});
                 }
-            }
-            else if (change.type === "update") {
-                this.updateReferences(change.newValue);
-                this.removeReferences(change.newValue);
-                this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
-            }
-            this.rootStore.timepointStore.regroupTimepoints();
-        });
-        //observe change in profileDomains and update domains of corresponding variables
-        observe(this.profileDomains, change => {
-            if (change.type === "update") {
-                for (let id in this.referencedVariables) {
-                    if (this.referencedVariables[id].profile === change.name) {
-                        this.referencedVariables[id].domain = change.newValue;
+                if (change.addedCount > 0) {
+                    if (this.type === "between" && this.currentVariables.length === 1) {
+                        this.rootStore.timepointStore.toggleTransition()
                     }
                 }
             }
-        })
+            else if (change.type === "update") {
+                this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
+            }
+            this.updateReferences();
+            this.updateVariableRanges();
+            this.rootStore.timepointStore.regroupTimepoints();
+        });
+
     }
 
     /**
@@ -80,109 +73,65 @@ class VariableStore {
      */
     removeVariable(variableId) {
         let name = this.getById(variableId).name;
-        this.currentVariables.splice(this.currentVariables.indexOf(variableId), 1);
+        this.currentVariables.remove(variableId);
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
     }
 
-    /**
-     * Decrement the referenced property of all the variables which were used by the current variable (and their "child variables"). If the referenced property is 0 remove the variable
-     * @param currentId
-     */
-    removeReferences(currentId) {
-        const _self = this;
-        if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
-            this.referencedVariables[currentId].originalIds.forEach(function (d) {
-                _self.removeReferences(d);
-            });
-        }
-        this.referencedVariables[currentId].referenced -= 1;
-        if (this.referencedVariables[currentId].referenced === 0) {
-            if (this.referencedVariables[currentId].type === "event") {
-                delete this.rootStore.eventTimelineMap[currentId];
-            }
-            delete this.referencedVariables[currentId];
-        }
-    }
 
-    /**
-     * updates shared profile domain of variableId to the new min/max
-     * @param variableId
-     */
-    removeFromProfileDomain(variableId) {
-        if (this.rootStore.cbioAPI.molecularProfiles.includes(this.referencedVariables[variableId].profile) && this.referencedVariables[variableId].datatype === "NUMBER") {
-            let isMin = Math.min(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[0];
-            let isMax = Math.max(...Object.values(this.referencedVariables[variableId].mapper)) === this.profileDomains.get(this.referencedVariables[variableId].profile)[1];
-            if (isMin || isMax) {
-                let currMin = Number.POSITIVE_INFINITY;
-                let currMax = Number.NEGATIVE_INFINITY;
-                let profileVariables = this.getCurrentVariables().filter(d => d.profile === this.referencedVariables[variableId].profile && d.id !== variableId);
-                if (profileVariables.length > 0) {
-                    profileVariables.forEach(d => {
-                        const min = Math.min(...Object.values(d.mapper).filter(d => d !== undefined));
-                        const max = Math.max(...Object.values(d.mapper).filter(d => d !== undefined));
-                        if (min < currMin) {
-                            currMin = min;
-                        }
-                        if (max > currMax) {
-                            currMax = max;
-                        }
-                    });
-                    let newDomain = this.profileDomains.get(this.referencedVariables[variableId].profile).slice();
-                    if (isMin) {
-                        newDomain[0] = currMin;
-                    }
-                    if (isMax) {
-                        newDomain[1] = currMax;
-                    }
-                    this.profileDomains.set(this.referencedVariables[variableId].profile, newDomain);
+    updateVariableRanges() {
+        let profileDomains = {};
+        let profileVariables = this.currentVariables
+            .filter(d => this.rootStore.cbioAPI.molecularProfiles.map(d => d.molecularProfileId).includes(this.referencedVariables[d].profile)
+                && this.referencedVariables[d].datatype === "NUMBER");
+        profileVariables.forEach(variableId => {
+            const variable=this.referencedVariables[variableId];
+                let min = Math.min(...Object.values(variable.mapper));
+                let max = Math.max(...Object.values(variable.mapper));
+                if (!(variable.profile in profileDomains)) {
+                    profileDomains[variable.profile] = [min, max];
                 }
                 else {
-                    this.profileDomains.delete(this.referencedVariables[variableId].profile);
+                    if (profileDomains[variable.profile][0] > min) {
+                        profileDomains[variable.profile][0] = min;
+                    }
+                    if (profileDomains[variable.profile][1] < max) {
+                        profileDomains[variable.profile][1] = max;
+                    }
                 }
-            }
-        }
+
+            });
+        profileVariables.forEach(variableId => {
+                if (this.referencedVariables[variableId].profile in profileDomains) {
+                    this.referencedVariables[variableId].domain = profileDomains[this.referencedVariables[variableId].profile]
+                }
+            });
     }
 
-    /**
-     * updates shared profile domain with domain of variable
-     * @param variableId
-     */
-    addToProfileDomain(variableId) {
-        let profileChanged = false;
-        let newDomain = [];
-        let variable=this.getById(variableId);
-        if (this.rootStore.cbioAPI.molecularProfiles.map(d => d.molecularProfileId).includes(variable.profile) && variable.datatype === "NUMBER") {
-            if (!(this.profileDomains.has(variable.profile))) {
-                this.profileDomains.set(variable.profile, variable.domain);
-            }
-            newDomain = [this.profileDomains.get(variable.profile)[0], this.profileDomains.get(variable.profile)[1]];
-            if (this.profileDomains.get(variable.profile)[0] > variable.domain[0]) {
-                newDomain[0] = variable.domain[0];
-                profileChanged = true;
-            }
-            if (this.profileDomains.get(variable.profile)[1] < variable.domain[1]) {
-                newDomain[1] = variable.domain[1];
-                profileChanged = true;
-            }
-            if (profileChanged) {
-                this.profileDomains.set(variable.profile, newDomain);
-            }
-            variable.domain=this.profileDomains.get(variable.profile);
-        }
-    }
 
     /**
      * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
      * @param currentId
      */
-    updateReferences(currentId) {
+    setReferences(currentId) {
         const _self = this;
         if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
             this.referencedVariables[currentId].originalIds.forEach(function (d) {
-                _self.updateReferences(d);
+                _self.setReferences(d);
             });
         }
         this.referencedVariables[currentId].referenced += 1;
+    }
+
+    updateReferences() {
+        for (let variable in this.referencedVariables) {
+            this.referencedVariables[variable].referenced = 0;
+        }
+        this.currentVariables.forEach(d => this.setReferences(d));
+        for (let variable in this.referencedVariables) {
+            if (!this.referencedVariables[variable].derived && this.referencedVariables[variable].referenced === 0) {
+                delete this.referencedVariables[variable]
+            }
+        }
     }
 
 
@@ -197,6 +146,19 @@ class VariableStore {
         if (!this.currentVariables.includes(variable.id)) {
             this.currentVariables.push(variable.id);
         }
+    }
+
+    addVariablesToBeDisplayed(variables) {
+        let currentVariables = this.currentVariables.slice();
+        variables.forEach(d => {
+            this.addVariableToBeReferenced(d);
+        });
+        variables.forEach(d => {
+            if (!currentVariables.includes(d.id)) {
+                currentVariables.push(d.id);
+            }
+        });
+        this.currentVariables.replace(currentVariables);
     }
 
 

@@ -171,7 +171,6 @@ const Content = observer(class Content extends React.Component {
         //this.state.clickedVariable=variable;
 
         this.setState({clickedVariable: variable});
-        console.log(this.state.clickedVariable);
     }
 
     getVarListModal() {
@@ -181,13 +180,7 @@ const Content = observer(class Content extends React.Component {
                                  openBinningModal={this.openModal}
                                  clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                  clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
-                                 molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
-                                 currentVariables={{
-                                     sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
-                                     between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
-                                 }} store={this.props.rootStore.timepointStore.variableStores.sample}
-                //store={this.props.rootStore.timepointStore}
-                //visMap={this.props.rootStore.visStore}
+                                 store={this.props.rootStore.timepointStore}
             />);
         }
         else {

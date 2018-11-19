@@ -26,9 +26,10 @@ class RootStore {
 
         this.clinicalSampleCategories = [];
         this.clinicalPatientCategories = [];
-        this.availableProfiles=[];
+        this.availableProfiles = [];
         this.mutationCountId = "mutCount";
         this.timeDistanceId = "timeGapMapping";
+        this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"];
         this.eventCategories = [];
         this.eventAttributes = [];
         this.patientOrderPerTimepoint = [];
@@ -294,7 +295,7 @@ class RootStore {
             _self.createClinicalSampleMapping();
             _self.createMutationCountsMapping();
             _self.createClinicalPatientMappers();
-            _self.availableProfiles=[{id:"clinSample",name:"Clinical Sample Data"},{id:"clinPatient",name:"Clincial Patient Data"}].concat(_self.cbioAPI.molecularProfiles.map(d=>{return {name:d.name,id:d.molecularProfileId}}));
+            _self.createAvailableProfiles();
             _self.timepointStore.initialize();
 
             /*if (localStorage.getItem(_self.study.studyId) !== null) {
@@ -309,7 +310,7 @@ class RootStore {
                 }
             } else {*/
             let initialVariable = _self.clinicalSampleCategories[0];
-            _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id],"clinSample"));
+            _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id], "clinSample"));
             _self.timepointStore.globalPrimary = initialVariable.id;
             _self.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
             //}
@@ -510,6 +511,38 @@ class RootStore {
         return newNames;
     }
 
+    createAvailableProfiles() {
+        this.availableProfiles = [{name: "Clinical Sample Data", id: "clinSample", type:"clinical",profile: "clinSample"}, {
+            id: "clinPatient",
+            profile: "clinPatient",
+            type:"clinical",
+            name: "Clincial Patient Data"
+        }];
+        this.cbioAPI.molecularProfiles.forEach(d => {
+            if (d.molecularAlterationType !== "MUTATION_EXTENDED") {
+                this.availableProfiles.push({
+                    name: d.name,
+                    id: d.molecularProfileId,
+                    type:"molecular",
+                    profile: d.molecularProfileId,
+                });
+            }
+            else {
+                this.mutationMappingTypes.forEach(f => {
+                    this.availableProfiles.push({
+                        name: d.name + " - " + f,
+                        id: f,
+                        type:"mutation",
+                        profile: d.molecularProfileId
+                    });
+                });
+
+            }
+
+        });
+
+    }
+
 
     /**
      * creates a dictionary mapping sample IDs onto clinical data
@@ -540,7 +573,7 @@ class RootStore {
         if (this.cbioAPI.molecularProfiles.map(d => d.molecularAlterationType).includes("MUTATION_EXTENDED")) {
             this.clinicalSampleCategories.push({
                 id: this.mutationCountId,
-                variable: "Muatation Counts",
+                variable: "Mutation Count",
                 datatype: "NUMBER",
                 description: "Sum of mutation counts"
             })
@@ -559,9 +592,6 @@ class RootStore {
             this.cbioAPI.mutationCounts.forEach(function (d) {
                 _self.staticMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
             });
-        }
-        else {
-            console.log("test.....");
         }
     }
 

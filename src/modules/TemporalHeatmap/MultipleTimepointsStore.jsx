@@ -40,7 +40,7 @@ class MultipleTimepointsStore {
 
         //console.log(variableId);
         //console.log(mapper);
-        
+
         const _self = this;
         this.structure.forEach(function (d, i) {
             let variableData = [];
@@ -82,6 +82,12 @@ class MultipleTimepointsStore {
         });
     }
 
+    resortHeatmapRows(order) {
+        let timepoints = this.timepoints;
+        timepoints.forEach(d => d.resortRows(order));
+        this.timepoints = timepoints;
+    }
+
     /**
      * Removes rows from the heatmaps
      * @param variableId
@@ -96,7 +102,7 @@ class MultipleTimepointsStore {
      * checks if at least one of the timepoints is grouped
      * @returns {boolean}
      */
-    atLeastOneGrouped(startIndex,endIndex) {
+    atLeastOneGrouped(startIndex, endIndex) {
         let oneIsGrouped = false;
         for (let i = startIndex; i <= endIndex; i++) {
             if (this.timepoints[i].isGrouped) {
@@ -131,7 +137,7 @@ class MultipleTimepointsStore {
                     timepoint.promote(variable)
                 }
                 if (timepoint.isGrouped) {
-                    timepoint.sortGroup(variable,originalTimepoint.groupOrder)
+                    timepoint.sortGroup(variable, originalTimepoint.groupOrder)
                 }
                 else {
                     timepoint.sortHeatmap(variable, originalTimepoint.heatmapSorting.order)
@@ -154,6 +160,7 @@ class MultipleTimepointsStore {
         if (timepointIndex - 1 >= 0) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex - 1], this.timepoints[timepointIndex]);
         }
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO PREVIOUS", variable, this.type, timepointIndex);
     }
 
     /**
@@ -167,6 +174,7 @@ class MultipleTimepointsStore {
         if (timepointIndex + 1 < this.timepoints.length) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex + 1], this.timepoints[timepointIndex]);
         }
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO NEXT", variable, this.type, timepointIndex);
     }
 
     /**
@@ -183,6 +191,7 @@ class MultipleTimepointsStore {
                 MultipleTimepointsStore.actionFunction(action, variable, d, _self.timepoints[timepointIndex]);
             }
         });
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO ALL", variable, this.type, timepointIndex);
     }
 
 }

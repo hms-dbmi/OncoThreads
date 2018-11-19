@@ -23,16 +23,14 @@ class ColorScales {
             return d3.scaleLinear().range(range).domain([min, max])
         }
     }
-
-
-    static getBinnedColorScale(range, binNames, binValues) {
-        let colors = [];
-        let continuousScale = ColorScales.getContinousColorScale(range, [binValues[0], binValues[binValues.length - 1]]);
-        for (let i = 0; i < binNames.length; i++) {
-            colors.push(continuousScale((binValues[i + 1] + binValues[i]) / 2));
+    static getBinnedRange(oldScale, binNames, binValues){
+        let range=[];
+         for (let i = 0; i < binNames.length; i++) {
+            range.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
         }
-        return d3.scaleOrdinal().range(colors).domain(binNames).unknown('#f7f7f7');
+        return range;
     }
+
 
     static getOrdinalScale(range, domain) {
         return d3.scaleOrdinal().range(['#f7f7f7'].concat(range.slice())).domain([undefined].concat(domain.slice()));

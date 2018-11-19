@@ -19,7 +19,6 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
      * applies primary variable of the clicked timepoint to all timepoints
      */
     applyActionToAll() {
-        console.log(this.variable.datatype, this.props.action);
         if (this.variable.datatype === "NUMBER" && this.props.action !== "UNGROUP") {
             if (this.props.action === "GROUP") {
                 this.props.openBinningModal(this.variable, this.type, derivedVariable => {
@@ -42,7 +41,6 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
             this.props.store.childStore.applyActionToAll(this.props.localIndex, this.props.clickedVariable, this.props.action);
         }
         this.props.hideContextMenu();
-        this.props.store.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO ALL", this.props.clickedVariable, this.type, this.props.localIndex)
     }
 
     /**
@@ -71,7 +69,6 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
             this.props.store.childStore.applyActionToPrevious(this.props.localIndex, this.props.clickedVariable, this.props.action);
         }
         this.props.hideContextMenu();
-        this.props.store.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO PREVIOUS", this.props.clickedVariable, this.type, this.props.localIndex)
     }
 
     /**
@@ -101,14 +98,12 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
             this.props.store.childStore.applyActionToNext(this.props.localIndex, this.props.clickedVariable, this.props.action);
         }
         this.props.hideContextMenu();
-        this.props.store.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + this.props.action + " TO NEXT", this.props.clickedVariable, this.type, this.props.localIndex)
 
     }
 
     magicSort() {
         this.props.store.childStore.timepoints[this.props.localIndex].magicSort(this.props.clickedVariable);
         this.props.hideContextMenu();
-        this.props.store.rootStore.undoRedoStore.saveTimepointHistory("MAGICSORT", this.props.clickedVariable, this.type, this.props.localIndex)
 
     }
 

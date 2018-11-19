@@ -24,7 +24,6 @@ class DerivedVariable {
     initializeObservable(domain, range) {
         let currDomain = this.getDefaultDomain(domain);
         let currRange = this.getDefaultRange(currDomain, range);
-        console.log(currDomain, currRange);
         return {
             domain: currDomain,
             range: currRange,
@@ -35,9 +34,6 @@ class DerivedVariable {
                 }
                 else if (this.datatype === "NUMBER") {
                     scale = ColorScales.getContinousColorScale(this.range, this.domain);
-                }
-                else if (this.datatype === "BINNED") {
-                    scale = ColorScales.getBinnedColorScale(this.range, this.domain, this.modification.binning.bins);
                 }
                 return scale;
             }

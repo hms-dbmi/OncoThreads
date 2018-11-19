@@ -1,7 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Col, Form, FormControl, FormGroup} from 'react-bootstrap';
+import {Alert, Button, Checkbox, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
+import ControlLabel from "react-bootstrap/es/ControlLabel";
 
 
 const VariableSelector = observer(class VariableSelector extends React.Component {
@@ -9,15 +10,19 @@ const VariableSelector = observer(class VariableSelector extends React.Component
     constructor(props) {
         super(props);
         this.state = {
-            mappingType: 'binary',
-            category: "clinSample",
+            selectionType: "clinical",
+            mutationOptions: [],
+            molecularOptions: [],
+            showCheckBoxOptions: false,
         };
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
         this.handleCategorySelect = this.handleCategorySelect.bind(this);
-        this.handleMutationSelect = this.handleMutationSelect.bind(this);
+        this.updateMutationCheckBoxOptions = this.updateMutationCheckBoxOptions.bind(this);
+        this.updateMolecularCheckBoxOptions = this.updateMolecularCheckBoxOptions.bind(this);
+        this.addGenes = this.addGenes.bind(this);
     }
 
 
@@ -26,51 +31,106 @@ const VariableSelector = observer(class VariableSelector extends React.Component
      * @returns {Array}
      */
     createOptions() {
-        let options = [];
-        let list = [];
-        if (this.state.category === "clinSample") {
-            list = this.props.clinicalSampleCategories;
-        }
-        else {
-            list = this.props.clinicalPatientCategories;
-        }
-        list.forEach(d => {
+        let sampleOptions = [];
+        this.props.clinicalSampleCategories.forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
-                     key={d.variable}> {d.variable}
+                     key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            options.push({value: d.id, label: lb, object: d})
+            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
         });
-        return options;
+        let patientOptions = [];
+        this.props.clinicalPatientCategories.forEach(d => {
+            let lb = (
+                <div className="wordBreak" style={{textAlign: "left"}}
+                     key={d.variable}><b>{d.variable}</b>{": " + d.description}
+                </div>);
+            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, profile: "clinPatient"})
+        });
+        return [{label: "Sample", options: sampleOptions}, {
+            label: "Patient", options: patientOptions
+        }];
     }
 
 
     handleCategorySelect(e) {
         this.setState({
-            category: e.target.value,
-            geneListString: "",
+            selectionType: e.target.value,
+            showCheckBoxOptions: false
         });
     }
 
 
     handleOptionSelect(selectedOption) {
-        this.props.handleVariableAddRemove(selectedOption.object, this.state.category, true)
+        if (!Array.isArray(selectedOption)) {
+            this.props.handleVariableAddRemove(selectedOption.object, selectedOption.profile, true)
+        }
+    }
+
+    updateMutationCheckBoxOptions(hasData) {
+        let mutationOptions = [];
+        if (hasData) {
+            this.props.availableProfiles.forEach(d => {
+                if (d.type === "mutation") {
+                    mutationOptions.push({id: d.id, profile: d.profile, name: d.name, selected: false});
+                }
+            })
+        }
+        this.setState({mutationOptions: mutationOptions, showCheckBoxOptions: true});
+    }
+
+    updateMolecularCheckBoxOptions(profile, hasData) {
+        let molecularOptions = this.state.molecularOptions.slice();
+        if (hasData) {
+            if (!molecularOptions.map(d => d.id).includes(profile)) {
+                molecularOptions.push({
+                    id: profile,
+                    profile: profile,
+                    name: this.props.availableProfiles.filter(d => d.profile === profile)[0].name,
+                    selected: false
+                });
+            }
+        }
+        else {
+            if (molecularOptions.map(d => d.id).includes(profile)) {
+                molecularOptions.splice(molecularOptions.map(d => d.id).indexOf(profile), 1);
+            }
+        }
+        console.log(molecularOptions);
+        this.setState({molecularOptions: molecularOptions, showCheckBoxOptions: true});
     }
 
     /**
      * searches for the genes entered in the search field
      */
     searchGenes() {
+        this.setState({molecularOptions: [], mutationOptions: []});
         let geneList = this.state.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, "").toUpperCase().split(" ");
         geneList.forEach(function (d, i) {
             if (d.includes("ORF")) {
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.store.rootStore.molProfileMapping.getMutations(this.state.category, geneList, this.state.mappingType, newVariable => {
-            this.props.handleGeneSelect(newVariable, this.state.category);
+        this.props.molProfileMapping.loadIds(geneList, () => {
+            this.props.molProfileMapping.loadMutations(() => {
+                this.updateMutationCheckBoxOptions(this.props.molProfileMapping.currentMutations.length>0);
+            });
+            this.props.availableProfiles.forEach(d => {
+                if (d.type === "molecular") {
+                    this.props.molProfileMapping.loadMolecularData(d.profile, () => {
+                        this.updateMolecularCheckBoxOptions(d.profile, this.props.molProfileMapping.currentMolecular[d.profile].length>0);
+                    })
+                }
+            });
         });
-        this.setState({geneListString: ""});
+
+    }
+
+    addGenes() {
+        const mappingTypes = this.state.mutationOptions.filter(d => d.selected).map(d => d.id);
+        const profiles=this.state.molecularOptions.filter(d => d.selected).map(d => d.profile);
+        this.props.molProfileMapping.getMultipleProfiles(profiles, mappingTypes).forEach(d=>this.props.handleGeneSelect(d));
+        this.setState({geneListString: "", showCheckBoxOptions: false});
     }
 
     /**
@@ -78,7 +138,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
      * @param event
      */
     updateSearchValue(event) {
-        this.setState({geneListString: event.target.value});
+        this.setState({geneListString: event.target.value, showCheckBoxOptions: false});
     }
 
     /**
@@ -99,13 +159,9 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         return false;
     }
 
-    handleMutationSelect(event) {
-        this.setState({mappingType: event.target.value})
-    }
-
 
     getTimepointSearchField() {
-        if (this.state.category === "clinSample" || this.state.category === "clinPatient") {
+        if (this.state.selectionType === "clinical") {
             return <Select
                 type="text"
                 searchable={true}
@@ -117,7 +173,6 @@ const VariableSelector = observer(class VariableSelector extends React.Component
             />
         }
         else {
-
             return <FormControl style={{height: 38}} type="textarea"
                                 placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
                                 onChange={this.updateSearchValue}
@@ -126,47 +181,73 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         }
     }
 
-    getMappingTypeSelect() {
-        let mutationSelect = null;
-        if (this.props.molecularProfiles.map(d => d.molecularProfileId).includes(this.state.category)) {
-            if (this.props.molecularProfiles.filter(d => d.molecularProfileId === this.state.category)[0].molecularAlterationType === "MUTATION_EXTENDED") {
-                mutationSelect =
-                    <FormControl style={{height: 38}} onChange={this.handleMutationSelect} componentClass="select"
-                                 placeholder="select">
-                        <option value="binary">Binary</option>
-                        <option value="proteinChange">Protein change</option>
-                        <option value="mutationType">Mutation type</option>
-                        <option value="vaf">Variant allele frequency</option>
-                    </FormControl>
-            }
+    toggleSelect(index, isMutation) {
+        if (isMutation) {
+            let mutationOptions = this.state.mutationOptions.slice();
+            mutationOptions[index].selected = !mutationOptions[index].selected;
+            this.setState({mutationOptions: mutationOptions});
         }
-        return mutationSelect;
+        else {
+            let molecularOptions = this.state.molecularOptions.slice();
+            molecularOptions[index].selected = !molecularOptions[index].selected;
+            this.setState({molecularOptions: molecularOptions});
+        }
+
+    }
+
+    getAvailableCheckBoxes() {
+        let checkBoxes = [];
+        if (this.state.mutationOptions.length > 0 || this.state.molecularOptions.length > 0) {
+            checkBoxes.push(<h5 key={"header"}>Available data for gene(s)</h5>)
+        }
+        else {
+            checkBoxes = "No data available"
+        }
+        if (this.state.mutationOptions.length > 0) {
+            let available = [];
+            this.state.mutationOptions.forEach((d, i) => available.push(<Checkbox
+                onChange={() => this.toggleSelect(i, true)} checked={d.selected} key={d.id}
+                value={d.id}>{d.name}</Checkbox>));
+            checkBoxes.push(<Col key="Mutations" sm={6}>
+                <ControlLabel>Mutations</ControlLabel>
+                {available}
+            </Col>)
+        }
+        if (this.state.molecularOptions.length > 0) {
+            let available = [];
+            this.state.molecularOptions.forEach((d, i) => available.push(<Checkbox
+                onChange={() => this.toggleSelect(i, false)} checked={d.selected} key={d.id}
+                value={d.id}>{d.name}</Checkbox>));
+            checkBoxes.push(<Col key="Molecular" sm={6}>
+                <ControlLabel>Molecular Profiles</ControlLabel>
+                {available}
+            </Col>)
+        }
+        return <Alert>
+            <FormGroup>{checkBoxes}</FormGroup>
+            <Button onClick={this.addGenes}>Add genes</Button>
+        </Alert>;
     }
 
 
     render() {
-        let mappingTypeSelect = this.getMappingTypeSelect();
-        let searchFieldSize = 8;
-        let mappingTypeCol = null;
-        if (mappingTypeSelect !== null) {
-            searchFieldSize = 6;
-            mappingTypeCol = <Col sm={2} style={{padding: 0}}>{mappingTypeSelect}</Col>
-        }
         return (<Form horizontal>
                 <FormGroup>
                     <Col sm={4} style={{paddingRight: "0"}}>
                         <FormControl style={{height: 38}} componentClass="select"
                                      onChange={this.handleCategorySelect}
                                      placeholder="Select Category">
-                            {this.props.variableOptions.map((d) => <option value={d.id}
-                                                                           key={d.id}>{d.name}</option>)}
+                            <option value={"clinical"}>Clinical Data</option>
+                            <option value={"genes"}>Genomic Data</option>
                         </FormControl>
                     </Col>
-                    {mappingTypeCol}
-                    <Col sm={searchFieldSize} style={{padding: 0}}>
+                    <Col sm={8} style={{padding: 0}}>
                         {this.getTimepointSearchField()}
                     </Col>
                 </FormGroup>
+
+                {this.state.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
+
             </Form>
         )
     }

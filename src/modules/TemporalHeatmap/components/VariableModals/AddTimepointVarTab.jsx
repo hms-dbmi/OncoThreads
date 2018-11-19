@@ -33,24 +33,22 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
             derivedVariable: '',
             callback: ''
         };
-        this.variableOptions = props.store.rootStore.availableProfiles;
         this.addOrder = props.currentVariables.slice();
 
         this.handleVariableAddRemove = this.handleVariableAddRemove.bind(this);
         this.handleGeneSelect = this.handleGeneSelect.bind(this);
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
-        this.closeCategoricalModal = this.closeCategoricalModal.bind(this);
-        this.closeContinuousModal = this.closeContinuousModal.bind(this);
-        this.changeRange = this.changeRange.bind(this);
+        this.closeModal = this.closeModal.bind(this);
         this.handleSort = this.handleSort.bind(this);
-        this.combineSelected=this.combineSelected.bind(this);
+        this.combineSelected = this.combineSelected.bind(this);
     }
 
-    changeRange(range, id) {
-        this.variableManagerStore.referencedVariables[id].range = range;
-        this.props.setTimepointData(this.variableManagerStore.currentVariables,this.variableManagerStore.referencedVariables)
-    }
-
+    /**
+     * opens modal to modify a variable or change an existing modification
+     * @param originalVariable
+     * @param derivedVariable
+     * @param isContinuous
+     */
     modifyVariable(originalVariable, derivedVariable, isContinuous) {
         this.openModifyModal(originalVariable, derivedVariable, isContinuous, newVariable => {
             if (derivedVariable !== null) {
@@ -68,8 +66,8 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     /**
      * closes the categorical modal
      */
-    closeCategoricalModal() {
-        this.setState({modifyCategoricalIsOpen: false});
+    closeModal() {
+        this.setState({modifyCategoricalIsOpen: false, modifyContinuousIsOpen: false});
 
     }
 
@@ -84,14 +82,6 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     }
 
     /**
-     * closes the categorical modal
-     */
-    closeContinuousModal() {
-        this.setState({modifyContinuousIsOpen: false});
-
-    }
-
-    /**
      * adds/removes variable to/from selectedVariables list
      * @param variable
      * @param category
@@ -100,23 +90,25 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     handleVariableAddRemove(variable, category, select) {
         if (select) {
             if (!(this.variableManagerStore.currentVariables.includes(variable.id))) {
-                this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(variable.id, variable.variable, variable.datatype, variable.description, [], [], this.props.store.rootStore.staticMappers[variable.id], category));
+                this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(variable.id, variable.variable, variable.datatype, variable.description, [], [], this.props.staticMappers[variable.id], category));
                 this.addOrder.push(variable.id);
             }
         }
         if (!select) {
             this.variableManagerStore.removeVariable(variable.id);
-            this.addOrder.splice(this.addOrder.indexOf(variable.id), 1);
+            if (this.addOrder.includes(variable.id)) {
+                this.addOrder.splice(this.addOrder.indexOf(variable.id), 1);
+            }
         }
         this.props.setTimepointData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
     }
 
     /**
      * handles a cogwheelClick
+     * @param event
      * @param id
      */
-    handleCogWheelClick(event,id) {
-        event.stopPropagation();
+    handleCogWheelClick(event, id) {
         let variable = this.variableManagerStore.getById(id);
         let originalVariable;
         let derivedVariable = null;
@@ -142,14 +134,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                 {fullVariable.description}
             </Tooltip>;
             let label = null;
-            let typeIcon;
-            if (fullVariable.profile === "clinPatient") {
-                typeIcon = <FontAwesome name="user"/>
-            }
-            else {
-                typeIcon = <FontAwesome name="flask"/>
-            }
-            if (d.isModified) {
+            if (fullVariable.derived) {
                 label = <Label bsStyle="info">
                     Modified
                 </Label>
@@ -164,13 +149,16 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
             }
             elements.push(
                 <tr key={d.id} style={{backgroundColor: bgColor}}
-                    onClick={() => this.variableManagerStore.toggleSelected(d.id)}>
+                    onClick={(e) => {
+                        if (e.target.nodeName === "TD") {
+                            this.variableManagerStore.toggleSelected(d.id)
+                        }
+                    }}>
                     <td>
                         {i}
                     </td>
                     <OverlayTrigger placement="top" overlay={tooltip}>
                         <td>
-                            {typeIcon}
                             {fullVariable.name}
                         </td>
                     </OverlayTrigger>
@@ -180,24 +168,25 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                     <td>
                         {fullVariable.datatype}
                     </td>
+                    <td>{this.props.availableProfiles[this.props.availableProfiles.map(d => d.id).indexOf(fullVariable.profile)].name}</td>
                     <td>
-                        <FontAwesome onClick={(e) => this.handleCogWheelClick(e,d.id)}
+                        <FontAwesome onClick={(e) => this.handleCogWheelClick(e, d.id)}
                                      name="cog"/>
                         {"\t"}
-                        <FontAwesome onClick={(e) => {
-                            e.stopPropagation();
+                        <FontAwesome onClick={() => {
                             this.handleVariableAddRemove(fullVariable, "", false)
                         }} name="times"/>
                     </td>
                 </tr>);
         });
-        return <Table condensed hover className="fixed_header">
+        return <Table condensed hover>
             <thead>
             <tr>
                 <th>Position</th>
                 <th>Variable</th>
                 <th/>
                 <th>Datatype</th>
+                <th>Source</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -208,38 +197,24 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
 
 
     /**
-     * creates the modal for categoxrical modification
+     * creates the modal for modification
      * @returns {*}
      */
-    getCategoricalModal() {
-        let modal = null;
-        if (this.state.modifyCategoricalIsOpen) {
-            modal = <ModifyCategorical modalIsOpen={this.state.modifyCategoricalIsOpen}
-                                       variable={this.state.currentVariable}
-                                       callback={this.state.callback}
-                                       derivedVariable={this.state.derivedVariable}
-                                       changeRange={this.changeRange}
-                                       closeModal={this.closeCategoricalModal}/>
-        }
-        return (
-            modal
-        )
-    }
-
-    /**
-     * creates the modal for continuous modification
-     * @returns {*}
-     */
-    getContinuousModal() {
+    getModal() {
         let modal = null;
         if (this.state.modifyContinuousIsOpen) {
             modal = <ModifyContinuous modalIsOpen={this.state.modifyContinuousIsOpen}
                                       variable={this.state.currentVariable}
                                       callback={this.state.callback}
                                       derivedVariable={this.state.derivedVariable}
-                                      changeRange={this.changeRange}
-                                      availableProfiles={this.variableOptions}
-                                      closeModal={this.closeContinuousModal}/>
+                                      closeModal={this.closeModal}/>
+        }
+        else if (this.state.modifyCategoricalIsOpen) {
+            modal = <ModifyCategorical modalIsOpen={this.state.modifyCategoricalIsOpen}
+                                       variable={this.state.currentVariable}
+                                       callback={this.state.callback}
+                                       derivedVariable={this.state.derivedVariable}
+                                       closeModal={this.closeModal}/>
         }
         return (
             modal
@@ -247,15 +222,23 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     }
 
 
+    /**
+     * handles adding the selected genes
+     * @param variable
+     */
     handleGeneSelect(variable) {
         this.variableManagerStore.addVariableToBeDisplayed(variable);
         this.addOrder.push(variable.id);
         this.props.setTimepointData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
     }
 
+    /**
+     * sorts current variables
+     * @param e
+     */
     handleSort(e) {
         if (e.target.value === "source") {
-            this.variableManagerStore.sortBySource(this.props.store.rootStore.availableProfiles.map(d => d.id));
+            this.variableManagerStore.sortBySource(this.props.availableProfiles.map(d => d.id));
         }
         else if (e.target.value === "addOrder") {
             this.variableManagerStore.sortByAddOrder(this.addOrder);
@@ -269,6 +252,10 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
         this.props.setTimepointData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables);
     }
 
+    /**
+     * Opens modal for combining selected variables
+     * TODO: implement combine modal
+     */
     combineSelected() {
         let selectedVar = this.variableManagerStore.getSelectedVariables();
         let isOfOneDatatype = true;
@@ -284,11 +271,11 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
             if (!isOfOneDatatype) {
                 alert("Cannot combine numerical with non-numerical variables");
             }
-            else{
-
+            else {
+                //open combine modal
             }
         }
-        else{
+        else {
             alert("Please select at least two variables");
         }
     }
@@ -298,8 +285,9 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
         return (
             <div>
                 <h4>Select variable</h4>
-                <VariableSelector {...this.props} handleVariableAddRemove={this.handleVariableAddRemove}
-                                  handleGeneSelect={this.handleGeneSelect} variableOptions={this.variableOptions}/>
+                <VariableSelector {...this.props}
+                                  handleVariableAddRemove={this.handleVariableAddRemove}
+                                  handleGeneSelect={this.handleGeneSelect}/>
                 <h4>Current Variables</h4>
                 <Form inline>
                     <FormGroup>
@@ -314,10 +302,11 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                         </FormControl>
                     </FormGroup>
                 </Form>
-                {this.showCurrentVariables()}
+                <div style={{maxHeight: 400, overflowY: "scroll"}}>
+                    {this.showCurrentVariables()}
+                </div>
                 <Button onClick={this.combineSelected}>Combine Selected</Button>
-                {this.getCategoricalModal()}
-                {this.getContinuousModal()}
+                {this.getModal()}
             </div>
 
         )

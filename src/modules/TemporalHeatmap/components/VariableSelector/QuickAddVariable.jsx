@@ -140,7 +140,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id],this.state.category));
+                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], this.state.category));
             });
             this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
             this.setState({selectedValues: []})
@@ -197,9 +197,11 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.store.rootStore.molProfileMapping.getMutations(this.state.category, geneList, "binary", newVariable => {
-            this.props.store.variableStores.sample.addVariableToBeDisplayed(newVariable);
-        });
+        this.props.store.rootStore.molProfileMapping.getMutations(this.props.store.rootStore.availableProfiles[this.props.store.rootStore.availableProfiles.map(d => d.id).indexOf(this.state.category)].profile,
+            geneList, this.state.category, newVariables => {
+                this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
+                //newVariables.forEach((d) => this.props.store.variableStores.sample.addVariableToBeDisplayed(d));
+            });
         this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
         this.setState({geneListString: ""});
     }
@@ -219,16 +221,6 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
             geneListString: "",
             isClinical: e.target.value === "clinSample" || e.target.value === "clinPatient"
         });
-    }
-
-    getTimepointVariableOptions() {
-        let options = [{id: "clinSample", name: "Clinical Sample Data"}, {
-            id: "clinPatient",
-            name: "Clinical Patient Data"
-        }];
-        return options.concat(this.props.molecularProfiles.map(d => {
-            return {id: d.molecularProfileId, name: d.name}
-        }));
     }
 
 
@@ -292,7 +284,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
                                      placeholder="Select Category">
                             <optgroup label="Timepoint Variables">
                                 {this.props.store.rootStore.availableProfiles.map((d) => <option value={d.id}
-                                                                                       key={d.id}>{d.name}</option>)}
+                                                                                                 key={d.id}>{d.name}</option>)}
                             </optgroup>
                             <optgroup label="Event Variables">
                                 {this.props.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option value={d}
