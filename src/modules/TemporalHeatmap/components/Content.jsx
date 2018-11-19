@@ -3,7 +3,7 @@
  */
 import React from "react";
 import {observer} from 'mobx-react';
-import {Button, Col, Grid, Row} from 'react-bootstrap';
+import {Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import MainView from "./MainView"
 import GroupBinningModal from "./VariableModals/Binner/GroupBinningModal"
@@ -20,7 +20,7 @@ import AddVarModal from "./VariableModals/AddVarModal";
 Creates all components except for the top navbar
  */
 const Content = observer(class Content extends React.Component {
-    constructor() {
+    constructor(props) {
         super();
         this.state = {
             modalIsOpen: false,
@@ -42,6 +42,7 @@ const Content = observer(class Content extends React.Component {
             contextY: 0,
             showContextMenu: false,
             showContextMenuHeatmapRow: false,
+            horizontalZoom: 300 - (props.rootStore.timepointStore.numberOfPatients < 300 ? props.rootStore.timepointStore.numberOfPatients : 300),
 
             addModalIsOpen: false
             //varList:[]
@@ -58,8 +59,15 @@ const Content = observer(class Content extends React.Component {
         this.hideTooltip = this.hideTooltip.bind(this);
         this.showContextMenu = this.showContextMenu.bind(this);
         this.hideContextMenu = this.hideContextMenu.bind(this);
-        this.showSidebar = this.showSidebar.bind(this);
-        this.hideSidebar = this.hideSidebar.bind(this);
+
+        this.handleResetAll = this.handleResetAll.bind(this);
+        this.handleResetAlignment = this.handleResetAlignment.bind(this);
+        this.handleResetSelection = this.handleResetSelection.bind(this);
+
+        this.horizontalZoom = this.horizontalZoom.bind(this);
+        this.setToScreenWidth = this.setToScreenWidth.bind(this);
+        this.verticalZoom = this.verticalZoom.bind(this);
+        this.setToScreenHeight = this.setToScreenHeight.bind(this);
 
         this.updateVariable = this.updateVariable.bind(this);
 
@@ -143,13 +151,35 @@ const Content = observer(class Content extends React.Component {
         })
     }
 
-    showSidebar() {
-        this.setState({sidebarSize: 2, displaySidebar: "", displayShowButton: "none"})
+    horizontalZoom(event) {
+        this.setState({horizontalZoom: parseInt(event.target.value, 10)});
+
     }
 
-    hideSidebar() {
-        this.setState({sidebarSize: 0, displaySidebar: "none", displayShowButton: ""})
+    verticalZoom(event) {
+        this.props.rootStore.visStore.setTransitionSpace(parseInt(event.target.value, 10));
     }
+
+    setToScreenWidth() {
+        this.setState({horizontalZoom: 300 - (this.props.rootStore.timepointStore.numberOfPatients < 300 ? this.props.rootStore.timepointStore.numberOfPatients : 300)})
+    }
+
+    setToScreenHeight() {
+        this.props.rootStore.visStore.fitToScreenHeight();
+    }
+
+    handleResetAll() {
+        this.props.rootStore.reset();
+    }
+
+    handleResetAlignment() {
+        this.props.rootStore.resetTimepointStructure(true);
+    }
+
+    handleResetSelection() {
+        this.props.rootStore.timepointStore.selectedPatients = []
+    }
+
 
     getBinner() {
         if (this.state.modalIsOpen) {
@@ -209,12 +239,12 @@ const Content = observer(class Content extends React.Component {
     render() {
         return (
             <div>
-                <Grid fluid={true} style={{paddingLeft:20}}>
+                <Grid fluid={true} style={{paddingLeft: 20}}>
                     <Row>
                         <Col sm={1} xs={1}>
                             <h5>Add Variables</h5>
                         </Col>
-                        <Col md={9} xs={9}>
+                        <Col md={8} xs={8}>
                             <QuickAddVariable
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
@@ -225,10 +255,55 @@ const Content = observer(class Content extends React.Component {
                                 eventAttributes={this.props.rootStore.eventAttributes}
                             />
                         </Col>
-                        <Col sm={2} xs={2}>
-                            <Button color="secondary"
-                                    onClick={this.openAddModal}>Variable manager
-                            </Button>
+                        <Col sm={3} xs={3}>
+
+                            <ButtonToolbar>
+                                <ButtonGroup>
+                                    <Button color="secondary"
+                                            onClick={this.openAddModal}>Variable manager
+                                    </Button>
+                                </ButtonGroup>
+                                <ButtonGroup>
+                                    <DropdownButton
+                                        title={"Zoom"}
+                                        key={"zoom"}
+                                        id={"zoom"}
+                                    >
+                                        <div style={{padding: "5px"}}>
+                                            Horizontal: <input type="range" value={this.state.horizontalZoom}
+                                                               onChange={this.horizontalZoom} step={1}
+                                                               min={0} max={290}/>
+                                            <Button onClick={this.setToScreenWidth}>Set to screen width</Button>
+                                            <br/>
+                                            Vertical: <input type="range"
+                                                             value={this.props.rootStore.visStore.transitionSpace}
+                                                             onChange={this.verticalZoom} step={1}
+                                                             min={5} max={700}/>
+                                            <Button onClick={this.setToScreenHeight}>Set to screen height</Button>
+                                        </div>
+                                    </DropdownButton>
+                                </ButtonGroup>
+                                <ButtonGroup>
+                                    {/*<Button onClick={this.props.store.rootStore.exportSVG}>Export
+                            </Button>*/}
+                                    <DropdownButton
+                                        title={"Reset"}
+                                        key={"ResetButton"}
+                                        id={"ResetButton"}
+                                    >
+                                        <MenuItem eventKey="1" onClick={this.handleResetAlignment}>...timepoint
+                                            alignment</MenuItem>
+                                        <MenuItem eventKey="2"
+                                                  onClick={this.handleResetSelection}>...selection</MenuItem>
+                                        <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
+                                    </DropdownButton>
+                                    <Button onClick={this.props.rootStore.undoRedoStore.undo}><FontAwesome
+                                        name="undo"/></Button>
+                                    <Button onClick={this.props.rootStore.undoRedoStore.redo}><FontAwesome
+                                        name="redo"/></Button>
+
+                                </ButtonGroup>
+                            </ButtonToolbar>
                         </Col>
                     </Row>
                     <Row>
@@ -253,7 +328,8 @@ const Content = observer(class Content extends React.Component {
                                     timepoints={this.props.rootStore.timepointStore.timepoints}
                                     store={this.props.rootStore.timepointStore}
                                     transitionStore={this.props.rootStore.transitionStore}
-                                    visMap={this.props.rootStore.visStore} f
+                                    visMap={this.props.rootStore.visStore}
+                                    horizontalZoom={this.state.horizontalZoom}
                                     rectWidth={this.props.rootStore.visStore.sampleRectWidth}
                                     openBinningModal={this.openModal}
                                     showTooltip={this.showTooltip}

@@ -231,14 +231,20 @@ const VariableSelector = observer(class VariableSelector extends React.Component
 
 
     render() {
+         let options=[];
+         if(this.props.availableProfiles.filter(d=>d.type==="clinical").length>0){
+            options.push(<option value={"clinical"}>Clinical Data</option>)
+        }
+        if(this.props.availableProfiles.filter(d=>d.type!=="clinical").length>0){
+            options.push(<option value={"genes"}>Genomic Data</option>)
+        }
         return (<Form horizontal>
                 <FormGroup>
                     <Col sm={4} style={{paddingRight: "0"}}>
                         <FormControl style={{height: 38}} componentClass="select"
                                      onChange={this.handleCategorySelect}
                                      placeholder="Select Category">
-                            <option value={"clinical"}>Clinical Data</option>
-                            <option value={"genes"}>Genomic Data</option>
+                            {options}
                         </FormControl>
                     </Col>
                     <Col sm={8} style={{padding: 0}}>

@@ -11,19 +11,10 @@ import MapperCombine from "../../MapperCombineFunctions";
 /*
 creates the selector for sample variables (left side of main view, top)
  */
-const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Component {
+const QuickAddVariable = observer(class QuickAddVariable extends React.Component {
     constructor(props) {
         super();
-        this.state = {
-            category:"clinical",
-            profile:props.availableProfiles.filter(d=>d.type!=="clinical")[0].profile,
-            mappingType:props.availableProfiles.filter(d=>d.type!=="clinical")[0].id,
-            geneListString: "",
-            selectedValues: [],
-            isClinical: true,
-            isEvent: false,
-            selectedKey: "",
-        };
+        this.state = QuickAddVariable.getInitialState(props);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
@@ -32,6 +23,25 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
         this.handleMappingSelect=this.handleMappingSelect.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.addVariablesEnter = this.addVariablesEnter.bind(this);
+    }
+    static getInitialState(props){
+        let profile='';
+        let mappingType='';
+        const nonClinicalProfiles=props.availableProfiles.filter(d=>d.type!=="clinical");
+        if(nonClinicalProfiles.length>0){
+            profile=nonClinicalProfiles[0].profile;
+            mappingType=nonClinicalProfiles[0].id;
+        }
+        return{
+             category:"clinical",
+            profile:profile,
+            mappingType:mappingType,
+            geneListString: "",
+            selectedValues: [],
+            isClinical: true,
+            isEvent: false,
+            selectedKey: "",
+        }
     }
 
     /**
@@ -113,7 +123,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
     }
 
     addVariablesEnter(e) {
-        if (QuickAddTimepointVar.checkEnterPressed(e)) {
+        if (QuickAddVariable.checkEnterPressed(e)) {
             this.handleAdd();
         }
     }
@@ -143,7 +153,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], this.state.category));
+                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.profile));
             });
             this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
             this.setState({selectedValues: []})
@@ -188,7 +198,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
      * @param event
      */
     handleEnterPressed(event) {
-        if (QuickAddTimepointVar.checkEnterPressed(event)) {
+        if (QuickAddVariable.checkEnterPressed(event)) {
             this.searchGenes();
         }
     }
@@ -308,6 +318,14 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
             </Col>
 
         }
+        let options=[];
+         if(this.props.availableProfiles.filter(d=>d.type==="clinical").length>0){
+            options.push(<option value={"clinical"}>Clinical Data</option>)
+        }
+        if(this.props.availableProfiles.filter(d=>d.type!=="clinical").length>0){
+            options.push(<option value={"genes"}>Genomic Data</option>)
+        }
+
         return (
             <Form horizontal>
                 <FormGroup>
@@ -315,8 +333,7 @@ const QuickAddVariable = observer(class QuickAddTimepointVar extends React.Compo
                         <FormControl style={{height: 38}} componentClass="select" onChange={this.handleSelect}
                                      placeholder="Select Category">
                             <optgroup label="Timepoint Variables">
-                                <option value={"clinical"}>Clinical Data</option>
-                                <option value={"genes"}>Genomic Data</option>
+                                {options}
                             </optgroup>
                             <optgroup label="Event Variables">
                                 {this.props.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option value={d}

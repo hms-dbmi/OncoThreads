@@ -512,17 +512,20 @@ class RootStore {
     }
 
     createAvailableProfiles() {
-        this.availableProfiles = [{
+        if(this.cbioAPI.clinicalSampleData.length>0){
+            this.availableProfiles.push({
             name: "Clinical Sample Data",
             id: "clinSample",
             type: "clinical",
-            profile: "clinSample"
-        }, {
+            profile: "clinSample"})
+        }
+        if(this.cbioAPI.clinicalPatientData.length>0){
+            this.availableProfiles.push({
             id: "clinPatient",
             profile: "clinPatient",
             type: "clinical",
             name: "Clincial Patient Data"
-        }];
+        })}
         this.cbioAPI.molecularProfiles.filter(d => d.molecularAlterationType === "MUTATION_EXTENDED").forEach(d => {
             this.mutationMappingTypes.forEach(f => {
                 this.availableProfiles.push({
