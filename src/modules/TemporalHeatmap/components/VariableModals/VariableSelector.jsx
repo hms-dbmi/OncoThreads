@@ -48,8 +48,8 @@ const VariableSelector = observer(class VariableSelector extends React.Component
                 </div>);
             patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, profile: "clinPatient"})
         });
-        return [{label: "Sample", options: sampleOptions}, {
-            label: "Patient", options: patientOptions
+        return [{label: "Sample-specific", options: sampleOptions}, {
+            label: "Patient-specific", options: patientOptions
         }];
     }
 
@@ -233,10 +233,10 @@ const VariableSelector = observer(class VariableSelector extends React.Component
     render() {
          let options=[];
          if(this.props.availableProfiles.filter(d=>d.type==="clinical").length>0){
-            options.push(<option value={"clinical"}>Clinical Data</option>)
+            options.push(<option value={"clinical"}>Predefined</option>)
         }
         if(this.props.availableProfiles.filter(d=>d.type!=="clinical").length>0){
-            options.push(<option value={"genes"}>Genomic Data</option>)
+            options.push(<option value={"genes"}>Genomic</option>)
         }
         return (<Form horizontal>
                 <FormGroup>

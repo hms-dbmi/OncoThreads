@@ -241,10 +241,10 @@ const Content = observer(class Content extends React.Component {
             <div>
                 <Grid fluid={true} style={{paddingLeft: 20}}>
                     <Row>
-                        <Col sm={1} xs={1}>
+                        <Col smOffset={1} xsOffset={1} sm={1} xs={1}>
                             <h5>Add Variables</h5>
                         </Col>
-                        <Col md={8} xs={8}>
+                        <Col md={7} xs={7}>
                             <QuickAddVariable
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
@@ -256,7 +256,6 @@ const Content = observer(class Content extends React.Component {
                             />
                         </Col>
                         <Col sm={3} xs={3}>
-
                             <ButtonToolbar>
                                 <ButtonGroup>
                                     <Button color="secondary"

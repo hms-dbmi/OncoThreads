@@ -14,7 +14,7 @@ gets the data with the cBioAPI and gives it to the other stores
 TODO: make prettier
  */
 class RootStore {
-    constructor(cbioAPI, study, firstLoad) {
+    constructor(cbioAPI, study, firstLoad, display) {
         this.cbioAPI = cbioAPI;
         this.study = study;
 
@@ -47,6 +47,7 @@ class RootStore {
         extendObservable(this, {
             parsed: false,
             firstLoad: firstLoad,
+            display:display,
 
 
             timeVar: 1,
@@ -289,7 +290,6 @@ class RootStore {
      */
     parseCBio() {
         const _self = this;
-        this.firstLoad = false;
         this.cbioAPI.getAllData(this.study.studyId, function () {
             _self.buildPatientStructure();
             _self.createClinicalSampleMapping();

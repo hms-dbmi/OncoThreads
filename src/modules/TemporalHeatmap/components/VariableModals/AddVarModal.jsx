@@ -65,7 +65,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                                 clinicalSampleCategories={this.props.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.clinicalPatientCategories}/>
                         </Tab>
-                        <Tab eventKey={2} title="Event Variables">
+                        <Tab disabled eventKey={2} title="Event Variables">
                             Coming soon
                         </Tab>
                     </Tabs>

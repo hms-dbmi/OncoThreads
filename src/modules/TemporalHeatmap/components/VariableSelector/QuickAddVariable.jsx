@@ -177,8 +177,8 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
                 </div>);
             patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, profile: "clinPatient"})
         });
-        return [{label: "Sample", options: sampleOptions}, {
-            label: "Patient", options: patientOptions
+        return [{label: "Sample-specific", options: sampleOptions}, {
+            label: "Patient-specific", options: patientOptions
         }];
     }
 
@@ -320,15 +320,15 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         }
         let options=[];
          if(this.props.availableProfiles.filter(d=>d.type==="clinical").length>0){
-            options.push(<option value={"clinical"}>Clinical Data</option>)
+            options.push(<option key="clinical" value={"clinical"}>Predefined</option>)
         }
         if(this.props.availableProfiles.filter(d=>d.type!=="clinical").length>0){
-            options.push(<option value={"genes"}>Genomic Data</option>)
+            options.push(<option key="genes" value={"genes"}>Genomic</option>)
         }
 
         return (
             <Form horizontal>
-                <FormGroup>
+                <FormGroup style={{margin:0}}>
                     <Col sm={2} style={{paddingRight: "0"}}>
                         <FormControl style={{height: 38}} componentClass="select" onChange={this.handleSelect}
                                      placeholder="Select Category">

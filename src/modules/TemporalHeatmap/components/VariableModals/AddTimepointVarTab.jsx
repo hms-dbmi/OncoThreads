@@ -305,7 +305,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                 <div style={{maxHeight: 400, overflowY: "scroll"}}>
                     {this.showCurrentVariables()}
                 </div>
-                <Button onClick={this.combineSelected}>Combine Selected</Button>
+                <Button disabled onClick={this.combineSelected}>Combine Selected</Button>
                 {this.getModal()}
             </div>
 
