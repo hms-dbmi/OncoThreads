@@ -95,7 +95,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
         /**
-         * computes the width of a text. Returns 30 if the text width would be shorter than 30
+         * crops text to a certain width and appends "..."
          * @param text
          * @param fontSize
          * @param fontweight
