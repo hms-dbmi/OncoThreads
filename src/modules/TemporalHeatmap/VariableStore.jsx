@@ -1,8 +1,4 @@
 import {extendObservable, observe} from "mobx";
-import OriginalVariable from "./OriginalVariable";
-import DerivedVariable from "./DerivedVariable";
-import EventVariable from "./EventVariable";
-import MapperCombine from "./MapperCombineFunctions";
 import MultipleTimepointsStore from "./MultipleTimepointsStore";
 
 /*
@@ -18,32 +14,46 @@ class VariableStore {
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: [],
+
         });
         //Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
             if (change.type === 'splice') {
-                if (change.added.length > 0) {
-                    if (this.type === "between" && this.currentVariables.length === 1) {
-                        this.rootStore.timepointStore.toggleTransition()
+                change.added.forEach(d => {
+                    if (!change.removed.includes(d)) {
+                        this.childStore.addHeatmapRows(d, this.getById(d).mapper);
                     }
-                    change.added.forEach(d => this.childStore.addHeatmapRows(d, this.getById(d).mapper))
+                });
+                change.removed.forEach(d => {
+                    if (!change.added.includes(d)) {
+                        this.childStore.removeHeatmapRows(d);
+                    }
+                });
+                if (change.removedCount > 0 && change.addedCount > 0) {
+                    this.childStore.resortHeatmapRows(this.currentVariables);
                 }
-                if (change.removed.length > 0) {
+                if (change.removedCount > 0 && change.added === 0) {
                     if (this.type === "between" && this.currentVariables.length === 0) {
                         this.rootStore.timepointStore.toggleTransition()
                     }
                     if (this.type === "sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
                         this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
                     }
-                    change.removed.forEach(d => this.childStore.removeHeatmapRows(d));
+                }
+                if (change.addedCount > 0) {
+                    if (this.type === "between" && this.currentVariables.length === 1) {
+                        this.rootStore.timepointStore.toggleTransition()
+                    }
                 }
             }
             else if (change.type === "update") {
                 this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
             }
+            this.updateReferences();
+            this.updateVariableRanges();
             this.rootStore.timepointStore.regroupTimepoints();
-
         });
+
     }
 
     /**
@@ -63,138 +73,100 @@ class VariableStore {
      */
     removeVariable(variableId) {
         let name = this.getById(variableId).name;
-        this.currentVariables.splice(this.currentVariables.indexOf(variableId), 1);
-        this.removeReferences(variableId);
-        this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", +name, true);
+        this.currentVariables.remove(variableId);
+        this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
     }
 
-    /**
-     * Decrement the referenced property of all the variables which were used by the current variable (and their "child variables"). If the referenced property is 0 remove the variable
-     * @param currentId
-     */
-    removeReferences(currentId) {
-        const _self = this;
-        if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
-            this.referencedVariables[currentId].originalIds.forEach(function (d) {
-                _self.removeReferences(d);
+
+    updateVariableRanges() {
+        let profileDomains = {};
+        let profileVariables = this.currentVariables
+            .filter(d => this.rootStore.cbioAPI.molecularProfiles.map(d => d.molecularProfileId).includes(this.referencedVariables[d].profile)
+                && this.referencedVariables[d].datatype === "NUMBER");
+        profileVariables.forEach(variableId => {
+            const variable=this.referencedVariables[variableId];
+                let min = Math.min(...Object.values(variable.mapper));
+                let max = Math.max(...Object.values(variable.mapper));
+                if (!(variable.profile in profileDomains)) {
+                    profileDomains[variable.profile] = [min, max];
+                }
+                else {
+                    if (profileDomains[variable.profile][0] > min) {
+                        profileDomains[variable.profile][0] = min;
+                    }
+                    if (profileDomains[variable.profile][1] < max) {
+                        profileDomains[variable.profile][1] = max;
+                    }
+                }
+
             });
-        }
-        this.referencedVariables[currentId].referenced -= 1;
-        if (this.referencedVariables[currentId].referenced === 0) {
-            if (this.referencedVariables[currentId].type === "event") {
-                delete this.rootStore.eventTimelineMap[currentId];
-            }
-            delete this.referencedVariables[currentId];
-        }
+        profileVariables.forEach(variableId => {
+                if (this.referencedVariables[variableId].profile in profileDomains) {
+                    this.referencedVariables[variableId].domain = profileDomains[this.referencedVariables[variableId].profile]
+                }
+            });
     }
+
 
     /**
      * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
      * @param currentId
      */
-    updateReferences(currentId) {
+    setReferences(currentId) {
         const _self = this;
         if (!(this.referencedVariables[currentId].originalIds.length === 1 && this.referencedVariables[currentId].originalIds[0] === currentId)) {
             this.referencedVariables[currentId].originalIds.forEach(function (d) {
-                _self.updateReferences(d);
+                _self.setReferences(d);
             });
         }
-        _self.referencedVariables[currentId].referenced += 1;
+        this.referencedVariables[currentId].referenced += 1;
     }
 
-    /**
-     * adds an original variable. If display is true the variable will be added to the current variables
-     * @param id
-     * @param name
-     * @param datatype
-     * @param description
-     * @param range
-     * @param display
-     * @param mapper
-     */
-    addOriginalVariable(id, name, datatype, description, range, display, mapper) {
-        if (!this.isReferenced(id)) {
-            this.referencedVariables[id] = new OriginalVariable(id, name, datatype, description, range, [], mapper);
+    updateReferences() {
+        for (let variable in this.referencedVariables) {
+            this.referencedVariables[variable].referenced = 0;
         }
-        if (display && !this.isDisplayed(id)) {
-            this.updateReferences(id);
-            this.currentVariables.push(id);
-            this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
+        this.currentVariables.forEach(d => this.setReferences(d));
+        for (let variable in this.referencedVariables) {
+            if (!this.referencedVariables[variable].derived && this.referencedVariables[variable].referenced === 0) {
+                delete this.referencedVariables[variable]
+            }
         }
     }
+
 
     addVariableToBeReferenced(variable) {
-        this.referencedVariables[variable.id] = variable;
+        if (!(variable.id in this.referencedVariables)) {
+            this.referencedVariables[variable.id] = variable;
+        }
     }
 
     addVariableToBeDisplayed(variable) {
-        this.referencedVariables[variable.id] = variable;
-        this.updateReferences(variable.id);
-        this.currentVariables.push(variable.id);
+        this.addVariableToBeReferenced(variable);
+        if (!this.currentVariables.includes(variable.id)) {
+            this.currentVariables.push(variable.id);
+        }
     }
+
+    addVariablesToBeDisplayed(variables) {
+        let currentVariables = this.currentVariables.slice();
+        variables.forEach(d => {
+            this.addVariableToBeReferenced(d);
+        });
+        variables.forEach(d => {
+            if (!currentVariables.includes(d.id)) {
+                currentVariables.push(d.id);
+            }
+        });
+        this.currentVariables.replace(currentVariables);
+    }
+
 
     replaceDisplayedVariable(oldId, newVariable) {
         if (!this.isReferenced(newVariable.id)) {
             this.referencedVariables[newVariable.id] = newVariable;
         }
-        this.updateReferences(newVariable.id);
-        this.removeReferences(oldId);
         this.currentVariables[this.currentVariables.indexOf(oldId)] = newVariable.id;
-    }
-
-    /**
-     * add an event variable. If display is true the variable will be added to the current variables
-     * @param eventType
-     * @param selectedVariable
-     * @param display
-     */
-    addEventVariable(eventType, selectedVariable, display) {
-        const _self = this;
-        if (!this.isReferenced(selectedVariable.id)) {
-            _self.referencedVariables[selectedVariable.id] = new EventVariable(selectedVariable.id, selectedVariable.name, "binary", eventType, selectedVariable.eventType, [], this.rootStore.getSampleEventMapping(eventType, selectedVariable));
-        }
-        if (!(_self.currentVariables.includes(selectedVariable.id)) && display) {
-            this.updateReferences(selectedVariable.id);
-            _self.currentVariables.push(selectedVariable.id);
-            this.rootStore.undoRedoStore.saveVariableHistory("ADD", selectedVariable.name, true);
-        }
-    }
-
-    /**
-     * adds a derived variable to current and all variables
-     * @param id
-     * @param name
-     * @param datatype
-     * @param description
-     * @param originalIds
-     * @param modificationType
-     * @param modification
-     */
-    addDerivedVariable(id, name, datatype, description, originalIds, modificationType, modification) {
-        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, originalIds, modificationType, modification, [], [], MapperCombine.getModificationMapper(modificationType, modification, originalIds.map(d => this.referencedVariables[d].mapper)));
-        this.updateReferences(id);
-        this.currentVariables.push(id);
-        this.rootStore.undoRedoStore.saveVariableHistory("ADD", name, true);
-    }
-    
-
-    /**
-     * replaces a variable with a variable derived from it
-     * @param id
-     * @param name
-     * @param datatype
-     * @param description
-     * @param originalId
-     * @param modificationType
-     * @param modification
-     */
-    modifyVariable(id, name, datatype, description, originalId, modificationType, modification) {
-        let oldName = this.referencedVariables[originalId].name;
-        this.referencedVariables[id] = new DerivedVariable(id, name, datatype, description, [originalId], modificationType, modification, [], [], MapperCombine.getModificationMapper(modificationType, modification, [this.referencedVariables[originalId].mapper]));
-        this.updateReferences(id);
-        this.currentVariables[this.getIndex(originalId)] = id;
-        this.removeReferences(originalId);
-        this.rootStore.undoRedoStore.saveVariableModification(modificationType, oldName, true);
     }
 
 
@@ -207,7 +179,7 @@ class VariableStore {
     }
 
     /**
-     * check if a variable is referenced (is in referencedVariables)
+     * check if a variable is referenced (is in originalVariables)
      * @param id
      * @returns {boolean}
      */

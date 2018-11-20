@@ -62,9 +62,6 @@ class VisStore {
         if (transitionSpace > 30) {
             this.transitionSpace = transitionSpace
         }
-        else {
-            this.transitionSpace = 30;
-        }
     }
 
     setTransitionSpace(transitionSpace) {

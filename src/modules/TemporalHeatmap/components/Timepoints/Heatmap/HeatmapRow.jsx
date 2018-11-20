@@ -25,15 +25,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         //console.log(this.props.row.data);
 
 
-        let x;
 
-        if (this.props.dtype === "BINNED") {
-
-            _self.props.currentVariables.filter(d => d.derived).forEach(function (d) {
-                if (d.id === _self.props.row.variable) x = d
-            });
-
-        }
 
         this.props.row.data.forEach(function (d, j) {
             let stroke = "none";
@@ -48,16 +40,16 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
             let str = "";
 
-            if (x) {
-                let ind = x.modification.binning.binNames.map(d=>d.name).indexOf(d.value);
-                if(x.modification.binning.binNames[ind].modified) {
-                    let low = Math.round(x.modification.binning.bins[ind] * 100) / 100;
+            if (_self.props.currVar.derived && _self.props.currVar === "ORDINAL" && _self.props.currVar.modificationType === "continuousTransform") {
+                let ind = _self.props.currVar.modification.binning.binNames.map(d => d.name).indexOf(d.value);
+                if (_self.props.currVar.modification.binning.binNames[ind].modified) {
+                    let low = Math.round(_self.props.currVar.modification.binning.bins[ind] * 100) / 100;
 
                     if (ind !== 0) {
                         low = low + 1;
                     }
 
-                    str = ": " + low + " to " + Math.round(x.modification.binning.bins[ind + 1] * 100) / 100;
+                    str = ": " + low + " to " + Math.round(_self.props.currVar.modification.binning.bins[ind + 1] * 100) / 100;
                 }
 
             }
