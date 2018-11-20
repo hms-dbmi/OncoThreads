@@ -2,7 +2,7 @@ import TransitionStore from "./TemporalHeatmap/TransitionStore.jsx"
 import DataStore from "./TemporalHeatmap/DataStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
-import {extendObservable} from "mobx";
+import {extendObservable,observe} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
@@ -47,7 +47,7 @@ class RootStore {
         extendObservable(this, {
             parsed: false,
             firstLoad: firstLoad,
-            display:display,
+            display: display,
 
 
             timeVar: 1,
@@ -102,6 +102,10 @@ class RootStore {
                 return max;
             }
 
+        });
+        observe(this.timepointStructure, (change) => {
+            console.log(change);
+            this.timepointStore.update([], []);
         });
         this.molProfileMapping = new MolProfileMapping(this);
         this.timepointStore = new DataStore(this);
@@ -512,20 +516,22 @@ class RootStore {
     }
 
     createAvailableProfiles() {
-        if(this.cbioAPI.clinicalSampleData.length>0){
+        if (this.cbioAPI.clinicalSampleData.length > 0) {
             this.availableProfiles.push({
-            name: "Clinical Sample Data",
-            id: "clinSample",
-            type: "clinical",
-            profile: "clinSample"})
+                name: "Clinical Sample Data",
+                id: "clinSample",
+                type: "clinical",
+                profile: "clinSample"
+            })
         }
-        if(this.cbioAPI.clinicalPatientData.length>0){
+        if (this.cbioAPI.clinicalPatientData.length > 0) {
             this.availableProfiles.push({
-            id: "clinPatient",
-            profile: "clinPatient",
-            type: "clinical",
-            name: "Clincial Patient Data"
-        })}
+                id: "clinPatient",
+                profile: "clinPatient",
+                type: "clinical",
+                name: "Clincial Patient Data"
+            })
+        }
         this.cbioAPI.molecularProfiles.filter(d => d.molecularAlterationType === "MUTATION_EXTENDED").forEach(d => {
             this.mutationMappingTypes.forEach(f => {
                 this.availableProfiles.push({

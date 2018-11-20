@@ -56,18 +56,13 @@ class UndoRedoStore {
 
 
     deserialize(index) {
-        this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
-        this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
-        this.rootStore.timepointStore.variableStores.sample.currentVariables.replace(this.stateStack[index].state.currentSampleVar);
-        this.rootStore.timepointStore.variableStores.between.currentVariables.replace(this.stateStack[index].state.currentBetweenVar);
-        this.rootStore.timepointStore.transitionOn = this.stateStack[index].state.transitionOn;
-        this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
+        this.deserializeVariables(index);
         this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].state.timepointStructure);
+        this.rootStore.timepointStore.globalTime = this.stateStack[index].state.globalTime;
+        this.rootStore.timepointStore.regroupTimepoints();
         this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
         this.rootStore.timepointStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
-        this.rootStore.timepointStore.globalTime = this.stateStack[index].state.globalTime;
-        this.rootStore.timepointStore.globalPrimary = this.stateStack[index].state.globalPrimary;
-        this.rootStore.timepointStore.regroupTimepoints();
+        this.rootStore.timepointStore.update(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints[0].heatmapOrder,this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.map(d=>d.name));
     }
 
     /**
@@ -79,16 +74,16 @@ class UndoRedoStore {
         this.deserialize(this.currentPointer);
     }
 
-    /**
-     * writes saved attributes to observable datastructure
-     * @param observable
-     * @param saved
-     * @returns {*}
-     */
-    static deserializeVariables(observable, saved) {
-        observable.replace(saved);
-        return observable;
+    deserializeVariables(index) {
+        this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
+        this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
+        this.rootStore.timepointStore.variableStores.sample.currentVariables.replace(this.stateStack[index].state.currentSampleVar);
+        this.rootStore.timepointStore.variableStores.between.currentVariables.replace(this.stateStack[index].state.currentBetweenVar);
+        this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
+        this.rootStore.timepointStore.transitionOn = this.stateStack[index].state.transitionOn;
+        this.rootStore.timepointStore.globalPrimary = this.stateStack[index].state.globalPrimary;
     }
+
 
     /**
      * updates observed variables to the state of saved variables. If necessary, new variables are added (if saved contains a variable not contained in observed)
