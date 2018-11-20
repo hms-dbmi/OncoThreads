@@ -27,7 +27,7 @@ const ContextMenu = observer(class ContextMenu extends React.Component {
                 });
             } else {
                 if (this.props.store.childStore.atLeastOneGrouped(0, this.props.store.childStore.timepoints.length - 1)) {
-                    this.props.openBinningModal(this.variable, this.type, function (derivedVariable) {
+                    this.props.openBinningModal(this.variable, this.type, derivedVariable=> {
                         this.props.store.replaceDisplayedVariable(this.props.clickedVariable, derivedVariable);
                         this.props.store.childStore.applyActionToAll(this.props.localIndex, derivedVariable.id, this.props.action);
                     });

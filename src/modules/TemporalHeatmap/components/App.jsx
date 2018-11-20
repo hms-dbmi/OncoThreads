@@ -65,7 +65,7 @@ const App = observer(class App extends React.Component {
     }
 
     getNavbarContent() {
-        if (this.rootStore.display) {
+        if (this.rootStore.display && this.rootStore.parsed) {
             return ([
                     <GetStudy key="getStudy" setRoot={this.setRootStore} rootStore={this.rootStore} cbioAPI={this.props.cbioAPI}
                               studies={this.props.studyapi.studies}/>,

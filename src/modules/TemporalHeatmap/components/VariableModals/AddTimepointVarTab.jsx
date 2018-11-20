@@ -287,7 +287,8 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                 <h4>Select variable</h4>
                 <VariableSelector {...this.props}
                                   handleVariableAddRemove={this.handleVariableAddRemove}
-                                  handleGeneSelect={this.handleGeneSelect}/>
+                                  handleGeneSelect={this.handleGeneSelect}
+                                  currentVariables={this.variableManagerStore.currentVariables}/>
                 <h4>Current Variables</h4>
                 <Form inline>
                     <FormGroup>

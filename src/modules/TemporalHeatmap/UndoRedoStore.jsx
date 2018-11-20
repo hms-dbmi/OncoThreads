@@ -54,15 +54,32 @@ class UndoRedoStore {
 
     }
 
-
+    /**
+     * deserializes the state at index
+     * @param index
+     */
     deserialize(index) {
         this.deserializeVariables(index);
         this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].state.timepointStructure);
-        this.rootStore.timepointStore.globalTime = this.stateStack[index].state.globalTime;
-        this.rootStore.timepointStore.regroupTimepoints();
+        this.rootStore.timepointStore.update(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints[0].heatmapOrder);
         this.rootStore.timepointStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
         this.rootStore.timepointStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.timepointStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
-        this.rootStore.timepointStore.update(this.rootStore.timepointStore.variableStores.sample.childStore.timepoints[0].heatmapOrder,this.rootStore.timepointStore.variableStores.sample.childStore.timepoints.map(d=>d.name));
+        this.rootStore.timepointStore.globalTime = this.stateStack[index].state.globalTime;
+        this.rootStore.timepointStore.regroupTimepoints();
+    }
+
+    /**
+     * deserialize variable related data
+     * @param index
+     */
+    deserializeVariables(index) {
+        this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
+        this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
+        this.rootStore.timepointStore.variableStores.sample.currentVariables.replace(this.stateStack[index].state.currentSampleVar);
+        this.rootStore.timepointStore.variableStores.between.currentVariables.replace(this.stateStack[index].state.currentBetweenVar);
+        this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
+        this.rootStore.timepointStore.transitionOn = this.stateStack[index].state.transitionOn;
+        this.rootStore.timepointStore.globalPrimary = this.stateStack[index].state.globalPrimary;
     }
 
     /**
@@ -72,16 +89,6 @@ class UndoRedoStore {
         this.stateStack = [{state: JSON.parse(localStorage.getItem(this.rootStore.study.studyId))}];
         this.currentPointer = this.stateStack.length - 1;
         this.deserialize(this.currentPointer);
-    }
-
-    deserializeVariables(index) {
-        this.rootStore.timepointStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
-        this.rootStore.timepointStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.timepointStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
-        this.rootStore.timepointStore.variableStores.sample.currentVariables.replace(this.stateStack[index].state.currentSampleVar);
-        this.rootStore.timepointStore.variableStores.between.currentVariables.replace(this.stateStack[index].state.currentBetweenVar);
-        this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
-        this.rootStore.timepointStore.transitionOn = this.stateStack[index].state.transitionOn;
-        this.rootStore.timepointStore.globalPrimary = this.stateStack[index].state.globalPrimary;
     }
 
 
@@ -167,6 +174,7 @@ class UndoRedoStore {
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({
+                name: timepoint.name,
                 heatmapOrder: timepoint.heatmapOrder,
                 groupOrder: timepoint.groupOrder,
                 isGrouped: timepoint.isGrouped,

@@ -33,7 +33,6 @@ const MainView = observer(class MainView extends React.Component {
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.setPlotWidth = this.setPlotWidth.bind(this);
         this.state = {
-            activeTab: props.store.rootStore.globalTime ? 2 : 1,
             highlightedVariable: '',
             plotWidth: 700
         }
@@ -57,10 +56,9 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     handleGlobalTimeClick(key) {
-        if (key !== this.state.activeTab) {
-            this.props.store.globalTime = !this.props.store.globalTime;
+        if (key !== this.props.store.globalTime) {
+            this.props.store.globalTime =key;
             this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.store.globalTime);
-            this.setState({activeTab: this.props.store.globalTime ? 2 : 1})
         }
     }
 
@@ -249,12 +247,13 @@ const MainView = observer(class MainView extends React.Component {
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
-                <Tabs mountOnEnter unmountOnExit animation={false} defaultActiveKey={this.state.activeTab}
+                <Tabs mountOnEnter unmountOnExit animation={false}
+                      activeKey={this.props.store.globalTime}
                       onSelect={this.handleGlobalTimeClick} id={"viewTab"}>
-                    <Tab eventKey={1} style={{paddingTop: 10}} title="Block view">
+                    <Tab eventKey={false} style={{paddingTop: 10}} title="Block view">
                         {blockView}
                     </Tab>
-                    <Tab eventKey={2} style={{paddingTop: 10}} title="Timeline">
+                    <Tab eventKey={true} style={{paddingTop: 10}} title="Timeline">
                         {timelineView}
                     </Tab>
                 </Tabs>

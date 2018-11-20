@@ -18,17 +18,19 @@ class MultipleTimepointsStore {
      * changes timepointStructure
      * @param structure
      * @param order
-     * @param names
      */
-    updateTimepointStructure(structure, order, names) {
+    updateTimepointStructure(structure, order) {
         this.structure = structure;
         this.timepoints = [];
         const _self = this;
         this.structure.forEach(function (d, i) {
             let tp = new SingleTimepoint(_self.rootStore, d.map(d => d.patient), _self.type, i, order);
-            tp.name = names[i];
             _self.timepoints.push(tp);
         });
+    }
+    updateNames(names){
+        console.log(names);
+        this.timepoints.forEach((d,i)=>d.name=names[i]);
     }
 
     /**

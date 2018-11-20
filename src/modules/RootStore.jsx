@@ -254,7 +254,7 @@ class RootStore {
         this.timepointStore.reset();
         this.resetTimepointStructure(false);
         let initialVariable = this.clinicalSampleCategories[0];
-        this.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, this.staticMappers[initialVariable.id]);
+        this.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample"));
         this.timepointStore.globalPrimary = initialVariable.id;
         this.parsed = true;
     }
@@ -286,7 +286,9 @@ class RootStore {
         if (update) {
             this.timepointStore.update(this.patientOrderPerTimepoint);
         }
-        this.timepointStore.initialize();
+        else{
+            this.timepointStore.initialize();
+        }
     }
 
     /*
@@ -464,7 +466,8 @@ class RootStore {
         timeline.splice(index, 1);
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
         let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
-        this.timepointStore.update(heatmapOrder, this.createNameList(up, this.timepointStore.variableStores.sample.childStore.timepoints, oldSampleTimepointNames, patient));
+        this.timepointStore.update(heatmapOrder);
+        this.timepointStore.variableStores.sample.childStore.updateNames(this.createNameList(up, this.timepointStore.variableStores.sample.childStore.timepoints, oldSampleTimepointNames, patient));
 
     }
 

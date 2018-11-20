@@ -33,17 +33,17 @@ const VariableSelector = observer(class VariableSelector extends React.Component
      */
     createOptions() {
         let sampleOptions = [];
-        this.props.clinicalSampleCategories.forEach(d => {
+        this.props.clinicalSampleCategories.filter(d=>!this.props.currentVariables.map(d=>d.id).includes(d.id)).forEach(d => {
             let lb = (
-                <div className="wordBreak" style={{textAlign: "left"}}
+                <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
         });
         let patientOptions = [];
-        this.props.clinicalPatientCategories.forEach(d => {
+        this.props.clinicalPatientCategories.filter(d=>!this.props.currentVariables.map(d=>d.id).includes(d.id)).forEach(d => {
             let lb = (
-                <div className="wordBreak" style={{textAlign: "left"}}
+                <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
             patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, profile: "clinPatient"})
@@ -233,10 +233,10 @@ const VariableSelector = observer(class VariableSelector extends React.Component
     render() {
          let options=[];
          if(this.props.availableProfiles.filter(d=>d.type==="clinical").length>0){
-            options.push(<option value={"clinical"}>Predefined</option>)
+            options.push(<option key={"clinical"} value={"clinical"}>Predefined</option>)
         }
         if(this.props.availableProfiles.filter(d=>d.type!=="clinical").length>0){
-            options.push(<option value={"genes"}>Genomic</option>)
+            options.push(<option key={"genes"} value={"genes"}>Genomic</option>)
         }
         return (<Form horizontal>
                 <FormGroup>

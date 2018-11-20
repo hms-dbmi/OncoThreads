@@ -162,7 +162,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
     createTimepointOptions() {
         let sampleOptions = [];
-        this.props.clinicalSampleCategories.forEach(d => {
+        this.props.clinicalSampleCategories.filter((d)=>!this.props.currentVariables.sample.map(d=>d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -170,7 +170,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
         });
         let patientOptions = [];
-        this.props.clinicalPatientCategories.forEach(d => {
+        this.props.clinicalPatientCategories.filter((d)=>!this.props.currentVariables.sample.map(d=>d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -214,7 +214,6 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        console.log(geneList,this.state.profile,this.state.mappingType);
         this.props.store.rootStore.molProfileMapping.getMutations(this.state.profile,
             geneList, this.state.mappingType, newVariables => {
                 this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);

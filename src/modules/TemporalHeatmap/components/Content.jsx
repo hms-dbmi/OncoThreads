@@ -248,6 +248,10 @@ const Content = observer(class Content extends React.Component {
                             <QuickAddVariable
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
+                                currentVariables={{
+                                        sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
+                                        between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
+                                    }}
                                 molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
                                 availableProfiles={this.props.rootStore.availableProfiles}
                                 store={this.props.rootStore.timepointStore}
