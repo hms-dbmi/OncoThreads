@@ -103,10 +103,6 @@ class RootStore {
             }
 
         });
-        observe(this.timepointStructure, (change) => {
-            console.log(change);
-            this.timepointStore.update([], []);
-        });
         this.molProfileMapping = new MolProfileMapping(this);
         this.timepointStore = new DataStore(this);
         this.transitionStore = new TransitionStore(this);
