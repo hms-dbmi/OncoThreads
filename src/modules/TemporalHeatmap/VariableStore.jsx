@@ -247,6 +247,15 @@ class VariableStore {
         });
         return relatedVariables.map(d => this.referencedVariables[d])
     }
+    isEventDerived(variableId){
+        if(this.referencedVariables[variableId].type==="event"){
+            return true;
+        }
+        else if(this.referencedVariables[variableId].type==="derived"){
+            return this.referencedVariables[variableId].originalIds.map(d=>this.isEventDerived(d)).includes(true);
+        }
+        return false;
+    }
 
     /**
      * checks is a variable is derived from a variable with a certain type
