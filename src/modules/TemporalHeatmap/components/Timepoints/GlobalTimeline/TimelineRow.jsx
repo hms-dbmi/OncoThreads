@@ -165,7 +165,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 }
                 else{
 
-                    let fill = "grey";
+                    let fill = "lightgrey";
 
                     rects.push(<rect stroke={stroke}
                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, "Last known status: Living", _self.props.ypi[i], 0)
