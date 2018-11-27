@@ -50,10 +50,6 @@ class DataStore {
         this.globalPrimary = varId;
     }
 
-    toggleTransition() {
-        this.transitionOn = !this.transitionOn;
-    }
-
 
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;

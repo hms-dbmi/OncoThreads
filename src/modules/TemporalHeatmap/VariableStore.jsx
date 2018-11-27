@@ -29,22 +29,18 @@ class VariableStore {
                         this.childStore.removeHeatmapRows(d);
                     }
                 });
-                if (change.removedCount > 0 && change.addedCount > 0) {
-                    this.childStore.resortHeatmapRows(this.currentVariables);
-                }
-                if (change.removedCount > 0 && change.added === 0) {
-                    if (this.type === "between" && this.currentVariables.length === 0) {
-                        this.rootStore.timepointStore.toggleTransition()
+                if (change.removedCount > 0) {
+                    if (change.addedCount > 0) {
+                        this.childStore.resortHeatmapRows(this.currentVariables);
                     }
-                    if (this.type === "sample" && change.removed[0] === this.rootStore.timepointStore.globalPrimary) {
+                    if (this.type === "sample" && change.removed.includes(this.rootStore.timepointStore.globalPrimary)) {
                         this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
                     }
                 }
-                if (change.addedCount > 0) {
-                    if (this.type === "between" && this.currentVariables.length === 1) {
-                        this.rootStore.timepointStore.toggleTransition()
-                    }
+                if (this.type === "between") {
+                    this.rootStore.timepointStore.transitionOn=this.currentVariables.length!==0;
                 }
+
             }
             else if (change.type === "update") {
                 this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
@@ -84,27 +80,27 @@ class VariableStore {
             .filter(d => this.rootStore.cbioAPI.molecularProfiles.map(d => d.molecularProfileId).includes(this.referencedVariables[d].profile)
                 && this.referencedVariables[d].datatype === "NUMBER");
         profileVariables.forEach(variableId => {
-            const variable=this.referencedVariables[variableId];
-                let min = Math.min(...Object.values(variable.mapper));
-                let max = Math.max(...Object.values(variable.mapper));
-                if (!(variable.profile in profileDomains)) {
-                    profileDomains[variable.profile] = [min, max];
+            const variable = this.referencedVariables[variableId];
+            let min = Math.min(...Object.values(variable.mapper));
+            let max = Math.max(...Object.values(variable.mapper));
+            if (!(variable.profile in profileDomains)) {
+                profileDomains[variable.profile] = [min, max];
+            }
+            else {
+                if (profileDomains[variable.profile][0] > min) {
+                    profileDomains[variable.profile][0] = min;
                 }
-                else {
-                    if (profileDomains[variable.profile][0] > min) {
-                        profileDomains[variable.profile][0] = min;
-                    }
-                    if (profileDomains[variable.profile][1] < max) {
-                        profileDomains[variable.profile][1] = max;
-                    }
+                if (profileDomains[variable.profile][1] < max) {
+                    profileDomains[variable.profile][1] = max;
                 }
+            }
 
-            });
+        });
         profileVariables.forEach(variableId => {
-                if (this.referencedVariables[variableId].profile in profileDomains) {
-                    this.referencedVariables[variableId].domain = profileDomains[this.referencedVariables[variableId].profile]
-                }
-            });
+            if (this.referencedVariables[variableId].profile in profileDomains) {
+                this.referencedVariables[variableId].domain = profileDomains[this.referencedVariables[variableId].profile]
+            }
+        });
     }
 
 
@@ -250,6 +246,15 @@ class VariableStore {
             }
         });
         return relatedVariables.map(d => this.referencedVariables[d])
+    }
+    isEventDerived(variableId){
+        if(this.referencedVariables[variableId].type==="event"){
+            return true;
+        }
+        else if(this.referencedVariables[variableId].type==="derived"){
+            return this.referencedVariables[variableId].originalIds.map(d=>this.isEventDerived(d)).includes(true);
+        }
+        return false;
     }
 
     /**

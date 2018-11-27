@@ -20,22 +20,23 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
-        this.handleMappingSelect=this.handleMappingSelect.bind(this);
+        this.handleMappingSelect = this.handleMappingSelect.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.addVariablesEnter = this.addVariablesEnter.bind(this);
     }
-    static getInitialState(props){
-        let profile='';
-        let mappingType='';
-        const nonClinicalProfiles=props.availableProfiles.filter(d=>d.type!=="clinical");
-        if(nonClinicalProfiles.length>0){
-            profile=nonClinicalProfiles[0].profile;
-            mappingType=nonClinicalProfiles[0].id;
+
+    static getInitialState(props) {
+        let profile = '';
+        let mappingType = '';
+        const nonClinicalProfiles = props.availableProfiles.filter(d => d.type !== "clinical");
+        if (nonClinicalProfiles.length > 0) {
+            profile = nonClinicalProfiles[0].profile;
+            mappingType = nonClinicalProfiles[0].id;
         }
-        return{
-             category:"clinical",
-            profile:profile,
-            mappingType:mappingType,
+        return {
+            category: "clinical",
+            profile: profile,
+            mappingType: mappingType,
             geneListString: "",
             selectedValues: [],
             isClinical: true,
@@ -65,16 +66,24 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
      * calls functions to add a variable
      */
     addEventVariable() {
-        if (this.state.selectedValues.length > 0) {
-            if (this.state.selectedValues.length > 1) {
-                let name = this.createCompositeName(this.state.selectedValues);
-                this.addCombinedVariable(name);
+        if (this.state.category !== "computed") {
+            if (this.state.selectedValues.length > 0) {
+                if (this.state.selectedValues.length > 1) {
+                    let name = this.createCompositeName(this.state.selectedValues);
+                    this.addCombinedVariable(name);
+                }
+                else {
+                    this.addVariablesSeperate();
+                }
+                this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
             }
-            else {
-                this.addVariablesSeperate();
-            }
-            this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
         }
+        else {
+            this.state.selectedValues.forEach(d => {
+                this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id))
+            })
+        }
+        this.setState({selectedValues: [], selectedKey: ""})
     }
 
 
@@ -85,7 +94,6 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         let originalVariables = this.state.selectedValues.map(d => new EventVariable(d.value, d.label, this.state.category, d.object.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object)));
         originalVariables.forEach(d => this.props.store.variableStores.between.addVariableToBeReferenced(d));
         this.props.store.variableStores.between.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), name, "BINARY", "Binary combination of variables: " + this.state.defaultName, this.state.selectedValues.map(d => d.value), "binaryCombine", "or", [], [], MapperCombine.createBinaryCombinedMapper(originalVariables.map(d => d.mapper), "or")));
-        this.setState({selectedValues: [], selectedKey: ""})
     }
 
     /**
@@ -93,24 +101,38 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
      */
     addVariablesSeperate() {
         this.state.selectedValues.forEach(d => this.props.store.variableStores.between.addVariableToBeDisplayed(new EventVariable(d.value, d.label, this.state.category, d.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object))));
-        this.setState({selectedValues: [], selectedKey: ""})
     }
 
 
     createEventOptions() {
         let options = [];
-        for (let key in this.props.eventAttributes[this.state.category]) {
-            let subOptions = [];
-            this.props.eventAttributes[this.state.category][key].forEach(d => {
-                let option = {
-                    label: d.name,
-                    value: d.id,
-                    object: d,
-                    isDisabled: this.state.selectedKey === "" ? false : this.state.selectedKey !== key
-                };
-                subOptions.push(option)
+        if (this.state.category !== "computed") {
+            for (let key in this.props.eventAttributes[this.state.category]) {
+                let subOptions = [];
+                this.props.eventAttributes[this.state.category][key].forEach(d => {
+                    let option = {
+                        label: d.name,
+                        value: d.id,
+                        object: d,
+                        isDisabled: this.state.selectedKey === "" ? false : this.state.selectedKey !== key
+                    };
+                    subOptions.push(option)
+                });
+                options.push({label: key, options: subOptions})
+            }
+        }
+        else {
+            options.push({
+                label: "Timepoint Distance",
+                value: this.props.store.rootStore.timeDistanceId,
+                object: {
+                    id: this.props.store.rootStore.timeDistanceId,
+                    name: "Timepoint Distance",
+                    description: "Time between timepoints",
+                    datatype: "NUMBER"
+                },
+                isDisabled: false
             });
-            options.push({label: key, options: subOptions})
         }
         return options;
     }
@@ -162,7 +184,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
     createTimepointOptions() {
         let sampleOptions = [];
-        this.props.clinicalSampleCategories.filter((d)=>!this.props.currentVariables.sample.map(d=>d.id).includes(d.id)).forEach(d => {
+        this.props.clinicalSampleCategories.filter((d) => !this.props.currentVariables.sample.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -170,7 +192,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
         });
         let patientOptions = [];
-        this.props.clinicalPatientCategories.filter((d)=>!this.props.currentVariables.sample.map(d=>d.id).includes(d.id)).forEach(d => {
+        this.props.clinicalPatientCategories.filter((d) => !this.props.currentVariables.sample.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -280,7 +302,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     }
 
     getSearchField() {
-        if (this.state.category === "clinical"|| this.props.eventCategories.includes(this.state.category)) {
+        if (this.state.category === "clinical" || this.state.category === "computed" || this.props.eventCategories.includes(this.state.category)) {
             return <Select
                 value={this.state.selectedValues}
                 type="text"
@@ -317,17 +339,17 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             </Col>
 
         }
-        let options=[];
-         if(this.props.availableProfiles.filter(d=>d.type==="clinical").length>0){
+        let options = [];
+        if (this.props.availableProfiles.filter(d => d.type === "clinical").length > 0) {
             options.push(<option key="clinical" value={"clinical"}>Predefined</option>)
         }
-        if(this.props.availableProfiles.filter(d=>d.type!=="clinical").length>0){
+        if (this.props.availableProfiles.filter(d => d.type !== "clinical").length > 0) {
             options.push(<option key="genes" value={"genes"}>Genomic</option>)
         }
 
         return (
             <Form horizontal>
-                <FormGroup style={{margin:0}}>
+                <FormGroup style={{margin: 0}}>
                     <Col sm={2} style={{paddingRight: "0"}}>
                         <FormControl style={{height: 38}} componentClass="select" onChange={this.handleSelect}
                                      placeholder="Select Category">
@@ -337,6 +359,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
                             <optgroup label="Event Variables">
                                 {this.props.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option value={d}
                                                                                                              key={d}>{QuickAddVariable.toTitleCase(d)}</option>)}
+                                <option value="computed" key="computed">Computed variables</option>
                             </optgroup>
                         </FormControl>
                     </Col>

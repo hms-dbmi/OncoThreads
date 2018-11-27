@@ -29,8 +29,10 @@ class MultipleTimepointsStore {
         });
     }
     updateNames(names){
-        console.log(names);
         this.timepoints.forEach((d,i)=>d.name=names[i]);
+    }
+    ungroupAll(){
+        this.timepoints.forEach(d=>d.isGrouped=false)
     }
 
     /**
@@ -68,7 +70,7 @@ class MultipleTimepointsStore {
      */
     updateHeatmapRows(variableId, mapper, index) {
         const _self = this;
-        this.rootStore.timepointStructure.forEach(function (d, i) {
+        this.structure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {

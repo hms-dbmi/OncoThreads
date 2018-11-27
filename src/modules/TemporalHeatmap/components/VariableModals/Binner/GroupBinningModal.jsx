@@ -12,7 +12,7 @@ import ColorScales from "../../../ColorScales";
 const GroupBinningModal = observer(class GroupBinningModal extends React.Component {
         constructor(props) {
             super(props);
-            this.data = Object.values(props.variable.mapper);
+            this.data = Object.values(props.variable.mapper).filter(d=>d!==undefined);
             this.state = this.setInitialState();
             this.handleBinChange = this.handleBinChange.bind(this);
             this.handleBinNameChange = this.handleBinNameChange.bind(this);
@@ -83,6 +83,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                 }
             }, ColorScales.getBinnedRange(this.props.variable.colorScale,this.state.binNames,this.state.bins), this.state.binNames.map(d=>d.name), MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames),this.props.variable.profile);
             this.props.callback(derivedVariable);
+            console.log(derivedVariable.mapper,this.props.variable.mapper, this.props.store.rootStore.staticMappers[this.props.variable.id]);
             this.props.closeModal();
         }
 

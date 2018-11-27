@@ -84,7 +84,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
                 this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
                     this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variableId, derivedVariable);
-                    timepoint.promote(derivedVariable.id)
+                    timepoint.promote(derivedVariable.id);
                     this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variableId, timepoint.type, timepoint.localIndex)
                 });
             }

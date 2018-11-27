@@ -2,7 +2,7 @@ import TransitionStore from "./TemporalHeatmap/TransitionStore.jsx"
 import DataStore from "./TemporalHeatmap/DataStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
-import {extendObservable,observe} from "mobx";
+import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
@@ -102,10 +102,6 @@ class RootStore {
                 return max;
             }
 
-        });
-        observe(this.timepointStructure, (change) => {
-            console.log(change);
-            this.timepointStore.update([], []);
         });
         this.molProfileMapping = new MolProfileMapping(this);
         this.timepointStore = new DataStore(this);
@@ -286,7 +282,7 @@ class RootStore {
         if (update) {
             this.timepointStore.update(this.patientOrderPerTimepoint);
         }
-        else{
+        else {
             this.timepointStore.initialize();
         }
     }
@@ -621,6 +617,7 @@ class RootStore {
                 }
                 timeGapMapping[curr[i]] = _self.sampleTimelineMap[curr[i]].startNumberOfDaysSinceDiagnosis - _self.sampleTimelineMap[curr[i - 1]].startNumberOfDaysSinceDiagnosis;
             }
+            timeGapMapping[curr[curr.length - 1] + "_post"] = undefined;
         });
         return timeGapMapping;
 
