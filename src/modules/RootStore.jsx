@@ -2,7 +2,7 @@ import TransitionStore from "./TemporalHeatmap/TransitionStore.jsx"
 import DataStore from "./TemporalHeatmap/DataStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
-import {extendObservable, observe} from "mobx";
+import {extendObservable} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
