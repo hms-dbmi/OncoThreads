@@ -79,7 +79,14 @@ class SingleTimepoint {
             this.primaryVariableId = "";
         }
         else if (variableId === this.primaryVariableId) {
-            this.primaryVariableId = this.heatmap[0].variable;
+            let primaryIndex = this.rootStore.timepointStore.variableStores[this.type].getCurrentVariables().map(d => d.datatype === "NUMBER").indexOf(false);
+            if (this.isGrouped && primaryIndex !== -1) {
+                this.primaryVariableId = this.heatmap[primaryIndex].variable;
+            }
+            else {
+                this.isGrouped = false;
+                this.primaryVariableId = this.heatmap[0].variable
+            }
         }
     }
 
