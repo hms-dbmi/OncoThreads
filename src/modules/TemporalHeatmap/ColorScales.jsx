@@ -33,7 +33,13 @@ class ColorScales {
 
 
     static getOrdinalScale(range, domain) {
-        return d3.scaleOrdinal().range(['#f7f7f7'].concat(range.slice())).domain([undefined].concat(domain.slice()));
+        return function (value) {
+            const colorScale = d3.scaleOrdinal().range(range.slice()).domain(domain.slice());
+            if (value === undefined) {
+                return '#f7f7f7';
+            }
+            else return colorScale(value);
+        };
     }
 
 

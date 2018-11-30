@@ -169,10 +169,14 @@ class MolProfileMapping {
         }
         else if (mappingType === "Protein change") {
             mappingFunction = currentSample => {
-                const entry = list.filter(d => d.sampleId === currentSample)[0];
-                let proteinChange = undefined;
-                if (entry !== undefined) {
-                    proteinChange = entry.proteinChange;
+                const missense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "missense");
+                const nonsense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "nonsense");
+                let proteinChange = "wild type";
+                if (missense.length > 0) {
+                    proteinChange = missense[0].proteinChange;
+                }
+                else if (nonsense.length > 0) {
+                    proteinChange = nonsense[0].proteinChange;
                 }
                 return (proteinChange);
             }
@@ -207,16 +211,17 @@ class MolProfileMapping {
         }
         else {
             mappingFunction = currentSample => {
-                const entries = list.filter(d => d.sampleId === currentSample && (MolProfileMapping.getMutationType(d.mutationType) === "missense" || MolProfileMapping.getMutationType(d.mutationType) === "nonsense"));
-                let vaf = 0;
-                if (entries.length === 0) {
-                    vaf = undefined;
+                const missense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "missense");
+                const nonsense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "nonsense");
+                let vaf = 1;
+                if(missense.length>0){
+                    vaf=missense[0].tumorAltCount/(missense[0].tumorAltCount+missense[0].tumorRefCount);
                 }
-                entries.forEach(entry => {
-                    vaf += entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
+                else if(nonsense.length>0){
+                    vaf=nonsense[0].tumorAltCount/(nonsense[0].tumorAltCount+nonsense[0].tumorRefCount);
 
-                });
-                return vaf === undefined ? vaf : vaf / entries.length;
+                }
+                return vaf;
             }
         }
         let mapper = {};
