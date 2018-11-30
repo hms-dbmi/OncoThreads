@@ -142,16 +142,29 @@ class RootStore {
             for (var c = 0; c < svg_all[i].children.length; c++) {
                 var temp = svg_all[i].children[c];
 
-                if(!this.timepointStore.globalTime && temp.childElementCount===4 && i===1){
+                if(!this.timepointStore.globalTime){
 
-                    console.log(temp);
-                    for(var k=0; k<temp.childElementCount; k++){
-                        temp.children[k].children[0].children.sort.remove();
-                        temp.children[k].children[0].children.group.remove();
-                        temp.children[k].children[0].children.delete.remove();
+                    if(i===0 ){
+
+                        if(temp.childElementCount===2){
+                            temp.children[1].remove();
+                        }                 
+
                     }
-
-                    console.log(temp);
+                    else if(i===1 && temp.childElementCount===4){
+                        for(var k=0; k<temp.childElementCount; k++){
+                            temp.children[k].children[0].children.sort.remove();
+                            if(temp.children[k].children[0].children.group){
+                                temp.children[k].children[0].children.group.remove();
+                            }
+                            if(temp.children[k].children[0].children.ungroup){
+                                temp.children[k].children[0].children.ungroup.remove();
+                            }
+                            
+                            temp.children[k].children[0].children.delete.remove();
+                        }
+                    }
+                    
                 }
                 t = t + (new XMLSerializer()).serializeToString(temp);
             }
