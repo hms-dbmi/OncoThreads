@@ -134,7 +134,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                                 selected: false,
                                 name: d,
                                 categories: [],
-                                color: this.props.derivedVariable.range[i]
+                                color: this.props.derivedVariable.range[i%this.props.derivedVariable.range.length]
                             })
                         }
                         currentData[currentData.map(d => d.name).indexOf(d)].categories.push(key);
@@ -148,7 +148,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     selected: false,
                     name: d.toString(),
                     categories: [d.toString()],
-                    color: this.props.variable.range[i]
+                    color: this.props.variable.range[i%this.props.variable.range.length]
                 })
             });
         }
