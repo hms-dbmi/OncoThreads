@@ -254,7 +254,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
     handleSelect(e) {
         this.setState({
-            isEvent: e.target.value !== "genomic" && e.target.value !== "clinical",
+            isEvent: e.target.value !== "genes" && e.target.value !== "clinical",
             category: e.target.value,
             geneListString: "",
             isClinical: e.target.value === "clinical"
