@@ -71,7 +71,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
                 labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField
                     width={_self.state.width / 3 * 2}
                     timepoint={d}/>
-                    <g id="realign" transform={"translate(" + _self.state.width / 3 * 2 + ",0)"}
+                    <g id="realign" className="not_exported" transform={"translate(" + _self.state.width / 3 * 2 + ",0)"}
                        onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
                        onMouseLeave={_self.props.hideTooltip}>
                         <g transform={"translate(0,4)"}>
@@ -88,7 +88,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
             else {
                 pos = _self.props.visMap.timepointPositions.timepoint[i] + _self.props.visMap.getTPHeight(d) / 2 + 4;
                 labels.push(
-                    <g id="realign" key={d.globalIndex}
+                    <g id="realign" className="not_exported" key={d.globalIndex}
                        transform={"translate(" + _self.state.width / 3 * 2 + "," + pos + ")"}
                        onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
                        onMouseLeave={_self.props.hideTooltip}>

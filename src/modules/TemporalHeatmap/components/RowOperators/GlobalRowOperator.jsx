@@ -70,7 +70,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g key={"delete" + variable} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g  className="not_exported" key={"delete" + variable} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"

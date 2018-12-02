@@ -152,7 +152,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
         getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (<g id="sort" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+            return (<g id="sort" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                        onMouseOver={(e) => this.props.showTooltip(e, "Sort timepoint by this variable")}
                        onMouseOut={this.props.hideTooltip}>
                 <path fill="gray" d="M3,13H15V11H3M3,6V8H21V6M3,18H9V16H3V18Z"/>
@@ -165,7 +165,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
         getGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (<g id="group" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+            return (<g id="group" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                        onMouseEnter={(e) => this.props.showTooltip(e, "Group timepoint by this variable")}
                        onMouseLeave={this.props.hideTooltip}>
                 <path fill="gray"
@@ -180,7 +180,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         getUnGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g id="ungroup" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g id="ungroup" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Ungroup timepoint")}
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
@@ -195,7 +195,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g id="delete" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g id="delete" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
                    onMouseLeave={this.props.hideTooltip}>>
                     <path fill="gray"
