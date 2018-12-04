@@ -28,7 +28,6 @@ class ColorScales {
          for (let i = 0; i < binNames.length; i++) {
             range.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
         }
-        console.log(range);
         return range;
     }
 
@@ -38,6 +37,8 @@ class ColorScales {
             const colorScale = d3.scaleOrdinal().range(range.slice()).domain(domain.slice());
             if (value === undefined) {
                 return '#f7f7f7';
+            }else if(value==="wild type"){
+                return  'lightgray'
             }
             else return colorScale(value);
         };
