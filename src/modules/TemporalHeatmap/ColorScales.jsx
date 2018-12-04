@@ -28,6 +28,7 @@ class ColorScales {
          for (let i = 0; i < binNames.length; i++) {
             range.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
         }
+        console.log(range);
         return range;
     }
 

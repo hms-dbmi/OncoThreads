@@ -199,7 +199,7 @@ class MolProfileMapping {
             filteredGeneIds=this.filterGeneIDs();
         }
         mappingTypes.forEach(d => variables = variables.concat(this.getMutationsProfile(filteredGeneIds,d)));
-        profileIds.map(d => {
+        profileIds.forEach(d => {
                 variables = variables.concat(this.getMolecularProfile(this.filterMolecularData(d), d));
             }
         );
