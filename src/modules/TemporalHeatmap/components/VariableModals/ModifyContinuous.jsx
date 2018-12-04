@@ -58,7 +58,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             binNames: binNames,
             bin: bin,
             colorRange: this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range,
-            isXLog: !(this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform),
+            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform!==false,
             name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name
         }
     }
@@ -197,12 +197,12 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             disabled = true;
         }
         return (<FormGroup>
-            <Radio defaultChecked onClick={this.changeTransformation} disabled={disabled} value={'linear'}
+            <Radio onChange={this.changeTransformation} checked={!this.state.isXLog} disabled={disabled} value={'linear'}
                    name="XradioGroup"
                    inline>
                 None
             </Radio>{' '}
-            <Radio onClick={this.changeTransformation} value={'log'} disabled={disabled} name="XradioGroup" inline>
+            <Radio onChange={this.changeTransformation} value={'log'} checked={this.state.isXLog} disabled={disabled} name="XradioGroup" inline>
                 Log
             </Radio>{' '}
         </FormGroup>);
