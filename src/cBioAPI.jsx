@@ -125,6 +125,7 @@ class cBioAPI {
             }
             callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));
         }).catch(function (error) {
+            console.log(error);
             alert("invalid symbol")
         })
     }
@@ -141,6 +142,51 @@ class cBioAPI {
             .catch(function (error) {
                 console.log(error)
             });
+    }
+
+    /**
+     * checks for each sample if entrezIDs have been profiled
+     * @param studyId
+     * @param profileId
+     * @param entrezIDs
+     * @param callback
+     */
+    areProfiled(studyId, entrezIDs, callback) {
+        let profiledDict = {};
+        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/gene-panel-data/fetch",
+                {
+                    "sampleListId": studyId + "_all"
+                }
+        ).then(samplePanels => {
+            let differentPanels = samplePanels.data.map(d => d.genePanelId).filter(function (item, i, ar) {
+                return ar.indexOf(item) === i;
+            }).filter(d=>d!==undefined);
+            if(differentPanels.length>0) {
+                axios.all(differentPanels.map(d => axios.get("http://www.cbiohack.org/api/gene-panels/" + d))).then(panelList => {
+                    samplePanels.data.forEach(samplePanel => {
+                        profiledDict[samplePanel.sampleId] = [];
+                        entrezIDs.forEach(entrezId => {
+                            if (samplePanel.genePanelId !== undefined) {
+                                if (panelList.data[panelList.data.map(panel => panel.genePanelId).indexOf(samplePanel.genePanelId)].genes.map(gene => gene.entrezGeneId).includes(entrezId)) {
+                                    profiledDict[samplePanel.sampleId].push(entrezId);
+                                }
+                            }
+                            else{
+                                profiledDict[samplePanel.sampleId]=entrezId;
+                            }
+
+                        });
+                    });
+                    callback(profiledDict);
+                });
+            }
+            else{
+                samplePanels.data.forEach(samplePanel=>
+                    profiledDict[samplePanel.sampleId]=entrezIDs
+                );
+                callback(profiledDict);
+            }
+        })
     }
 
     getMolecularValues(studyId, profileId, entrezIDs, callback) {

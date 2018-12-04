@@ -121,7 +121,7 @@ const MainView = observer(class MainView extends React.Component {
                 <div className="view" id="block-view">
                     <Row>
                         <Button bsSize="xsmall" onClick={this.handleTimeClick}
-                                disabled={this.props.store.globalTime || this.props.store.timepoints.length === 0 || this.props.currentVariables.between.length > 0}
+                                disabled={this.props.store.globalTime ||  this.props.currentVariables.between.length > 0}
                                 key={"actualTimeline"}>
                             <FontAwesome
                                 name="clock"/> {(this.props.store.realTime) ? "Hide relative time" : "Show relative time"}

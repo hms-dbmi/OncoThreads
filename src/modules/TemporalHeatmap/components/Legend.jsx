@@ -77,21 +77,21 @@ const Legend = observer(class Legend extends React.Component {
             let text = [];
             if (color.domain().length === 3) {
                 intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
-                text.push(<text key={"text" + min} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
+                text.push(<text key={"text min"} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
                                 x={0}
                                 y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
-                    <text key={"text" + 0} fill={Legend.getTextColor(color(0))} style={{fontSize: fontSize}}
+                    <text key={"text med"} fill={Legend.getTextColor(color(0))} style={{fontSize: fontSize}}
                           x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
                           y={lineheight / 2 + fontSize / 2}>{0}</text>,
-                    <text key={"text" + max} fill={Legend.getTextColor(color(max))} style={{fontSize: fontSize}}
+                    <text key={"text max"} fill={Legend.getTextColor(color(max))} style={{fontSize: fontSize}}
                           x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
                           y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
             }
             else {
-                text.push(<text key={"text" + min} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
+                text.push(<text key={"text min"} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
                                 x={0}
                                 y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
-                    <text key={"text" + max} fill={Legend.getTextColor(color(max))} style={{fontSize: fontSize}}
+                    <text key={"text max"} fill={Legend.getTextColor(color(max))} style={{fontSize: fontSize}}
                           x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
                           y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
             }

@@ -37,24 +37,28 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             if (_self.props.selectedPatients.includes(d.patient)) {
                 stroke = "black";
             }
+            let str;
 
-            let str = "";
-
-            if (_self.props.currVar.derived && _self.props.currVar === "ORDINAL" && _self.props.currVar.modificationType === "continuousTransform") {
+            if(_self.props.currVar.datatype==="NUMBER"){
+                str=Math.round(d.value*100)/100;
+            }
+            else if (_self.props.currVar.derived && _self.props.currVar.datatype === "ORDINAL" && _self.props.currVar.modificationType === "continuousTransform") {
                 let ind = _self.props.currVar.modification.binning.binNames.map(d => d.name).indexOf(d.value);
+                str=d.value;
                 if (_self.props.currVar.modification.binning.binNames[ind].modified) {
                     let low = Math.round(_self.props.currVar.modification.binning.bins[ind] * 100) / 100;
 
                     if (ind !== 0) {
                         low = low + 1;
                     }
-
-                    str = ": " + low + " to " + Math.round(_self.props.currVar.modification.binning.bins[ind + 1] * 100) / 100;
+                    str += ": " + low + " to " + Math.round(_self.props.currVar.modification.binning.bins[ind + 1] * 100) / 100;
                 }
-
+            }
+            else{
+                str=d.value;
             }
 
-            rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, d.value + str)}
+            rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, str)}
                              onMouseLeave={_self.handleMouseLeave}
                              onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}
                              onMouseUp={_self.handleMouseUp} onDoubleClick={() => _self.handleDoubleClick(d.patient)}

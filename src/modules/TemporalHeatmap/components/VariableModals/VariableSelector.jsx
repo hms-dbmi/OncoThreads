@@ -113,7 +113,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         });
         this.props.molProfileMapping.loadIds(geneList, () => {
             this.props.molProfileMapping.loadMutations(() => {
-                this.updateMutationCheckBoxOptions(this.props.molProfileMapping.currentMutations.length>0);
+                this.updateMutationCheckBoxOptions(Object.values(this.props.molProfileMapping.isInGenePanel).join().length>0);
             });
             this.props.availableProfiles.forEach(d => {
                 if (d.type === "molecular") {
