@@ -139,11 +139,62 @@ class RootStore {
 
         for (var i = 0; i < svg_all.length; i++) {
             var t = "";
-            for (var c = 0; c < svg_all[i].children.length; c++) {
-                var child = svg_all[i].children[c];
-                t = t + (new XMLSerializer()).serializeToString(child);
+
+            var svg_copy = svg_all[i].cloneNode(true);
+            var a = svg_copy.getElementsByClassName("not_exported");
+            [...a].forEach(t => {t.remove();})
+
+
+            for (var c = 0; c < svg_copy.children.length; c++) {
+                var temp = svg_copy.children[c];
+        
+                //if(!this.timepointStore.globalTime){
+
+                    /*if(i===0 ){
+
+                        if(temp.childElementCount===2){
+                            temp.children[1].remove();
+                        }                 
+
+                    }
+                    else if(i===1 && temp.childElementCount===4){
+                        for(var k=0; k<temp.childElementCount; k++){
+
+                            for(var l=0; l< temp.children[k].childElementCount; l++){
+
+                                temp.children[k].children[l].children.sort.remove();
+                                if(temp.children[k].children[l].children.group){
+                                    temp.children[k].children[l].children.group.remove();
+                                }
+                                if(temp.children[k].children[l].children.ungroup){
+                                    temp.children[k].children[l].children.ungroup.remove();
+                                }
+                                
+                                temp.children[k].children[l].children.delete.remove();
+
+                            }
+                            
+                        }
+                    } */
+
+                    //var a = svg_all[i].getElementsByClassName("not_exported");
+                    //[...a].forEach(t => {t.remove();})
+                    
+                //}
+               /* else{ //global timeline
+
+                    if(i===0){
+                        for(var k2=0; k2<svg_all[0].children[0].childElementCount; k2++){
+                            svg_all[i].children[0].children[k2].children[0].children[1].remove();
+                        }
+                    }
+                    
+
+                } */
+
+                t = t + (new XMLSerializer()).serializeToString(temp);
             }
-            ;
+
             var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
             if (this.timepointStore.globalTime && this.timepointStore.transitionOn && (i === 0 || i === 1)) {
