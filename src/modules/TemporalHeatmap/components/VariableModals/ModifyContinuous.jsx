@@ -39,7 +39,13 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                 med = 0;
             }
             bins = [min, med, max];
-            binNames = [{name: min + " to " + med, modified: false}, {name: med + " to " + max, modified: false}];
+            binNames = [{
+                name: (Math.round(min * 100) / 100) + " to " + med,
+                modified: false
+            }, {
+                name: (Math.round(med * 100) / 100) + " to " + (Math.round(max * 100) / 100),
+                modified: false
+            }];
             bin = false;
         }
         else {
@@ -52,7 +58,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             binNames: binNames,
             bin: bin,
             colorRange: this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range,
-            isXLog: !(this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform),
+            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform!==false,
             name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name
         }
     }
@@ -109,10 +115,10 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
      */
     getInitialData() {
         if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform) {
-            return Object.values(this.props.variable.mapper).filter(d=>d!==undefined);
+            return Object.values(this.props.variable.mapper).filter(d => d !== undefined);
         }
         else {
-            return Object.values(this.props.variable.mapper).filter(d=>d!==undefined).map(d => this.props.derivedVariable.modification.logTransform(d));
+            return Object.values(this.props.variable.mapper).filter(d => d !== undefined).map(d => this.props.derivedVariable.modification.logTransform(d));
 
         }
     }
@@ -125,11 +131,11 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         let isLog;
         if (event.target.value === 'linear') {
             isLog = false;
-            this.data = Object.values(this.props.variable.mapper).filter(d=>d!==undefined);
+            this.data = Object.values(this.props.variable.mapper).filter(d => d !== undefined);
         }
         else {
             isLog = true;
-            this.data = Object.values(this.props.variable.mapper).filter(d=>d!==undefined).map(d => Math.log10(d));
+            this.data = Object.values(this.props.variable.mapper).filter(d => d !== undefined).map(d => Math.log10(d));
         }
         let min = d3.min(this.data);
         let max = d3.max(this.data);
@@ -166,20 +172,19 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         };
         let returnVariable;
         if (this.state.bin) {
-            let binnedRange=ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange),this.state.binNames,this.state.bins);
-            returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]),this.props.variable.profile);
+            let binnedRange = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.state.binNames, this.state.bins);
+            returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]), this.props.variable.profile);
         }
-        else if(this.state.isXLog){
-            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]),this.props.variable.profile);
+        else if (this.state.isXLog) {
+            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]), this.props.variable.profile);
         }
-        else{
+        else {
             returnVariable = this.props.variable;
-            returnVariable.range=this.state.colorRange;
+            returnVariable.range = this.state.colorRange;
         }
         this.props.callback(returnVariable);
         this.props.closeModal();
     }
-
 
 
     /**
@@ -192,11 +197,12 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             disabled = true;
         }
         return (<FormGroup>
-            <Radio defaultChecked onClick={this.changeTransformation} disabled={disabled} value={'linear'} name="XradioGroup"
+            <Radio onChange={this.changeTransformation} checked={!this.state.isXLog} disabled={disabled} value={'linear'}
+                   name="XradioGroup"
                    inline>
                 None
             </Radio>{' '}
-            <Radio onClick={this.changeTransformation} value={'log'} disabled={disabled} name="XradioGroup" inline>
+            <Radio onChange={this.changeTransformation} value={'log'} checked={this.state.isXLog} disabled={disabled} name="XradioGroup" inline>
                 Log
             </Radio>{' '}
         </FormGroup>);

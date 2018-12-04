@@ -29,7 +29,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                     med = 0;
                 }
                 bins = [min, med, max];
-                binNames = [{name: min + " to " + med, modified: false}, {name: med + " to " + max, modified: false}];
+                binNames = [{name: (Math.round(min*100)/100)+ " to " + med, modified: false}, {name: (Math.round(med*100)/100) + " to " + (Math.round(max*100)/100), modified: false}];
             return {
                 bins: bins,
                 binNames: binNames,
@@ -83,7 +83,6 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                 }
             }, ColorScales.getBinnedRange(this.props.variable.colorScale,this.state.binNames,this.state.bins), this.state.binNames.map(d=>d.name), MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames),this.props.variable.profile);
             this.props.callback(derivedVariable);
-            console.log(derivedVariable.mapper,this.props.variable.mapper, this.props.store.rootStore.staticMappers[this.props.variable.id]);
             this.props.closeModal();
         }
 

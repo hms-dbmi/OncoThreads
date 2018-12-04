@@ -236,7 +236,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.store.rootStore.molProfileMapping.getMutations(this.state.profile,
+        this.props.store.rootStore.molProfileMapping.getProfileData(this.state.profile,
             geneList, this.state.mappingType, newVariables => {
                 this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
             });
