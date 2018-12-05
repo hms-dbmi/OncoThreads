@@ -11,7 +11,7 @@ const GetStudy = observer(class GetStudy extends React.Component {
 
     getStudy(event, study) {
         this.props.cbioAPI.constructor();
-        this.props.setRoot(study, false);
+        this.props.setRoot(study, false, true);
     }
 
 

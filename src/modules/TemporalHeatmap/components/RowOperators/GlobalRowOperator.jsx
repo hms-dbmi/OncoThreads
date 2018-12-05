@@ -70,7 +70,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g key={"delete" + variable} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g  className="not_exported" key={"delete" + variable} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
@@ -104,7 +104,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             const currVar = this.props.store.variableStores[timepoint.type].getById(variable);
             let label;
             if (timepoint.type === 'between') {
-                if (currVar.type === 'event' || currVar.derived) {
+                if (this.props.store.variableStores[timepoint.type].isEventDerived(variable)) {
                     //let labels = [];
                     //let oIds = currVar.originalIds;
                     label = <g key={currVar.id}
@@ -122,38 +122,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                               fill={this.props.visMap.globalTimelineColors(currVar.id)}
                               opacity={0.5}/>
                     </g>;
-                    /*
-                    oIds.forEach(function (element, i) {
-                        let originalVar = _self.props.store.variableStores[timepoint.type].getById(element);
-                        if (originalVar.type === "event") {
-                            let c1 = ColorScales.getGlobalTimelineColors();
-                            let fillC = c1(currVar.id);
-                            let xT = GlobalRowOperator.getTextWidth(originalVar.name, fontSize);
-                            labels.push(<g key={element}
-                                           transform={"translate(0," + _self.position + ")"}
-                                           onMouseEnter={(e) => _self.props.showTooltip(e, originalVar.name, originalVar.description)}
-                                           onMouseLeave={_self.props.hideTooltip}>
-                                <rect key={"rect"}
-                                      width={fontSize} height={fontSize}
-                                      x={xT + 5} y={-fontSize + 2}
-                                      fill={fillC}
-                                      opacity={0.5}/>
-                                <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
-                                    {GlobalRowOperator.cropText(originalVar.name, fontSize, fontWeight, width - iconScale * 24)}
-                                </text>
-                            </g>);
-                        }
-                        _self.position += i * _self.props.store.rootStore.visStore.secondaryHeight;
-
-
-                    });
-                    if (oIds.length > 1) {
-                        labels.push(<rect key={variable} width={this.props.width}
-                                          height={yPos + (oIds.length - 0.8) * _self.props.store.rootStore.visStore.secondaryHeight}
-                                          strokeDasharray="5,5" strokeWidth={1} stroke={"grey"} fill={"none"}/>)
-                    }
-                    labels.push(_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, 0));
-                    return labels;*/
+                    this.position += this.props.visMap.secondaryHeight;
                 }
             }
 
@@ -168,8 +137,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                         </text>
                         {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
                     </g>;
+                this.position += this.props.visMap.secondaryHeight;
             }
-            this.position += this.props.visMap.secondaryHeight;
             return label
         }
 

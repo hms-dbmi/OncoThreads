@@ -3,7 +3,7 @@
  */
 import React from "react";
 import {observer} from 'mobx-react';
-import {Nav, Navbar, NavItem} from 'react-bootstrap';
+import {Button, Modal, Nav, Navbar, NavDropdown, NavItem} from 'react-bootstrap';
 
 import GetStudy from "./GetStudy";
 import Content from "./Content"
@@ -12,6 +12,7 @@ import RootStore from "../../RootStore";
 import LogModal from "./Modals/LogModal";
 import SettingsModal from "./Modals/SettingsModal";
 import AboutModal from "./Modals/AboutModal";
+import StudySummary from "./StudySummary";
 
 const App = observer(class App extends React.Component {
     constructor(props) {
@@ -21,7 +22,8 @@ const App = observer(class App extends React.Component {
         this.state = {
             logModalIsOpen: false,
             aboutModalIsOpen: false,
-            settingsModalIsOpen: false
+            settingsModalIsOpen: false,
+            studyInfoModalIsOpen: false
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -38,6 +40,11 @@ const App = observer(class App extends React.Component {
                 logModalIsOpen: true
             });
         }
+        else if (type === 'info') {
+            this.setState({
+                studyInfoModalIsOpen: true,
+            })
+        }
         else {
             this.setState({
                 settingsModalIsOpen: true
@@ -47,21 +54,27 @@ const App = observer(class App extends React.Component {
     }
 
     closeModal() {
-        this.setState({logModalIsOpen: false, aboutModalIsOpen: false, settingsModalIsOpen: false});
+        this.setState({
+            logModalIsOpen: false, aboutModalIsOpen: false, settingsModalIsOpen: false, studyInfoModalIsOpen: false,
+        });
     }
 
-    setRootStore(study, firstLoad) {
-        this.rootStore.constructor(this.props.cbioAPI, study, firstLoad);
+    setRootStore(study, firstLoad, display) {
+        this.rootStore.constructor(this.props.cbioAPI, study, firstLoad,display);
         this.rootStore.parseCBio();
     }
 
     getNavbarContent() {
-        if (this.rootStore.parsed) {
+        if (this.rootStore.display && this.rootStore.parsed) {
             return ([
-                    <GetStudy key="getStudy" setRoot={this.setRootStore} cbioAPI={this.props.cbioAPI}
+                    <GetStudy key="getStudy" setRoot={this.setRootStore} rootStore={this.rootStore} cbioAPI={this.props.cbioAPI}
                               studies={this.props.studyapi.studies}/>,
-                    <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
+                    <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
+                        <NavItem onClick={this.rootStore.exportSVG}>...as SVG</NavItem>
+                    </NavDropdown>,
                     <NavItem key='settings' onClick={() => this.openModal('settings')}>Settings</NavItem>,
+                    <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
+                    <NavItem key="info" onClick={() => this.openModal('info')}>Study Info</NavItem>,
                     <NavItem key='about' onClick={() => this.openModal('about')}>About</NavItem>
                 ]
             )
@@ -76,32 +89,28 @@ const App = observer(class App extends React.Component {
      * @returns {*}
      */
     getMainContent() {
-        //if everything is parsed show the main view
-        if (this.rootStore.parsed) {
+
+        if (this.rootStore.firstLoad) {
+            return (
+                <DefaultView setRoot={this.setRootStore} cbioAPI={this.props.cbioAPI}
+                             rootStore={this.rootStore}
+                             studies={this.props.studyapi.studies}/>
+            )
+        }
+          //if everything is parsed show the main view
+        else if (this.rootStore.display && this.rootStore.parsed) {
             return (
                 <Content rootStore={this.rootStore}/>
             )
         }
         else {
-            //if there is no study loaded show the default view
-            if (this.rootStore.firstLoad) {
-                return (
-                    <DefaultView setRoot={this.setRootStore} cbioAPI={this.props.cbioAPI}
-                                 studies={this.props.studyapi.studies}/>
-                )
-            }
-            //if a study is loaded but not parsed yet display "Loading study"
-            else {
-                return (
-                    <h1 className="defaultView">Loading study...</h1>
-                )
-            }
+            return <div className="bigLoader"/>
         }
     }
 
     render() {
         return (
-            <div><Navbar style={{margin: 0}}>
+            <div><Navbar fluid style={{marginBottom: 10}}>
                 <Navbar.Header>
                     <Navbar.Brand>
                         <a>OncoThreads</a>
@@ -118,6 +127,23 @@ const App = observer(class App extends React.Component {
                 <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} store={this.rootStore.timepointStore}
                                close={this.closeModal}/>
                 <AboutModal modalIsOpen={this.state.aboutModalIsOpen} close={this.closeModal}/>
+                <Modal show={this.state.studyInfoModalIsOpen}
+                       onHide={this.closeModal}>
+                    <Modal.Header>
+                        Study Information
+                    </Modal.Header>
+                    <Modal.Body>
+                        <StudySummary studyName={this.rootStore.study.name}
+                                      studyDescription={this.rootStore.study.description}
+                                      studyCitation={this.rootStore.study.citation}
+                                      numPatients={this.rootStore.patientOrderPerTimepoint.length}
+                                      minTP={this.rootStore.minTP}
+                                      maxTP={this.rootStore.maxTP}/>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={this.closeModal}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         )
     }

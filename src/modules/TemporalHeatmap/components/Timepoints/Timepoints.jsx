@@ -160,8 +160,11 @@ const Timepoints = observer(class Timepoints extends React.Component {
             var k;
             //if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"] && _self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]==="DECEASED"){
             //if(_self.props.store.rootStore.staticMappers["OS_STATUS"][d+"_Pri"]){  
-                k=_self.props.store.rootStore.staticMappers["OS_MONTHS"][d+"_Pri"] * 30; 
-                tod.push(k);
+                if(_self.props.store.rootStore.staticMappers["OS_MONTHS"]){
+                    k=_self.props.store.rootStore.staticMappers["OS_MONTHS"][d+"_Pri"] * 30; 
+                    tod.push(k);
+                }
+               
             //}
             /*else{
                 k=-1;

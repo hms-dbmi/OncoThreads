@@ -31,7 +31,7 @@ class MapperCombine {
     static createBinnedMapper(mapper, bins, binNames) {
         let newMapper = {};
         for (let entry in mapper) {
-            if (mapper[entry] === 'undefined') {
+            if (mapper[entry] === undefined) {
                 newMapper[entry] = undefined;
             }
             else {

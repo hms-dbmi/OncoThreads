@@ -18,17 +18,21 @@ class MultipleTimepointsStore {
      * changes timepointStructure
      * @param structure
      * @param order
-     * @param names
      */
-    updateTimepointStructure(structure, order, names) {
+    updateTimepointStructure(structure, order) {
         this.structure = structure;
         this.timepoints = [];
         const _self = this;
         this.structure.forEach(function (d, i) {
             let tp = new SingleTimepoint(_self.rootStore, d.map(d => d.patient), _self.type, i, order);
-            tp.name = names[i];
             _self.timepoints.push(tp);
         });
+    }
+    updateNames(names){
+        this.timepoints.forEach((d,i)=>d.name=names[i]);
+    }
+    ungroupAll(){
+        this.timepoints.forEach(d=>d.isGrouped=false)
     }
 
     /**
@@ -40,7 +44,7 @@ class MultipleTimepointsStore {
 
         //console.log(variableId);
         //console.log(mapper);
-        
+
         const _self = this;
         this.structure.forEach(function (d, i) {
             let variableData = [];
@@ -66,7 +70,7 @@ class MultipleTimepointsStore {
      */
     updateHeatmapRows(variableId, mapper, index) {
         const _self = this;
-        this.rootStore.timepointStructure.forEach(function (d, i) {
+        this.structure.forEach(function (d, i) {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {
@@ -80,6 +84,12 @@ class MultipleTimepointsStore {
             });
             _self.timepoints[i].updateRow(index, variableId, variableData);
         });
+    }
+
+    resortHeatmapRows(order) {
+        let timepoints = this.timepoints;
+        timepoints.forEach(d => d.resortRows(order));
+        this.timepoints = timepoints;
     }
 
     /**
@@ -96,7 +106,7 @@ class MultipleTimepointsStore {
      * checks if at least one of the timepoints is grouped
      * @returns {boolean}
      */
-    atLeastOneGrouped(startIndex,endIndex) {
+    atLeastOneGrouped(startIndex, endIndex) {
         let oneIsGrouped = false;
         for (let i = startIndex; i <= endIndex; i++) {
             if (this.timepoints[i].isGrouped) {
@@ -113,6 +123,7 @@ class MultipleTimepointsStore {
      * @param action
      * @param variable
      * @param timepoint
+     * @param originalTimepoint
      */
     static actionFunction(action, variable, timepoint, originalTimepoint) {
         switch (action) {
@@ -130,7 +141,7 @@ class MultipleTimepointsStore {
                     timepoint.promote(variable)
                 }
                 if (timepoint.isGrouped) {
-                    timepoint.sortGroup(variable,originalTimepoint.groupOrder)
+                    timepoint.sortGroup(variable, originalTimepoint.groupOrder)
                 }
                 else {
                     timepoint.sortHeatmap(variable, originalTimepoint.heatmapSorting.order)
@@ -153,6 +164,7 @@ class MultipleTimepointsStore {
         if (timepointIndex - 1 >= 0) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex - 1], this.timepoints[timepointIndex]);
         }
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO PREVIOUS", variable, this.type, timepointIndex);
     }
 
     /**
@@ -166,6 +178,7 @@ class MultipleTimepointsStore {
         if (timepointIndex + 1 < this.timepoints.length) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex + 1], this.timepoints[timepointIndex]);
         }
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO NEXT", variable, this.type, timepointIndex);
     }
 
     /**
@@ -182,6 +195,7 @@ class MultipleTimepointsStore {
                 MultipleTimepointsStore.actionFunction(action, variable, d, _self.timepoints[timepointIndex]);
             }
         });
+        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO ALL", variable, this.type, timepointIndex);
     }
 
 }

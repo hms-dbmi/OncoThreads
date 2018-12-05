@@ -62,6 +62,8 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
     }
 
     render() {
+        const iconDimension=20;
+        const gap=10;
         let labels = [];
         const _self = this;
         this.props.timepoints.forEach(function (d, i) {
@@ -69,16 +71,16 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
             if (d.type === 'sample') {
                 pos = _self.props.visMap.timepointPositions.timepoint[i] + _self.props.visMap.getTPHeight(d) / 2 + 4;
                 labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField
-                    width={_self.state.width / 3 * 2}
+                    width={_self.state.width - (iconDimension+gap)}
                     timepoint={d}/>
-                    <g transform={"translate(" + _self.state.width / 3 * 2 + ",0)"}
+                    <g className="not_exported" transform={"translate(" + (_self.state.width-(iconDimension+gap)) + ",0)"}
                        onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
                        onMouseLeave={_self.props.hideTooltip}>
                         <g transform={"translate(0,4)"}>
                             <path fill="gray"
                                   d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
                             <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}
-                                  width={20} height={20}
+                                  width={iconDimension} height={iconDimension}
                                   fill="none"
                                   pointerEvents="visible"/>
                         </g>
@@ -88,15 +90,15 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
             else {
                 pos = _self.props.visMap.timepointPositions.timepoint[i] + _self.props.visMap.getTPHeight(d) / 2 + 4;
                 labels.push(
-                    <g key={d.globalIndex}
-                       transform={"translate(" + _self.state.width / 3 * 2 + "," + pos + ")"}
+                    <g key={d.globalIndex} className="not_exported" 
+                       transform={"translate(" + (_self.state.width -(iconDimension+gap)) + "," + pos + ")"}
                        onMouseEnter={(e) => _self.props.showTooltip(e, "Realign patients")}
                        onMouseLeave={_self.props.hideTooltip}>
                         <g transform={"translate(0,4)"}>
                             <path fill="gray"
                                   d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
                             <rect onClick={() => _self.props.store.applyPatientOrderToAll(d.globalIndex, true)}
-                                  width={20} height={20}
+                                  width={iconDimension} height={iconDimension}
                                   fill="none"
                                   pointerEvents="visible"/>
                         </g>
@@ -108,19 +110,19 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
         return (
             <div ref="timepointLabels">
                 <svg width={this.state.width} height={this.props.height}>
-                    <line x1={this.state.width / 3 - 10} x2={this.state.width / 3}
+                    <line x1={(this.state.width-(iconDimension+gap))/2 - 10} x2={(this.state.width-(iconDimension+gap))/2}
                           y1={this.props.visMap.timepointPositions.timepoint[0] + offset}
                           y2={this.props.visMap.timepointPositions.timepoint[0] + offset} stroke='lightgray'/>
-                    <line x1={this.state.width / 3} x2={this.state.width / 3}
+                    <line x1={(this.state.width-(iconDimension+gap))/2} x2={(this.state.width-(iconDimension+gap))/2}
                           y1={this.props.visMap.timepointPositions.timepoint[0] + offset}
                           y2={this.props.visMap.timepointPositions.timepoint[this.props.visMap.timepointPositions.timepoint.length - 1] + offset}
                           stroke='lightgray'/>
-                    <line x1={this.state.width / 3 - 10} x2={this.state.width / 3}
+                    <line x1={(this.state.width-(iconDimension+gap))/2 - 10} x2={(this.state.width-(iconDimension+gap))/2}
                           y1={this.props.visMap.timepointPositions.timepoint[this.props.visMap.timepointPositions.timepoint.length - 1] + offset}
                           y2={this.props.visMap.timepointPositions.timepoint[this.props.visMap.timepointPositions.timepoint.length - 1] + offset}
                           stroke='lightgray'/>
                     <text y={15}
-                          x={this.state.width / 3 - TimepointLabels.getTextWidth("Timepoint", 14) / 2}>Timepoint
+                          x={0}>Timepoint
                     </text>
                     {labels}
                 </svg>

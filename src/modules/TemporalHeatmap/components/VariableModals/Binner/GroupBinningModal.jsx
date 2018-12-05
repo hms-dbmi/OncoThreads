@@ -6,12 +6,13 @@ import uuidv4 from 'uuid/v4';
 import DerivedVariable from "../../../DerivedVariable";
 import MapperCombine from "../../../MapperCombineFunctions";
 import {Alert, Button, Modal} from "react-bootstrap";
+import ColorScales from "../../../ColorScales";
 
 
 const GroupBinningModal = observer(class GroupBinningModal extends React.Component {
         constructor(props) {
             super(props);
-            this.data = Object.values(props.variable.mapper);
+            this.data = Object.values(props.variable.mapper).filter(d=>d!==undefined);
             this.state = this.setInitialState();
             this.handleBinChange = this.handleBinChange.bind(this);
             this.handleBinNameChange = this.handleBinNameChange.bind(this);
@@ -75,13 +76,14 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
          */
         handleApply() {
             const newId = uuidv4();
-            let derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINNED", this.props.variable.description + " (binned)", [this.props.variable.id], "binning", {
+            let derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", {
                 binning: {
                     bins: this.state.bins,
                     binNames: this.state.binNames
                 }
-            }, [], this.state.binNames.map(d=>d.name), MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames));
+            }, ColorScales.getBinnedRange(this.props.variable.colorScale,this.state.binNames,this.state.bins), this.state.binNames.map(d=>d.name), MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames),this.props.variable.profile);
             this.props.callback(derivedVariable);
+            console.log(derivedVariable.mapper,this.props.variable.mapper, this.props.store.rootStore.staticMappers[this.props.variable.id]);
             this.props.closeModal();
         }
 

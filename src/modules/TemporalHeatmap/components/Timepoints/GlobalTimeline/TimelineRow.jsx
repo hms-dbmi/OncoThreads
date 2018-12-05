@@ -29,7 +29,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
         //console.log(this.props.row.data);
         if (_self.props.timepointType === "between") {
-            if (_self.props.dtype === "binary") {
+            if (_self.props.dtype === "BINARY") {
 
 
                 _self.props.events.forEach(function (ev, j) {
@@ -165,7 +165,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                 }
                 else{
 
-                    let fill = "grey";
+                    let fill = "lightgrey";
 
                     rects.push(<rect stroke={stroke}
                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, "Last known status: Living", _self.props.ypi[i], 0)

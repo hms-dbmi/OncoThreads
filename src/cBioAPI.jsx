@@ -6,7 +6,7 @@ class cBioAPI {
         this.clinicalEvents = {};
         this.clinicalPatientData = [];
         this.clinicalSampleData = [];
-        this.molecularProfiles=[];
+        this.molecularProfiles = [];
         this.mutationCounts = [];
     }
 
@@ -59,7 +59,7 @@ class cBioAPI {
                                     .then(axios.spread(function (clinicalData, molecularProfiles) {
                                         _self.clinicalSampleData = clinicalData.data;
                                         _self.molecularProfiles = molecularProfiles.data;
-                                        let index = _self.molecularProfiles.map(d=> {
+                                        let index = _self.molecularProfiles.map(d => {
                                             return d.molecularAlterationType;
                                         }).indexOf("MUTATION_EXTENDED");
                                         if (index !== -1) {
@@ -129,8 +129,8 @@ class cBioAPI {
         })
     }
 
-    getAllMutations(studyId, entrezIDs, callback) {
-        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC", {
+    getMutations(studyId, entrezIDs, callback) {
+        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC", {
             "entrezGeneIds":
                 entrezIDs.map(d => d.entrezGeneId)
             ,
@@ -141,7 +141,20 @@ class cBioAPI {
             .catch(function (error) {
                 console.log(error)
             });
+    }
 
+    getMolecularValues(studyId, profileId, entrezIDs, callback) {
+        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + profileId + "/molecular-data/fetch?projection=SUMMARY", {
+            "entrezGeneIds":
+                entrezIDs.map(d => d.entrezGeneId)
+            ,
+            "sampleListId": studyId + "_all"
+        }).then(function (response) {
+            callback(response.data)
+        })
+            .catch(function (error) {
+                console.log(error)
+            });
     }
 
     /**

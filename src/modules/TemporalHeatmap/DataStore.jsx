@@ -50,10 +50,6 @@ class DataStore {
         this.globalPrimary = varId;
     }
 
-    toggleTransition() {
-        this.transitionOn = !this.transitionOn;
-    }
-
 
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
@@ -89,9 +85,9 @@ class DataStore {
         this.transitionOn = false;
     }
 
-    update(order, names) {
-        this.variableStores.sample.update(this.rootStore.timepointStructure, order, names);
-        this.variableStores.between.update(this.rootStore.transitionStructure, order, this.rootStore.transitionStructure.map((d, i) => i));
+    update(order) {
+        this.variableStores.sample.update(this.rootStore.timepointStructure, order);
+        this.variableStores.between.update(this.rootStore.transitionStructure, order);
         this.combineTimepoints(this.transitionOn);
 
     }

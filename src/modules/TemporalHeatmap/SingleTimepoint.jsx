@@ -79,7 +79,14 @@ class SingleTimepoint {
             this.primaryVariableId = "";
         }
         else if (variableId === this.primaryVariableId) {
-            this.primaryVariableId = this.heatmap[0].variable;
+            let primaryIndex = this.rootStore.timepointStore.variableStores[this.type].getCurrentVariables().map(d => d.datatype === "NUMBER").indexOf(false);
+            if (this.isGrouped && primaryIndex !== -1) {
+                this.primaryVariableId = this.heatmap[primaryIndex].variable;
+            }
+            else {
+                this.isGrouped = false;
+                this.primaryVariableId = this.heatmap[0].variable
+            }
         }
     }
 
@@ -90,9 +97,28 @@ class SingleTimepoint {
      * @param variableData
      */
     updateRow(index, variableId, variableData) {
+        const isPrimary = this.heatmap[index].variable === this.primaryVariableId;
         this.heatmap[index].variable = variableId;
         this.heatmap[index].data = variableData;
         this.heatmap[index].isUndef = this.rowIsUndefined(variableData);
+        if (isPrimary) {
+            this.primaryVariableId = variableId;
+        }
+    }
+
+    resortRows(order) {
+        this.heatmap = this.heatmap.sort((a, b) => {
+            if (order.indexOf(a.variable) < order.indexOf(b.variable)) {
+                return -1;
+            }
+            if (order.indexOf(a.variable) > order.indexOf(b.variable)) {
+                return 1;
+            }
+            else return 0;
+        });
+        if (this.isGrouped) {
+            this.group(this.primaryVariableId);
+        }
     }
 
     /**
@@ -122,7 +148,7 @@ class SingleTimepoint {
                 this.setPrimaryVariable(variableId);
                 this.groupTimepoint(variableId);
             }
-            this.sortGroup(variableId,-this.groupOrder);
+            this.sortGroup(variableId, -this.groupOrder);
         }
         //case: the timepoint is not grouped
         else {
@@ -143,7 +169,7 @@ class SingleTimepoint {
     group(variable) {
         this.setPrimaryVariable(variable);
         this.groupTimepoint(variable);
-        this.sortGroup(variable,1);
+        this.sortGroup(variable, 1);
     }
 
     /**
@@ -154,7 +180,7 @@ class SingleTimepoint {
         this.setPrimaryVariable(variableId);
         if (this.isGrouped) {
             this.groupTimepoint(variableId);
-            this.sortGroup(variableId,this.groupOrder);
+            this.sortGroup(variableId, this.groupOrder);
         }
     }
 
@@ -248,9 +274,9 @@ class SingleTimepoint {
      * @param variable
      * @param order: 1 ascending, -1 descending
      */
-    sortGroup(variable,order) {
+    sortGroup(variable, order) {
         this.groupOrder = order;
-        let domain=this.rootStore.timepointStore.variableStores[this.type].getById(variable).domain;
+        let domain = this.rootStore.timepointStore.variableStores[this.type].getById(variable).domain;
         this.grouped = this.grouped.sort(function (a, b) {
             if (domain.indexOf(a.partition) < domain.indexOf(b.partition)) {
                 return -order;
@@ -360,6 +386,7 @@ class SingleTimepoint {
             }
         }
         this.rootStore.timepointStore.applyPatientOrderToAll(this.globalIndex, false);
+        this.rootStore.undoRedoStore.saveTimepointHistory("MAGIC SORT", variable, this.type, this.globalIndex);
     }
 }
 
