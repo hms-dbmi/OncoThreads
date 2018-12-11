@@ -21,15 +21,12 @@ const BinSelector = observer(class BinSelector extends React.Component {
         this.handlePositionTextFieldChange = this.handlePositionTextFieldChange.bind(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        this.setState({x: nextProps.bins.filter((d, i) => i !== 0 && i !== nextProps.bins.length - 1).map(d => nextProps.xScale(d))})
-    }
-
     /**
      * handles the addition of bins
      */
     handleBinAddition() {
-        let xSorted = this.state.x.slice().sort((a, b) => a - b);
+        let xSorted = this.state.x.slice();
+        xSorted=xSorted.sort((a, b) => a - b);
         let biggestGap = xSorted[0];
         let newPos = biggestGap / 2;
         if (xSorted.length === 1) {
@@ -48,7 +45,8 @@ const BinSelector = observer(class BinSelector extends React.Component {
                 newPos = (xSorted[i] + xSorted[i - 1]) / 2;
             }
         }
-        let newX = this.state.x.slice().concat(newPos);
+        let newX = this.state.x.slice();
+            newX.push(newPos);
         this.setState({x: newX});
         this.props.handleBinChange(this.getBins(newX));
     }
@@ -83,12 +81,12 @@ const BinSelector = observer(class BinSelector extends React.Component {
     getBins(x) {
         let binValues = [];
         binValues.push(this.props.xScale.domain()[0]);
-        x.forEach(d => {
+        x.slice().forEach(d => {
             binValues.push(this.props.xScale.invert(d));
 
         });
         binValues.push(this.props.xScale.domain()[1]);
-        return binValues.sort((a, b) => a - b);
+        return binValues.sort((a,b)=>a-b);
     }
 
     handleMouseMove(e, width) {
@@ -139,7 +137,8 @@ const BinSelector = observer(class BinSelector extends React.Component {
                 <label>Number of bins: <input onChange={(e) => this.handleNumberChange(e)}
                                               type="number"
                                               name="points"
-                                              step="1" min="2" defaultValue="2"/></label>
+                                              value={this.state.x.length+1}
+                                              step="1" min="2"/></label>
             </div>
         )
     }
