@@ -634,7 +634,7 @@ class RootStore {
                 id: this.mutationCountId,
                 variable: "Mutation Count",
                 datatype: "NUMBER",
-                description: "Sum of mutation counts"
+                description: "Number of mutations"
             })
         }
     }
