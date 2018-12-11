@@ -71,6 +71,7 @@ const App = observer(class App extends React.Component {
                               studies={this.props.studyapi.studies}/>,
                     <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
                         <NavItem onClick={this.rootStore.exportSVG}>...as SVG</NavItem>
+                        <NavItem onClick={this.rootStore.exportSVGandData}>...as SVG with metadata</NavItem>
                     </NavDropdown>,
                     <NavItem key='settings' onClick={() => this.openModal('settings')}>Settings</NavItem>,
                     <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
