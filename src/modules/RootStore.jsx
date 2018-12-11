@@ -42,6 +42,8 @@ class RootStore {
         this.reset = this.reset.bind(this);
 
         this.exportSVG = this.exportSVG.bind(this);
+
+        
         //this.onSubmit = this.onSubmit.bind(this);
 
         extendObservable(this, {
@@ -132,6 +134,7 @@ class RootStore {
         var svg_all = tmp.getElementsByTagName("svg");
 
         var print_svg = '';
+
         var minW = null, minH = null, maxW = null, maxH = null;
 
         var prev_right = 0, new_x, new_right;
@@ -237,7 +240,7 @@ class RootStore {
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +
-                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + boundingRect.y + ') scale(' + scaleX + ', 1)" >' +
+                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + (boundingRect.y) + ') scale(' + scaleX + ', 1)" >' +
 
                     t +
 
@@ -248,7 +251,7 @@ class RootStore {
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +
-                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + boundingRect.y + ') scale(' + scaleX + ', 1)" >' +
+                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + (boundingRect.y) + ') scale(' + scaleX + ', 1)" >' +
 
                     t +
 
@@ -257,7 +260,7 @@ class RootStore {
 
             } else {
                 print_svg = print_svg +
-                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + boundingRect.y + ')" >' +
+                    '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + (boundingRect.y) + ')" >' +
 
                     t +
 
@@ -265,8 +268,26 @@ class RootStore {
             }
         }
 
+        var svg_prefix =
+        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 25)">' +
+            '<text style="font-size:18px">Study: ' + this.study.name + '</text>'+
+        '</g>' +
+        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 50)">' +
+            '<text style="font-size:18px">Description: ' + this.study.description + '</text>'+
+        '</g>' +
+        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
+            '<text style="font-size:18px">Citation: ' + this.study.citation + '</text>'+
+        '</g>' +
+        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
+            '<text style="font-size:18px">Number of patients: ' + this.patientOrderPerTimepoint.length + '</text>'+
+        '</g>' +
+        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
+            '<text style="font-size:18px">Number of timepoints: ' + this.minTP + "-" + this.maxTP + '</text>'+
+        '</g>'
+
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
+            svg_prefix +
             print_svg +
 
             '</svg>';
