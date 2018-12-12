@@ -48,6 +48,7 @@ class VariableStore {
             this.updateReferences();
             this.updateVariableRanges();
             this.rootStore.timepointStore.regroupTimepoints();
+            this.rootStore.visStore.fitToScreenHeight();
         });
 
     }

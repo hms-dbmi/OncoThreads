@@ -11,6 +11,7 @@ class EventVariable {
         this.type = "event";
         this.derived = false;
         this.eventType = eventType; //e.g. Treatment
+        this.profile=eventType;
         this.eventSubType = eventSubType; //e.g. Agent
         this.mapper = mapper;
         this.domain = [true, false];

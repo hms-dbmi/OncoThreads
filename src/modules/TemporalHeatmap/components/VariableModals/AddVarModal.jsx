@@ -3,6 +3,7 @@ import {observer} from 'mobx-react';
 import {Button, Modal, Tab, Tabs} from 'react-bootstrap';
 import AddTimepointVarTab from "./AddTimepointVarTab"
 import UndoRedoStore from "../../UndoRedoStore";
+import AddEventVarTab from "./AddEventVarTab";
 
 
 const AddVarModal = observer(class AddVarModal extends React.Component {
@@ -12,11 +13,12 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.state = {
             currentTimepointVariables: this.props.store.variableStores.sample.currentVariables,
             referencedTimepointVariables: this.props.store.variableStores.sample.referencedVariables,
-            currentEventVariables: this.props.store.variableStores.between.currentVariable,
-            referenceEventVariable: this.props.store.variableStores.between.referencedVariables
+            currentEventVariables: this.props.store.variableStores.between.currentVariables,
+            referencedEventVariables: this.props.store.variableStores.between.referencedVariables
         }
         ;
         this.setTimepointData = this.setTimepointData.bind(this);
+        this.setEventData = this.setEventData.bind(this);
         this.handleAddButton = this.handleAddButton.bind(this);
     }
 
@@ -32,13 +34,22 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         })
     }
 
+    setEventData(currentVariables, referencedVariables) {
+        this.setState({
+            currentEventVariables: currentVariables.map(d => d.id),
+            referencedEventVariables: referencedVariables
+        });
+    }
+
     /**
      * handles clicking the add button
      */
     handleAddButton() {
         this.props.store.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.props.store.variableStores.sample.referencedVariables, this.state.referencedTimepointVariables);
         this.props.store.variableStores.sample.currentVariables.replace(this.state.currentTimepointVariables.slice());
-        this.props.store.rootStore.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.store.variableStores.sample.currentVariables.map(d => this.props.store.variableStores.sample.getById(d).name), true);
+        this.props.store.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.props.store.variableStores.between.referencedVariables, this.state.referencedEventVariables);
+        this.props.store.variableStores.between.currentVariables.replace(this.state.currentEventVariables.slice());
+        this.props.store.rootStore.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.store.variableStores.sample.currentVariables.map(d => this.props.store.variableStores.sample.getById(d).name)+"\n"+this.props.store.variableStores.between.currentVariables.map(d => this.props.store.variableStores.between.getById(d).name), true);
         this.props.closeAddModal();
     }
 
@@ -58,15 +69,22 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                             <AddTimepointVarTab
                                 currentVariables={this.props.store.variableStores.sample.currentVariables}
                                 referencedVariables={this.props.store.variableStores.sample.referencedVariables}
-                                setTimepointData={this.setTimepointData}
+                                setData={this.setTimepointData}
                                 availableProfiles={this.props.store.rootStore.availableProfiles}
                                 molProfileMapping={this.props.store.rootStore.molProfileMapping}
                                 staticMappers={this.props.store.rootStore.staticMappers}
                                 clinicalSampleCategories={this.props.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.clinicalPatientCategories}/>
                         </Tab>
-                        <Tab disabled eventKey={2} title="Event Variables">
-                            Coming soon
+                        <Tab eventKey={2} title="Event Variables">
+                            <AddEventVarTab
+                                currentVariables={this.props.store.variableStores.between.currentVariables}
+                                referencedVariables={this.props.store.variableStores.between.referencedVariables}
+                                eventCategories={this.props.store.rootStore.eventCategories}
+                                eventAttributes={this.props.store.rootStore.eventAttributes}
+                                setData={this.setEventData}
+                                store={this.props.store.rootStore}
+                                staticMappers={this.props.store.rootStore.staticMappers}/>
                         </Tab>
                     </Tabs>
                 </Modal.Body>

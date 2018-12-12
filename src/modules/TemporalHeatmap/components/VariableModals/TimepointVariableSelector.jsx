@@ -5,7 +5,7 @@ import Select from 'react-select';
 import ControlLabel from "react-bootstrap/es/ControlLabel";
 
 
-const VariableSelector = observer(class VariableSelector extends React.Component {
+const TimepointVariableSelector = observer(class TimepointVariableSelector extends React.Component {
 
     constructor(props) {
         super(props);
@@ -64,7 +64,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
 
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
-            this.props.handleVariableAddRemove(selectedOption.object, selectedOption.profile, true)
+            this.props.handleVariableAdd(selectedOption.object, selectedOption.profile, true)
         }
     }
 
@@ -146,7 +146,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
      * @param event
      */
     handleEnterPressed(event) {
-        if (VariableSelector.checkEnterPressed(event)) {
+        if (TimepointVariableSelector.checkEnterPressed(event)) {
             this.searchGenes();
         }
     }
@@ -239,6 +239,8 @@ const VariableSelector = observer(class VariableSelector extends React.Component
             options.push(<option key={"genes"} value={"genes"}>Genomic</option>)
         }
         return (<Form horizontal>
+                                <h4>Select variable</h4>
+
                 <FormGroup>
                     <Col sm={4} style={{paddingRight: "0"}}>
                         <FormControl style={{height: 38}} componentClass="select"
@@ -258,4 +260,4 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         )
     }
 });
-export default VariableSelector;
+export default TimepointVariableSelector;
