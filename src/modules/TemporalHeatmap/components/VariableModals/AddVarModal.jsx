@@ -34,6 +34,11 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         })
     }
 
+    /**
+     * sets the state of the event data
+     * @param currentVariables
+     * @param referencedVariables
+     */
     setEventData(currentVariables, referencedVariables) {
         this.setState({
             currentEventVariables: currentVariables.map(d => d.id),
@@ -71,6 +76,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                                 referencedVariables={this.props.store.variableStores.sample.referencedVariables}
                                 setData={this.setTimepointData}
                                 availableProfiles={this.props.store.rootStore.availableProfiles}
+                                mutationMappingTypes={this.props.store.rootStore.mutationMappingTypes}
                                 molProfileMapping={this.props.store.rootStore.molProfileMapping}
                                 staticMappers={this.props.store.rootStore.staticMappers}
                                 clinicalSampleCategories={this.props.clinicalSampleCategories}

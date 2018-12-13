@@ -61,6 +61,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     }
 
     render() {
+        let availableCategories=[...this.props.availableProfiles,...this.props.mutationMappingTypes.map(d=>{return{id:d,name:"Mutation - "+d}}),{id:"clinSample",name:"Clinical sample data"},{id:"clinPatient",name:"Clinical patient data"}];
         return (
             <div>
                 <TimepointVariableSelector {...this.props}
@@ -69,7 +70,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                                            handleGeneSelect={this.handleGeneSelect}
                                            currentVariables={this.variableManagerStore.currentVariables}/>
                 <VariableTable {...this.props} variableManagerStore={this.variableManagerStore}
-                               addOrder={this.state.addOrder}/>
+                               addOrder={this.state.addOrder} availableCategories={availableCategories}/>
             </div>
 
         )

@@ -566,37 +566,11 @@ class RootStore {
     }
 
     createAvailableProfiles() {
-        if (this.cbioAPI.clinicalSampleData.length > 0) {
-            this.availableProfiles.push({
-                name: "Clinical Sample Data",
-                id: "clinSample",
-                type: "clinical",
-                profile: "clinSample"
-            })
-        }
-        if (this.cbioAPI.clinicalPatientData.length > 0) {
-            this.availableProfiles.push({
-                id: "clinPatient",
-                profile: "clinPatient",
-                type: "clinical",
-                name: "Clincial Patient Data"
-            })
-        }
-        this.cbioAPI.molecularProfiles.filter(d => d.molecularAlterationType === "MUTATION_EXTENDED").forEach(d => {
-            this.mutationMappingTypes.forEach(f => {
-                this.availableProfiles.push({
-                    name: d.name + " - " + f,
-                    id: f,
-                    type: "mutation",
-                    profile: d.molecularProfileId
-                });
-            });
-        });
-        this.cbioAPI.molecularProfiles.filter(d => d.molecularAlterationType !== "MUTATION_EXTENDED").forEach(d => {
+        this.cbioAPI.molecularProfiles.forEach(d => {
             this.availableProfiles.push({
                 name: d.name,
                 id: d.molecularProfileId,
-                type: "molecular",
+                type: d.molecularAlterationType,
                 profile: d.molecularProfileId,
             });
         });

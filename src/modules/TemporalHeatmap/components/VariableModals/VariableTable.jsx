@@ -3,11 +3,11 @@ import {observer} from 'mobx-react';
 import {toJS} from "mobx"
 import {
     Button,
-    ControlLabel,
+    ControlLabel, DropdownButton,
     Form,
     FormControl,
-    FormGroup,
-    Label,
+    FormGroup, Glyphicon,
+    Label, MenuItem,
     OverlayTrigger,
     Table,
     Tooltip
@@ -62,6 +62,13 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     }
 
+    /**
+     * opens modal to modify variable
+     * @param variable
+     * @param derivedVariable
+     * @param isContinuous
+     * @param callback
+     */
     openModifyModal(variable, derivedVariable, isContinuous, callback) {
         this.setState({
             modifyContinuousIsOpen: isContinuous,
@@ -126,6 +133,10 @@ const VariableTable = observer(class VariableTable extends React.Component {
                     }}>
                     <td>
                         {i}
+                        <Button bsSize="xsmall" onClick={(e) => this.moveSingle(true,false,i)}><Glyphicon
+                        glyph="chevron-up"/></Button>
+                    <Button bsSize="xsmall" onClick={(e) => this.moveSingle(false,false,i)}><Glyphicon
+                        glyph="chevron-down"/></Button>
                     </td>
                     <OverlayTrigger placement="top" overlay={tooltip}>
                         <td>
@@ -138,7 +149,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                     <td>
                         {fullVariable.datatype}
                     </td>
-                    <td>{this.props.availableProfiles[this.props.availableProfiles.map(d => d.id).indexOf(fullVariable.profile)].name}</td>
+                    <td>{this.props.availableCategories[this.props.availableCategories.map(d => d.id).indexOf(fullVariable.profile)].name}</td>
                     <td>
                         <FontAwesome onClick={(e) => this.handleCogWheelClick(e, d.id)}
                                      name="cog"/>
@@ -198,7 +209,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
      */
     handleSort(e) {
         if (e.target.value === "source") {
-            this.props.variableManagerStore.sortBySource(this.props.availableProfiles.map(d => d.id));
+            this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id));
         }
         else if (e.target.value === "addOrder") {
             this.props.variableManagerStore.sortByAddOrder(this.props.addOrder);
@@ -240,6 +251,29 @@ const VariableTable = observer(class VariableTable extends React.Component {
         }
     }
 
+    /**
+     * moves selected variables
+     * @param isUp
+     * @param toExtreme
+     */
+    moveSelected(isUp,toExtreme){
+        let indices=this.props.variableManagerStore.getSelectedIndices();
+        this.props.variableManagerStore.move(isUp,toExtreme,indices);
+        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables);
+    }
+
+    /**
+     * moves single variable
+     * @param isUp
+     * @param toExtreme
+     * @param index
+     */
+    moveSingle(isUp,toExtreme,index){
+        this.props.variableManagerStore.move(isUp,toExtreme,[index]);
+        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables);
+    }
+
+
 
     render() {
         return (
@@ -248,7 +282,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                 <Form inline>
                     <FormGroup>
                         <ControlLabel>Sort by</ControlLabel>
-                        <FormControl style={{height: 38}} componentClass="select"
+                        <FormControl componentClass="select"
                                      onChange={this.handleSort}
                                      placeholder="Select Category">
                             <option value="addOrder">add order</option>
@@ -256,12 +290,22 @@ const VariableTable = observer(class VariableTable extends React.Component {
                             <option value="alphabet">alphabet</option>
                             <option value="datatype">datatype</option>
                         </FormControl>
+                         <DropdownButton
+                    title={"Move selected..."}
+                    id={"MoveSelected"}
+                >
+                    <MenuItem onClick={()=>this.moveSelected(true,false)} eventKey="1">Up</MenuItem>
+                    <MenuItem onClick={()=>this.moveSelected(false,false)} eventKey="2">Down</MenuItem>
+                          <MenuItem divider />
+                    <MenuItem onClick={()=>this.moveSelected(true,true)} eventKey="3">to top</MenuItem>
+                    <MenuItem onClick={()=>this.moveSelected(false,true)} eventKey="4">to bottom</MenuItem>
+                </DropdownButton>
                     </FormGroup>
                 </Form>
                 <div style={{maxHeight: 400, overflowY: "scroll"}}>
                     {this.showCurrentVariables()}
                 </div>
-                <Button disabled onClick={this.combineSelected}>Combine Selected</Button>
+                <Button onClick={this.combineSelected}>Combine Selected</Button>
                 {this.getModal()}
             </div>
 

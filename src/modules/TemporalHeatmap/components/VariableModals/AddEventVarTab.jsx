@@ -65,19 +65,19 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
     }
 
     render() {
-        let profiles = [...this.props.eventCategories.map(d => {
+        let categories = [...this.props.eventCategories.filter(d=>d!=="SPECIMEN").map(d => {
             return {id: d, name: AddEventVarTab.toTitleCase(d)}
         }), {id: "Computed", name: "Computed"}];
         return (
             <div>
                 <EventVariableSelector {...this.props}
-                                       eventCategories={profiles}
+                                       eventCategories={categories}
                                        addTimepointDistance={this.addTimepointDistance}
                                        addEventVariable={this.addEventVariable}
                                        removeVariable={this.removeVariable}
                                        currentVariables={this.variableManagerStore.currentVariables}/>
                 <VariableTable {...this.props} variableManagerStore={this.variableManagerStore}
-                               addOrder={this.state.addOrder} availableProfiles={profiles}/>
+                               addOrder={this.state.addOrder} availableCategories={categories}/>
             </div>
 
         )

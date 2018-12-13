@@ -12,6 +12,7 @@ class EventVariable {
         this.derived = false;
         this.eventType = eventType; //e.g. Treatment
         this.profile=eventType;
+        this.description="Indicates if event: \""+name+"\" has happened between two timepoints";
         this.eventSubType = eventSubType; //e.g. Agent
         this.mapper = mapper;
         this.domain = [true, false];

@@ -52,14 +52,20 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
         return options;
     }
 
-
+    /**
+     * handles selecting a category
+     * @param e
+     */
     handleCategorySelect(e) {
         this.setState({
             category: e.target.value,
         });
     }
 
-
+    /**
+     * handles selecting an option
+     * @param selectedOption
+     */
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
             if (this.state.category !== "Computed") {
@@ -71,8 +77,11 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
         }
     }
 
-
-    getTimepointSearchField() {
+    /**
+     * get Select element for current category
+     * @returns {*}
+     */
+    getSelect() {
         return <Select
             type="text"
             searchable={true}
@@ -93,12 +102,11 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
                         <FormControl style={{height: 38}} componentClass="select"
                                      onChange={this.handleCategorySelect}
                                      placeholder="Select Category">
-                            {this.props.eventCategories.filter(d => d.id !== "SPECIMEN").map((d) => <option value={d.id}
-                                                                                                         key={d.id}>{d.name}</option>)}
+                            {this.props.eventCategories.map((d) => <option value={d.id} key={d.id}>{d.name}</option>)}
                         </FormControl>
                     </Col>
                     <Col sm={8} style={{padding: 0}}>
-                        {this.getTimepointSearchField()}
+                        {this.getSelect()}
                     </Col>
                 </FormGroup>
             </Form>
