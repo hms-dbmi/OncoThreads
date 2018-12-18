@@ -5,9 +5,6 @@ class MapperCombine {
             case "binaryCombine":
                 mapper = MapperCombine.createBinaryCombinedMapper(mappers, modification);
                 break;
-            case "binning":
-                mapper = MapperCombine.createBinnedMapper(mappers[0], modification.bins, modification.binNames);
-                break;
             case "modifyCategorical":
                 mapper = MapperCombine.createModifyCategoriesMapper(mappers[0], modification);
                 break;
@@ -75,14 +72,6 @@ class MapperCombine {
                 }
                 newMapper[entry] = containedInAll;
             }
-        }
-        return newMapper;
-    }
-
-    static makeBinary(mapper, trueValues) {
-        let newMapper = {};
-        for (let entry in mapper) {
-            newMapper[entry] = trueValues.includes(mapper[entry]);
         }
         return newMapper;
     }

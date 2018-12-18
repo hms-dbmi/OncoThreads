@@ -12,56 +12,98 @@ import ColorScales from "../../../ColorScales";
 const GroupBinningModal = observer(class GroupBinningModal extends React.Component {
         constructor(props) {
             super(props);
-            this.data = Object.values(props.variable.mapper).filter(d=>d!==undefined);
+            this.data = Object.values(props.variable.mapper).filter(d => d !== undefined);
             this.state = this.setInitialState();
             this.handleBinChange = this.handleBinChange.bind(this);
             this.handleBinNameChange = this.handleBinNameChange.bind(this);
             this.handleApply = this.handleApply.bind(this);
+            this.toggleIsBinary = this.toggleIsBinary.bind(this);
             this.close = this.close.bind(this);
         }
 
         setInitialState() {
             let bins, binNames;
-                let min = d3.min(this.data);
-                let max = d3.max(this.data);
-                let med = (max + min) / 2;
-                if (min < 0) {
-                    med = 0;
-                }
-                bins = [min, med, max];
-                binNames = [{name: (Math.round(min*100)/100)+ " to " + med, modified: false}, {name: (Math.round(med*100)/100) + " to " + (Math.round(max*100)/100), modified: false}];
+            let min = d3.min(this.data);
+            let max = d3.max(this.data);
+            let med = (max + min) / 2;
+            if (min < 0) {
+                med = 0;
+            }
+            bins = [min, med, max];
+            binNames = [{
+                name: (Math.round(min * 100) / 100) + " to " + med,
+                modified: false
+            }, {name: (Math.round(med * 100) / 100) + " to " + (Math.round(max * 100) / 100), modified: false}];
             return {
                 bins: bins,
                 binNames: binNames,
+                isBinary: false
             }
         }
 
+        toggleIsBinary() {
+            let binNames = this.state.binNames.slice();
+            if (this.state.isBinary) {
+                for (let i = 1; i < this.state.bins.length; i++) {
+                    binNames[i - 1].name = Math.round(this.state.bins[i - 1] * 100) / 100 + " to " + Math.round(this.state.bins[i] * 100) / 100;
+                    binNames[i - 1].modified = false;
+                }
+            }
+            else {
+                binNames[0] = {name: true, modified: true};
+                binNames[1] = {name: false, modified: true};
+
+            }
+            this.setState({isBinary: !this.state.isBinary, binNames: binNames});
+        }
+
         handleBinChange(bins) {
+            let isBinary = this.state.isBinary;
+            let binNames = this.state.binNames.slice();
+            console.log(binNames);
+            if (bins.length !== 3) {
+                isBinary = false;
+            }
             if (bins.length === this.state.bins.length) {
-                let binNames = this.state.binNames.slice();
                 for (let i = 1; i < bins.length; i++) {
                     if (!binNames[i - 1].modified) {
                         binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
                     }
                 }
-                this.setState({bins: bins, binNames: binNames})
             }
             else {
-                let binNames = [];
+                binNames = [];
                 for (let i = 1; i < bins.length; i++) {
                     binNames.push({
                         name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
                         modified: false
                     });
                 }
-                this.setState({bins: bins, binNames: binNames})
             }
+            console.log(binNames);
+
+            this.setState({bins: bins, binNames: binNames, isBinary: isBinary})
+
 
         }
 
         handleBinNameChange(e, index) {
             let binNames = this.state.binNames.slice();
-            binNames[index] = {name: e.target.value, modified: true};
+            if (!this.state.isBinary) {
+                binNames[index] = {name: e.target.value, modified: true};
+            }
+            else {
+                binNames.forEach((d, i) => {
+                    if (i === index) {
+                        d.name = e.target.value === "true";
+                        d.modified = true;
+                    }
+                    else {
+                        d.name = e.target.value !== "true";
+                        d.modified = true;
+                    }
+                })
+            }
             this.setState({binNames: binNames});
         }
 
@@ -76,12 +118,25 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
          */
         handleApply() {
             const newId = uuidv4();
-            let derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", {
+            let derivedVariable;
+            let modification = {
                 binning: {
                     bins: this.state.bins,
                     binNames: this.state.binNames
                 }
-            }, ColorScales.getBinnedRange(this.props.variable.colorScale,this.state.binNames,this.state.bins), this.state.binNames.map(d=>d.name), MapperCombine.createBinnedMapper(this.props.variable.mapper, this.state.bins, this.state.binNames),this.props.variable.profile);
+            };
+            if (!this.state.isBinary) {
+                derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)",
+                    [this.props.variable.id], "continuousTransform", modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.state.binNames, this.state.bins),
+                    this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]),
+                    this.props.variable.profile);
+            }
+            else {
+                derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINARY", this.props.variable.description + " (binned)",
+                    [this.props.variable.id], "continuousTransform", modification, [], [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]),
+                    this.props.variable.profile);
+
+            }
             this.props.callback(derivedVariable);
             this.props.closeModal();
         }
@@ -120,8 +175,10 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                                 width={width}
                                 height={height}
                                 histBins={bins}
+                                isBinary={this.state.isBinary}
                                 handleBinChange={this.handleBinChange}
-                                handleBinNameChange={this.handleBinNameChange}/>
+                                handleBinNameChange={this.handleBinNameChange}
+                                toggleIsBinary={this.toggleIsBinary}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.close}>

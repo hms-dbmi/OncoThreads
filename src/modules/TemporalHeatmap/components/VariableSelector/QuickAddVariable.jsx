@@ -340,10 +340,10 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
         }
         let options = [];
-        if (this.props.availableProfiles.filter(d => d.type === "clinical").length > 0) {
+        if (this.props.clinicalSampleCategories.length>0||this.props.clinicalPatientCategories.length>0) {
             options.push(<option key="clinical" value={"clinical"}>Predefined</option>)
         }
-        if (this.props.availableProfiles.filter(d => d.type !== "clinical").length > 0) {
+        if (this.props.availableProfiles.length > 0) {
             options.push(<option key="genes" value={"genes"}>Genomic</option>)
         }
 

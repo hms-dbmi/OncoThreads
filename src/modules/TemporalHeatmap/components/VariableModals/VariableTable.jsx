@@ -15,6 +15,7 @@ import {
 import FontAwesome from 'react-fontawesome';
 import ModifyCategorical from "./ModifyCategorical";
 import ModifyContinuous from "./ModifyContinuous";
+import ModifyBinary from "./ModifyBinary";
 
 const VariableTable = observer(class VariableTable extends React.Component {
 
@@ -23,6 +24,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
         this.state = {
             modifyCategoricalIsOpen: false,
             modifyContinuousIsOpen: false,
+            modifyBinaryIsOpen:false,
             currentVariable: '',
             derivedVariable: '',
             callback: ''
@@ -38,10 +40,10 @@ const VariableTable = observer(class VariableTable extends React.Component {
      * opens modal to modify a variable or change an existing modification
      * @param originalVariable
      * @param derivedVariable
-     * @param isContinuous
+     * @param type
      */
-    modifyVariable(originalVariable, derivedVariable, isContinuous) {
-        this.openModifyModal(originalVariable, derivedVariable, isContinuous, newVariable => {
+    modifyVariable(originalVariable, derivedVariable, type) {
+        this.openModifyModal(originalVariable, derivedVariable, type, newVariable => {
             if (derivedVariable !== null) {
                 this.props.variableManagerStore.replaceDisplayedVariable(derivedVariable.id, newVariable);
             }
@@ -58,7 +60,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
      * closes the categorical modal
      */
     closeModal() {
-        this.setState({modifyCategoricalIsOpen: false, modifyContinuousIsOpen: false});
+        this.setState({modifyCategoricalIsOpen: false, modifyContinuousIsOpen: false,modifyBinaryIsOpen:false});
 
     }
 
@@ -66,13 +68,14 @@ const VariableTable = observer(class VariableTable extends React.Component {
      * opens modal to modify variable
      * @param variable
      * @param derivedVariable
-     * @param isContinuous
+     * @param type
      * @param callback
      */
-    openModifyModal(variable, derivedVariable, isContinuous, callback) {
+    openModifyModal(variable, derivedVariable, type, callback) {
         this.setState({
-            modifyContinuousIsOpen: isContinuous,
-            modifyCategoricalIsOpen: !isContinuous,
+            modifyContinuousIsOpen: type==="NUMBER",
+            modifyCategoricalIsOpen: type==="STRING"||type==="ORDINAL",
+            modifyBinaryIsOpen: type==="BINARY",
             derivedVariable: derivedVariable,
             currentVariable: variable,
             callback: callback
@@ -96,7 +99,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
         else {
             originalVariable = variable;
         }
-        this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype === "NUMBER");
+        this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype);
     }
 
     /**
@@ -196,6 +199,13 @@ const VariableTable = observer(class VariableTable extends React.Component {
                                        callback={this.state.callback}
                                        derivedVariable={this.state.derivedVariable}
                                        closeModal={this.closeModal}/>
+        }
+        else if(this.state.modifyBinaryIsOpen){
+            modal=<ModifyBinary modalIsOpen={this.state.modifyBinaryIsOpen}
+                                variable={this.state.currentVariable}
+                                callback={this.state.callback}
+                                derivedVariable={this.state.derivedVariable}
+                                closeModal={this.closeModal}/>
         }
         return (
             modal

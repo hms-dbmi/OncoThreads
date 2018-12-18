@@ -14,8 +14,10 @@ const Binner = observer(class Binner extends React.Component {
                              xScale={this.props.xScale}
                              yScale={this.props.yScale}
                              histBins={this.props.histBins}
+                             isBinary={this.props.isBinary}
+                             toggleIsBinary={this.props.toggleIsBinary}
                              bins={this.props.bins}/>
-                <BinNames binNames={this.props.binNames} handleBinNameChange={this.props.handleBinNameChange}/>
+                <BinNames binNames={this.props.binNames} handleBinNameChange={this.props.handleBinNameChange} isBinary={this.props.isBinary}/>
             </div>
         )
     }

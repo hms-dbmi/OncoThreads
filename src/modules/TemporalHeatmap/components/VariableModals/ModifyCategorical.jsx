@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {
     Button,
+    ButtonGroup,
     ControlLabel,
     FormControl,
     FormGroup,
@@ -19,6 +20,7 @@ import MapperCombine from "../../MapperCombineFunctions";
 import FontAwesome from 'react-fontawesome';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 import * as d3 from "d3";
+import ColorScales from "../../ColorScales";
 
 
 const ModifyCategorical = observer(class ModifyCategorical extends React.Component {
@@ -28,34 +30,27 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.state =
             {
                 colorScale: d3.scaleOrdinal().range(props.derivedVariable !== null ? props.derivedVariable.range : props.variable.range),
-                currentData: this.createCurrentData(),
+                convertBinary: props.derivedVariable === null ? false : props.derivedVariable.datatype === "BINARY",
+                currentData: this.createCurrentCategoryData(),
+                binaryMapping: this.createBinaryMapping(),
+                binaryColors: props.derivedVariable !== null && props.derivedVariable.modificationType === "convertBinary" ? props.derivedVariable.range : ColorScales.defaultBinaryRange,
                 name: props.derivedVariable !== null ? props.derivedVariable.name : props.variable.name,
-                nameChanged: false,
-                ordinal: props.derivedVariable !== null ? props.derivedVariable.datatype === "ORDINAL": false,
+                ordinal: props.derivedVariable !== null ? props.derivedVariable.datatype === "ORDINAL" : false,
             };
         this.merge = this.merge.bind(this);
         this.unMerge = this.unMerge.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
+        this.toggleConvertBinary = this.toggleConvertBinary.bind(this);
     }
 
-    /**
-     * computes the percent occurrence
-     */
-    getPercentOccurences() {
-        let occurences = {};
-        this.state.currentData.forEach(d => {
-            const mapEntry = d.categories.toString();
-            occurences[mapEntry] = 0;
-            d.categories.forEach(f => {
-                for (let entry in this.props.variable.mapper) {
-                    if (this.props.variable.mapper[entry].toString() === f) {
-                        occurences[mapEntry] += 1 / Object.keys(this.props.variable.mapper).length * 100;
-                    }
-                }
-            })
+    getPercentOccurence(categories) {
+        let allOccurences = Object.values(this.props.variable.mapper);
+        let numOccurences = 0;
+        categories.forEach(d => {
+            numOccurences += allOccurences.filter(f => d.toString() === f.toString()).length;
         });
-        return occurences;
+        return numOccurences / allOccurences.length * 100
     }
 
     /**
@@ -74,7 +69,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * @param event
      */
     handleNameChange(event) {
-        this.setState({name: event.target.value, nameChanged: true});
+        this.setState({name: event.target.value});
     }
 
 
@@ -82,27 +77,38 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * handles pressing apply
      */
     handleApply() {
-        let categoryMapping = {};
-        this.props.variable.domain.forEach((d) => {
-            this.state.currentData.forEach(f => {
-                if (f.categories.includes(d.toString())) {
-                    categoryMapping[d] = f.name;
-                }
+        let returnVariable;
+        if (!this.state.convertBinary) {
+            let categoryMapping = {};
+            this.props.variable.domain.forEach((d) => {
+                this.state.currentData.forEach(f => {
+                    if (f.categories.includes(d.toString())) {
+                        categoryMapping[d] = f.name;
+                    }
+                });
             });
-        });
-        let newId = uuidv4();
-        const datatype = this.state.ordinal ? "ORDINAL" : "STRING";
-        const range = this.state.currentData.map(d => d.color);
-        const domain = this.state.currentData.map(d => d.name);
-        let returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, range, domain, MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]), this.props.variable.profile);
-        if (this.state.ordinal || this.categoriesChanged(returnVariable)) {
-            if (!this.state.nameChanged && this.props.derivedVariable === null) {
-                returnVariable.name = this.state.name + "_MODIFIED";
+            let newId = uuidv4();
+            const datatype = this.state.ordinal ? "ORDINAL" : "STRING";
+            const range = this.state.currentData.map(d => d.color);
+            const domain = this.state.currentData.map(d => d.name);
+            returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, range, domain, MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]), this.props.variable.profile);
+            if (this.state.ordinal || this.categoriesChanged(returnVariable)) {
+                if (this.state.name===this.props.variable.name && this.props.derivedVariable === null) {
+                    returnVariable.name = this.state.name + "_MODIFIED";
+                }
+            }
+            else {
+                returnVariable = this.props.variable;
+                returnVariable.range = range;
             }
         }
         else {
-            returnVariable = this.props.variable;
-            returnVariable.range = range;
+            let newId = uuidv4();
+            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], "convertBinary", this.state.binaryMapping, this.state.binaryColors, [], MapperCombine.getModificationMapper("modifyCategorical", this.state.binaryMapping, [this.props.variable.mapper]), this.props.variable.profile);
+            if (this.state.name===this.props.variable.name && this.props.derivedVariable === null) {
+                returnVariable.name = this.state.name + "_MODIFIED";
+            }
+
         }
         this.props.callback(returnVariable);
         this.props.closeModal();
@@ -123,9 +129,9 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * creates the initial list of current categories
      * @returns {Array}
      */
-    createCurrentData() {
+    createCurrentCategoryData() {
         let currentData = [];
-        if (this.props.derivedVariable !== null) {
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.modificationType !== "convertBinary") {
             this.props.derivedVariable.domain.forEach((d, i) => {
                 for (let key in this.props.derivedVariable.modification) {
                     if (this.props.derivedVariable.modification[key] === d) {
@@ -134,7 +140,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                                 selected: false,
                                 name: d,
                                 categories: [],
-                                color: this.props.derivedVariable.range[i%this.props.derivedVariable.range.length]
+                                color: this.props.derivedVariable.range[i % this.props.derivedVariable.range.length]
                             })
                         }
                         currentData[currentData.map(d => d.name).indexOf(d)].categories.push(key);
@@ -148,11 +154,22 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     selected: false,
                     name: d.toString(),
                     categories: [d.toString()],
-                    color: this.props.variable.range[i%this.props.variable.range.length]
+                    color: this.props.variable.range[i % this.props.variable.range.length]
                 })
             });
         }
         return currentData;
+    }
+
+    createBinaryMapping() {
+        let binaryMapping = {};
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.modificationType === "convertBinary") {
+            binaryMapping = this.props.derivedVariable.modification;
+        }
+        else {
+            this.props.variable.domain.forEach(d => binaryMapping[d] = true);
+        }
+        return binaryMapping;
     }
 
     /**
@@ -252,11 +269,17 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * @param index
      */
     toggleSelect(e, index) {
-        if(e.target.nodeName==="TD") {
+        if (e.target.nodeName === "TD") {
             let currentData = this.state.currentData.slice();
             currentData[index].selected = !currentData[index].selected;
             this.setState({currentData: currentData});
         }
+    }
+
+    handleBinaryChange(name, value) {
+        let binaryMapping = Object.assign({}, this.state.binaryMapping);
+        binaryMapping[name] = value;
+        this.setState({binaryMapping: binaryMapping});
     }
 
     /**
@@ -280,10 +303,96 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      * shows the current categories in a table
      * @returns {any[]}
      */
-    displayCategories() {
-        const _self = this;
-        const occuranceMapper = this.getPercentOccurences();
-        return this.state.currentData.map(function (d, i) {
+    displayTable() {
+        let bottom = null;
+        if (!this.state.convertBinary) {
+            bottom = <form>
+                <Button onClick={this.merge}>Merge selected</Button>
+                <Button onClick={this.unMerge}>Split selected</Button>
+            </form>;
+
+        }
+        else {
+            console.log(this.state.binaryColors);
+            let colorRects = this.state.binaryColors.map((d, i) => {
+                const popover = (
+                    <Popover id="popover-positioned-right" title="Choose color">
+                        <SketchPicker
+                            color={d}
+                            onChangeComplete={(color) => {
+                                let binaryColors = this.state.binaryColors.slice();
+                                binaryColors[i] = color.hex;
+                                this.setState({binaryColors: binaryColors});
+                            }}
+                        />
+                    </Popover>);
+                return <OverlayTrigger rootClose={true} onClick={(e) => ModifyCategorical.handleOverlayClick(e)}
+                                       trigger="click"
+                                       placement="right" overlay={popover}>
+                    <svg width="10" height="10">
+                        <rect stroke="black" width="10" height="10"
+                              fill={d}/>
+                    </svg>
+                </OverlayTrigger>
+            });
+            bottom = <div>
+                <p>Click to change color:</p>
+                true: {colorRects[0]}
+                <br/>
+                false: {colorRects[1]}
+            </div>
+        }
+        return <div>
+            <Table bordered condensed responsive>
+                <thead>
+                {this.getTableHead()}
+                </thead>
+                <tbody>
+                {this.getTableContent()}
+                </tbody>
+            </Table>
+            {bottom}
+        </div>
+    }
+
+    getTableHead() {
+        if (!this.state.convertBinary) {
+            const colorScalePopOver = <Popover id="popover-positioned-right" title="Choose color scale">
+                {this.getColorScalePopover()}
+            </Popover>;
+            return <tr>
+                <th>#</th>
+                <th>Category</th>
+                <th>% Occurence</th>
+                <th>Color
+                    <OverlayTrigger rootClose={true}
+                                    onClick={(e) => ModifyCategorical.handleOverlayClick(e)}
+                                    trigger="click"
+                                    placement="right" overlay={colorScalePopOver}><FontAwesome
+                        name="paint-brush"/></OverlayTrigger></th>
+            </tr>
+        }
+        else {
+            return <tr>
+                <th>Category</th>
+                <th>% Occurence</th>
+                <th>Binary value</th>
+            </tr>
+        }
+
+    }
+
+    getTableContent() {
+        if (!this.state.convertBinary) {
+            return this.getCategoryContent();
+        }
+        else {
+            return this.getBinaryContent()
+        }
+    }
+
+    getCategoryContent() {
+        return this.state.currentData.map((d, i) => {
             let bgColor = "white";
             if (d.selected) {
                 bgColor = "lightgrey";
@@ -292,14 +401,14 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                 <Popover id="popover-positioned-right" title="Choose color">
                     <SketchPicker
                         color={d.color}
-                        onChangeComplete={(color) => _self.handleColorChange(color, i)}
+                        onChangeComplete={(color) => this.handleColorChange(color, i)}
                     />
                 </Popover>);
             let colorRect = <svg width="10" height="10">
                 <rect stroke="black" width="10" height="10"
                       fill={d.color}/>
             </svg>;
-            if (!_self.state.ordinal) {
+            if (!this.state.ordinal) {
                 colorRect =
                     <OverlayTrigger rootClose={true} onClick={(e) => ModifyCategorical.handleOverlayClick(e)}
                                     trigger="click"
@@ -310,11 +419,11 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                         </svg>
                     </OverlayTrigger>
             }
-            return (<tr key={d.categories} bgcolor={bgColor} onClick={(e) => _self.toggleSelect(e, i)}>
+            return (<tr key={d.categories} bgcolor={bgColor} onClick={(e) => this.toggleSelect(e, i)}>
                 <td>{i}
-                    <Button bsSize="xsmall" onClick={(e) => _self.move(e, i, true)}><Glyphicon
+                    <Button bsSize="xsmall" onClick={(e) => this.move(e, i, true)}><Glyphicon
                         glyph="chevron-up"/></Button>
-                    <Button bsSize="xsmall" onClick={(e) => _self.move(e, i, false)}><Glyphicon
+                    <Button bsSize="xsmall" onClick={(e) => this.move(e, i, false)}><Glyphicon
                         glyph="chevron-down"/></Button>
                 </td>
                 <td>
@@ -322,16 +431,40 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                         <FormControl bsSize="small"
                                      type="text"
                                      value={d.name}
-                                     onChange={(e) => _self.handleRenameCategory(i, e)}
+                                     onChange={(e) => this.handleRenameCategory(i, e)}
                         />
                     </form>
                 </td>
-                <td>{Math.round(occuranceMapper[d.categories.toString()] * 100) / 100}</td>
+                <td>{Math.round(this.getPercentOccurence(d.categories) * 100) / 100}</td>
                 <td>
                     {colorRect}
                 </td>
             </tr>)
-        })
+        });
+    }
+
+    getBinaryContent() {
+        return this.props.variable.domain.map(d => {
+            return (<tr key={d}>
+                <td>
+                    {d.toString()}
+                </td>
+                <td>{Math.round(this.getPercentOccurence([d]) * 100) / 100}</td>
+                <td>
+                    <ButtonGroup>
+                        <Button onClick={() => this.handleBinaryChange(d, true)}
+                                active={this.state.binaryMapping[d] === true}
+                                value={true} bsSize="xsmall">true</Button>
+                        <Button onClick={() => this.handleBinaryChange(d, false)}
+                                active={this.state.binaryMapping[d] === false}
+                                value={false} bsSize="xsmall">false</Button>
+                        <Button onClick={() => this.handleBinaryChange(d, undefined)}
+                                active={this.state.binaryMapping[d] === undefined} value={undefined}
+                                bsSize="xsmall">undefined</Button>
+                    </ButtonGroup>
+                </td>
+            </tr>)
+        });
     }
 
     /**
@@ -413,11 +546,12 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
 
     }
 
+    toggleConvertBinary() {
+        this.setState({convertBinary: !this.state.convertBinary});
+    }
+
 
     render() {
-        const colorScalePopOver = <Popover id="popover-positioned-right" title="Choose color scale">
-            {this.getColorScalePopover()}
-        </Popover>;
         return (
             <Modal show={this.props.modalIsOpen}
                    onHide={this.props.closeModal}>
@@ -434,29 +568,18 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     </form>
                     <h5>Description</h5>
                     <p>{this.props.variable.description}</p>
-                    <Table bordered condensed responsive>
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Category</th>
-                            <th>% Occurence</th>
-                            <th>Color
-                                <OverlayTrigger rootClose={true}
-                                                onClick={(e) => ModifyCategorical.handleOverlayClick(e)}
-                                                trigger="click"
-                                                placement="right" overlay={colorScalePopOver}><FontAwesome
-                                    name="paint-brush"/></OverlayTrigger></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {this.displayCategories()}
-                        </tbody>
-                    </Table>
-                    <form>
-                        <Button onClick={this.merge}>Merge selected</Button>
-                        <Button onClick={this.unMerge}>Split selected</Button>
+                    <FormGroup>
+                        <Radio onChange={this.toggleConvertBinary} name="radioGroup"
+                               checked={!this.state.convertBinary}>
+                            Customize categories
+                        </Radio>{' '}
+                        <Radio onChange={this.toggleConvertBinary} name="radioGroup" checked={this.state.convertBinary}>
+                            Convert to binary
+                        </Radio>{' '}
+                    </FormGroup>
 
-                    </form>
+                    {this.displayTable()}
+
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.closeModal}>
