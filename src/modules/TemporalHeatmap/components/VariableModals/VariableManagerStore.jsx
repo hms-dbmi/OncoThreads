@@ -1,4 +1,4 @@
-import {extendObservable,observe} from "mobx";
+import {extendObservable, observe} from "mobx";
 
 /*
 Store containing information about variables
@@ -13,7 +13,7 @@ class VariableManagerStore {
                 return {id: d, isNew: false, isSelected: false}
             }),
         });
-         observe(this.currentVariables, () => {
+        observe(this.currentVariables, () => {
             this.updateReferences();
         });
     }
@@ -24,10 +24,10 @@ class VariableManagerStore {
      * @param variableId
      */
     removeVariable(variableId) {
-        this.currentVariables.remove(this.currentVariables.filter(d=>d.id===variableId)[0]);
+        this.currentVariables.remove(this.currentVariables.filter(d => d.id === variableId)[0]);
     }
 
-     /**
+    /**
      * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
      * @param currentId
      */
@@ -135,6 +135,90 @@ class VariableManagerStore {
         ))
     }
 
+    /**
+     * moves variables up or down
+     * @param isUp: if true move up, if false move down
+     * @param toExtreme: if true move to top/bottom, if false move only by one row
+     * @param indices: move these indices
+     */
+    move(isUp, toExtreme, indices) {
+       if(toExtreme){
+           this.moveToExtreme(isUp,indices);
+       }
+       else{
+           this.moveByOneRow(isUp,indices);
+       }
+    }
+
+    /**
+     * move a group of variables at indices to the top or the bottom
+     * @param isUp
+     * @param indices
+     */
+    moveToExtreme(isUp,indices){
+        let currentVariables=this.currentVariables.slice();
+        let selectedVariables=currentVariables.filter((d,i)=>indices.includes(i));
+        let notSelectedVariables=currentVariables.filter((d,i)=>!indices.includes(i));
+        if(isUp){
+            currentVariables=[...selectedVariables,...notSelectedVariables]
+        }
+        else{
+            currentVariables=[...notSelectedVariables,...selectedVariables];
+        }
+        this.currentVariables.replace(currentVariables);
+    }
+
+    /**
+     * move variable(s) up or down by one row
+     * @param isUp
+     * @param indices
+     */
+    moveByOneRow(isUp, indices) {
+        let currentVariables = this.currentVariables.slice();
+        let extreme,getNextIndex;
+        if (isUp) {
+            extreme = 0;
+            getNextIndex=function (index) {
+                return index-1;
+            }
+        }
+        else {
+            extreme = currentVariables.length - 1;
+            indices.reverse();
+            getNextIndex=function (index) {
+                return index+1;
+            }
+        }
+        indices.forEach(d => {
+            if ((d !== extreme)) {
+                if (!(indices.includes(extreme) && VariableManagerStore.isBlock(indices))) {
+                    let save = currentVariables[getNextIndex(d)];
+                    currentVariables[getNextIndex(d)] = currentVariables[d];
+                    currentVariables[d] = save;
+                }
+            }
+        });
+        this.currentVariables.replace(currentVariables);
+    }
+
+    /**
+     * checks if the selected indices are a block (no not selected variable in between)
+     * @param array
+     * @returns {boolean}
+     */
+    static isBlock(array) {
+        let sorted = array.sort((a, b) => a - b);
+        let isBlock = true;
+        let current = sorted[0];
+        for (let i = 1; i < sorted.length; i++) {
+            if (sorted[i] !== current + 1) {
+                isBlock = false;
+                break;
+            }
+        }
+        return isBlock
+    }
+
 
     /**
      * gets a variable by id
@@ -181,6 +265,12 @@ class VariableManagerStore {
 
     getSelectedVariables() {
         return this.currentVariables.filter(d => d.isSelected).map(d => this.referencedVariables[d.id]);
+    }
+
+    getSelectedIndices() {
+        return this.currentVariables.map((d, i) => {
+            return {isSelected: d.isSelected, index: i}
+        }).filter(d => d.isSelected).map(d => d.index);
     }
 
 

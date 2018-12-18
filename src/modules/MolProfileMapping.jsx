@@ -39,6 +39,9 @@ class MolProfileMapping {
                 if (mappingType === "Mutation type") {
                     domain = this.mutationOrder;
                 }
+                else if (mappingType === "Variant allele frequency") {
+                    domain = [0, 1];
+                }
                 variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "mutation in" + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType));
             }
         });
@@ -194,11 +197,11 @@ class MolProfileMapping {
      */
     getMultipleProfiles(profileIds, mappingTypes) {
         let variables = [];
-        let filteredGeneIds=[];
-        if(mappingTypes.length>0){
-            filteredGeneIds=this.filterGeneIDs();
+        let filteredGeneIds = [];
+        if (mappingTypes.length > 0) {
+            filteredGeneIds = this.filterGeneIDs();
         }
-        mappingTypes.forEach(d => variables = variables.concat(this.getMutationsProfile(filteredGeneIds,d)));
+        mappingTypes.forEach(d => variables = variables.concat(this.getMutationsProfile(filteredGeneIds, d)));
         profileIds.forEach(d => {
                 variables = variables.concat(this.getMolecularProfile(this.filterMolecularData(d), d));
             }

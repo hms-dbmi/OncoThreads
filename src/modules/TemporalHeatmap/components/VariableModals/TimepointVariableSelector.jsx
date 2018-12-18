@@ -5,7 +5,7 @@ import Select from 'react-select';
 import ControlLabel from "react-bootstrap/es/ControlLabel";
 
 
-const VariableSelector = observer(class VariableSelector extends React.Component {
+const TimepointVariableSelector = observer(class TimepointVariableSelector extends React.Component {
 
     constructor(props) {
         super(props);
@@ -53,7 +53,10 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         }];
     }
 
-
+    /**
+     * handles selection of a category
+     * @param e
+     */
     handleCategorySelect(e) {
         this.setState({
             selectionType: e.target.value,
@@ -61,25 +64,35 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         });
     }
 
-
+    /**
+     * handle selection of an option
+     * @param selectedOption
+     */
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
-            this.props.handleVariableAddRemove(selectedOption.object, selectedOption.profile, true)
+            this.props.handleVariableAdd(selectedOption.object, selectedOption.profile, true)
         }
     }
 
+    /**
+     * updates the checkboxes showing the different mutation data types
+     * @param hasData
+     */
     updateMutationCheckBoxOptions(hasData) {
         let mutationOptions = [];
         if (hasData) {
-            this.props.availableProfiles.forEach(d => {
-                if (d.type === "mutation") {
-                    mutationOptions.push({id: d.id, profile: d.profile, name: d.name, selected: false});
-                }
+            this.props.mutationMappingTypes.forEach(d => {
+                    mutationOptions.push({id: d, selected: false});
             })
         }
         this.setState({mutationOptions: mutationOptions, showCheckBoxOptions: true});
     }
 
+    /**
+     * updates the checkboxes showing the different molecular profiles
+     * @param profile
+     * @param hasData
+     */
     updateMolecularCheckBoxOptions(profile, hasData) {
         let molecularOptions = this.state.molecularOptions.slice();
         if (hasData) {
@@ -112,20 +125,23 @@ const VariableSelector = observer(class VariableSelector extends React.Component
             }
         });
         this.props.molProfileMapping.loadIds(geneList, () => {
-            this.props.molProfileMapping.loadMutations(() => {
-                this.updateMutationCheckBoxOptions(Object.values(this.props.molProfileMapping.isInGenePanel).join().length>0);
-            });
-            this.props.availableProfiles.forEach(d => {
-                if (d.type === "molecular") {
+            if(this.props.availableProfiles.map(d=>d.type).includes("MUTATION_EXTENDED")) {
+                this.props.molProfileMapping.loadMutations(() => {
+                    this.updateMutationCheckBoxOptions(Object.values(this.props.molProfileMapping.isInGenePanel).join().length > 0);
+                });
+            }
+            this.props.availableProfiles.filter(d=>d.type!=="MUTATION_EXTENDED").forEach(d => {
                     this.props.molProfileMapping.loadMolecularData(d.profile, () => {
                         this.updateMolecularCheckBoxOptions(d.profile, this.props.molProfileMapping.currentMolecular[d.profile].length>0);
                     })
-                }
             });
         });
 
     }
 
+    /**
+     * adds Genes to view
+     */
     addGenes() {
         const mappingTypes = this.state.mutationOptions.filter(d => d.selected).map(d => d.id);
         const profiles=this.state.molecularOptions.filter(d => d.selected).map(d => d.profile);
@@ -146,7 +162,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
      * @param event
      */
     handleEnterPressed(event) {
-        if (VariableSelector.checkEnterPressed(event)) {
+        if (TimepointVariableSelector.checkEnterPressed(event)) {
             this.searchGenes();
         }
     }
@@ -159,7 +175,10 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         return false;
     }
 
-
+    /**
+     * gets search field or select depending on the selected category (select for clinical, search field for genomic)
+     * @returns {*}
+     */
     getTimepointSearchField() {
         if (this.state.selectionType === "clinical") {
             return <Select
@@ -181,6 +200,11 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         }
     }
 
+    /**
+     * toggles selection of a checkbox
+     * @param index
+     * @param isMutation
+     */
     toggleSelect(index, isMutation) {
         if (isMutation) {
             let mutationOptions = this.state.mutationOptions.slice();
@@ -195,6 +219,10 @@ const VariableSelector = observer(class VariableSelector extends React.Component
 
     }
 
+    /**
+     * gets the checkboxes for the available genomic data
+     * @returns {*}
+     */
     getAvailableCheckBoxes() {
         let checkBoxes = [];
         if (this.state.mutationOptions.length > 0 || this.state.molecularOptions.length > 0) {
@@ -207,7 +235,7 @@ const VariableSelector = observer(class VariableSelector extends React.Component
             let available = [];
             this.state.mutationOptions.forEach((d, i) => available.push(<Checkbox
                 onChange={() => this.toggleSelect(i, true)} checked={d.selected} key={d.id}
-                value={d.id}>{d.name}</Checkbox>));
+                value={d.id}>{d.id}</Checkbox>));
             checkBoxes.push(<Col key="Mutations" sm={6}>
                 <ControlLabel>Mutations</ControlLabel>
                 {available}
@@ -232,13 +260,15 @@ const VariableSelector = observer(class VariableSelector extends React.Component
 
     render() {
          let options=[];
-         if(this.props.availableProfiles.filter(d=>d.type==="clinical").length>0){
+         if(this.props.clinicalSampleCategories.length>0||this.props.clinicalPatientCategories.length>0){
             options.push(<option key={"clinical"} value={"clinical"}>Predefined</option>)
         }
-        if(this.props.availableProfiles.filter(d=>d.type!=="clinical").length>0){
+        if(this.props.availableProfiles.length>0){
             options.push(<option key={"genes"} value={"genes"}>Genomic</option>)
         }
         return (<Form horizontal>
+                                <h4>Select variable</h4>
+
                 <FormGroup>
                     <Col sm={4} style={{paddingRight: "0"}}>
                         <FormControl style={{height: 38}} componentClass="select"
@@ -258,4 +288,4 @@ const VariableSelector = observer(class VariableSelector extends React.Component
         )
     }
 });
-export default VariableSelector;
+export default TimepointVariableSelector;
