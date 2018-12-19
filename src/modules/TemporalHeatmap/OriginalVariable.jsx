@@ -3,12 +3,12 @@ import {extendObservable} from "mobx";
 import * as d3ScaleChromatic from "d3-scale-chromatic";
 
 class OriginalVariable {
-    constructor(id, name, datatype, description, range, domain, mapper, profile) {
+    constructor(id, name, datatype, description, range, domain, mapper, profile,type) {
         this.id = id;
         this.originalIds = [id];
         this.name = name;
         this.profile = profile;
-        this.type = "original";
+        this.type = type;
         this.datatype = datatype;
         this.derived = false;
         this.mapper = mapper;

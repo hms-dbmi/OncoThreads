@@ -3,7 +3,6 @@ import {observer} from "mobx-react";
 import {Button, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../OriginalVariable";
-import EventVariable from "../../EventVariable";
 import DerivedVariable from "../../DerivedVariable";
 import uuidv4 from "uuid/v4";
 import MapperCombine from "../../MapperCombineFunctions";
@@ -80,7 +79,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         }
         else {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id))
+                this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id,"computed"))
             })
         }
         this.setState({selectedValues: [], selectedKey: ""})
@@ -91,7 +90,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
      * adds a variable to the view
      */
     addCombinedVariable(name) {
-        let originalVariables = this.state.selectedValues.map(d => new EventVariable(d.value, d.label, this.state.category, d.object.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object)));
+        let originalVariables = this.state.selectedValues.map(d => new OriginalVariable(d.value, d.label, "BINARY", "Indicates if event: \"" + d.label + "\" has happened between two timepoints", [], [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object), this.state.category,"event"));
         originalVariables.forEach(d => this.props.store.variableStores.between.addVariableToBeReferenced(d));
         this.props.store.variableStores.between.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), name, "BINARY", "Binary combination of variables: " + this.state.defaultName, this.state.selectedValues.map(d => d.value), "binaryCombine", "or", [], [], MapperCombine.createBinaryCombinedMapper(originalVariables.map(d => d.mapper), "or")));
     }
@@ -100,7 +99,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.state.selectedValues.forEach(d => this.props.store.variableStores.between.addVariableToBeDisplayed(new EventVariable(d.value, d.label, this.state.category, d.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object))));
+        this.state.selectedValues.forEach(d => this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.value, d.label, "BINARY", "Indicates if event: \"" + d.label + "\" has happened between two timepoints", [], [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object), this.state.category,"event")));
     }
 
 
@@ -340,7 +339,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
         }
         let options = [];
-        if (this.props.clinicalSampleCategories.length>0||this.props.clinicalPatientCategories.length>0) {
+        if (this.props.clinicalSampleCategories.length > 0 || this.props.clinicalPatientCategories.length > 0) {
             options.push(<option key="clinical" value={"clinical"}>Predefined</option>)
         }
         if (this.props.availableProfiles.length > 0) {

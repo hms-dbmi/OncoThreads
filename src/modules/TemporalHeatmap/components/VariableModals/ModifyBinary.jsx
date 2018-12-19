@@ -19,6 +19,7 @@ const ModifyBinary = observer(class ModifyBinary extends React.Component {
                 invert: props.derivedVariable !== null
             };
         this.toggleInvert = this.toggleInvert.bind(this);
+        this.handleNameChange=this.handleNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
 
     }

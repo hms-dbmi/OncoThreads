@@ -1,6 +1,5 @@
 import {createTransformer, extendObservable, toJS} from "mobx";
 import OriginalVariable from "./OriginalVariable";
-import EventVariable from "./EventVariable";
 import DerivedVariable from "./DerivedVariable";
 
 /**
@@ -104,15 +103,11 @@ class UndoRedoStore {
                 UndoRedoStore.remapProperties(observedVariables[variable], savedVariables[variable]);
             }
             else if (!(variable in observedVariables)) {
-                switch (savedVariables[variable].type) {
-                    case "original":
-                        observedVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile);
-                        break;
-                    case "event":
-                        observedVariables[variable] = new EventVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].eventType, savedVariables[variable].eventSubType,savedVariables[variable].range, savedVariables[variable].mapper);
-                        break;
-                    default:
-                        observedVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modificationType, savedVariables[variable].modification, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile)
+                if (!savedVariables[variable].derived) {
+                    observedVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile, savedVariables[variable].type);
+                }
+                else {
+                    observedVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modificationType, savedVariables[variable].modification, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile)
                 }
             }
         }

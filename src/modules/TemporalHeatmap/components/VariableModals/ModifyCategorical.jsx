@@ -1,6 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import {
+    Alert,
     Button,
     ButtonGroup,
     ControlLabel,
@@ -93,7 +94,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             const domain = this.state.currentData.map(d => d.name);
             returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, range, domain, MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]), this.props.variable.profile);
             if (this.state.ordinal || this.categoriesChanged(returnVariable)) {
-                if (this.state.name===this.props.variable.name && this.props.derivedVariable === null) {
+                if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
                     returnVariable.name = this.state.name + "_MODIFIED";
                 }
             }
@@ -105,7 +106,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         else {
             let newId = uuidv4();
             returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], "convertBinary", this.state.binaryMapping, this.state.binaryColors, [], MapperCombine.getModificationMapper("modifyCategorical", this.state.binaryMapping, [this.props.variable.mapper]), this.props.variable.profile);
-            if (this.state.name===this.props.variable.name && this.props.derivedVariable === null) {
+            if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
                 returnVariable.name = this.state.name + "_MODIFIED";
             }
 
@@ -307,13 +308,12 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         let bottom = null;
         if (!this.state.convertBinary) {
             bottom = <form>
-                <Button onClick={this.merge}>Merge selected</Button>
-                <Button onClick={this.unMerge}>Split selected</Button>
+                <Button disabled={!(this.state.currentData.filter(d=>d.selected).length>1)} onClick={this.merge}>Merge selected</Button>
+                <Button disabled={!(this.state.currentData.filter(d=>d.selected && d.categories.length>1).length>0)} onClick={this.unMerge}>Unmerge selected</Button>
             </form>;
 
         }
         else {
-            console.log(this.state.binaryColors);
             let colorRects = this.state.binaryColors.map((d, i) => {
                 const popover = (
                     <Popover id="popover-positioned-right" title="Choose color">
@@ -550,6 +550,14 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         this.setState({convertBinary: !this.state.convertBinary});
     }
 
+    getUniqueCategoryWarning() {
+        let alert = null;
+        if (!this.state.convertBinary && new Set(this.state.currentData.map(d => d.name)).size !== this.state.currentData.length) {
+            alert = <Alert>Please choose unique category names</Alert>
+        }
+        return alert;
+    }
+
 
     render() {
         return (
@@ -577,15 +585,14 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                             Convert to binary
                         </Radio>{' '}
                     </FormGroup>
-
                     {this.displayTable()}
-
+                    {this.getUniqueCategoryWarning()}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.closeModal}>
                         Cancel
                     </Button>
-                    <Button onClick={this.handleApply}>
+                    <Button disabled={!this.state.convertBinary && new Set(this.state.currentData.map(d => d.name)).size !== this.state.currentData.length} onClick={this.handleApply}>
                         Apply
                     </Button>
                 </Modal.Footer>

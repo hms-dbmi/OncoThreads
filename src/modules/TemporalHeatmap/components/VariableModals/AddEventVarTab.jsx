@@ -5,7 +5,6 @@ import VariableTable from "./VariableTable";
 import UndoRedoStore from "../../UndoRedoStore";
 import VariableManagerStore from "./VariableManagerStore";
 import OriginalVariable from "../../OriginalVariable";
-import EventVariable from "../../EventVariable";
 import {toJS} from "mobx";
 
 
@@ -28,7 +27,8 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
      * @param eventCategory
      */
     addEventVariable(event, eventCategory) {
-        this.variableManagerStore.addVariableToBeDisplayed(new EventVariable(event.id, event.name, eventCategory, event.eventType, [], this.props.store.getSampleEventMapping(eventCategory, event)));
+        this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(event.id, event.name, "BINARY", "Indicates if event: \""+event.name+"\" has happened between two timepoints", [], [], this.props.store.getSampleEventMapping(eventCategory, event), eventCategory,"event"));
+        //this.variableManagerStore.addVariableToBeDisplayed(new EventVariable(event.id, event.name, eventCategory, event.eventType, [], this.props.store.getSampleEventMapping(eventCategory, event)));
         this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables);
         this.setState({addOrder: [...this.state.addOrder, event.id]})
     }
@@ -38,7 +38,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
      * @param timepointDistance
      */
     addTimepointDistance(timepointDistance) {
-        this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(timepointDistance.id, timepointDistance.name, timepointDistance.datatype, timepointDistance.description, [], [], this.props.staticMappers[timepointDistance.id], "Computed"));
+        this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(timepointDistance.id, timepointDistance.name, timepointDistance.datatype, timepointDistance.description, [], [], this.props.staticMappers[timepointDistance.id], "Computed",false));
         this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables);
         this.setState({addOrder: [...this.state.addOrder, timepointDistance.id]})
 
@@ -52,7 +52,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
         this.variableManagerStore.removeVariable(variableId);
         if (this.state.addOrder.includes(variableId)) {
             let addOrder = this.state.addOrder.slice();
-            addOrder.splice(this.addOrder.indexOf(variableId), 1);
+            addOrder.splice(addOrder.indexOf(variableId), 1);
             this.setState({addOrder: addOrder})
         }
         this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
@@ -77,7 +77,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
                                        removeVariable={this.removeVariable}
                                        currentVariables={this.variableManagerStore.currentVariables}/>
                 <VariableTable {...this.props} variableManagerStore={this.variableManagerStore}
-                               addOrder={this.state.addOrder} availableCategories={categories}/>
+                               addOrder={this.state.addOrder} availableCategories={categories} removeVariable={this.removeVariable}/>
             </div>
 
         )

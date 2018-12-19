@@ -44,7 +44,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
         this.variableManagerStore.removeVariable(variableId);
         if (this.state.addOrder.includes(variableId)) {
             let addOrder = this.state.addOrder.slice();
-            addOrder.splice(this.addOrder.indexOf(variableId), 1);
+            addOrder.splice(addOrder.indexOf(variableId), 1);
             this.setState({addOrder: addOrder})
         }
         this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
@@ -70,7 +70,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                                            handleGeneSelect={this.handleGeneSelect}
                                            currentVariables={this.variableManagerStore.currentVariables}/>
                 <VariableTable {...this.props} variableManagerStore={this.variableManagerStore}
-                               addOrder={this.state.addOrder} availableCategories={availableCategories}/>
+                               addOrder={this.state.addOrder} availableCategories={availableCategories} removeVariable={this.removeVariable}/>
             </div>
 
         )
