@@ -8,6 +8,8 @@ import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
 import MolProfileMapping from "./MolProfileMapping";
 
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 /*
 gets the data with the cBioAPI and gives it to the other stores
@@ -42,8 +44,9 @@ class RootStore {
         this.reset = this.reset.bind(this);
 
         this.exportSVG = this.exportSVG.bind(this);
-
         this.exportSVGandData = this.exportSVGandData.bind(this);
+        this.exportPNG = this.exportPNG.bind(this);
+        this.exportPDF = this.exportPDF.bind(this);
         //this.onSubmit = this.onSubmit.bind(this);
 
         extendObservable(this, {
@@ -112,6 +115,37 @@ class RootStore {
         this.undoRedoStore = new UndoRedoStore(this);
     }
 
+
+    exportPNG() {
+        var tmp;
+        if (this.timepointStore.globalTime) {
+            tmp = document.getElementById("timeline-view");
+        } else {
+            tmp = document.getElementById("block-view");
+        }
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+            var element = document.createElement("a");
+            element.href = canvas.toDataURL('image/png');
+            element.download = "download.png";
+            element.click();
+        });
+    }
+
+    
+    exportPDF() {
+        var tmp;
+        if (this.timepointStore.globalTime) {
+            tmp = document.getElementById("timeline-view");
+        } else {
+            tmp = document.getElementById("block-view");
+        }
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('l', 'px', [canvas.width, canvas.height]);
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save("download.pdf"); 
+        });
+    }
 
     
     exportSVG() {
