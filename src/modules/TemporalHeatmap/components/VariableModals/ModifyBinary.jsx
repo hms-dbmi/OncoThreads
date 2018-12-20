@@ -48,7 +48,7 @@ const ModifyBinary = observer(class ModifyBinary extends React.Component {
      */
     handleApply() {
         let returnVariable;
-        if (this.state.invert) {
+        if (this.state.invert && this.props.derivedVariable===null) {
             let newId = uuidv4();
             let modification = {true: false, false: true};
             returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], "invertBinary", modification, this.state.binaryColors, [], MapperCombine.getModificationMapper("modifyCategorical", modification, [this.props.variable.mapper]), this.props.variable.profile);
@@ -57,10 +57,11 @@ const ModifyBinary = observer(class ModifyBinary extends React.Component {
             }
         }
         else {
-            returnVariable = this.props.variable;
+            returnVariable = this.props.derivedVariable!==null?this.props.derivedVariable:this.props.variable;
             returnVariable.range = this.state.binaryColors;
 
         }
+        console.log(returnVariable);
         this.props.callback(returnVariable);
         this.props.closeModal();
     }

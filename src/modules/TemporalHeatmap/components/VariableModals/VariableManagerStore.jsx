@@ -69,15 +69,15 @@ class VariableManagerStore {
 
 
     replaceDisplayedVariable(oldId, newVariable) {
-        if (!this.isReferenced(newVariable.id)) {
+        if (oldId !== newVariable.id) {
             this.referencedVariables[newVariable.id] = newVariable;
+            const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
+            this.currentVariables[replaceIndex] = {
+                id: newVariable.id,
+                isNew: this.currentVariables[replaceIndex].isNew,
+                isSelected: this.currentVariables[replaceIndex].isSelected
+            };
         }
-        const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
-        this.currentVariables[replaceIndex] = {
-            id: newVariable.id,
-            isNew: this.currentVariables[replaceIndex].isNew,
-            isSelected: this.currentVariables[replaceIndex].isSelected
-        };
     }
 
     toggleSelected(id) {
@@ -142,12 +142,12 @@ class VariableManagerStore {
      * @param indices: move these indices
      */
     move(isUp, toExtreme, indices) {
-       if(toExtreme){
-           this.moveToExtreme(isUp,indices);
-       }
-       else{
-           this.moveByOneRow(isUp,indices);
-       }
+        if (toExtreme) {
+            this.moveToExtreme(isUp, indices);
+        }
+        else {
+            this.moveByOneRow(isUp, indices);
+        }
     }
 
     /**
@@ -155,15 +155,15 @@ class VariableManagerStore {
      * @param isUp
      * @param indices
      */
-    moveToExtreme(isUp,indices){
-        let currentVariables=this.currentVariables.slice();
-        let selectedVariables=currentVariables.filter((d,i)=>indices.includes(i));
-        let notSelectedVariables=currentVariables.filter((d,i)=>!indices.includes(i));
-        if(isUp){
-            currentVariables=[...selectedVariables,...notSelectedVariables]
+    moveToExtreme(isUp, indices) {
+        let currentVariables = this.currentVariables.slice();
+        let selectedVariables = currentVariables.filter((d, i) => indices.includes(i));
+        let notSelectedVariables = currentVariables.filter((d, i) => !indices.includes(i));
+        if (isUp) {
+            currentVariables = [...selectedVariables, ...notSelectedVariables]
         }
-        else{
-            currentVariables=[...notSelectedVariables,...selectedVariables];
+        else {
+            currentVariables = [...notSelectedVariables, ...selectedVariables];
         }
         this.currentVariables.replace(currentVariables);
     }
@@ -175,18 +175,18 @@ class VariableManagerStore {
      */
     moveByOneRow(isUp, indices) {
         let currentVariables = this.currentVariables.slice();
-        let extreme,getNextIndex;
+        let extreme, getNextIndex;
         if (isUp) {
             extreme = 0;
-            getNextIndex=function (index) {
-                return index-1;
+            getNextIndex = function (index) {
+                return index - 1;
             }
         }
         else {
             extreme = currentVariables.length - 1;
             indices.reverse();
-            getNextIndex=function (index) {
-                return index+1;
+            getNextIndex = function (index) {
+                return index + 1;
             }
         }
         indices.forEach(d => {
