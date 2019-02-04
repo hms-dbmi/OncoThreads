@@ -29,7 +29,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
     addEventVariable(event, eventCategory) {
         this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(event.id, event.name, "BINARY", "Indicates if event: \""+event.name+"\" has happened between two timepoints", [], [], this.props.store.getSampleEventMapping(eventCategory, event), eventCategory,"event"));
         //this.variableManagerStore.addVariableToBeDisplayed(new EventVariable(event.id, event.name, eventCategory, event.eventType, [], this.props.store.getSampleEventMapping(eventCategory, event)));
-        this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables);
+        this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables,this.variableManagerStore.primaryVariables);
         this.setState({addOrder: [...this.state.addOrder, event.id]})
     }
 
@@ -39,7 +39,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
      */
     addTimepointDistance(timepointDistance) {
         this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(timepointDistance.id, timepointDistance.name, timepointDistance.datatype, timepointDistance.description, [], [], this.props.staticMappers[timepointDistance.id], "Computed",false));
-        this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables);
+        this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables,this.variableManagerStore.primaryVariables);
         this.setState({addOrder: [...this.state.addOrder, timepointDistance.id]})
 
     }
@@ -55,7 +55,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
             addOrder.splice(addOrder.indexOf(variableId), 1);
             this.setState({addOrder: addOrder})
         }
-        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
+        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables,this.variableManagerStore.primaryVariables);
     }
 
     static toTitleCase(str) {

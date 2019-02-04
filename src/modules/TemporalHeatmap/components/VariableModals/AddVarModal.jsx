@@ -13,8 +13,10 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.state = {
             currentTimepointVariables: this.props.store.variableStores.sample.currentVariables,
             referencedTimepointVariables: this.props.store.variableStores.sample.referencedVariables,
+            primaryTimepointVariables: this.props.store.variableStores.sample.childStore.timepoints.map(d=>d.primaryVariableId),
             currentEventVariables: this.props.store.variableStores.between.currentVariables,
-            referencedEventVariables: this.props.store.variableStores.between.referencedVariables
+            referencedEventVariables: this.props.store.variableStores.between.referencedVariables,
+            primaryEventVariables: this.props.store.variableStores.between.childStore.timepoints.map(d=>d.primaryVariableId)
         }
         ;
         this.setTimepointData = this.setTimepointData.bind(this);
@@ -26,11 +28,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * sets the state of the timepoint data
      * @param currentVariables
      * @param referencedVariables
+     * @param primaryVariables
      */
-    setTimepointData(currentVariables, referencedVariables) {
+    setTimepointData(currentVariables, referencedVariables,primaryVariables) {
         this.setState({
             currentTimepointVariables: currentVariables.map(d => d.id),
-            referencedTimepointVariables: referencedVariables
+            referencedTimepointVariables: referencedVariables,
+            primaryTimepointVariables: primaryVariables
         })
     }
 
@@ -38,11 +42,13 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * sets the state of the event data
      * @param currentVariables
      * @param referencedVariables
+     * @param primaryVariables
      */
-    setEventData(currentVariables, referencedVariables) {
+    setEventData(currentVariables, referencedVariables, primaryVariables) {
         this.setState({
             currentEventVariables: currentVariables.map(d => d.id),
-            referencedEventVariables: referencedVariables
+            referencedEventVariables: referencedVariables,
+            primaryEventVariables: primaryVariables
         });
     }
 
@@ -54,6 +60,8 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
         this.props.store.variableStores.sample.currentVariables.replace(this.state.currentTimepointVariables.slice());
         this.props.store.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.props.store.variableStores.between.referencedVariables, this.state.referencedEventVariables);
         this.props.store.variableStores.between.currentVariables.replace(this.state.currentEventVariables.slice());
+        this.state.primaryTimepointVariables.forEach((variableId,i)=>this.props.store.variableStores.sample.childStore.timepoints[i].setPrimaryVariable(variableId));
+        this.state.primaryEventVariables.forEach((variableId,i)=>this.props.store.variableStores.between.childStore.timepoints[i].setPrimaryVariable(variableId));
         this.props.store.rootStore.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.store.variableStores.sample.currentVariables.map(d => this.props.store.variableStores.sample.getById(d).name)+"\n"+this.props.store.variableStores.between.currentVariables.map(d => this.props.store.variableStores.between.getById(d).name), true);
         this.props.closeAddModal();
     }
@@ -74,6 +82,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                             <AddTimepointVarTab
                                 currentVariables={this.props.store.variableStores.sample.currentVariables}
                                 referencedVariables={this.props.store.variableStores.sample.referencedVariables}
+                                primaryVariables={this.props.store.variableStores.sample.childStore.timepoints.map(d=>d.primaryVariableId)}
                                 setData={this.setTimepointData}
                                 availableProfiles={this.props.store.rootStore.availableProfiles}
                                 mutationMappingTypes={this.props.store.rootStore.mutationMappingTypes}
@@ -86,6 +95,7 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
                             <AddEventVarTab
                                 currentVariables={this.props.store.variableStores.between.currentVariables}
                                 referencedVariables={this.props.store.variableStores.between.referencedVariables}
+                                primaryVariables={this.props.store.variableStores.between.childStore.timepoints.map(d=>d.primaryVariableId)}
                                 eventCategories={this.props.store.rootStore.eventCategories}
                                 eventAttributes={this.props.store.rootStore.eventAttributes}
                                 setData={this.setEventData}

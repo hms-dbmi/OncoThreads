@@ -50,7 +50,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
             else {
                 this.props.variableManagerStore.replaceDisplayedVariable(originalVariable.id, newVariable);
             }
-            this.props.setData(toJS(this.props.variableManagerStore.currentVariables), this.props.variableManagerStore.referencedVariables);
+            this.props.setData(toJS(this.props.variableManagerStore.currentVariables), this.props.variableManagerStore.referencedVariables,this.props.variableManagerStore.primaryVariables);
         });
 
     }
@@ -152,7 +152,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                     <td>
                         {fullVariable.datatype}
                     </td>
-                    <td>{this.props.availableCategories[this.props.availableCategories.map(d => d.id).indexOf(fullVariable.profile)].name}</td>
+                    <td>{fullVariable.name}</td>
                     <td>
                         <FontAwesome onClick={(e) => this.handleCogWheelClick(e, d.id)}
                                      name="cog"/>
@@ -230,7 +230,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
         else {
             this.props.variableManagerStore.sortByDatatype();
         }
-        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables);
+        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables, this.props.variableManagerStore.primaryVariables);
     }
 
     /**
@@ -269,7 +269,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
     moveSelected(isUp,toExtreme){
         let indices=this.props.variableManagerStore.getSelectedIndices();
         this.props.variableManagerStore.move(isUp,toExtreme,indices);
-        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables);
+        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables, this.props.variableManagerStore.primaryVariables);
     }
 
     /**
@@ -280,7 +280,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
      */
     moveSingle(isUp,toExtreme,index){
         this.props.variableManagerStore.move(isUp,toExtreme,[index]);
-        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables);
+        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables, this.props.variableManagerStore.primaryVariables);
     }
 
 

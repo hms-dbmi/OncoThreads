@@ -14,7 +14,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
         this.state = {
             addOrder: props.currentVariables.slice()
         };
-        this.variableManagerStore = new VariableManagerStore(UndoRedoStore.serializeVariables(props.referencedVariables), props.currentVariables.slice());
+        this.variableManagerStore = new VariableManagerStore(UndoRedoStore.serializeVariables(props.referencedVariables), props.currentVariables.slice(),props.primaryVariables.slice());
         this.handleVariableAdd = this.handleVariableAdd.bind(this);
         this.handleGeneSelect = this.handleGeneSelect.bind(this);
         this.removeVariable = this.removeVariable.bind(this);
@@ -33,7 +33,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                 this.setState({addOrder: [...this.state.addOrder, variable.id]})
             }
         }
-        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
+        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables, this.variableManagerStore.primaryVariables);
     }
 
     /**
@@ -47,7 +47,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
             addOrder.splice(addOrder.indexOf(variableId), 1);
             this.setState({addOrder: addOrder})
         }
-        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
+        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables,this.variableManagerStore.primaryVariables);
     }
 
     /**
@@ -57,7 +57,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     handleGeneSelect(variable) {
         this.variableManagerStore.addVariableToBeDisplayed(variable);
         this.setState({addOrder: [...this.state.addOrder, variable.id]});
-        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
+        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables, this.variableManagerStore.primaryVariables);
     }
 
     render() {

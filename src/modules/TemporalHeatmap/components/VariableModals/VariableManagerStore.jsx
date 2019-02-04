@@ -4,9 +4,10 @@ import {extendObservable, observe} from "mobx";
 Store containing information about variables
  */
 class VariableManagerStore {
-    constructor(referencedVariables, currentVariables) {
+    constructor(referencedVariables, currentVariables, primaryVariables) {
         //Variables that are referenced (displayed or used to create a derived variable)
         this.referencedVariables = referencedVariables;
+        this.primaryVariables = primaryVariables;
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: currentVariables.map(d => {
@@ -77,6 +78,9 @@ class VariableManagerStore {
                 isNew: this.currentVariables[replaceIndex].isNew,
                 isSelected: this.currentVariables[replaceIndex].isSelected
             };
+        }
+        if (this.primaryVariables.includes(oldId)) {
+            this.primaryVariables[this.primaryVariables.indexOf(oldId)] = newVariable.id;
         }
     }
 
