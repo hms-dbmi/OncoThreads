@@ -29,6 +29,12 @@ const Plot = observer(class Plot extends React.Component {
         }
     }
 
+    shouldComponentUpdate(nextProps) {
+        //console.log("shouldComponentUpdate?",!nextProps.dataLoading);
+        return !nextProps.dataLoading;
+    }
+
+
     /**
      * Remove event listener
      */
@@ -60,7 +66,7 @@ const Plot = observer(class Plot extends React.Component {
      * @param w: width of the plot
      */
     createGroupScale(w) {
-        return (d3.scaleLinear().domain([0, this.props.store.numberOfPatients]).range([0, w]));
+        return (d3.scaleLinear().domain([0, this.props.numberOfPatients]).range([0, w]));
 
     }
 
@@ -69,33 +75,28 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     render() {
-        this.props.visMap.setSampleRectWidth((this.props.width / this.props.horizontalZoom) - this.props.visMap.gap);
-        const heatmapWidth = this.props.store.numberOfPatients * (this.props.visMap.sampleRectWidth + this.props.visMap.gap) - this.props.visMap.gap;
-        const svgWidth = heatmapWidth > this.props.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + this.props.visMap.sampleRectWidth : this.props.width;
-        const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.heatmapWidth, this.props.sampleRectWidth);
+        const groupScale = this.createGroupScale(this.props.width - this.props.partitionGap * (this.props.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
-        const max = this.props.store.rootStore.actualTimeLine
+        const max = this.props.actualTimeLine
             .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
             .reduce((next, max) => next > max ? next : max, 0);
-        const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.primaryHeight * 2, 0, max);
+        const timeScale = Plot.createTimeScale(this.props.height - this.props.primaryHeight * 2, 0, max);
         return (
             <div ref="plot" className="scrollableX">
-                <svg width={svgWidth} height={this.props.height}>
+                <svg width={this.props.svgWidth} height={this.props.height}>
                     <g transform={transform}>
-                        <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
-                                     timepointData={this.props.store.timepoints}
-                                     realTime={this.props.store.realTime}
-                                     globalTime={this.props.store.globalTime}
-                                     transitionOn={this.props.store.transitionOn}
+                        <Transitions {...this.props}
+                                     transitionData={this.props.transitions}
+                                     timepointData={this.props.timepoints}
                                      yPositions={this.props.transY}
-                                     allYPositions={this.props.store.rootStore.actualTimeLine}
+                                     allYPositions={this.props.actualTimeLine}
                                      groupScale={groupScale}
                                      heatmapScales={sampleHeatmapScales}
                                      timeScale={timeScale}
                                      height={this.props.transitionSpace}/>
                         <Timepoints {...this.props}
-                                    allYPositions={this.props.store.rootStore.actualTimeLine}
+                                    allYPositions={this.props.actualTimeLine}
                                     yPositions={this.props.timepointY}
                                     groupScale={groupScale}
                                     timeScale={timeScale}

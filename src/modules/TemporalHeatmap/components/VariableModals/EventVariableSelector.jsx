@@ -22,7 +22,13 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
      */
     createOptions() {
         let options = [];
-        if (this.state.category !== "Computed") {
+            if(this.state.category==="saved"){
+            return(this.props.savedReferences.map(variableId=>{
+                let variable= this.props.store.dataStore.variableStores.between.getById(variableId);
+                return({label:variable.name,value:variableId,object:variableId});
+            }))
+        }
+        else if (this.state.category !== "Computed") {
             for (let key in this.props.eventAttributes[this.state.category]) {
                 let subOptions = [];
                 this.props.eventAttributes[this.state.category][key].forEach(d => {
@@ -68,7 +74,10 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
      */
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
-            if (this.state.category !== "Computed") {
+             if(this.state.category==="saved"){
+                this.props.handleSavedVariableAdd(selectedOption.object);
+            }
+            else if (this.state.category !== "Computed") {
                 this.props.addEventVariable(selectedOption.object, this.state.category);
             }
             else {
@@ -95,6 +104,10 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
 
 
     render() {
+        let savedOption=null;
+        if(this.props.savedReferences.length>0){
+            savedOption=<option value={"saved"} key={"saved"}>Saved variables</option>
+        }
         return (<Form horizontal>
                 <h4>Select variable</h4>
                 <FormGroup>
@@ -103,6 +116,7 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
                                      onChange={this.handleCategorySelect}
                                      placeholder="Select Category">
                             {this.props.eventCategories.map((d) => <option value={d.id} key={d.id}>{d.name}</option>)}
+                            {savedOption}
                         </FormControl>
                     </Col>
                     <Col sm={8} style={{padding: 0}}>

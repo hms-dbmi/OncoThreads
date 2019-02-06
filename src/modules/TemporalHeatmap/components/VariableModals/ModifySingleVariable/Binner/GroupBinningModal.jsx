@@ -3,10 +3,10 @@ import {observer} from 'mobx-react';
 import Binner from './Binner';
 import * as d3 from 'd3';
 import uuidv4 from 'uuid/v4';
-import DerivedVariable from "../../../DerivedVariable";
-import MapperCombine from "../../../MapperCombineFunctions";
+import DerivedVariable from "../../../../DerivedVariable";
+import MapperCombine from "../../../../MapperCombineFunctions";
 import {Alert, Button, Modal} from "react-bootstrap";
-import ColorScales from "../../../ColorScales";
+import ColorScales from "../../../../ColorScales";
 
 
 const GroupBinningModal = observer(class GroupBinningModal extends React.Component {

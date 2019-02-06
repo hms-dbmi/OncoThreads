@@ -3,9 +3,9 @@ import {observer} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal, OverlayTrigger, Popover, Table} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
 import {SketchPicker} from 'react-color';
-import DerivedVariable from "../../DerivedVariable";
-import MapperCombine from "../../MapperCombineFunctions";
-import ColorScales from "../../ColorScales";
+import DerivedVariable from "../../../DerivedVariable";
+import MapperCombine from "../../../MapperCombineFunctions";
+import ColorScales from "../../../ColorScales";
 
 
 const ModifyBinary = observer(class ModifyBinary extends React.Component {

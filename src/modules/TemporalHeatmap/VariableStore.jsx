@@ -11,6 +11,8 @@ class VariableStore {
         this.type = type;
         //Variables that are referenced (displayed or used to create a derived variable)
         this.referencedVariables = {};
+        //Derived variables that are not displayed but should be saved for later use
+        this.savedReferences = [];
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: [],
@@ -18,6 +20,10 @@ class VariableStore {
         });
         //Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
+            if(this.type==="between"){
+                this.rootStore.dataStore.updateTimeline(this.type)
+            }
+            this.rootStore.dataLoading = true;
             if (change.type === 'splice') {
                 change.added.forEach(d => {
                     if (!change.removed.includes(d)) {
@@ -33,22 +39,22 @@ class VariableStore {
                     if (change.addedCount > 0) {
                         this.childStore.resortHeatmapRows(this.currentVariables);
                     }
-                    if (this.type === "sample" && change.removed.includes(this.rootStore.timepointStore.globalPrimary)) {
-                        this.rootStore.timepointStore.setGlobalPrimary(this.currentVariables[0]);
+                    if (this.type === "sample" && change.removed.includes(this.rootStore.dataStore.globalPrimary)) {
+                        this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
                     }
                 }
                 if (this.type === "between") {
-                    this.rootStore.timepointStore.transitionOn=this.currentVariables.length!==0;
+                    this.rootStore.dataStore.transitionOn = this.currentVariables.length !== 0;
                 }
-
             }
             else if (change.type === "update") {
                 this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
             }
             this.updateReferences();
             this.updateVariableRanges();
-            this.rootStore.timepointStore.regroupTimepoints();
+            this.rootStore.dataStore.regroupTimepoints();
             this.rootStore.visStore.fitToScreenHeight();
+            this.rootStore.dataLoading = false;
         });
 
     }
@@ -74,11 +80,32 @@ class VariableStore {
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
     }
 
+    saveVariable(variableId) {
+        if (!this.savedReferences.includes(variableId)) {
+            this.savedReferences.push(variableId);
+        }
+    }
+
+    removeSavedVariable(variableId) {
+        if (this.savedReferences.includes(variableId)) {
+            this.savedReferences.splice(this.savedReferences.indexOf(variableId), 1);
+        }
+    }
+
+    updateSavedVariables(variableId, save) {
+        if (save) {
+            this.saveVariable(variableId);
+        }
+        else {
+            this.removeSavedVariable(variableId);
+        }
+    }
+
 
     updateVariableRanges() {
         let profileDomains = {};
         let profileVariables = this.currentVariables
-            .filter(d => this.rootStore.cbioAPI.molecularProfiles.map(d => d.molecularProfileId).includes(this.referencedVariables[d].profile)
+            .filter(d => this.rootStore.availableProfiles.map(d => d.molecularProfileId).includes(this.referencedVariables[d].profile)
                 && this.referencedVariables[d].datatype === "NUMBER");
         profileVariables.forEach(variableId => {
             const variable = this.referencedVariables[variableId];
@@ -124,8 +151,9 @@ class VariableStore {
             this.referencedVariables[variable].referenced = 0;
         }
         this.currentVariables.forEach(d => this.setReferences(d));
+        this.savedReferences.forEach(d => this.setReferences(d));
         for (let variable in this.referencedVariables) {
-            if (!this.referencedVariables[variable].derived && this.referencedVariables[variable].referenced === 0) {
+            if (this.referencedVariables[variable].referenced === 0) {
                 delete this.referencedVariables[variable]
             }
         }
@@ -248,15 +276,19 @@ class VariableStore {
         });
         return relatedVariables.map(d => this.referencedVariables[d])
     }
-    isEventDerived(variableId){
-        if(this.referencedVariables[variableId].type==="event"){
+
+    isEventDerived(variableId) {
+        if (this.referencedVariables[variableId].type === "event") {
             return true;
         }
-        else if(this.referencedVariables[variableId].type==="derived"){
-            return this.referencedVariables[variableId].originalIds.map(d=>this.isEventDerived(d)).includes(true);
+        else if (this.referencedVariables[variableId].type === "derived") {
+            return this.referencedVariables[variableId].originalIds.map(d => this.isEventDerived(d)).includes(true);
         }
         return false;
     }
+
+
+
 
     /**
      * checks is a variable is derived from a variable with a certain type

@@ -57,7 +57,6 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             else{
                 str=d.value;
             }
-
             rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, str)}
                              onMouseLeave={_self.handleMouseLeave}
                              onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}

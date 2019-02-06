@@ -3,19 +3,23 @@ import {observer} from 'mobx-react';
 import {toJS} from "mobx"
 import {
     Button,
-    ControlLabel, DropdownButton,
+    ControlLabel,
+    DropdownButton,
     Form,
     FormControl,
-    FormGroup, Glyphicon,
-    Label, MenuItem,
+    FormGroup,
+    Glyphicon,
+    Label,
+    MenuItem,
     OverlayTrigger,
     Table,
     Tooltip
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import ModifyCategorical from "./ModifyCategorical";
-import ModifyContinuous from "./ModifyContinuous";
-import ModifyBinary from "./ModifyBinary";
+import ModifyCategorical from "./ModifySingleVariable/ModifyCategorical";
+import ModifyContinuous from "./ModifySingleVariable/ModifyContinuous";
+import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
+import SaveVariableDialog from "../Modals/SaveVariableDialog";
 
 const VariableTable = observer(class VariableTable extends React.Component {
 
@@ -24,7 +28,8 @@ const VariableTable = observer(class VariableTable extends React.Component {
         this.state = {
             modifyCategoricalIsOpen: false,
             modifyContinuousIsOpen: false,
-            modifyBinaryIsOpen:false,
+            modifyBinaryIsOpen: false,
+            saveVariableIsOpen: false,
             currentVariable: '',
             derivedVariable: '',
             callback: ''
@@ -50,7 +55,6 @@ const VariableTable = observer(class VariableTable extends React.Component {
             else {
                 this.props.variableManagerStore.replaceDisplayedVariable(originalVariable.id, newVariable);
             }
-            this.props.setData(toJS(this.props.variableManagerStore.currentVariables), this.props.variableManagerStore.referencedVariables,this.props.variableManagerStore.primaryVariables);
         });
 
     }
@@ -60,7 +64,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
      * closes the categorical modal
      */
     closeModal() {
-        this.setState({modifyCategoricalIsOpen: false, modifyContinuousIsOpen: false,modifyBinaryIsOpen:false});
+        this.setState({modifyCategoricalIsOpen: false, modifyContinuousIsOpen: false, modifyBinaryIsOpen: false, saveVariableIsOpen:false});
 
     }
 
@@ -73,11 +77,19 @@ const VariableTable = observer(class VariableTable extends React.Component {
      */
     openModifyModal(variable, derivedVariable, type, callback) {
         this.setState({
-            modifyContinuousIsOpen: type==="NUMBER",
-            modifyCategoricalIsOpen: type==="STRING"||type==="ORDINAL",
-            modifyBinaryIsOpen: type==="BINARY",
+            modifyContinuousIsOpen: type === "NUMBER",
+            modifyCategoricalIsOpen: type === "STRING" || type === "ORDINAL",
+            modifyBinaryIsOpen: type === "BINARY",
             derivedVariable: derivedVariable,
             currentVariable: variable,
+            callback: callback
+        });
+    }
+
+    openSaveVariableModal(variable, callback) {
+        this.setState({
+            currentVariable: variable,
+            saveVariableIsOpen: true,
             callback: callback
         });
     }
@@ -100,6 +112,18 @@ const VariableTable = observer(class VariableTable extends React.Component {
             originalVariable = variable;
         }
         this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype);
+    }
+
+    removeVariable(variable) {
+        if (variable.derived) {
+            this.openSaveVariableModal(variable, save => {
+                this.props.variableManagerStore.updateSavedVariables(variable.id, save);
+                this.props.removeVariable(variable.id);
+            });
+        }
+        else {
+            this.props.removeVariable(variable.id);
+        }
     }
 
     /**
@@ -136,10 +160,10 @@ const VariableTable = observer(class VariableTable extends React.Component {
                     }}>
                     <td>
                         {i}
-                        <Button bsSize="xsmall" onClick={(e) => this.moveSingle(true,false,i)}><Glyphicon
-                        glyph="chevron-up"/></Button>
-                    <Button bsSize="xsmall" onClick={(e) => this.moveSingle(false,false,i)}><Glyphicon
-                        glyph="chevron-down"/></Button>
+                        <Button bsSize="xsmall" onClick={(e) => this.moveSingle(true, false, i)}><Glyphicon
+                            glyph="chevron-up"/></Button>
+                        <Button bsSize="xsmall" onClick={(e) => this.moveSingle(false, false, i)}><Glyphicon
+                            glyph="chevron-down"/></Button>
                     </td>
                     <OverlayTrigger placement="top" overlay={tooltip}>
                         <td>
@@ -158,7 +182,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                                      name="cog"/>
                         {"\t"}
                         <FontAwesome onClick={() => {
-                            this.props.removeVariable(d.id)
+                            this.removeVariable(fullVariable);
                         }} name="times"/>
                     </td>
                 </tr>);
@@ -200,12 +224,18 @@ const VariableTable = observer(class VariableTable extends React.Component {
                                        derivedVariable={this.state.derivedVariable}
                                        closeModal={this.closeModal}/>
         }
-        else if(this.state.modifyBinaryIsOpen){
-            modal=<ModifyBinary modalIsOpen={this.state.modifyBinaryIsOpen}
-                                variable={this.state.currentVariable}
-                                callback={this.state.callback}
-                                derivedVariable={this.state.derivedVariable}
-                                closeModal={this.closeModal}/>
+        else if (this.state.modifyBinaryIsOpen) {
+            modal = <ModifyBinary modalIsOpen={this.state.modifyBinaryIsOpen}
+                                  variable={this.state.currentVariable}
+                                  callback={this.state.callback}
+                                  derivedVariable={this.state.derivedVariable}
+                                  closeModal={this.closeModal}/>
+        }
+        else if (this.state.saveVariableIsOpen) {
+            modal = <SaveVariableDialog modalIsOpen={this.state.saveVariableIsOpen}
+                                        variable={this.state.currentVariable}
+                                        callback={this.state.callback}
+                                        closeModal={this.closeModal}/>
         }
         return (
             modal
@@ -230,7 +260,6 @@ const VariableTable = observer(class VariableTable extends React.Component {
         else {
             this.props.variableManagerStore.sortByDatatype();
         }
-        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables, this.props.variableManagerStore.primaryVariables);
     }
 
     /**
@@ -266,10 +295,9 @@ const VariableTable = observer(class VariableTable extends React.Component {
      * @param isUp
      * @param toExtreme
      */
-    moveSelected(isUp,toExtreme){
-        let indices=this.props.variableManagerStore.getSelectedIndices();
-        this.props.variableManagerStore.move(isUp,toExtreme,indices);
-        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables, this.props.variableManagerStore.primaryVariables);
+    moveSelected(isUp, toExtreme) {
+        let indices = this.props.variableManagerStore.getSelectedIndices();
+        this.props.variableManagerStore.move(isUp, toExtreme, indices);
     }
 
     /**
@@ -278,11 +306,9 @@ const VariableTable = observer(class VariableTable extends React.Component {
      * @param toExtreme
      * @param index
      */
-    moveSingle(isUp,toExtreme,index){
-        this.props.variableManagerStore.move(isUp,toExtreme,[index]);
-        this.props.setData(this.props.variableManagerStore.currentVariables, this.props.variableManagerStore.referencedVariables, this.props.variableManagerStore.primaryVariables);
+    moveSingle(isUp, toExtreme, index) {
+        this.props.variableManagerStore.move(isUp, toExtreme, [index]);
     }
-
 
 
     render() {
@@ -300,16 +326,16 @@ const VariableTable = observer(class VariableTable extends React.Component {
                             <option value="alphabet">alphabet</option>
                             <option value="datatype">datatype</option>
                         </FormControl>
-                         <DropdownButton
-                    title={"Move selected..."}
-                    id={"MoveSelected"}
-                >
-                    <MenuItem onClick={()=>this.moveSelected(true,false)} eventKey="1">Up</MenuItem>
-                    <MenuItem onClick={()=>this.moveSelected(false,false)} eventKey="2">Down</MenuItem>
-                          <MenuItem divider />
-                    <MenuItem onClick={()=>this.moveSelected(true,true)} eventKey="3">to top</MenuItem>
-                    <MenuItem onClick={()=>this.moveSelected(false,true)} eventKey="4">to bottom</MenuItem>
-                </DropdownButton>
+                        <DropdownButton
+                            title={"Move selected..."}
+                            id={"MoveSelected"}
+                        >
+                            <MenuItem onClick={() => this.moveSelected(true, false)} eventKey="1">Up</MenuItem>
+                            <MenuItem onClick={() => this.moveSelected(false, false)} eventKey="2">Down</MenuItem>
+                            <MenuItem divider/>
+                            <MenuItem onClick={() => this.moveSelected(true, true)} eventKey="3">to top</MenuItem>
+                            <MenuItem onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</MenuItem>
+                        </DropdownButton>
                     </FormGroup>
                 </Form>
                 <div style={{maxHeight: 400, overflowY: "scroll"}}>

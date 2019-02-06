@@ -1,5 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import SaveVariableDialog from "../Modals/SaveVariableDialog";
 
 
 /*
@@ -8,6 +9,11 @@ implements the icons and their functionality on the left side of the plot
 const RowOperator = observer(class RowOperator extends React.Component {
         constructor() {
             super();
+            this.state = {
+                modalIsOpen: false,
+                callback: "",
+                currentVariable: ""
+            };
             this.sortTimepoint = this.sortTimepoint.bind(this);
             this.group = this.group.bind(this);
             this.unGroup = this.unGroup.bind(this);
@@ -16,6 +22,14 @@ const RowOperator = observer(class RowOperator extends React.Component {
             this.handleRowLeave = this.handleRowLeave.bind(this);
         }
 
+
+        openSaveModal(variable, callback) {
+            this.setState({
+                modalIsOpen: true,
+                currentVariable: variable,
+                callback: callback,
+            })
+        }
 
         /**
          * calls the store function to group a timepoint
@@ -94,6 +108,19 @@ const RowOperator = observer(class RowOperator extends React.Component {
             }
         }
 
+        removeVariable(variableId, type) {
+            let variable = this.props.store.variableStores[type].getById(variableId);
+            if (variable.derived) {
+                this.openSaveModal(variable, save => {
+                    this.props.store.variableStores[type].updateSavedVariables(variableId, save);
+                    this.props.store.variableStores[type].removeVariable(variableId);
+                })
+            }
+            else {
+                this.props.store.variableStores[type].removeVariable(variableId);
+            }
+        }
+
         /**
          * crops text to a certain width and appends "..."
          * @param text
@@ -144,7 +171,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
             if (timepoint.type === "between" || this.props.currentVariables[timepoint.type].length > 1) {
-                this.props.store.variableStores[timepoint.type].removeVariable(variable);
+                this.removeVariable(variable, timepoint.type);
             }
             else {
                 alert("Samples have to be represented by at least one variable");
@@ -152,7 +179,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
         getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (<g id="sort" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+            return (<g id="sort" className="not_exported"
+                       transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                        onMouseOver={(e) => this.props.showTooltip(e, "Sort timepoint by this variable")}
                        onMouseOut={this.props.hideTooltip}>
                 <path fill="gray" d="M3,13H15V11H3M3,6V8H21V6M3,18H9V16H3V18Z"/>
@@ -165,7 +193,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
         getGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
-            return (<g id="group" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+            return (<g id="group" className="not_exported"
+                       transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                        onMouseEnter={(e) => this.props.showTooltip(e, "Group timepoint by this variable")}
                        onMouseLeave={this.props.hideTooltip}>
                 <path fill="gray"
@@ -180,7 +209,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         getUnGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g id="ungroup" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g id="ungroup" className="not_exported"
+                   transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Ungroup timepoint")}
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
@@ -195,7 +225,8 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
-                <g id="delete" className="not_exported" transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g id="delete" className="not_exported"
+                   transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
                    onMouseLeave={this.props.hideTooltip}>>
                     <path fill="gray"
@@ -291,6 +322,10 @@ const RowOperator = observer(class RowOperator extends React.Component {
             return (
                 <g transform={this.props.transform}>
                     {this.getRowOperator()}
+                    <SaveVariableDialog modalIsOpen={this.state.modalIsOpen}
+                                        variable={this.state.currentVariable}
+                                        callback={this.state.callback}
+                                        closeModal={() => this.setState({modalIsOpen: false})}/>
                 </g>
             )
         }

@@ -106,7 +106,7 @@ class RootStore {
 
         });
         this.molProfileMapping = new MolProfileMapping(this);
-        this.timepointStore = new DataStore(this);
+        this.dataStore = new DataStore(this);
         this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore(this);
         this.undoRedoStore = new UndoRedoStore(this);
@@ -116,7 +116,7 @@ class RootStore {
     
     exportSVG() {
         var tmp;
-        if (this.timepointStore.globalTime) {
+        if (this.dataStore.globalTime) {
             tmp = document.getElementById("timeline-view");
         } else {
             tmp = document.getElementById("block-view");
@@ -146,7 +146,7 @@ class RootStore {
 
             var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
-            if (this.timepointStore.globalTime && this.timepointStore.transitionOn && (i === 0 || i === 1)) {
+            if (this.dataStore.globalTime && this.dataStore.transitionOn && (i === 0 || i === 1)) {
                 boundingRect = svg_all[i].getBoundingClientRect();
             }
             else {
@@ -158,7 +158,7 @@ class RootStore {
             new_x = boundingRect.x;
             new_right = new_x + width;
 
-            if (boundingRect.x < prev_right && !this.timepointStore.globalTime) {
+            if (boundingRect.x < prev_right && !this.dataStore.globalTime) {
 
                 new_right = prev_right + width;
                 new_x = prev_right;
@@ -181,8 +181,8 @@ class RootStore {
 
             var scaleX = 1;
 
-            if (this.timepointStore.globalTime && this.timepointStore.transitionOn && i === 4) {
-                // if(this.timepointStore.transitionOn && i===4){
+            if (this.dataStore.globalTime && this.dataStore.transitionOn && i === 4) {
+                // if(this.dataStore.transitionOn && i===4){
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +
@@ -193,7 +193,7 @@ class RootStore {
                     '</g>';
 
             }
-            else if (this.timepointStore.globalTime && !this.timepointStore.transitionOn && i === 3) {
+            else if (this.dataStore.globalTime && !this.dataStore.transitionOn && i === 3) {
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +
@@ -253,7 +253,7 @@ class RootStore {
 
     exportSVGandData() {
         var tmp;
-        if (this.timepointStore.globalTime) {
+        if (this.dataStore.globalTime) {
             tmp = document.getElementById("timeline-view");
         } else {
             tmp = document.getElementById("block-view");
@@ -278,7 +278,7 @@ class RootStore {
             for (var c = 0; c < svg_copy.children.length; c++) {
                 var temp = svg_copy.children[c];
         
-                //if(!this.timepointStore.globalTime){
+                //if(!this.dataStore.globalTime){
 
                     /*if(i===0 ){
 
@@ -327,7 +327,7 @@ class RootStore {
 
             var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
-            if (this.timepointStore.globalTime && this.timepointStore.transitionOn && (i === 0 || i === 1)) {
+            if (this.dataStore.globalTime && this.dataStore.transitionOn && (i === 0 || i === 1)) {
                 boundingRect = svg_all[i].getBoundingClientRect();
             }
             else {
@@ -339,7 +339,7 @@ class RootStore {
             new_x = boundingRect.x;
             new_right = new_x + width;
 
-            if (boundingRect.x < prev_right && !this.timepointStore.globalTime) {
+            if (boundingRect.x < prev_right && !this.dataStore.globalTime) {
 
                 new_right = prev_right + width;
                 new_x = prev_right;
@@ -362,8 +362,8 @@ class RootStore {
 
             var scaleX = 1;
 
-            if (this.timepointStore.globalTime && this.timepointStore.transitionOn && i === 4) {
-                // if(this.timepointStore.transitionOn && i===4){
+            if (this.dataStore.globalTime && this.dataStore.transitionOn && i === 4) {
+                // if(this.dataStore.transitionOn && i===4){
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +
@@ -374,7 +374,7 @@ class RootStore {
                     '</g>';
 
             }
-            else if (this.timepointStore.globalTime && !this.timepointStore.transitionOn && i === 3) {
+            else if (this.dataStore.globalTime && !this.dataStore.transitionOn && i === 3) {
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +
@@ -449,11 +449,11 @@ class RootStore {
      */
     reset() {
         this.parsed = false;
-        this.timepointStore.reset();
+        this.dataStore.reset();
         this.resetTimepointStructure(false);
         let initialVariable = this.clinicalSampleCategories[0];
-        this.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample"));
-        this.timepointStore.globalPrimary = initialVariable.id;
+        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample"));
+        this.dataStore.globalPrimary = initialVariable.id;
         this.parsed = true;
     }
 
@@ -482,10 +482,10 @@ class RootStore {
         }
         this.timepointStructure = timepointStructure;
         if (update) {
-            this.timepointStore.update(this.patientOrderPerTimepoint);
+            this.dataStore.update(this.patientOrderPerTimepoint);
         }
         else {
-            this.timepointStore.initialize();
+            this.dataStore.initialize();
         }
     }
 
@@ -500,7 +500,7 @@ class RootStore {
             _self.createMutationCountsMapping();
             _self.createClinicalPatientMappers();
             _self.createAvailableProfiles();
-            _self.timepointStore.initialize();
+            _self.dataStore.initialize();
 
             /*if (localStorage.getItem(_self.study.studyId) !== null) {
                 const confirm = window.confirm("Load from local storage?");
@@ -509,13 +509,13 @@ class RootStore {
                 }
                 else {
                     let initialVariable = _self.clinicalSampleCategories[0];
-                    _self.timepointStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
-                    _self.timepointStore.globalPrimary = initialVariable.id;
+                    _self.dataStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
+                    _self.dataStore.globalPrimary = initialVariable.id;
                 }
             } else {*/
             let initialVariable = _self.clinicalSampleCategories[0];
-            _self.timepointStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id], "clinSample"));
-            _self.timepointStore.globalPrimary = initialVariable.id;
+            _self.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id], "clinSample"));
+            _self.dataStore.globalPrimary = initialVariable.id;
             _self.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
             //}
             _self.parsed = true;
@@ -578,7 +578,7 @@ class RootStore {
         this.maxTP = maxTP;
         this.minTP = minTP;
         this.sampleTimelineMap = sampleTimelineMap;
-        this.timepointStore.setNumberOfPatients(allPatients.length);
+        this.dataStore.setNumberOfPatients(allPatients.length);
         this.patientOrderPerTimepoint = allPatients;
         this.eventCategories = eventCategories;
         this.sampleStructure = sampleStructure;
@@ -601,7 +601,7 @@ class RootStore {
      * @param up
      */
     updateTimepointStructure(patient, timepoint, up) {
-        const oldSampleTimepointNames = this.timepointStore.variableStores.sample.childStore.timepoints.map(d => d.name);
+        const oldSampleTimepointNames = this.dataStore.variableStores.sample.childStore.timepoints.map(d => d.name);
         let timeline = this.timepointStructure[timepoint];
         const index = this.timepointStructure[timepoint].map(d => d.patient).indexOf(patient);
         let indexedElements;
@@ -609,11 +609,11 @@ class RootStore {
         let el2;
         const _self = this;
         if (!up) { //down movement
-            if (timepoint === this.timepointStore.timepoints.length - 1) {
+            if (timepoint === this.dataStore.timepoints.length - 1) {
                 _self.timepointStructure.push([element]);
             }
             else {
-                for (let i = timepoint; i < this.timepointStore.variableStores.sample.childStore.timepoints.length; i++) {
+                for (let i = timepoint; i < this.dataStore.variableStores.sample.childStore.timepoints.length; i++) {
                     if (i + 1 < _self.timepointStructure.length) {
                         indexedElements = _self.timepointStructure[i + 1]
                             .filter(d => d)
@@ -663,9 +663,9 @@ class RootStore {
         } //else end
         timeline.splice(index, 1);
         this.timepointStructure = this.timepointStructure.filter(struct => struct.length);
-        let heatmapOrder = this.timepointStore.timepoints[timepoint].heatmapOrder.slice();
-        this.timepointStore.update(heatmapOrder);
-        this.timepointStore.variableStores.sample.childStore.updateNames(this.createNameList(up, this.timepointStore.variableStores.sample.childStore.timepoints, oldSampleTimepointNames, patient));
+        let heatmapOrder = this.dataStore.timepoints[timepoint].heatmapOrder.slice();
+        this.dataStore.update(heatmapOrder);
+        this.dataStore.variableStores.sample.childStore.updateNames(this.createNameList(up, this.dataStore.variableStores.sample.childStore.timepoints, oldSampleTimepointNames, patient));
 
     }
 

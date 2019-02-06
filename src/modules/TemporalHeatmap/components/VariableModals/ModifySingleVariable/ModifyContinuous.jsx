@@ -5,10 +5,10 @@ import * as d3 from 'd3';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, OverlayTrigger, Popover, Radio} from "react-bootstrap";
 import FontAwesome from 'react-fontawesome';
 import Histogram from "./Binner/Histogram";
-import DerivedVariable from "../../DerivedVariable";
+import DerivedVariable from "../../../DerivedVariable";
 import uuidv4 from "uuid/v4";
-import MapperCombine from "../../MapperCombineFunctions";
-import ColorScales from "../../ColorScales";
+import MapperCombine from "../../../MapperCombineFunctions";
+import ColorScales from "../../../ColorScales";
 
 
 const ModifyContinuous = observer(class ModifyContinuous extends React.Component {

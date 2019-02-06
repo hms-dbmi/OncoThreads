@@ -6,7 +6,7 @@ import {observer} from 'mobx-react';
 import {Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import MainView from "./MainView"
-import GroupBinningModal from "./VariableModals/Binner/GroupBinningModal"
+import GroupBinningModal from "./VariableModals/ModifySingleVariable/Binner/GroupBinningModal"
 import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
@@ -42,7 +42,7 @@ const Content = observer(class Content extends React.Component {
             contextY: 0,
             showContextMenu: false,
             showContextMenuHeatmapRow: false,
-            horizontalZoom: 300 - (props.rootStore.timepointStore.numberOfPatients < 300 ? props.rootStore.timepointStore.numberOfPatients : 300),
+            horizontalZoom: 300 - (props.rootStore.dataStore.numberOfPatients < 300 ? props.rootStore.dataStore.numberOfPatients : 300),
 
             addModalIsOpen: false
             //varList:[]
@@ -161,7 +161,7 @@ const Content = observer(class Content extends React.Component {
     }
 
     setToScreenWidth() {
-        this.setState({horizontalZoom: 300 - (this.props.rootStore.timepointStore.numberOfPatients < 300 ? this.props.rootStore.timepointStore.numberOfPatients : 300)})
+        this.setState({horizontalZoom: 300 - (this.props.rootStore.dataStore.numberOfPatients < 300 ? this.props.rootStore.dataStore.numberOfPatients : 300)})
     }
 
     setToScreenHeight() {
@@ -177,7 +177,7 @@ const Content = observer(class Content extends React.Component {
     }
 
     handleResetSelection() {
-        this.props.rootStore.timepointStore.selectedPatients = []
+        this.props.rootStore.dataStore.selectedPatients = []
     }
 
 
@@ -187,7 +187,7 @@ const Content = observer(class Content extends React.Component {
                                        variable={this.state.clickedVariable}
                                        type={this.state.type}
                                        callback={this.state.callback}
-                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
+                                       closeModal={this.closeModal} store={this.props.rootStore.dataStore}
                                        visMap={this.props.rootStore.visStore}
             />);
         }
@@ -210,7 +210,7 @@ const Content = observer(class Content extends React.Component {
                                  openBinningModal={this.openModal}
                                  clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                  clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
-                                 store={this.props.rootStore.timepointStore}
+                                 store={this.props.rootStore.dataStore}
             />);
         }
         else {
@@ -249,12 +249,11 @@ const Content = observer(class Content extends React.Component {
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
                                 currentVariables={{
-                                        sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
-                                        between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
+                                        sample: this.props.rootStore.dataStore.variableStores.sample.getCurrentVariables(),
+                                        between: this.props.rootStore.dataStore.variableStores.between.getCurrentVariables()
                                     }}
-                                molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
                                 availableProfiles={this.props.rootStore.availableProfiles}
-                                store={this.props.rootStore.timepointStore}
+                                store={this.props.rootStore.dataStore}
                                 eventCategories={this.props.rootStore.eventCategories}
                                 eventAttributes={this.props.rootStore.eventAttributes}
                             />
@@ -325,22 +324,31 @@ const Content = observer(class Content extends React.Component {
                             <Row>
                                 <MainView
                                     currentVariables={{
-                                        sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
-                                        between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
+                                        sample: this.props.rootStore.dataStore.variableStores.sample.getCurrentVariables(),
+                                        between: this.props.rootStore.dataStore.variableStores.between.getCurrentVariables()
                                     }}
-                                    timepoints={this.props.rootStore.timepointStore.timepoints}
-                                    store={this.props.rootStore.timepointStore}
-                                    transitionStore={this.props.rootStore.transitionStore}
-                                    visMap={this.props.rootStore.visStore}
+                                    globalTime={this.props.rootStore.dataStore.globalTime}
+                                    realTime={this.props.rootStore.dataStore.realTime}
+                                    timepoints={this.props.rootStore.dataStore.timepoints}
+                                    transitions={this.props.rootStore.transitionStore.transitionData}
+                                    selectedPatients={this.props.rootStore.dataStore.selectedPatients}
+                                    dataLoading={this.props.rootStore.dataLoading}
+                                    numberOfPatients={this.props.rootStore.dataStore.numberOfPatients}
+                                    maxPartitions={this.props.rootStore.dataStore.maxPartitions}
+
                                     horizontalZoom={this.state.horizontalZoom}
-                                    rectWidth={this.props.rootStore.visStore.sampleRectWidth}
+
                                     openBinningModal={this.openModal}
                                     showTooltip={this.showTooltip}
                                     hideTooltip={this.hideTooltip}
                                     showContextMenu={this.showContextMenu}
                                     hideContextMenu={this.hideContextMenu}
                                     showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
-                                    sidebarVisible={this.state.sidebarSize === 2}/>
+
+                                    store={this.props.rootStore.dataStore}
+                                    transitionStore={this.props.rootStore.transitionStore}
+                                    visMap={this.props.rootStore.visStore}
+                                />
                             </Row>
                         </Col>
                     </Row>
@@ -355,7 +363,7 @@ const Content = observer(class Content extends React.Component {
                               contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
                               clickedVariable={this.state.clickedVariable}
                               type={this.state.contextType}
-                              store={this.props.rootStore.timepointStore}
+                              store={this.props.rootStore.dataStore}
                               openBinningModal={this.openModal}/>
 
 

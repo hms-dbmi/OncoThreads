@@ -128,7 +128,7 @@ const Legend = observer(class Legend extends React.Component {
         let currX = this.borderLeft;
         let legendEntries = [];
         variable.domain.forEach((d, i) => {
-            if (row.includes(d)) {
+            if (variable.datatype==="ORDINAL"||row.includes(d)) {
                 let tooltipText;
                 if (variable.derived && variable.datatype === "ORDINAL" && variable.modificationType === "continuousTransform") {
                     tooltipText = d + ": " + Math.round(variable.modification.binning.bins[i] * 100) / 100 + " to " + Math.round(variable.modification.binning.bins[i + 1] * 100) / 100;

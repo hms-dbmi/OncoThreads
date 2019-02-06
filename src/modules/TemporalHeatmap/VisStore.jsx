@@ -17,21 +17,23 @@ class VisStore {
         //space for transitions
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
+        this.svgWidth = 700;
+        this.heatmapWidth=700;
+
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
             transitionSpace: 100,
             timepointY: [],
             plotHeight: 700,
             transY: [],
-            svgWidth: 0,
             get svgHeight() {
-                return (this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.getTPHeight(this.rootStore.timepointStore.timepoints[this.rootStore.timepointStore.timepoints.length - 1]));
+                return (this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]));
             },
             get timepointPositions() {
                 let timepointPositions = {"timepoint": [], "connection": []};
                 let prevY = 0;
                 const _self = this;
-                this.rootStore.timepointStore.timepoints.forEach(function (d) {
+                this.rootStore.dataStore.timepoints.forEach(function (d) {
                     let tpHeight = _self.getTPHeight(d);
                     timepointPositions.timepoint.push(prevY);
                     timepointPositions.connection.push(prevY + tpHeight);
@@ -54,11 +56,11 @@ class VisStore {
     fitToScreenHeight() {
         let heightWithoutSpace = 0;
         const _self = this;
-        this.rootStore.timepointStore.timepoints.forEach(function (d) {
+        this.rootStore.dataStore.timepoints.forEach(function (d) {
             heightWithoutSpace += _self.getTPHeight(d);
         });
         let remainingHeight = this.plotHeight - heightWithoutSpace;
-        let transitionSpace = remainingHeight / (this.rootStore.timepointStore.timepoints.length - 1);
+        let transitionSpace = remainingHeight / (this.rootStore.dataStore.timepoints.length - 1);
         if (transitionSpace > 30) {
             this.transitionSpace = transitionSpace
         }
@@ -69,9 +71,14 @@ class VisStore {
         this.transitionSpace = transitionSpace;
     }
 
-    setSampleRectWidth(width) {
-        this.sampleRectWidth = width;
+
+    setVisParameters(plotWidth, zoom,maxPartitions) {
+        this.sampleRectWidth = plotWidth / zoom - this.gap;
+        this.heatmapWidth=this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.gap) - this.gap;
+                this.svgWidth = this.heatmapWidth > plotWidth ? this.heatmapWidth + maxPartitions * this.partitionGap + this.sampleRectWidth : plotWidth;
     }
+
+
 
 
     /**
@@ -93,7 +100,7 @@ class VisStore {
         let height = 0;
         let varCount = 0;
         timepoint.heatmap.forEach(function (d, i) {
-            if (!d.isUndef || _self.rootStore.timepointStore.showUndefined || d.variable === timepoint.primaryVariableId) {
+            if (!d.isUndef || _self.rootStore.dataStore.showUndefined || d.variable === timepoint.primaryVariableId) {
                 varCount += 1;
                 if (d.variable === timepoint.primaryVariableId) {
                     height += _self.primaryHeight;
@@ -113,9 +120,9 @@ class VisStore {
     computeTimepointPositions() {
         let timepointPositions = {"timepoint": [], "connection": []};
         let prevY = 0;
-        for (let i = 0; i < this.rootStore.timepointStore.timepoints.length; i++) {
+        for (let i = 0; i < this.rootStore.dataStore.timepoints.length; i++) {
             let tpHeight;
-            if (this.rootStore.timepointStore.timepoints[i].type === "between") {
+            if (this.rootStore.dataStore.timepoints[i].type === "between") {
                 tpHeight = this.betweenTPHeight;
             }
             else {

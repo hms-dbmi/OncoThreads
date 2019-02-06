@@ -26,16 +26,12 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
     static getInitialState(props) {
         let profile = '';
-        let mappingType = '';
-        const nonClinicalProfiles = props.availableProfiles.filter(d => d.type !== "clinical");
-        if (nonClinicalProfiles.length > 0) {
-            profile = nonClinicalProfiles[0].profile;
-            mappingType = nonClinicalProfiles[0].id;
+        if (props.availableProfiles.length > 0) {
+            profile = props.availableProfiles[0].molecularProfileId;
         }
         return {
             category: "clinical",
             profile: profile,
-            mappingType: mappingType,
             geneListString: "",
             selectedValues: [],
             isClinical: true,
@@ -174,6 +170,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
+                console.log(d.object,this.props.store.rootStore.staticMappers);
                 this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.profile));
             });
             this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
@@ -236,7 +233,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             }
         });
         this.props.store.rootStore.molProfileMapping.getProfileData(this.state.profile,
-            geneList, this.state.mappingType, newVariables => {
+            geneList, "Binary", newVariables => {
                 this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
             });
         this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
@@ -261,14 +258,9 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     }
 
     handleMappingSelect(e) {
-        let profile = this.props.availableProfiles.filter(d => d.id === e.target.value)[0];
-        let mappingType = "";
-        if (profile.type === "mutation") {
-            mappingType = profile.id;
-        }
+        let profile = this.props.availableProfiles.filter(d => d.molecularProfileId === e.target.value)[0];
         this.setState({
-            mappingType: mappingType,
-            profile: profile.profile,
+            profile: profile.molecularProfileId,
         })
     }
 
@@ -332,8 +324,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             selectMappingType = <Col sm={colSize} style={{padding: 0}}>
                 <FormControl style={{height: 38}} componentClass="select" onChange={this.handleMappingSelect}
                              placeholder="Select Category">
-                    {this.props.availableProfiles.filter(d => d.type !== "clinical").map(d => <option value={d.id}
-                                                                                                      key={d.id}>{d.name}</option>)}
+                    {this.props.availableProfiles.map(d => <option value={d.molecularProfileId} key={d.molecularProfileId}>{d.name}</option>)}
                 </FormControl>
             </Col>
 

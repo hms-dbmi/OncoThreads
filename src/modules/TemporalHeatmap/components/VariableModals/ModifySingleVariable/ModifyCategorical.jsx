@@ -16,12 +16,12 @@ import {
 } from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
 import {SketchPicker} from 'react-color';
-import DerivedVariable from "../../DerivedVariable";
-import MapperCombine from "../../MapperCombineFunctions";
+import DerivedVariable from "../../../DerivedVariable";
+import MapperCombine from "../../../MapperCombineFunctions";
 import FontAwesome from 'react-fontawesome';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 import * as d3 from "d3";
-import ColorScales from "../../ColorScales";
+import ColorScales from "../../../ColorScales";
 
 
 const ModifyCategorical = observer(class ModifyCategorical extends React.Component {

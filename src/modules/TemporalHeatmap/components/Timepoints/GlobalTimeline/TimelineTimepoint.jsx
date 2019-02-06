@@ -107,7 +107,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
 
     render() {
-
         return (
             this.getGlobalTimepointWithTransition()
         )

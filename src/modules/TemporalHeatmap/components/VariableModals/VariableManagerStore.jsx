@@ -4,21 +4,21 @@ import {extendObservable, observe} from "mobx";
 Store containing information about variables
  */
 class VariableManagerStore {
-    constructor(referencedVariables, currentVariables, primaryVariables) {
+    constructor(referencedVariables, currentVariables, primaryVariables,savedReferences) {
         //Variables that are referenced (displayed or used to create a derived variable)
         this.referencedVariables = referencedVariables;
         this.primaryVariables = primaryVariables;
+        this.savedReferences = savedReferences;
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: currentVariables.map(d => {
                 return {id: d, isNew: false, isSelected: false}
-            }),
+            })
         });
         observe(this.currentVariables, () => {
             this.updateReferences();
         });
     }
-
 
     /**
      * removes a variable from current variables
@@ -26,6 +26,34 @@ class VariableManagerStore {
      */
     removeVariable(variableId) {
         this.currentVariables.remove(this.currentVariables.filter(d => d.id === variableId)[0]);
+        if(this.primaryVariables.includes(variableId)){
+            this.primaryVariables.forEach((d,i)=>{
+                if(d===variableId){
+                    this.primaryVariables[i]="";
+                }
+            })
+        }
+    }
+
+    saveVariable(variableId) {
+        if (!this.savedReferences.includes(variableId)) {
+            this.savedReferences.push(variableId);
+        }
+    }
+
+    removeSavedVariable(variableId) {
+        if (this.savedReferences.includes(variableId)) {
+            this.savedReferences.splice(this.savedReferences.indexOf(variableId), 1);
+        }
+    }
+
+    updateSavedVariables(variableId, save) {
+        if (save) {
+            this.saveVariable(variableId);
+        }
+        else {
+            this.removeSavedVariable(variableId);
+        }
     }
 
     /**
@@ -47,8 +75,9 @@ class VariableManagerStore {
             this.referencedVariables[variable].referenced = 0;
         }
         this.currentVariables.forEach(d => this.setReferences(d.id));
+        this.savedReferences.forEach(d => this.setReferences(d));
         for (let variable in this.referencedVariables) {
-            if (!this.referencedVariables[variable].derived && this.referencedVariables[variable].referenced === 0) {
+            if (this.referencedVariables[variable].referenced === 0) {
                 delete this.referencedVariables[variable]
             }
         }
@@ -80,7 +109,10 @@ class VariableManagerStore {
             };
         }
         if (this.primaryVariables.includes(oldId)) {
-            this.primaryVariables[this.primaryVariables.indexOf(oldId)] = newVariable.id;
+            for (let i = 0; i < this.primaryVariables.length; i++)
+                if (this.primaryVariables[i] === oldId) {
+                    this.primaryVariables[i] = newVariable.id;
+                }
         }
     }
 

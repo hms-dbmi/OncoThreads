@@ -1,17 +1,19 @@
 import {extendObservable, reaction} from "mobx";
 import VariableStore from "./VariableStore";
+import TimelineStore from "./TimelineStore";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
  */
 class DataStore {
-    constructor(rootStore) {
+    constructor(rootStore,numPatients) {
         this.rootStore = rootStore;
-        this.numberOfPatients = 0;
+        this.numberOfPatients = numPatients;
         this.variableStores = {
             sample: null,
             between: null
         };
+        this.timelineStore=null;
         extendObservable(this, {
             timepoints: [],
             selectedPatients: [],
@@ -42,6 +44,9 @@ class DataStore {
             this.combineTimepoints(isOn));
         reaction(() => this.transitionOn, isOn =>
             this.combineTimepoints(isOn));
+        reaction(()=>this.globalPrimary,()=>
+            this.updateTimeline("sample")
+        );
         this.regroupTimepoints = this.regroupTimepoints.bind(this);
 
     }
@@ -49,7 +54,12 @@ class DataStore {
     setGlobalPrimary(varId) {
         this.globalPrimary = varId;
     }
-
+    toggleRealtime(){
+        this.realTime=!this.realTime;
+    }
+    setGlobalTime(boolean){
+        this.globalTime=boolean;
+    }
 
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
@@ -70,11 +80,14 @@ class DataStore {
     /**
      * initializes the datastructures
      */
-    initialize() {
+    initialize(numPatients) {
+        this.numberOfPatients=numPatients;
         this.variableStores = {
             sample: new VariableStore(this.rootStore, this.rootStore.timepointStructure, "sample"),
             between: new VariableStore(this.rootStore, this.rootStore.transitionStructure, "between")
         };
+        console.log(this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap);
+        this.timelineStore=new TimelineStore(this.rootStore,this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap);
         this.combineTimepoints(false);
     }
 
@@ -90,6 +103,14 @@ class DataStore {
         this.variableStores.between.update(this.rootStore.transitionStructure, order);
         this.combineTimepoints(this.transitionOn);
 
+    }
+    updateTimeline(type){
+        if(type==="sample"){
+            this.timelineStore.changeSampleTimelineData(this.globalPrimary)
+        }
+        else{
+            this.timelineStore.changeEventTimelineData(this.variableStores.between.currentVariables)
+        }
     }
 
     combineTimepoints(isOn) {
@@ -117,7 +138,7 @@ class DataStore {
 
     /**
      * gets all values of a variable, indepently of their timepoint
-     * @param variable
+     * @param mapper
      * @param type
      * @returns {Array}
      */

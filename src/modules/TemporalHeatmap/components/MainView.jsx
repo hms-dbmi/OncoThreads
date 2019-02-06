@@ -38,6 +38,7 @@ const MainView = observer(class MainView extends React.Component {
         }
     }
 
+
     setPlotWidth(width) {
         this.setState({plotWidth: width});
     }
@@ -52,13 +53,13 @@ const MainView = observer(class MainView extends React.Component {
 
     handleTimeClick() {
         this.props.store.applyPatientOrderToAll(0);
-        this.props.store.realTime = !this.props.store.realTime;
+        this.props.store.toggleRealtime();
     }
 
     handleGlobalTimeClick(key) {
-        if (key !== this.props.store.globalTime) {
-            this.props.store.globalTime =key;
-            this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.store.globalTime);
+        if (key !== this.props.globalTime) {
+            this.props.store.setGlobalTime(key);
+            this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.globalTime);
         }
     }
 
@@ -68,7 +69,7 @@ const MainView = observer(class MainView extends React.Component {
      * @param patient
      */
     handlePatientSelection(patient) {
-        if (this.props.store.selectedPatients.includes(patient)) {
+        if (this.props.selectedPatients.includes(patient)) {
             this.props.store.removePatientFromSelection(patient)
         }
         else {
@@ -86,14 +87,14 @@ const MainView = observer(class MainView extends React.Component {
         //isContained: true if all patients are contained
         let isContained = true;
         patients.forEach(function (d, i) {
-            if (!_self.props.store.selectedPatients.includes(d)) {
+            if (!_self.props.selectedPatients.includes(d)) {
                 isContained = false
             }
         });
         //If not all patients are contained, add the patients that are not contained to the selected patients
         if (!isContained) {
             patients.forEach(function (d) {
-                if (!_self.props.store.selectedPatients.includes(d)) {
+                if (!_self.props.selectedPatients.includes(d)) {
                     _self.props.store.addPatientToSelection(d);
                 }
             });
@@ -115,21 +116,21 @@ const MainView = observer(class MainView extends React.Component {
     }
 
 
-    getBlockView(svgHeight, svgWidth, heatmapWidth, timepointPositions) {
+    getBlockView() {
         return (
             <div>
                 <div className="view" id="block-view">
                     <Row>
                         <Button bsSize="xsmall" onClick={this.handleTimeClick}
-                                disabled={this.props.store.globalTime ||  this.props.currentVariables.between.length > 0}
+                                disabled={this.props.globalTime || this.props.currentVariables.between.length > 0}
                                 key={"actualTimeline"}>
                             <FontAwesome
-                                name="clock"/> {(this.props.store.realTime) ? "Hide relative time" : "Show relative time"}
+                                name="clock"/> {(this.props.realTime) ? "Hide relative time" : "Show relative time"}
                         </Button>
                     </Row>
                     <Row>
                         <Col lg={1} md={1} xs={1} style={{padding: 0}}>
-                            <TimepointLabels timepoints={this.props.store.timepoints} height={svgHeight}
+                            <TimepointLabels timepoints={this.props.timepoints} height={this.props.visMap.svgHeight}
                                              store={this.props.store}
                                              showTooltip={this.props.showTooltip}
                                              hideTooltip={this.props.hideTooltip}
@@ -137,27 +138,40 @@ const MainView = observer(class MainView extends React.Component {
                                              sidebarVisible={this.props.sidebarVisible}/>
                         </Col>
                         <Col lg={2} xs={2} md={2} style={{padding: 0}}>
-                            <RowOperators {...this.props} height={svgHeight}
-                                          posY={timepointPositions.timepoint}
-                                          selectedPatients={this.props.store.selectedPatients}
+                            <RowOperators {...this.props} height={this.props.visMap.svgHeight}
+                                          posY={this.props.visMap.timepointPositions.timepoint}
+                                          selectedPatients={this.props.selectedPatients}
                                           highlightedVariable={this.state.highlightedVariable}
                                           setHighlightedVariable={this.setHighlightedVariable}
                                           removeHighlightedVariable={this.removeHighlightedVariable}/>
 
                         </Col>
                         <Col lg={8} xs={7} md={7} style={{padding: 0}}>
-                            <Plot
-                                {...this.props} width={this.state.plotWidth} height={svgHeight}
-                                horizontalZoom={300 - this.props.horizontalZoom}
-                                timepointY={timepointPositions.timepoint}
-                                transY={timepointPositions.connection}
-                                setPlotWidth={this.setPlotWidth}
-                                selectedPatients={this.props.store.selectedPatients}
-                                onDrag={this.handlePatientSelection} selectPartition={this.handlePartitionSelection}/>
+                            <Plot {...this.props}
+                                  width={this.state.plotWidth} height={this.props.visMap.svgHeight}
+                                  transitionOn={this.props.store.transitionOn}
+                                  actualTimeLine={this.props.store.rootStore.actualTimeLine}
+                                  showUndefined={this.props.store.rootStore.showUndefined}
+
+                                  timepointY={this.props.visMap.timepointPositions.timepoint}
+                                  transY={this.props.visMap.timepointPositions.connection}
+                                  setPlotWidth={this.setPlotWidth}
+
+                                  sampleRectWidth={this.props.visMap.sampleRectWidth}
+                                  primaryHeight={this.props.visMap.primaryHeight}
+                                  secondaryHeight={this.props.visMap.secondaryHeight}
+                                  gap={this.props.visMap.gap}
+
+                                  heatmapWidth={this.props.visMap.heatmapWidth}
+                                  svgWidth={this.props.visMap.svgWidth}
+
+                                  onDrag={this.handlePatientSelection}
+                                  selectPartition={this.handlePartitionSelection}/>
                         </Col>
                         <Col lg={1} xs={2} md={2} style={{padding: 0}}>
-                            <Legend {...this.props} height={svgHeight} mainWidth={svgWidth}
-                                    posY={timepointPositions.timepoint}
+                            <Legend {...this.props} height={this.props.visMap.svgHeight}
+                                    mainWidth={this.props.visMap.svgWidth}
+                                    posY={this.props.visMap.timepointPositions.timepoint}
                                     highlightedVariable={this.state.highlightedVariable}
                                     setHighlightedVariable={this.setHighlightedVariable}
                                     removeHighlightedVariable={this.removeHighlightedVariable}/>
@@ -172,48 +186,56 @@ const MainView = observer(class MainView extends React.Component {
         );
     }
 
-    getGlobalView(timepointPositions, svgHeight, svgWidth) {
+    getGlobalView() {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
         const globalPrimaryName = this.props.currentVariables.sample.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
-        const axisHorizontalZoom = (300 - this.props.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
+        const axisHorizontalZoom = (300 - this.props.horizontalZoom) / (this.props.numberOfPatients < 300 ? this.props.numberOfPatients : 300);
         return (
             <div>
                 <div className="view" id="timeline-view">
                     <Row>
                         <Col xs={2} md={2} style={{padding: 0}}>
                             <TimeAssign {...this.props} //timeVar={this.timeVar} timeValue={this.timeValue}
-                                        width={250} height={svgHeight} maxTimeInDays={maxTime}/>
+                                        width={250} height={this.props.visMap.svgHeight} maxTimeInDays={maxTime}/>
                             <GlobalRowOperators {...this.props} width={300}
                                                 timepointVarHeight={(this.props.currentVariables.sample.length + 1) * 19}
                                                 eventVarHeight={this.props.store.variableStores.between.getVariablesOfType("event").length * 19}
-                                                posY={timepointPositions.timepoint}
-                                                selectedPatients={this.props.store.selectedPatients}/>
+                                                posY={this.props.visMap.timepointPositions.timepoint}
+                                                selectedPatients={this.props.selectedPatients}/>
 
                             <h5>{"Legend of " + globalPrimaryName}</h5>
-                            <Legend {...this.props} height={svgHeight / 4}
-                                    mainWidth={svgWidth}/>
+                            <Legend {...this.props} height={this.props.visMap.svgHeight / 4}
+                                    mainWidth={this.props.visMap.svgWidth}/>
                         </Col>
                         <Col xs={1} md={1} style={{padding: 0, width: 55}}>
                             <GlobalTimeAxis {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                             timeValue={this.props.store.rootStore.timeValue}
                                 //width={this.state.plotWidth / axisHorizontalZoom}
                                             width={55}
-                                            height={svgHeight} maxTimeInDays={maxTime}/>
+                                            height={this.props.visMap.svgHeight} maxTimeInDays={maxTime}/>
                         </Col>
                         <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
 
                             <GlobalBands {...this.props} //timeVar={this.props.store.rootStore.timeVar}
                                          timeValue={this.props.store.rootStore.timeValue}
                                          width={this.state.plotWidth / axisHorizontalZoom}
-                                         height={svgHeight} maxTimeInDays={maxTime}/>
+                                         height={this.props.visMap.svgHeight} maxTimeInDays={maxTime}/>
                             <Plot {...this.props}
-                                  height={svgHeight}
+                                 heatmapWidth={this.props.visMap.heatmapWidth}
+                                  svgWidth={this.props.visMap.svgWidth}
+                                  transitionOn={this.props.store.transitionOn}
+                                  actualTimeLine={this.props.store.rootStore.actualTimeLine}
+                                  height={this.props.visMap.svgHeight}
                                   width={this.state.plotWidth / axisHorizontalZoom}
+                                  sampleRectWidth={this.props.visMap.sampleRectWidth}
+                                  primaryHeight={this.props.visMap.primaryHeight}
+                                  secondaryHeight={this.props.visMap.secondaryHeight}
+                                  gap={this.props.visMap.gap}
                                   setPlotWidth={this.setPlotWidth}
                                   horizontalZoom={300 - this.props.horizontalZoom}
-                                  timepointY={timepointPositions.timepoint}
-                                  transY={timepointPositions.connection}
-                                  selectedPatients={this.props.store.selectedPatients}
+                                  timepointY={this.props.visMap.timepointPositions.timepoint}
+                                  transY={this.props.visMap.timepointPositions.connection}
+                                  selectedPatients={this.props.selectedPatients}
                                   onDrag={this.handlePatientSelection}/>
                         </Col>
                     </Row>
@@ -228,27 +250,19 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        let rectWidth = this.state.plotWidth / 300;
-        if (this.props.store.numberOfPatients < 300) {
-            rectWidth = this.state.plotWidth / this.props.store.numberOfPatients - 1;
-        }
-        this.setVisualParameters(rectWidth);
-
-
-        const heatmapWidth = this.props.store.numberOfPatients * (rectWidth + 1);
-        const svgWidth = heatmapWidth + (this.props.store.maxPartitions - 1) * this.props.visMap.partitionGap + 0.5 * rectWidth;
+        this.props.visMap.setVisParameters(this.state.plotWidth, 300 - this.props.horizontalZoom, this.props.maxPartitions);
         let blockView = null;
         let timelineView = null;
-        if (!this.props.store.globalTime) {
-            blockView = this.getBlockView(this.props.visMap.svgHeight, svgWidth, heatmapWidth, this.props.visMap.timepointPositions);
+        if (!this.props.globalTime) {
+            blockView = this.getBlockView();
         }
         else {
-            timelineView = this.getGlobalView(this.props.visMap.timepointPositions, this.props.visMap.svgHeight, svgWidth, heatmapWidth);
+            timelineView = this.getGlobalView();
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
                 <Tabs mountOnEnter unmountOnExit animation={false}
-                      activeKey={this.props.store.globalTime}
+                      activeKey={this.props.globalTime}
                       onSelect={this.handleGlobalTimeClick} id={"viewTab"}>
                     <Tab eventKey={false} style={{paddingTop: 10}} title="Block view">
                         {blockView}

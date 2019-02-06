@@ -16,15 +16,15 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
 
 
     goUp(patient) {
-        if (this.props.rootStore.timepointStore.selectedPatients.length === 0) {
+        if (this.props.rootStore.dataStore.selectedPatients.length === 0) {
             this.moveSinglePatientUp(patient);
             this.props.rootStore.undoRedoStore.saveTPMovement("up", patient);
         }
         else {
-            for (let i = 0; i < this.props.rootStore.timepointStore.selectedPatients.length; i++) {
-                this.moveSinglePatientUp(this.props.rootStore.timepointStore.selectedPatients[i]);
+            for (let i = 0; i < this.props.rootStore.dataStore.selectedPatients.length; i++) {
+                this.moveSinglePatientUp(this.props.rootStore.dataStore.selectedPatients[i]);
             }
-            this.props.rootStore.undoRedoStore.saveTPMovement("up", this.props.rootStore.timepointStore.selectedPatients);
+            this.props.rootStore.undoRedoStore.saveTPMovement("up", this.props.rootStore.dataStore.selectedPatients);
 
         }
 
@@ -51,15 +51,15 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
 
 
     goDown(patient) {
-        if (this.props.rootStore.timepointStore.selectedPatients.length === 0) {
+        if (this.props.rootStore.dataStore.selectedPatients.length === 0) {
             this.moveSinglePatientDown(patient);
             this.props.rootStore.undoRedoStore.saveTPMovement("down", patient);
         }
         else {
-            for (let i = this.props.rootStore.timepointStore.selectedPatients.length - 1; i >= 0; i--) {
-                this.moveSinglePatientDown(this.props.rootStore.timepointStore.selectedPatients[i]);
+            for (let i = this.props.rootStore.dataStore.selectedPatients.length - 1; i >= 0; i--) {
+                this.moveSinglePatientDown(this.props.rootStore.dataStore.selectedPatients[i]);
             }
-            this.props.rootStore.undoRedoStore.saveTPMovement("down", this.props.rootStore.timepointStore.selectedPatients);
+            this.props.rootStore.undoRedoStore.saveTPMovement("down", this.props.rootStore.dataStore.selectedPatients);
 
         }
 
