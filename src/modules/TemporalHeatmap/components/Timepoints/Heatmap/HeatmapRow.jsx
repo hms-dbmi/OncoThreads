@@ -22,19 +22,15 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         let rects = [];
         const _self = this;
 
-        //console.log(this.props.row.data);
-
-
-
 
         this.props.row.data.forEach(function (d, j) {
             let stroke = "none";
-            let fill = _self.props.color(d.value);
+            let fill = _self.props.currVar.colorScale(d.value);
             if (d.value === undefined) {
                 stroke = "lightgray";
                 fill = "white";
             }
-            if (_self.props.selectedPatients.includes(d.patient)) {
+            if (_self.props.store.selectedPatients.includes(d.patient)) {
                 stroke = "black";
             }
             let str;
@@ -62,17 +58,17 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
                              onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}
                              onMouseUp={_self.handleMouseUp} onDoubleClick={() => _self.handleDoubleClick(d.patient)}
                              onClick={_self.handleClick}
-                             onContextMenu={(e) => _self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
+                             onContextMenu={(e) => _self.handleRightClick(e, d.patient, _self.props.timepointIndex, j)}
                              key={d.patient} height={_self.props.height}
                              width={_self.props.rectWidth}
-                             x={_self.props.heatmapScale(d.patient) + _self.props.x}
+                             x={_self.props.heatmapScale(d.patient) + _self.props.xOffset}
                              fill={fill} opacity={_self.props.opacity}/>);
             if (d.value === undefined) {
                 rects.push(<line stroke={stroke}
                                  key={d.patient + "UNDEFINED"} height={_self.props.height}
                                  width={_self.props.rectWidth}
-                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
-                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
+                                 x1={_self.props.heatmapScale(d.patient) + _self.props.xOffset}
+                                 x2={_self.props.heatmapScale(d.patient) + _self.props.xOffset + _self.props.rectWidth}
                                  y1={0}
                                  y2={_self.props.height}
                                  opacity={_self.props.opacity}/>);
@@ -90,7 +86,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     handleMouseDown(event, patient) {
         if (event.button === 0) {
             if (!this.state.dragging) {
-                this.props.onDrag(patient);
+                this.props.store.handlePatientSelection(patient);
             }
             this.setState({
                 dragging: true
@@ -107,7 +103,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
     handleMouseEnter(event, patient, value) {
         if (this.state.dragging) {
-            this.props.onDrag(patient);
+            this.props.store.handlePatientSelection(patient);
         }
         else {
             this.props.showTooltip(event, patient + ": " + value)
@@ -116,7 +112,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
     handleMouseEnterGlobal(event, patient, value, startDay, duration) {
         if (this.state.dragging) {
-            this.props.onDrag(patient);
+            this.props.store.handlePatientSelection(patient);
         }
         else {
             this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
@@ -144,13 +140,13 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         })
     }
 
-    handleRightClick(e, patient, timepoint, xposition) {
+    handleRightClick(e, patient, timepointIndex, xposition) {
         //console.log("\n Right Clicked!");
         e.preventDefault();
         this.setState({
             dragging: false
         });
-        this.props.showContextMenuHeatmapRow(e, patient, timepoint, xposition);
+        this.props.showContextMenuHeatmapRow(e, patient, timepointIndex, xposition);
 
 
     }

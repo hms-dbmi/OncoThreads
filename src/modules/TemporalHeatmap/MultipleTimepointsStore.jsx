@@ -41,8 +41,7 @@ class MultipleTimepointsStore {
      * @param mapper
      */
     addHeatmapRows(variableId, mapper) {
-        const _self = this;
-        this.structure.forEach(function (d, i) {
+        this.structure.forEach((d,i)=> {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {
@@ -54,7 +53,7 @@ class MultipleTimepointsStore {
                     });
                 }
             });
-            _self.timepoints[i].addRow(variableId, variableData);
+            this.timepoints[i].addRow(variableId, variableData);
         });
     }
 
@@ -83,9 +82,7 @@ class MultipleTimepointsStore {
     }
 
     resortHeatmapRows(order) {
-        let timepoints = this.timepoints;
-        timepoints.forEach(d => d.resortRows(order));
-        this.timepoints = timepoints;
+        this.timepoints.forEach(d => d.resortRows(order));
     }
 
     /**
@@ -93,9 +90,7 @@ class MultipleTimepointsStore {
      * @param variableId
      */
     removeHeatmapRows(variableId) {
-        let timepoints = this.timepoints.slice();
-        timepoints.forEach(d => d.removeRow(variableId));
-        this.timepoints = timepoints;
+        this.timepoints.forEach(d => d.removeRow(variableId));
     }
 
     /**

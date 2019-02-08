@@ -7,37 +7,36 @@ import HeatmapRow from './HeatmapRow';
 creates a heatmap timepoint
  */
 const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component {
-
     getTimepoint() {
         const _self = this;
         let rows = [];
         let previousYposition = 0;
         this.props.timepoint.forEach(function (row, i) {
-            let color = _self.props.currentVariables[i].colorScale;
             const transform = "translate(0," + previousYposition + ")";
-            if (!row.isUndef || _self.props.showUndefined || row.variable === _self.props.primaryVariableId) {
+            if (!row.isUndef || _self.props.store.showUndefined || row.variable === _self.props.primaryVariableId) {
+                let rowHeight = _self.props.visMap.secondaryHeight;
+                let opacity = 0.5;
                 if (row.variable === _self.props.primaryVariableId) {
-                    rows.push(<g key={row.variable} transform={transform}>
-                        <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
-                                    height={_self.props.primaryHeight}
-                                    opacity={1}
-                                    color={color}
-                                    x={(_self.props.sampleRectWidth - _self.props.rectWidth) / 2}
-                                    currVar={_self.props.currentVariables[i]}/>;
-                    </g>);
-                    previousYposition += _self.props.primaryHeight + _self.props.gap;
+                    rowHeight = _self.props.visMap.primaryHeight;
+                    opacity = 1;
                 }
-                else {
-                    rows.push(<g key={row.variable} transform={transform}>
-                        <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
-                                    height={_self.props.secondaryHeight}
-                                    opacity={0.5}
-                                    color={color}
-                                    x={(_self.props.sampleRectWidth - _self.props.rectWidth) / 2}
-                                    currVar={_self.props.currentVariables[i]}/>;
-                    </g>);
-                    previousYposition += _self.props.secondaryHeight + _self.props.gap;
-                }
+                rows.push(<g key={row.variable} transform={transform}>
+                    <HeatmapRow showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
+                                store={_self.props.store}
+                                {..._self.props.tooltipFunctions}
+
+                                heatmapScale={_self.props.heatmapScale}
+                                row={row}
+                                timepointIndex={_self.props.index}
+                                rectWidth={_self.props.rectWidth}
+                                xOffset={_self.props.xOffset}
+                                currVar={_self.props.currentVariables[i]}
+
+                                height={rowHeight}
+                                opacity={opacity}/>;
+                </g>);
+                previousYposition += rowHeight + _self.props.visMap.gap;
+
             }
         });
         return (rows)

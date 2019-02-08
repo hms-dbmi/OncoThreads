@@ -18,17 +18,21 @@ class RootStore {
         this.cbioAPI = cbioAPI;
         this.study = study;
 
-        this.hasMutations = false;
 
-        //maximum and minum amount of timepoints a patient has in the dataset
+        this.hasMutations = false;
+        this.mutations = [];
+        this.events = [];
+        this.survivalEvents = [];
+
+        //maximum and minimum amount of timepoints a patient has in the dataset
         this.maxTP = 0;
         this.minTP = Number.POSITIVE_INFINITY;
 
         this.clinicalSampleCategories = [];
         this.clinicalPatientCategories = [];
         this.availableProfiles = [];
-        this.mutationCountId = "mutCount";
-        this.timeDistanceId = "timeGapMapping";
+        this.mutationCountId = uuidv4();
+        this.timeDistanceId = uuidv4();
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"];
         this.eventCategories = [];
         this.eventAttributes = [];
@@ -42,12 +46,12 @@ class RootStore {
         this.reset = this.reset.bind(this);
 
         this.exportSVG = this.exportSVG.bind(this);
-
         this.exportSVGandData = this.exportSVGandData.bind(this);
         //this.onSubmit = this.onSubmit.bind(this);
 
         extendObservable(this, {
             parsed: false,
+            dataLoading: false,
             firstLoad: firstLoad,
             display: display,
 
@@ -90,17 +94,14 @@ class RootStore {
             get maxTimeInDays() {
                 let max = 0;
                 for (let variable in this.eventTimelineMap) {
-                    for (let i = 0; i < this.eventTimelineMap[variable].length; i++) {
-                        if (this.eventTimelineMap[variable][i].eventEndDate > max) {
-                            max = this.eventTimelineMap[variable][i].eventEndDate;
-                        }
-                    }
+                    max=Math.max(max,Math.max(...this.eventTimelineMap[variable].map(d=>d.eventEndDate)));
                 }
                 for (let sample in this.sampleTimelineMap) {
                     if (this.sampleTimelineMap[sample].startNumberOfDaysSinceDiagnosis > max) {
                         max = this.sampleTimelineMap[sample].startNumberOfDaysSinceDiagnosis;
                     }
                 }
+                max=Math.max(max,Math.max(...this.survivalEvents.map(d=>d.date)));
                 return max;
             }
 
@@ -113,7 +114,6 @@ class RootStore {
     }
 
 
-    
     exportSVG() {
         var tmp;
         if (this.dataStore.globalTime) {
@@ -135,7 +135,9 @@ class RootStore {
 
             var svg_copy = svg_all[i].cloneNode(true);
             var a = svg_copy.getElementsByClassName("not_exported");
-            [...a].forEach(t => {t.remove();})
+            [...a].forEach(t => {
+                t.remove();
+            })
 
 
             for (var c = 0; c < svg_copy.children.length; c++) {
@@ -233,7 +235,7 @@ class RootStore {
 
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
-           // svg_prefix +
+            // svg_prefix +
             print_svg +
 
             '</svg>';
@@ -272,55 +274,57 @@ class RootStore {
 
             var svg_copy = svg_all[i].cloneNode(true);
             var a = svg_copy.getElementsByClassName("not_exported");
-            [...a].forEach(t => {t.remove();})
+            [...a].forEach(t => {
+                t.remove();
+            })
 
 
             for (var c = 0; c < svg_copy.children.length; c++) {
                 var temp = svg_copy.children[c];
-        
+
                 //if(!this.dataStore.globalTime){
 
-                    /*if(i===0 ){
+                /*if(i===0 ){
 
-                        if(temp.childElementCount===2){
-                            temp.children[1].remove();
-                        }                 
-
+                    if(temp.childElementCount===2){
+                        temp.children[1].remove();
                     }
-                    else if(i===1 && temp.childElementCount===4){
-                        for(var k=0; k<temp.childElementCount; k++){
 
-                            for(var l=0; l< temp.children[k].childElementCount; l++){
+                }
+                else if(i===1 && temp.childElementCount===4){
+                    for(var k=0; k<temp.childElementCount; k++){
 
-                                temp.children[k].children[l].children.sort.remove();
-                                if(temp.children[k].children[l].children.group){
-                                    temp.children[k].children[l].children.group.remove();
-                                }
-                                if(temp.children[k].children[l].children.ungroup){
-                                    temp.children[k].children[l].children.ungroup.remove();
-                                }
-                                
-                                temp.children[k].children[l].children.delete.remove();
+                        for(var l=0; l< temp.children[k].childElementCount; l++){
 
+                            temp.children[k].children[l].children.sort.remove();
+                            if(temp.children[k].children[l].children.group){
+                                temp.children[k].children[l].children.group.remove();
                             }
-                            
-                        }
-                    } */
+                            if(temp.children[k].children[l].children.ungroup){
+                                temp.children[k].children[l].children.ungroup.remove();
+                            }
 
-                    //var a = svg_all[i].getElementsByClassName("not_exported");
-                    //[...a].forEach(t => {t.remove();})
-                    
-                //}
-               /* else{ //global timeline
+                            temp.children[k].children[l].children.delete.remove();
 
-                    if(i===0){
-                        for(var k2=0; k2<svg_all[0].children[0].childElementCount; k2++){
-                            svg_all[i].children[0].children[k2].children[0].children[1].remove();
                         }
+
                     }
-                    
-
                 } */
+
+                //var a = svg_all[i].getElementsByClassName("not_exported");
+                //[...a].forEach(t => {t.remove();})
+
+                //}
+                /* else{ //global timeline
+
+                     if(i===0){
+                         for(var k2=0; k2<svg_all[0].children[0].childElementCount; k2++){
+                             svg_all[i].children[0].children[k2].children[0].children[1].remove();
+                         }
+                     }
+
+
+                 } */
 
                 t = t + (new XMLSerializer()).serializeToString(temp);
             }
@@ -395,27 +399,27 @@ class RootStore {
             }
         }
 
-        var name=this.study.name.replace('&', 'and');
-        var desc=this.study.description.replace('&', 'and');
+        var name = this.study.name.replace('&', 'and');
+        var desc = this.study.description.replace('&', 'and');
 
         var svg_prefix =
-        '<g width="' + ((minW + maxW)*2).toString() + '" height= "25" transform="translate(400, 25)">' +
-            '<text style="font-size:18px">Study: ' + name + '</text>'+
-        '</g>' +
-        '<g width="' + ((minW + maxW)*2).toString() + '" height= "25" transform="translate(400, 50)">' +
-            '<text style="font-size:18px">Description: ' + desc + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
-            '<text style="font-size:18px">Citation: ' + this.study.citation + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
-            '<text style="font-size:18px">Number of patients: ' + this.patientOrderPerTimepoint.length + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
-            '<text style="font-size:18px">Number of timepoints: ' + this.minTP + "-" + this.maxTP + '</text>'+
-        '</g>'
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 25)">' +
+            '<text style="font-size:18px">Study: ' + name + '</text>' +
+            '</g>' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 50)">' +
+            '<text style="font-size:18px">Description: ' + desc + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
+            '<text style="font-size:18px">Citation: ' + this.study.citation + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
+            '<text style="font-size:18px">Number of patients: ' + this.patientOrderPerTimepoint.length + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
+            '<text style="font-size:18px">Number of timepoints: ' + this.minTP + "-" + this.maxTP + '</text>' +
+            '</g>'
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW)*2).toString() + '" height= "' + (minH + maxH).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
             svg_prefix +
             print_svg +
@@ -493,98 +497,104 @@ class RootStore {
     gets data from cBio and sets parameters in other stores
      */
     parseCBio() {
-        const _self = this;
-        this.cbioAPI.getAllData(this.study.studyId, function () {
-            _self.buildPatientStructure();
-            _self.createClinicalSampleMapping();
-            _self.createMutationCountsMapping();
-            _self.createClinicalPatientMappers();
-            _self.createAvailableProfiles();
-            _self.dataStore.initialize();
-
-            /*if (localStorage.getItem(_self.study.studyId) !== null) {
-                const confirm = window.confirm("Load from local storage?");
-                if (confirm) {
-                    _self.undoRedoStore.deserializeLocalStorage();
-                }
-                else {
-                    let initialVariable = _self.clinicalSampleCategories[0];
-                    _self.dataStore.variableStores.sample.addOriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], true, _self.staticMappers[initialVariable.id]);
-                    _self.dataStore.globalPrimary = initialVariable.id;
-                }
-            } else {*/
-            let initialVariable = _self.clinicalSampleCategories[0];
-            _self.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], _self.staticMappers[initialVariable.id], "clinSample"));
-            _self.dataStore.globalPrimary = initialVariable.id;
-            _self.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
-            //}
-            _self.parsed = true;
-
+        this.cbioAPI.getPatients(this.study.studyId, patients => {
+            this.patientOrderPerTimepoint = patients;
+            this.cbioAPI.getEvents(this.study.studyId, patients, events => {
+                this.events = events;
+                this.buildTimelineStructure(patients, events);
+                this.cbioAPI.getClinicalSampleData(this.study.studyId, data => {
+                    this.createClinicalSampleMapping(data);
+                    this.dataStore.initialize(patients.length);
+                    let initialVariable = this.clinicalSampleCategories[0];
+                    this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample"));
+                    this.dataStore.globalPrimary = initialVariable.id;
+                    this.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
+                    this.parsed = true;
+                });
+                this.cbioAPI.getClinialPatientData(this.study.studyId, patients, data => {
+                    this.createClinicalPatientMappers(data);
+                    this.computeSurvival();
+                });
+                this.cbioAPI.getAvailableMolecularProfiles(this.study.studyId, profiles => {
+                    this.availableProfiles = profiles;
+                    const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
+                    if (mutationIndex !== -1) {
+                        this.hasMutations = true;
+                        this.cbioAPI.getAllMutations(this.study.studyId, profiles[mutationIndex].molecularProfileId, data => {
+                            this.createMutationsStructure(data);
+                        });
+                        this.cbioAPI.getMutationCounts(this.study.studyId, profiles[mutationIndex].molecularProfileId, data => {
+                            this.createMutationCountsMapping(data);
+                        });
+                    }
+                })
+            })
         });
-    }
 
+    }
 
     /**
      * combines clinical events of sort "SPECIMEN" and clinical data in one datastructure,
      * sets some variables in the other stores
      */
-    buildPatientStructure() {
-        const _self = this;
+    buildTimelineStructure(patients, events) {
         let sampleStructure = {};
+        let timelineStructure = [];
         let sampleTimelineMap = {};
         let eventCategories = [];
         let maxTP = 0;
         let minTP = Number.POSITIVE_INFINITY;
         let timepointStructure = [];
-        let allPatients = [];
         let excludeDates = {};
 
-        this.cbioAPI.patients.forEach(function (d) {
-            sampleStructure[d.patientId] = [];
-            excludeDates[d.patientId] = [];
-            allPatients.push(d.patientId);
+        patients.forEach(patient => {
+            sampleStructure[patient] = [];
+            timelineStructure[patient] = [];
+            excludeDates[patient] = [];
             let previousDate = -1;
             let currTP = 0;
-            _self.cbioAPI.clinicalEvents[d.patientId].forEach(function (e, i) {
+            events[patient].forEach(function (e, i) {
                 if (!eventCategories.includes(e.eventType)) {
                     eventCategories.push(e.eventType);
                 }
                 if (e.eventType === "SPECIMEN") {
-                    excludeDates[d.patientId].push(e.startNumberOfDaysSinceDiagnosis);
+                    excludeDates[patient].push(e.startNumberOfDaysSinceDiagnosis);
                     sampleTimelineMap[e.attributes[1].value] = {
                         "method": e.attributes[0].key,
                         "method_name": e.attributes[0].value,
                         "startNumberOfDaysSinceDiagnosis": e.startNumberOfDaysSinceDiagnosis
                     };
                     if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
-                        sampleStructure[d.patientId].push(e.attributes[1].value);
+                        sampleStructure[patient].push(e.attributes[1].value);
+                        timelineStructure[patient].push({
+                            sampleId: e.attributes[1].value,
+                            date: e.startNumberOfDaysSinceDiagnosis
+                        });
                         if (timepointStructure.length <= currTP) {
                             timepointStructure.push([]);
                         }
-                        timepointStructure[currTP].push({patient: d.patientId, sample: e.attributes[1].value});
+                        timepointStructure[currTP].push({patient: patient, sample: e.attributes[1].value});
                         currTP += 1;
 
                     }
                     previousDate = e.startNumberOfDaysSinceDiagnosis;
                 }
             });
-            if (sampleStructure[d.patientId].length > maxTP) {
+            if (sampleStructure[patient].length > maxTP) {
                 maxTP = currTP;
             }
-            if (sampleStructure[d.patientId].length < minTP) {
+            if (sampleStructure[patient].length < minTP) {
                 minTP = currTP;
             }
         });
         this.maxTP = maxTP;
         this.minTP = minTP;
         this.sampleTimelineMap = sampleTimelineMap;
-        this.dataStore.setNumberOfPatients(allPatients.length);
-        this.patientOrderPerTimepoint = allPatients;
         this.eventCategories = eventCategories;
         this.sampleStructure = sampleStructure;
         this.timepointStructure = timepointStructure;
-        this.getEventAttributes(excludeDates);
-        this.staticMappers["timeGapMapping"] = this.createTimeGapMapping();
+        this.getEventAttributes(events, excludeDates);
+        this.staticMappers["timeGapMapping"] = this.createTimeGapMapping(patients);
     }
 
 
@@ -716,77 +726,59 @@ class RootStore {
         return newNames;
     }
 
-    createAvailableProfiles() {
-        this.cbioAPI.molecularProfiles.forEach(d => {
-            this.availableProfiles.push({
-                name: d.name,
-                id: d.molecularProfileId,
-                type: d.molecularAlterationType,
-                profile: d.molecularProfileId,
-            });
-        });
-    }
-
-
     /**
      * creates a dictionary mapping sample IDs onto clinical data
      * @returns {{}}
      */
-    createClinicalSampleMapping() {
-        const _self = this;
-        this.cbioAPI.clinicalSampleData.forEach(function (d) {
+    createClinicalSampleMapping(data) {
+        data.forEach(d => {
             if (d)
-                if (!(d.clinicalAttributeId in _self.staticMappers)) {
-                    _self.clinicalSampleCategories.push({
+                if (!(d.clinicalAttributeId in this.staticMappers)) {
+                    this.clinicalSampleCategories.push({
                         id: d.clinicalAttributeId,
                         variable: d.clinicalAttribute.displayName,
                         datatype: d.clinicalAttribute.datatype,
                         description: d.clinicalAttribute.description
                     });
-                    _self.staticMappers[d.clinicalAttributeId] = {}
+                    this.staticMappers[d.clinicalAttributeId] = {}
                 }
-            if (_self.sampleStructure[d.patientId].includes(d.sampleId)) {
+            if (this.sampleStructure[d.patientId].includes(d.sampleId)) {
                 if (d.clinicalAttribute.datatype !== "NUMBER") {
-                    return _self.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
+                    return this.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
                 }
                 else {
-                    return _self.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
+                    return this.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
                 }
             }
         });
-        if (this.cbioAPI.molecularProfiles.map(d => d.molecularAlterationType).includes("MUTATION_EXTENDED")) {
-            this.clinicalSampleCategories.push({
-                id: this.mutationCountId,
-                variable: "Mutation Count",
-                datatype: "NUMBER",
-                description: "Number of mutations"
-            })
-        }
+
     }
 
     /**
      * creates a dictionary mapping sample IDs onto mutation counts
      * @returns {{}}
      */
-    createMutationCountsMapping() {
-        if (this.cbioAPI.mutationCounts.length !== 0) {
-            this.hasMutations = true;
-            const _self = this;
-            this.staticMappers[this.mutationCountId] = {};
-            this.cbioAPI.mutationCounts.forEach(function (d) {
-                _self.staticMappers[_self.mutationCountId][d.sampleId] = d.mutationCount;
-            });
-        }
+    createMutationCountsMapping(data) {
+        this.staticMappers[this.mutationCountId] = {};
+        data.forEach(d => {
+            this.staticMappers[this.mutationCountId][d.sampleId] = d.mutationCount;
+        });
+        this.clinicalSampleCategories.push({
+            id: this.mutationCountId,
+            variable: "Mutation Count",
+            datatype: "NUMBER",
+            description: "Number of mutations"
+        });
     }
 
     /**
      * creates a dictionary mapping sample IDs onto time between timepoints
      */
-    createTimeGapMapping() {
+    createTimeGapMapping(patients) {
         let timeGapMapping = {};
         const _self = this;
-        this.cbioAPI.patients.forEach(function (d) {
-            let curr = _self.sampleStructure[d.patientId];
+        patients.forEach(d => {
+            let curr = _self.sampleStructure[d];
             for (let i = 1; i < curr.length; i++) {
                 if (i === 1) {
                     timeGapMapping[curr[i - 1]] = undefined
@@ -799,31 +791,67 @@ class RootStore {
 
     }
 
+    createMutationsStructure(data) {
+        this.mutations = {};
+        data.forEach(mutation => {
+            if (!(mutation.entrezGeneId in this.mutations)) {
+                this.mutations[mutation.entrezGeneId] = [];
+            }
+            this.mutations[mutation.entrezGeneId].push({
+                patientId: mutation.patientId,
+                sampleId: mutation.sampleId,
+                mutationType: mutation.mutationType,
+                proteinChange: mutation.proteinChange,
+                vaf: mutation.tumorAltCount / (mutation.tumorAltCount + mutation.tumorRefCount)
+            });
+        });
 
-    createClinicalPatientMappers() {
-        const _self = this;
-        this.cbioAPI.clinicalPatientData.forEach(function (d) {
-            d.forEach(function (d) {
+    }
+
+    createClinicalPatientMappers(data) {
+        data.forEach(d => {
+            d.forEach(d => {
                 if (d)
-                    if (!(d.clinicalAttributeId in _self.staticMappers)) {
-                        _self.clinicalPatientCategories.push({
+                    if (!(d.clinicalAttributeId in this.staticMappers)) {
+                        this.clinicalPatientCategories.push({
                             id: d.clinicalAttributeId,
                             variable: d.clinicalAttribute.displayName,
                             datatype: d.clinicalAttribute.datatype,
                             description: d.clinicalAttribute.description
                         });
-                        _self.staticMappers[d.clinicalAttributeId] = {}
+                        this.staticMappers[d.clinicalAttributeId] = {}
                     }
-                _self.sampleStructure[d.patientId].forEach(function (f) {
+                this.sampleStructure[d.patientId].forEach(f => {
                     if (d.clinicalAttribute.datatype !== "NUMBER") {
-                        return _self.staticMappers[d.clinicalAttributeId][f] = d.value;
+                        return this.staticMappers[d.clinicalAttributeId][f] = d.value;
                     }
                     else {
-                        return _self.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
+                        return this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
                     }
                 });
             })
         });
+    }
+
+    computeSurvival() {
+        const survivalMonths = "OS_MONTHS";
+        const survivalStatus = "OS_STATUS";
+        let survivalEvents = [];
+        let hasStatus = this.clinicalPatientCategories.map(d => d.id).includes(survivalStatus);
+        if (this.clinicalPatientCategories.map(d => d.id).includes(survivalMonths)) {
+            for (let patient in this.sampleStructure) {
+                let status = undefined;
+                if (hasStatus) {
+                    status = this.staticMappers[survivalStatus][this.sampleStructure[patient][0]];
+                }
+                survivalEvents.push({
+                    patient: patient,
+                    date: this.staticMappers[survivalMonths][this.sampleStructure[patient][0]] * 30,
+                    status: status
+                })
+            }
+        }
+        this.survivalEvents=survivalEvents;
     }
 
 
@@ -837,7 +865,7 @@ class RootStore {
         let sampleMapper = {};
         this.eventTimelineMap[selectedVariable.id] = [];
         const _self = this;
-        for (let patient in this.cbioAPI.clinicalEvents) {
+        for (let patient in this.events) {
             let samples = [];
             //extract samples for current patient
             this.transitionStructure.forEach(function (g) {
@@ -855,14 +883,14 @@ class RootStore {
                 let currentStart = Number.NEGATIVE_INFINITY;
                 let currentEnd = this.sampleTimelineMap[samples[counter]].startNumberOfDaysSinceDiagnosis;
                 let i = 0;
-                while (i < this.cbioAPI.clinicalEvents[patient].length) {
-                    let start = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
-                    let end = this.cbioAPI.clinicalEvents[patient][i].startNumberOfDaysSinceDiagnosis;
-                    if (this.cbioAPI.clinicalEvents[patient][i].hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
-                        end = this.cbioAPI.clinicalEvents[patient][i].endNumberOfDaysSinceDiagnosis;
+                while (i < this.events[patient].length) {
+                    let start = this.events[patient][i].startNumberOfDaysSinceDiagnosis;
+                    let end = this.events[patient][i].startNumberOfDaysSinceDiagnosis;
+                    if (this.events[patient][i].hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+                        end = this.events[patient][i].endNumberOfDaysSinceDiagnosis;
                     }
-                    if (RootStore.isInCurrentRange(this.cbioAPI.clinicalEvents[patient][i], currentStart, currentEnd)) {
-                        let matchingId = _self.doesEventMatch(eventType, selectedVariable, this.cbioAPI.clinicalEvents[patient][i]);
+                    if (RootStore.isInCurrentRange(this.events[patient][i], currentStart, currentEnd)) {
+                        let matchingId = _self.doesEventMatch(eventType, selectedVariable, this.events[patient][i]);
                         if (matchingId !== null) {
                             sampleMapper[samples[counter]] = true;
                             _self.eventTimelineMap[matchingId].push({
@@ -941,10 +969,10 @@ class RootStore {
     /**
      * gets all the different attributes an event can have
      */
-    getEventAttributes(excludeDates) {
+    getEventAttributes(events, excludeDates) {
         let attributes = {};
-        for (let patient in this.cbioAPI.clinicalEvents) {
-            this.cbioAPI.clinicalEvents[patient].forEach(function (d, i) {
+        for (let patient in events) {
+            events[patient].forEach(function (d, i) {
                 if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
                     if (!(d.eventType in attributes)) {
                         attributes[d.eventType] = {}

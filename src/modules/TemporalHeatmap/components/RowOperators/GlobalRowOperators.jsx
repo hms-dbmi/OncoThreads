@@ -42,24 +42,22 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
             else {
                 i = 0;
             }
-            const d = this.props.timepoints[i];
+            const d = this.props.store.timepoints[i];
             return <GlobalRowOperator timepoint={d} width={this.state.width}
                                       height={this.props.store.variableStores.sample.currentVariables.length*20}
                                visMap={this.props.visMap} store={this.props.store}
-                               showTooltip={this.props.showTooltip}
-                               hideTooltip={this.props.hideTooltip}/>
+                                {...this.props.tooltipFunctions}/>
         }
 
         getEventRowHeader() {
             let i;
             if (this.props.store.transitionOn) {
                 i = 0;
-                const d = this.props.timepoints[i];
+                const d = this.props.store.timepoints[i];
                 return <GlobalRowOperator timepoint={d} width={this.state.width}
                                           height={this.props.store.variableStores.between.getRelatedVariables("event").length*20}
                                           visMap={this.props.visMap} store={this.props.store}
-                                          showTooltip={this.props.showTooltip}
-                                          hideTooltip={this.props.hideTooltip}/>
+                                          {...this.props.tooltipFunctions}/>
             }
             else {
                 return "-"

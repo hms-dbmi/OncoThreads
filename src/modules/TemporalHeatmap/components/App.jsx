@@ -8,7 +8,7 @@ import {Button, Modal, Nav, Navbar, NavDropdown, NavItem} from 'react-bootstrap'
 import GetStudy from "./GetStudy";
 import Content from "./Content"
 import DefaultView from "./DefaultView"
-import RootStore from "../../ReworkRootStore";
+import RootStore from "../../RootStore";
 import LogModal from "./Modals/LogModal";
 import SettingsModal from "./Modals/SettingsModal";
 import AboutModal from "./Modals/AboutModal";

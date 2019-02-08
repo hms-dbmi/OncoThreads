@@ -1,6 +1,5 @@
 import {extendObservable, reaction} from "mobx";
 import VariableStore from "./VariableStore";
-import TimelineStore from "./TimelineStore";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -13,7 +12,7 @@ class DataStore {
             sample: null,
             between: null
         };
-        this.timelineStore=null;
+        //this.timelineStore=null;
         extendObservable(this, {
             timepoints: [],
             selectedPatients: [],
@@ -37,16 +36,14 @@ class DataStore {
                 return max;
             }
         });
-        reaction(
+        /*reaction(
             () => this.timepoints.map(tp => tp.heatmap.length),
-            length => rootStore.visStore.fitToScreenHeight());
+            length => rootStore.visStore.fitToScreenHeight());*/
         reaction(() => this.transitionOn, isOn =>
             this.combineTimepoints(isOn));
-        reaction(() => this.transitionOn, isOn =>
-            this.combineTimepoints(isOn));
-        reaction(()=>this.globalPrimary,()=>
+        /*reaction(()=>this.globalPrimary,()=>
             this.updateTimeline("sample")
-        );
+        );*/
         this.regroupTimepoints = this.regroupTimepoints.bind(this);
 
     }
@@ -64,6 +61,48 @@ class DataStore {
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
     }
+        /**
+     * handles currently selected patients
+     * @param patient
+     */
+    handlePatientSelection(patient) {
+        if (this.selectedPatients.includes(patient)) {
+            this.removePatientFromSelection(patient)
+        }
+        else {
+            this.addPatientToSelection(patient);
+        }
+    }
+
+
+    /**
+     * handles the selection of patients in a partition
+     * @param patients
+     */
+    handlePartitionSelection(patients) {
+        const _self = this;
+        //isContained: true if all patients are contained
+        let isContained = true;
+        patients.forEach(function (d, i) {
+            if (!_self.selectedPatients.includes(d)) {
+                isContained = false
+            }
+        });
+        //If not all patients are contained, add the patients that are not contained to the selected patients
+        if (!isContained) {
+            patients.forEach(function (d) {
+                if (!_self.selectedPatients.includes(d)) {
+                    _self.addPatientToSelection(d);
+                }
+            });
+        }
+        //If all the patients are already contained, remove them from selected patients
+        else {
+            patients.forEach(function (d) {
+                _self.removePatientFromSelection(d);
+            });
+        }
+    }
 
     addPatientToSelection(patient) {
         let selected = this.selectedPatients.slice();
@@ -76,7 +115,9 @@ class DataStore {
         selected.splice(this.selectedPatients.indexOf(patient), 1);
         this.selectedPatients = selected;
     }
-
+    getVariable(id,type){
+        return this.variableStores[type].getById(id)
+    }
     /**
      * initializes the datastructures
      */
@@ -86,8 +127,7 @@ class DataStore {
             sample: new VariableStore(this.rootStore, this.rootStore.timepointStructure, "sample"),
             between: new VariableStore(this.rootStore, this.rootStore.transitionStructure, "between")
         };
-        console.log(this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap);
-        this.timelineStore=new TimelineStore(this.rootStore,this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap);
+        //this.timelineStore=new TimelineStore(this.rootStore,this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap,this.rootStore.survivalData);
         this.combineTimepoints(false);
     }
 
@@ -104,6 +144,7 @@ class DataStore {
         this.combineTimepoints(this.transitionOn);
 
     }
+    /*
     updateTimeline(type){
         if(type==="sample"){
             this.timelineStore.changeSampleTimelineData(this.globalPrimary)
@@ -112,6 +153,7 @@ class DataStore {
             this.timelineStore.changeEventTimelineData(this.variableStores.between.currentVariables)
         }
     }
+    */
 
     combineTimepoints(isOn) {
         let betweenTimepoints = this.variableStores.between.childStore.timepoints.slice();

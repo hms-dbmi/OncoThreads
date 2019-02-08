@@ -227,7 +227,6 @@ class MolProfileMapping {
      */
     createMutationMapping(list, mappingType, entrezID) {
         let mappingFunction;
-        console.log(list);
         if (mappingType === "Binary") {
             mappingFunction = currentSample => {
                 return (list.filter(d => d.sampleId === currentSample).length > 0)

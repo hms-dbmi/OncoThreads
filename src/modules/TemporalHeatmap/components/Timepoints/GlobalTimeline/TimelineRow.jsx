@@ -75,7 +75,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                     stroke = "lightgray";
                     fill = "white";
                 }
-                if (_self.props.selectedPatients.includes(d.patient)) {
+                if (_self.props.store.selectedPatients.includes(d.patient)) {
                     stroke = "black";
                 }
 

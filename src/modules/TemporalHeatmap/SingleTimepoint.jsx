@@ -10,10 +10,10 @@ class SingleTimepoint {
         this.patients = patients;
         this.globalIndex = localIndex;
         this.localIndex = localIndex;
+        this.heatmap=[];
+        this.grouped=[];
         this.heatmapSorting = {variable: "", order: 0};
         extendObservable(this, {
-            heatmap: [],
-            grouped: [],
             heatmapOrder: order,
             groupOrder: 1,
             isGrouped: false,

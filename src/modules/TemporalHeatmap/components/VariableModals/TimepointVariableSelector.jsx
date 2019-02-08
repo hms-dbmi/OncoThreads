@@ -1,19 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {
-    Alert,
-    Button,
-    Checkbox,
-    Col, Form,
-    FormControl,
-    FormGroup,
-    Nav,
-    NavItem,
-    Row,
-    Tab,
-    TabContent,
-    TabPane
-} from 'react-bootstrap';
+import {Alert, Button, Checkbox, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import ControlLabel from "react-bootstrap/es/ControlLabel";
 
@@ -30,30 +17,33 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             showCheckBoxOptions: false,
         };
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
-        this.handleClinicalOptionSelect=this.handleClinicalOptionSelect.bind(this);
-        this.handleSavedOptionSelect=this.handleSavedOptionSelect.bind(this);
+        this.handleClinicalOptionSelect = this.handleClinicalOptionSelect.bind(this);
+        this.handleSavedOptionSelect = this.handleSavedOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
-        this.handleCategorySelect = this.handleCategorySelect.bind(this);
         this.updateMutationCheckBoxOptions = this.updateMutationCheckBoxOptions.bind(this);
         this.updateMolecularCheckBoxOptions = this.updateMolecularCheckBoxOptions.bind(this);
         this.addGenes = this.addGenes.bind(this);
     }
 
-
-    /**
-     * creates a searchable list of clinical attributes
-     * @returns {Array}
-     */
-    createClinicalOptions() {
+    createOptions(){
+        let savedOptions=[];
+        this.props.savedReferences.forEach(d => {
+            let variable = this.props.variableStore.getById(d);
+            let lb = (
+                <div style={{textAlign: "left"}}
+                     key={d}><b>{variable.name}</b>{": " + variable.description}
+                </div>);
+            savedOptions.push({value: variable.name + variable.description, label: lb, object: variable.id, type:"saved"})
+        });
         let sampleOptions = [];
         this.props.clinicalSampleCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
+            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, type: "clinical"})
         });
         let patientOptions = [];
         this.props.clinicalPatientCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
@@ -61,35 +51,12 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, profile: "clinPatient"})
+            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, type: "clinical"})
         });
-        return [{label: "Sample-specific", options: sampleOptions}, {
-            label: "Patient-specific", options: patientOptions
-        }];
-    }
+        return [{label: "Saved variables",options:savedOptions},
+            {label: "Sample-specific", options: sampleOptions},
+            {label: "Patient-specific", options: patientOptions}];
 
-    createSavedOptions() {
-        let options = [];
-        this.props.savedReferences.forEach(d => {
-            let variable = this.props.variableStore.getById(d);
-            let lb = (
-                <div style={{textAlign: "left"}}
-                     key={d}><b>{variable.name}</b>{": " + variable.description}
-                </div>);
-            options.push({value: variable.name + variable.description, label: lb, object: variable.id})
-        });
-        return options;
-    }
-
-    /**
-     * handles selection of a category
-     * @param e
-     */
-    handleCategorySelect(e) {
-        this.setState({
-            selectionType: e.target.value,
-            showCheckBoxOptions: false
-        });
     }
 
     /**
@@ -98,7 +65,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
      */
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
-            if (this.state.selectionType === 'clinical') {
+            if (selectedOption.type === 'clinical') {
                 this.props.handleVariableAdd(selectedOption.object, selectedOption.profile, true)
             }
             else {
@@ -226,41 +193,6 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
         return false;
     }
 
-    /**
-     * gets search field or select depending on the selected category (select for clinical, search field for genomic)
-     * @returns {*}
-     */
-    getTimepointSearchField() {
-        if (this.state.selectionType === "clinical") {
-            return <Select
-                type="text"
-                searchable={true}
-                componentClass="select" placeholder="Select..."
-                searchPlaceholder="Search variable"
-                options={this.createClinicalOptions()}
-                onChange={this.handleOptionSelect}
-
-            />
-        }
-        else if (this.state.selectionType === "saved") {
-            return <Select
-                type="text"
-                searchable={true}
-                componentClass="select" placeholder="Select..."
-                searchPlaceholder="Search variable"
-                options={this.createSavedOptions()}
-                onChange={this.handleOptionSelect}
-
-            />
-        }
-        else {
-            return <FormControl style={{height: 38}} type="textarea"
-                                placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
-                                onChange={this.updateSearchValue}
-                                onKeyDown={this.handleEnterPressed}
-                                value={this.state.geneListString}/>
-        }
-    }
 
     /**
      * toggles selection of a checkbox
@@ -313,97 +245,56 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 {available}
             </Col>)
         }
-        return <Alert>
-            <FormGroup>{checkBoxes}</FormGroup>
-            <Button onClick={this.addGenes}>Add genes</Button>
-        </Alert>;
+        return <Form horizontal>
+            <Alert>
+                <FormGroup>{checkBoxes}</FormGroup>
+                <Button onClick={this.addGenes}>Add genes</Button>
+            </Alert>
+        </Form>
     }
 
 
+
     render() {
-        let options = [];
-        let navItems = [];
-        let tabs = [];
+        let formGroups = [];
         if (this.props.clinicalSampleCategories.length > 0 || this.props.clinicalPatientCategories.length > 0) {
-            navItems.push(<NavItem eventKey={"clinical"} key={"clinical"}>Clinical</NavItem>);
-            tabs.push(<TabPane eventKey={"clinical"} key={"clinicalTab"}>
-                <Select
-                    type="text"
-                    searchable={true}
-                    componentClass="select" placeholder="Select..."
-                    searchPlaceholder="Search variable"
-                    options={this.createClinicalOptions()}
-                    onChange={this.handleClinicalOptionSelect}
-
-                /></TabPane>);
-            options.push(<option key={"clinical"} value={"clinical"}>Predefined</option>)
-        }
-        if (this.props.availableProfiles.length > 0) {
-            navItems.push(<NavItem eventKey={"genomic"} key={"genomic"}>Genomic</NavItem>);
-            tabs.push(<TabPane eventKey={"genomic"} key={"genomicTab"}>
-                <FormControl style={{height: 38}} type="textarea"
-                             placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
-                             onChange={this.updateSearchValue}
-                             onKeyDown={this.handleEnterPressed}
-                             value={this.state.geneListString}/></TabPane>);
-            options.push(<option key={"genes"} value={"genes"}>Genomic</option>)
-        }
-        navItems.push(<NavItem eventKey={"saved"} key={"saved"}>Saved</NavItem>);
-        tabs.push(<TabPane eventKey={"saved"} key={"savedTab"}>
-            <Select
-                type="text"
-                searchable={true}
-                componentClass="select" placeholder="Select..."
-                searchPlaceholder="Search variable"
-                options={this.createSavedOptions()}
-                onChange={this.handleSavedOptionSelect}
-            /></TabPane>);
-        if (this.props.savedReferences.length > 0) {
-            options.push(<option key={"saved"} value={"saved"}>Saved Variables</option>)
-        }
-        {/*return (<Form horizontal>
-                                <h4>Select variable</h4>
-
-                <FormGroup>
-                    <Col sm={4} style={{paddingRight: "0"}}>
-                        <FormControl style={{height: 38}} componentClass="select"
-                                     onChange={this.handleCategorySelect}
-                                     placeholder="Select Category">
-                            {options}
-                        </FormControl>
-                    </Col>
-                    <Col sm={8} style={{padding: 0}}>
-                        {this.getTimepointSearchField()}
-                    </Col>
-                </FormGroup>
-
-                {this.state.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
-
-            </Form>
-        )*/
-        }
-        return (<div>
-            <Row><Tab.Container id="left-tabs-example" defaultActiveKey="clinical">
-            <Row>
-                <Col sm={2}>
-                    <Nav variant="pills" className="flex-column">
-                        {navItems}
-                    </Nav>
+            formGroups.push(<FormGroup>
+                <Col componentClass={ControlLabel} sm={2}>
+                    Variables
                 </Col>
                 <Col sm={10}>
-                    <TabContent>
-                        {tabs}
-                    </TabContent>
-                </Col>
-            </Row>
+                    <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.createOptions()}
+                        onChange={this.handleOptionSelect}
 
-        </Tab.Container>
-        </Row>
-            <Row>
-                <Form horizontal>
+                    />
+                </Col>
+            </FormGroup>);
+        }
+        if (this.props.availableProfiles.length > 0) {
+            formGroups.push(<FormGroup>
+                <Col componentClass={ControlLabel} sm={2}>
+                    Find gene
+                </Col>
+                <Col sm={10}>
+                    <FormControl style={{height: 38}} type="textarea"
+                                 placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
+                                 onChange={this.updateSearchValue}
+                                 onKeyDown={this.handleEnterPressed}
+                                 value={this.state.geneListString}/>
+                </Col>
+            </FormGroup>);
+        }
+        return (<div>
+            <h4>Select Variable</h4>
+            <Form horizontal>
+            {formGroups}
+        </Form>
             {this.state.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
-                </Form>
-            </Row>
         </div>)
     }
 });

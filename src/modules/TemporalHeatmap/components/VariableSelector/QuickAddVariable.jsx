@@ -170,7 +170,6 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
-                console.log(d.object,this.props.store.rootStore.staticMappers);
                 this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.profile));
             });
             this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
@@ -235,9 +234,9 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         this.props.store.rootStore.molProfileMapping.getProfileData(this.state.profile,
             geneList, "Binary", newVariables => {
                 this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
+                this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
             });
-        this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
-        this.setState({geneListString: ""});
+          this.setState({geneListString: ""});
     }
 
     /**

@@ -43,7 +43,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
 
             if (_self.props.transition.data.to && _self.props.transition.data.to.includes(d)) {
                 let strokeColor = "lightgray";
-                if (_self.props.selectedPatients.includes(d)) {
+                if (_self.props.store.selectedPatients.includes(d)) {
                     strokeColor = "black"
                 }
                 lines.push(LineTransition.drawLine(_self.props.firstHeatmapScale(d) + _self.props.visMap.sampleRectWidth / 2,
@@ -77,7 +77,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
 
             if (_self.props.transition.data.to.includes(d)) {
                 let strokeColor = "lightgray";
-                if (_self.props.selectedPatients.includes(d)) {
+                if (_self.props.store.selectedPatients.includes(d)) {
                     strokeColor = "black"
                 }
                 const frac = _self.props.transition.timeGapStructure[d] / max;
@@ -117,7 +117,7 @@ const LineTransition = observer(class LineTransition extends React.Component {
 
 
     render() {
-        if (this.props.realTime) {
+        if (this.props.store.realTime) {
             return (
                 this.drawRealtimeLines()
             )

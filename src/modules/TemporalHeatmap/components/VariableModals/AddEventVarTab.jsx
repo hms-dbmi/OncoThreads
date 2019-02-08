@@ -2,8 +2,6 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import EventVariableSelector from "./EventVariableSelector";
 import VariableTable from "./VariableTable";
-import UndoRedoStore from "../../UndoRedoStore";
-import VariableManagerStore from "./VariableManagerStore";
 import OriginalVariable from "../../OriginalVariable";
 
 

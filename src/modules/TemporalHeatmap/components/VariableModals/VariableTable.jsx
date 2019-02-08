@@ -1,6 +1,5 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {toJS} from "mobx"
 import {
     Button,
     ControlLabel,
@@ -64,7 +63,12 @@ const VariableTable = observer(class VariableTable extends React.Component {
      * closes the categorical modal
      */
     closeModal() {
-        this.setState({modifyCategoricalIsOpen: false, modifyContinuousIsOpen: false, modifyBinaryIsOpen: false, saveVariableIsOpen:false});
+        this.setState({
+            modifyCategoricalIsOpen: false,
+            modifyContinuousIsOpen: false,
+            modifyBinaryIsOpen: false,
+            saveVariableIsOpen: false
+        });
 
     }
 

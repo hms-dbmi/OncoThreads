@@ -237,6 +237,10 @@ const Content = observer(class Content extends React.Component {
 
 
     render() {
+          const tooltipFunctions = {
+            showTooltip: this.showTooltip,
+            hideTooltip: this.hideTooltip,
+        };
         return (
             <div>
                 <Grid fluid={true} style={{paddingLeft: 20}}>
@@ -323,24 +327,10 @@ const Content = observer(class Content extends React.Component {
                              style={{paddingTop: 0}}>
                             <Row>
                                 <MainView
-                                    currentVariables={{
-                                        sample: this.props.rootStore.dataStore.variableStores.sample.getCurrentVariables(),
-                                        between: this.props.rootStore.dataStore.variableStores.between.getCurrentVariables()
-                                    }}
-                                    globalTime={this.props.rootStore.dataStore.globalTime}
-                                    realTime={this.props.rootStore.dataStore.realTime}
-                                    timepoints={this.props.rootStore.dataStore.timepoints}
-                                    transitions={this.props.rootStore.transitionStore.transitionData}
-                                    selectedPatients={this.props.rootStore.dataStore.selectedPatients}
-                                    dataLoading={this.props.rootStore.dataLoading}
-                                    numberOfPatients={this.props.rootStore.dataStore.numberOfPatients}
-                                    maxPartitions={this.props.rootStore.dataStore.maxPartitions}
-
                                     horizontalZoom={this.state.horizontalZoom}
 
+                                    tooltipFunctions={tooltipFunctions}
                                     openBinningModal={this.openModal}
-                                    showTooltip={this.showTooltip}
-                                    hideTooltip={this.hideTooltip}
                                     showContextMenu={this.showContextMenu}
                                     hideContextMenu={this.hideContextMenu}
                                     showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}

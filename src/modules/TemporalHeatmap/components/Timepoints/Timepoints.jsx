@@ -12,56 +12,45 @@ const Timepoints = observer(class Timepoints extends React.Component {
     getBlockTimepoints() {
         const _self = this;
         let timepoints = [];
-        this.props.timepoints.forEach(function (d, i) {
+        this.props.store.timepoints.forEach(function (d, i) {
             let rectWidth;
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-            if (_self.props.timepoints[i].type === "between") {
-                rectWidth = _self.props.sampleRectWidth / 2;
+            if (d.type === "between") {
+                rectWidth = _self.props.visMap.sampleRectWidth / 2;
             }
             else {
-                rectWidth = _self.props.sampleRectWidth;
+                rectWidth = _self.props.visMap.sampleRectWidth;
             }
 
-            const transform = "translate(0," + _self.props.yPositions[i] + ")";
+            const transform = "translate(0," + _self.props.visMap.timepointPositions.timepoint[i] + ")";
             if (d.heatmap.length > 0) {
                 if (d.isGrouped) {
                     timepoints.push(<g key={i + "timepoint"} transform={transform}><GroupTimepoint
+                        visMap={_self.props.visMap}
+                        store={_self.props.store}
                         timepoint={d.grouped}
                         heatmap={d.heatmap}
                         index={i}
-                        currentVariables={_self.props.currentVariables[d.type]}
+                        currentVariables={_self.props.store.variableStores[d.type].getCurrentVariables()}
                         rectWidth={rectWidth}
-                        width={_self.props.heatmapWidth}
-                        store={_self.props.store}
-                        visMap={_self.props.visMap}
                         groupScale={_self.props.groupScale}
-                        selectPartition={_self.props.selectPartition}
-                        selectedPatients={_self.props.selectedPatients}
-                        advancedSelection={_self.props.store.advancedSelection}
-                        showTooltip={_self.props.showTooltip}
-                        hideTooltip={_self.props.hideTooltip}
+                        tooltipFunctions={_self.props.tooltipFunctions}
                         primaryVariableId={d.primaryVariableId}/></g>)
                 }
                 else {
                     timepoints.push(<g key={i + "timepoint"} transform={transform}>
                         <HeatmapTimepoint
+                            visMap={_self.props.visMap}
+                            store={_self.props.store}
+                            tooltipFunctions={_self.props.tooltipFunctions}
+                            showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
+                            xOffset={(_self.props.visMap.sampleRectWidth - rectWidth) / 2}
+                            rectWidth={rectWidth}
                             timepoint={d.heatmap}
                             index={i}
-                            currentVariables={_self.props.currentVariables[d.type]}
-                            rectWidth={rectWidth}
-                            width={_self.props.heatmapWidth}
+                            currentVariables={_self.props.store.variableStores[d.type].getCurrentVariables()}
                             heatmapScale={_self.props.heatmapScales[i]}
-                            onDrag={_self.props.onDrag}
-                            selectedPatients={_self.props.selectedPatients}
-                            showTooltip={_self.props.showTooltip}
-                            hideTooltip={_self.props.hideTooltip}
                             primaryVariableId={d.primaryVariableId}
-                            showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
-                            showUndefined={_self.props.showUndefined}
-                            primaryHeight={_self.props.primaryHeight}
-                            secondaryHeight={_self.props.secondaryHeight}
-                            sampleRectWidth={_self.props.sampleRectWidth}
-                            gap={_self.props.gap}
                         /></g>)
 
                 }
@@ -80,14 +69,14 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         let globalIndex = 0;
 
-        this.props.timepoints.forEach(function (d, i) {
+        this.props.store.timepoints.forEach(function (d, i) {
             let rectWidth;
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
             if (d.type === "between") {
-                rectWidth = _self.props.sampleRectWidth / 2;
+                rectWidth = _self.props.visMap.sampleRectWidth / 2;
             }
             else {
-                rectWidth = _self.props.sampleRectWidth;
+                rectWidth = _self.props.visMap.sampleRectWidth;
             }
 
 
@@ -102,7 +91,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             });
 
 
-            let yp = _self.props.allYPositions[i]; //.map(x=>x.timeGapBetweenSample);
+            let yp = _self.props.store.rootStore.actualTimeLine[i]; //.map(x=>x.timeGapBetweenSample);
 
             let ht = yp.map(d => 0);
 
@@ -116,16 +105,12 @@ const Timepoints = observer(class Timepoints extends React.Component {
                     ht={ht}
                     timeScale={_self.props.timeScale}
                     numEventsForEachPatient={numEventsForEachPatient}
-                    currentVariables={_self.props.currentVariables[d.type]}
+                    currentVariables={_self.props.store.variableStores[d.type].getCurrentVariables()}
                     rectWidth={rectWidth}
-                    selectPatient={_self.props.onDrag}
-                    width={_self.props.heatmapWidth}
                     store={_self.props.store}
                     visMap={_self.props.visMap}
                     heatmapScale={_self.props.heatmapScales[0]}
-                    selectedPatients={_self.props.selectedPatients}
-                    showTooltip={_self.props.showTooltip}
-                    hideTooltip={_self.props.hideTooltip}
+                    {..._self.props.tooltipFunctions}
                     primaryVariableId={d.primaryVariableId}
                 />
                 </g>);
@@ -138,11 +123,11 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         let rectWidth;
         //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-        //if (_self.props.timepoints[i].type === "between") {
+        //if (_self.props.store.timepoints[i].type === "between") {
         //  rectWidth = _self.props.visMap.sampleRectWidth / 2;
         //}
         //else {
-        rectWidth = _self.props.sampleRectWidth;
+        rectWidth = _self.props.visMap.sampleRectWidth;
         //}
 
 
@@ -179,29 +164,25 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         let ht = tod.map(d => 0);
 
-        //let i=this.props.timepoints.length;
+        //let i=this.props.store.timepoints.length;
 
         //if (d.heatmap.length > 0) {
-        timepoints.push(<g key={this.props.timepoints.length + "timepoint" + globalIndex}><TimelineTimepoint
-            timepoint={this.props.timepoints[0].heatmap}
-            timepointType={this.props.timepoints[0].type}
-            primaryVariable={this.props.timepoints[0].primaryVariable}
-            index={this.props.timepoints.length}
+        timepoints.push(<g key={this.props.store.timepoints.length + "timepoint" + globalIndex}><TimelineTimepoint
+            timepoint={this.props.store.timepoints[0].heatmap}
+            timepointType={this.props.store.timepoints[0].type}
+            primaryVariable={this.props.store.timepoints[0].primaryVariable}
+            index={this.props.store.timepoints.length}
             ypi={tod}
             ht={ht}
             timeScale={_self.props.timeScale}
             numEventsForEachPatient={numEventsForEachPatient}
-            currentVariables={_self.props.currentVariables[this.props.timepoints[0].type]}
+            currentVariables={_self.props.store.variableStores[this.props.store.timepoints[0].type].getCurrentVariables()}
             rectWidth={rectWidth}
-            selectPatient={_self.props.onDrag}
-            width={_self.props.heatmapWidth}
             store={_self.props.store}
             visMap={_self.props.visMap}
             heatmapScale={_self.props.heatmapScales[0]}
-            selectedPatients={_self.props.selectedPatients}
-            showTooltip={_self.props.showTooltip}
-            hideTooltip={_self.props.hideTooltip}
-            primaryVariableId={this.props.timepoints[0].primaryVariableId}
+            {..._self.props.tooltipFunctions}
+            primaryVariableId={this.props.store.timepoints[0].primaryVariableId}
         />
         </g>);
         globalIndex++;
@@ -222,7 +203,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         //var timepoint_sample, heatmapScale_sample, ind_sample;
 
-        this.props.timepoints.forEach(function (d, i) {
+        this.props.store.timepoints.forEach(function (d, i) {
             let rectWidth;
             let yp, count, ht;
 
@@ -237,14 +218,14 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             let transFlag = false;
 
-            //if(_self.props.timepoints[i].primaryVariable.datatype!=="NUMBER"){
+            //if(_self.props.store.timepoints[i].primaryVariable.datatype!=="NUMBER"){
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-            if (_self.props.timepoints[i].type === "between") {
+            if (_self.props.store.timepoints[i].type === "between") {
 
                 transFlag = true;
                 //  return timepoints;
                 //}
-                rectWidth = _self.props.sampleRectWidth / 2;
+                rectWidth = _self.props.visMap.sampleRectWidth / 2;
 
 
                 //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
@@ -258,8 +239,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             else {
                 transFlag = false;
-                rectWidth = _self.props.sampleRectWidth;
-                yp = _self.props.allYPositions[Math.floor(i / 2)];
+                rectWidth = _self.props.store.sampleRectWidth;
+                yp = _self.props.store.rootStore.actualTimeLine[Math.floor(i / 2)];
                 ht = yp.map(d => 0);
                 //transform= "translate(0, 350)";
                 transform = "translate(0, 0)";
@@ -298,16 +279,12 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             ht={ht}
                             timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
-                            currentVariables={_self.props.currentVariables[heatmapd.type]}
+                            currentVariables={_self.props.store.variableStores[heatmapd.type].getCurrentVariables()}
                             rectWidth={rectWidth}
-                            selectPatient={_self.props.onDrag}
-                            width={_self.props.heatmapWidth}
                             store={_self.props.store}
                             visMap={_self.props.visMap}
                             heatmapScale={_self.props.heatmapScales[0]}
-                            selectedPatients={_self.props.selectedPatients}
-                            showTooltip={_self.props.showTooltip}
-                            hideTooltip={_self.props.hideTooltip}/>
+                            {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
                 else {
@@ -320,16 +297,13 @@ const Timepoints = observer(class Timepoints extends React.Component {
                             ht={ht}
                             timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
-                            currentVariables={_self.props.currentVariables[heatmapd.type]}
+                            currentVariables={_self.props.store.variableStores[heatmapd.type].getCurrentVariables()}
                             rectWidth={rectWidth}
-                            selectPatient={_self.props.onDrag}
                             width={_self.props.heatmapWidth}
                             store={_self.props.store}
                             visMap={_self.props.visMap}
                             heatmapScale={_self.props.heatmapScales[0]}
-                            selectedPatients={_self.props.selectedPatients}
-                            showTooltip={_self.props.showTooltip}
-                            hideTooltip={_self.props.hideTooltip}/>
+                            {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
 
@@ -360,9 +334,9 @@ const Timepoints = observer(class Timepoints extends React.Component {
         var tod = [];
         let transFlag = false;
 
-        //if(_self.props.timepoints[i].primaryVariable.datatype!=="NUMBER"){
+        //if(_self.props.store.timepoints[i].primaryVariable.datatype!=="NUMBER"){
         //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-        /*if (_self.props.timepoints[0].type === "between") {
+        /*if (_self.props.store.timepoints[0].type === "between") {
 
             transFlag = true;
             //  return timepoints;
@@ -382,7 +356,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         //else {
         transFlag = false;
-        rectWidth = _self.props.sampleRectWidth;
+        rectWidth = _self.props.visMap.sampleRectWidth;
         //yp = _self.props.allYPositions[Math.floor(i / 2)];
         //ht = yp.map(d => 0);
         //transform= "translate(0, 350)";
@@ -419,8 +393,8 @@ const Timepoints = observer(class Timepoints extends React.Component {
         ht = tod.map(d => 0);
 
 
-        let d = _self.props.timepoints[1];
-        let i = this.props.timepoints.length;
+        let d = _self.props.store.timepoints[1];
+        let i = this.props.store.timepoints.length;
         if (d.heatmap.length > 0) {
 
             let heatmapd = d;
@@ -432,22 +406,18 @@ const Timepoints = observer(class Timepoints extends React.Component {
                         timepoint={d.heatmap}
                         timepointType={d.type}
                         primaryVariable={d.primaryVariable}
-                        index={_self.props.timepoints.length}
+                        index={_self.props.store.timepoints.length}
                         //index={heatmapi}
                         ypi={tod}
                         ht={ht}
                         timeScale={_self.props.timeScale}
                         numEventsForEachPatient={numEventsForEachPatient}
-                        currentVariables={_self.props.currentVariables[heatmapd.type]}
+                        currentVariables={_self.props.store.variableStores[heatmapd.type].getCurrentVariables()}
                         rectWidth={rectWidth}
-                        selectPatient={_self.props.onDrag}
-                        width={_self.props.heatmapWidth}
                         store={_self.props.store}
                         visMap={_self.props.visMap}
                         heatmapScale={_self.props.heatmapScales[0]}
-                        selectedPatients={_self.props.selectedPatients}
-                        showTooltip={_self.props.showTooltip}
-                        hideTooltip={_self.props.hideTooltip}/>
+                        {..._self.props.tooltipFunctions}/>
                 </g>);
             }
             else {
@@ -456,21 +426,17 @@ const Timepoints = observer(class Timepoints extends React.Component {
                         timepoint={d.heatmap}
                         timepointType={d.type}
                         primaryVariable={d.primaryVariable} //index={heatmapi}
-                        index={_self.props.timepoints.length}
+                        index={_self.props.store.timepoints.length}
                         ypi={tod}
                         ht={ht}
                         timeScale={_self.props.timeScale}
                         numEventsForEachPatient={numEventsForEachPatient}
-                        currentVariables={_self.props.currentVariables[heatmapd.type]}
+                        currentVariables={_self.props.store.variableStores[heatmapd.type].getCurrentVariables()}
                         rectWidth={rectWidth}
-                        selectPatient={_self.props.onDrag}
-                        width={_self.props.heatmapWidth}
                         store={_self.props.store}
                         visMap={_self.props.visMap}
                         heatmapScale={_self.props.heatmapScales[0]}
-                        selectedPatients={_self.props.selectedPatients}
-                        showTooltip={_self.props.showTooltip}
-                        hideTooltip={_self.props.hideTooltip}/>
+                        {..._self.props.tooltipFunctions}/>
                 </g>);
             }
 
@@ -484,13 +450,13 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
 
     render() {
-        if (this.props.store.transitionOn && this.props.globalTime) {
+        if (this.props.store.transitionOn && this.props.store.globalTime) {
             return (
                 this.getTreatmentTimepoints()
             )
         }
 
-        else if (this.props.globalTime) {
+        else if (this.props.store.globalTime) {
             return (
                 this.getGlobalTimepoints()
             )

@@ -238,7 +238,7 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "ORDINAL") {
             let allValues = [];
-            this.props.timepoints.forEach(function (d) {
+            this.props.store.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {
                     if (f.variable === _self.props.store.globalPrimary) {
                         allValues = allValues.concat(f.data.map(element => element.value));
@@ -265,10 +265,10 @@ const Legend = observer(class Legend extends React.Component {
         let transform = "";
         if (!this.props.store.globalTime) {
             transform = "translate(0," + 20 + ")";
-            this.props.timepoints.forEach(function (d, i) {
-                let transform = "translate(0," + _self.props.posY[i] + ")";
+            this.props.store.timepoints.forEach(function (d, i) {
+                let transform = "translate(0," + _self.props.visMap.timepointPositions.timepoint[i] + ")";
 
-                const lg = _self.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.currentVariables[d.type]);
+                const lg = _self.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStores[d.type].fullCurrentVariables);
 
                 legends.push(<g key={i + d}
                                 transform={transform}
@@ -280,13 +280,12 @@ const Legend = observer(class Legend extends React.Component {
         }
         else {
             //let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
-
-            let primaryVariable = this.props.currentVariables.sample.filter(variable => variable.id === _self.props.store.globalPrimary)[0];
+            let primaryVariable = this.props.store.variableStores.sample.fullCurrentVariables.filter(variable => variable.id === _self.props.store.globalPrimary)[0];
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }
         return (
             <div className="scrollableX">
-                <svg width={this.maxWidth} height={this.props.height}>
+                <svg width={this.maxWidth} height={this.props.visMap.svgHeight}>
                     <g transform={transform}>
                         {legends}
                     </g>

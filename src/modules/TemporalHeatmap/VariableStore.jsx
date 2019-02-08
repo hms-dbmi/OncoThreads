@@ -1,4 +1,4 @@
-import {extendObservable, observe} from "mobx";
+import {extendObservable, intercept, observe} from "mobx";
 import MultipleTimepointsStore from "./MultipleTimepointsStore";
 
 /*
@@ -16,25 +16,27 @@ class VariableStore {
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: [],
+            get fullCurrentVariables() {
+                return this.currentVariables.map(d => this.referencedVariables[d]);
+            }
 
         });
         //Observe the change and update timepoints accordingly
+        intercept(this.currentVariables, change => {
+            change.added.forEach(d => {
+                if(!this.currentVariables.includes(d)) {
+                    this.childStore.addHeatmapRows(d, this.getById(d).mapper);
+                }
+            });
+            return change;
+        });
         observe(this.currentVariables, (change) => {
-            if(this.type==="between"){
-                this.rootStore.dataStore.updateTimeline(this.type)
-            }
-            this.rootStore.dataLoading = true;
             if (change.type === 'splice') {
-                change.added.forEach(d => {
-                    if (!change.removed.includes(d)) {
-                        this.childStore.addHeatmapRows(d, this.getById(d).mapper);
-                    }
-                });
-                change.removed.forEach(d => {
-                    if (!change.added.includes(d)) {
+                change.removed.forEach(d=>{
+                    if(!change.added.includes(d)) {
                         this.childStore.removeHeatmapRows(d);
                     }
-                });
+            });
                 if (change.removedCount > 0) {
                     if (change.addedCount > 0) {
                         this.childStore.resortHeatmapRows(this.currentVariables);
@@ -54,7 +56,6 @@ class VariableStore {
             this.updateVariableRanges();
             this.rootStore.dataStore.regroupTimepoints();
             this.rootStore.visStore.fitToScreenHeight();
-            this.rootStore.dataLoading = false;
         });
 
     }
@@ -286,8 +287,6 @@ class VariableStore {
         }
         return false;
     }
-
-
 
 
     /**

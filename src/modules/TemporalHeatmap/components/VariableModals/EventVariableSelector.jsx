@@ -22,10 +22,10 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
      */
     createOptions() {
         let options = [];
-            if(this.state.category==="saved"){
-            return(this.props.savedReferences.map(variableId=>{
-                let variable= this.props.store.dataStore.variableStores.between.getById(variableId);
-                return({label:variable.name,value:variableId,object:variableId});
+        if (this.state.category === "saved") {
+            return (this.props.savedReferences.map(variableId => {
+                let variable = this.props.store.dataStore.variableStores.between.getById(variableId);
+                return ({label: variable.name, value: variableId, object: variableId});
             }))
         }
         else if (this.state.category !== "Computed") {
@@ -74,7 +74,7 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
      */
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
-             if(this.state.category==="saved"){
+            if (this.state.category === "saved") {
                 this.props.handleSavedVariableAdd(selectedOption.object);
             }
             else if (this.state.category !== "Computed") {
@@ -104,9 +104,9 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
 
 
     render() {
-        let savedOption=null;
-        if(this.props.savedReferences.length>0){
-            savedOption=<option value={"saved"} key={"saved"}>Saved variables</option>
+        let savedOption = null;
+        if (this.props.savedReferences.length > 0) {
+            savedOption = <option value={"saved"} key={"saved"}>Saved variables</option>
         }
         return (<Form horizontal>
                 <h4>Select variable</h4>

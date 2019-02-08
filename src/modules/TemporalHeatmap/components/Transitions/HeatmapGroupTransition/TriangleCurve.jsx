@@ -8,9 +8,9 @@ Creates a Triangle Curve
 const TriangleCurve = observer(class TriangleCurve extends React.Component {
     render() {
         let color = "#dddddd";
-        let stroke = "#cccccc"
+        let stroke = "#cccccc";
         if (this.props.selectedPatients.includes(this.props.patient)) {
-            color = "#b7b7b7"
+            color = "#b7b7b7";
             stroke = "#cccccc"
         }
         const curvature = .5;

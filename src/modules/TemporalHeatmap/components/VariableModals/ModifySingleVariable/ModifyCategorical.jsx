@@ -46,7 +46,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
     }
 
     getPercentOccurence(categories) {
-        let allOccurences = Object.values(this.props.variable.mapper);
+        let allOccurences = Object.values(this.props.variable.mapper).filter(d=>d!==undefined);
         let numOccurences = 0;
         categories.forEach(d => {
             numOccurences += allOccurences.filter(f => d.toString() === f.toString()).length;

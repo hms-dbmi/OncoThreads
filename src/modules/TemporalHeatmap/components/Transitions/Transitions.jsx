@@ -13,22 +13,20 @@ const Transitions = observer(class Transitions extends React.Component {
 
     getBlockTransitions() {
         const _self = this;
-        return (_self.props.transitionData.map(function (d, i) {
-            const transform = "translate(0," + _self.props.yPositions[i] + ")";
+        return (_self.props.transitionStore.transitionData.map(function (d, i) {
+            const transform = "translate(0," + _self.props.visMap.timepointPositions.connection[i] + ")";
             return (<g key={i + "transition"} transform={transform}><Transition transition={d}
                                                                                 index={i}
-                                                                                realTime={_self.props.realTime}
-                                                                                firstTimepoint={_self.props.timepoints[i]}
-                                                                                secondTimepoint={_self.props.timepoints[i + 1]}
-                                                                                firstPrimary={_self.getFullPrimary(_self.props.timepoints[i])}
-                                                                                secondPrimary={_self.getFullPrimary(_self.props.timepoints[i + 1])}
+                                                                                firstTimepoint={_self.props.store.timepoints[i]}
+                                                                                secondTimepoint={_self.props.store.timepoints[i + 1]}
+                                                                                firstPrimary={_self.getFullPrimary(_self.props.store.timepoints[i])}
+                                                                                secondPrimary={_self.getFullPrimary(_self.props.store.timepoints[i + 1])}
                                                                                 groupScale={_self.props.groupScale}
                                                                                 firstHeatmapScale={_self.props.heatmapScales[i]}
                                                                                 secondHeatmapScale={_self.props.heatmapScales[i + 1]}
-                                                                                selectedPatients={_self.props.selectedPatients}
-                                                                                showTooltip={_self.props.showTooltip}
-                                                                                hideTooltip={_self.props.hideTooltip}
-                                                                                visMap={_self.props.visMap}/>
+                                                                                {..._self.props.tooltipFunctions}
+                                                                                visMap={_self.props.visMap}
+                                                                                store={_self.props.store}/>
             </g>);
 
         }))
@@ -38,14 +36,14 @@ const Transitions = observer(class Transitions extends React.Component {
         let transitions = [];
         let stepWidth = 1;
         let start = 1;
-        if (this.props.transitionOn) {
+        if (this.props.store.transitionOn) {
             stepWidth = 2;
             start = 3;
         }
         let counter = 0;
-        for (let i = start; i < this.props.timepoints.length; i += stepWidth) {
-            let from = this.props.timepoints[i - stepWidth].patients;
-            let to = this.props.timepoints[i].patients;
+        for (let i = start; i < this.props.store.timepoints.length; i += stepWidth) {
+            let from = this.props.store.timepoints[i - stepWidth].patients;
+            let to = this.props.store.timepoints[i].patients;
             transitions.push(
                 <GlobalTransition
                     key={i}
@@ -53,13 +51,11 @@ const Transitions = observer(class Transitions extends React.Component {
                     to={to}
                     timeScale={this.props.timeScale}
                     patientScale={this.props.heatmapScales[0]}
-                    allYPositionsy1={this.props.allYPositions[counter]}
-                    allYPositionsy2={this.props.allYPositions[counter + 1]}
-                    max={this.props.max}
-                    selectedPatients={this.props.selectedPatients}
-                    showTooltip={this.props.showTooltip}
-                    hideTooltip={this.props.hideTooltip}
-                    visMap={this.props.visMap}/>
+                    allYPositionsy1={this.props.store.rootStore.actualTimeLine[counter]}
+                    allYPositionsy2={this.props.store.rootStore.actualTimeLine[counter + 1]}
+                    {...this.props.tooltipFunctions}
+                    visMap={this.props.visMap}
+                    store={this.props.store}/>
             );
             counter++;
 
