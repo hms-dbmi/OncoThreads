@@ -5,16 +5,16 @@ import VariableStore from "./VariableStore";
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
  */
 class DataStore {
-    constructor(rootStore,numPatients) {
+    constructor(rootStore, numPatients) {
         this.rootStore = rootStore;
         this.numberOfPatients = numPatients;
         this.variableStores = {
             sample: null,
             between: null
         };
+        this.timepoints = [];
         //this.timelineStore=null;
         extendObservable(this, {
-            timepoints: [],
             selectedPatients: [],
             continuousRepresentation: 'gradient',
             globalPrimary: '',
@@ -36,14 +36,8 @@ class DataStore {
                 return max;
             }
         });
-        /*reaction(
-            () => this.timepoints.map(tp => tp.heatmap.length),
-            length => rootStore.visStore.fitToScreenHeight());*/
         reaction(() => this.transitionOn, isOn =>
             this.combineTimepoints(isOn));
-        /*reaction(()=>this.globalPrimary,()=>
-            this.updateTimeline("sample")
-        );*/
         this.regroupTimepoints = this.regroupTimepoints.bind(this);
 
     }
@@ -51,17 +45,20 @@ class DataStore {
     setGlobalPrimary(varId) {
         this.globalPrimary = varId;
     }
-    toggleRealtime(){
-        this.realTime=!this.realTime;
+
+    toggleRealtime() {
+        this.realTime = !this.realTime;
     }
-    setGlobalTime(boolean){
-        this.globalTime=boolean;
+
+    setGlobalTime(boolean) {
+        this.globalTime = boolean;
     }
 
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
     }
-        /**
+
+    /**
      * handles currently selected patients
      * @param patient
      */
@@ -83,7 +80,7 @@ class DataStore {
         const _self = this;
         //isContained: true if all patients are contained
         let isContained = true;
-        patients.forEach(function (d, i) {
+        patients.forEach(function (d) {
             if (!_self.selectedPatients.includes(d)) {
                 isContained = false
             }
@@ -115,14 +112,12 @@ class DataStore {
         selected.splice(this.selectedPatients.indexOf(patient), 1);
         this.selectedPatients = selected;
     }
-    getVariable(id,type){
-        return this.variableStores[type].getById(id)
-    }
+
     /**
      * initializes the datastructures
      */
     initialize(numPatients) {
-        this.numberOfPatients=numPatients;
+        this.numberOfPatients = numPatients;
         this.variableStores = {
             sample: new VariableStore(this.rootStore, this.rootStore.timepointStructure, "sample"),
             between: new VariableStore(this.rootStore, this.rootStore.transitionStructure, "between")
@@ -144,6 +139,7 @@ class DataStore {
         this.combineTimepoints(this.transitionOn);
 
     }
+
     /*
     updateTimeline(type){
         if(type==="sample"){
@@ -216,7 +212,7 @@ class DataStore {
         this.timepoints.forEach(function (d, i) {
             if (d.isGrouped) {
                 d.group(d.primaryVariableId);
-                d.sortGroup(d.primaryVariableId,d.groupOrder);
+                d.sortGroup(d.primaryVariableId, d.groupOrder);
             }
             _self.rootStore.transitionStore.adaptTransitions(i);
         })

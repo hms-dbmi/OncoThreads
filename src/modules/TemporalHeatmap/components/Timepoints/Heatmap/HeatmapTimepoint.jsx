@@ -11,26 +11,26 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
         const _self = this;
         let rows = [];
         let previousYposition = 0;
-        this.props.timepoint.forEach(function (row, i) {
+        this.props.currentVariables.forEach((variable, i)=> {
             const transform = "translate(0," + previousYposition + ")";
-            if (!row.isUndef || _self.props.store.showUndefined || row.variable === _self.props.primaryVariableId) {
+            if (!this.props.timepoint[i].isUndef || _self.props.store.showUndefined || this.props.timepoint[i].variable === _self.props.primaryVariableId) {
                 let rowHeight = _self.props.visMap.secondaryHeight;
                 let opacity = 0.5;
-                if (row.variable === _self.props.primaryVariableId) {
+                if (variable.id === _self.props.primaryVariableId) {
                     rowHeight = _self.props.visMap.primaryHeight;
                     opacity = 1;
                 }
-                rows.push(<g key={row.variable} transform={transform}>
+                rows.push(<g key={variable.id} transform={transform}>
                     <HeatmapRow showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
                                 store={_self.props.store}
                                 {..._self.props.tooltipFunctions}
 
                                 heatmapScale={_self.props.heatmapScale}
-                                row={row}
+                                row={this.props.timepoint[i]}
                                 timepointIndex={_self.props.index}
                                 rectWidth={_self.props.rectWidth}
                                 xOffset={_self.props.xOffset}
-                                currVar={_self.props.currentVariables[i]}
+                                currVar={variable}
 
                                 height={rowHeight}
                                 opacity={opacity}/>;

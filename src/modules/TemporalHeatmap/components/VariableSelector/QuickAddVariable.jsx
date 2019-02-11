@@ -233,6 +233,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         });
         this.props.store.rootStore.molProfileMapping.getProfileData(this.state.profile,
             geneList, "Binary", newVariables => {
+            console.log(newVariables);
                 this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
                 this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
             });

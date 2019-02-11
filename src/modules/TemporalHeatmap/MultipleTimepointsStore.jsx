@@ -1,4 +1,3 @@
-import {extendObservable} from "mobx";
 import SingleTimepoint from "./SingleTimepoint"
 
 /*
@@ -9,9 +8,7 @@ class MultipleTimepointsStore {
         this.rootStore = rootStore;
         this.structure = structure;
         this.type = type;
-        extendObservable(this, {
-            timepoints: this.structure.map((d, i) => new SingleTimepoint(this.rootStore, d.map(d => d.patient), this.type, i, this.rootStore.patientOrderPerTimepoint))
-        });
+        this.timepoints = this.structure.map((d, i) => new SingleTimepoint(this.rootStore, d.map(d => d.patient), this.type, i, this.rootStore.patientOrderPerTimepoint))
     }
 
     /**
@@ -28,11 +25,17 @@ class MultipleTimepointsStore {
             _self.timepoints.push(tp);
         });
     }
-    updateNames(names){
-        this.timepoints.forEach((d,i)=>d.name=names[i]);
+
+    reset() {
+        this.timepoints.forEach(d => d.reset())
     }
-    ungroupAll(){
-        this.timepoints.forEach(d=>d.isGrouped=false)
+
+    updateNames(names) {
+        this.timepoints.forEach((d, i) => d.name = names[i]);
+    }
+
+    ungroupAll() {
+        this.timepoints.forEach(d => d.isGrouped = false)
     }
 
     /**
@@ -41,7 +44,7 @@ class MultipleTimepointsStore {
      * @param mapper
      */
     addHeatmapRows(variableId, mapper) {
-        this.structure.forEach((d,i)=> {
+        this.structure.forEach((d, i) => {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {

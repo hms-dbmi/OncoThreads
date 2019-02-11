@@ -130,7 +130,7 @@ const MainView = observer(class MainView extends React.Component {
 
     getGlobalView() {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
-        const globalPrimaryName = this.props.store.variableStores.sample.getCurrentVariables().filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
+        const globalPrimaryName = this.props.store.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
         const axisHorizontalZoom = (300 - this.props.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (
             <div>
@@ -177,7 +177,7 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        this.props.visMap.setVisParameters(this.state.plotWidth, 300 - this.props.horizontalZoom, this.props.maxPartitions);
+        this.props.visMap.setVisParameters(this.state.plotWidth, 300 - this.props.horizontalZoom, this.props.store.maxPartitions);
 
         let blockView = null;
         let timelineView = null;

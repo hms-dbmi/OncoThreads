@@ -21,12 +21,12 @@ const AddVarModal = observer(class AddVarModal extends React.Component {
      * handles clicking the add button
      */
     handleAddButton() {
-        this.props.store.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.props.store.variableStores.sample.referencedVariables, this.timepointVariableManager.referencedVariables);
-        this.props.store.variableStores.sample.currentVariables.replace(this.timepointVariableManager.currentVariables.map(d=>d.id));
-        this.props.store.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.props.store.variableStores.between.referencedVariables, this.eventVariableManager.referencedVariables);
-        this.props.store.variableStores.between.currentVariables.replace(this.eventVariableManager.currentVariables.map(d=>d.id));
-        this.props.store.variableStores.sample.childStore.timepoints.forEach((d, i) => d.setPrimaryVariable(this.timepointVariableManager.primaryVariables[i]));
-        this.props.store.variableStores.between.childStore.timepoints.forEach((d, i) => d.setPrimaryVariable(this.eventVariableManager.primaryVariables[i]));
+        this.props.store.variableStores.sample.replaceAll(UndoRedoStore.deserializeReferencedVariables(this.props.store.variableStores.sample.referencedVariables,
+            this.timepointVariableManager.referencedVariables), this.timepointVariableManager.currentVariables.map(d => d.id),
+            this.timepointVariableManager.primaryVariables);
+        this.props.store.variableStores.between.replaceAll(UndoRedoStore.deserializeReferencedVariables(this.props.store.variableStores.between.referencedVariables,
+            this.eventVariableManager.referencedVariables), this.eventVariableManager.currentVariables.map(d => d.id),
+            this.eventVariableManager.primaryVariables);
         this.props.store.rootStore.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.store.variableStores.sample.currentVariables.map(d => this.props.store.variableStores.sample.getById(d).name) + "\n" + this.props.store.variableStores.between.currentVariables.map(d => this.props.store.variableStores.between.getById(d).name), true);
         this.props.closeAddModal();
     }

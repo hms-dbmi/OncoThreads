@@ -65,7 +65,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                 height={_self.props.visMap.primaryHeight}
                                  color={color}
                         //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                  x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
@@ -88,7 +87,6 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                     rows.push(<g key={row.variable + i + globalIndex}>
 
                         <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
-                                     height={_self.props.visMap.primaryHeight}
                                      color={color}
                             //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
                                      x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}

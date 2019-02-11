@@ -1,4 +1,4 @@
-import {extendObservable, intercept, observe} from "mobx";
+import {extendObservable, observe} from "mobx";
 import MultipleTimepointsStore from "./MultipleTimepointsStore";
 
 /*
@@ -22,21 +22,8 @@ class VariableStore {
 
         });
         //Observe the change and update timepoints accordingly
-        intercept(this.currentVariables, change => {
-            change.added.forEach(d => {
-                if(!this.currentVariables.includes(d)) {
-                    this.childStore.addHeatmapRows(d, this.getById(d).mapper);
-                }
-            });
-            return change;
-        });
         observe(this.currentVariables, (change) => {
             if (change.type === 'splice') {
-                change.removed.forEach(d=>{
-                    if(!change.added.includes(d)) {
-                        this.childStore.removeHeatmapRows(d);
-                    }
-            });
                 if (change.removedCount > 0) {
                     if (change.addedCount > 0) {
                         this.childStore.resortHeatmapRows(this.currentVariables);
@@ -48,9 +35,6 @@ class VariableStore {
                 if (this.type === "between") {
                     this.rootStore.dataStore.transitionOn = this.currentVariables.length !== 0;
                 }
-            }
-            else if (change.type === "update") {
-                this.childStore.updateHeatmapRows(change.newValue, this.getById(change.newValue).mapper, change.index)
             }
             this.updateReferences();
             this.updateVariableRanges();
@@ -70,6 +54,17 @@ class VariableStore {
         this.childStore.updateTimepointStructure(structure, order, names);
         this.currentVariables.forEach(d => this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper))
     }
+    replaceAll(referencedVariables,currentVariables,primaryVariables){
+        this.referencedVariables=referencedVariables;
+        this.childStore.reset();
+        currentVariables.forEach(d=>{
+            this.childStore.addHeatmapRows(d,this.referencedVariables[d].mapper);
+        });
+        this.childStore.timepoints.forEach((d,i)=>{
+            d.setPrimaryVariable(primaryVariables[i])
+        });
+        this.currentVariables.replace(currentVariables);
+    }
 
     /**
      * removes a variable from current variables
@@ -77,6 +72,7 @@ class VariableStore {
      */
     removeVariable(variableId) {
         let name = this.getById(variableId).name;
+        this.childStore.removeHeatmapRows(variableId);
         this.currentVariables.remove(variableId);
         this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
     }
@@ -169,17 +165,17 @@ class VariableStore {
 
     addVariableToBeDisplayed(variable) {
         this.addVariableToBeReferenced(variable);
+        this.childStore.addHeatmapRows(variable.id,variable.mapper);
         if (!this.currentVariables.includes(variable.id)) {
             this.currentVariables.push(variable.id);
         }
     }
 
     addVariablesToBeDisplayed(variables) {
-        let currentVariables = this.currentVariables.slice();
+        let currentVariables=this.currentVariables.slice();
         variables.forEach(d => {
             this.addVariableToBeReferenced(d);
-        });
-        variables.forEach(d => {
+            this.childStore.addHeatmapRows(d.id,d.mapper);
             if (!currentVariables.includes(d.id)) {
                 currentVariables.push(d.id);
             }
@@ -190,6 +186,8 @@ class VariableStore {
 
     replaceDisplayedVariable(oldId, newVariable) {
         if (!this.isReferenced(newVariable.id)) {
+            this.childStore.removeHeatmapRows(oldId);
+            this.childStore.addHeatmapRows(newVariable.id,newVariable.mapper);
             this.referencedVariables[newVariable.id] = newVariable;
         }
         this.currentVariables[this.currentVariables.indexOf(oldId)] = newVariable.id;

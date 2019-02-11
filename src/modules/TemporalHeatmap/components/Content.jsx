@@ -253,8 +253,8 @@ const Content = observer(class Content extends React.Component {
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
                                 currentVariables={{
-                                        sample: this.props.rootStore.dataStore.variableStores.sample.getCurrentVariables(),
-                                        between: this.props.rootStore.dataStore.variableStores.between.getCurrentVariables()
+                                        sample: this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables,
+                                        between: this.props.rootStore.dataStore.variableStores.between.fullCurrentVariables
                                     }}
                                 availableProfiles={this.props.rootStore.availableProfiles}
                                 store={this.props.rootStore.dataStore}

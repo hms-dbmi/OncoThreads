@@ -79,7 +79,7 @@ class SingleTimepoint {
             this.primaryVariableId = "";
         }
         else if (variableId === this.primaryVariableId) {
-            let primaryIndex = this.rootStore.dataStore.variableStores[this.type].getCurrentVariables().map(d => d.datatype === "NUMBER").indexOf(false);
+            let primaryIndex = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables.map(d => d.datatype === "NUMBER").indexOf(false);
             if (this.isGrouped && primaryIndex !== -1) {
                 this.primaryVariableId = this.heatmap[primaryIndex].variable;
             }
@@ -217,7 +217,7 @@ class SingleTimepoint {
                 return e.partition;
             }).indexOf(currPartitionKey);
             if (partitionIndex === -1) {
-                let rows = this.rootStore.dataStore.variableStores[this.type].getCurrentVariables().map(function (d) {
+                let rows = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables.map(function (d) {
                     return {variable: d.id, counts: []}
                 });
                 let patients = this.heatmap[variableIndex].data.filter(function (d) {

@@ -75,7 +75,7 @@ class VisStore {
     setVisParameters(plotWidth, zoom,maxPartitions) {
         this.sampleRectWidth = plotWidth / zoom - this.gap;
         this.heatmapWidth=this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.gap) - this.gap;
-                this.svgWidth = this.heatmapWidth > plotWidth ? this.heatmapWidth + maxPartitions * this.partitionGap + this.sampleRectWidth : plotWidth;
+        this.svgWidth = this.heatmapWidth > plotWidth ? this.heatmapWidth + maxPartitions * this.partitionGap + this.sampleRectWidth : plotWidth;
     }
 
 

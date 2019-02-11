@@ -196,26 +196,26 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let legend = [];
         let currPos = 0;
-        data.forEach(function (d, i) {
-            if (!d.isUndef || _self.props.store.showUndefined || primary === d.variable) {
+        currentVariables.forEach(function (d, i) {
+            if (!data[i].isUndef || _self.props.store.showUndefined || primary === d.id) {
                 let lineheight;
                 let opacity = 1;
-                if (primary === d.variable) {
+                if (primary === d.id) {
                     lineheight = _self.props.visMap.primaryHeight;
                 }
                 else {
                     lineheight = _self.props.visMap.secondaryHeight;
                     opacity = 0.5
                 }
-                let color = currentVariables[i].colorScale;
+                let color = d.colorScale;
                 let legendEntries = [];
                 if (lineheight < fontSize) {
                     fontSize = Math.round(lineheight);
                 }
-                if (currentVariables[i].datatype === "STRING" || currentVariables[i].datatype === "ORDINAL") {
-                    legendEntries = _self.getCategoricalLegend(currentVariables[i], d.data.map(element => element.value), opacity, fontSize, lineheight);
+                if (d.datatype === "STRING" || d.datatype === "ORDINAL") {
+                    legendEntries = _self.getCategoricalLegend(d, data[i].data.map(element => element.value), opacity, fontSize, lineheight);
                 }
-                else if (currentVariables[i].datatype === "BINARY") {
+                else if (d.datatype === "BINARY") {
                     legendEntries = _self.getBinaryLegend(opacity, fontSize, lineheight, color);
                 }
                 else {
