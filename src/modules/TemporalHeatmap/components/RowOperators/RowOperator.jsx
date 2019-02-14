@@ -38,7 +38,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         group(timepoint, variable) {
             if (variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable.id, timepoint.type, derivedVariable => {
+                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
                     this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
                     this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
@@ -58,7 +58,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         sortTimepoint(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable.id, timepoint.type, derivedVariable => {
+                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
                     this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
                     this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
@@ -93,7 +93,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         promote(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable.id, timepoint.type, derivedVariable => {
+                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
                     this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.promote(derivedVariable.id);
                     this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)

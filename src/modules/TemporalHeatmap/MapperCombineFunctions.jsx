@@ -18,8 +18,8 @@ class MapperCombine {
                 if (modification.binning) {
                     mapper = MapperCombine.createBinnedMapper(intermedMapper, modification.binning.bins, modification.binning.binNames);
                 }
-                else{
-                    mapper=intermedMapper;
+                else {
+                    mapper = intermedMapper;
                 }
         }
         return mapper;
@@ -49,20 +49,45 @@ class MapperCombine {
         return newMapper
     }
 
-    static createBinaryCombinedMapper(mappers, operator) {
+    static createBinaryCombinedMapper(mappers, modification, names) {
         let newMapper = {};
         for (let entry in mappers[0]) {
-            if (operator === "or") {
-                let containedInOne = false;
-                for (let i = 0; i < mappers.length; i++) {
-                    if (mappers[i][entry]) {
-                        containedInOne = true;
-                        break;
+            if (modification.operator === "or") {
+                if (modification.datatype === "BINARY") {
+                    let containedInOne = false;
+                    for (let i = 0; i < mappers.length; i++) {
+                        if (mappers[i][entry]) {
+                            containedInOne = true;
+                            break;
+                        }
+                    }
+                    newMapper[entry] = containedInOne;
+                }
+                else {
+                    for (let entry in mappers[0]) {
+                        let categories = [];
+                        for (let i = 0; i < mappers.length; i++) {
+                            if (mappers[i][entry]) {
+                                categories.push(names[i]);
+                            }
+                        }
+                        let result = "";
+                        if (categories.length > 0) {
+                            categories.forEach((d, i) => {
+                                if (i === categories.length - 1) {
+                                    result += d;
+                                }
+                                else {
+                                    result += (d + ",");
+                                }
+                            })
+                        }
+                        else result ="none";
+                        newMapper[entry] = result;
                     }
                 }
-                newMapper[entry] = containedInOne;
             }
-            else if (operator === "and") {
+            else if (modification.operator === "and") {
                 let containedInAll = true;
                 for (let i = 0; i < mappers.length; i++) {
                     if (!mappers[i][entry]) {
@@ -75,6 +100,7 @@ class MapperCombine {
         }
         return newMapper;
     }
+
 
     static createModifyCategoriesMapper(mapper, categoryMapping) {
         let newMapper = {};

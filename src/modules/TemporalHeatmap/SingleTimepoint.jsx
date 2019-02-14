@@ -10,8 +10,8 @@ class SingleTimepoint {
         this.patients = patients;
         this.globalIndex = localIndex;
         this.localIndex = localIndex;
-        this.heatmap=[];
-        this.grouped=[];
+        this.heatmap = [];
+        this.grouped = [];
         this.heatmapSorting = {variable: "", order: 0};
         extendObservable(this, {
             heatmapOrder: order,
@@ -198,9 +198,7 @@ class SingleTimepoint {
      * @param variableId
      */
     setPrimaryVariable(variableId) {
-        if(variableId!=="") {
-            this.primaryVariableId = variableId;
-        }
+        this.primaryVariableId = variableId;
     }
 
     /**
@@ -236,6 +234,7 @@ class SingleTimepoint {
             }
         }
         this.grouped = grouped;
+        this.rootStore.dataStore.setMaxPartitions(grouped.length);
         this.isGrouped = true;
     }
 

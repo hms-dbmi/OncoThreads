@@ -291,13 +291,6 @@ class VariableManagerStore {
         return this.currentVariables.indexOf(id);
     }
 
-    /**
-     * gets complete current variables (not only ids)
-     * @returns {*}
-     */
-    getCurrentVariables() {
-        return this.currentVariables.map(d => this.referencedVariables[d.id]);
-    }
 
     getSelectedVariables() {
         return this.currentVariables.filter(d => d.isSelected).map(d => this.referencedVariables[d.id]);

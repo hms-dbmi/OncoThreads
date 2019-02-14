@@ -31,7 +31,7 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     updateDimensions() {
-        this.props.setPlotWidth(this.refs.plot.parentNode.getBoundingClientRect().width);
+        this.props.visMap.setPlotWidth(this.refs.plot.parentNode.getBoundingClientRect().width);
     }
 
     /**
@@ -64,7 +64,7 @@ const Plot = observer(class Plot extends React.Component {
 
     render() {
         const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.visMap.heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        const groupScale = this.createGroupScale(this.props.visMap.plotWidth - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
         const timeScale = Plot.createTimeScale(this.props.visMap.svgHeight - this.props.visMap.primaryHeight * 2, 0, this.props.store.rootStore.maxTimeInDays);
         return (

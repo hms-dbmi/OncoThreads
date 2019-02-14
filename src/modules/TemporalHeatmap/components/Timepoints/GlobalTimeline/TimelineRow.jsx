@@ -29,7 +29,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
         //console.log(this.props.row.data);
         if (_self.props.timepointType === "between") {
-            if (_self.props.dtype === "BINARY") {
 
 
                 _self.props.events.forEach(function (ev, j) {
@@ -61,7 +60,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         />);
                     }
                 );
-            }
         }
         else
         {

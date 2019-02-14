@@ -72,10 +72,12 @@ class UndoRedoStore {
      * @param index
      */
     deserializeVariables(index) {
-        this.rootStore.dataStore.variableStores.sample.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.dataStore.variableStores.sample.referencedVariables, this.stateStack[index].state.allSampleVar);
-        this.rootStore.dataStore.variableStores.between.referencedVariables = UndoRedoStore.deserializeReferencedVariables(this.rootStore.dataStore.variableStores.between.referencedVariables, this.stateStack[index].state.allBetweenVar);
-        this.rootStore.dataStore.variableStores.sample.currentVariables.replace(this.stateStack[index].state.currentSampleVar);
-        this.rootStore.dataStore.variableStores.between.currentVariables.replace(this.stateStack[index].state.currentBetweenVar);
+        this.rootStore.dataStore.variableStores.sample.replaceVariables(UndoRedoStore.deserializeReferencedVariables(this.rootStore.dataStore.variableStores.sample.referencedVariables
+            , this.stateStack[index].state.allSampleVar),
+            this.stateStack[index].state.currentSampleVar);
+        this.rootStore.dataStore.variableStores.between.replaceVariables(UndoRedoStore.deserializeReferencedVariables(this.rootStore.dataStore.variableStores.between.referencedVariables
+            , this.stateStack[index].state.allBetweenVar),
+            this.stateStack[index].state.currentBetweenVar);
         this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
         this.rootStore.dataStore.transitionOn = this.stateStack[index].state.transitionOn;
         this.rootStore.dataStore.globalPrimary = this.stateStack[index].state.globalPrimary;

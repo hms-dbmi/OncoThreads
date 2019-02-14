@@ -46,7 +46,7 @@ class MolProfileMapping {
                 else if (mappingType === "Variant allele frequency") {
                     domain = [0, 1];
                 }
-                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType));
+                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType,"gene"));
             }
         });
         return variables;
@@ -75,7 +75,7 @@ class MolProfileMapping {
                         });
                         datatype = "ORDINAL";
                     }
-                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId));
+                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId,"gene"));
                 }
             });
         }

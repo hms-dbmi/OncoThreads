@@ -64,11 +64,6 @@ const Content = observer(class Content extends React.Component {
         this.handleResetAlignment = this.handleResetAlignment.bind(this);
         this.handleResetSelection = this.handleResetSelection.bind(this);
 
-        this.horizontalZoom = this.horizontalZoom.bind(this);
-        this.setToScreenWidth = this.setToScreenWidth.bind(this);
-        this.verticalZoom = this.verticalZoom.bind(this);
-        this.setToScreenHeight = this.setToScreenHeight.bind(this);
-
         this.updateVariable = this.updateVariable.bind(this);
 
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
@@ -151,22 +146,6 @@ const Content = observer(class Content extends React.Component {
         })
     }
 
-    horizontalZoom(event) {
-        this.setState({horizontalZoom: parseInt(event.target.value, 10)});
-
-    }
-
-    verticalZoom(event) {
-        this.props.rootStore.visStore.setTransitionSpace(parseInt(event.target.value, 10));
-    }
-
-    setToScreenWidth() {
-        this.setState({horizontalZoom: 300 - (this.props.rootStore.dataStore.numberOfPatients < 300 ? this.props.rootStore.dataStore.numberOfPatients : 300)})
-    }
-
-    setToScreenHeight() {
-        this.props.rootStore.visStore.fitToScreenHeight();
-    }
 
     handleResetAll() {
         this.props.rootStore.reset();
@@ -276,16 +255,16 @@ const Content = observer(class Content extends React.Component {
                                         id={"zoom"}
                                     >
                                         <div style={{padding: "5px"}}>
-                                            Horizontal: <input type="range" value={this.state.horizontalZoom}
-                                                               onChange={this.horizontalZoom} step={1}
+                                            Horizontal: <input type="range" value={this.props.rootStore.visStore.horizontalZoom}
+                                                               onChange={(e)=>this.props.rootStore.visStore.setHorizontalZoom(parseInt(e.target.value,10))} step={1}
                                                                min={0} max={290}/>
-                                            <Button onClick={this.setToScreenWidth}>Set to screen width</Button>
+                                            <Button onClick={this.props.rootStore.visStore.fitToScreenWidth}>Set to screen width</Button>
                                             <br/>
                                             Vertical: <input type="range"
                                                              value={this.props.rootStore.visStore.transitionSpace}
-                                                             onChange={this.verticalZoom} step={1}
+                                                             onChange={(e)=>this.props.rootStore.visStore.setTransitionSpace(parseInt(e.target.value,10))} step={1}
                                                              min={5} max={700}/>
-                                            <Button onClick={this.setToScreenHeight}>Set to screen height</Button>
+                                            <Button onClick={this.props.rootStore.visStore.fitToScreenHeight}>Set to screen height</Button>
                                         </div>
                                     </DropdownButton>
                                 </ButtonGroup>

@@ -80,11 +80,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                     });
                 }
             }
-            console.log(binNames);
-
             this.setState({bins: bins, binNames: binNames, isBinary: isBinary})
-
-
         }
 
         handleBinNameChange(e, index) {

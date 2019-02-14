@@ -4,9 +4,6 @@ import * as d3 from 'd3';
 stores information about current visual parameters
  */
 class ColorScales {
-    static getDefaultBinaryRange(){
-        return ['#ffd92f', 'lightgray'];
-    }
     static getContinousColorScale(range, domain) {
         let min = Math.min(...domain);
         let max = Math.max(...domain);
@@ -52,5 +49,6 @@ class ColorScales {
 
 }
 ColorScales.defaultBinaryRange=['#ffd92f', 'lightgray'];
+ColorScales.defaultCategoricalRange=['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'];
 
 export default ColorScales;

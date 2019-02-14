@@ -28,11 +28,12 @@ class RootStore {
         this.maxTP = 0;
         this.minTP = Number.POSITIVE_INFINITY;
 
+        this.mutationCountId = uuidv4();
+        this.timeDistanceId = uuidv4();
+
         this.clinicalSampleCategories = [];
         this.clinicalPatientCategories = [];
         this.availableProfiles = [];
-        this.mutationCountId = uuidv4();
-        this.timeDistanceId = uuidv4();
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"];
         this.eventCategories = [];
         this.eventAttributes = [];
@@ -456,7 +457,7 @@ class RootStore {
         this.dataStore.reset();
         this.resetTimepointStructure(false);
         let initialVariable = this.clinicalSampleCategories[0];
-        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample"));
+        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample","clinical"));
         this.dataStore.globalPrimary = initialVariable.id;
         this.parsed = true;
     }
@@ -469,17 +470,17 @@ class RootStore {
         const _self = this;
         for (let i = 0; i < this.maxTP; i++) {
             let patientSamples = [];
-            this.cbioAPI.patients.forEach(function (d, j) {
+            this.patientOrderPerTimepoint.forEach(function (d, j) {
                 if (_self.minTP === 0) {
-                    _self.minTP = _self.sampleStructure[d.patientId].length;
+                    _self.minTP = _self.sampleStructure[d].length;
                 }
                 else {
-                    if (_self.sampleStructure[d.patientId].length < _self.minTP) {
-                        _self.minTP = _self.sampleStructure[d.patientId].length;
+                    if (_self.sampleStructure[d].length < _self.minTP) {
+                        _self.minTP = _self.sampleStructure[d].length;
                     }
                 }
-                if (_self.sampleStructure[d.patientId].length > i) {
-                    patientSamples.push({patient: d.patientId, sample: _self.sampleStructure[d.patientId][i]})
+                if (_self.sampleStructure[d].length > i) {
+                    patientSamples.push({patient: d, sample: _self.sampleStructure[d][i]})
                 }
             });
             timepointStructure.push(patientSamples);
@@ -489,7 +490,7 @@ class RootStore {
             this.dataStore.update(this.patientOrderPerTimepoint);
         }
         else {
-            this.dataStore.initialize();
+            this.dataStore.initialize(this.patientOrderPerTimepoint);
         }
     }
 
@@ -505,8 +506,9 @@ class RootStore {
                 this.cbioAPI.getClinicalSampleData(this.study.studyId, data => {
                     this.createClinicalSampleMapping(data);
                     this.dataStore.initialize(patients.length);
+                    this.visStore.fitToScreenWidth();
                     let initialVariable = this.clinicalSampleCategories[0];
-                    this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample"));
+                    this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample","clinical"));
                     this.dataStore.globalPrimary = initialVariable.id;
                     this.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
                     this.parsed = true;

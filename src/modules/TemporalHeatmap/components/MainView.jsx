@@ -29,17 +29,11 @@ const MainView = observer(class MainView extends React.Component {
         this.handleGlobalTimeClick = this.handleGlobalTimeClick.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
-        this.setPlotWidth = this.setPlotWidth.bind(this);
         this.state = {
             highlightedVariable: '',
-            plotWidth: 700
         }
     }
 
-
-    setPlotWidth(width) {
-        this.setState({plotWidth: width});
-    }
 
     setHighlightedVariable(newHighlighted) {
         this.setState({highlightedVariable: newHighlighted});
@@ -101,9 +95,7 @@ const MainView = observer(class MainView extends React.Component {
 
                         </Col>
                         <Col lg={8} xs={7} md={7} style={{padding: 0}}>
-                            <Plot width={this.state.plotWidth}
-                                  setPlotWidth={this.setPlotWidth}
-                                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                            <Plot showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                                   visMap={this.props.visMap}
                                   store={this.props.store}
                                   transitionStore={this.props.transitionStore}
@@ -131,7 +123,7 @@ const MainView = observer(class MainView extends React.Component {
     getGlobalView() {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
         const globalPrimaryName = this.props.store.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
-        const axisHorizontalZoom = (300 - this.props.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
+        //const axisHorizontalZoom = (300 - this.props.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (
             <div>
                 <div className="view" id="timeline-view">
@@ -143,7 +135,7 @@ const MainView = observer(class MainView extends React.Component {
                                                 tooltipFunctions={this.props.tooltipFunctions}/>
 
                             <h5>{"Legend of " + globalPrimaryName}</h5>
-                            <Legend store={this.props.store} visMap={this.props.visMap}/>
+                            <Legend store={this.props.store} visMap={this.props.visMap} {...this.props.tooltipFunctions}/>
                         </Col>
                         <Col xs={1} md={1} style={{padding: 0, width: 55}}>
                             <GlobalTimeAxis store={this.props.store}
@@ -156,11 +148,8 @@ const MainView = observer(class MainView extends React.Component {
 
                             <GlobalBands store={this.props.store}
                                          visMap={this.props.visMap}//timeVar={this.props.store.rootStore.timeVar}
-                                         width={this.state.plotWidth / axisHorizontalZoom}
                                          maxTimeInDays={maxTime}/>
-                            <Plot width={this.state.plotWidth}
-                                  setPlotWidth={this.setPlotWidth}
-                                  visMap={this.props.visMap}
+                            <Plot visMap={this.props.visMap}
                                   store={this.props.store}
                                   transitionStore={this.props.transitionStore}
                                   tooltipFunctions={this.props.tooltipFunctions}/>
@@ -177,7 +166,7 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        this.props.visMap.setVisParameters(this.state.plotWidth, 300 - this.props.horizontalZoom, this.props.store.maxPartitions);
+        //this.props.visMap.setVisParameters(this.state.plotWidth, 300 - this.props.horizontalZoom, this.props.store.maxPartitions);
 
         let blockView = null;
         let timelineView = null;

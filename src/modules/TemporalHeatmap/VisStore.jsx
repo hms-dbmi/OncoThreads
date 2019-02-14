@@ -6,9 +6,7 @@ stores information about current visual parameters
  */
 class VisStore {
     constructor(rootStore) {
-        //width of rects in sampleTimepoints
         this.rootStore = rootStore;
-        this.sampleRectWidth = 10;
         //height of rects in a row which is primary
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
@@ -18,16 +16,27 @@ class VisStore {
         //gap between partitions in grouped timepoints
         this.partitionGap = 10;
         this.svgWidth = 700;
-        this.heatmapWidth=700;
-
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
+        this.fitToScreenWidth = this.fitToScreenWidth.bind(this);
+        this.fitToScreenHeight = this.fitToScreenHeight.bind(this);
         extendObservable(this, {
             transitionSpace: 100,
             timepointY: [],
             plotHeight: 700,
+            plotWidth: 700,
+            horizontalZoom: 0,
             transY: [],
             get svgHeight() {
                 return (this.timepointPositions.connection[this.timepointPositions.connection.length - 1] + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]));
+            },
+            get sampleRectWidth() {
+                return this.plotWidth / (300 - this.horizontalZoom) - this.gap
+            },
+            get heatmapWidth() {
+                return this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.gap) - this.gap;
+            },
+            get svgWidth() {
+                return this.heatmapWidth > this.plotWidth ? this.heatmapWidth + this.rootStore.dataStore.maxPartitions * this.partitionGap + this.sampleRectWidth : this.plotWidth;
             },
             get timepointPositions() {
                 let timepointPositions = {"timepoint": [], "connection": []};
@@ -44,13 +53,17 @@ class VisStore {
         });
         reaction(
             () => this.plotHeight,
-            length => this.fitToScreenHeight());
+            () => this.fitToScreenHeight());
     }
 
     setPlotY(y) {
         this.plotHeight = (window.innerHeight
             || document.documentElement.clientHeight
             || document.body.clientHeight) - y;
+    }
+
+    setPlotWidth(width) {
+        this.plotWidth = width;
     }
 
     fitToScreenHeight() {
@@ -64,7 +77,15 @@ class VisStore {
         if (transitionSpace > 30) {
             this.transitionSpace = transitionSpace
         }
-        else this.transitionSpace = 30;
+    }
+
+    fitToScreenWidth() {
+        this.horizontalZoom = 300 - (this.rootStore.dataStore.numberOfPatients < 300 ? this.rootStore.dataStore.numberOfPatients : 300);
+    }
+
+    setHorizontalZoom(zoomLevel) {
+        this.horizontalZoom = zoomLevel;
+
     }
 
     setTransitionSpace(transitionSpace) {
@@ -72,13 +93,12 @@ class VisStore {
     }
 
 
-    setVisParameters(plotWidth, zoom,maxPartitions) {
-        this.sampleRectWidth = plotWidth / zoom - this.gap;
-        this.heatmapWidth=this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.gap) - this.gap;
-        this.svgWidth = this.heatmapWidth > plotWidth ? this.heatmapWidth + maxPartitions * this.partitionGap + this.sampleRectWidth : plotWidth;
+    setVisParameters(plotWidth, zoom, maxPartitions) {
+        this.sampleRectWidth = this.plotWidth / zoom - this.gap;
+        this.heatmapWidth = this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.gap) - this.gap;
+        this.svgWidth = this.heatmapWidth > this.plotWidth ? this.heatmapWidth + maxPartitions * this.partitionGap + this.sampleRectWidth : plotWidth;
+        console.log(this.svgWidth, maxPartitions);
     }
-
-
 
 
     /**
@@ -99,10 +119,10 @@ class VisStore {
         const _self = this;
         let height = 0;
         let varCount = 0;
-        timepoint.heatmap.forEach(function (d, i) {
-            if (!d.isUndef || _self.rootStore.dataStore.showUndefined || d.variable === timepoint.primaryVariableId) {
+        this.rootStore.dataStore.variableStores[timepoint.type].currentVariables.forEach(function (d, i) {
+            if (!timepoint.heatmap[i].isUndef || _self.rootStore.dataStore.showUndefined || d === timepoint.primaryVariableId) {
                 varCount += 1;
-                if (d.variable === timepoint.primaryVariableId) {
+                if (d === timepoint.primaryVariableId) {
                     height += _self.primaryHeight;
                 }
                 else {

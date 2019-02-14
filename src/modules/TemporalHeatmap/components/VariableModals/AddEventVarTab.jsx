@@ -30,10 +30,8 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
     }
 
     handleSavedVariableAdd(variable) {
-        if (!(this.props.variableManagerStore.currentVariables.includes(variable))) {
-            this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(variable));
-            this.setState({addOrder: [...this.state.addOrder, variable]})
-        }
+        this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(variable));
+        this.setState({addOrder: [...this.state.addOrder, variable]})
     }
 
     /**

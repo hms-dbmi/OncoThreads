@@ -17,6 +17,7 @@ class VariableStore {
             //List of ids of currently displayed variables
             currentVariables: [],
             get fullCurrentVariables() {
+                console.log(this.currentVariables.map(d => this.referencedVariables[d]));
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             }
 
@@ -54,14 +55,19 @@ class VariableStore {
         this.childStore.updateTimepointStructure(structure, order, names);
         this.currentVariables.forEach(d => this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper))
     }
-    replaceAll(referencedVariables,currentVariables,primaryVariables){
-        this.referencedVariables=referencedVariables;
-        this.childStore.reset();
-        currentVariables.forEach(d=>{
-            this.childStore.addHeatmapRows(d,this.referencedVariables[d].mapper);
-        });
-        this.childStore.timepoints.forEach((d,i)=>{
+
+    replaceAll(referencedVariables, currentVariables, primaryVariables) {
+        this.childStore.timepoints.forEach((d, i) => {
             d.setPrimaryVariable(primaryVariables[i])
+        });
+        this.replaceVariables(referencedVariables, currentVariables);
+    }
+
+    replaceVariables(referencedVariables, currentVariables) {
+        this.referencedVariables = referencedVariables;
+        this.childStore.reset();
+        currentVariables.forEach(d => {
+            this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper);
         });
         this.currentVariables.replace(currentVariables);
     }
@@ -165,17 +171,17 @@ class VariableStore {
 
     addVariableToBeDisplayed(variable) {
         this.addVariableToBeReferenced(variable);
-        this.childStore.addHeatmapRows(variable.id,variable.mapper);
+        this.childStore.addHeatmapRows(variable.id, variable.mapper);
         if (!this.currentVariables.includes(variable.id)) {
             this.currentVariables.push(variable.id);
         }
     }
 
     addVariablesToBeDisplayed(variables) {
-        let currentVariables=this.currentVariables.slice();
+        let currentVariables = this.currentVariables.slice();
         variables.forEach(d => {
             this.addVariableToBeReferenced(d);
-            this.childStore.addHeatmapRows(d.id,d.mapper);
+            this.childStore.addHeatmapRows(d.id, d.mapper);
             if (!currentVariables.includes(d.id)) {
                 currentVariables.push(d.id);
             }
@@ -187,7 +193,7 @@ class VariableStore {
     replaceDisplayedVariable(oldId, newVariable) {
         if (!this.isReferenced(newVariable.id)) {
             this.childStore.removeHeatmapRows(oldId);
-            this.childStore.addHeatmapRows(newVariable.id,newVariable.mapper);
+            this.childStore.addHeatmapRows(newVariable.id, newVariable.mapper);
             this.referencedVariables[newVariable.id] = newVariable;
         }
         this.currentVariables[this.currentVariables.indexOf(oldId)] = newVariable.id;

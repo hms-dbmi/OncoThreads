@@ -1,6 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import TimelineRow from "./TimelineRow";
+import MapperCombine from "../../../MapperCombineFunctions";
 //import * as d3 from 'd3';
 
 /*
@@ -27,6 +28,18 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
         }
     }
 
+    filerEvents(variableId, events) {
+        let variable = this.props.store.variableStores.between.getById(variableId);
+        let filterMapper = {};
+        if (variable.datatype === "BINARY") {
+            filterMapper = variable.mapper;
+        }
+        if (variable.derived && variable.modificationType === "binaryCombine" && variable.modification.datatype === "STRING") {
+            filterMapper = MapperCombine.createBinaryCombinedMapper(variable.originalIds.map(d => this.props.store.variableStores.between.getById(d).mapper),
+                {operator: variable.modification.operator, datatype: "BINARY"}, []);
+        }
+        return events.filter((d) => filterMapper[d.sampleId]);
+    }
 
 
     getGlobalTimepointWithTransition() {
@@ -61,7 +74,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 opacity = 0.5;
                 color = _self.props.visMap.globalTimelineColors;
                 let events = _self.getAllEvents(row.variable, index, []);
-                events = events.filter((d) => _self.props.store.variableStores.between.referencedVariables[row.variable].mapper[d.sampleId]);
+                events = _self.filerEvents(row.variable, events);
                 rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}

@@ -19,6 +19,7 @@ import ModifyCategorical from "./ModifySingleVariable/ModifyCategorical";
 import ModifyContinuous from "./ModifySingleVariable/ModifyContinuous";
 import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
+import CombineModal from "./CombineVariables/CombineModal";
 
 const VariableTable = observer(class VariableTable extends React.Component {
 
@@ -31,7 +32,8 @@ const VariableTable = observer(class VariableTable extends React.Component {
             saveVariableIsOpen: false,
             currentVariable: '',
             derivedVariable: '',
-            callback: ''
+            combineVariables: [],
+            callback: '',
         };
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -55,7 +57,20 @@ const VariableTable = observer(class VariableTable extends React.Component {
                 this.props.variableManagerStore.replaceDisplayedVariable(originalVariable.id, newVariable);
             }
         });
+    }
 
+    combineVariables(variables, derivedVariable) {
+        this.openCombineModal(variables, derivedVariable, (newVariable,keep) => {
+            if (derivedVariable !== null) {
+                this.props.variableManagerStore.replaceDisplayedVariable(derivedVariable.id, newVariable);
+            }
+            else {
+                this.props.variableManagerStore.addVariableToBeDisplayed(newVariable);
+                   if(!keep){
+                    variables.forEach(d=>this.props.variableManagerStore.removeVariable(d.id));
+                }
+            }
+        })
     }
 
 
@@ -67,7 +82,8 @@ const VariableTable = observer(class VariableTable extends React.Component {
             modifyCategoricalIsOpen: false,
             modifyContinuousIsOpen: false,
             modifyBinaryIsOpen: false,
-            saveVariableIsOpen: false
+            saveVariableIsOpen: false,
+            combineVariablesIsOpen: false
         });
 
     }
@@ -90,6 +106,15 @@ const VariableTable = observer(class VariableTable extends React.Component {
         });
     }
 
+    openCombineModal(variables, derivedVariable, callback) {
+        this.setState({
+            combineVariables: variables,
+            derivedVariable: derivedVariable,
+            combineVariablesIsOpen: true,
+            callback: callback
+        })
+    }
+
     openSaveVariableModal(variable, callback) {
         this.setState({
             currentVariable: variable,
@@ -106,16 +131,22 @@ const VariableTable = observer(class VariableTable extends React.Component {
      */
     handleCogWheelClick(event, id) {
         let variable = this.props.variableManagerStore.getById(id);
-        let originalVariable;
-        let derivedVariable = null;
-        if (variable.derived && variable.originalIds.length === 1) {
-            originalVariable = this.props.variableManagerStore.getById(variable.originalIds[0]);
-            derivedVariable = variable;
+
+        if (variable.originalIds.length === 1) {
+            let originalVariable;
+            let derivedVariable = null;
+            if (variable.derived) {
+                originalVariable = this.props.variableManagerStore.getById(variable.originalIds[0]);
+                derivedVariable = variable;
+            }
+            else {
+                originalVariable = variable;
+            }
+            this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype);
         }
         else {
-            originalVariable = variable;
+            this.combineVariables(variable.originalIds.map(d=>this.props.variableManagerStore.getById(d)),variable);
         }
-        this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype);
     }
 
     removeVariable(variable) {
@@ -180,7 +211,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                     <td>
                         {fullVariable.datatype}
                     </td>
-                    <td>{fullVariable.name}</td>
+                    <td>{this.props.availableCategories.filter(d=>d.id===fullVariable.profile)[0].name}</td>
                     <td>
                         <FontAwesome onClick={(e) => this.handleCogWheelClick(e, d.id)}
                                      name="cog"/>
@@ -241,6 +272,13 @@ const VariableTable = observer(class VariableTable extends React.Component {
                                         callback={this.state.callback}
                                         closeModal={this.closeModal}/>
         }
+        else if (this.state.combineVariablesIsOpen) {
+            modal = <CombineModal modalIsOpen={this.state.combineVariablesIsOpen}
+                                  variables={this.state.combineVariables}
+                                  derivedVariable={this.state.derivedVariable}
+                                  callback={this.state.callback}
+                                  closeModal={this.closeModal}/>
+        }
         return (
             modal
         )
@@ -286,7 +324,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                 alert("Cannot combine numerical with non-numerical variables");
             }
             else {
-                //open combine modal
+                this.combineVariables(this.props.variableManagerStore.getSelectedVariables(), null);
             }
         }
         else {

@@ -21,22 +21,15 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
      * adds predefined variable
      * @param variable
      * @param category
-     * @param select
      */
-    handleVariableAdd(variable, category, select) {
-        if (select) {
-            if (!(this.props.variableManagerStore.currentVariables.includes(variable.id))) {
-                this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(variable.id, variable.variable, variable.datatype, variable.description, [], [], this.props.staticMappers[variable.id], category));
-                this.setState({addOrder: [...this.state.addOrder, variable.id]})
-            }
-        }
+    handleVariableAdd(variable, category) {
+        this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(variable.id, variable.variable, variable.datatype, variable.description, [], [], this.props.staticMappers[variable.id], category, category));
+        this.setState({addOrder: [...this.state.addOrder, variable.id]})
     }
 
-    handleSavedVariableAdd(variable) {
-        if (!(this.props.variableManagerStore.currentVariables.includes(variable))) {
-            this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(variable));
-            this.setState({addOrder: [...this.state.addOrder, variable]})
-        }
+    handleSavedVariableAdd(variableId) {
+        this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(variableId));
+        this.setState({addOrder: [...this.state.addOrder, variableId]})
     }
 
     /**
@@ -62,9 +55,14 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
     }
 
     render() {
-        let availableCategories = [...this.props.availableProfiles, ...this.props.mutationMappingTypes.map(d => {
-            return {id: d, name: "Mutation - " + d}
-        }), {id: "clinSample", name: "Clinical sample data"}, {id: "clinPatient", name: "Clinical patient data"}];
+        let availableCategories = [{id: "clinPatient", name: "Clinical patient data"}
+            , {id: "clinSample", name: "Clinical sample data"}
+            , ...this.props.mutationMappingTypes.map(d => {
+                return {id: d, name: "Mutation - " + d}
+            })
+            , ...this.props.availableProfiles.map(d => {
+                return {id: d.molecularProfileId, name: d.name}
+            })];
         return (
             <div>
                 <TimepointVariableSelector {...this.props}
@@ -74,7 +72,7 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
                                            removeVariable={this.removeVariable}
                                            handleGeneSelect={this.handleGeneSelect}
                                            currentVariables={this.props.variableManagerStore.currentVariables}
-                                            savedReferences={this.props.variableManagerStore.savedReferences}/>
+                                           savedReferences={this.props.variableManagerStore.savedReferences}/>
                 <VariableTable {...this.props} variableManagerStore={this.props.variableManagerStore}
                                addOrder={this.state.addOrder} availableCategories={availableCategories}
                                removeVariable={this.removeVariable}/>

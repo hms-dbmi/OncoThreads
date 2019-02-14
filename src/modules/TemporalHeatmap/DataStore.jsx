@@ -5,16 +5,17 @@ import VariableStore from "./VariableStore";
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
  */
 class DataStore {
-    constructor(rootStore, numPatients) {
+    constructor(rootStore) {
         this.rootStore = rootStore;
-        this.numberOfPatients = numPatients;
+        this.numberOfPatients = 300;
         this.variableStores = {
             sample: null,
             between: null
         };
-        this.timepoints = [];
+        //this.timepoints = [];
         //this.timelineStore=null;
         extendObservable(this, {
+            timepoints:[],
             selectedPatients: [],
             continuousRepresentation: 'gradient',
             globalPrimary: '',
@@ -23,25 +24,19 @@ class DataStore {
             transitionOn: false,
             advancedSelection: true,
             showUndefined: true,
-            get maxPartitions() {
-                let max = 0;
-                const _self = this;
-                this.timepoints.forEach(function (d, i) {
-                    if (d.isGrouped) {
-                        if (_self.timepoints[i].grouped.length > max) {
-                            max = _self.timepoints[i].grouped.length;
-                        }
-                    }
-                });
-                return max;
-            }
+            maxPartitions:0,
+
         });
         reaction(() => this.transitionOn, isOn =>
             this.combineTimepoints(isOn));
         this.regroupTimepoints = this.regroupTimepoints.bind(this);
 
     }
-
+    setMaxPartitions(numPartitions){
+        if(numPartitions>this.maxPartitions){
+           this.maxPartitions=numPartitions
+        }
+    }
     setGlobalPrimary(varId) {
         this.globalPrimary = varId;
     }

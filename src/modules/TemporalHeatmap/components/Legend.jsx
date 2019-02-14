@@ -227,7 +227,7 @@ const Legend = observer(class Legend extends React.Component {
                 if (d.variable === _self.props.highlightedVariable) {
                     highlightRect = _self.getHighlightRect(lineheight)
                 }
-                legend.push(<g key={d.variable} transform={transform}>{highlightRect}{legendEntries}</g>)
+                legend.push(<g key={d.id} transform={transform}>{highlightRect}{legendEntries}</g>)
             }
         });
         return legend

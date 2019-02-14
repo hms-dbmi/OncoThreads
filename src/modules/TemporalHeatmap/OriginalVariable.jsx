@@ -78,10 +78,10 @@ class OriginalVariable {
                 currRange= domain.map((d, i) => d3ScaleChromatic.interpolateGreys(i * step));
             }
             else if (this.datatype === "STRING") {
-                currRange= ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']
+                currRange= ColorScales.defaultCategoricalRange;
             }
             else if (this.datatype === "BINARY") {
-                currRange= ['#ffd92f', 'lightgray']
+                currRange= ColorScales.defaultBinaryRange;
             }
             else if (this.datatype === "NUMBER") {
                 let min = Math.min(...domain);

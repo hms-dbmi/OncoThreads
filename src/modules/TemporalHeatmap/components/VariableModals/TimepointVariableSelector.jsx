@@ -17,7 +17,6 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             showCheckBoxOptions: false,
         };
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
-        this.handleClinicalOptionSelect = this.handleClinicalOptionSelect.bind(this);
         this.handleSavedOptionSelect = this.handleSavedOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
@@ -27,15 +26,20 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
         this.addGenes = this.addGenes.bind(this);
     }
 
-    createOptions(){
-        let savedOptions=[];
+    createOptions() {
+        let savedOptions = [];
         this.props.savedReferences.forEach(d => {
             let variable = this.props.variableStore.getById(d);
             let lb = (
                 <div style={{textAlign: "left"}}
                      key={d}><b>{variable.name}</b>{": " + variable.description}
                 </div>);
-            savedOptions.push({value: variable.name + variable.description, label: lb, object: variable.id, type:"saved"})
+            savedOptions.push({
+                value: variable.name + variable.description,
+                label: lb,
+                object: variable.id,
+                type: "saved"
+            })
         });
         let sampleOptions = [];
         this.props.clinicalSampleCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
@@ -43,7 +47,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, type: "clinical"})
+            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, type: "clinSample"})
         });
         let patientOptions = [];
         this.props.clinicalPatientCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
@@ -51,9 +55,9 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, type: "clinical"})
+            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, type: "clinPatient"})
         });
-        return [{label: "Saved variables",options:savedOptions},
+        return [{label: "Saved variables", options: savedOptions},
             {label: "Sample-specific", options: sampleOptions},
             {label: "Patient-specific", options: patientOptions}];
 
@@ -64,24 +68,14 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
      * @param selectedOption
      */
     handleOptionSelect(selectedOption) {
-        if (!Array.isArray(selectedOption)) {
-            if (selectedOption.type === 'clinical') {
-                this.props.handleVariableAdd(selectedOption.object, selectedOption.profile, true)
-            }
-            else {
-                this.props.handleSavedVariableAdd(selectedOption.object);
-            }
+        if (selectedOption.type !== 'saved') {
+            this.props.handleVariableAdd(selectedOption.object, selectedOption.type)
+        }
+        else {
+            this.props.handleSavedVariableAdd(selectedOption.object);
         }
     }
 
-    /**
-     * handle selection of an option
-     * @param selectedOption
-     */
-    handleClinicalOptionSelect(selectedOption) {
-        this.props.handleVariableAdd(selectedOption.object, selectedOption.profile, true)
-
-    }
 
     /**
      * handle selection of an option
@@ -254,11 +248,10 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
     }
 
 
-
     render() {
         let formGroups = [];
         if (this.props.clinicalSampleCategories.length > 0 || this.props.clinicalPatientCategories.length > 0) {
-            formGroups.push(<FormGroup>
+            formGroups.push(<FormGroup key={"clinical"}>
                 <Col componentClass={ControlLabel} sm={2}>
                     Variables
                 </Col>
@@ -276,7 +269,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             </FormGroup>);
         }
         if (this.props.availableProfiles.length > 0) {
-            formGroups.push(<FormGroup>
+            formGroups.push(<FormGroup key={"genetic"}>
                 <Col componentClass={ControlLabel} sm={2}>
                     Find gene
                 </Col>
@@ -292,8 +285,8 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
         return (<div>
             <h4>Select Variable</h4>
             <Form horizontal>
-            {formGroups}
-        </Form>
+                {formGroups}
+            </Form>
             {this.state.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
         </div>)
     }
