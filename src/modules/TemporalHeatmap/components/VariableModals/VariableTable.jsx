@@ -60,14 +60,14 @@ const VariableTable = observer(class VariableTable extends React.Component {
     }
 
     combineVariables(variables, derivedVariable) {
-        this.openCombineModal(variables, derivedVariable, (newVariable,keep) => {
+        this.openCombineModal(variables, derivedVariable, (newVariable, keep) => {
             if (derivedVariable !== null) {
                 this.props.variableManagerStore.replaceDisplayedVariable(derivedVariable.id, newVariable);
             }
             else {
                 this.props.variableManagerStore.addVariableToBeDisplayed(newVariable);
-                   if(!keep){
-                    variables.forEach(d=>this.props.variableManagerStore.removeVariable(d.id));
+                if (!keep) {
+                    variables.forEach(d => this.props.variableManagerStore.removeVariable(d.id));
                 }
             }
         })
@@ -145,7 +145,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
             this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype);
         }
         else {
-            this.combineVariables(variable.originalIds.map(d=>this.props.variableManagerStore.getById(d)),variable);
+            this.combineVariables(variable.originalIds.map(d => this.props.variableManagerStore.getById(d)), variable);
         }
     }
 
@@ -211,7 +211,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                     <td>
                         {fullVariable.datatype}
                     </td>
-                    <td>{!fullVariable.derived?this.props.availableCategories.filter(d=>d.id===fullVariable.profile)[0].name:"Derived"}</td>
+                    <td>{!fullVariable.derived ? this.props.availableCategories.filter(d => d.id === fullVariable.profile)[0].name : "Derived"}</td>
                     <td>
                         <FontAwesome onClick={(e) => this.handleCogWheelClick(e, d.id)}
                                      name="cog"/>
@@ -306,22 +306,19 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     /**
      * Opens modal for combining selected variables
-     * TODO: implement combine modal
      */
     combineSelected() {
         let selectedVar = this.props.variableManagerStore.getSelectedVariables();
-        let isOfOneDatatype = true;
+        let isBinary = true;
         if (selectedVar.length > 1) {
-            let datatype = selectedVar[0].datatype;
             for (let i = 1; i < selectedVar.length; i++) {
-                if ((selectedVar[i].datatype !== "NUMBER" && datatype === "NUMBER") ||
-                    (selectedVar[i].datatype === "NUMBER" && datatype !== "NUMBER")) {
-                    isOfOneDatatype = false;
+                if (selectedVar[i].datatype !== "BINARY") {
+                    isBinary = false;
                     break;
                 }
             }
-            if (!isOfOneDatatype) {
-                alert("Cannot combine numerical with non-numerical variables");
+            if (!isBinary) {
+                alert("Please select two binary variables");
             }
             else {
                 this.combineVariables(this.props.variableManagerStore.getSelectedVariables(), null);

@@ -172,7 +172,6 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 currDomain.push(mapper[sample]);
             }
         }
-                console.log(modification,mapper,currDomain);
         return currDomain;
     }
 
