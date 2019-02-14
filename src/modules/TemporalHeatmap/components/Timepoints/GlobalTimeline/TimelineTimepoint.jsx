@@ -28,7 +28,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
         }
     }
 
-    filerEvents(variableId, events) {
+    filterEvents(variableId, events) {
         let variable = this.props.store.variableStores.between.getById(variableId);
         let filterMapper = {};
         if (variable.datatype === "BINARY") {
@@ -74,7 +74,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
                 opacity = 0.5;
                 color = _self.props.visMap.globalTimelineColors;
                 let events = _self.getAllEvents(row.variable, index, []);
-                events = _self.filerEvents(row.variable, events);
+                events = _self.filterEvents(row.variable, events);
                 rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}

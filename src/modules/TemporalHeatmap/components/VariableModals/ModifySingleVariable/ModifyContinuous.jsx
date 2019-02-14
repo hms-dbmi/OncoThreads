@@ -85,21 +85,23 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         if (bins.length !== 3) {
             isBinary = false;
         }
-        if (bins.length === this.state.bins.length) {
-            for (let i = 1; i < bins.length; i++) {
-                if (!binNames[i - 1].modified) {
-                    binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+        if(!isBinary) {
+            if (bins.length === this.state.bins.length) {
+                for (let i = 1; i < bins.length; i++) {
+                    if (!binNames[i - 1].modified) {
+                        binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+                    }
                 }
+                this.setState({bins: bins, binNames: binNames})
             }
-            this.setState({bins: bins, binNames: binNames})
-        }
-        else {
-            binNames = [];
-            for (let i = 1; i < bins.length; i++) {
-                binNames.push({
-                    name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
-                    modified: false
-                });
+            else {
+                binNames = [];
+                for (let i = 1; i < bins.length; i++) {
+                    binNames.push({
+                        name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
+                        modified: false
+                    });
+                }
             }
         }
         this.setState({bins: bins, binNames: binNames, isBinary: isBinary})
@@ -201,6 +203,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
     handleApply() {
         const newId = uuidv4();
         let modification = {
+            type: "continuousTransform",
             logTransform: this.state.isXLog ? Math.log10 : false, binning: this.state.bin ? {
                 bins: this.state.bins,
                 binNames: this.state.binNames
@@ -208,16 +211,16 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         };
         let returnVariable;
         if (this.state.bin) {
-            if(!this.state.isBinary) {
+            if (!this.state.isBinary) {
                 let binnedRange = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.state.binNames, this.state.bins);
-                returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]), this.props.variable.profile);
+                returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
             }
-            else{
-                returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, [], [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]), this.props.variable.profile);
+            else {
+                returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description + " (binned)", [this.props.variable.id], modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
             }
         }
         else if (this.state.isXLog) {
-            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]), this.props.variable.profile);
+            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], modification, this.state.colorRange, [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
         }
         else {
             returnVariable = this.props.variable;

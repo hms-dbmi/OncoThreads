@@ -264,23 +264,6 @@ class VariableManagerStore {
         return this.referencedVariables[id];
     }
 
-    /**
-     * check if a variable is referenced (is in originalVariables)
-     * @param id
-     * @returns {boolean}
-     */
-    isReferenced(id) {
-        return id in this.referencedVariables;
-    }
-
-    /**
-     * check if a variable is displayed (is in currentVariables)
-     * @param id
-     * @returns {boolean}
-     */
-    isDisplayed(id) {
-        return this.currentVariables.includes(id);
-    }
 
     /**
      * gets the index of a variable in current variables (-1 if not contained)

@@ -1,4 +1,5 @@
 import {extendObservable} from "mobx";
+import MapperCombine from "./MapperCombineFunctions";
 
 /*
 stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -40,13 +41,21 @@ class TimelineStore {
     changeEventTimelineData(variableIds) {
         this.eventTimeline = variableIds.map(variableId => {
             let variable = this.rootStore.dataStore.variableStores.between.referencedVariables[variableId];
-            return ({variableId: variable.id, variableName: variable.name, events: this.getFilteredEvents(variable)});
+            return ({variableId: variable.id, variableName: variable.name, events: this.filterEvents(variable)});
         });
         console.log(this.eventTimeline);
     }
 
-    getFilteredEvents(variable) {
-        return (this.getAllEvents(variable, []).filter(d => variable.mapper[d.sampleId]));
+    filterEvents(variable, events) {
+        let filterMapper = {};
+        if (variable.datatype === "BINARY") {
+            filterMapper = variable.mapper;
+        }
+        if (variable.derived && variable.modificationType === "binaryCombine" && variable.modification.datatype === "STRING") {
+            filterMapper = MapperCombine.createBinaryCombinedMapper(variable.originalIds.map(d => this.rootStore.dataStore.variableStores.between.getById(d).mapper),
+                {operator: variable.modification.operator, datatype: "BINARY"}, []);
+        }
+        return events.filter((d) => filterMapper[d.sampleId]);
     }
 
     getAllEvents(variable, array) {

@@ -157,7 +157,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
     addGenes() {
         const mappingTypes = this.state.mutationOptions.filter(d => d.selected).map(d => d.id);
         const profiles = this.state.molecularOptions.filter(d => d.selected).map(d => d.profile);
-        this.props.molProfileMapping.getMultipleProfiles(profiles, mappingTypes).forEach(d => this.props.handleGeneSelect(d));
+        this.props.handleGeneSelect(this.props.molProfileMapping.getMultipleProfiles(profiles, mappingTypes));
         this.setState({geneListString: "", showCheckBoxOptions: false});
     }
 

@@ -3,18 +3,17 @@ import {extendObservable} from "mobx";
 import * as d3ScaleChromatic from "d3-scale-chromatic";
 
 class DerivedVariable {
-    constructor(id, name, datatype, description, originalIds, modificationType, modification, range, domain, mapper, profile) {
+    constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper) {
         this.id = id;
         this.name = name;
         this.datatype = datatype;
-        this.type = "derived";
         this.derived = true;
         this.description = description;
         this.originalIds = originalIds;
-        this.modificationType = modificationType;
         this.modification = modification;
         this.mapper = mapper;
-        this.profile = profile;
+        this.type = "derived";
+        this.profile = "derived";
         this.referenced = 0;
         extendObservable(this,
             this.initializeObservable(domain, range))

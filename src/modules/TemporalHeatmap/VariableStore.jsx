@@ -17,7 +17,6 @@ class VariableStore {
             //List of ids of currently displayed variables
             currentVariables: [],
             get fullCurrentVariables() {
-                console.log(this.currentVariables.map(d => this.referencedVariables[d]));
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             }
 

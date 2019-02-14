@@ -47,11 +47,15 @@ const AddTimepointVarTab = observer(class AddVarModal extends React.Component {
 
     /**
      * handles adding the selected genes
-     * @param variable
+     * @param variables
      */
-    handleGeneSelect(variable) {
-        this.props.variableManagerStore.addVariableToBeDisplayed(variable);
-        this.setState({addOrder: [...this.state.addOrder, variable.id]});
+    handleGeneSelect(variables) {
+        variables.forEach(variable => {
+            this.props.variableManagerStore.addVariableToBeDisplayed(variable);
+            this.props.variableManagerStore.toggleSelected(variable.id);
+            this.setState({addOrder: [...this.state.addOrder, variable.id]});
+        })
+
     }
 
     render() {

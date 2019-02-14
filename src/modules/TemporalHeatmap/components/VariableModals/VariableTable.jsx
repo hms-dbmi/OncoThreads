@@ -211,7 +211,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                     <td>
                         {fullVariable.datatype}
                     </td>
-                    <td>{this.props.availableCategories.filter(d=>d.id===fullVariable.profile)[0].name}</td>
+                    <td>{!fullVariable.derived?this.props.availableCategories.filter(d=>d.id===fullVariable.profile)[0].name:"Derived"}</td>
                     <td>
                         <FontAwesome onClick={(e) => this.handleCogWheelClick(e, d.id)}
                                      name="cog"/>

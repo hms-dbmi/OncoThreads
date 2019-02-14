@@ -17,7 +17,7 @@ class TransitionStore {
                 this.rootStore.transitionStructure.forEach(function (d, i) {
                     let variableData = {};
                     d.forEach(function (f) {
-                        variableData[f.patient] = _self.rootStore.staticMappers.timeGapMapping[f.sample];
+                        variableData[f.patient] = _self.rootStore.staticMappers[rootStore.timeDistanceId][f.sample];
                     });
                     timeGapStructure.push(variableData);
                 });

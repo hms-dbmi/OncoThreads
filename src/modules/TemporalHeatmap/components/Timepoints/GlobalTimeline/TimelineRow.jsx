@@ -14,7 +14,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
     }
 
     handleClick(patient) {
-        this.props.selectPatient(patient)
+        this.props.store.handlePatientSelection(patient)
     }
 
     getRow() {

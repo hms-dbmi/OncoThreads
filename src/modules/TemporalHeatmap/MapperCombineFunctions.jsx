@@ -1,12 +1,15 @@
 class MapperCombine {
-    static getModificationMapper(modificationType, modification, mappers) {
+    static getModificationMapper(modification, mappers) {
         let mapper;
-        switch (modificationType) {
+        switch (modification.type) {
             case "binaryCombine":
                 mapper = MapperCombine.createBinaryCombinedMapper(mappers, modification);
                 break;
             case "modifyCategorical":
-                mapper = MapperCombine.createModifyCategoriesMapper(mappers[0], modification);
+                mapper = MapperCombine.createModifyCategoriesMapper(mappers[0], modification.mapping);
+                break;
+            case "convertBinary":
+                mapper=MapperCombine.createModifyCategoriesMapper(mappers[0],modification.mapping);
                 break;
             default:
                 let intermedMapper = {};
@@ -49,7 +52,7 @@ class MapperCombine {
         return newMapper
     }
 
-    static createBinaryCombinedMapper(mappers, modification, names) {
+    static createBinaryCombinedMapper(mappers, modification) {
         let newMapper = {};
         for (let entry in mappers[0]) {
             if (modification.operator === "or") {
@@ -68,7 +71,7 @@ class MapperCombine {
                         let categories = [];
                         for (let i = 0; i < mappers.length; i++) {
                             if (mappers[i][entry]) {
-                                categories.push(names[i]);
+                                categories.push(modification.variableNames[i]);
                             }
                         }
                         let result = "";

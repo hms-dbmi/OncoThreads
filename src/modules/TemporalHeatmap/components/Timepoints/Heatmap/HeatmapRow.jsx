@@ -38,7 +38,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
             if(_self.props.currVar.datatype==="NUMBER"){
                 str=Math.round(d.value*100)/100;
             }
-            else if (_self.props.currVar.derived && _self.props.currVar.datatype === "ORDINAL" && _self.props.currVar.modificationType === "continuousTransform") {
+            else if (_self.props.currVar.derived && _self.props.currVar.datatype === "ORDINAL" && _self.props.currVar.modification.type === "continuousTransform") {
                 let ind = _self.props.currVar.modification.binning.binNames.map(d => d.name).indexOf(d.value);
                 str=d.value;
                 if (_self.props.currVar.modification.binning.binNames[ind].modified) {

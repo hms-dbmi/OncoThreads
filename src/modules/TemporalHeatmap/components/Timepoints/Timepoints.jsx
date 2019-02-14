@@ -14,7 +14,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
         let timepoints = [];
         this.props.store.timepoints.forEach(function (d, i) {
             let rectWidth;
-            //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
+            //check the type of the timepoint to get the correct width of the heatmap rectangles
             if (d.type === "between") {
                 rectWidth = _self.props.visMap.sampleRectWidth / 2;
             }
@@ -120,7 +120,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         });
 
-
+        /*
         let rectWidth;
         //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
         //if (_self.props.store.timepoints[i].type === "between") {
@@ -153,10 +153,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
             }
 
             //}
-            /*else{
-                k=-1;
-                tod.push(k);
-            } */
+
 
         });
 
@@ -187,12 +184,10 @@ const Timepoints = observer(class Timepoints extends React.Component {
         </g>);
         globalIndex++;
         //}
+        */
         return timepoints;
     }
 
-    comparePatientOrder(order, p, q) {
-        return order.indexOf(p.patientId) < order.indexOf(q.patientId) ? -1 : 1;
-    }
 
     getTreatmentTimepoints() {
         const _self = this;
@@ -318,7 +313,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         //new code for time of death
 
-
+        /*
         let rectWidth;
         let count, ht;
 
@@ -336,22 +331,6 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
         //if(_self.props.store.timepoints[i].primaryVariable.datatype!=="NUMBER"){
         //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-        /*if (_self.props.store.timepoints[0].type === "between") {
-
-            transFlag = true;
-            //  return timepoints;
-            //}
-            rectWidth = _self.props.visMap.sampleRectWidth / 2;
-
-
-            //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
-
-            transform = "translate(0, 0)";
-
-
-
-            //arr;
-        }*/
 
 
         //else {
@@ -443,6 +422,7 @@ const Timepoints = observer(class Timepoints extends React.Component {
 
             globalIndex++;
         }
+        */
 
 
         return timepoints;

@@ -102,7 +102,7 @@ class RootStore {
                         max = this.sampleTimelineMap[sample].startNumberOfDaysSinceDiagnosis;
                     }
                 }
-                max=Math.max(max,Math.max(...this.survivalEvents.map(d=>d.date)));
+                //max=Math.max(max,Math.max(...this.survivalEvents.map(d=>d.date)));
                 return max;
             }
 
@@ -596,7 +596,7 @@ class RootStore {
         this.sampleStructure = sampleStructure;
         this.timepointStructure = timepointStructure;
         this.getEventAttributes(events, excludeDates);
-        this.staticMappers["timeGapMapping"] = this.createTimeGapMapping(patients);
+        this.staticMappers[this.timeDistanceId] = this.createTimeGapMapping(patients);
     }
 
 

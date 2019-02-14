@@ -20,7 +20,6 @@ const CombineModal = observer(class CombineModal extends React.Component {
         this.setCurrentVarCategories = this.setCurrentVarCategories.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
-        this.getMapper = this.getMapper.bind(this);
 
     }
 
@@ -31,7 +30,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
     getModificationType() {
         let modificationType;
         if (this.props.derivedVariable !== null) {
-            modificationType = this.props.derivedVariable.modificationType;
+            modificationType = this.props.derivedVariable.modification.type;
         }
         else {
             if (this.props.variables.filter(d => d.datatype === "BINARY").length === this.props.variables.length) {
@@ -49,7 +48,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
 
     getInitialState() {
         let name;
-        let modification = {operator: "", datatype: ""};
+        let modification = {type: this.modificationType, operator: "", datatype: ""};
         let nameChanged = false;
         let variableRange = [];
         let keep = true;
@@ -62,7 +61,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             variableRange = this.props.derivedVariable.range;
             ordinal = this.props.derivedVariable.datatype === "ORDINAL";
             if (this.props.derivedVariable.modification.datatype === "STRING") {
-                currentVarCategories=this.getCurrentDataOfDerivedVariable();
+                currentVarCategories = this.getCurrentDataOfDerivedVariable();
             }
         }
         else {
@@ -90,8 +89,8 @@ const CombineModal = observer(class CombineModal extends React.Component {
     getCurrentDataOfDerivedVariable() {
         let currentVarCategories = [];
         this.props.derivedVariable.domain.forEach((d, i) => {
-            for (let key in this.props.derivedVariable.modification.categoryMapping) {
-                if (this.props.derivedVariable.modification.categoryMapping[key] === d) {
+            for (let key in this.props.derivedVariable.modification.mapping) {
+                if (this.props.derivedVariable.modification.mapping[key] === d) {
                     if (!(currentVarCategories.map(d => d.name).includes(d))) {
                         currentVarCategories.push({
                             selected: false,
@@ -133,6 +132,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
     setModification(modification) {
         let currentVarCategories = [];
         let colors = [];
+        modification.type=this.modificationType;
         if (modification.datatype === "STRING") {
             if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.datatype === "STRING") {
                 colors = this.props.derivedVariable.range;
@@ -140,6 +140,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             else {
                 colors = ColorScales.defaultCategoricalRange;
             }
+            modification.variableNames = this.props.variables.map(d => d.name);
             currentVarCategories = this.createCurrentCategoryData(modification, colors);
         }
         else {
@@ -157,21 +158,6 @@ const CombineModal = observer(class CombineModal extends React.Component {
         });
     }
 
-    /**
-     * returns a mapper for a modification
-     * @param modification
-     */
-    getMapper(modification) {
-        let mapper = {};
-        if (this.modificationType === "binaryCombine") {
-            mapper = MapperCombine.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), modification, this.props.variables.map(d => d.name));
-        }
-        else if (this.modificationType === "categoryCombine") {
-        }
-        else if (this.modificationType === "numberCombine") {
-        }
-        return mapper;
-    }
 
     /**
      * returns the domain of the current mapper
@@ -180,12 +166,13 @@ const CombineModal = observer(class CombineModal extends React.Component {
      */
     getDomain(modification) {
         let currDomain = [];
-        let mapper = this.getMapper(modification);
+        let mapper = MapperCombine.getModificationMapper(modification, this.props.variables.map(d => d.mapper));
         for (let sample in mapper) {
             if (!(currDomain.includes(mapper[sample]))) {
                 currDomain.push(mapper[sample]);
             }
         }
+                console.log(modification,mapper,currDomain);
         return currDomain;
     }
 
@@ -214,7 +201,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
         this.setState({
             currentVarCategories: currentVarCategories,
             variableRange: range,
-            modification: {operator: "or", datatype: "STRING", categoryMapping: categoryMapping}
+            modification: {type: this.modificationType, operator: "or", datatype: "STRING", mapping: categoryMapping}
         });
     }
 
@@ -231,7 +218,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             return <BinaryCombine setModification={this.setModification}
                                   ordinal={this.state.ordinal}
                                   modification={this.state.modification}
-                                  mapper={this.getMapper(this.state.modification)}
+                                  mapper={MapperCombine.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper))}
                                   variableRange={this.state.variableRange}
                                   variableDomain={this.getDomain(this.state.modification)}
                                   currentVarCategories={this.state.currentVarCategories}
@@ -244,7 +231,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
 
     handleApply() {
         let dataType, description;
-        let mapper = this.getMapper(this.state.modification);
+        let mapper = MapperCombine.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper));
         if (this.modificationType === "binaryCombine") {
             if (this.state.modification.datatype === "BINARY") {
                 dataType = "BINARY";
@@ -258,8 +245,8 @@ const CombineModal = observer(class CombineModal extends React.Component {
                     dataType = "STRING";
                 }
                 description = "Binary combination of " + this.props.variables.map(d => d.name);
-                if (this.state.modification.categoryMapping !== null) {
-                    mapper = MapperCombine.createModifyCategoriesMapper(mapper, this.state.modification.categoryMapping);
+                if (this.state.modification.mapping !== null) {
+                    mapper = MapperCombine.createModifyCategoriesMapper(mapper, this.state.modification.mapping);
                 }
             }
         }
@@ -273,7 +260,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             description = "Numerical combination of " + this.props.variables.map(d => d.name);
 
         }
-        this.props.callback(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.modificationType, this.state.modification, this.state.variableRange, [], mapper, this.props.variables[0].profile,this.props.variables[0].type), this.state.keep);
+        this.props.callback(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper), this.state.keep);
         this.props.closeModal();
     }
 

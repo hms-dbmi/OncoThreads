@@ -60,24 +60,25 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         handleBinChange(bins) {
             let isBinary = this.state.isBinary;
             let binNames = this.state.binNames.slice();
-            console.log(binNames);
             if (bins.length !== 3) {
                 isBinary = false;
             }
-            if (bins.length === this.state.bins.length) {
-                for (let i = 1; i < bins.length; i++) {
-                    if (!binNames[i - 1].modified) {
-                        binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+            if(!isBinary) {
+                if (bins.length === this.state.bins.length) {
+                    for (let i = 1; i < bins.length; i++) {
+                        if (!binNames[i - 1].modified) {
+                            binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+                        }
                     }
                 }
-            }
-            else {
-                binNames = [];
-                for (let i = 1; i < bins.length; i++) {
-                    binNames.push({
-                        name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
-                        modified: false
-                    });
+                else {
+                    binNames = [];
+                    for (let i = 1; i < bins.length; i++) {
+                        binNames.push({
+                            name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
+                            modified: false
+                        });
+                    }
                 }
             }
             this.setState({bins: bins, binNames: binNames, isBinary: isBinary})

@@ -20,7 +20,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                 convertBinary: props.derivedVariable === null ? false : props.derivedVariable.datatype === "BINARY",
                 currentData: this.createCurrentCategoryData(),
                 binaryMapping: this.createBinaryMapping(),
-                binaryColors: props.derivedVariable !== null && props.derivedVariable.modificationType === "convertBinary" ? props.derivedVariable.range : ColorScales.defaultBinaryRange,
+                binaryColors: props.derivedVariable !== null && props.derivedVariable.modification.type === "convertBinary" ? props.derivedVariable.range : ColorScales.defaultBinaryRange,
                 name: props.derivedVariable !== null ? props.derivedVariable.name : props.variable.name,
                 ordinal: props.derivedVariable !== null ? props.derivedVariable.datatype === "ORDINAL" : false,
             };
@@ -62,7 +62,8 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             const datatype = this.state.ordinal ? "ORDINAL" : "STRING";
             const range = this.state.currentData.map(d => d.color);
             const domain = this.state.currentData.map(d => d.name);
-            returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id], "modifyCategorical", categoryMapping, range, domain, MapperCombine.getModificationMapper("modifyCategorical", categoryMapping, [this.props.variable.mapper]), this.props.variable.profile);
+            let modification={type: "modifyCategorical",mapping: categoryMapping};
+            returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id],modification, range, domain, MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
             if (this.state.ordinal || this.categoriesChanged(returnVariable)) {
                 if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
                     returnVariable.name = this.state.name + "_MODIFIED";
@@ -75,7 +76,8 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         }
         else {
             let newId = uuidv4();
-            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], "convertBinary", this.state.binaryMapping, this.state.binaryColors, [], MapperCombine.getModificationMapper("modifyCategorical", this.state.binaryMapping, [this.props.variable.mapper]), this.props.variable.profile);
+            let modification={type:"convertBinary",mapping: this.state.binaryMapping};
+            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], modification, this.state.binaryColors, [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
             if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
                 returnVariable.name = this.state.name + "_MODIFIED";
             }
@@ -102,10 +104,10 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      */
     createCurrentCategoryData() {
         let currentData = [];
-        if (this.props.derivedVariable !== null && this.props.derivedVariable.modificationType !== "convertBinary") {
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.type !== "convertBinary") {
             this.props.derivedVariable.domain.forEach((d, i) => {
-                for (let key in this.props.derivedVariable.modification) {
-                    if (this.props.derivedVariable.modification[key] === d) {
+                for (let key in this.props.derivedVariable.modification.mapping) {
+                    if (this.props.derivedVariable.modification.mapping[key] === d) {
                         if (!(currentData.map(d => d.name).includes(d))) {
                             currentData.push({
                                 selected: false,
@@ -134,8 +136,8 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
 
     createBinaryMapping() {
         let binaryMapping = {};
-        if (this.props.derivedVariable !== null && this.props.derivedVariable.modificationType === "convertBinary") {
-            binaryMapping = this.props.derivedVariable.modification;
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.type === "convertBinary") {
+            binaryMapping = this.props.derivedVariable.modification.mapping;
         }
         else {
             this.props.variable.domain.forEach(d => binaryMapping[d] = true);

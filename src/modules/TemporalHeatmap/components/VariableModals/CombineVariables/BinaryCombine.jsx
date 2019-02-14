@@ -58,7 +58,7 @@ const BinaryCombine = observer(class BinaryCombine extends React.Component {
                 <Radio onChange={() => this.props.setModification({
                     operator: "or",
                     datatype: "STRING",
-                    categoryMapping: null
+                    mapping: null
                 })}
                        checked={this.props.modification.operator === "or" && this.props.modification.datatype === "STRING"}
                        name="binaryCombine">
