@@ -98,7 +98,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         else if (this.props.store.rootStore.timeVar === "365") {
             timeV = this.props.maxTimeInDays / 365;
         }
-        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.height - 35]).nice();
+        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.visMap.svgHeight - 35]).nice();
 
 
         const yAxis = d3.axisLeft().scale(y);
@@ -117,7 +117,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .attr("class", "axisLabel")
             .attr("transform", "rotate(-90)")
             .attr("y", -50)
-            .attr("x", -1 * this.props.height / 4)
+            .attr("x", -1 * this.props.visMap.svgHeight / 4)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
             .style("font-family", "times")
@@ -198,7 +198,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
         return (
             <div>
-                <svg height={this.props.height} width={this.props.width}>
+                <svg height={this.props.visMap.svgHeight} width={this.props.width}>
                     <g className="axisGlobal" transform="translate(50, 25)">
                     </g>
 

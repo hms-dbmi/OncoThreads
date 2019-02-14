@@ -2,11 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import EventVariableSelector from "./EventVariableSelector";
 import VariableTable from "./VariableTable";
-import UndoRedoStore from "../../UndoRedoStore";
-import VariableManagerStore from "./VariableManagerStore";
 import OriginalVariable from "../../OriginalVariable";
-import EventVariable from "../../EventVariable";
-import {toJS} from "mobx";
 
 
 const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
@@ -16,8 +12,8 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
             addOrder: props.currentVariables.slice()
 
         };
-        this.variableManagerStore = new VariableManagerStore(UndoRedoStore.serializeVariables(props.referencedVariables), props.currentVariables.slice());
         this.addEventVariable = this.addEventVariable.bind(this);
+        this.handleSavedVariableAdd = this.handleSavedVariableAdd.bind(this);
         this.addTimepointDistance = this.addTimepointDistance.bind(this);
         this.removeVariable = this.removeVariable.bind(this);
     }
@@ -28,9 +24,14 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
      * @param eventCategory
      */
     addEventVariable(event, eventCategory) {
-        this.variableManagerStore.addVariableToBeDisplayed(new EventVariable(event.id, event.name, eventCategory, event.eventType, [], this.props.store.getSampleEventMapping(eventCategory, event)));
-        this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables);
+        this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(event.id, event.name, "BINARY", "Indicates if event: \"" + event.name + "\" has happened between two timepoints", [], [], this.props.store.getSampleEventMapping(eventCategory, event), eventCategory, "event"));
+        //this.props.variableManagerStore.addVariableToBeDisplayed(new EventVariable(event.id, event.name, eventCategory, event.eventType, [], this.props.store.getSampleEventMapping(eventCategory, event)));
         this.setState({addOrder: [...this.state.addOrder, event.id]})
+    }
+
+    handleSavedVariableAdd(variable) {
+        this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(variable));
+        this.setState({addOrder: [...this.state.addOrder, variable]})
     }
 
     /**
@@ -38,8 +39,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
      * @param timepointDistance
      */
     addTimepointDistance(timepointDistance) {
-        this.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(timepointDistance.id, timepointDistance.name, timepointDistance.datatype, timepointDistance.description, [], [], this.props.staticMappers[timepointDistance.id], "Computed"));
-        this.props.setData(this.variableManagerStore.currentVariables, this.variableManagerStore.referencedVariables);
+        this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(timepointDistance.id, timepointDistance.name, timepointDistance.datatype, timepointDistance.description, [], [], this.props.staticMappers[timepointDistance.id], "Computed", false));
         this.setState({addOrder: [...this.state.addOrder, timepointDistance.id]})
 
     }
@@ -49,13 +49,12 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
      * @param variableId
      */
     removeVariable(variableId) {
-        this.variableManagerStore.removeVariable(variableId);
+        this.props.variableManagerStore.removeVariable(variableId);
         if (this.state.addOrder.includes(variableId)) {
             let addOrder = this.state.addOrder.slice();
-            addOrder.splice(this.addOrder.indexOf(variableId), 1);
+            addOrder.splice(addOrder.indexOf(variableId), 1);
             this.setState({addOrder: addOrder})
         }
-        this.props.setData(toJS(this.variableManagerStore.currentVariables), this.variableManagerStore.referencedVariables);
     }
 
     static toTitleCase(str) {
@@ -65,7 +64,7 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
     }
 
     render() {
-        let categories = [...this.props.eventCategories.filter(d=>d!=="SPECIMEN").map(d => {
+        let categories = [...this.props.eventCategories.filter(d => d !== "SPECIMEN").map(d => {
             return {id: d, name: AddEventVarTab.toTitleCase(d)}
         }), {id: "Computed", name: "Computed"}];
         return (
@@ -74,10 +73,13 @@ const AddEventVarTab = observer(class AddEventVarTab extends React.Component {
                                        eventCategories={categories}
                                        addTimepointDistance={this.addTimepointDistance}
                                        addEventVariable={this.addEventVariable}
+                                       handleSavedVariableAdd={this.handleSavedVariableAdd}
                                        removeVariable={this.removeVariable}
-                                       currentVariables={this.variableManagerStore.currentVariables}/>
-                <VariableTable {...this.props} variableManagerStore={this.variableManagerStore}
-                               addOrder={this.state.addOrder} availableCategories={categories}/>
+                                       currentVariables={this.props.variableManagerStore.currentVariables}
+                                       savedReferences={this.props.variableManagerStore.savedReferences}/>
+                <VariableTable {...this.props} variableManagerStore={this.props.variableManagerStore}
+                               addOrder={this.state.addOrder} availableCategories={categories}
+                               removeVariable={this.removeVariable}/>
             </div>
 
         )

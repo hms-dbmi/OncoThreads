@@ -23,12 +23,6 @@ const Plot = observer(class Plot extends React.Component {
         window.addEventListener("resize", this.updateDimensions);
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.sidebarVisible !== prevProps.sidebarVisible) {
-            this.updateDimensions();
-        }
-    }
-
     /**
      * Remove event listener
      */
@@ -37,7 +31,7 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     updateDimensions() {
-        this.props.setPlotWidth(this.refs.plot.parentNode.getBoundingClientRect().width);
+        this.props.visMap.setPlotWidth(this.refs.plot.parentNode.getBoundingClientRect().width);
     }
 
     /**
@@ -47,7 +41,7 @@ const Plot = observer(class Plot extends React.Component {
      * @returns any[] scales
      */
     createSampleHeatMapScales(w, rectWidth) {
-        return this.props.timepoints.map(function (d) {
+        return this.props.store.timepoints.map(function (d) {
             return d3.scalePoint()
                 .domain(d.heatmapOrder)
                 .range([0, w - rectWidth]);
@@ -69,34 +63,25 @@ const Plot = observer(class Plot extends React.Component {
     }
 
     render() {
-        this.props.visMap.setSampleRectWidth((this.props.width / this.props.horizontalZoom) - this.props.visMap.gap);
-        const heatmapWidth = this.props.store.numberOfPatients * (this.props.visMap.sampleRectWidth + this.props.visMap.gap) - this.props.visMap.gap;
-        const svgWidth = heatmapWidth > this.props.width ? heatmapWidth + (this.props.store.maxPartitions) * this.props.visMap.partitionGap + this.props.visMap.sampleRectWidth : this.props.width;
-        const sampleHeatmapScales = this.createSampleHeatMapScales(heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.width - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.visMap.heatmapWidth, this.props.visMap.sampleRectWidth);
+        const groupScale = this.createGroupScale(this.props.visMap.plotWidth - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
-        const max = this.props.store.rootStore.actualTimeLine
-            .map(yPositions => yPositions.reduce((next, max) => next > max ? next : max, 0))
-            .reduce((next, max) => next > max ? next : max, 0);
-        const timeScale = Plot.createTimeScale(this.props.height - this.props.visMap.primaryHeight * 2, 0, max);
+        const timeScale = Plot.createTimeScale(this.props.visMap.svgHeight - this.props.visMap.primaryHeight * 2, 0, this.props.store.rootStore.maxTimeInDays);
         return (
             <div ref="plot" className="scrollableX">
-                <svg width={svgWidth} height={this.props.height}>
+                <svg width={this.props.visMap.svgWidth} height={this.props.visMap.svgHeight}>
                     <g transform={transform}>
-                        <Transitions {...this.props} transitionData={this.props.transitionStore.transitionData}
-                                     timepointData={this.props.store.timepoints}
-                                     realTime={this.props.store.realTime}
-                                     globalTime={this.props.store.globalTime}
-                                     transitionOn={this.props.store.transitionOn}
-                                     yPositions={this.props.transY}
-                                     allYPositions={this.props.store.rootStore.actualTimeLine}
-                                     groupScale={groupScale}
+                        <Transitions groupScale={groupScale}
                                      heatmapScales={sampleHeatmapScales}
                                      timeScale={timeScale}
-                                     height={this.props.transitionSpace}/>
-                        <Timepoints {...this.props}
-                                    allYPositions={this.props.store.rootStore.actualTimeLine}
-                                    yPositions={this.props.timepointY}
+                                     tooltipFunctions={this.props.tooltipFunctions}
+                                     visMap={this.props.visMap}
+                                     store={this.props.store}
+                                     transitionStore={this.props.transitionStore}/>
+                        <Timepoints visMap={this.props.visMap}
+                                    store={this.props.store}
+                                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                    tooltipFunctions={this.props.tooltipFunctions}
                                     groupScale={groupScale}
                                     timeScale={timeScale}
                                     heatmapScales={sampleHeatmapScales}/>

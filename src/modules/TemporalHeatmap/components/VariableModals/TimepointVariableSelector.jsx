@@ -10,58 +10,57 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
     constructor(props) {
         super(props);
         this.state = {
-            geneListString:"",
+            geneListString: "",
             selectionType: "clinical",
             mutationOptions: [],
             molecularOptions: [],
             showCheckBoxOptions: false,
         };
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
+        this.handleSavedOptionSelect = this.handleSavedOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
-        this.handleCategorySelect = this.handleCategorySelect.bind(this);
         this.updateMutationCheckBoxOptions = this.updateMutationCheckBoxOptions.bind(this);
         this.updateMolecularCheckBoxOptions = this.updateMolecularCheckBoxOptions.bind(this);
         this.addGenes = this.addGenes.bind(this);
     }
 
-
-    /**
-     * creates a searchable list of clinical attributes
-     * @returns {Array}
-     */
     createOptions() {
+        let savedOptions = [];
+        this.props.savedReferences.forEach(d => {
+            let variable = this.props.variableStore.getById(d);
+            let lb = (
+                <div style={{textAlign: "left"}}
+                     key={d}><b>{variable.name}</b>{": " + variable.description}
+                </div>);
+            savedOptions.push({
+                value: variable.name + variable.description,
+                label: lb,
+                object: variable.id,
+                type: "saved"
+            })
+        });
         let sampleOptions = [];
-        this.props.clinicalSampleCategories.filter(d=>!this.props.currentVariables.map(d=>d.id).includes(d.id)).forEach(d => {
+        this.props.clinicalSampleCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
+            sampleOptions.push({value: d.variable + d.description, label: lb, object: d, type: "clinSample"})
         });
         let patientOptions = [];
-        this.props.clinicalPatientCategories.filter(d=>!this.props.currentVariables.map(d=>d.id).includes(d.id)).forEach(d => {
+        this.props.clinicalPatientCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
                 </div>);
-            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, profile: "clinPatient"})
+            patientOptions.push({value: d.variable + " " + d.description, label: lb, object: d, type: "clinPatient"})
         });
-        return [{label: "Sample-specific", options: sampleOptions}, {
-            label: "Patient-specific", options: patientOptions
-        }];
-    }
+        return [{label: "Saved variables", options: savedOptions},
+            {label: "Sample-specific", options: sampleOptions},
+            {label: "Patient-specific", options: patientOptions}];
 
-    /**
-     * handles selection of a category
-     * @param e
-     */
-    handleCategorySelect(e) {
-        this.setState({
-            selectionType: e.target.value,
-            showCheckBoxOptions: false
-        });
     }
 
     /**
@@ -69,9 +68,22 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
      * @param selectedOption
      */
     handleOptionSelect(selectedOption) {
-        if (!Array.isArray(selectedOption)) {
-            this.props.handleVariableAdd(selectedOption.object, selectedOption.profile, true)
+        if (selectedOption.type !== 'saved') {
+            this.props.handleVariableAdd(selectedOption.object, selectedOption.type)
         }
+        else {
+            this.props.handleSavedVariableAdd(selectedOption.object);
+        }
+    }
+
+
+    /**
+     * handle selection of an option
+     * @param selectedOption
+     */
+    handleSavedOptionSelect(selectedOption) {
+        this.props.handleSavedVariableAdd(selectedOption.object);
+
     }
 
     /**
@@ -82,7 +94,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
         let mutationOptions = [];
         if (hasData) {
             this.props.mutationMappingTypes.forEach(d => {
-                    mutationOptions.push({id: d, selected: false});
+                mutationOptions.push({id: d, selected: false});
             })
         }
         this.setState({mutationOptions: mutationOptions, showCheckBoxOptions: true});
@@ -100,7 +112,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 molecularOptions.push({
                     id: profile,
                     profile: profile,
-                    name: this.props.availableProfiles.filter(d => d.profile === profile)[0].name,
+                    name: this.props.availableProfiles.filter(d => d.molecularProfileId === profile)[0].name,
                     selected: false
                 });
             }
@@ -125,15 +137,15 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             }
         });
         this.props.molProfileMapping.loadIds(geneList, () => {
-            if(this.props.availableProfiles.map(d=>d.type).includes("MUTATION_EXTENDED")) {
+            if (this.props.availableProfiles.map(d => d.molecularAlterationType).includes("MUTATION_EXTENDED")) {
                 this.props.molProfileMapping.loadMutations(() => {
                     this.updateMutationCheckBoxOptions(Object.values(this.props.molProfileMapping.isInGenePanel).join().length > 0);
                 });
             }
-            this.props.availableProfiles.filter(d=>d.type!=="MUTATION_EXTENDED").forEach(d => {
-                    this.props.molProfileMapping.loadMolecularData(d.profile, () => {
-                        this.updateMolecularCheckBoxOptions(d.profile, this.props.molProfileMapping.currentMolecular[d.profile].length>0);
-                    })
+            this.props.availableProfiles.filter(d => d.molecularAlterationType !== "MUTATION_EXTENDED").forEach(d => {
+                this.props.molProfileMapping.loadMolecularData(d.molecularProfileId, () => {
+                    this.updateMolecularCheckBoxOptions(d.molecularProfileId, this.props.molProfileMapping.currentMolecular[d.molecularProfileId].length > 0);
+                })
             });
         });
 
@@ -144,8 +156,8 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
      */
     addGenes() {
         const mappingTypes = this.state.mutationOptions.filter(d => d.selected).map(d => d.id);
-        const profiles=this.state.molecularOptions.filter(d => d.selected).map(d => d.profile);
-        this.props.molProfileMapping.getMultipleProfiles(profiles, mappingTypes).forEach(d=>this.props.handleGeneSelect(d));
+        const profiles = this.state.molecularOptions.filter(d => d.selected).map(d => d.profile);
+        this.props.handleGeneSelect(this.props.molProfileMapping.getMultipleProfiles(profiles, mappingTypes));
         this.setState({geneListString: "", showCheckBoxOptions: false});
     }
 
@@ -175,30 +187,6 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
         return false;
     }
 
-    /**
-     * gets search field or select depending on the selected category (select for clinical, search field for genomic)
-     * @returns {*}
-     */
-    getTimepointSearchField() {
-        if (this.state.selectionType === "clinical") {
-            return <Select
-                type="text"
-                searchable={true}
-                componentClass="select" placeholder="Select..."
-                searchPlaceholder="Search variable"
-                options={this.createOptions()}
-                onChange={this.handleOptionSelect}
-
-            />
-        }
-        else {
-            return <FormControl style={{height: 38}} type="textarea"
-                                placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
-                                onChange={this.updateSearchValue}
-                                onKeyDown={this.handleEnterPressed}
-                                value={this.state.geneListString}/>
-        }
-    }
 
     /**
      * toggles selection of a checkbox
@@ -251,41 +239,56 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 {available}
             </Col>)
         }
-        return <Alert>
-            <FormGroup>{checkBoxes}</FormGroup>
-            <Button onClick={this.addGenes}>Add genes</Button>
-        </Alert>;
+        return <Form horizontal>
+            <Alert>
+                <FormGroup>{checkBoxes}</FormGroup>
+                <Button onClick={this.addGenes}>Add genes</Button>
+            </Alert>
+        </Form>
     }
 
 
     render() {
-         let options=[];
-         if(this.props.clinicalSampleCategories.length>0||this.props.clinicalPatientCategories.length>0){
-            options.push(<option key={"clinical"} value={"clinical"}>Predefined</option>)
+        let formGroups = [];
+        if (this.props.clinicalSampleCategories.length > 0 || this.props.clinicalPatientCategories.length > 0) {
+            formGroups.push(<FormGroup key={"clinical"}>
+                <Col componentClass={ControlLabel} sm={2}>
+                    Variables
+                </Col>
+                <Col sm={10}>
+                    <Select
+                        type="text"
+                        searchable={true}
+                        componentClass="select" placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.createOptions()}
+                        onChange={this.handleOptionSelect}
+
+                    />
+                </Col>
+            </FormGroup>);
         }
-        if(this.props.availableProfiles.length>0){
-            options.push(<option key={"genes"} value={"genes"}>Genomic</option>)
+        if (this.props.availableProfiles.length > 0) {
+            formGroups.push(<FormGroup key={"genetic"}>
+                <Col componentClass={ControlLabel} sm={2}>
+                    Find gene
+                </Col>
+                <Col sm={10}>
+                    <FormControl style={{height: 38}} type="textarea"
+                                 placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
+                                 onChange={this.updateSearchValue}
+                                 onKeyDown={this.handleEnterPressed}
+                                 value={this.state.geneListString}/>
+                </Col>
+            </FormGroup>);
         }
-        return (<Form horizontal>
-                                <h4>Select variable</h4>
-
-                <FormGroup>
-                    <Col sm={4} style={{paddingRight: "0"}}>
-                        <FormControl style={{height: 38}} componentClass="select"
-                                     onChange={this.handleCategorySelect}
-                                     placeholder="Select Category">
-                            {options}
-                        </FormControl>
-                    </Col>
-                    <Col sm={8} style={{padding: 0}}>
-                        {this.getTimepointSearchField()}
-                    </Col>
-                </FormGroup>
-
-                {this.state.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
-
+        return (<div>
+            <h4>Select Variable</h4>
+            <Form horizontal>
+                {formGroups}
             </Form>
-        )
+            {this.state.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
+        </div>)
     }
 });
 export default TimepointVariableSelector;

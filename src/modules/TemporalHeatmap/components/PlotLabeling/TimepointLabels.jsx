@@ -58,7 +58,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
     }
 
     setName(index, event) {
-        this.props.timepoints[index].name(event.target.value)
+        this.props.store.timepoints[index].name(event.target.value)
     }
 
     render() {
@@ -66,7 +66,7 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
         const gap=10;
         let labels = [];
         const _self = this;
-        this.props.timepoints.forEach(function (d, i) {
+        this.props.store.timepoints.forEach(function (d, i) {
             let pos;
             if (d.type === 'sample') {
                 pos = _self.props.visMap.timepointPositions.timepoint[i] + _self.props.visMap.getTPHeight(d) / 2 + 4;
@@ -106,10 +106,10 @@ const TimepointLabels = observer(class TimepointLabels extends React.Component {
             }
         });
 
-        let offset = 15 + this.props.visMap.getTPHeight(this.props.timepoints[0]) / 2;
+        let offset = 15 + this.props.visMap.getTPHeight(this.props.store.timepoints[0]) / 2;
         return (
             <div ref="timepointLabels">
-                <svg width={this.state.width} height={this.props.height}>
+                <svg width={this.state.width} height={this.props.visMap.svgHeight}>
                     <line x1={(this.state.width-(iconDimension+gap))/2 - 10} x2={(this.state.width-(iconDimension+gap))/2}
                           y1={this.props.visMap.timepointPositions.timepoint[0] + offset}
                           y2={this.props.visMap.timepointPositions.timepoint[0] + offset} stroke='lightgray'/>

@@ -48,7 +48,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                 else {
                     rectColor = "black";
                 }
-                if (_self.props.advancedSelection) {
+                if (_self.props.store.advancedSelection) {
                     let x = selectedScale(stepwidth * i);
                     if (i === 0) {
                         x = x + 1;
@@ -68,7 +68,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             {stops}
         </linearGradient>;
         let selectUndefinedRect = null;
-        if (undefinedValuesCounter > 0 && this.props.advancedSelection) {
+        if (undefinedValuesCounter > 0 && this.props.store.advancedSelection) {
             selectUndefinedRect = <rect x={this.props.groupScale(values.length) + 1} height={this.props.height}
                                         width={this.props.groupScale(undefinedValuesCounter) - 1}
                                         fill={"none"}
@@ -200,13 +200,13 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             return (a.value - b.value)
         });
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
-        if (this.props.continuousRepresentation === 'gradient') {
-            let selectedPartitionPatients = this.props.partition.map(d => d.patients[0]).filter(element => -1 !== this.props.selectedPatients.indexOf(element));
+        if (this.props.store.continuousRepresentation === 'gradient') {
+            let selectedPartitionPatients = this.props.partition.map(d => d.patients[0]).filter(element => -1 !== this.props.store.selectedPatients.indexOf(element));
             return (
                 this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
             )
         }
-        else if (this.props.continuousRepresentation === 'boxplot')
+        else if (this.props.store.continuousRepresentation === 'boxplot')
             return (
                 this.createBoxPlot(boxPlotValues, values.length)
             );

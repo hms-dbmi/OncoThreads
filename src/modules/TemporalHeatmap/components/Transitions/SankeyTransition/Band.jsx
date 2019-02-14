@@ -33,7 +33,7 @@ const Band = observer(class Band extends React.Component {
     getSelectedWidth() {
         let numSelected = 0;
         const _self = this;
-        this.props.selectedPatients.forEach(function (d, i) {
+        this.props.store.selectedPatients.forEach(function (d, i) {
             if (_self.props.patients.includes(d)) {
                 numSelected += 1;
             }

@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import Histogram from './Histogram';
 import Slider from './Slider';
+import {Checkbox, Form} from "react-bootstrap";
 
 const BinSelector = observer(class BinSelector extends React.Component {
     constructor(props) {
@@ -26,7 +27,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
      */
     handleBinAddition() {
         let xSorted = this.state.x.slice();
-        xSorted=xSorted.sort((a, b) => a - b);
+        xSorted = xSorted.sort((a, b) => a - b);
         let biggestGap = xSorted[0];
         let newPos = biggestGap / 2;
         if (xSorted.length === 1) {
@@ -46,7 +47,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
             }
         }
         let newX = this.state.x.slice();
-            newX.push(newPos);
+        newX.push(newPos);
         this.setState({x: newX});
         this.props.handleBinChange(this.getBins(newX));
     }
@@ -86,7 +87,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
 
         });
         binValues.push(this.props.xScale.domain()[1]);
-        return binValues.sort((a,b)=>a-b);
+        return binValues.sort((a, b) => a - b);
     }
 
     handleMouseMove(e, width) {
@@ -108,6 +109,16 @@ const BinSelector = observer(class BinSelector extends React.Component {
         this.props.handleBinChange(this.getBins(x));
         this.setState({x: x});
 
+    }
+
+    getBinaryCheckbox() {
+        let checkbox = null;
+        if (this.state.x.length===1) {
+            checkbox =
+                <Checkbox onChange={this.props.toggleIsBinary} checked={this.props.isBinary}> make binary</Checkbox>
+
+        }
+        return checkbox;
     }
 
 
@@ -134,11 +145,14 @@ const BinSelector = observer(class BinSelector extends React.Component {
                                 handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>
                     </g>
                 </svg>
-                <label>Number of bins: <input onChange={(e) => this.handleNumberChange(e)}
-                                              type="number"
-                                              name="points"
-                                              value={this.state.x.length+1}
-                                              step="1" min="2"/></label>
+                <Form inline>
+                    <label>Number of bins: <input onChange={(e) => this.handleNumberChange(e)}
+                                                  type="number"
+                                                  name="points"
+                                                  value={this.state.x.length + 1}
+                                                  step="1" min="2"/></label>
+                    {this.getBinaryCheckbox()}
+                </Form>
             </div>
         )
     }

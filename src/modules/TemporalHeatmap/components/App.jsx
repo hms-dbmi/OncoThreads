@@ -29,6 +29,8 @@ const App = observer(class App extends React.Component {
         this.closeModal = this.closeModal.bind(this);
     }
 
+
+
     openModal(type) {
         if (type === 'about') {
             this.setState({
@@ -125,7 +127,7 @@ const App = observer(class App extends React.Component {
                 {this.getMainContent()}
                 <LogModal modalIsOpen={this.state.logModalIsOpen} close={this.closeModal}
                           logs={this.rootStore.undoRedoStore.logs}/>
-                <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} store={this.rootStore.timepointStore}
+                <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} store={this.rootStore.dataStore}
                                close={this.closeModal}/>
                 <AboutModal modalIsOpen={this.state.aboutModalIsOpen} close={this.closeModal}/>
                 <Modal show={this.state.studyInfoModalIsOpen}

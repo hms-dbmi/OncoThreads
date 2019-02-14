@@ -6,7 +6,7 @@ import {observer} from 'mobx-react';
 import {Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import MainView from "./MainView"
-import GroupBinningModal from "./VariableModals/Binner/GroupBinningModal"
+import GroupBinningModal from "./VariableModals/ModifySingleVariable/Binner/GroupBinningModal"
 import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
@@ -42,7 +42,7 @@ const Content = observer(class Content extends React.Component {
             contextY: 0,
             showContextMenu: false,
             showContextMenuHeatmapRow: false,
-            horizontalZoom: 300 - (props.rootStore.timepointStore.numberOfPatients < 300 ? props.rootStore.timepointStore.numberOfPatients : 300),
+            horizontalZoom: 300 - (props.rootStore.dataStore.numberOfPatients < 300 ? props.rootStore.dataStore.numberOfPatients : 300),
 
             addModalIsOpen: false
             //varList:[]
@@ -63,11 +63,6 @@ const Content = observer(class Content extends React.Component {
         this.handleResetAll = this.handleResetAll.bind(this);
         this.handleResetAlignment = this.handleResetAlignment.bind(this);
         this.handleResetSelection = this.handleResetSelection.bind(this);
-
-        this.horizontalZoom = this.horizontalZoom.bind(this);
-        this.setToScreenWidth = this.setToScreenWidth.bind(this);
-        this.verticalZoom = this.verticalZoom.bind(this);
-        this.setToScreenHeight = this.setToScreenHeight.bind(this);
 
         this.updateVariable = this.updateVariable.bind(this);
 
@@ -151,22 +146,6 @@ const Content = observer(class Content extends React.Component {
         })
     }
 
-    horizontalZoom(event) {
-        this.setState({horizontalZoom: parseInt(event.target.value, 10)});
-
-    }
-
-    verticalZoom(event) {
-        this.props.rootStore.visStore.setTransitionSpace(parseInt(event.target.value, 10));
-    }
-
-    setToScreenWidth() {
-        this.setState({horizontalZoom: 300 - (this.props.rootStore.timepointStore.numberOfPatients < 300 ? this.props.rootStore.timepointStore.numberOfPatients : 300)})
-    }
-
-    setToScreenHeight() {
-        this.props.rootStore.visStore.fitToScreenHeight();
-    }
 
     handleResetAll() {
         this.props.rootStore.reset();
@@ -177,7 +156,7 @@ const Content = observer(class Content extends React.Component {
     }
 
     handleResetSelection() {
-        this.props.rootStore.timepointStore.selectedPatients = []
+        this.props.rootStore.dataStore.selectedPatients = []
     }
 
 
@@ -187,7 +166,7 @@ const Content = observer(class Content extends React.Component {
                                        variable={this.state.clickedVariable}
                                        type={this.state.type}
                                        callback={this.state.callback}
-                                       closeModal={this.closeModal} store={this.props.rootStore.timepointStore}
+                                       closeModal={this.closeModal} store={this.props.rootStore.dataStore}
                                        visMap={this.props.rootStore.visStore}
             />);
         }
@@ -210,7 +189,7 @@ const Content = observer(class Content extends React.Component {
                                  openBinningModal={this.openModal}
                                  clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                  clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
-                                 store={this.props.rootStore.timepointStore}
+                                 store={this.props.rootStore.dataStore}
             />);
         }
         else {
@@ -237,6 +216,10 @@ const Content = observer(class Content extends React.Component {
 
 
     render() {
+          const tooltipFunctions = {
+            showTooltip: this.showTooltip,
+            hideTooltip: this.hideTooltip,
+        };
         return (
             <div>
                 <Grid fluid={true} style={{paddingLeft: 20}}>
@@ -249,12 +232,11 @@ const Content = observer(class Content extends React.Component {
                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
                                 currentVariables={{
-                                        sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
-                                        between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
+                                        sample: this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables,
+                                        between: this.props.rootStore.dataStore.variableStores.between.fullCurrentVariables
                                     }}
-                                molecularProfiles={this.props.rootStore.cbioAPI.molecularProfiles}
                                 availableProfiles={this.props.rootStore.availableProfiles}
-                                store={this.props.rootStore.timepointStore}
+                                store={this.props.rootStore.dataStore}
                                 eventCategories={this.props.rootStore.eventCategories}
                                 eventAttributes={this.props.rootStore.eventAttributes}
                             />
@@ -273,16 +255,16 @@ const Content = observer(class Content extends React.Component {
                                         id={"zoom"}
                                     >
                                         <div style={{padding: "5px"}}>
-                                            Horizontal: <input type="range" value={this.state.horizontalZoom}
-                                                               onChange={this.horizontalZoom} step={1}
+                                            Horizontal: <input type="range" value={this.props.rootStore.visStore.horizontalZoom}
+                                                               onChange={(e)=>this.props.rootStore.visStore.setHorizontalZoom(parseInt(e.target.value,10))} step={1}
                                                                min={0} max={290}/>
-                                            <Button onClick={this.setToScreenWidth}>Set to screen width</Button>
+                                            <Button onClick={this.props.rootStore.visStore.fitToScreenWidth}>Set to screen width</Button>
                                             <br/>
                                             Vertical: <input type="range"
                                                              value={this.props.rootStore.visStore.transitionSpace}
-                                                             onChange={this.verticalZoom} step={1}
+                                                             onChange={(e)=>this.props.rootStore.visStore.setTransitionSpace(parseInt(e.target.value,10))} step={1}
                                                              min={5} max={700}/>
-                                            <Button onClick={this.setToScreenHeight}>Set to screen height</Button>
+                                            <Button onClick={this.props.rootStore.visStore.fitToScreenHeight}>Set to screen height</Button>
                                         </div>
                                     </DropdownButton>
                                 </ButtonGroup>
@@ -324,23 +306,18 @@ const Content = observer(class Content extends React.Component {
                              style={{paddingTop: 0}}>
                             <Row>
                                 <MainView
-                                    currentVariables={{
-                                        sample: this.props.rootStore.timepointStore.variableStores.sample.getCurrentVariables(),
-                                        between: this.props.rootStore.timepointStore.variableStores.between.getCurrentVariables()
-                                    }}
-                                    timepoints={this.props.rootStore.timepointStore.timepoints}
-                                    store={this.props.rootStore.timepointStore}
-                                    transitionStore={this.props.rootStore.transitionStore}
-                                    visMap={this.props.rootStore.visStore}
                                     horizontalZoom={this.state.horizontalZoom}
-                                    rectWidth={this.props.rootStore.visStore.sampleRectWidth}
+
+                                    tooltipFunctions={tooltipFunctions}
                                     openBinningModal={this.openModal}
-                                    showTooltip={this.showTooltip}
-                                    hideTooltip={this.hideTooltip}
                                     showContextMenu={this.showContextMenu}
                                     hideContextMenu={this.hideContextMenu}
                                     showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
-                                    sidebarVisible={this.state.sidebarSize === 2}/>
+
+                                    store={this.props.rootStore.dataStore}
+                                    transitionStore={this.props.rootStore.transitionStore}
+                                    visMap={this.props.rootStore.visStore}
+                                />
                             </Row>
                         </Col>
                     </Row>
@@ -355,7 +332,7 @@ const Content = observer(class Content extends React.Component {
                               contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
                               clickedVariable={this.state.clickedVariable}
                               type={this.state.contextType}
-                              store={this.props.rootStore.timepointStore}
+                              store={this.props.rootStore.dataStore}
                               openBinningModal={this.openModal}/>
 
 

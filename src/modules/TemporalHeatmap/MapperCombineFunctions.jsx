@@ -1,15 +1,15 @@
 class MapperCombine {
-    static getModificationMapper(modificationType, modification, mappers) {
+    static getModificationMapper(modification, mappers) {
         let mapper;
-        switch (modificationType) {
+        switch (modification.type) {
             case "binaryCombine":
                 mapper = MapperCombine.createBinaryCombinedMapper(mappers, modification);
                 break;
-            case "binning":
-                mapper = MapperCombine.createBinnedMapper(mappers[0], modification.bins, modification.binNames);
-                break;
             case "modifyCategorical":
-                mapper = MapperCombine.createModifyCategoriesMapper(mappers[0], modification);
+                mapper = MapperCombine.createModifyCategoriesMapper(mappers[0], modification.mapping);
+                break;
+            case "convertBinary":
+                mapper=MapperCombine.createModifyCategoriesMapper(mappers[0],modification.mapping);
                 break;
             default:
                 let intermedMapper = {};
@@ -21,8 +21,8 @@ class MapperCombine {
                 if (modification.binning) {
                     mapper = MapperCombine.createBinnedMapper(intermedMapper, modification.binning.bins, modification.binning.binNames);
                 }
-                else{
-                    mapper=intermedMapper;
+                else {
+                    mapper = intermedMapper;
                 }
         }
         return mapper;
@@ -52,20 +52,45 @@ class MapperCombine {
         return newMapper
     }
 
-    static createBinaryCombinedMapper(mappers, operator) {
+    static createBinaryCombinedMapper(mappers, modification) {
         let newMapper = {};
         for (let entry in mappers[0]) {
-            if (operator === "or") {
-                let containedInOne = false;
-                for (let i = 0; i < mappers.length; i++) {
-                    if (mappers[i][entry]) {
-                        containedInOne = true;
-                        break;
+            if (modification.operator === "or") {
+                if (modification.datatype === "BINARY") {
+                    let containedInOne = false;
+                    for (let i = 0; i < mappers.length; i++) {
+                        if (mappers[i][entry]) {
+                            containedInOne = true;
+                            break;
+                        }
+                    }
+                    newMapper[entry] = containedInOne;
+                }
+                else {
+                    for (let entry in mappers[0]) {
+                        let categories = [];
+                        for (let i = 0; i < mappers.length; i++) {
+                            if (mappers[i][entry]) {
+                                categories.push(modification.variableNames[i]);
+                            }
+                        }
+                        let result = "";
+                        if (categories.length > 0) {
+                            categories.forEach((d, i) => {
+                                if (i === categories.length - 1) {
+                                    result += d;
+                                }
+                                else {
+                                    result += (d + ",");
+                                }
+                            })
+                        }
+                        else result ="none";
+                        newMapper[entry] = result;
                     }
                 }
-                newMapper[entry] = containedInOne;
             }
-            else if (operator === "and") {
+            else if (modification.operator === "and") {
                 let containedInAll = true;
                 for (let i = 0; i < mappers.length; i++) {
                     if (!mappers[i][entry]) {
@@ -79,13 +104,6 @@ class MapperCombine {
         return newMapper;
     }
 
-    static makeBinary(mapper, trueValues) {
-        let newMapper = {};
-        for (let entry in mapper) {
-            newMapper[entry] = trueValues.includes(mapper[entry]);
-        }
-        return newMapper;
-    }
 
     static createModifyCategoriesMapper(mapper, categoryMapping) {
         let newMapper = {};

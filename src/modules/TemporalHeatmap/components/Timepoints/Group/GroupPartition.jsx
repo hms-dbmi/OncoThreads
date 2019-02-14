@@ -28,27 +28,24 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                 }
                 if (_self.props.currentVariables[i].datatype === "NUMBER") {
                     rows.push(<g key={d.variable} transform={transform}><ContinuousRow partition={d.counts}
+                                                                                       store={_self.props.store}
                                                                                        height={height}
                                                                                        opacity={opacity} color={color}
                                                                                        stroke={stroke}
                                                                                        variableDomain={_self.props.currentVariables[i].domain}
                                                                                        groupScale={_self.props.groupScale}
-                                                                                       showTooltip={_self.props.showTooltip}
-                                                                                       hideTooltip={_self.props.hideTooltip}
-                                                                                       selectedPatients={_self.props.selectedPatients}
-                                                                                       advancedSelection={_self.props.advancedSelection}
-                                                                                       continuousRepresentation={_self.props.store.continuousRepresentation}/>
+                                                                                       {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
                 else {
-                    rows.push(<g key={d.variable} transform={transform}><CategoricalRow row={d.counts} height={height}
-                                                                                        opacity={opacity} color={color}
+                    rows.push(<g key={d.variable} transform={transform}><CategoricalRow row={d.counts}
+                                                                                        store={_self.props.store}
+                                                                                        height={height}
+                                                                                        opacity={opacity}
+                                                                                        color={color}
                                                                                         stroke={stroke}
                                                                                         groupScale={_self.props.groupScale}
-                                                                                        showTooltip={_self.props.showTooltip}
-                                                                                        hideTooltip={_self.props.hideTooltip}
-                                                                                        selectedPatients={_self.props.selectedPatients}
-                                                                                        advancedSelection={_self.props.advancedSelection}/>
+                                                                                        {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
                 previousYposition += height + _self.props.visMap.gap;
