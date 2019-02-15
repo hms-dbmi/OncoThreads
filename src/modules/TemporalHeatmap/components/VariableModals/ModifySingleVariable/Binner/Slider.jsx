@@ -3,6 +3,9 @@ import {observer} from 'mobx-react';
 
 
 const Slider = observer(class Slider extends React.Component {
+    constructor(){
+        super();
+    }
     /**
      * creats the slider dots and associated lines
      * @returns {Array}
@@ -29,11 +32,11 @@ const Slider = observer(class Slider extends React.Component {
         this.props.x.forEach(function (d, i) {
             positionText.push(
                 <foreignObject key={i} x={d}>
-                    <input onChange={(e) => _self.props.handlePositionTextFieldChange(e, i)}
+                    <input onChange={(e) =>_self.props.handlePositionTextFieldChange(e.target.value,i)}
                            type="text"
                            style={{
                                width: 50 + "px"
-                           }} value={Math.round(_self.props.xScale.invert(d) * 100) / 100}/>
+                           }} value={_self.props.textFieldTexts[i]}/>
                 </foreignObject>)
         });
         return positionText;
@@ -41,7 +44,7 @@ const Slider = observer(class Slider extends React.Component {
     }
 
     /**
-     * creates the labes for the binse
+     * creates the labes for the bins
      * @returns {*}
      */
     getBinLabels() {

@@ -3,14 +3,20 @@ import {observer} from 'mobx-react';
 import Histogram from './Histogram';
 import Slider from './Slider';
 import {Checkbox, Form} from "react-bootstrap";
+import * as d3 from "d3";
 
 const BinSelector = observer(class BinSelector extends React.Component {
     constructor(props) {
         super(props);
         this.coordX = 0;
+        this.margin = {top: 20, right: 20, bottom: 90, left: 50};
+        this.w = props.width + (this.margin.left + this.margin.right);
+        this.h = props.height + (this.margin.top + this.margin.bottom);
+        this.inverseScale = d3.scaleLinear().range(props.xScale.domain()).domain(props.xScale.range());
         this.state = {
             dragging: false,
             x: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1).map(d => props.xScale(d)),
+            textFieldTexts: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1),
             currentBin: 0
         };
         this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -47,15 +53,19 @@ const BinSelector = observer(class BinSelector extends React.Component {
             }
         }
         let newX = this.state.x.slice();
+        let textFieldTexts = this.state.textFieldTexts.slice();
         newX.push(newPos);
-        this.setState({x: newX});
+        textFieldTexts.push(this.inverseScale(newPos));
+        this.setState({x: newX, textFieldTexts: textFieldTexts});
         this.props.handleBinChange(this.getBins(newX));
     }
 
     handleBinRemoval() {
         let x = this.state.x.slice();
+        let textFieldTexts = this.state.textFieldTexts.slice();
         x.pop();
-        this.setState({x: x});
+        textFieldTexts.pop();
+        this.setState({x: x, textFieldTexts: textFieldTexts});
         this.props.handleBinChange(this.getBins(x));
     }
 
@@ -83,37 +93,49 @@ const BinSelector = observer(class BinSelector extends React.Component {
         let binValues = [];
         binValues.push(this.props.xScale.domain()[0]);
         x.slice().forEach(d => {
-            binValues.push(this.props.xScale.invert(d));
-
+            binValues.push(this.inverseScale(d));
         });
         binValues.push(this.props.xScale.domain()[1]);
         return binValues.sort((a, b) => a - b);
     }
 
-    handleMouseMove(e, width) {
+    handleMouseMove(e) {
         if (this.state.dragging) {
             e.preventDefault();
             const xDiff = Math.round(this.coordX - e.pageX);
             this.coordX = e.pageX;
             let x = this.state.x.slice();
             x[this.state.currentBin] = x[this.state.currentBin] - xDiff;
-            if (x[this.state.currentBin] > 0 && x[this.state.currentBin] < width) {
-                this.setState({x: x});
+            let textFieldTexts = this.state.textFieldTexts.slice();
+            textFieldTexts[this.state.currentBin] = this.inverseScale(x[this.state.currentBin] - xDiff);
+            if (x[this.state.currentBin] > 0 && x[this.state.currentBin] < this.props.width) {
+                this.setState({x: x, textFieldTexts: textFieldTexts});
             }
         }
     }
 
-    handlePositionTextFieldChange(event, index) {
-        let x = this.state.x.slice();
-        x[index] = this.props.xScale(event.target.value);
-        this.props.handleBinChange(this.getBins(x));
-        this.setState({x: x});
-
+    handlePositionTextFieldChange(value, index) {
+        console.log(value, isNaN(value), typeof(value));
+        if (value === "-" || value === ".") {
+            let textFieldTexts = this.state.textFieldTexts.slice();
+            textFieldTexts[index] = value;
+            this.setState({textFieldTexts: textFieldTexts});
+        }
+        else if (!isNaN(value) && value>this.props.bins[0]&&value<this.props.bins[this.props.bins.length-1]) {
+            let textFieldTexts = this.state.textFieldTexts.slice();
+            textFieldTexts[index] = value;
+            this.setState({textFieldTexts: textFieldTexts});
+            let position = this.props.xScale(value);
+            let x = this.state.x.slice();
+            x[index] = position;
+            this.props.handleBinChange(this.getBins(x));
+            this.setState({x: x});
+        }
     }
 
     getBinaryCheckbox() {
         let checkbox = null;
-        if (this.state.x.length===1) {
+        if (this.state.x.length === 1) {
             checkbox =
                 <Checkbox onChange={this.props.toggleIsBinary} checked={this.props.isBinary}> make binary</Checkbox>
 
@@ -123,23 +145,21 @@ const BinSelector = observer(class BinSelector extends React.Component {
 
 
     render() {
-        const margin = {top: 20, right: 20, bottom: 90, left: 50},
-            w = this.props.width + (margin.left + margin.right),
-            h = this.props.height + (margin.top + margin.bottom);
-        const transform = 'translate(' + margin.left + ',' + margin.top + ')';
-
+        const transform = 'translate(' + this.margin.left + ',' + this.margin.top + ')';
         return (
             <div>
-                <svg onMouseMove={(e) => this.handleMouseMove(e, w)}
+                <svg onMouseMove={(e) => this.handleMouseMove(e)}
                      onMouseUp={() => this.handleMouseUp(this.props.xScale)}
-                     width={w}
-                     height={h}>
+                     width={this.w}
+                     height={this.h}>
                     <g transform={transform}>
                         <Histogram bins={this.props.histBins} xScale={this.props.xScale} yScale={this.props.yScale}
                                    h={this.props.height}
                                    w={this.props.width} xLabel={this.props.xLabel}
                                    numValues={this.props.data.length}/>
                         <Slider yPos={this.props.height + 50} width={this.props.width} x={this.state.x}
+                                dragging={this.state.dragging}
+                                textFieldTexts={this.state.textFieldTexts}
                                 xScale={this.props.xScale}
                                 handleMouseDown={this.handleMouseDown}
                                 handlePositionTextFieldChange={this.handlePositionTextFieldChange}/>

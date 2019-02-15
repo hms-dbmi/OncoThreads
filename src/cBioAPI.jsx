@@ -1,12 +1,18 @@
 import axios from 'axios';
 
+
 class cBioAPI {
     getPatients(studyID, callback) {
         axios.get("http://cbiohack.org/api/studies/" + studyID + "/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
                 callback(response.data.map(patient => patient.patientId));
-            }).catch(()=>{
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
                 console.log("Could not load patients");
+            }
         });
     }
 
@@ -19,8 +25,13 @@ class cBioAPI {
                     events[patients[i]] = response.data;
                 });
                 callback(events);
-            }).catch(()=>{
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
                 console.log("Could not load events")
+            }
         });
     }
 
@@ -33,9 +44,13 @@ class cBioAPI {
                     patientData.push(response.data);
                 });
                 callback(patientData);
-            }).catch((error)=>{
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
                 console.log(error);
+            }
+            else {
                 console.log("Could not load patient data")
+            }
         });
     }
 
@@ -43,8 +58,14 @@ class cBioAPI {
         axios.get("http://www.cbiohack.org/api/studies/" + studyID + "/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
                 callback(response.data);
-            }).catch(()=>{
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
                 console.log("Could not available molecular profiles")
+
+            }
         });
     }
 
@@ -52,9 +73,13 @@ class cBioAPI {
         axios.get("http://cbiohack.org/api/studies/" + studyID + "/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
                 callback(response.data);
-            }).catch((error)=>{
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
                 console.log(error);
+            }
+            else {
                 console.log("Could not load sample data")
+            }
         });
     }
 
@@ -62,8 +87,13 @@ class cBioAPI {
         axios.get("http://www.cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutations?sampleListId=" + studyID + "_all&projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
                 callback(response.data);
-            }).catch(()=>{
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
                 console.log("Could not load mutations")
+            }
         });
     }
 
@@ -71,8 +101,13 @@ class cBioAPI {
         axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutation-counts?sampleListId=" + studyID + "_all")
             .then(response => {
                 callback(response.data);
-            }).catch(()=>{
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
                 console.log("Could not load mutation counts")
+            }
         });
 
     }
@@ -115,8 +150,12 @@ class cBioAPI {
             });
             callback(mapper);
         }).catch(function (error) {
-            console.log(error);
-            alert("invalid symbol")
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                alert("invalid symbol")
+            }
         })
     }
 
@@ -138,8 +177,12 @@ class cBioAPI {
             }
             callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));
         }).catch(function (error) {
-            console.log(error);
-            alert("invalid symbol")
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                alert("invalid symbol")
+            }
         })
     }
 
@@ -152,8 +195,13 @@ class cBioAPI {
         }).then(function (response) {
             callback(response.data)
         }).catch(function (error) {
-                console.log(error)
-            });
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Can't get mutations")
+            }
+        });
     }
 
     /**
@@ -189,6 +237,10 @@ class cBioAPI {
                         });
                     });
                     callback(profiledDict);
+                }).catch(function (error) {
+                    if (cBioAPI.verbose) {
+                        console.log(error);
+                    }
                 });
             }
             else {
@@ -197,7 +249,11 @@ class cBioAPI {
                 );
                 callback(profiledDict);
             }
-        })
+        }).catch(function (error) {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+        });
     }
 
     getMolecularValues(studyId, profileId, entrezIDs, callback) {
@@ -208,8 +264,7 @@ class cBioAPI {
             "sampleListId": studyId + "_all"
         }).then(function (response) {
             callback(response.data)
-        })
-            .catch(function (error) {
+        }).catch(function (error) {
                 console.log(error)
             });
     }
@@ -224,5 +279,6 @@ class cBioAPI {
     }
 
 }
+cBioAPI.verbose = false;
 
 export default cBioAPI;
