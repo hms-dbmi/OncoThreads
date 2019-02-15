@@ -7,6 +7,7 @@ import DerivedVariable from "../../../../DerivedVariable";
 import MapperCombine from "../../../../MapperCombineFunctions";
 import {Alert, Button, Modal} from "react-bootstrap";
 import ColorScales from "../../../../ColorScales";
+import UtilityFunctions from "../../../../UtilityFunctions";
 
 
 const GroupBinningModal = observer(class GroupBinningModal extends React.Component {
@@ -31,9 +32,9 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             }
             bins = [min, med, max];
             binNames = [{
-                name: (Math.round(min * 100) / 100) + " to " + med,
+                name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
                 modified: false
-            }, {name: (Math.round(med * 100) / 100) + " to " + (Math.round(max * 100) / 100), modified: false}];
+            }, {name: UtilityFunctions.getScientificNotation(med) + " to " + UtilityFunctions.getScientificNotation(max), modified: false}];
             return {
                 bins: bins,
                 binNames: binNames,
@@ -45,7 +46,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             let binNames = this.state.binNames.slice();
             if (this.state.isBinary) {
                 for (let i = 1; i < this.state.bins.length; i++) {
-                    binNames[i - 1].name = Math.round(this.state.bins[i - 1] * 100) / 100 + " to " + Math.round(this.state.bins[i] * 100) / 100;
+                    binNames[i - 1].name = UtilityFunctions.getScientificNotation(this.state.bins[i - 1])  + " to " + UtilityFunctions.getScientificNotation(this.state.bins[i]);
                     binNames[i - 1].modified = false;
                 }
             }
@@ -67,7 +68,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                 if (bins.length === this.state.bins.length) {
                     for (let i = 1; i < bins.length; i++) {
                         if (!binNames[i - 1].modified) {
-                            binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+                            binNames[i - 1].name = UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]);
                         }
                     }
                 }
@@ -75,7 +76,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                     binNames = [];
                     for (let i = 1; i < bins.length; i++) {
                         binNames.push({
-                            name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
+                            name: UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions(bins[i]),
                             modified: false
                         });
                     }
@@ -124,13 +125,13 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             };
             if (!this.state.isBinary) {
                 derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)",
-                    [this.props.variable.id], "continuousTransform", modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.state.binNames, this.state.bins),
-                    this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]),
+                    [this.props.variable.id], modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.state.binNames, this.state.bins),
+                    this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]),
                     this.props.variable.profile);
             }
             else {
                 derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINARY", this.props.variable.description + " (binned)",
-                    [this.props.variable.id], "continuousTransform", modification, [], [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]),
+                    [this.props.variable.id],  modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]),
                     this.props.variable.profile);
 
             }

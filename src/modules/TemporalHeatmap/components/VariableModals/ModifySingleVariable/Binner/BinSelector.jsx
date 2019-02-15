@@ -4,6 +4,7 @@ import Histogram from './Histogram';
 import Slider from './Slider';
 import {Checkbox, Form} from "react-bootstrap";
 import * as d3 from "d3";
+import UtilityFunctions from "../../../../UtilityFunctions";
 
 const BinSelector = observer(class BinSelector extends React.Component {
     constructor(props) {
@@ -16,7 +17,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
         this.state = {
             dragging: false,
             x: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1).map(d => props.xScale(d)),
-            textFieldTexts: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1),
+            textFieldTexts: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1).map(d=>UtilityFunctions.getScientificNotation(d)),
             currentBin: 0
         };
         this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -55,7 +56,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
         let newX = this.state.x.slice();
         let textFieldTexts = this.state.textFieldTexts.slice();
         newX.push(newPos);
-        textFieldTexts.push(this.inverseScale(newPos));
+        textFieldTexts.push(UtilityFunctions.getScientificNotation(this.inverseScale(newPos)));
         this.setState({x: newX, textFieldTexts: textFieldTexts});
         this.props.handleBinChange(this.getBins(newX));
     }
@@ -107,7 +108,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
             let x = this.state.x.slice();
             x[this.state.currentBin] = x[this.state.currentBin] - xDiff;
             let textFieldTexts = this.state.textFieldTexts.slice();
-            textFieldTexts[this.state.currentBin] = this.inverseScale(x[this.state.currentBin] - xDiff);
+            textFieldTexts[this.state.currentBin] = UtilityFunctions.getScientificNotation(this.inverseScale(x[this.state.currentBin] - xDiff));
             if (x[this.state.currentBin] > 0 && x[this.state.currentBin] < this.props.width) {
                 this.setState({x: x, textFieldTexts: textFieldTexts});
             }
@@ -115,22 +116,16 @@ const BinSelector = observer(class BinSelector extends React.Component {
     }
 
     handlePositionTextFieldChange(value, index) {
-        console.log(value, isNaN(value), typeof(value));
-        if (value === "-" || value === ".") {
-            let textFieldTexts = this.state.textFieldTexts.slice();
+        let x = this.state.x.slice();
+        let textFieldTexts = this.state.textFieldTexts.slice();
+        if (UtilityFunctions.isValidValue(value)) {
             textFieldTexts[index] = value;
-            this.setState({textFieldTexts: textFieldTexts});
+            if (!isNaN(value) && value > this.props.bins[0] && value < this.props.bins[this.props.bins.length - 1]) {
+                x[index] = this.props.xScale(value);
+                this.props.handleBinChange(this.getBins(x));
+            }
         }
-        else if (!isNaN(value) && value>this.props.bins[0]&&value<this.props.bins[this.props.bins.length-1]) {
-            let textFieldTexts = this.state.textFieldTexts.slice();
-            textFieldTexts[index] = value;
-            this.setState({textFieldTexts: textFieldTexts});
-            let position = this.props.xScale(value);
-            let x = this.state.x.slice();
-            x[index] = position;
-            this.props.handleBinChange(this.getBins(x));
-            this.setState({x: x});
-        }
+        this.setState({x: x, textFieldTexts: textFieldTexts});
     }
 
     getBinaryCheckbox() {

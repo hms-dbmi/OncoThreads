@@ -9,6 +9,7 @@ import DerivedVariable from "../../../DerivedVariable";
 import uuidv4 from "uuid/v4";
 import MapperCombine from "../../../MapperCombineFunctions";
 import ColorScales from "../../../ColorScales";
+import UtilityFunctions from "../../../UtilityFunctions";
 
 
 const ModifyContinuous = observer(class ModifyContinuous extends React.Component {
@@ -41,10 +42,10 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             }
             bins = [min, med, max];
             binNames = [{
-                name: (Math.round(min * 100) / 100) + " to " + med,
+                name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
                 modified: false
             }, {
-                name: (Math.round(med * 100) / 100) + " to " + (Math.round(max * 100) / 100),
+                name: UtilityFunctions.getScientificNotation(med) + " to " + UtilityFunctions.getScientificNotation(max),
                 modified: false
             }];
             bin = false;
@@ -89,7 +90,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             if (bins.length === this.state.bins.length) {
                 for (let i = 1; i < bins.length; i++) {
                     if (!binNames[i - 1].modified) {
-                        binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+                        binNames[i - 1].name = UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]);
                     }
                 }
                 this.setState({bins: bins, binNames: binNames})
@@ -98,7 +99,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                 binNames = [];
                 for (let i = 1; i < bins.length; i++) {
                     binNames.push({
-                        name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
+                        name: UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]),
                         modified: false
                     });
                 }
@@ -137,7 +138,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         let binNames = this.state.binNames;
         if (this.state.isBinary) {
             for (let i = 1; i < this.state.bins.length; i++) {
-                binNames[i - 1].name = Math.round(this.state.bins[i - 1] * 100) / 100 + " to " + Math.round(this.state.bins[i] * 100) / 100;
+                binNames[i - 1].name = UtilityFunctions.getScientificNotation(this.state.bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(this.state.bins[i]);
                 binNames[i - 1].modified = false;
             }
         }
@@ -185,9 +186,9 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             isXLog: isLog,
             bins: [min, med, max],
             binNames: [{
-                name: Math.round(min * 100) / 100 + " to " + Math.round(med * 100) / 100,
+                name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
                 modified: false
-            }, {name: Math.round(med * 100) / 100 + " to " + Math.round(max * 100) / 100, modified: false}]
+            }, {name: UtilityFunctions.getScientificNotation(med) + " to " +UtilityFunctions.getScientificNotation(max), modified: false}]
         });
     }
 

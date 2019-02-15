@@ -42,11 +42,12 @@ const Timepoints = observer(class Timepoints extends React.Component {
                         <HeatmapTimepoint
                             visMap={_self.props.visMap}
                             store={_self.props.store}
+                            variableStore={_self.props.store.variableStores[d.type]}
                             tooltipFunctions={_self.props.tooltipFunctions}
                             showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
                             xOffset={(_self.props.visMap.sampleRectWidth - rectWidth) / 2}
                             rectWidth={rectWidth}
-                            timepoint={d.heatmap}
+                            heatmap={d.heatmap}
                             index={i}
                             currentVariables={_self.props.store.variableStores[d.type].fullCurrentVariables}
                             heatmapScale={_self.props.heatmapScales[i]}

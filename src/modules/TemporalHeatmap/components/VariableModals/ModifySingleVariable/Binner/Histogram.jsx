@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import Axis from "./Axis";
 import * as d3 from "d3";
+import UtilityFunctions from "../../../../UtilityFunctions";
 
 const Histogram = observer(class Histogram extends React.Component {
     render() {
@@ -15,7 +16,9 @@ const Histogram = observer(class Histogram extends React.Component {
             );
         });
          const xAxis = d3.axisBottom()
-            .scale(this.props.xScale);
+            .scale(this.props.xScale).tickFormat(d=>{
+                return UtilityFunctions.getScientificNotation(d);
+             });
         const yAxis = d3.axisLeft()
             .scale(this.props.yScale)
             .tickFormat(d =>{

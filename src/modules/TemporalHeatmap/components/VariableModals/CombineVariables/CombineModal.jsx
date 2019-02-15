@@ -151,6 +151,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 colors = ColorScales.defaultBinaryRange;
             }
         }
+        console.log(modification);
         this.setState({
             modification: modification,
             currentVarCategories: currentVarCategories,
@@ -200,7 +201,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
         this.setState({
             currentVarCategories: currentVarCategories,
             variableRange: range,
-            modification: {type: this.modificationType, operator: "or", datatype: "STRING", mapping: categoryMapping}
+            modification: {type: this.modificationType, operator: "or", datatype: "STRING", mapping: categoryMapping,variableNames:this.state.modification.variableNames}
         });
     }
 
@@ -214,6 +215,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
 
     getModificationPanel() {
         if (this.modificationType === "binaryCombine") {
+            console.log(this.state.modification);
             return <BinaryCombine setModification={this.setModification}
                                   ordinal={this.state.ordinal}
                                   modification={this.state.modification}

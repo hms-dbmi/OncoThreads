@@ -3,9 +3,6 @@ import {observer} from 'mobx-react';
 
 
 const Slider = observer(class Slider extends React.Component {
-    constructor(){
-        super();
-    }
     /**
      * creats the slider dots and associated lines
      * @returns {Array}
@@ -35,7 +32,7 @@ const Slider = observer(class Slider extends React.Component {
                     <input onChange={(e) =>_self.props.handlePositionTextFieldChange(e.target.value,i)}
                            type="text"
                            style={{
-                               width: 50 + "px"
+                               width: 75 + "px"
                            }} value={_self.props.textFieldTexts[i]}/>
                 </foreignObject>)
         });

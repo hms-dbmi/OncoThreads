@@ -1,6 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import uuidv4 from 'uuid/v4';
+import UtilityFunctions from "../UtilityFunctions";
 
 /*
 implements the legend on the right side of the main view
@@ -77,23 +78,33 @@ const Legend = observer(class Legend extends React.Component {
             let text = [];
             if (color.domain().length === 3) {
                 intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
-                text.push(<text key={"text min"} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
+                text.push(<text key={"text min"}
+                                fill={Legend.getTextColor(color(min))}
+                                style={{fontSize: fontSize}}
                                 x={0}
-                                y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
-                    <text key={"text med"} fill={Legend.getTextColor(color(0))} style={{fontSize: fontSize}}
+                                y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(min)}</text>,
+                    <text key={"text med"}
+                          fill={Legend.getTextColor(color(0))}
+                          style={{fontSize: fontSize}}
                           x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
                           y={lineheight / 2 + fontSize / 2}>{0}</text>,
-                    <text key={"text max"} fill={Legend.getTextColor(color(max))} style={{fontSize: fontSize}}
-                          x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
-                          y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
+                    <text key={"text max"}
+                          fill={Legend.getTextColor(color(max))}
+                          style={{fontSize: fontSize}}
+                          x={100 - Legend.getTextWidth(0, UtilityFunctions.getScientificNotation(max), fontSize)}
+                          y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(max)}</text>)
             }
             else {
-                text.push(<text key={"text min"} fill={Legend.getTextColor(color(min))} style={{fontSize: fontSize}}
+                text.push(<text key={"text min"}
+                                fill={Legend.getTextColor(color(min))}
+                                style={{fontSize: fontSize}}
                                 x={0}
-                                y={lineheight / 2 + fontSize / 2}>{Math.round(min * 100) / 100}</text>,
-                    <text key={"text max"} fill={Legend.getTextColor(color(max))} style={{fontSize: fontSize}}
-                          x={100 - Legend.getTextWidth(0, Math.round(max * 100) / 100, fontSize)}
-                          y={lineheight / 2 + fontSize / 2}>{Math.round(max * 100) / 100}</text>)
+                                y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(min)}</text>,
+                    <text key={"text max"}
+                          fill={Legend.getTextColor(color(max))}
+                          style={{fontSize: fontSize}}
+                          x={100 - Legend.getTextWidth(0, UtilityFunctions.getScientificNotation(max), fontSize)}
+                          y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(max)}</text>)
             }
             let randomId = uuidv4();
             this.updateMaxWidth(100 + this.borderLeft);
@@ -130,8 +141,8 @@ const Legend = observer(class Legend extends React.Component {
         variable.domain.forEach((d, i) => {
             if (variable.datatype==="ORDINAL"||row.includes(d)) {
                 let tooltipText;
-                if (variable.derived && variable.datatype === "ORDINAL" && variable.modificationType === "continuousTransform") {
-                    tooltipText = d + ": " + Math.round(variable.modification.binning.bins[i] * 100) / 100 + " to " + Math.round(variable.modification.binning.bins[i + 1] * 100) / 100;
+                if (variable.derived && variable.datatype === "ORDINAL" && variable.modification.type === "continuousTransform"&&variable.modification.binning.binNames[i].modified) {
+                    tooltipText = d + ": " + UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i]) + " to " + UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i + 1]);
                 }
                 else {
                     tooltipText = d;
