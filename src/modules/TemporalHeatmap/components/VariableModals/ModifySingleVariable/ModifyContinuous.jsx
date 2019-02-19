@@ -5,10 +5,11 @@ import * as d3 from 'd3';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, OverlayTrigger, Popover, Radio} from "react-bootstrap";
 import FontAwesome from 'react-fontawesome';
 import Histogram from "./Binner/Histogram";
-import DerivedVariable from "../../DerivedVariable";
+import DerivedVariable from "../../../DerivedVariable";
 import uuidv4 from "uuid/v4";
-import MapperCombine from "../../MapperCombineFunctions";
-import ColorScales from "../../ColorScales";
+import MapperCombine from "../../../MapperCombineFunctions";
+import ColorScales from "../../../ColorScales";
+import UtilityFunctions from "../../../UtilityFunctions";
 
 
 const ModifyContinuous = observer(class ModifyContinuous extends React.Component {
@@ -19,6 +20,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         this.changeTransformation = this.changeTransformation.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleBinChange = this.handleBinChange.bind(this);
+        this.toggleIsBinary = this.toggleIsBinary.bind(this);
         this.toggleBinningActive = this.toggleBinningActive.bind(this);
         this.handleBinNameChange = this.handleBinNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
@@ -30,7 +32,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
      * @returns {{bins: *, binNames: *, bin: boolean, colorRange: *, isXLog: boolean, name: string}}
      */
     setInitialState() {
-        let bins, binNames, bin;
+        let bins, binNames, bin, isBinary;
         if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
             let min = d3.min(this.data);
             let max = d3.max(this.data);
@@ -40,26 +42,29 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             }
             bins = [min, med, max];
             binNames = [{
-                name: (Math.round(min * 100) / 100) + " to " + med,
+                name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
                 modified: false
             }, {
-                name: (Math.round(med * 100) / 100) + " to " + (Math.round(max * 100) / 100),
+                name: UtilityFunctions.getScientificNotation(med) + " to " + UtilityFunctions.getScientificNotation(max),
                 modified: false
             }];
             bin = false;
+            isBinary = false;
         }
         else {
             bins = this.props.derivedVariable.modification.binning.bins;
             binNames = this.props.derivedVariable.modification.binning.binNames;
             bin = true;
+            isBinary = this.props.derivedVariable.datatype === "BINARY";
         }
         return {
             bins: bins,
             binNames: binNames,
             bin: bin,
             colorRange: this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range,
-            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform!==false,
-            name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name
+            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform !== false,
+            name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name,
+            isBinary: isBinary
         }
     }
 
@@ -76,25 +81,31 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
      * @param bins
      */
     handleBinChange(bins) {
-        if (bins.length === this.state.bins.length) {
-            let binNames = this.state.binNames.slice();
-            for (let i = 1; i < bins.length; i++) {
-                if (!binNames[i - 1].modified) {
-                    binNames[i - 1].name = Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100;
+        let isBinary = this.state.isBinary;
+        let binNames = this.state.binNames.slice();
+        if (bins.length !== 3) {
+            isBinary = false;
+        }
+        if(!isBinary) {
+            if (bins.length === this.state.bins.length) {
+                for (let i = 1; i < bins.length; i++) {
+                    if (!binNames[i - 1].modified) {
+                        binNames[i - 1].name = UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]);
+                    }
+                }
+                this.setState({bins: bins, binNames: binNames})
+            }
+            else {
+                binNames = [];
+                for (let i = 1; i < bins.length; i++) {
+                    binNames.push({
+                        name: UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]),
+                        modified: false
+                    });
                 }
             }
-            this.setState({bins: bins, binNames: binNames})
         }
-        else {
-            let binNames = [];
-            for (let i = 1; i < bins.length; i++) {
-                binNames.push({
-                    name: Math.round(bins[i - 1] * 100) / 100 + " to " + Math.round(bins[i] * 100) / 100,
-                    modified: false
-                });
-            }
-            this.setState({bins: bins, binNames: binNames})
-        }
+        this.setState({bins: bins, binNames: binNames, isBinary: isBinary})
 
     }
 
@@ -105,8 +116,36 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
      */
     handleBinNameChange(e, index) {
         let binNames = this.state.binNames.slice();
-        binNames[index] = {name: e.target.value, modified: true};
+        if (!this.state.isBinary) {
+            binNames[index] = {name: e.target.value, modified: true};
+        }
+        else {
+            binNames.forEach((d, i) => {
+                if (i === index) {
+                    d.name = e.target.value === "true";
+                    d.modified = true;
+                }
+                else {
+                    d.name = e.target.value !== "true";
+                    d.modified = true;
+                }
+            })
+        }
         this.setState({binNames: binNames});
+    }
+
+    toggleIsBinary() {
+        let binNames = this.state.binNames;
+        if (this.state.isBinary) {
+            for (let i = 1; i < this.state.bins.length; i++) {
+                binNames[i - 1].name = UtilityFunctions.getScientificNotation(this.state.bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(this.state.bins[i]);
+                binNames[i - 1].modified = false;
+            }
+        }
+        else {
+            binNames[0].name = true;
+        }
+        this.setState({isBinary: !this.state.isBinary, binNames: binNames});
     }
 
     /**
@@ -147,9 +186,9 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             isXLog: isLog,
             bins: [min, med, max],
             binNames: [{
-                name: Math.round(min * 100) / 100 + " to " + Math.round(med * 100) / 100,
+                name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
                 modified: false
-            }, {name: Math.round(med * 100) / 100 + " to " + Math.round(max * 100) / 100, modified: false}]
+            }, {name: UtilityFunctions.getScientificNotation(med) + " to " +UtilityFunctions.getScientificNotation(max), modified: false}]
         });
     }
 
@@ -165,6 +204,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
     handleApply() {
         const newId = uuidv4();
         let modification = {
+            type: "continuousTransform",
             logTransform: this.state.isXLog ? Math.log10 : false, binning: this.state.bin ? {
                 bins: this.state.bins,
                 binNames: this.state.binNames
@@ -172,11 +212,16 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         };
         let returnVariable;
         if (this.state.bin) {
-            let binnedRange = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.state.binNames, this.state.bins);
-            returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], "continuousTransform", modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]), this.props.variable.profile);
+            if (!this.state.isBinary) {
+                let binnedRange = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.state.binNames, this.state.bins);
+                returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+            }
+            else {
+                returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description + " (binned)", [this.props.variable.id], modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+            }
         }
         else if (this.state.isXLog) {
-            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], "continuousTransform", modification, this.state.colorRange, [], MapperCombine.getModificationMapper("continuousTransform", modification, [this.props.variable.mapper]), this.props.variable.profile);
+            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], modification, this.state.colorRange, [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
         }
         else {
             returnVariable = this.props.variable;
@@ -197,12 +242,14 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             disabled = true;
         }
         return (<FormGroup>
-            <Radio onChange={this.changeTransformation} checked={!this.state.isXLog} disabled={disabled} value={'linear'}
+            <Radio onChange={this.changeTransformation} checked={!this.state.isXLog} disabled={disabled}
+                   value={'linear'}
                    name="XradioGroup"
                    inline>
                 None
             </Radio>{' '}
-            <Radio onChange={this.changeTransformation} value={'log'} checked={this.state.isXLog} disabled={disabled} name="XradioGroup" inline>
+            <Radio onChange={this.changeTransformation} value={'log'} checked={this.state.isXLog} disabled={disabled}
+                   name="XradioGroup" inline>
                 Log
             </Radio>{' '}
         </FormGroup>);
@@ -238,8 +285,10 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                            width={width}
                            height={height}
                            histBins={bins}
+                           isBinary={this.state.isBinary}
                            handleBinChange={this.handleBinChange}
-                           handleBinNameChange={this.handleBinNameChange}/>
+                           handleBinNameChange={this.handleBinNameChange}
+                           toggleIsBinary={this.toggleIsBinary}/>
         }
         else {
             const margin = {top: 20, right: 20, bottom: 90, left: 50},

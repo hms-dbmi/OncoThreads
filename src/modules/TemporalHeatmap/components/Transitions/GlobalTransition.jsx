@@ -32,7 +32,7 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
             let j = _self.props.to.indexOf(d);
             if (j !== -1) {
                 let strokeColor = "lightgray";
-                if (_self.props.selectedPatients.includes(d)) {
+                if (_self.props.store.selectedPatients.includes(d)) {
                     strokeColor = "black"
                 }
                 lines.push(

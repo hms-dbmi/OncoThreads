@@ -29,13 +29,6 @@ const RowOperators = observer(class RowOperators extends React.Component {
             window.removeEventListener("resize", this.updateDimensions);
         }
 
-        componentDidUpdate(prevProps) {
-            // Typical usage (don't forget to compare props):
-            if (this.props.sidebarVisible !== prevProps.sidebarVisible) {
-                this.updateDimensions();
-            }
-        }
-
         updateDimensions() {
             this.setState({
                 width: this.refs.rowOperators.parentNode.clientWidth
@@ -53,13 +46,12 @@ const RowOperators = observer(class RowOperators extends React.Component {
         render() {
             let rowHeader = [];
             const _self = this;
-            this.props.timepoints.forEach(function (d, i) {
-                let transform = "translate(0," + _self.props.posY[i] + ")";
+            this.props.store.timepoints.forEach(function (d, i) {
+                let transform = "translate(0," + _self.props.visMap.timepointPositions.timepoint[i] + ")";
                 //Different icons and functions for grouped and ungrouped timepoints
                 rowHeader.push(<RowOperator key={i} transform={transform} timepoint={d} width={_self.state.width}
-                                            currentVariables={_self.props.currentVariables}
                                             visMap={_self.props.visMap} store={_self.props.store}
-                                            showTooltip={_self.props.showTooltip} hideTooltip={_self.props.hideTooltip}
+                                            {..._self.props.tooltipFunctions}
                                             showContextMenu={_self.props.showContextMenu}
                                             openBinningModal={_self.props.openBinningModal}
                                             selectedPatients={_self.props.selectedPatients}
@@ -71,7 +63,7 @@ const RowOperators = observer(class RowOperators extends React.Component {
             let transform = "translate(0," + 20 + ")";
             return (
                 <div ref='rowOperators'>
-                    <svg width={this.state.width} height={this.props.height}>
+                    <svg width={this.state.width} height={this.props.visMap.svgHeight}>
                         <g transform={transform}>
                             {rowHeader}
                         </g>

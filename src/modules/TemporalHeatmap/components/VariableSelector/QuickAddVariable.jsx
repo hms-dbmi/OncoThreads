@@ -3,10 +3,6 @@ import {observer} from "mobx-react";
 import {Button, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../OriginalVariable";
-import EventVariable from "../../EventVariable";
-import DerivedVariable from "../../DerivedVariable";
-import uuidv4 from "uuid/v4";
-import MapperCombine from "../../MapperCombineFunctions";
 
 /*
 creates the selector for sample variables (left side of main view, top)
@@ -27,16 +23,12 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
     static getInitialState(props) {
         let profile = '';
-        let mappingType = '';
-        const nonClinicalProfiles = props.availableProfiles.filter(d => d.type !== "clinical");
-        if (nonClinicalProfiles.length > 0) {
-            profile = nonClinicalProfiles[0].profile;
-            mappingType = nonClinicalProfiles[0].id;
+        if (props.availableProfiles.length > 0) {
+            profile = props.availableProfiles[0].molecularProfileId;
         }
         return {
             category: "clinical",
             profile: profile,
-            mappingType: mappingType,
             geneListString: "",
             selectedValues: [],
             isClinical: true,
@@ -68,19 +60,13 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     addEventVariable() {
         if (this.state.category !== "computed") {
             if (this.state.selectedValues.length > 0) {
-                if (this.state.selectedValues.length > 1) {
-                    let name = this.createCompositeName(this.state.selectedValues);
-                    this.addCombinedVariable(name);
-                }
-                else {
-                    this.addVariablesSeperate();
-                }
+                this.addVariablesSeperate();
                 this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
             }
         }
         else {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id))
+                this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id, "computed"))
             })
         }
         this.setState({selectedValues: [], selectedKey: ""})
@@ -88,19 +74,10 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
 
     /**
-     * adds a variable to the view
-     */
-    addCombinedVariable(name) {
-        let originalVariables = this.state.selectedValues.map(d => new EventVariable(d.value, d.label, this.state.category, d.object.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object)));
-        originalVariables.forEach(d => this.props.store.variableStores.between.addVariableToBeReferenced(d));
-        this.props.store.variableStores.between.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), name, "BINARY", "Binary combination of variables: " + this.state.defaultName, this.state.selectedValues.map(d => d.value), "binaryCombine", "or", [], [], MapperCombine.createBinaryCombinedMapper(originalVariables.map(d => d.mapper), "or")));
-    }
-
-    /**
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.state.selectedValues.forEach(d => this.props.store.variableStores.between.addVariableToBeDisplayed(new EventVariable(d.value, d.label, this.state.category, d.eventType, [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object))));
+        this.state.selectedValues.forEach(d => this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.value, d.label, "BINARY", "Indicates if event: \"" + d.label + "\" has happened between two timepoints", [], [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object), this.state.category, "event")));
     }
 
 
@@ -175,7 +152,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.profile));
+                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.profile,"clinical"));
             });
             this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
             this.setState({selectedValues: []})
@@ -237,10 +214,10 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             }
         });
         this.props.store.rootStore.molProfileMapping.getProfileData(this.state.profile,
-            geneList, this.state.mappingType, newVariables => {
+            geneList, "Binary", newVariables => {
                 this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
+                this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
             });
-        this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
         this.setState({geneListString: ""});
     }
 
@@ -262,14 +239,9 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     }
 
     handleMappingSelect(e) {
-        let profile = this.props.availableProfiles.filter(d => d.id === e.target.value)[0];
-        let mappingType = "";
-        if (profile.type === "mutation") {
-            mappingType = profile.id;
-        }
+        let profile = this.props.availableProfiles.filter(d => d.molecularProfileId === e.target.value)[0];
         this.setState({
-            mappingType: mappingType,
-            profile: profile.profile,
+            profile: profile.molecularProfileId,
         })
     }
 
@@ -333,17 +305,17 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             selectMappingType = <Col sm={colSize} style={{padding: 0}}>
                 <FormControl style={{height: 38}} componentClass="select" onChange={this.handleMappingSelect}
                              placeholder="Select Category">
-                    {this.props.availableProfiles.filter(d => d.type !== "clinical").map(d => <option value={d.id}
-                                                                                                      key={d.id}>{d.name}</option>)}
+                    {this.props.availableProfiles.map(d => <option value={d.molecularProfileId}
+                                                                   key={d.molecularProfileId}>{d.name}</option>)}
                 </FormControl>
             </Col>
 
         }
         let options = [];
-        if (this.props.availableProfiles.filter(d => d.type === "clinical").length > 0) {
+        if (this.props.clinicalSampleCategories.length > 0 || this.props.clinicalPatientCategories.length > 0) {
             options.push(<option key="clinical" value={"clinical"}>Predefined</option>)
         }
-        if (this.props.availableProfiles.filter(d => d.type !== "clinical").length > 0) {
+        if (this.props.availableProfiles.length > 0) {
             options.push(<option key="genes" value={"genes"}>Genomic</option>)
         }
 

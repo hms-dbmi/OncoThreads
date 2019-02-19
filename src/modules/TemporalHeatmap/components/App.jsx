@@ -29,6 +29,8 @@ const App = observer(class App extends React.Component {
         this.closeModal = this.closeModal.bind(this);
     }
 
+
+
     openModal(type) {
         if (type === 'about') {
             this.setState({
@@ -71,6 +73,7 @@ const App = observer(class App extends React.Component {
                               studies={this.props.studyapi.studies}/>,
                     <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
                         <NavItem onClick={this.rootStore.exportSVG}>...as SVG</NavItem>
+                        <NavItem onClick={this.rootStore.exportSVGandData}>...as SVG with metadata</NavItem>
                     </NavDropdown>,
                     <NavItem key='settings' onClick={() => this.openModal('settings')}>Settings</NavItem>,
                     <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
@@ -124,7 +127,7 @@ const App = observer(class App extends React.Component {
                 {this.getMainContent()}
                 <LogModal modalIsOpen={this.state.logModalIsOpen} close={this.closeModal}
                           logs={this.rootStore.undoRedoStore.logs}/>
-                <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} store={this.rootStore.timepointStore}
+                <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} store={this.rootStore.dataStore}
                                close={this.closeModal}/>
                 <AboutModal modalIsOpen={this.state.aboutModalIsOpen} close={this.closeModal}/>
                 <Modal show={this.state.studyInfoModalIsOpen}

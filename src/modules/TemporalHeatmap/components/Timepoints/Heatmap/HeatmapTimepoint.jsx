@@ -7,39 +7,37 @@ import HeatmapRow from './HeatmapRow';
 creates a heatmap timepoint
  */
 const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component {
-
-
     getTimepoint() {
         const _self = this;
         let rows = [];
         let previousYposition = 0;
-        this.props.timepoint.forEach(function (row, i) {
-            //get the correct color scale depending on the type of the variable (STRING, continous or binary)
-            let color = _self.props.currentVariables[i].colorScale;
+        this.props.currentVariables.forEach((variable, i)=> {
             const transform = "translate(0," + previousYposition + ")";
-            if (!row.isUndef || _self.props.store.showUndefined || row.variable === _self.props.primaryVariableId) {
-                if (row.variable === _self.props.primaryVariableId) {
-                    rows.push(<g key={row.variable} transform={transform}>
-                        <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
-                                    height={_self.props.visMap.primaryHeight}
-                                    opacity={1}
-                                    color={color}
-                                    x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                    currVar={_self.props.currentVariables[i]}/>;
-                    </g>);
-                    previousYposition += _self.props.visMap.primaryHeight + _self.props.visMap.gap;
+            if (!this.props.heatmap[i].isUndef || _self.props.store.showUndefined || this.props.heatmap[i].variable === _self.props.primaryVariableId) {
+                let rowHeight = _self.props.visMap.secondaryHeight;
+                let opacity = 0.5;
+                if (variable.id === _self.props.primaryVariableId) {
+                    rowHeight = _self.props.visMap.primaryHeight;
+                    opacity = 1;
                 }
-                else {
-                    rows.push(<g key={row.variable} transform={transform}>
-                        <HeatmapRow {..._self.props} row={row} timepoint={_self.props.index}
-                                    height={_self.props.visMap.secondaryHeight}
-                                    opacity={0.5}
-                                    color={color}
-                                    x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
-                                    currVar={_self.props.currentVariables[i]}/>;
-                    </g>);
-                    previousYposition += _self.props.visMap.secondaryHeight + _self.props.visMap.gap;
-                }
+                rows.push(<g key={variable.id} transform={transform}>
+                    <HeatmapRow showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
+                                store={_self.props.store}
+                                {..._self.props.tooltipFunctions}
+
+                                heatmapScale={_self.props.heatmapScale}
+                                row={this.props.heatmap[i]}
+                                timepointIndex={_self.props.index}
+                                variableStore={_self.props.variableStore}
+                                rectWidth={_self.props.rectWidth}
+                                xOffset={_self.props.xOffset}
+                                currVar={variable}
+
+                                height={rowHeight}
+                                opacity={opacity}/>;
+                </g>);
+                previousYposition += rowHeight + _self.props.visMap.gap;
+
             }
         });
         return (rows)

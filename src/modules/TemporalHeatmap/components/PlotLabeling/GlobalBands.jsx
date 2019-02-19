@@ -139,7 +139,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
         else if (this.props.store.rootStore.timeVar === "365") {
             timeV = this.props.maxTimeInDays / 365;
         }
-        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.height - 35]).nice();
+        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.visMap.svgHeight - 35]).nice();
 
 
         const yAxis = d3.axisLeft().scale(y);
@@ -156,12 +156,12 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
             .attr("class", "grid")
             .call(//this.make_y_gridlines(yAxis)
                 yAxis
-                    .tickSize(-this.props.width)
+                    .tickSize(-this.props.visMap.plotWidth)
                     .tickFormat("")
             )
             .style("stroke-width", 0)
             .style("stroke", "#f00")
-            .style("opacity", 0.3)
+            .style("opacity", 0.3);
 
         //.style("fill", "blue")
         d3.select(".axisGlobal2").select(".intBands").remove();
@@ -183,7 +183,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
          });*/
 
 
-        var ht = (this.props.height - 35) / yval.length, wd = this.props.width;
+        var ht = (this.props.visMap.svgHeight - 35) / yval.length, wd = this.props.visMap.plotWidth;
 
         //d3.selectAll('g').selectAll('intBands').remove();
 
@@ -217,7 +217,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
 
         return (
             <div className="overlaid">
-                <svg height={this.props.height} width={this.props.width}>
+                <svg height={this.props.visMap.svgHeight} width={this.props.visMap.plotWidth}>
 
 
                     <g className="axisGlobal2" transform="translate(0, 25)">

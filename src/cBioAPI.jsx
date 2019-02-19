@@ -1,83 +1,153 @@
 import axios from 'axios';
 
+
 class cBioAPI {
-    constructor() {
-        this.patients = [];
-        this.clinicalEvents = {};
-        this.clinicalPatientData = [];
-        this.clinicalSampleData = [];
-        this.molecularProfiles = [];
-        this.mutationCounts = [];
-    }
-
-    initialize() {
-        this.patients = [];
-        this.clinicalEvents = {};
-        this.clinicalPatientData = [];
-        this.clinicalSampleData = [];
-        this.molecularProfiles = [];
-        this.mutationCounts = [];
-    }
-
-
-    getAllData(studyID, callback) {
-        /**
-         * get patient information first
-         */
-        this.patients = [];
-        this.clinicalEvents = {};
-        this.clinicalPatientData = [];
-        this.clinicalSampleData = [];
-        this.mutationCounts = [];
+    /**
+     * get all patients in a study
+     * @param studyID
+     * @param callback
+     */
+    getPatients(studyID, callback) {
         axios.get("http://cbiohack.org/api/studies/" + studyID + "/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
-                this.patients = response.data;
-                let _self = this;
-                let clinicalEventRequests = [];
-                let patientDataRequests = [];
-                /**
-                 * get clinical events for all the patients
-                 */
-                this.patients.forEach(function (patient) {
-                    clinicalEventRequests.push(axios.get("http://cbiohack.org/api/studies/" + studyID + "/patients/" + patient.patientId + "/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC"));
-                    patientDataRequests.push(axios.get("http://cbiohack.org/api/studies/" + studyID + "/patients/" + patient.patientId + "/clinical-data?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC"));
+                callback(response.data.map(patient => patient.patientId));
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Could not load patients");
+            }
+        });
+    }
+
+    /**
+     * get all events for all patients in a study
+     * @param studyID
+     * @param patients
+     * @param callback
+     */
+    getEvents(studyID, patients, callback) {
+        let clinicalEventRequests = patients.map(patient => axios.get("http://cbiohack.org/api/studies/" + studyID + "/patients/" + patient + "/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC"));
+        axios.all(clinicalEventRequests)
+            .then(eventResults => {
+                let events = {};
+                eventResults.forEach((response, i) => {
+                    events[patients[i]] = response.data;
                 });
-                axios.all(clinicalEventRequests)
-                    .then(function (eventResults) {
-                        eventResults.forEach(function (response2, i) {
-                            _self.clinicalEvents[_self.patients[i].patientId] = response2.data;
-                        });
-                        axios.all(patientDataRequests)
-                            .then(function (patientDataResults) {
-                                patientDataResults.forEach(function (response3, i) {
-                                    _self.clinicalPatientData.push(response3.data);
-                                });
-                                /**
-                                 * get clinical data and mutation counts
-                                 */
-                                axios.all([cBioAPI.getClinicalData(studyID), cBioAPI.getMolecularProfiles(studyID)])
-                                    .then(axios.spread(function (clinicalData, molecularProfiles) {
-                                        _self.clinicalSampleData = clinicalData.data;
-                                        _self.molecularProfiles = molecularProfiles.data;
-                                        let index = _self.molecularProfiles.map(d => {
-                                            return d.molecularAlterationType;
-                                        }).indexOf("MUTATION_EXTENDED");
-                                        if (index !== -1) {
-                                            axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfiles.data[index].molecularProfileId + "/mutation-counts?sampleListId=" + studyID + "_all")
-                                                .then(response => {
-                                                    _self.mutationCounts = response.data;
-                                                    callback();
-                                                })
-                                        }
-                                        else {
-                                            callback();
-                                        }
-                                    })).catch(function (error) {
-                                    console.log(error);
-                                });
-                            })
-                    })
-            });
+                callback(events);
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Could not load events")
+            }
+        });
+    }
+
+    /**
+     * get clinical patient data for each patient in a study
+     * @param studyID
+     * @param patients
+     * @param callback
+     */
+    getClinialPatientData(studyID, patients, callback) {
+        let patientDataRequests = patients.map(patient => axios.get("http://cbiohack.org/api/studies/" + studyID + "/patients/" + patient + "/clinical-data?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC"));
+        axios.all(patientDataRequests)
+            .then(patientDataResults => {
+                let patientData = [];
+                patientDataResults.forEach(function (response) {
+                    patientData.push(response.data);
+                });
+                callback(patientData);
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Could not load patient data")
+            }
+        });
+    }
+
+    /**
+     * get all available molecular profiles for a study
+     * @param studyID
+     * @param callback
+     */
+    getAvailableMolecularProfiles(studyID, callback) {
+        axios.get("http://www.cbiohack.org/api/studies/" + studyID + "/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
+            .then(response => {
+                callback(response.data);
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Could not available molecular profiles")
+
+            }
+        });
+    }
+
+    /**
+     * get all available clinical sample data in a study
+     * @param studyID
+     * @param callback
+     */
+    getClinicalSampleData(studyID, callback) {
+        axios.get("http://cbiohack.org/api/studies/" + studyID + "/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC")
+            .then(response => {
+                callback(response.data);
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Could not load sample data")
+            }
+        });
+    }
+
+    /**
+     * get all mutations in a study
+     * @param studyID
+     * @param molecularProfile
+     * @param callback
+     */
+    getAllMutations(studyID, molecularProfile, callback) {
+        axios.get("http://www.cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutations?sampleListId=" + studyID + "_all&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC")
+            .then(response => {
+                callback(response.data);
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Could not load mutations")
+            }
+        });
+    }
+
+    /**
+     * get mutation counts in a study
+     * @param studyID
+     * @param molecularProfile
+     * @param callback
+     */
+    getMutationCounts(studyID, molecularProfile, callback) {
+        axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutation-counts?sampleListId=" + studyID + "_all")
+            .then(response => {
+                callback(response.data);
+            }).catch((error) => {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Could not load mutation counts")
+            }
+        });
 
     }
 
@@ -93,8 +163,12 @@ class cBioAPI {
      * Gets mutation counts from the cBio Portal
      * @returns {AxiosPromise<any>}
      */
-    static getMutationCounts(studyID) {
-        return axios.get("http://cbiohack.org/api/molecular-profiles/" + studyID + "_mutations/mutation-counts?sampleListId=" + studyID + "_all");
+    static getMutationCounts(studyID, molecularProfile) {
+        return axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutation-counts?sampleListId=" + studyID + "_all");
+    }
+
+    static getMutations(studyID, molecularProfile) {
+        return axios.get("http://www.cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutations?sampleListId=" + studyID + "_all&projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC");
     }
 
 
@@ -105,6 +179,23 @@ class cBioAPI {
      */
     static genomNexusMappingMultipleSymbols(hgncSymbols) {
         return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
+    }
+
+    getHugoSymbols(entrezIds, callback) {
+        axios.post("https://genomenexus.org/ensembl/canonical-gene/entrez", entrezIds).then(function (response) {
+            let mapper = {};
+            response.data.forEach(d => {
+                mapper[d.entrezGeneId] = d.hugoSymbol;
+            });
+            callback(mapper);
+        }).catch(function (error) {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                alert("invalid symbol")
+            }
+        })
     }
 
     getGeneIDs(hgncSymbols, callback) {
@@ -125,8 +216,12 @@ class cBioAPI {
             }
             callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));
         }).catch(function (error) {
-            console.log(error);
-            alert("invalid symbol")
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                alert("invalid symbol")
+            }
         })
     }
 
@@ -138,30 +233,33 @@ class cBioAPI {
             "sampleListId": studyId + "_all"
         }).then(function (response) {
             callback(response.data)
-        })
-            .catch(function (error) {
-                console.log(error)
-            });
+        }).catch(function (error) {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+            else {
+                console.log("Can't get mutations")
+            }
+        });
     }
 
     /**
      * checks for each sample if entrezIDs have been profiled
      * @param studyId
-     * @param profileId
      * @param entrezIDs
      * @param callback
      */
     areProfiled(studyId, entrezIDs, callback) {
         let profiledDict = {};
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + studyId + "_mutations/gene-panel-data/fetch",
-                {
-                    "sampleListId": studyId + "_all"
-                }
+            {
+                "sampleListId": studyId + "_all"
+            }
         ).then(samplePanels => {
             let differentPanels = samplePanels.data.map(d => d.genePanelId).filter(function (item, i, ar) {
                 return ar.indexOf(item) === i;
-            }).filter(d=>d!==undefined);
-            if(differentPanels.length>0) {
+            }).filter(d => d !== undefined);
+            if (differentPanels.length > 0) {
                 axios.all(differentPanels.map(d => axios.get("http://www.cbiohack.org/api/gene-panels/" + d))).then(panelList => {
                     samplePanels.data.forEach(samplePanel => {
                         profiledDict[samplePanel.sampleId] = [];
@@ -171,22 +269,30 @@ class cBioAPI {
                                     profiledDict[samplePanel.sampleId].push(entrezId);
                                 }
                             }
-                            else{
-                                profiledDict[samplePanel.sampleId]=entrezId;
+                            else {
+                                profiledDict[samplePanel.sampleId] = entrezId;
                             }
 
                         });
                     });
                     callback(profiledDict);
+                }).catch(function (error) {
+                    if (cBioAPI.verbose) {
+                        console.log(error);
+                    }
                 });
             }
-            else{
-                samplePanels.data.forEach(samplePanel=>
-                    profiledDict[samplePanel.sampleId]=entrezIDs
+            else {
+                samplePanels.data.forEach(samplePanel =>
+                    profiledDict[samplePanel.sampleId] = entrezIDs
                 );
                 callback(profiledDict);
             }
-        })
+        }).catch(function (error) {
+            if (cBioAPI.verbose) {
+                console.log(error);
+            }
+        });
     }
 
     getMolecularValues(studyId, profileId, entrezIDs, callback) {
@@ -197,8 +303,7 @@ class cBioAPI {
             "sampleListId": studyId + "_all"
         }).then(function (response) {
             callback(response.data)
-        })
-            .catch(function (error) {
+        }).catch(function (error) {
                 console.log(error)
             });
     }
@@ -213,5 +318,6 @@ class cBioAPI {
     }
 
 }
+cBioAPI.verbose = false;
 
 export default cBioAPI;

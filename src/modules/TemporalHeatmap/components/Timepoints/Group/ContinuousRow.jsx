@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import uuidv4 from "uuid/v4";
 import * as d3 from 'd3';
+import UtilityFunctions from "../../../UtilityFunctions";
 /*
 creates a row of a continuous variable in a partition of a grouped timepoint
  */
@@ -48,7 +49,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                 else {
                     rectColor = "black";
                 }
-                if (_self.props.advancedSelection) {
+                if (_self.props.store.advancedSelection) {
                     let x = selectedScale(stepwidth * i);
                     if (i === 0) {
                         x = x + 1;
@@ -68,7 +69,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             {stops}
         </linearGradient>;
         let selectUndefinedRect = null;
-        if (undefinedValuesCounter > 0 && this.props.advancedSelection) {
+        if (undefinedValuesCounter > 0 && this.props.store.advancedSelection) {
             selectUndefinedRect = <rect x={this.props.groupScale(values.length) + 1} height={this.props.height}
                                         width={this.props.groupScale(undefinedValuesCounter) - 1}
                                         fill={"none"}
@@ -80,7 +81,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             </defs>
             <rect x="0" height={this.props.height} width={this.props.groupScale(values.length)}
                   fill={"url(#" + randomId + ")"} opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, values.length + ' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
+                  onMouseEnter={(e) => this.props.showTooltip(e, values.length + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                   onMouseLeave={this.props.hideTooltip}/>
             <rect x={this.props.groupScale(values.length)} height={this.props.height}
                   width={this.props.groupScale(this.props.partition.length - values.length)} fill={"white"}
@@ -127,7 +128,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                 </defs>
                 <rect x={0} width={this.props.groupScale(numValues)} height={this.props.height}
                       fill={"url(#" + randomId + ")"} stroke={'lightgray'} opacity={this.props.opacity}
-                      onMouseEnter={(e) => this.props.showTooltip(e, 'Minimum: ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median: ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum: ' + Math.round(boxPlotValues[4] * 100) / 100)}
+                      onMouseEnter={(e) => this.props.showTooltip(e, 'Minimum: ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median: ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum: ' +UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                       onMouseLeave={this.props.hideTooltip}/>
                 <line x1={boxPlotScale(boxPlotValues[0])} x2={boxPlotScale(boxPlotValues[0])}
                       y1={1 / 3 * this.props.height} y2={2 / 3 * this.props.height} stroke="black"/>
@@ -167,7 +168,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
         return (<g>
             <rect x="0" height={this.props.height} width={this.props.groupScale(numValues)}
                   fill={this.props.color(boxPlotValues[2])} opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, numValues + ' patients: Minimum ' + Math.round(boxPlotValues[0] * 100) / 100 + ', Median ' + Math.round(boxPlotValues[2] * 100) / 100 + ', Maximum ' + Math.round(boxPlotValues[4] * 100) / 100)}
+                  onMouseEnter={(e) => this.props.showTooltip(e, numValues + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                   onMouseLeave={this.props.hideTooltip}/>
             <rect x={this.props.groupScale(numValues)} height={this.props.height}
                   width={this.props.groupScale(this.props.partition.length - numValues)} fill={"white"}
@@ -200,13 +201,13 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             return (a.value - b.value)
         });
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
-        if (this.props.continuousRepresentation === 'gradient') {
-            let selectedPartitionPatients = this.props.partition.map(d => d.patients[0]).filter(element => -1 !== this.props.selectedPatients.indexOf(element));
+        if (this.props.store.continuousRepresentation === 'gradient') {
+            let selectedPartitionPatients = this.props.partition.map(d => d.patients[0]).filter(element => -1 !== this.props.store.selectedPatients.indexOf(element));
             return (
                 this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
             )
         }
-        else if (this.props.continuousRepresentation === 'boxplot')
+        else if (this.props.store.continuousRepresentation === 'boxplot')
             return (
                 this.createBoxPlot(boxPlotValues, values.length)
             );

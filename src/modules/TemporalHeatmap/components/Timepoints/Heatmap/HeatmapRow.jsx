@@ -1,5 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import UtilityFunctions from "../../../UtilityFunctions";
 /*
 creats a row in the heatmap
  */
@@ -15,68 +16,52 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
         this.handleMouseEnter = this.handleMouseEnter.bind(this);
-        this.handleMouseEnterGlobal = this.handleMouseEnterGlobal.bind(this);
     }
 
     getRow() {
         let rects = [];
-        const _self = this;
-
-        //console.log(this.props.row.data);
 
 
-
-
-        this.props.row.data.forEach(function (d, j) {
+        this.props.row.data.forEach((d, j) =>{
             let stroke = "none";
-            let fill = _self.props.color(d.value);
+            let fill = this.props.currVar.colorScale(d.value);
             if (d.value === undefined) {
                 stroke = "lightgray";
                 fill = "white";
             }
-            if (_self.props.selectedPatients.includes(d.patient)) {
+            if (this.props.store.selectedPatients.includes(d.patient)) {
                 stroke = "black";
             }
             let str;
 
-            if(_self.props.currVar.datatype==="NUMBER"){
-                str=Math.round(d.value*100)/100;
+            if(this.props.currVar.datatype==="NUMBER"){
+                str=UtilityFunctions.getScientificNotation(d.value);
             }
-            else if (_self.props.currVar.derived && _self.props.currVar.datatype === "ORDINAL" && _self.props.currVar.modificationType === "continuousTransform") {
-                let ind = _self.props.currVar.modification.binning.binNames.map(d => d.name).indexOf(d.value);
-                str=d.value;
-                if (_self.props.currVar.modification.binning.binNames[ind].modified) {
-                    let low = Math.round(_self.props.currVar.modification.binning.bins[ind] * 100) / 100;
-
-                    if (ind !== 0) {
-                        low = low + 1;
-                    }
-                    str += ": " + low + " to " + Math.round(_self.props.currVar.modification.binning.bins[ind + 1] * 100) / 100;
-                }
+            else if (this.props.currVar.derived && this.props.currVar.datatype === "ORDINAL" && this.props.currVar.modification.type === "continuousTransform") {
+                str=d.value+" ("+UtilityFunctions.getScientificNotation(this.props.variableStore.getById(this.props.currVar.originalIds[0]).mapper[d.sample])+")";
             }
             else{
                 str=d.value;
             }
-
-            rects.push(<rect stroke={stroke} onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, str)}
-                             onMouseLeave={_self.handleMouseLeave}
-                             onMouseDown={(e) => _self.handleMouseDown(e, d.patient)}
-                             onMouseUp={_self.handleMouseUp} onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                             onClick={_self.handleClick}
-                             onContextMenu={(e) => _self.handleRightClick(e, d.patient, _self.props.timepoint, j)}
-                             key={d.patient} height={_self.props.height}
-                             width={_self.props.rectWidth}
-                             x={_self.props.heatmapScale(d.patient) + _self.props.x}
-                             fill={fill} opacity={_self.props.opacity}/>);
+            rects.push(<rect stroke={stroke} onMouseEnter={(e) => this.handleMouseEnter(e, d.patient, str)}
+                             onMouseLeave={this.handleMouseLeave}
+                             onMouseDown={(e) => this.handleMouseDown(e, d.patient)}
+                             onMouseUp={this.handleMouseUp} onDoubleClick={() => this.handleDoubleClick(d.patient)}
+                             onClick={this.handleClick}
+                             onContextMenu={(e) => this.handleRightClick(e, d.patient, this.props.timepointIndex, j)}
+                             key={d.patient} height={this.props.height}
+                             width={this.props.rectWidth}
+                             x={this.props.heatmapScale(d.patient) + this.props.xOffset}
+                             fill={fill} opacity={this.props.opacity}/>);
             if (d.value === undefined) {
                 rects.push(<line stroke={stroke}
-                                 key={d.patient + "UNDEFINED"} height={_self.props.height}
-                                 width={_self.props.rectWidth}
-                                 x1={_self.props.heatmapScale(d.patient) + _self.props.x}
-                                 x2={_self.props.heatmapScale(d.patient) + _self.props.x + _self.props.rectWidth}
+                                 key={d.patient + "UNDEFINED"} height={this.props.height}
+                                 width={this.props.rectWidth}
+                                 x1={this.props.heatmapScale(d.patient) + this.props.xOffset}
+                                 x2={this.props.heatmapScale(d.patient) + this.props.xOffset + this.props.rectWidth}
                                  y1={0}
-                                 y2={_self.props.height}
-                                 opacity={_self.props.opacity}/>);
+                                 y2={this.props.height}
+                                 opacity={this.props.opacity}/>);
             }
         });
         return rects;
@@ -91,7 +76,7 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
     handleMouseDown(event, patient) {
         if (event.button === 0) {
             if (!this.state.dragging) {
-                this.props.onDrag(patient);
+                this.props.store.handlePatientSelection(patient);
             }
             this.setState({
                 dragging: true
@@ -108,19 +93,10 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
 
     handleMouseEnter(event, patient, value) {
         if (this.state.dragging) {
-            this.props.onDrag(patient);
+            this.props.store.handlePatientSelection(patient);
         }
         else {
             this.props.showTooltip(event, patient + ": " + value)
-        }
-    }
-
-    handleMouseEnterGlobal(event, patient, value, startDay, duration) {
-        if (this.state.dragging) {
-            this.props.onDrag(patient);
-        }
-        else {
-            this.props.showTooltip(event, patient + ": " + value + ", Event start day: " + startDay + ", Duration: " + duration + " days")
         }
     }
 
@@ -145,13 +121,13 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         })
     }
 
-    handleRightClick(e, patient, timepoint, xposition) {
+    handleRightClick(e, patient, timepointIndex, xposition) {
         //console.log("\n Right Clicked!");
         e.preventDefault();
         this.setState({
             dragging: false
         });
-        this.props.showContextMenuHeatmapRow(e, patient, timepoint, xposition);
+        this.props.showContextMenuHeatmapRow(e, patient, timepointIndex, xposition);
 
 
     }

@@ -14,7 +14,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
     }
 
     handleClick(patient) {
-        this.props.selectPatient(patient)
+        this.props.store.handlePatientSelection(patient)
     }
 
     getRow() {
@@ -29,7 +29,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
         //console.log(this.props.row.data);
         if (_self.props.timepointType === "between") {
-            if (_self.props.dtype === "BINARY") {
 
 
                 _self.props.events.forEach(function (ev, j) {
@@ -61,22 +60,20 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         />);
                     }
                 );
-            }
         }
         else
         {
-            this.props.row.data.forEach(function (d, i) { 
-           
+            this.props.row.data.forEach(function (d, i) {
 
-            if(_self.props.store.rootStore.timepointStore.timepoints.length!==_self.props.index){
-            //if(_self.props.store.rootStore.timepointStore.timepoints.length!==-1){  
+            if(_self.props.store.rootStore.dataStore.timepoints.length!==_self.props.index){
+            //if(_self.props.store.rootStore.dataStore.timepoints.length!==-1){
                 let stroke = "none";
                 let fill = _self.props.color(d.value);
                 if (d.value === undefined) {
                     stroke = "lightgray";
                     fill = "white";
                 }
-                if (_self.props.selectedPatients.includes(d.patient)) {
+                if (_self.props.store.selectedPatients.includes(d.patient)) {
                     stroke = "black";
                 }
 
@@ -104,7 +101,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                 key={d.patient + i + j}
                                 height={_self.props.rectWidth / 2}//{_self.props.height}
                                 width={_self.props.rectWidth / 2}
-                                x={xGlobal}
+                                x={_self.props.heatmapScale(d.patient)}
                                 y={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis)}
                                 fill={fill}
                                 opacity={_self.props.opacity}
@@ -120,14 +117,14 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                                     y2={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis)+_self.props.rectWidth/2}
                                                     opacity={_self.props.opacity}/>);
                                 }
-            
-    
-    
+
+
+
             }
             else{
-            
+
             let stroke = "none";
-            
+
 
 
             //const val = d.value;
@@ -186,7 +183,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
                 }
-               
+
             }
             /*if (d.value === undefined) {
                                 rects.push(<line stroke={"lightgrey"}
@@ -198,10 +195,10 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                                 y2={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample].startNumberOfDaysSinceDiagnosis)+_self.props.rectWidth/2}
                                                 opacity={_self.props.opacity}/>);
                             }*/
-        
+
 
            }
-    
+
         });
     }
 return rects;
