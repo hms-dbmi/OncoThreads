@@ -34,7 +34,10 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             binNames = [{
                 name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
                 modified: false
-            }, {name: UtilityFunctions.getScientificNotation(med) + " to " + UtilityFunctions.getScientificNotation(max), modified: false}];
+            }, {
+                name: UtilityFunctions.getScientificNotation(med) + " to " + UtilityFunctions.getScientificNotation(max),
+                modified: false
+            }];
             return {
                 bins: bins,
                 binNames: binNames,
@@ -46,7 +49,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             let binNames = this.state.binNames.slice();
             if (this.state.isBinary) {
                 for (let i = 1; i < this.state.bins.length; i++) {
-                    binNames[i - 1].name = UtilityFunctions.getScientificNotation(this.state.bins[i - 1])  + " to " + UtilityFunctions.getScientificNotation(this.state.bins[i]);
+                    binNames[i - 1].name = UtilityFunctions.getScientificNotation(this.state.bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(this.state.bins[i]);
                     binNames[i - 1].modified = false;
                 }
             }
@@ -64,7 +67,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             if (bins.length !== 3) {
                 isBinary = false;
             }
-            if(!isBinary) {
+            if (!isBinary) {
                 if (bins.length === this.state.bins.length) {
                     for (let i = 1; i < bins.length; i++) {
                         if (!binNames[i - 1].modified) {
@@ -76,7 +79,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                     binNames = [];
                     for (let i = 1; i < bins.length; i++) {
                         binNames.push({
-                            name: UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions(bins[i]),
+                            name: UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]),
                             modified: false
                         });
                     }
@@ -118,6 +121,8 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             const newId = uuidv4();
             let derivedVariable;
             let modification = {
+                type: "continuousTransform",
+                logTransform: false,
                 binning: {
                     bins: this.state.bins,
                     binNames: this.state.binNames
@@ -131,7 +136,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             }
             else {
                 derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINARY", this.props.variable.description + " (binned)",
-                    [this.props.variable.id],  modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]),
+                    [this.props.variable.id], modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]),
                     this.props.variable.profile);
 
             }
