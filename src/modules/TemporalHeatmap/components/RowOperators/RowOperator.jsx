@@ -107,7 +107,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         removeVariable(variable, type) {
             if (variable.derived) {
-                this.openSaveModal(variable.id, save => {
+                this.openSaveModal(variable, save => {
                     this.props.store.variableStores[type].updateSavedVariables(variable.id, save);
                     this.props.store.variableStores[type].removeVariable(variable.id);
                 })

@@ -33,21 +33,22 @@ const BlockTextField = observer(class BlockTextField extends React.Component {
      * @returns {number}
      */
     static cropText(text, fontSize, maxWidth) {
-        const width = BlockTextField.getTextWidth(text, fontSize);
+        let returnText=text.toString();
+        const width = BlockTextField.getTextWidth(returnText, fontSize);
         if (width > maxWidth) {
-            let prevText = text.substr(0, 0);
-            for (let i = 1; i < text.length; i++) {
-                let currText = text.substr(0, i);
+            let prevText = returnText.substr(0, 0);
+            for (let i = 1; i < returnText.length; i++) {
+                let currText = returnText.substr(0, i);
                 let prevWidth = BlockTextField.getTextWidth(prevText, fontSize);
                 let currWidth = BlockTextField.getTextWidth(currText, fontSize);
                 if (currWidth > maxWidth && prevWidth < maxWidth) {
-                    text = prevText;
+                    returnText = prevText;
                     break;
                 }
                 prevText = currText;
             }
         }
-        return text;
+        return returnText;
     }
 
     render() {

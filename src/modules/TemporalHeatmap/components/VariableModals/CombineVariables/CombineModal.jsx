@@ -62,6 +62,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             ordinal = this.props.derivedVariable.datatype === "ORDINAL";
             if (this.props.derivedVariable.modification.datatype === "STRING") {
                 currentVarCategories = this.getCurrentDataOfDerivedVariable();
+                console.log(currentVarCategories);
             }
         }
         else {
@@ -86,22 +87,30 @@ const CombineModal = observer(class CombineModal extends React.Component {
         };
     }
 
+    /**
+     * creates current variable categories for a derived variable
+     * @returns {Array}
+     */
     getCurrentDataOfDerivedVariable() {
         let currentVarCategories = [];
         this.props.derivedVariable.domain.forEach((d, i) => {
-            for (let key in this.props.derivedVariable.modification.mapping) {
-                if (this.props.derivedVariable.modification.mapping[key] === d) {
-                    if (!(currentVarCategories.map(d => d.name).includes(d))) {
-                        currentVarCategories.push({
-                            selected: false,
-                            name: d,
-                            categories: [],
-                            color: this.props.derivedVariable.range[i % this.props.derivedVariable.range.length]
-                        })
+            let categories = [];
+            if (this.props.derivedVariable.modification.mapping === null) {
+                categories = [d];
+            }
+            else {
+                for (let key in this.props.derivedVariable.modification.mapping) {
+                    if (this.props.derivedVariable.modification.mapping[key] === d) {
+                        categories.push(key);
                     }
-                    currentVarCategories[currentVarCategories.map(d => d.name).indexOf(d)].categories.push(key);
                 }
             }
+            currentVarCategories.push({
+                selected: false,
+                name: d,
+                categories: categories,
+                color: this.props.derivedVariable.range[i % this.props.derivedVariable.range.length]
+            });
         });
         return currentVarCategories;
     }
@@ -132,7 +141,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
     setModification(modification) {
         let currentVarCategories = [];
         let colors = [];
-        modification.type=this.modificationType;
+        modification.type = this.modificationType;
         if (modification.datatype === "STRING") {
             if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.datatype === "STRING") {
                 colors = this.props.derivedVariable.range;
@@ -151,6 +160,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 colors = ColorScales.defaultBinaryRange;
             }
         }
+        console.log(modification);
         this.setState({
             modification: modification,
             currentVarCategories: currentVarCategories,
@@ -200,7 +210,13 @@ const CombineModal = observer(class CombineModal extends React.Component {
         this.setState({
             currentVarCategories: currentVarCategories,
             variableRange: range,
-            modification: {type: this.modificationType, operator: "or", datatype: "STRING", mapping: categoryMapping}
+            modification: {
+                type: this.modificationType,
+                operator: "or",
+                datatype: "STRING",
+                mapping: categoryMapping,
+                variableNames: this.state.modification.variableNames
+            }
         });
     }
 
