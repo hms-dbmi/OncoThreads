@@ -60,13 +60,10 @@ const RowOperators = observer(class RowOperators extends React.Component {
                                             highlightedVariable={_self.props.highlightedVariable}/>);
 
             });
-            let transform = "translate(0," + 20 + ")";
             return (
                 <div ref='rowOperators'>
                     <svg width={this.state.width} height={this.props.visMap.svgHeight}>
-                        <g transform={transform}>
                             {rowHeader}
-                        </g>
                     </svg>
                 </div>
             )

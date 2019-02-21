@@ -273,9 +273,7 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let legends = [];
 
-        let transform = "";
         if (!this.props.store.globalTime) {
-            transform = "translate(0," + 20 + ")";
             this.props.store.timepoints.forEach(function (d, i) {
                 let transform = "translate(0," + _self.props.visMap.timepointPositions.timepoint[i] + ")";
 
@@ -297,9 +295,7 @@ const Legend = observer(class Legend extends React.Component {
         return (
             <div className="scrollableX">
                 <svg width={this.maxWidth} height={this.props.visMap.svgHeight}>
-                    <g transform={transform}>
                         {legends}
-                    </g>
                 </svg>
             </div>
         )

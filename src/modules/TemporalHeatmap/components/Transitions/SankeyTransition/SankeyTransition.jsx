@@ -25,65 +25,47 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      * @returns []: transitions
      */
     drawTransitions() {
-        const _self = this;
         const rectHeight = 2;
 
         let transitions = [];
         let rects = [];
         let currXtarget = {};
         let sourcePartitionPos = 0;
-        this.props.firstTimepoint.grouped.forEach(function (d, i) {
-            const firstParLength = _self.getPartitionLength(d, _self.props.firstPrimary.id);
+        this.props.firstGrouped.forEach((sourcePartition, i) => {
             let currXsource = sourcePartitionPos;
-            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, _self.props.visMap.gap, _self.props.groupScale(firstParLength), rectHeight, _self.props.firstPrimary.colorScale(d.partition), d.partition + "source"));
-
+            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, this.props.visMap.gap, this.props.groupScale(sourcePartition.patients.length), rectHeight, this.props.firstPrimary.colorScale(sourcePartition.partition), sourcePartition.partition + "source"));
             let targetPartitionPos = 0;
-            _self.props.secondTimepoint.grouped.forEach(function (f) {
+            this.props.secondGrouped.forEach(targetPartition => {
                 if (i === 0) {
-                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, _self.props.visMap.transitionSpace - rectHeight - _self.props.visMap.gap * 2, _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)), rectHeight, _self.props.secondPrimary.colorScale(f.partition), f.partition + "target"));
+                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visMap.transitionSpace - rectHeight - this.props.visMap.gap * 2, this.props.groupScale(targetPartition.patients.length), rectHeight, this.props.secondPrimary.colorScale(targetPartition.partition), targetPartition.partition + "target"));
                 }
-                let transition = _self.getTransition(d.partition, f.partition);
-                if (!(f.partition in currXtarget)) {
-                    currXtarget[f.partition] = targetPartitionPos
+                let patientIntersection = sourcePartition.patients.filter(patient => targetPartition.patients.includes(patient));
+                if (!(targetPartition.partition in currXtarget)) {
+                    currXtarget[targetPartition.partition] = targetPartitionPos
                 }
-                if (transition.value !== 0) {
-                    const transitionWidth = transition.value * (_self.props.groupScale(firstParLength) / firstParLength);
-                    transitions.push(<Band {..._self.props} key={d.partition + "->" + f.partition} x0={currXsource}
-                                           x1={currXtarget[f.partition]}
-                                           width={transitionWidth} rectHeight={rectHeight} firstPartition={d.partition}
-                                           secondPartition={f.partition} patients={transition.patients}
-                                           count={transition.value}/>);
+                if (patientIntersection.length !== 0) {
+                    const transitionWidth = patientIntersection.length * (this.props.groupScale(sourcePartition.patients.length) / sourcePartition.patients.length);
+                    transitions.push(<Band key={sourcePartition.partition + "->" + targetPartition.partition}
+                                           x0={currXsource}
+                                           x1={currXtarget[targetPartition.partition]}
+                                           {...this.props.tooltipFunctions}
+                                           width={transitionWidth} rectHeight={rectHeight}
+                                           firstPartition={sourcePartition.partition}
+                                           secondPartition={targetPartition.partition}
+                                           patients={patientIntersection}
+                                           count={patientIntersection.length}
+                                           firstPrimary={this.props.firstPrimary}
+                                           secondPrimary={this.props.secondPrimary}
+                                           store={this.props.store}
+                                           visMap={this.props.visMap}/>);
                     currXsource += transitionWidth;
-                    currXtarget[f.partition] += transitionWidth;
+                    currXtarget[targetPartition.partition] += transitionWidth;
                 }
-                targetPartitionPos += _self.props.groupScale(_self.getPartitionLength(f, _self.props.secondPrimary.id)) + 10;
+                targetPartitionPos += this.props.groupScale(targetPartition.patients.length) + 10;
             });
-            sourcePartitionPos += _self.props.groupScale(firstParLength) + 10;
+            sourcePartitionPos += this.props.groupScale(sourcePartition.patients.length) + 10;
         });
         return [transitions, rects];
-    }
-
-
-    /**
-     * gets the length of a partition
-     * @param partition
-     * @param primaryVariable
-     */
-    getPartitionLength(partition, primaryVariable) {
-        return partition.rows.filter(function (e) {
-            return e.variable === primaryVariable;
-        })[0].counts[0].value;
-    }
-
-    /**
-     * gets counts for transition from source partition to target partition
-     * @param source
-     * @param target
-     */
-    getTransition(source, target) {
-        return this.props.transition.data.filter(function (d) {
-            return d.from === source && d.to === target
-        })[0]
     }
 
 

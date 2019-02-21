@@ -1,4 +1,3 @@
-import TransitionStore from "./TemporalHeatmap/TransitionStore.jsx"
 import DataStore from "./TemporalHeatmap/DataStore"
 
 import VisStore from "./TemporalHeatmap/VisStore.jsx"
@@ -22,7 +21,6 @@ class RootStore {
         this.hasMutations = false;
         this.mutations = [];
         this.events = [];
-        this.survivalEvents = [];
 
         //maximum and minimum amount of timepoints a patient has in the dataset
         this.maxTP = 0;
@@ -39,7 +37,7 @@ class RootStore {
         this.eventAttributes = [];
         this.patientOrderPerTimepoint = [];
         this.sampleTimelineMap = {};
-        this.eventTimelineMap = {};
+       //this.eventTimelineMap = {};
         this.staticMappers = {};
 
         this.sampleStructure = [];
@@ -55,6 +53,7 @@ class RootStore {
             dataLoading: false,
             firstLoad: firstLoad,
             display: display,
+            eventTimelineMap:{},
 
 
             timeVar: 1,
@@ -92,24 +91,41 @@ class RootStore {
                 })));
                 return transitionStructure;
             },
+            get minMax() {
+                let minMax = {};
+                let survivalEvents=this.computeSurvival();
+                for (let patient in this.sampleStructure) {
+                    let value = undefined;
+                    let max = Math.max(...this.sampleStructure[patient].map(d => this.sampleTimelineMap[d].startNumberOfDaysSinceDiagnosis));
+                    let min = Math.min(...this.sampleStructure[patient].map(d => this.sampleTimelineMap[d].startNumberOfDaysSinceDiagnosis));
+                    for (let variable in this.eventTimelineMap) {
+                        max = Math.max(max, Math.max(...this.eventTimelineMap[variable].filter(d => d.patient === patient).map(d => d.eventEndDate)));
+                        min = Math.min(min, Math.min(...this.eventTimelineMap[variable].filter(d => d.patient === patient).map(d => d.eventEndDate)));
+                    }
+                    if (survivalEvents.map(d => d.patient).includes(patient)) {
+                        let survivalEvent = survivalEvents.filter(d => d.patient === patient)[0];
+                        if (survivalEvent.date > max) {
+                            max = survivalEvent.date;
+                            value = survivalEvent.status;
+                        }
+                    }
+                    minMax[patient] = {start: min, end: max, value: value}
+                }
+                return minMax;
+            },
             get maxTimeInDays() {
                 let max = 0;
-                for (let variable in this.eventTimelineMap) {
-                    max=Math.max(max,Math.max(...this.eventTimelineMap[variable].map(d=>d.eventEndDate)));
-                }
-                for (let sample in this.sampleTimelineMap) {
-                    if (this.sampleTimelineMap[sample].startNumberOfDaysSinceDiagnosis > max) {
-                        max = this.sampleTimelineMap[sample].startNumberOfDaysSinceDiagnosis;
+                for(let patient in this.minMax){
+                    if(this.minMax[patient].end>max){
+                        max=this.minMax[patient].end;
                     }
                 }
-                //max=Math.max(max,Math.max(...this.survivalEvents.map(d=>d.date)));
                 return max;
-            }
+            },
 
         });
         this.molProfileMapping = new MolProfileMapping(this);
         this.dataStore = new DataStore(this);
-        this.transitionStore = new TransitionStore(this);
         this.visStore = new VisStore(this);
         this.undoRedoStore = new UndoRedoStore(this);
     }
@@ -457,7 +473,7 @@ class RootStore {
         this.dataStore.reset();
         this.resetTimepointStructure(false);
         let initialVariable = this.clinicalSampleCategories[0];
-        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample","clinical"));
+        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample", "clinical"));
         this.dataStore.globalPrimary = initialVariable.id;
         this.parsed = true;
     }
@@ -503,19 +519,18 @@ class RootStore {
             this.cbioAPI.getEvents(this.study.studyId, patients, events => {
                 this.events = events;
                 this.buildTimelineStructure(patients, events);
+                  this.cbioAPI.getClinialPatientData(this.study.studyId, patients, data => {
+                    this.createClinicalPatientMappers(data);
+                });
                 this.cbioAPI.getClinicalSampleData(this.study.studyId, data => {
                     this.createClinicalSampleMapping(data);
                     this.dataStore.initialize(patients.length);
                     this.visStore.fitToScreenWidth();
                     let initialVariable = this.clinicalSampleCategories[0];
-                    this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample","clinical"));
+                    this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample", "clinical"));
                     this.dataStore.globalPrimary = initialVariable.id;
                     this.undoRedoStore.saveVariableHistory("ADD", initialVariable.variable, true);
                     this.parsed = true;
-                });
-                this.cbioAPI.getClinialPatientData(this.study.studyId, patients, data => {
-                    this.createClinicalPatientMappers(data);
-                    this.computeSurvival();
                 });
                 this.cbioAPI.getAvailableMolecularProfiles(this.study.studyId, profiles => {
                     this.availableProfiles = profiles;
@@ -853,7 +868,7 @@ class RootStore {
                 })
             }
         }
-        this.survivalEvents=survivalEvents;
+        return survivalEvents;
     }
 
 

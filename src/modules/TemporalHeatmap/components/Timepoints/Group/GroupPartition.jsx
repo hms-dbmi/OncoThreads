@@ -27,7 +27,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
                     opacity = 0.5;
                 }
                 if (_self.props.currentVariables[i].datatype === "NUMBER") {
-                    rows.push(<g key={d.variable} transform={transform}><ContinuousRow partition={d.counts}
+                    rows.push(<g key={d.variable} transform={transform}><ContinuousRow row={d.counts}
                                                                                        store={_self.props.store}
                                                                                        height={height}
                                                                                        opacity={opacity} color={color}

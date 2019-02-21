@@ -1,4 +1,4 @@
-import {extendObservable, observe} from "mobx";
+import {action, extendObservable, observe} from "mobx";
 import MultipleTimepointsStore from "./MultipleTimepointsStore";
 
 /*
@@ -18,27 +18,89 @@ class VariableStore {
             currentVariables: [],
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
-            }
+            },
+            removeCurrentVariable: action(function (id) {
+                this.currentVariables.remove(id);
+            }),
+            addCurrentVariable: action(function (id) {
+                this.currentVariables.push(id);
+            }),
+            replaceCurrentVariable: action(function (oldId, id) {
+                this.currentVariables[this.currentVariables.indexOf(oldId)] = id;
+            }),
+            replaceAllCurrentVariables: action(function (newIds) {
+                this.currentVariables.replace(newIds);
+            }),
+            addVariableToBeDisplayed: action(function (variable) {
+                if (!(variable.id in this.referencedVariables)) {
+                    this.referencedVariables[variable.id] = variable;
+                }
+                if (!this.currentVariables.includes(variable.id)) {
+                    this.addCurrentVariable(variable.id)
+                }
+            }),
+            addVariablesToBeDisplayed: action(function (variables) {
+                variables.forEach(d => {
+                    this.addVariableToBeDisplayed(d);
+                });
+            }),
+            replaceDisplayedVariable: action(function (oldId, newVariable) {
+                if (!(newVariable.id in this.referencedVariables)) {
+                    this.referencedVariables[newVariable.id] = newVariable;
+                }
+                this.replaceCurrentVariable(oldId, newVariable.id);
+            }),
+            replaceAll:action(function(referencedVariables, currentVariables, primaryVariables) {
+                this.childStore.timepoints.forEach((d, i) => {
+                    d.setPrimaryVariable(primaryVariables[i])
+                });
+                this.replaceVariables(referencedVariables, currentVariables);
+            }),
+
+            replaceVariables:action(function(referencedVariables, currentVariables) {
+                this.referencedVariables = referencedVariables;
+                this.replaceAllCurrentVariables(currentVariables);
+            }),
+
+            /**
+             * removes a variable from current variables
+             * @param variableId
+             */
+            removeVariable:action(function(variableId) {
+                let name = this.referencedVariables[variableId].name;
+                this.removeCurrentVariable(variableId);
+                this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
+            })
 
         });
         //Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
             if (change.type === 'splice') {
                 if (change.removedCount > 0) {
-                    if (change.addedCount > 0) {
-                        this.childStore.resortHeatmapRows(this.currentVariables);
-                    }
-                    if (this.type === "sample" && change.removed.includes(this.rootStore.dataStore.globalPrimary)) {
-                        this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
-                    }
+                    change.removed.forEach(d => {
+                        if (!change.added.includes(d)) {
+                            this.childStore.removeHeatmapRows(d)
+                        }
+                    });
                 }
+                if (change.addedCount > 0) {
+                    change.added.forEach(d => {
+                        if (!change.removed.includes(d)) {
+                            this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper)
+                        }
+                    });
+                }
+                this.childStore.resortHeatmapRows(this.currentVariables);
+                if (this.type === "sample" && change.removed.includes(this.rootStore.dataStore.globalPrimary)) {
+                    this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
+                }
+
                 if (this.type === "between") {
                     this.rootStore.dataStore.transitionOn = this.currentVariables.length !== 0;
                 }
             }
             this.updateReferences();
             this.updateVariableRanges();
-            this.rootStore.dataStore.regroupTimepoints();
             this.rootStore.visStore.fitToScreenHeight();
         });
 
@@ -52,35 +114,8 @@ class VariableStore {
      */
     update(structure, order, names) {
         this.childStore.updateTimepointStructure(structure, order, names);
-        this.currentVariables.forEach(d => this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper))
     }
 
-    replaceAll(referencedVariables, currentVariables, primaryVariables) {
-        this.childStore.timepoints.forEach((d, i) => {
-            d.setPrimaryVariable(primaryVariables[i])
-        });
-        this.replaceVariables(referencedVariables, currentVariables);
-    }
-
-    replaceVariables(referencedVariables, currentVariables) {
-        this.referencedVariables = referencedVariables;
-        this.childStore.reset();
-        currentVariables.forEach(d => {
-            this.childStore.addHeatmapRows(d, this.referencedVariables[d].mapper);
-        });
-        this.currentVariables.replace(currentVariables);
-    }
-
-    /**
-     * removes a variable from current variables
-     * @param variableId
-     */
-    removeVariable(variableId) {
-        let name = this.getById(variableId).name;
-        this.childStore.removeHeatmapRows(variableId);
-        this.currentVariables.remove(variableId);
-        this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
-    }
 
     saveVariable(variableId) {
         if (!this.savedReferences.includes(variableId)) {
@@ -162,43 +197,6 @@ class VariableStore {
     }
 
 
-    addVariableToBeReferenced(variable) {
-        if (!(variable.id in this.referencedVariables)) {
-            this.referencedVariables[variable.id] = variable;
-        }
-    }
-
-    addVariableToBeDisplayed(variable) {
-        this.addVariableToBeReferenced(variable);
-        this.childStore.addHeatmapRows(variable.id, variable.mapper);
-        if (!this.currentVariables.includes(variable.id)) {
-            this.currentVariables.push(variable.id);
-        }
-    }
-
-    addVariablesToBeDisplayed(variables) {
-        let currentVariables = this.currentVariables.slice();
-        variables.forEach(d => {
-            this.addVariableToBeReferenced(d);
-            this.childStore.addHeatmapRows(d.id, d.mapper);
-            if (!currentVariables.includes(d.id)) {
-                currentVariables.push(d.id);
-            }
-        });
-        this.currentVariables.replace(currentVariables);
-    }
-
-
-    replaceDisplayedVariable(oldId, newVariable) {
-        if (!this.isReferenced(newVariable.id)) {
-            this.childStore.removeHeatmapRows(oldId);
-            this.childStore.addHeatmapRows(newVariable.id, newVariable.mapper);
-            this.referencedVariables[newVariable.id] = newVariable;
-        }
-        this.currentVariables[this.currentVariables.indexOf(oldId)] = newVariable.id;
-    }
-
-
     /**
      * gets a variable by id
      * @param id
@@ -234,13 +232,6 @@ class VariableStore {
         return this.currentVariables.indexOf(id);
     }
 
-    /**
-     * gets complete current variables (not only ids)
-     * @returns {*}
-     */
-    getCurrentVariables() {
-        return this.currentVariables.map(d => this.referencedVariables[d]);
-    }
 
     /**
      * gets variables of a certain type

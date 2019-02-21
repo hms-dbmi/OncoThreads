@@ -31,8 +31,8 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
                 fill = "white"
             }
             rects.push(<rect key={f.key}
-                             onMouseEnter={(e) => _self.props.showTooltip(e, CategoricalRow.getTooltipContent(f.key, f.value))}
-                             onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.value)}
+                             onMouseEnter={(e) => _self.props.showTooltip(e, CategoricalRow.getTooltipContent(f.key, f.patients.length))}
+                             onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.patients.length)}
                              x={_self.props.groupScale(currCounts)} height={_self.props.height}
                              fill={fill} stroke={stroke} opacity={_self.props.opacity}/>);
             if (_self.props.store.advancedSelection) {
@@ -43,7 +43,7 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
                           fill='none' stroke='black'/>
                 );
             }
-            currCounts += f.value
+            currCounts += f.patients.length
         });
         return rects
     }

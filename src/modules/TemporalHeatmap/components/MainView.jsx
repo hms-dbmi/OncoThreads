@@ -9,13 +9,15 @@ import RowOperators from "./RowOperators/RowOperators"
 import GlobalRowOperators from "./RowOperators/GlobalRowOperators"
 
 import Legend from "./Legend"
-import Plot from "./Plot";
 import GlobalTimeAxis from "./PlotLabeling/GlobalTimeAxis";
 import GlobalBands from "./PlotLabeling/GlobalBands";
 
 
 import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
+import * as d3 from "d3";
+import GlobalTimeline from "./GlobalTimeline";
+import BlockView from "./BlockView";
 
 /*
 Main View
@@ -63,9 +65,36 @@ const MainView = observer(class MainView extends React.Component {
     setVisualParameters(rectWidth) {
         this.props.visMap.setSampleRectWidth(rectWidth);
     }
+        /**
+     * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
+     * @param w: width of the plot
+     * @param rectWidth: width of a heatmap cell
+     * @returns any[] scales
+     */
+    createSampleHeatMapScales(w, rectWidth) {
+        return this.props.store.timepoints.map(function (d) {
+            return d3.scalePoint()
+                .domain(d.heatmapOrder)
+                .range([0, w - rectWidth]);
+        })
+    }
 
 
-    getBlockView() {
+    /**
+     * creates scales for computing the length of the partitions in grouped timepoints
+     * @param w: width of the plot
+     */
+    createGroupScale(w) {
+        return (d3.scaleLinear().domain([0, this.props.store.numberOfPatients]).range([0, w]));
+
+    }
+
+    static createTimeScale(height, min, max) {
+        return (d3.scaleLinear().domain([min, max]).rangeRound([0, height]));
+    }
+
+
+    getBlockView(sampleHeatmapScales,groupScale,timeScale) {
         return (
             <div>
                 <div className="view" id="block-view">
@@ -83,7 +112,7 @@ const MainView = observer(class MainView extends React.Component {
                                              {...this.props.tooltipFunctions}
                                              visMap={this.props.visMap}/>
                         </Col>
-                        <Col lg={2} xs={2} md={2} style={{padding: 0}}>
+                        <Col lg={2} xs={2} md={2} style={{padding: 0,  marginTop:20}}>
                             <RowOperators highlightedVariable={this.state.highlightedVariable}
                                           setHighlightedVariable={this.setHighlightedVariable}
                                           removeHighlightedVariable={this.removeHighlightedVariable}
@@ -94,14 +123,16 @@ const MainView = observer(class MainView extends React.Component {
                                           openBinningModal={this.props.openBinningModal}/>
 
                         </Col>
-                        <Col lg={8} xs={7} md={7} style={{padding: 0}}>
-                            <Plot showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                  visMap={this.props.visMap}
-                                  store={this.props.store}
-                                  transitionStore={this.props.transitionStore}
-                                  tooltipFunctions={this.props.tooltipFunctions}/>
+                        <Col lg={8} xs={7} md={7} style={{padding: 0, marginTop:20}}>
+                            <BlockView visMap={this.props.visMap}
+                                    store={this.props.store}
+                                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                    tooltipFunctions={this.props.tooltipFunctions}
+                                    groupScale={groupScale}
+                                    timeScale={timeScale}
+                                    heatmapScales={sampleHeatmapScales}/>
                         </Col>
-                        <Col lg={1} xs={2} md={2} style={{padding: 0}}>
+                        <Col lg={1} xs={2} md={2} style={{padding: 0, marginTop:20}}>
                             <Legend highlightedVariable={this.state.highlightedVariable}
                                     setHighlightedVariable={this.setHighlightedVariable}
                                     removeHighlightedVariable={this.removeHighlightedVariable}
@@ -120,10 +151,9 @@ const MainView = observer(class MainView extends React.Component {
         );
     }
 
-    getGlobalView() {
+    getGlobalView(sampleHeatmapScales,groupScale,timeScale) {
         let maxTime = this.props.store.rootStore.maxTimeInDays;
         const globalPrimaryName = this.props.store.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
-        //const axisHorizontalZoom = (300 - this.props.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
         return (
             <div>
                 <div className="view" id="timeline-view">
@@ -149,10 +179,13 @@ const MainView = observer(class MainView extends React.Component {
                             <GlobalBands store={this.props.store}
                                          visMap={this.props.visMap}//timeVar={this.props.store.rootStore.timeVar}
                                          maxTimeInDays={maxTime}/>
-                            <Plot visMap={this.props.visMap}
-                                  store={this.props.store}
-                                  transitionStore={this.props.transitionStore}
-                                  tooltipFunctions={this.props.tooltipFunctions}/>
+                            <GlobalTimeline visMap={this.props.visMap}
+                                    store={this.props.store}
+                                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                    tooltipFunctions={this.props.tooltipFunctions}
+                                    groupScale={groupScale}
+                                    timeScale={timeScale}
+                                    heatmapScales={sampleHeatmapScales}/>
                         </Col>
                     </Row>
                 </div>
@@ -166,15 +199,17 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        //this.props.visMap.setVisParameters(this.state.plotWidth, 300 - this.props.horizontalZoom, this.props.store.maxPartitions);
-
+        const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.visMap.heatmapWidth, this.props.visMap.sampleRectWidth);
+        const groupScale = this.createGroupScale(this.props.visMap.plotWidth - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        let transform = "translate(0," + 20 + ")";
+        const timeScale = Plot.createTimeScale(this.props.visMap.svgHeight - this.props.visMap.primaryHeight * 2, 0, this.props.store.rootStore.maxTimeInDays);
         let blockView = null;
         let timelineView = null;
         if (!this.props.store.globalTime) {
-            blockView = this.getBlockView();
+            blockView = this.getBlockView(sampleHeatmapScales,groupScale,timeScale,transform);
         }
         else {
-            timelineView = this.getGlobalView();
+            timelineView = this.getGlobalView(sampleHeatmapScales,groupScale,timeScale,transform);
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>

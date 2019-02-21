@@ -13,13 +13,12 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
 
     /**
      * gets the different partitions in the grouped timepoint
-     * @returns partitions
      */
     getPartitions() {
         let partitions = [];
         const _self = this;
         let previousXPosition = 0;
-        this.props.timepoint.forEach(function (d, i) {
+        this.props.group.forEach(function (d, i) {
             const transform = "translate(" + previousXPosition + ",0)";
             let stroke = "none";
             if (_self.isSelected(d.patients) && !_self.props.store.advancedSelection) {
@@ -38,11 +37,9 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
                                                                      stroke={stroke}
                                                                      primaryVariableId={_self.props.primaryVariableId}/>
             </g>);
-            for (let j = 0; j < d.rows.length; j++) {
-                if (d.rows[j].variable === _self.props.primaryVariableId) {
-                    previousXPosition += _self.props.groupScale(d.rows[j].counts[0].value) + 10;
-                }
-            }
+
+            previousXPosition += _self.props.groupScale(d.patients.length) + 10;
+
         });
         return partitions;
     }

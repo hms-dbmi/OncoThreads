@@ -1,4 +1,4 @@
-import {extendObservable, reaction} from "mobx";
+import {action, extendObservable, reaction} from "mobx";
 import VariableStore from "./VariableStore";
 
 /*
@@ -15,7 +15,7 @@ class DataStore {
         //this.timepoints = [];
         //this.timelineStore=null;
         extendObservable(this, {
-            timepoints:[],
+            timepoints: [],
             selectedPatients: [],
             continuousRepresentation: 'gradient',
             globalPrimary: '',
@@ -24,89 +24,75 @@ class DataStore {
             transitionOn: false,
             advancedSelection: true,
             showUndefined: true,
-            maxPartitions:0,
-
+            get maxPartitions() {
+                return Math.max(...this.timepoints.filter(d => d.isGrouped).map(d => d.grouped.length));
+            },
+            setGlobalPrimary: action(function (varId) {
+                this.globalPrimary = varId;
+            }),
+            toggleRealtime: action(function () {
+                this.realTime = !this.realTime;
+            }),
+            setGlobalTime: action(function (boolean) {
+                this.globalTime = boolean;
+            }),
+            /**
+             * handles currently selected patients
+             * @param patient
+             */
+            handlePatientSelection: action(function (patient) {
+                if (this.selectedPatients.includes(patient)) {
+                    this.selectedPatients.remove(patient)
+                }
+                else {
+                    this.selectedPatients.push(patient);
+                }
+            }),
+            /**
+             * handles the selection of patients in a partition
+             * @param patients
+             */
+            handlePartitionSelection: action(function (patients) {
+                //isContained: true if all patients are contained
+                let isContained = true;
+                patients.forEach(d => {
+                    if (!this.selectedPatients.includes(d)) {
+                        isContained = false
+                    }
+                });
+                //If not all patients are contained, add the patients that are not contained to the selected patients
+                if (!isContained) {
+                    patients.forEach(d => {
+                        if (!this.selectedPatients.includes(d)) {
+                            this.selectedPatients.push(d);
+                        }
+                    });
+                }
+                //If all the patients are already contained, remove them from selected patients
+                else {
+                    patients.forEach(d => {
+                        this.selectedPatients.remove(d);
+                    });
+                }
+            }),
+            reset: action(function () {
+                this.globalTime = false;
+                this.realTime = false;
+                this.selectedPatients = [];
+                this.transitionOn = false;
+            })
         });
-        reaction(() => this.transitionOn, isOn =>
-            this.combineTimepoints(isOn));
-        this.regroupTimepoints = this.regroupTimepoints.bind(this);
-
-    }
-    setMaxPartitions(numPartitions){
-        if(numPartitions>this.maxPartitions){
-           this.maxPartitions=numPartitions
-        }
-    }
-    setGlobalPrimary(varId) {
-        this.globalPrimary = varId;
+        reaction(() => this.transitionOn, isOn => {
+            this.timepoints.replace(this.combineTimepoints(isOn));
+            //this.rootStore.transitionStore.initializeTransitions(this.timepoints.length - 1);
+        });
     }
 
-    toggleRealtime() {
-        this.realTime = !this.realTime;
-    }
-
-    setGlobalTime(boolean) {
-        this.globalTime = boolean;
-    }
 
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
     }
 
-    /**
-     * handles currently selected patients
-     * @param patient
-     */
-    handlePatientSelection(patient) {
-        if (this.selectedPatients.includes(patient)) {
-            this.removePatientFromSelection(patient)
-        }
-        else {
-            this.addPatientToSelection(patient);
-        }
-    }
-
-
-    /**
-     * handles the selection of patients in a partition
-     * @param patients
-     */
-    handlePartitionSelection(patients) {
-        const _self = this;
-        //isContained: true if all patients are contained
-        let isContained = true;
-        patients.forEach(function (d) {
-            if (!_self.selectedPatients.includes(d)) {
-                isContained = false
-            }
-        });
-        //If not all patients are contained, add the patients that are not contained to the selected patients
-        if (!isContained) {
-            patients.forEach(function (d) {
-                if (!_self.selectedPatients.includes(d)) {
-                    _self.addPatientToSelection(d);
-                }
-            });
-        }
-        //If all the patients are already contained, remove them from selected patients
-        else {
-            patients.forEach(function (d) {
-                _self.removePatientFromSelection(d);
-            });
-        }
-    }
-
-    addPatientToSelection(patient) {
-        let selected = this.selectedPatients.slice();
-        selected.push(patient);
-        this.selectedPatients = selected;
-    }
-
-    removePatientFromSelection(patient) {
-        let selected = this.selectedPatients.slice();
-        selected.splice(this.selectedPatients.indexOf(patient), 1);
-        this.selectedPatients = selected;
-    }
 
     /**
      * initializes the datastructures
@@ -118,15 +104,9 @@ class DataStore {
             between: new VariableStore(this.rootStore, this.rootStore.transitionStructure, "between")
         };
         //this.timelineStore=new TimelineStore(this.rootStore,this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap,this.rootStore.survivalData);
-        this.combineTimepoints(false);
+        this.timepoints.replace(this.combineTimepoints(false));
     }
 
-    reset() {
-        this.globalTime = false;
-        this.realTime = false;
-        this.selectedPatients = [];
-        this.transitionOn = false;
-    }
 
     update(order) {
         this.variableStores.sample.update(this.rootStore.timepointStructure, order);
@@ -146,6 +126,7 @@ class DataStore {
     }
     */
 
+    //action
     combineTimepoints(isOn) {
         let betweenTimepoints = this.variableStores.between.childStore.timepoints.slice();
         let sampleTimepoints = this.variableStores.sample.childStore.timepoints.slice();
@@ -164,8 +145,7 @@ class DataStore {
 
         }
         timepoints.forEach((d, i) => d.globalIndex = i);
-        this.timepoints = timepoints;
-        this.rootStore.transitionStore.initializeTransitions(timepoints.length - 1);
+        return timepoints;
 
     }
 
@@ -199,19 +179,6 @@ class DataStore {
     }
 
 
-    /**
-     * regroups the timepoints. Used after something is changed (variable is removed/added/declared primary)
-     */
-    regroupTimepoints() {
-        const _self = this;
-        this.timepoints.forEach(function (d, i) {
-            if (d.isGrouped) {
-                d.group(d.primaryVariableId);
-                d.sortGroup(d.primaryVariableId, d.groupOrder);
-            }
-            _self.rootStore.transitionStore.adaptTransitions(i);
-        })
-    }
 }
 
 

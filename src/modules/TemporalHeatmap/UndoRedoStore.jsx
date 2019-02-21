@@ -64,7 +64,7 @@ class UndoRedoStore {
         this.rootStore.dataStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.dataStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
         this.rootStore.dataStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.dataStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
         this.rootStore.dataStore.globalTime = this.stateStack[index].state.globalTime;
-        this.rootStore.dataStore.regroupTimepoints();
+        //this.rootStore.dataStore.regroupTimepoints();
     }
 
     /**

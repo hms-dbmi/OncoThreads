@@ -16,33 +16,44 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
      */
 
 
-    static drawLine(x0, x1, y0, y1, key, strokeColor) {
+    static drawLine(x0, x1, y0, y1, key, strokeColor,strokeWidth) {
         let path = "M" + x0 + "," + y0
             + "L" + x1 + "," + y1;
-        return (<path key={key} d={path} stroke={strokeColor} fill="none"/>)
+        return (<path key={key} d={path} stroke={strokeColor} strokeWidth={strokeWidth} fill="none"/>)
     }
+
 
     drawLines() {
         let lines = [];
-        const _self = this;
-        let y1 = _self.props.allYPositionsy1.map(y => _self.props.timeScale(y));
-        let y2 = _self.props.allYPositionsy2.map(y => _self.props.timeScale(y));
-        let globalInd = 2;
-        _self.props.from.forEach(function (d, i) {
-            let j = _self.props.to.indexOf(d);
-            if (j !== -1) {
-                let strokeColor = "lightgray";
-                if (_self.props.store.selectedPatients.includes(d)) {
-                    strokeColor = "black"
-                }
-                lines.push(
-                    GlobalTransition.drawLine(_self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                        _self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                        y1[i] + _self.props.visMap.sampleRectWidth / 2,
-                        y2[j],
-                        d + globalInd + i, strokeColor));
-                globalInd = globalInd + 2;
+        this.props.patients.forEach(d => {
+            let strokeColor = "lightgray";
+            if (this.props.store.selectedPatients.includes(d)) {
+                strokeColor = "black"
             }
+            let finalValueColor="lightgray";
+            let endHeight=1;
+            let mouseProperties=[];
+            if(this.props.minMax[d].value!==undefined){
+                endHeight=3;
+                mouseProperties={onMouseEnter:(e)=>this.props.showTooltip(e,this.props.minMax[d].value+": ",this.props.minMax[d].end+" days"),onMouseLeave:this.props.hideTooltip};
+                if(this.props.minMax[d].value==="DECEASED"){
+                    finalValueColor="black"
+                }
+            }
+            lines.push(
+                GlobalTransition.drawLine(this.props.heatmapScale(d) + this.props.visMap.sampleRectWidth / 4,
+                    this.props.heatmapScale(d) + this.props.visMap.sampleRectWidth / 4,
+                    this.props.timeScale(this.props.minMax[d].start),
+                    this.props.timeScale(this.props.minMax[d].end),
+                    d, strokeColor,1));
+            lines.push(<rect key={d+"endpoint"}
+                x={this.props.heatmapScale(d)}
+                             y={this.props.timeScale(this.props.minMax[d].end)}
+                             width={this.props.visMap.sampleRectWidth/2}
+                                height={endHeight}
+                             fill={finalValueColor}
+                             {...mouseProperties}
+                                />);
         });
         return lines;
     }

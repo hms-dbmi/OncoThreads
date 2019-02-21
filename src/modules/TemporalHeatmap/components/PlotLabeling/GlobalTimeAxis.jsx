@@ -199,10 +199,8 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
         return (
             <div>
                 <svg height={this.props.visMap.svgHeight} width={this.props.width}>
-                    <g className="axisGlobal" transform="translate(50, 25)">
+                    <g className="axisGlobal" transform="translate(50, 0)">
                     </g>
-
-
                 </svg>
 
 

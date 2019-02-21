@@ -31,12 +31,9 @@ class MultipleTimepointsStore {
     }
 
     updateNames(names) {
-        this.timepoints.forEach((d, i) => d.name = names[i]);
+        this.timepoints.forEach((d, i) => d.setName(names[i]));
     }
 
-    ungroupAll() {
-        this.timepoints.forEach(d => d.isGrouped = false)
-    }
 
     /**
      * adds rows to heatmaps

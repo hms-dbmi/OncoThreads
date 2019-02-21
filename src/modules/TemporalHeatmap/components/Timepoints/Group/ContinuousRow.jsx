@@ -84,10 +84,10 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                   onMouseEnter={(e) => this.props.showTooltip(e, values.length + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                   onMouseLeave={this.props.hideTooltip}/>
             <rect x={this.props.groupScale(values.length)} height={this.props.height}
-                  width={this.props.groupScale(this.props.partition.length - values.length)} fill={"white"}
+                  width={this.props.groupScale(this.props.row.length - values.length)} fill={"white"}
                   stroke="lightgray"
                   opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.partition.length - values.length))}
+                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - values.length))}
                   onMouseLeave={this.props.hideTooltip}/>
             {selectUndefinedRect}
             {selectedRects}
@@ -150,9 +150,9 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             <g>
                 {boxPlot}
                 <rect x={this.props.groupScale(numValues)}
-                      width={this.props.groupScale(this.props.partition.length - numValues)} height={this.props.height}
+                      width={this.props.groupScale(this.props.row.length - numValues)} height={this.props.height}
                       fill={'white'} stroke={'lightgray'}
-                      onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.partition.length - numValues))}
+                      onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
                       onMouseLeave={this.props.hideTooltip}/>
             </g>
         )
@@ -171,10 +171,10 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                   onMouseEnter={(e) => this.props.showTooltip(e, numValues + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                   onMouseLeave={this.props.hideTooltip}/>
             <rect x={this.props.groupScale(numValues)} height={this.props.height}
-                  width={this.props.groupScale(this.props.partition.length - numValues)} fill={"white"}
+                  width={this.props.groupScale(this.props.row.length - numValues)} fill={"white"}
                   stroke="lightgray"
                   opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.partition.length - numValues))}
+                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
                   onMouseLeave={this.props.hideTooltip}/>
         </g>);
     }
@@ -195,14 +195,14 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
     }
 
     render() {
-        let values = this.props.partition.filter(function (d, i) {
+        let values = this.props.row.filter(function (d, i) {
             return d.key !== undefined;
         }).map(element => ({patient: element.patients[0], value: element.key})).sort(function (a, b) {
             return (a.value - b.value)
         });
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
         if (this.props.store.continuousRepresentation === 'gradient') {
-            let selectedPartitionPatients = this.props.partition.map(d => d.patients[0]).filter(element => -1 !== this.props.store.selectedPatients.indexOf(element));
+            let selectedPartitionPatients = this.props.row.map(d => d.patients[0]).filter(element => -1 !== this.props.store.selectedPatients.indexOf(element));
             return (
                 this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
             )

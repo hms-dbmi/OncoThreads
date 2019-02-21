@@ -36,6 +36,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
             callback: '',
         };
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
+        this.setColorRange=this.setColorRange.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.handleSort = this.handleSort.bind(this);
         this.combineSelected = this.combineSelected.bind(this);
@@ -71,6 +72,9 @@ const VariableTable = observer(class VariableTable extends React.Component {
                 }
             }
         })
+    }
+    setColorRange(id,range){
+        this.props.variableManagerStore.getById(id).range=range;
     }
 
 
@@ -250,6 +254,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                                       variable={this.state.currentVariable}
                                       callback={this.state.callback}
                                       derivedVariable={this.state.derivedVariable}
+                                      setColorRange={this.setColorRange}
                                       closeModal={this.closeModal}/>
         }
         else if (this.state.modifyCategoricalIsOpen) {
