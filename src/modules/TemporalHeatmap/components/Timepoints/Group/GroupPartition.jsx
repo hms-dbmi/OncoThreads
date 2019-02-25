@@ -12,7 +12,7 @@ const GroupPartition = observer(class GroupPartition extends React.Component {
         let previousYposition = 0;
         let rows = [];
         this.props.partition.rows.forEach(function (d, i) {
-            if (!_self.props.heatmap[i].isUndef || _self.props.store.showUndefined || d.variable === _self.props.primaryVariableId) {
+            if (!_self.props.heatmap[i].isUndef || _self.props.store.rootStore.uiStore.showUndefined || d.variable === _self.props.primaryVariableId) {
                 const color = _self.props.currentVariables[i].colorScale;
                 let height = 0;
                 let opacity = 1;

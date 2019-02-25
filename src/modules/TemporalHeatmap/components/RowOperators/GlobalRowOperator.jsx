@@ -1,5 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import UtilityFunctions from "../../UtilityFunctions";
 
 
 /*
@@ -90,9 +91,7 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          */
         static getTextWidth(text, fontSize) {
             const minWidth = 30;
-            const context = document.createElement("canvas").getContext("2d");
-            context.font = fontSize + "px Arial";
-            const width = context.measureText(text).width;
+            const width = UtilityFunctions.getTextWidth(text,fontSize);
             if (width > minWidth) {
                 return width;
             }

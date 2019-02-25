@@ -15,13 +15,8 @@ class DataStore {
         extendObservable(this, {
             timepoints: [],
             selectedPatients: [],
-            continuousRepresentation: 'gradient',
             globalPrimary: '',
-            realTime: false,
-            globalTime: false,
             transitionOn: false,
-            advancedSelection: true,
-            showUndefined: true,
             /**
              * get thr maximum number of currently displayed partitions
              * @returns {number}
@@ -37,26 +32,26 @@ class DataStore {
             /**
              * set global primary
              */
-            setGlobalPrimary: action(function (varId) {
+            setGlobalPrimary: action(varId => {
                 this.globalPrimary = varId;
             }),
             /**
              * changes display realtime
              */
-            toggleRealtime: action(function () {
+            toggleRealtime: action(()=> {
                 this.realTime = !this.realTime;
             }),
             /**
              * changes display global timeline
              */
-            setGlobalTime: action(function (boolean) {
+            setGlobalTime: action(boolean=> {
                 this.globalTime = boolean;
             }),
             /**
              * handles currently selected patients
              * @param patient
              */
-            handlePatientSelection: action(function (patient) {
+            handlePatientSelection: action(patient=> {
                 if (this.selectedPatients.includes(patient)) {
                     this.selectedPatients.remove(patient)
                 }
@@ -68,7 +63,7 @@ class DataStore {
              * handles the selection of patients in a partition
              * @param patients
              */
-            handlePartitionSelection: action(function (patients) {
+            handlePartitionSelection: action((patients) =>{
                 //isContained: true if all patients are contained
                 let isContained = true;
                 patients.forEach(d => {
@@ -91,10 +86,13 @@ class DataStore {
                     });
                 }
             }),
+            resetSelection: action(() => {
+                this.selectedPatients.clear();
+            }),
             /**
              * resets variables
              */
-            reset: action(function () {
+            reset: action( ()=> {
                 this.globalTime = false;
                 this.realTime = false;
                 this.selectedPatients = [];
@@ -103,7 +101,7 @@ class DataStore {
             /**
              * combines the two sets of timepoints (samples, events)
              */
-            combineTimepoints: action(function (isOn) {
+            combineTimepoints: action(isOn=> {
                 let betweenTimepoints = this.variableStores.between.childStore.timepoints.slice();
                 let sampleTimepoints = this.variableStores.sample.childStore.timepoints.slice();
                 let timepoints = [];
@@ -128,7 +126,7 @@ class DataStore {
             /**
              * initializes the datastructures
              */
-            initialize: action(function (numPatients) {
+            initialize: action(numPatients=> {
                 this.numberOfPatients = numPatients;
                 this.variableStores = {
                     sample: new VariableStore(this.rootStore, this.rootStore.timepointStructure, "sample"),
@@ -141,7 +139,7 @@ class DataStore {
             /**
              * updates timepoints after structures are changed
              */
-            update: action(function (order) {
+            update: action(order=> {
                 this.variableStores.sample.update(this.rootStore.timepointStructure, order);
                 this.variableStores.between.update(this.rootStore.eventBlockStructure, order);
                 this.combineTimepoints(this.transitionOn);
@@ -152,9 +150,9 @@ class DataStore {
              * @param timepointIndex
              * @param saveRealign
              */
-            applyPatientOrderToAll: action(function (timepointIndex, saveRealign) {
+            applyPatientOrderToAll: action((timepointIndex, saveRealign)=> {
                 let sorting = this.timepoints[timepointIndex].heatmapOrder;
-                this.timepoints.forEach(function (d) {
+                this.timepoints.forEach(d=> {
                     d.heatmapOrder = sorting;
                 });
                 if (saveRealign) {

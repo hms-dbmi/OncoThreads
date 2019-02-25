@@ -1,24 +1,13 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import UtilityFunctions from "../UtilityFunctions";
 /*
 tooltip for hovering over Sankey Transition
  */
 const Tooltip = observer(class SankeyTransitionTooltip extends React.Component {
-    /**
-     * computes the width of a text. Returns 30 if the text width would be shorter than 30
-     * @param text
-     * @param fontSize
-     * @returns {number}
-     */
-    static getTextWidth(text, fontSize) {
-        const context = document.createElement("canvas").getContext("2d");
-        context.font = fontSize + "px Arial";
-        return context.measureText(text).width;
-    }
-
     render() {
-        const line1Width = Tooltip.getTextWidth(this.props.line1, 14);
-        const line2Width = Tooltip.getTextWidth(this.props.line2, 14);
+        const line1Width = UtilityFunctions.getTextWidth(this.props.line1, 14);
+        const line2Width = UtilityFunctions.getTextWidth(this.props.line2, 14);
         const rectHeight = this.props.line2 !== undefined ? 35 : 20;
         const textWidth = line1Width > line2Width ? line1Width : line2Width;
         let transformText = "translate(5,15)";

@@ -11,7 +11,7 @@ import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
 import ColorScales from "../../../ColorScales";
 import UtilityFunctions from "../../../UtilityFunctions";
 
-
+//TODO: create store
 const ModifyContinuous = observer(class ModifyContinuous extends React.Component {
     constructor(props) {
         super(props);

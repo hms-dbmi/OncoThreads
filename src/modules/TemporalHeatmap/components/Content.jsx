@@ -7,7 +7,6 @@ import {Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem,
 import FontAwesome from 'react-fontawesome';
 import MainView from "./MainView"
 import GroupBinningModal from "./VariableModals/ModifySingleVariable/Binner/GroupBinningModal"
-import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
 import ContextMenus from "./RowOperators/ContextMenus";
 import QuickAddVariable from "./VariableSelector/QuickAddVariable"
@@ -20,32 +19,19 @@ import AddVarModal from "./VariableModals/AddVarModal";
 Creates all components except for the top navbar
  */
 const Content = observer(class Content extends React.Component {
-    constructor(props) {
+    constructor() {
         super();
         this.state = {
             modalIsOpen: false,
             callback: null,
             clickedVariable: "",
             clickedTimepoint: -1,
-            display: false,
-            modify: false,
-            type: "",
             x: 0,
             y: 0,
-            sidebarSize: 0,
-            displaySidebar: "none",
-            displayShowButton: "",
-            tooltipContent: "",
             showTooltip: "hidden",
             contextType: "",
-            contextX: 0,
-            contextY: 0,
-            showContextMenu: false,
             showContextMenuHeatmapRow: false,
-            horizontalZoom: 300 - (props.rootStore.dataStore.numberOfPatients < 300 ? props.rootStore.dataStore.numberOfPatients : 300),
-
             addModalIsOpen: false
-            //varList:[]
         }
         ;
         this.openModal = this.openModal.bind(this);
@@ -129,8 +115,8 @@ const Content = observer(class Content extends React.Component {
 
     showContextMenuHeatmapRow(e, patient, timepoint, xposition) {
         this.setState({
-            contextX: e.pageX,
-            contextY: e.pageY,
+            x: e.pageX,
+            y: e.pageY,
             showContextMenuHeatmapRow: true,
             patient: patient,
             timepoint: timepoint,
@@ -146,25 +132,35 @@ const Content = observer(class Content extends React.Component {
         })
     }
 
-
+    /**
+     * resets everything
+     */
     handleResetAll() {
         this.props.rootStore.reset();
     }
 
+    /**
+     * resets timpoint and eventblock structure
+     */
     handleResetAlignment() {
         this.props.rootStore.resetTimepointStructure(true);
     }
 
+    /**
+     * resets current selection
+     */
     handleResetSelection() {
-        this.props.rootStore.dataStore.selectedPatients = []
+        this.props.rootStore.dataStore.resetSelection();
     }
 
-
+    /**
+     * gets binning modal
+     * @returns {*}
+     */
     getBinner() {
         if (this.state.modalIsOpen) {
             return (<GroupBinningModal modalIsOpen={this.state.modalIsOpen}
                                        variable={this.state.clickedVariable}
-                                       type={this.state.type}
                                        callback={this.state.callback}
                                        closeModal={this.closeModal} store={this.props.rootStore.dataStore}
                                        visMap={this.props.rootStore.visStore}
@@ -175,14 +171,19 @@ const Content = observer(class Content extends React.Component {
         }
     }
 
-
+    /**
+     * updates the currently selected variable
+     * @param variable
+     */
     updateVariable(variable) {
-        //this.state.clickedVariable=variable;
-
         this.setState({clickedVariable: variable});
     }
 
-    getVarListModal() {
+    /**
+     * gets modal for variable manager
+     * @returns {*}
+     */
+    getVariableManager() {
         if (this.state.addModalIsOpen) {
             return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
                                  closeAddModal={this.closeAddModal}
@@ -198,11 +199,15 @@ const Content = observer(class Content extends React.Component {
     }
 
 
+    /**
+     * gets context Menu to move patient(s) up or down
+     * @returns {*}
+     */
     getContextMenuHeatmapRow() {
         if (this.state.showContextMenuHeatmapRow) {
             return (<ContextMenuHeatmapRow showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
-                                           contextX={this.state.contextX}
-                                           contextY={this.state.contextY}
+                                           contextX={this.state.x}
+                                           contextY={this.state.y}
                                            patient={this.state.patient}
                                            timepoint={this.state.timepoint}
                                            xposition={this.state.xposition}
@@ -269,8 +274,6 @@ const Content = observer(class Content extends React.Component {
                                     </DropdownButton>
                                 </ButtonGroup>
                                 <ButtonGroup>
-                                    {/*<Button onClick={this.props.store.rootStore.exportSVG}>Export
-                            </Button>*/}
                                     <DropdownButton
                                         title={"Reset"}
                                         key={"ResetButton"}
@@ -292,21 +295,12 @@ const Content = observer(class Content extends React.Component {
                         </Col>
                     </Row>
                     <Row>
-                        <Col sm={this.state.sidebarSize} md={this.state.sidebarSize}
-                             style={{display: this.state.displaySidebar, paddingTop: 0}}>
-                            <StudySummary studyName={this.props.rootStore.study.name}
-                                          studyDescription={this.props.rootStore.study.description}
-                                          studyCitation={this.props.rootStore.study.citation}
-                                          numPatients={this.props.rootStore.patients.length}
-                                          minTP={this.props.rootStore.minTP}
-                                          maxTP={this.props.rootStore.maxTP}/>
-                        </Col>
-                        <Col sm={12 - this.state.sidebarSize} md={12 - this.state.sidebarSize}
+                        <Col sm={12} md={12}
                              onMouseEnter={this.hideContextMenu}
                              style={{paddingTop: 0}}>
                             <Row>
                                 <MainView
-                                    horizontalZoom={this.state.horizontalZoom}
+                                    horizontalZoom={this.props.rootStore.visStore.horizontalZoom}
 
                                     tooltipFunctions={tooltipFunctions}
                                     openBinningModal={this.openModal}
@@ -323,7 +317,7 @@ const Content = observer(class Content extends React.Component {
                     </Row>
                 </Grid>
                 {this.getBinner()}
-                {this.getVarListModal()}
+                {this.getVariableManager()}
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>

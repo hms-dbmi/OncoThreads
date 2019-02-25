@@ -127,7 +127,7 @@ const App = observer(class App extends React.Component {
                 {this.getMainContent()}
                 <LogModal modalIsOpen={this.state.logModalIsOpen} close={this.closeModal}
                           logs={this.rootStore.undoRedoStore.logs}/>
-                <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} store={this.rootStore.dataStore}
+                <SettingsModal modalIsOpen={this.state.settingsModalIsOpen} uiStore={this.rootStore.uiStore}
                                close={this.closeModal}/>
                 <AboutModal modalIsOpen={this.state.aboutModalIsOpen} close={this.closeModal}/>
                 <Modal show={this.state.studyInfoModalIsOpen}

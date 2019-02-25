@@ -9,9 +9,6 @@ import {observer} from "mobx-react";
 const BlockTextField = observer(class BlockTextField extends React.Component {
 
 
-    setName(event) {
-        this.props.timepoint.setName(event.target.value);
-    }
 
     /**
      * computes the width of a text. Returns 30 if the text width would be shorter than 30
@@ -30,7 +27,7 @@ const BlockTextField = observer(class BlockTextField extends React.Component {
      * @param text
      * @param fontSize
      * @param maxWidth
-     * @returns {number}
+     * @returns {string}
      */
     static cropText(text, fontSize, maxWidth) {
         let returnText=text.toString();
@@ -60,7 +57,7 @@ const BlockTextField = observer(class BlockTextField extends React.Component {
                       x={(this.props.width - BlockTextField.getTextWidth(croppedText, 14)) / 2 + 1}>{croppedText}</text>
                 <foreignObject><input
                     style={{textAlign: 'center', width: this.props.width, height: 30}} value={this.props.timepoint.name}
-                    onChange={(e) => this.setName(e)} type="text"/>
+                    onChange={(e) => this.props.timepoint.setName(e.target.value)} type="text"/>
                 </foreignObject>
             </g>
         );

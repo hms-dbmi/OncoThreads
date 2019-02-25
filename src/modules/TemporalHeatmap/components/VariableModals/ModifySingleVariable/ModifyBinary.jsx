@@ -51,7 +51,6 @@ const ModifyBinary = observer(class ModifyBinary extends React.Component {
             returnVariable.range = this.state.binaryColors;
 
         }
-        console.log(returnVariable);
         this.props.callback(returnVariable);
         this.props.closeModal();
     }

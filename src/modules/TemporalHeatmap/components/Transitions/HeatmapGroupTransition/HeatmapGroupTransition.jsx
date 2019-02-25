@@ -24,18 +24,17 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
     /**
      * gets all the transitions between a grouped and an ungrouped timepoint
      * @param recty: y position of the helper rectangle
-     * @param rectHeight: height of the helper rectangle
      * @param y0: y position of grouped timepoint
      * @param y1: y position of ungrouped timepoint
      * @returns {*[]}
      */
-    getTransitions(recty, rectHeight, y0, y1) {
+    getTransitions(recty, y0, y1) {
         let transitions = [];
         let rects = [];
         let sourcePartitionPos = 0;
         this.props.partitions.forEach((currentPartition)=> {
             let currXsource = sourcePartitionPos;
-            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, this.props.groupScale(currentPartition.patients.length), rectHeight, this.props.colorScale(currentPartition.partition), currentPartition.partition));
+            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, this.props.groupScale(currentPartition.patients.length), this.props.visMap.helperRectHeight, this.props.colorScale(currentPartition.partition), currentPartition.partition));
             const sharedPatients=currentPartition.patients.filter(patient => this.props.nonGrouped.patients.includes(patient));
             let transitionPatients = this.sortTransitionPatients(sharedPatients, this.props.heatmapScale);
             if (transitionPatients.length !== 0) {
@@ -68,19 +67,18 @@ const HeatmapGroupTransition = observer(class HeatmapGroupTransition extends Rea
     }
 
     render() {
-        const rectHeight = 2;
         let y0, y1, recty;
         if (this.props.inverse) {
-            y0 = this.props.visMap.transitionSpace - rectHeight - 2 * this.props.visMap.gap;
+            y0 = this.props.visMap.transitionSpace - this.props.visMap.helperRectHeight - 2 * this.props.visMap.gap;
             y1 = 0 - this.props.visMap.gap;
             recty = y0;
         }
         else {
-            y0 = 0 + this.props.visMap.gap + rectHeight;
+            y0 = 0 + this.props.visMap.gap + this.props.visMap.helperRectHeight;
             y1 = this.props.visMap.transitionSpace;
             recty = 0 + this.props.visMap.gap;
         }
-        return (this.getTransitions(recty, rectHeight, y0, y1))
+        return (this.getTransitions(recty, y0, y1))
     }
 });
 export default HeatmapGroupTransition;

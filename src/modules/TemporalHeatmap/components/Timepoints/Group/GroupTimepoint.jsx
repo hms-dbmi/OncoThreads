@@ -16,29 +16,28 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
      */
     getPartitions() {
         let partitions = [];
-        const _self = this;
         let previousXPosition = 0;
-        this.props.group.forEach(function (d, i) {
+        this.props.group.forEach((d, i)=> {
             const transform = "translate(" + previousXPosition + ",0)";
             let stroke = "none";
-            if (_self.isSelected(d.patients) && !_self.props.store.advancedSelection) {
+            if (this.isSelected(d.patients) && !this.props.store.rootStore.uiStore.advancedSelection) {
                 stroke = "black";
             }
             partitions.push(<g key={d.partition} style={{backgroundColor: "darkgray"}}
-                               onClick={(e) => _self.handleMouseClick(e, d.patients)}
-                               transform={transform}><GroupPartition visMap={_self.props.visMap}
-                                                                     store={_self.props.store}
-                                                                     heatmap={_self.props.heatmap}
-                                                                     currentVariables={_self.props.currentVariables}
-                                                                     groupScale={_self.props.groupScale}
-                                                                     tooltipFunctions={_self.props.tooltipFunctions}
+                               onClick={(e) => this.handleMouseClick(e, d.patients)}
+                               transform={transform}><GroupPartition visMap={this.props.visMap}
+                                                                     store={this.props.store}
+                                                                     heatmap={this.props.heatmap}
+                                                                     currentVariables={this.props.currentVariables}
+                                                                     groupScale={this.props.groupScale}
+                                                                     tooltipFunctions={this.props.tooltipFunctions}
                                                                      partition={d}
                                                                      partitionIndex={i}
                                                                      stroke={stroke}
-                                                                     primaryVariableId={_self.props.primaryVariableId}/>
+                                                                     primaryVariableId={this.props.primaryVariableId}/>
             </g>);
 
-            previousXPosition += _self.props.groupScale(d.patients.length) + 10;
+            previousXPosition += this.props.groupScale(d.patients.length) + 10;
 
         });
         return partitions;

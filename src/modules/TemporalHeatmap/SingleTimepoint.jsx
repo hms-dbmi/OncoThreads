@@ -248,7 +248,7 @@ class SingleTimepoint {
                 }
                 //case: the timepoint is not grouped
                 else {
-                    this.rootStore.dataStore.realTime = false;
+                    this.rootStore.uiStore.setRealTime(false);
                     this.setPrimaryVariable(variableId);
                     let order = 1;
                     if (this.heatmapSorting.variable === variableId) {

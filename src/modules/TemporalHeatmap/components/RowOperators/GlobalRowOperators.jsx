@@ -44,9 +44,9 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
             }
             const d = this.props.store.timepoints[i];
             return <GlobalRowOperator timepoint={d} width={this.state.width}
-                                      height={this.props.store.variableStores.sample.currentVariables.length*20}
-                               visMap={this.props.visMap} store={this.props.store}
-                                {...this.props.tooltipFunctions}/>
+                                      height={this.props.store.variableStores.sample.currentVariables.length * 20}
+                                      visMap={this.props.visMap} store={this.props.store}
+                                      {...this.props.tooltipFunctions}/>
         }
 
         getEventRowHeader() {
@@ -55,7 +55,7 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
                 i = 0;
                 const d = this.props.store.timepoints[i];
                 return <GlobalRowOperator timepoint={d} width={this.state.width}
-                                          height={this.props.store.variableStores.between.getRelatedVariables("event").length*20}
+                                          height={this.props.store.variableStores.between.getRelatedVariables("event").length * 20}
                                           visMap={this.props.visMap} store={this.props.store}
                                           {...this.props.tooltipFunctions}/>
             }

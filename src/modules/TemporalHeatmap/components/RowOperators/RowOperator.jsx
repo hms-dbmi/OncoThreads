@@ -68,7 +68,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             else {
                 timepoint.sort(variable.id, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
-                if (this.props.store.rootStore.realTime) {
+                if (this.props.store.rootStore.uiStore.realTime) {
                     this.props.store.applyPatientOrderToAll(timepoint.globalIndex, false);
                 }
                 this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
@@ -256,7 +256,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
             let pos = 0;
             let rowOperators = [];
             this.props.store.variableStores[this.props.timepoint.type].fullCurrentVariables.forEach((d,i)=> {
-                if (!this.props.timepoint.heatmap[i].isUndef || _self.props.store.showUndefined || d.id === _self.props.timepoint.primaryVariableId) {
+                if (!this.props.timepoint.heatmap[i].isUndef || _self.props.store.rootStore.uiStore.showUndefined || d.id === _self.props.timepoint.primaryVariableId) {
                     let lineHeight = _self.props.visMap.secondaryHeight;
                     let fontWeight = "normal";
                     if (d.id === _self.props.timepoint.primaryVariableId) {

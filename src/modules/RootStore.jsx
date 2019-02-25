@@ -7,6 +7,7 @@ import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
 import MolProfileMapping from "./MolProfileMapping";
 import SvgExport from "./SvgExport";
+import UIStore from "./TemporalHeatmap/UIStore";
 
 
 /*
@@ -371,6 +372,7 @@ class RootStore {
         this.reset = this.reset.bind(this);
         this.molProfileMapping = new MolProfileMapping(this);
         this.dataStore = new DataStore(this);
+        this.uiStore=new UIStore(this);
         this.visStore = new VisStore(this);
         this.undoRedoStore = new UndoRedoStore(this);
         this.svgExport = new SvgExport(this);

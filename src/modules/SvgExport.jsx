@@ -14,7 +14,7 @@ class SvgExport {
      */
     exportSVG() {
         var tmp;
-        if (this.rootStore.dataStore.globalTime) {
+        if (this.rootStore.uiStore.globalTime) {
             tmp = document.getElementById("timeline-view");
         } else {
             tmp = document.getElementById("block-view");
@@ -46,7 +46,7 @@ class SvgExport {
 
             var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
-            if (this.rootStore.dataStore.globalTime && this.rootStore.dataStore.transitionOn && (i === 0 || i === 1)) {
+            if (this.rootStore.uiStore.globalTime && this.rootStore.uiStore.transitionOn && (i === 0 || i === 1)) {
                 boundingRect = svg_all[i].getBoundingClientRect();
             }
             else {
@@ -58,7 +58,7 @@ class SvgExport {
             new_x = boundingRect.x;
             new_right = new_x + width;
 
-            if (boundingRect.x < prev_right && !this.rootStore.dataStore.globalTime) {
+            if (boundingRect.x < prev_right && !this.rootStore.uiStore.globalTime) {
 
                 new_right = prev_right + width;
                 new_x = prev_right;
@@ -81,7 +81,7 @@ class SvgExport {
 
             var scaleX = 1;
 
-            if (this.rootStore.dataStore.globalTime && this.rootStore.dataStore.transitionOn && i === 4) {
+            if (this.rootStore.uiStore.globalTime && this.rootStore.dataStore.transitionOn && i === 4) {
                 // if(this.rootStore.dataStore.transitionOn && i===4){
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
@@ -93,7 +93,7 @@ class SvgExport {
                     '</g>';
 
             }
-            else if (this.rootStore.dataStore.globalTime && !this.rootStore.dataStore.transitionOn && i === 3) {
+            else if (this.rootStore.uiStore.globalTime && !this.rootStore.dataStore.transitionOn && i === 3) {
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +
@@ -155,7 +155,7 @@ class SvgExport {
      */
     exportSVGandData() {
         var tmp;
-        if (this.rootStore.dataStore.globalTime) {
+        if (this.rootStore.uiStore.globalTime) {
             tmp = document.getElementById("timeline-view");
         } else {
             tmp = document.getElementById("block-view");
@@ -231,7 +231,7 @@ class SvgExport {
 
             var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
-            if (this.rootStore.dataStore.globalTime && this.rootStore.dataStore.transitionOn && (i === 0 || i === 1)) {
+            if (this.rootStore.uiStore.globalTime && this.rootStore.uiStore.transitionOn && (i === 0 || i === 1)) {
                 boundingRect = svg_all[i].getBoundingClientRect();
             }
             else {
@@ -243,7 +243,7 @@ class SvgExport {
             new_x = boundingRect.x;
             new_right = new_x + width;
 
-            if (boundingRect.x < prev_right && !this.rootStore.dataStore.globalTime) {
+            if (boundingRect.x < prev_right && !this.rootStore.uiStore.globalTime) {
 
                 new_right = prev_right + width;
                 new_x = prev_right;
@@ -266,7 +266,7 @@ class SvgExport {
 
             var scaleX = 1;
 
-            if (this.rootStore.dataStore.globalTime && this.rootStore.dataStore.transitionOn && i === 4) {
+            if (this.rootStore.uiStore.globalTime && this.rootStore.dataStore.transitionOn && i === 4) {
                 // if(this.rootStore.dataStore.transitionOn && i===4){
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
@@ -278,7 +278,7 @@ class SvgExport {
                     '</g>';
 
             }
-            else if (this.rootStore.dataStore.globalTime && !this.rootStore.dataStore.transitionOn && i === 3) {
+            else if (this.rootStore.uiStore.globalTime && !this.rootStore.dataStore.transitionOn && i === 3) {
 
                 scaleX = svg_all[i + 1].getBoundingClientRect().width / width;
                 print_svg = print_svg +

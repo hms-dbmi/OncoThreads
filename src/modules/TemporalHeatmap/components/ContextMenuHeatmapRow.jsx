@@ -13,6 +13,11 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
         this.move = this.move.bind(this);
     }
 
+    /**
+     * moves single patient of all selected patients
+     * @param patient
+     * @param isUp
+     */
     move(patient, isUp) {
         if (this.props.rootStore.dataStore.selectedPatients.length === 0) {
             this.props.rootStore.updateTimepointStructure([patient], this.props.timepoint, isUp);

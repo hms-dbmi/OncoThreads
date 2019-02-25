@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 /*
-implements a LineTransition
+implements a Global Transition
  */
 const GlobalTransition = observer(class GlobalTransition extends React.Component {
     /**
@@ -14,15 +14,16 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
      * @param strokeColor
      * @returns Line
      */
-
-
     static drawLine(x0, x1, y0, y1, key, strokeColor,strokeWidth) {
         let path = "M" + x0 + "," + y0
             + "L" + x1 + "," + y1;
         return (<path key={key} d={path} stroke={strokeColor} strokeWidth={strokeWidth} fill="none"/>)
     }
 
-
+    /**
+     * draws one line for each patient
+     * @returns {Array}
+     */
     drawLines() {
         let lines = [];
         this.props.patients.forEach(d => {
@@ -56,10 +57,6 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
                                 />);
         });
         return lines;
-    }
-
-    static getMax(max, num) {
-        return max > num ? max : num;
     }
 
     render() {

@@ -29,8 +29,8 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
     }
 
     updateDimensions() {
-        this.props.visMap.setPlotWidth(this.refs.plot.parentNode.getBoundingClientRect().width);
-        this.props.visMap.setPlotHeight(this.refs.blockView.parentNode.getBoundingClientRect().height);
+        this.props.visMap.setPlotWidth(this.refs.globalTime.parentNode.getBoundingClientRect().width);
+        this.props.visMap.setPlotHeight(this.refs.globalTime.parentNode.getBoundingClientRect().height);
     }
 
     getGlobalTimepoints() {
@@ -210,7 +210,7 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
             timepoints = this.getGlobalTimepoints()
 
         }
-        return <div ref="plot" className="scrollableX">
+        return <div ref="globalTime" className="scrollableX">
             <svg width={this.props.visMap.svgWidth} height={this.props.visMap.svgHeight}>
                 <g transform={"translate(0," + this.props.visMap.timelineRectSize / 2 + ")"}>
                     {transitions}

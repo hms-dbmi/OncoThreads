@@ -47,9 +47,7 @@ const Legend = observer(class Legend extends React.Component {
      * @returns {number}
      */
     static getTextWidth(min, text, fontSize) {
-        const context = document.createElement("canvas").getContext("2d");
-        context.font = fontSize + "px Arial";
-        const width = context.measureText(text).width;
+         const width=UtilityFunctions.getTextWidth(text,fontSize);
         if (width > min) {
             return width;
         }
@@ -191,6 +189,11 @@ const Legend = observer(class Legend extends React.Component {
         return (legendEntries);
     }
 
+    /**
+     * creates a grey rectangle in order to highlight a row
+     * @param height
+     * @returns {*}
+     */
     getHighlightRect(height) {
         return <rect height={height} width={this.maxWidth} fill="lightgray"/>
     }
@@ -208,7 +211,7 @@ const Legend = observer(class Legend extends React.Component {
         let legend = [];
         let currPos = 0;
         currentVariables.forEach(function (d, i) {
-            if (!data[i].isUndef || _self.props.store.showUndefined || primary === d.id) {
+            if (!data[i].isUndef || _self.props.store.rootStore.uiStore.showUndefined || primary === d.id) {
                 let lineheight;
                 let opacity = 1;
                 if (primary === d.id) {
@@ -244,6 +247,12 @@ const Legend = observer(class Legend extends React.Component {
         return legend
     }
 
+    /**
+     * gets global legend
+     * @param fontSize
+     * @param primaryVariable
+     * @returns {Array}
+     */
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
         const _self = this;
@@ -273,7 +282,7 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let legends = [];
 
-        if (!this.props.store.globalTime) {
+        if (!this.props.store.rootStore.uiStore.globalTime) {
             this.props.store.timepoints.forEach(function (d, i) {
                 let transform = "translate(0," + _self.props.visMap.timepointPositions.timepoint[i] + ")";
 
@@ -288,7 +297,6 @@ const Legend = observer(class Legend extends React.Component {
             });
         }
         else {
-            //let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
             let primaryVariable = this.props.store.variableStores.sample.fullCurrentVariables.filter(variable => variable.id === _self.props.store.globalPrimary)[0];
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }

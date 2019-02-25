@@ -108,13 +108,8 @@ const LineTransition = observer(class LineTransition extends React.Component {
         return lines;
     }
 
-    static getMax(max, num) {
-        return max > num ? max : num;
-    }
-
-
     render() {
-        if (this.props.store.realTime) {
+        if (this.props.store.rootStore.uiStore.realTime) {
             return (
                 this.drawRealtimeLines()
             )

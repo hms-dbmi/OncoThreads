@@ -25,19 +25,17 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
      * @returns []: transitions
      */
     drawTransitions() {
-        const rectHeight = 2;
-
         let transitions = [];
         let rects = [];
         let currXtarget = {};
         let sourcePartitionPos = 0;
         this.props.firstGrouped.forEach((sourcePartition, i) => {
             let currXsource = sourcePartitionPos;
-            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, this.props.visMap.gap, this.props.groupScale(sourcePartition.patients.length), rectHeight, this.props.firstPrimary.colorScale(sourcePartition.partition), sourcePartition.partition + "source"));
+            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, this.props.visMap.gap, this.props.groupScale(sourcePartition.patients.length), this.props.visMap.helperRectHeight, this.props.firstPrimary.colorScale(sourcePartition.partition), sourcePartition.partition + "source"));
             let targetPartitionPos = 0;
             this.props.secondGrouped.forEach(targetPartition => {
                 if (i === 0) {
-                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visMap.transitionSpace - rectHeight - this.props.visMap.gap * 2, this.props.groupScale(targetPartition.patients.length), rectHeight, this.props.secondPrimary.colorScale(targetPartition.partition), targetPartition.partition + "target"));
+                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visMap.transitionSpace - this.props.visMap.helperRectHeight - this.props.visMap.gap * 2, this.props.groupScale(targetPartition.patients.length), this.props.visMap.helperRectHeight, this.props.secondPrimary.colorScale(targetPartition.partition), targetPartition.partition + "target"));
                 }
                 let patientIntersection = sourcePartition.patients.filter(patient => targetPartition.patients.includes(patient));
                 if (!(targetPartition.partition in currXtarget)) {
@@ -49,11 +47,10 @@ const SankeyTransition = observer(class SankeyTransition extends React.Component
                                            x0={currXsource}
                                            x1={currXtarget[targetPartition.partition]}
                                            {...this.props.tooltipFunctions}
-                                           width={transitionWidth} rectHeight={rectHeight}
+                                           width={transitionWidth}
                                            firstPartition={sourcePartition.partition}
                                            secondPartition={targetPartition.partition}
                                            patients={patientIntersection}
-                                           count={patientIntersection.length}
                                            firstPrimary={this.props.firstPrimary}
                                            secondPrimary={this.props.secondPrimary}
                                            store={this.props.store}

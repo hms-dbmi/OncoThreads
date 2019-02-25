@@ -104,16 +104,6 @@ const HeatmapRow = observer(class HeatmapRow extends React.Component {
         this.props.hideTooltip();
     }
 
-    /*showContextMenu(e, timepointIndex, variable, type) {
-        this.setState({
-            x: e.pageX,
-            y: e.pageY,
-            clickedTimepoint: timepointIndex,
-            clickedVariable: variable,
-            contextType: type
-        });
-        e.preventDefault();
-    }*/
 
     hideContextMenu() {
         this.setState({

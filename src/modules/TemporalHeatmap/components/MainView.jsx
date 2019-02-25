@@ -22,7 +22,6 @@ import BlockView from "./BlockView";
 /*
 Main View
 Creates the Row operators, the Plot and the Legend
-Sets the basic parameters, e.g. the dimensions of the rectangles or the height of the transitions ("transition space")
  */
 const MainView = observer(class MainView extends React.Component {
     constructor(props) {
@@ -47,23 +46,14 @@ const MainView = observer(class MainView extends React.Component {
 
     handleTimeClick() {
         this.props.store.applyPatientOrderToAll(0);
-        this.props.store.toggleRealtime();
+        this.props.store.rootStore.uiStore.setRealTime(!this.props.store.rootStore.uiStore.realTime);
     }
 
     handleGlobalTimeClick(key) {
-        if (key !== this.props.globalTime) {
-            this.props.store.setGlobalTime(key);
+        if (key !== this.props.store.rootStore.uiStore.globalTime) {
+            this.props.store.rootStore.uiStore.setGlobalTime(key);
             this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.globalTime);
         }
-    }
-
-
-    /**
-     * set visual parameters
-     * @param rectWidth
-     */
-    setVisualParameters(rectWidth) {
-        this.props.visMap.setSampleRectWidth(rectWidth);
     }
         /**
      * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
@@ -100,10 +90,10 @@ const MainView = observer(class MainView extends React.Component {
                 <div className="view" id="block-view">
                     <Row>
                         <Button bsSize="xsmall" onClick={this.handleTimeClick}
-                                disabled={this.props.store.globalTime || this.props.store.variableStores.between.currentVariables.length > 0}
+                                disabled={this.props.store.rootStore.uiStore.globalTime || this.props.store.variableStores.between.currentVariables.length > 0}
                                 key={"actualTimeline"}>
                             <FontAwesome
-                                name="clock"/> {(this.props.store.realTime) ? "Hide relative time" : "Show relative time"}
+                                name="clock"/> {(this.props.store.rootStore.uiStore.realTime) ? "Hide relative time" : "Show relative time"}
                         </Button>
                     </Row>
                     <Row>
@@ -205,7 +195,7 @@ const MainView = observer(class MainView extends React.Component {
         const timeScale = MainView.createTimeScale(this.props.visMap.svgHeight - this.props.visMap.primaryHeight * 2, 0, this.props.store.rootStore.maxTimeInDays);
         let blockView = null;
         let timelineView = null;
-        if (!this.props.store.globalTime) {
+        if (!this.props.store.rootStore.uiStore.globalTime) {
             blockView = this.getBlockView(sampleHeatmapScales,groupScale,timeScale,transform);
         }
         else {
@@ -214,7 +204,7 @@ const MainView = observer(class MainView extends React.Component {
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
                 <Tabs mountOnEnter unmountOnExit animation={false}
-                      activeKey={this.props.store.globalTime}
+                      activeKey={this.props.store.rootStore.uiStore.globalTime}
                       onSelect={this.handleGlobalTimeClick} id={"viewTab"}>
                     <Tab eventKey={false} style={{paddingTop: 10}} title="Block view">
                         {blockView}

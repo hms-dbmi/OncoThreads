@@ -38,5 +38,16 @@ class UtilityFunctions{
         }
         return isValid;
     }
+        /**
+     * computes the width of a text
+     * @param text
+     * @param fontSize
+     * @returns {number}
+     */
+    static getTextWidth(text, fontSize) {
+        const context = document.createElement("canvas").getContext("2d");
+        context.font = fontSize + "px Arial";
+        return context.measureText(text).width;
+    }
 }
 export default UtilityFunctions;

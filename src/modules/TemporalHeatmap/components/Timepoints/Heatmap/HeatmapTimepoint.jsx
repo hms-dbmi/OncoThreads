@@ -13,7 +13,7 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
         let previousYposition = 0;
         this.props.currentVariables.forEach((variable, i)=> {
             const transform = "translate(0," + previousYposition + ")";
-            if (!this.props.heatmap[i].isUndef || _self.props.store.showUndefined || this.props.heatmap[i].variable === _self.props.primaryVariableId) {
+            if (!this.props.heatmap[i].isUndef || _self.props.store.rootStore.uiStore.showUndefined || this.props.heatmap[i].variable === _self.props.primaryVariableId) {
                 let rowHeight = _self.props.visMap.secondaryHeight;
                 let opacity = 0.5;
                 if (variable.id === _self.props.primaryVariableId) {

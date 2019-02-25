@@ -8,16 +8,14 @@ creates a row of a continuous variable in a partition of a grouped timepoint
  */
 const ContinuousRow = observer(class ContinuousRow extends React.Component {
     static getTooltipContent(value, numPatients) {
-        {
-            let content = "";
-            if (numPatients === 1) {
-                content = value + ": " + numPatients + " patient";
-            }
-            else {
-                content = value + ": " + numPatients + " patients";
-            }
-            return content;
+        let content = "";
+        if (numPatients === 1) {
+            content = value + ": " + numPatients + " patient";
         }
+        else {
+            content = value + ": " + numPatients + " patients";
+        }
+        return content;
     }
 
     /**
@@ -49,7 +47,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                 else {
                     rectColor = "black";
                 }
-                if (_self.props.store.advancedSelection) {
+                if (_self.props.store.rootStore.uiStore.advancedSelection) {
                     let x = selectedScale(stepwidth * i);
                     if (i === 0) {
                         x = x + 1;
@@ -69,7 +67,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             {stops}
         </linearGradient>;
         let selectUndefinedRect = null;
-        if (undefinedValuesCounter > 0 && this.props.store.advancedSelection) {
+        if (undefinedValuesCounter > 0 && this.props.store.rootStore.uiStore.advancedSelection) {
             selectUndefinedRect = <rect x={this.props.groupScale(values.length) + 1} height={this.props.height}
                                         width={this.props.groupScale(undefinedValuesCounter) - 1}
                                         fill={"none"}
@@ -128,7 +126,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                 </defs>
                 <rect x={0} width={this.props.groupScale(numValues)} height={this.props.height}
                       fill={"url(#" + randomId + ")"} stroke={'lightgray'} opacity={this.props.opacity}
-                      onMouseEnter={(e) => this.props.showTooltip(e, 'Minimum: ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median: ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum: ' +UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
+                      onMouseEnter={(e) => this.props.showTooltip(e, 'Minimum: ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median: ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum: ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                       onMouseLeave={this.props.hideTooltip}/>
                 <line x1={boxPlotScale(boxPlotValues[0])} x2={boxPlotScale(boxPlotValues[0])}
                       y1={1 / 3 * this.props.height} y2={2 / 3 * this.props.height} stroke="black"/>
@@ -201,13 +199,13 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             return (a.value - b.value)
         });
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
-        if (this.props.store.continuousRepresentation === 'gradient') {
+        if (this.props.store.rootStore.uiStore.continuousRepresentation === 'gradient') {
             let selectedPartitionPatients = this.props.row.map(d => d.patients[0]).filter(element => -1 !== this.props.store.selectedPatients.indexOf(element));
             return (
                 this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
             )
         }
-        else if (this.props.store.continuousRepresentation === 'boxplot')
+        else if (this.props.store.rootStore.uiStore.continuousRepresentation === 'boxplot')
             return (
                 this.createBoxPlot(boxPlotValues, values.length)
             );

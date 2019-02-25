@@ -9,12 +9,20 @@ const GetStudy = observer(class GetStudy extends React.Component {
         this.getStudy = this.getStudy.bind(this);
     }
 
+    /**
+     * selects a study
+     * @param event
+     * @param study
+     */
     getStudy(event, study) {
         this.props.cbioAPI.constructor();
         this.props.setRoot(study, false, true);
     }
 
-
+    /**
+     * creates options for study selection
+     * @returns {Array}
+     */
     setOptions() {
         let options = [];
         const _self = this;

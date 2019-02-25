@@ -27,8 +27,8 @@ class UndoRedoStore {
      */
     undo() {
         if (this.currentPointer !== 0) {
-            if (this.rootStore.realTime) {
-                this.rootStore.realTime = false;
+            if (this.rootStore.uiStore.realTime) {
+                this.rootStore.setRealTime(false);
             }
             this.logs.push("UNDO: " + this.logs[this.currentPointer]);
             this.deserialize(this.currentPointer - 1);
@@ -61,7 +61,7 @@ class UndoRedoStore {
         this.rootStore.dataStore.update(this.rootStore.dataStore.variableStores.sample.childStore.timepoints[0].heatmapOrder);
         this.rootStore.dataStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.dataStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
         this.rootStore.dataStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.dataStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
-        this.rootStore.dataStore.globalTime = this.stateStack[index].state.globalTime;
+        this.rootStore.uiStore.globalTime = this.stateStack[index].state.globalTime;
     }
 
     /**
@@ -161,7 +161,7 @@ class UndoRedoStore {
             allSampleVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.sample.referencedVariables),
             allBetweenVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.between.referencedVariables),
             transitionOn: store.rootStore.dataStore.transitionOn,
-            globalTime: store.rootStore.dataStore.globalTime,
+            globalTime: store.rootStore.uiStore.globalTime,
             globalPrimary: store.rootStore.dataStore.globalPrimary,
             timepointStructure: toJS(store.rootStore.timepointStructure),
             eventTimelineMap: toJS(store.rootStore.eventTimelineMap)

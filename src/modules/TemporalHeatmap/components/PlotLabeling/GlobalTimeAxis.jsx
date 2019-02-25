@@ -4,7 +4,8 @@ import * as d3 from "d3";
 //import ReactDOM from 'react-dom'
 
 /*
- * Patient axis pointing to the right
+ * Time axis
+ * TODO: Make more react like (see Axis in VariableModals/ModifySingleVariables/Binner)
  */
 const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 

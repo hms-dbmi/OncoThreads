@@ -1,10 +1,10 @@
 import React from "react";
 import {observer} from "mobx-react";
 import * as d3 from "d3";
-//import ReactDOM from 'react-dom'
 
 /*
- * Patient axis pointing to the right
+ * bands
+ * TODO: make more react-like (no reason to use d3, create <rects>)
  */
 const GlobalBands = observer(class GlobalBands extends React.Component {
 

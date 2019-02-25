@@ -14,6 +14,7 @@ class VisStore {
         this.gap = 1;
         //space for transitions
         //gap between partitions in grouped timepoints
+        this.helperRectHeight=2;
         this.partitionGap = 10;
         this.svgWidth = 700;
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
@@ -138,7 +139,7 @@ class VisStore {
         let height = 0;
         let varCount = 0;
         this.rootStore.dataStore.variableStores[timepoint.type].currentVariables.forEach((variableId, i) => {
-            if (!timepoint.heatmap[i].isUndef || _self.rootStore.dataStore.showUndefined || variableId === timepoint.primaryVariableId) {
+            if (!timepoint.heatmap[i].isUndef || _self.rootStore.uiStore.showUndefined || variableId === timepoint.primaryVariableId) {
                 varCount += 1;
                 if (variableId === timepoint.primaryVariableId) {
                     height += _self.primaryHeight;
