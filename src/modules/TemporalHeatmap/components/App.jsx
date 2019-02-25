@@ -72,8 +72,8 @@ const App = observer(class App extends React.Component {
                     <GetStudy key="getStudy" setRoot={this.setRootStore} rootStore={this.rootStore} cbioAPI={this.props.cbioAPI}
                               studies={this.props.studyapi.studies}/>,
                     <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
-                        <NavItem onClick={this.rootStore.exportSVG}>...as SVG</NavItem>
-                        <NavItem onClick={this.rootStore.exportSVGandData}>...as SVG with metadata</NavItem>
+                        <NavItem onClick={this.rootStore.svgExport.exportSVG}>...as SVG</NavItem>
+                        <NavItem onClick={this.rootStore.svgExport.exportSVGandData}>...as SVG with metadata</NavItem>
                     </NavDropdown>,
                     <NavItem key='settings' onClick={() => this.openModal('settings')}>Settings</NavItem>,
                     <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
@@ -139,7 +139,7 @@ const App = observer(class App extends React.Component {
                         <StudySummary studyName={this.rootStore.study.name}
                                       studyDescription={this.rootStore.study.description}
                                       studyCitation={this.rootStore.study.citation}
-                                      numPatients={this.rootStore.patientOrderPerTimepoint.length}
+                                      numPatients={this.rootStore.patients.length}
                                       minTP={this.rootStore.minTP}
                                       maxTP={this.rootStore.maxTP}/>
                     </Modal.Body>

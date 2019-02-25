@@ -8,7 +8,7 @@ class MultipleTimepointsStore {
         this.rootStore = rootStore;
         this.structure = structure;
         this.type = type;
-        this.timepoints = this.structure.map((d, i) => new SingleTimepoint(this.rootStore, d.map(d => d.patient), this.type, i, this.rootStore.patientOrderPerTimepoint))
+        this.timepoints = this.structure.map((d, i) => new SingleTimepoint(this.rootStore, d.map(d => d.patient), this.type, i, this.rootStore.patients))
     }
 
     /**
@@ -26,10 +26,17 @@ class MultipleTimepointsStore {
         });
     }
 
+    /**
+     * resets timepoints
+     */
     reset() {
         this.timepoints.forEach(d => d.reset())
     }
 
+    /**
+     * updates all names
+     * @param names
+     */
     updateNames(names) {
         this.timepoints.forEach((d, i) => d.setName(names[i]));
     }
@@ -58,29 +65,9 @@ class MultipleTimepointsStore {
     }
 
     /**
-     * updates the rows at index of the heatmaps
-     * @param variableId
-     * @param mapper
-     * @param index
+     * resort rows of all timepints
+     * @param order
      */
-    updateHeatmapRows(variableId, mapper, index) {
-        const _self = this;
-        this.structure.forEach(function (d, i) {
-            let variableData = [];
-            d.forEach(function (f) {
-                if (f) {
-                    let value = mapper[f.sample];
-                    variableData.push({
-                        patient: f.patient,
-                        value: value,
-                        sample: f.sample
-                    });
-                }
-            });
-            _self.timepoints[i].updateRow(index, variableId, variableData);
-        });
-    }
-
     resortHeatmapRows(order) {
         this.timepoints.forEach(d => d.resortRows(order));
     }

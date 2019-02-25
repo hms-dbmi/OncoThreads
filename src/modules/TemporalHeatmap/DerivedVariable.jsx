@@ -1,6 +1,5 @@
 import ColorScales from "./ColorScales";
 import {extendObservable} from "mobx";
-import * as d3ScaleChromatic from "d3-scale-chromatic";
 
 class DerivedVariable {
     constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper) {
@@ -20,9 +19,15 @@ class DerivedVariable {
 
     }
 
+    /**
+     * initializes observable values
+     * @param domain
+     * @param range
+     * @returns {*}
+     */
     initializeObservable(domain, range) {
-        let currDomain = this.getDefaultDomain(domain);
-        let currRange = this.getDefaultRange(currDomain, range);
+        let currDomain = this.createDefaultDomain(domain);
+        let currRange = this.createDefaultRange(currDomain, range);
         return {
             domain: currDomain,
             range: currRange,
@@ -39,8 +44,12 @@ class DerivedVariable {
         };
     }
 
-
-    getDefaultDomain(domain) {
+     /**
+     * creates domain (use provided domain if given, otherwise use default domain)
+     * @param domain
+     * @returns {*}
+     */
+    createDefaultDomain(domain) {
         let currDomain = domain;
         if (domain.length === 0) {
             if (this.datatype === 'NUMBER') {
@@ -71,26 +80,31 @@ class DerivedVariable {
         return currDomain;
     }
 
-    getDefaultRange(domain, range) {
+    /**
+     * creates range (use provided range if given, otherwise use default range)
+     * @param domain
+     * @param range
+     * @returns {*}
+     */
+    createDefaultRange(domain, range) {
         let currRange = range;
         if (currRange.length === 0) {
             if (this.datatype === "ORDINAL") {
-                let step = 1 / domain.length;
-                currRange = domain.map((d, i) => d3ScaleChromatic.interpolateGreys(i * step));
+                currRange = ColorScales.getDefaultOrdinalRange(domain.length);
             }
             else if (this.datatype === "STRING") {
-                currRange = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']
+                currRange = ColorScales.defaultCategoricalRange;
             }
             else if (this.datatype === "BINARY") {
-                currRange = ['#ffd92f', 'lightgray']
+                currRange = ColorScales.defaultBinaryRange
             }
             else if (this.datatype === "NUMBER") {
                 let min = Math.min(...domain);
                 if (min < 0) {
-                    currRange = ['#0571b0', '#f7f7f7', '#ca0020'];
+                    currRange = ColorScales.defaultContinuousThreeColors;
                 }
                 else {
-                    currRange = ['#e6e6e6', '#000000'];
+                    currRange = ColorScales.defaultContinuousTwoColors;
                 }
             }
         }

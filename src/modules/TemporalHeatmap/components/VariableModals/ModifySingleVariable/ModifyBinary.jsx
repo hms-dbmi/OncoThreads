@@ -3,7 +3,7 @@ import {observer} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
 import DerivedVariable from "../../../DerivedVariable";
-import MapperCombine from "../../../MapperCombineFunctions";
+import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
 import ColorScales from "../../../ColorScales";
 import BinaryTable from "../VariableTables/BinaryTable";
 
@@ -41,7 +41,7 @@ const ModifyBinary = observer(class ModifyBinary extends React.Component {
         if (this.state.invert && this.props.derivedVariable === null) {
             let newId = uuidv4();
             let modification = {true: false, false: true};
-            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], {type:"invertBinary", mapping:modification}, this.state.binaryColors, [], MapperCombine.getModificationMapper("modifyCategorical", modification.mapping, [this.props.variable.mapper]), this.props.variable.profile);
+            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], {type:"invertBinary", mapping:modification}, this.state.binaryColors, [], DerivedMapperFunctions.getModificationMapper("modifyCategorical", modification.mapping, [this.props.variable.mapper]), this.props.variable.profile);
             if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
                 returnVariable.name = this.state.name + "_INVERTED";
             }

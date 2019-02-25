@@ -10,83 +10,19 @@ sort context menu, appears after a right click on the sort button
 const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React.Component {
     constructor() {
         super();
-        this.goUp = this.goUp.bind(this);
-        this.goDown = this.goDown.bind(this);
+        this.move = this.move.bind(this);
     }
 
-
-    goUp(patient) {
+    move(patient, isUp) {
         if (this.props.rootStore.dataStore.selectedPatients.length === 0) {
-            this.moveSinglePatientUp(patient);
-            this.props.rootStore.undoRedoStore.saveTPMovement("up", patient);
+            this.props.rootStore.updateTimepointStructure([patient], this.props.timepoint, isUp);
+            this.props.rootStore.undoRedoStore.saveTPMovement(isUp ? "UP" : "DOWN", patient);
         }
         else {
-            for (let i = 0; i < this.props.rootStore.dataStore.selectedPatients.length; i++) {
-                this.moveSinglePatientUp(this.props.rootStore.dataStore.selectedPatients[i]);
-            }
-            this.props.rootStore.undoRedoStore.saveTPMovement("up", this.props.rootStore.dataStore.selectedPatients);
-
+            this.props.rootStore.updateTimepointStructure(this.props.rootStore.dataStore.selectedPatients, this.props.timepoint, isUp);
+            this.props.rootStore.undoRedoStore.saveTPMovement(isUp ? "UP" : "DOWN", this.props.rootStore.dataStore.selectedPatients);
         }
-
     }
-
-    moveSinglePatientUp(patient) {
-        let findtimeline = 0;
-        let flag = false;
-        for (let j = this.props.rootStore.timepointStructure.length - 1; j >= 0; j--) {
-            const list = this.props.rootStore.timepointStructure[j];
-            for (let k = 0; k < list.length; k++) {
-                if (list[k].patient === patient) {
-                    flag = true;
-                    findtimeline = j;
-                    break;
-                }
-            }
-            if (flag) {
-                break;
-            }
-        }
-        this.props.rootStore.updateTimepointStructure(patient, findtimeline, true)
-    }
-
-
-    goDown(patient) {
-        if (this.props.rootStore.dataStore.selectedPatients.length === 0) {
-            this.moveSinglePatientDown(patient);
-            this.props.rootStore.undoRedoStore.saveTPMovement("down", patient);
-        }
-        else {
-            for (let i = this.props.rootStore.dataStore.selectedPatients.length - 1; i >= 0; i--) {
-                this.moveSinglePatientDown(this.props.rootStore.dataStore.selectedPatients[i]);
-            }
-            this.props.rootStore.undoRedoStore.saveTPMovement("down", this.props.rootStore.dataStore.selectedPatients);
-
-        }
-
-    }
-
-    moveSinglePatientDown(patient) {
-        let findtimeline = 0;
-        let flag = false;
-        for (let j = 0; j < this.props.rootStore.timepointStructure.length; j++) {
-            const list = this.props.rootStore.timepointStructure[j];
-            for (let k = 0; k < list.length; k++) {
-                if (list[k].patient === patient) {
-                    flag = true;
-                    findtimeline = j;
-                    break;
-                }
-            }
-            if (flag) {
-                break;
-            }
-        }
-
-        //console.log(findtimeline);
-
-        this.props.rootStore.updateTimepointStructure(patient, findtimeline, false);
-    }
-
 
     render() {
         return (
@@ -102,10 +38,10 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
 
             }}>
                 <Button
-                    onClick={() => this.goUp(this.props.patient)}> Move patient(s)
+                    onClick={() => this.move(this.props.patient, true)}> Move patient(s)
                     up by 1 timepoint</Button>
                 <Button
-                    onClick={() => this.goDown(this.props.patient)}>Move
+                    onClick={() => this.move(this.props.patient, false)}>Move
                     patient(s) down by 1 timepoint</Button>
             </ButtonGroup>
         )

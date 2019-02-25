@@ -10,9 +10,7 @@ class SingleTimepoint {
         this.patients = patients;
         this.globalIndex = localIndex;
         this.localIndex = localIndex;
-        //this.heatmap = [];
         this.heatmapSorting = {variable: "", order: 0};
-        //this.groupOrder = 1;
         extendObservable(this, {
             heatmapOrder: order,
             groupOrder: 1,
@@ -20,6 +18,10 @@ class SingleTimepoint {
             isGrouped: false,
             primaryVariableId: "",
             name: localIndex,
+            /**
+             * computes grouped layout based on current heatmap and order.
+             * @returns {Array}
+             */
             get grouped() {
                 let grouped = [];
                 let variableDomain = this.rootStore.dataStore.variableStores[this.type].getById(this.primaryVariableId).domain;
@@ -33,6 +35,9 @@ class SingleTimepoint {
                         this.heatmap.forEach(row => {
                             let counts = [];
                             let currVarDomain = this.rootStore.dataStore.variableStores[this.type].getById(row.variable).domain;
+                            if (this.groupOrder === -1) {
+                                currVarDomain = currVarDomain.reverse();
+                            }
                             let isNumerical = this.rootStore.dataStore.variableStores[this.type].getById(row.variable).datatype === "NUMBER";
                             if (!isNumerical) {
                                 currVarDomain.forEach(value => {
@@ -54,15 +59,27 @@ class SingleTimepoint {
                 });
                 return grouped;
             },
+            /**
+             * sets timepoint name
+             */
             setName: action(function (name) {
                 this.name = name
             }),
+            /**
+             * sets isGrouped
+             */
             setIsGrouped: action(function (isGrouped) {
                 this.isGrouped = isGrouped;
             }),
+            /**
+             * sets order in groups
+             */
             setGroupOrder: action(function (order) {
                 this.groupOrder = order;
             }),
+            /**
+             * sets primary variable
+             */
             setPrimaryVariable: action(function (id) {
                 this.primaryVariableId = id;
             }),
@@ -132,6 +149,9 @@ class SingleTimepoint {
                     this.setPrimaryVariable(variableId);
                 }
             }),
+            /**
+             * changes the order of the rows
+             */
             resortRows: action(function (order) {
                 this.heatmap = this.heatmap.sort((a, b) => {
                     if (order.indexOf(a.variable) < order.indexOf(b.variable)) {
@@ -143,6 +163,9 @@ class SingleTimepoint {
                     else return 0;
                 });
             }),
+            /**
+             * sorts heatmap (sets new heatmap order)
+             */
             sortHeatmap: action(function (variable, order) {
                 const _self = this;
                 let varToSort = this.rootStore.dataStore.variableStores[this.type].getById(variable);
@@ -198,6 +221,9 @@ class SingleTimepoint {
                     return d.patient;
                 });
             }),
+            /**
+             * hierachical sorting of all rows plus realigning afterwards
+             */
             magicSort: action(function (variable) {
                 for (let i = 0; i < this.heatmap.length; i++) {
                     this.sort(this.heatmap[i].variable);

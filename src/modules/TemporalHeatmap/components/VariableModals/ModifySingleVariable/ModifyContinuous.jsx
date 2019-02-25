@@ -7,7 +7,7 @@ import FontAwesome from 'react-fontawesome';
 import Histogram from "./Binner/Histogram";
 import DerivedVariable from "../../../DerivedVariable";
 import uuidv4 from "uuid/v4";
-import MapperCombine from "../../../MapperCombineFunctions";
+import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
 import ColorScales from "../../../ColorScales";
 import UtilityFunctions from "../../../UtilityFunctions";
 
@@ -221,15 +221,15 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         if (this.state.bin) {
             if (!this.state.isBinary) {
                 let binnedRange = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.state.binNames, this.state.bins);
-                returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+                returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], modification, binnedRange, this.state.binNames.map(d => d.name), DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]));
             }
             else {
-                returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description + " (binned)", [this.props.variable.id], modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+                returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description + " (binned)", [this.props.variable.id], modification, [], [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]));
             }
             this.props.setColorRange(this.props.variable.id, this.state.colorRange);
         }
         else if (this.state.isXLog) {
-            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], modification, this.state.colorRange, [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], modification, this.state.colorRange, [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]));
         }
         else {
             returnVariable = this.props.variable;

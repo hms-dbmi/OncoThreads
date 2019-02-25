@@ -20,7 +20,6 @@ const BlockView = observer(class BlockView extends React.Component {
      */
     componentDidMount() {
         this.updateDimensions();
-        this.props.visMap.setPlotY(this.refs.plot.parentNode.getBoundingClientRect().top + 50);
         window.addEventListener("resize", this.updateDimensions);
     }
 
@@ -32,7 +31,9 @@ const BlockView = observer(class BlockView extends React.Component {
     }
 
     updateDimensions() {
-        this.props.visMap.setPlotWidth(this.refs.plot.parentNode.getBoundingClientRect().width);
+        this.props.visMap.setPlotWidth(this.refs.blockView.parentNode.getBoundingClientRect().width);
+        this.props.visMap.setPlotHeight(this.refs.blockView.parentNode.getBoundingClientRect().height);
+
     }
 
     render() {
@@ -137,7 +138,7 @@ const BlockView = observer(class BlockView extends React.Component {
                 transitions.push(<g key={firstTP.globalIndex} transform={transform}>{transition}</g>)
             }
         });
-        return <div ref="plot" className="scrollableX">
+        return <div ref="blockView" className="scrollableX">
             <svg width={this.props.visMap.svgWidth} height={this.props.visMap.svgHeight}>
                 {timepoints}
                 {transitions}

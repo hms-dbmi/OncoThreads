@@ -175,8 +175,8 @@ const MainView = observer(class MainView extends React.Component {
                                             maxTimeInDays={maxTime}/>
                         </Col>
                         <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
-
                             <GlobalBands store={this.props.store}
+                                         timeValue={this.props.store.rootStore.timeValue}
                                          visMap={this.props.visMap}//timeVar={this.props.store.rootStore.timeVar}
                                          maxTimeInDays={maxTime}/>
                             <GlobalTimeline visMap={this.props.visMap}
@@ -202,7 +202,7 @@ const MainView = observer(class MainView extends React.Component {
         const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.visMap.heatmapWidth, this.props.visMap.sampleRectWidth);
         const groupScale = this.createGroupScale(this.props.visMap.plotWidth - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
-        const timeScale = Plot.createTimeScale(this.props.visMap.svgHeight - this.props.visMap.primaryHeight * 2, 0, this.props.store.rootStore.maxTimeInDays);
+        const timeScale = MainView.createTimeScale(this.props.visMap.svgHeight - this.props.visMap.primaryHeight * 2, 0, this.props.store.rootStore.maxTimeInDays);
         let blockView = null;
         let timelineView = null;
         if (!this.props.store.globalTime) {

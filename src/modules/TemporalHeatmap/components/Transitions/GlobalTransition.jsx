@@ -41,15 +41,15 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
                 }
             }
             lines.push(
-                GlobalTransition.drawLine(this.props.heatmapScale(d) + this.props.visMap.sampleRectWidth / 4,
-                    this.props.heatmapScale(d) + this.props.visMap.sampleRectWidth / 4,
+                GlobalTransition.drawLine(this.props.heatmapScale(d) + this.props.visMap.timelineRectSize / 2,
+                    this.props.heatmapScale(d) + this.props.visMap.timelineRectSize / 2,
                     this.props.timeScale(this.props.minMax[d].start),
                     this.props.timeScale(this.props.minMax[d].end),
                     d, strokeColor,1));
             lines.push(<rect key={d+"endpoint"}
                 x={this.props.heatmapScale(d)}
                              y={this.props.timeScale(this.props.minMax[d].end)}
-                             width={this.props.visMap.sampleRectWidth/2}
+                             width={this.props.visMap.timelineRectSize}
                                 height={endHeight}
                              fill={finalValueColor}
                              {...mouseProperties}

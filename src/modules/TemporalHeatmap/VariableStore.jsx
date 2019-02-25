@@ -19,18 +19,33 @@ class VariableStore {
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
+            /**
+             * removes a variable from view
+             */
             removeCurrentVariable: action(function (id) {
                 this.currentVariables.remove(id);
             }),
+            /**
+             * adds a variable to the view
+             */
             addCurrentVariable: action(function (id) {
                 this.currentVariables.push(id);
             }),
+            /**
+             * replaces a current variable
+             */
             replaceCurrentVariable: action(function (oldId, id) {
                 this.currentVariables[this.currentVariables.indexOf(oldId)] = id;
             }),
+            /**
+             * replaces all current variables
+             */
             replaceAllCurrentVariables: action(function (newIds) {
                 this.currentVariables.replace(newIds);
             }),
+            /**
+             * adds a variable to be displayed
+             */
             addVariableToBeDisplayed: action(function (variable) {
                 if (!(variable.id in this.referencedVariables)) {
                     this.referencedVariables[variable.id] = variable;
@@ -39,24 +54,35 @@ class VariableStore {
                     this.addCurrentVariable(variable.id)
                 }
             }),
+            /**
+             * adds variables to be displayed
+             */
             addVariablesToBeDisplayed: action(function (variables) {
                 variables.forEach(d => {
                     this.addVariableToBeDisplayed(d);
                 });
             }),
+            /**
+             * replaces a displayed variable
+             */
             replaceDisplayedVariable: action(function (oldId, newVariable) {
                 if (!(newVariable.id in this.referencedVariables)) {
                     this.referencedVariables[newVariable.id] = newVariable;
                 }
                 this.replaceCurrentVariable(oldId, newVariable.id);
             }),
+            /**
+             * replaces referenced, current and primary variables
+             */
             replaceAll:action(function(referencedVariables, currentVariables, primaryVariables) {
                 this.childStore.timepoints.forEach((d, i) => {
                     d.setPrimaryVariable(primaryVariables[i])
                 });
                 this.replaceVariables(referencedVariables, currentVariables);
             }),
-
+            /**
+             * replaces referenced and current variables
+             */
             replaceVariables:action(function(referencedVariables, currentVariables) {
                 this.referencedVariables = referencedVariables;
                 this.replaceAllCurrentVariables(currentVariables);
@@ -114,21 +140,36 @@ class VariableStore {
      */
     update(structure, order, names) {
         this.childStore.updateTimepointStructure(structure, order, names);
+        this.currentVariables.forEach(d=>{
+            this.childStore.addHeatmapRows(d,this.getById(d).mapper);
+        })
     }
 
-
+    /**
+     * adds a saved variable
+     * @param variableId
+     */
     saveVariable(variableId) {
         if (!this.savedReferences.includes(variableId)) {
             this.savedReferences.push(variableId);
         }
     }
 
+    /**
+     * removes a saved variable
+     * @param variableId
+     */
     removeSavedVariable(variableId) {
         if (this.savedReferences.includes(variableId)) {
             this.savedReferences.splice(this.savedReferences.indexOf(variableId), 1);
         }
     }
 
+    /**
+     * adds or removes a saved variable
+     * @param variableId
+     * @param save
+     */
     updateSavedVariables(variableId, save) {
         if (save) {
             this.saveVariable(variableId);
@@ -138,7 +179,9 @@ class VariableStore {
         }
     }
 
-
+    /**
+     * updates shared range of variables of the same profile (e.g. expression data)
+     */
     updateVariableRanges() {
         let profileDomains = {};
         let profileVariables = this.currentVariables
@@ -183,6 +226,9 @@ class VariableStore {
         this.referencedVariables[currentId].referenced += 1;
     }
 
+    /**
+     * updates variable tree, deletes unused variables and events
+     */
     updateReferences() {
         for (let variable in this.referencedVariables) {
             this.referencedVariables[variable].referenced = 0;
@@ -191,6 +237,9 @@ class VariableStore {
         this.savedReferences.forEach(d => this.setReferences(d));
         for (let variable in this.referencedVariables) {
             if (this.referencedVariables[variable].referenced === 0) {
+                if(this.referencedVariables[variable].type==="event"){
+                    this.rootStore.removeEvent(variable);
+                }
                 delete this.referencedVariables[variable]
             }
         }
@@ -203,15 +252,6 @@ class VariableStore {
      */
     getById(id) {
         return this.referencedVariables[id];
-    }
-
-    /**
-     * check if a variable is referenced (is in originalVariables)
-     * @param id
-     * @returns {boolean}
-     */
-    isReferenced(id) {
-        return id in this.referencedVariables;
     }
 
     /**
@@ -272,6 +312,11 @@ class VariableStore {
         return relatedVariables.map(d => this.referencedVariables[d])
     }
 
+    /**
+     * check if a variable is or is derived of an event
+     * @param variableId
+     * @returns {boolean}
+     */
     isEventDerived(variableId) {
         if (this.referencedVariables[variableId].type === "event") {
             return true;

@@ -3,7 +3,7 @@ import {observer} from 'mobx-react';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
 import DerivedVariable from "../../../DerivedVariable";
-import MapperCombine from "../../../MapperCombineFunctions";
+import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
 import * as d3 from "d3";
 import ColorScales from "../../../ColorScales";
 import CategoricalTable from "../VariableTables/CategoricalTable";
@@ -63,7 +63,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             const range = this.state.currentData.map(d => d.color);
             const domain = this.state.currentData.map(d => d.name);
             let modification={type: "modifyCategorical",mapping: categoryMapping};
-            returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id],modification, range, domain, MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
+            returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id],modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
             if (this.state.ordinal || this.categoriesChanged(returnVariable)) {
                 if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
                     returnVariable.name = this.state.name + "_MODIFIED";
@@ -77,7 +77,7 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
         else {
             let newId = uuidv4();
             let modification={type:"convertBinary",mapping: this.state.binaryMapping};
-            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], modification, this.state.binaryColors, [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
+            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], modification, this.state.binaryColors, [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
             if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
                 returnVariable.name = this.state.name + "_MODIFIED";
             }

@@ -90,14 +90,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
     renderAxis() {
 
-        var timeV = this.props.maxTimeInDays;
-
-        if (this.props.store.rootStore.timeVar === "30") {
-            timeV = this.props.maxTimeInDays / 30;
-        }
-        else if (this.props.store.rootStore.timeVar === "365") {
-            timeV = this.props.maxTimeInDays / 365;
-        }
+        var timeV = this.props.maxTimeInDays / this.props.store.rootStore.timeVar;
         const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.visMap.svgHeight - 35]).nice();
 
 
@@ -195,15 +188,13 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
     }
 
     render() {
-
         return (
             <div>
                 <svg height={this.props.visMap.svgHeight} width={this.props.width}>
-                    <g className="axisGlobal" transform="translate(50, 0)">
+                    <g className="axisGlobal"
+                       transform={"translate(50," + this.props.visMap.timelineRectSize / 2 + ")"}>
                     </g>
                 </svg>
-
-
             </div>
         );
     }

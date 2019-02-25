@@ -12,8 +12,6 @@ class DataStore {
             sample: null,
             between: null
         };
-        //this.timepoints = [];
-        //this.timelineStore=null;
         extendObservable(this, {
             timepoints: [],
             selectedPatients: [],
@@ -24,15 +22,33 @@ class DataStore {
             transitionOn: false,
             advancedSelection: true,
             showUndefined: true,
+            /**
+             * get thr maximum number of currently displayed partitions
+             * @returns {number}
+             */
             get maxPartitions() {
-                return Math.max(...this.timepoints.filter(d => d.isGrouped).map(d => d.grouped.length));
+                let maxPartitions = 0;
+                let groupedTP = this.timepoints.filter(d => d.isGrouped);
+                if (groupedTP.length > 0) {
+                    maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length));
+                }
+                return maxPartitions;
             },
+            /**
+             * set global primary
+             */
             setGlobalPrimary: action(function (varId) {
                 this.globalPrimary = varId;
             }),
+            /**
+             * changes display realtime
+             */
             toggleRealtime: action(function () {
                 this.realTime = !this.realTime;
             }),
+            /**
+             * changes display global timeline
+             */
             setGlobalTime: action(function (boolean) {
                 this.globalTime = boolean;
             }),
@@ -75,78 +91,90 @@ class DataStore {
                     });
                 }
             }),
+            /**
+             * resets variables
+             */
             reset: action(function () {
                 this.globalTime = false;
                 this.realTime = false;
                 this.selectedPatients = [];
                 this.transitionOn = false;
-            })
+            }),
+            /**
+             * combines the two sets of timepoints (samples, events)
+             */
+            combineTimepoints: action(function (isOn) {
+                let betweenTimepoints = this.variableStores.between.childStore.timepoints.slice();
+                let sampleTimepoints = this.variableStores.sample.childStore.timepoints.slice();
+                let timepoints = [];
+                if (!isOn) {
+                    timepoints = sampleTimepoints;
+                }
+                else {
+                    for (let i = 0; i < sampleTimepoints.length; i++) {
+                        timepoints.push(betweenTimepoints[i]);
+                        betweenTimepoints[i].heatmapOrder = sampleTimepoints[i].heatmapOrder;
+                        timepoints.push(sampleTimepoints[i]);
+                    }
+                    betweenTimepoints[betweenTimepoints.length - 1].heatmapOrder = sampleTimepoints[sampleTimepoints.length - 1].heatmapOrder;
+                    timepoints.push(betweenTimepoints[betweenTimepoints.length - 1]);
+
+                }
+                timepoints.forEach((d, i) => d.globalIndex = i);
+                this.timepoints.replace(timepoints);
+                this.rootStore.visStore.fitToScreenHeight();
+            }),
+
+            /**
+             * initializes the datastructures
+             */
+            initialize: action(function (numPatients) {
+                this.numberOfPatients = numPatients;
+                this.variableStores = {
+                    sample: new VariableStore(this.rootStore, this.rootStore.timepointStructure, "sample"),
+                    between: new VariableStore(this.rootStore, this.rootStore.eventBlockStructure, "between")
+                };
+                //this.timelineStore=new TimelineStore(this.rootStore,this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap,this.rootStore.survivalData);
+                this.combineTimepoints(false);
+            }),
+
+            /**
+             * updates timepoints after structures are changed
+             */
+            update: action(function (order) {
+                this.variableStores.sample.update(this.rootStore.timepointStructure, order);
+                this.variableStores.between.update(this.rootStore.eventBlockStructure, order);
+                this.combineTimepoints(this.transitionOn);
+
+            }),
+            /**
+             * applies the patient order of the current timepoint to all the other timepoints
+             * @param timepointIndex
+             * @param saveRealign
+             */
+            applyPatientOrderToAll: action(function (timepointIndex, saveRealign) {
+                let sorting = this.timepoints[timepointIndex].heatmapOrder;
+                this.timepoints.forEach(function (d) {
+                    d.heatmapOrder = sorting;
+                });
+                if (saveRealign) {
+                    this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
+                }
+                //this.rootStore.visStore.resetTransitionSpace();
+            }),
         });
         reaction(() => this.transitionOn, isOn => {
-            this.timepoints.replace(this.combineTimepoints(isOn));
+            this.combineTimepoints(isOn);
             //this.rootStore.transitionStore.initializeTransitions(this.timepoints.length - 1);
         });
     }
 
-
+    /**
+     * sets number of patients
+     * @param numP
+     */
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
-    }
-
-
-    /**
-     * initializes the datastructures
-     */
-    initialize(numPatients) {
-        this.numberOfPatients = numPatients;
-        this.variableStores = {
-            sample: new VariableStore(this.rootStore, this.rootStore.timepointStructure, "sample"),
-            between: new VariableStore(this.rootStore, this.rootStore.transitionStructure, "between")
-        };
-        //this.timelineStore=new TimelineStore(this.rootStore,this.rootStore.sampleStructure,this.rootStore.sampleTimelineMap,this.rootStore.survivalData);
-        this.timepoints.replace(this.combineTimepoints(false));
-    }
-
-
-    update(order) {
-        this.variableStores.sample.update(this.rootStore.timepointStructure, order);
-        this.variableStores.between.update(this.rootStore.transitionStructure, order);
-        this.combineTimepoints(this.transitionOn);
-
-    }
-
-    /*
-    updateTimeline(type){
-        if(type==="sample"){
-            this.timelineStore.changeSampleTimelineData(this.globalPrimary)
-        }
-        else{
-            this.timelineStore.changeEventTimelineData(this.variableStores.between.currentVariables)
-        }
-    }
-    */
-
-    //action
-    combineTimepoints(isOn) {
-        let betweenTimepoints = this.variableStores.between.childStore.timepoints.slice();
-        let sampleTimepoints = this.variableStores.sample.childStore.timepoints.slice();
-        let timepoints = [];
-        if (!isOn) {
-            timepoints = sampleTimepoints;
-        }
-        else {
-            for (let i = 0; i < sampleTimepoints.length; i++) {
-                timepoints.push(betweenTimepoints[i]);
-                betweenTimepoints[i].heatmapOrder = sampleTimepoints[i].heatmapOrder;
-                timepoints.push(sampleTimepoints[i]);
-            }
-            betweenTimepoints[betweenTimepoints.length - 1].heatmapOrder = sampleTimepoints[sampleTimepoints.length - 1].heatmapOrder;
-            timepoints.push(betweenTimepoints[betweenTimepoints.length - 1]);
-
-        }
-        timepoints.forEach((d, i) => d.globalIndex = i);
-        return timepoints;
-
     }
 
     /**
@@ -157,25 +185,9 @@ class DataStore {
      */
     getAllValues(mapper, type) {
         let allValues = [];
-        let structure = type === "sample" ? this.rootStore.timepointStructure : this.rootStore.transitionStructure;
+        let structure = type === "sample" ? this.rootStore.timepointStructure : this.rootStore.eventBlockStructure;
         structure.forEach(d => d.forEach(f => allValues.push(mapper[f.sample])));
         return allValues;
-    }
-
-    /**
-     * applies the patient order of the current timepoint to all the other timepoints
-     * @param timepointIndex
-     * @param saveRealign
-     */
-    applyPatientOrderToAll(timepointIndex, saveRealign) {
-        let sorting = this.timepoints[timepointIndex].heatmapOrder;
-        this.timepoints.forEach(function (d) {
-            d.heatmapOrder = sorting;
-        });
-        if (saveRealign) {
-            this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-        }
-        //this.rootStore.visStore.resetTransitionSpace();
     }
 
 

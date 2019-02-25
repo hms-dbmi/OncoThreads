@@ -48,7 +48,7 @@ const DefaultView = observer(class DefaultView extends React.Component {
                     <StudySummary studyName={this.props.rootStore.study.name}
                                   studyDescription={this.props.rootStore.study.description}
                                   studyCitation={this.props.rootStore.study.citation}
-                                  numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
+                                  numPatients={this.props.rootStore.patients.length}
                                   minTP={this.props.rootStore.minTP}
                                   maxTP={this.props.rootStore.maxTP}/>
                 </Panel.Body>

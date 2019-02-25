@@ -4,7 +4,7 @@ import Binner from './Binner';
 import * as d3 from 'd3';
 import uuidv4 from 'uuid/v4';
 import DerivedVariable from "../../../../DerivedVariable";
-import MapperCombine from "../../../../MapperCombineFunctions";
+import DerivedMapperFunctions from "../../../../DeriveMapperFunctions";
 import {Alert, Button, Modal} from "react-bootstrap";
 import ColorScales from "../../../../ColorScales";
 import UtilityFunctions from "../../../../UtilityFunctions";
@@ -131,12 +131,12 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
             if (!this.state.isBinary) {
                 derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)",
                     [this.props.variable.id], modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.state.binNames, this.state.bins),
-                    this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]),
+                    this.state.binNames.map(d => d.name), DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]),
                     this.props.variable.profile);
             }
             else {
                 derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINARY", this.props.variable.description + " (binned)",
-                    [this.props.variable.id], modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]),
+                    [this.props.variable.id], modification, [], [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]),
                     this.props.variable.profile);
 
             }

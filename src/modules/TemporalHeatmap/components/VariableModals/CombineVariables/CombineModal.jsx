@@ -4,7 +4,7 @@ import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstra
 import BinaryCombine from "./BinaryCombine";
 import DerivedVariable from "../../../DerivedVariable";
 import uuidv4 from 'uuid/v4';
-import MapperCombine from "../../../MapperCombineFunctions";
+import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
 import ColorScales from "../../../ColorScales";
 
 
@@ -176,7 +176,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
      */
     getDomain(modification) {
         let currDomain = [];
-        let mapper = MapperCombine.getModificationMapper(modification, this.props.variables.map(d => d.mapper));
+        let mapper = DerivedMapperFunctions.getModificationMapper(modification, this.props.variables.map(d => d.mapper));
         for (let sample in mapper) {
             if (!(currDomain.includes(mapper[sample]))) {
                 currDomain.push(mapper[sample]);
@@ -233,7 +233,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             return <BinaryCombine setModification={this.setModification}
                                   ordinal={this.state.ordinal}
                                   modification={this.state.modification}
-                                  mapper={MapperCombine.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper))}
+                                  mapper={DerivedMapperFunctions.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper))}
                                   variableRange={this.state.variableRange}
                                   variableDomain={this.getDomain(this.state.modification)}
                                   currentVarCategories={this.state.currentVarCategories}
@@ -246,7 +246,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
 
     handleApply() {
         let dataType, description;
-        let mapper = MapperCombine.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper));
+        let mapper = DerivedMapperFunctions.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper));
         if (this.modificationType === "binaryCombine") {
             if (this.state.modification.datatype === "BINARY") {
                 dataType = "BINARY";
@@ -261,7 +261,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 }
                 description = "Binary combination of " + this.props.variables.map(d => d.name);
                 if (this.state.modification.mapping !== null) {
-                    mapper = MapperCombine.createModifyCategoriesMapper(mapper, this.state.modification.mapping);
+                    mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.state.modification.mapping);
                 }
             }
         }
