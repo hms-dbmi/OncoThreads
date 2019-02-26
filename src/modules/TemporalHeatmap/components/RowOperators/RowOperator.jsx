@@ -69,7 +69,7 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
                 timepoint.sort(variable.id, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
                 if (this.props.uiStore.realTime) {
-                    this.props.rootStore.dataStore.applyPatientOrderToAll(timepoint.globalIndex, false);
+                    this.props.rootStore.dataStore.applyPatientOrderToAll(timepoint.globalIndex);
                 }
                 this.props.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
             }

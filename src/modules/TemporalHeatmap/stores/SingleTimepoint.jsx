@@ -147,7 +147,7 @@ class SingleTimepoint {
                 const isPrimary = this.heatmap[index].variable === this.primaryVariableId;
                 this.heatmap[index].variable = variableId;
                 this.heatmap[index].data = variableData;
-                this.heatmap[index].isUndef = SingleTimepoint.rowIsUndefined(variableData);
+                this.heatmap[index].isUndef = variableData.every(d => d.value === undefined);
                 if (isPrimary) {
                     this.setPrimaryVariable(variableId);
                 }
@@ -166,6 +166,9 @@ class SingleTimepoint {
                     else return 0;
                 });
             }),
+            sortHeatmapLikeGroup(){
+                this.sortHeatmap(this.primaryVariableId,this.groupOrder);
+            },
             /**
              * sorts heatmap (sets new heatmap order)
              */
@@ -234,7 +237,7 @@ class SingleTimepoint {
                         break;
                     }
                 }
-                this.rootStore.dataStore.applyPatientOrderToAll(this.globalIndex, false);
+                this.rootStore.dataStore.applyPatientOrderToAll(this.globalIndex);
             }),
             /**
              * sorts the timepoint by a variable (handled differently for grouped and ungrouped timepoints)
@@ -243,9 +246,6 @@ class SingleTimepoint {
             sort: action(variableId=> {
                 //case: the timepoint is grouped
                 if (this.isGrouped) {
-                    if (this.primaryVariableId !== variableId) {
-                        this.setPrimaryVariable(variableId);
-                    }
                     this.setGroupOrder(-this.groupOrder);
                 }
                 //case: the timepoint is not grouped

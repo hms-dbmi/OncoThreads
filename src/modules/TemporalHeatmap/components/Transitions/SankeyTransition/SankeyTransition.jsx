@@ -44,15 +44,16 @@ const SankeyTransition = inject("dataStore", "visStore")(observer(class SankeyTr
                 if (patientIntersection.length !== 0) {
                     const transitionWidth = patientIntersection.length * (this.props.groupScale(sourcePartition.patients.length) / sourcePartition.patients.length);
                     transitions.push(
-                        <Band x0={currXsource}
-                            x1={currXtarget[targetPartition.partition]}
-                            {...this.props.tooltipFunctions}
-                            width={transitionWidth}
-                            firstPartition={sourcePartition.partition}
-                            secondPartition={targetPartition.partition}
-                            patients={patientIntersection}
-                            firstPrimary={this.props.firstPrimary}
-                            secondPrimary={this.props.secondPrimary}
+                        <Band key={sourcePartition.partition + "->" + targetPartition.partition}
+                              x0={currXsource}
+                              x1={currXtarget[targetPartition.partition]}
+                              {...this.props.tooltipFunctions}
+                              width={transitionWidth}
+                              firstPartition={sourcePartition.partition}
+                              secondPartition={targetPartition.partition}
+                              patients={patientIntersection}
+                              firstPrimary={this.props.firstPrimary}
+                              secondPrimary={this.props.secondPrimary}
                         />);
                     currXsource += transitionWidth;
                     currXtarget[targetPartition.partition] += transitionWidth;

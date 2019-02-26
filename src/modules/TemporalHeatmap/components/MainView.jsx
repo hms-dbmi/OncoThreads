@@ -47,6 +47,7 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
     handleTimeClick() {
         this.props.rootStore.dataStore.applyPatientOrderToAll(0);
         this.props.uiStore.setRealTime(!this.props.uiStore.realTime);
+        this.props.undoRedoStore.saveRealTimeHistory(this.props.uiStore.realTime);
     }
 
     handleGlobalTimeClick(key) {

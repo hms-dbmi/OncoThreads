@@ -37,7 +37,7 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
                 str = UtilityFunctions.getScientificNotation(d.value);
             }
             else if (variable.derived && variable.datatype === "ORDINAL" && variable.modification.type === "continuousTransform") {
-                str = d.value + " (" + UtilityFunctions.getScientificNotation(this.props.variableStore.getById(variable.originalIds[0]).mapper[d.sample]) + ")";
+                str = d.value + " (" + UtilityFunctions.getScientificNotation(this.props.dataStore.variableStores[this.props.timepointType].getById(variable.originalIds[0]).mapper[d.sample]) + ")";
             }
             else {
                 str = d.value;

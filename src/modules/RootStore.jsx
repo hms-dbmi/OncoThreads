@@ -25,11 +25,11 @@ class RootStore {
         this.maxTP = 0;
         this.minTP = Number.POSITIVE_INFINITY;
 
+        this.initialVariable="";
+
         this.mutationCountId = uuidv4();
         this.timeDistanceId = uuidv4();
 
-        this.clinicalSampleCategories = [];
-        this.clinicalPatientCategories = [];
         this.availableProfiles = [];
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"];
         this.eventCategories = [];
@@ -48,6 +48,9 @@ class RootStore {
             timeVar: 1,
             timeValue: "days",
 
+            clinicalSampleCategories: [],
+            clinicalPatientCategories: [],
+
             timepointStructure: [],
             removeEvent: action(variableId => {
                 this.eventTimelineMap.delete(variableId);
@@ -59,7 +62,7 @@ class RootStore {
                 this.parsed = false;
                 this.dataStore.reset();
                 this.resetTimepointStructure(false);
-                this.addInitialVariable(this.clinicalSampleCategories[0].id);
+                this.addInitialVariable(this.initialVariable);
                 this.parsed = true;
             }),
             setTimeData: action((id, value) => {
@@ -100,10 +103,10 @@ class RootStore {
             gets data from cBio and sets parameters in other stores
              */
             parseCBio: action((study, callback) => {
-                this.staticMappers={};
+                this.staticMappers = {};
                 this.eventTimelineMap.clear();
-                this.clinicalPatientCategories=[];
-                this.clinicalSampleCategories=[];
+                this.clinicalPatientCategories.clear();
+                this.clinicalSampleCategories.clear();
                 this.study = study;
                 this.firstLoad = false;
                 this.parsed = false;
@@ -119,7 +122,8 @@ class RootStore {
                         this.cbioAPI.getClinicalSampleData(this.study.studyId, data => {
                             this.createClinicalSampleMapping(data);
                             this.dataStore.initialize();
-                            this.addInitialVariable(data[0].clinicalAttributeId);
+                            this.initialVariable=data[0].clinicalAttributeId;
+                            this.addInitialVariable(this.initialVariable);
                             callback();
                             this.visStore.fitToScreenWidth();
                             this.parsed = true;
@@ -141,6 +145,75 @@ class RootStore {
                         })
                     })
                 })
+            }),
+            /**
+             * creates a dictionary mapping sample IDs onto clinical sample data
+             */
+            createClinicalSampleMapping: action(data => {
+                data.forEach(d => {
+                    if (d)
+                        if (!(d.clinicalAttributeId in this.staticMappers)) {
+                            this.clinicalSampleCategories.push({
+                                id: d.clinicalAttributeId,
+                                variable: d.clinicalAttribute.displayName,
+                                datatype: d.clinicalAttribute.datatype,
+                                description: d.clinicalAttribute.description
+                            });
+                            this.staticMappers[d.clinicalAttributeId] = {}
+                        }
+                    if (this.sampleStructure[d.patientId].includes(d.sampleId)) {
+                        if (d.clinicalAttribute.datatype !== "NUMBER") {
+                            return this.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
+                        }
+                        else {
+                            return this.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
+                        }
+                    }
+                });
+            }),
+
+            /**
+             * creates a dictionary mapping sample IDs onto mutation counts
+             */
+            createMutationCountsMapping: action(data => {
+                this.staticMappers[this.mutationCountId] = {};
+                data.forEach(d => {
+                    this.staticMappers[this.mutationCountId][d.sampleId] = d.mutationCount;
+                });
+                this.clinicalSampleCategories.push({
+                    id: this.mutationCountId,
+                    variable: "Mutation Count",
+                    datatype: "NUMBER",
+                    description: "Number of mutations"
+                });
+            }),
+            /**
+             * creates dictionaries mapping sample IDs onto clinical patient data
+             * @param data
+             */
+            createClinicalPatientMappers: action(data => {
+                data.forEach(d => {
+                    d.forEach(d => {
+                        if (d)
+                            if (!(d.clinicalAttributeId in this.staticMappers)) {
+                                this.clinicalPatientCategories.push({
+                                    id: d.clinicalAttributeId,
+                                    variable: d.clinicalAttribute.displayName,
+                                    datatype: d.clinicalAttribute.datatype,
+                                    description: d.clinicalAttribute.description
+                                });
+                                this.staticMappers[d.clinicalAttributeId] = {}
+                            }
+                        this.sampleStructure[d.patientId].forEach(f => {
+                            if (d.clinicalAttribute.datatype !== "NUMBER") {
+                                return this.staticMappers[d.clinicalAttributeId][f] = d.value;
+                            }
+                            else {
+                                return this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
+                            }
+                        });
+                    })
+                });
             }),
 
             /**
@@ -246,7 +319,6 @@ class RootStore {
                         this.timepointStructure.replace(UndoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure));
                     }
                 }
-                console.log(timepoint,this.dataStore.timepoints);
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
                 this.dataStore.variableStores.sample.childStore.updateNames(this.createNameList(up, this.dataStore.variableStores.sample.childStore.timepoints, oldSampleTimepointNames, patients));
             }),
@@ -386,7 +458,7 @@ class RootStore {
         this.dataStore = new DataStore(this);
         this.visStore = new VisStore(this);
         this.svgExport = new SvgExport(this);
-        this.uiStore=uiStore;
+        this.uiStore = uiStore;
     }
 
     /**
@@ -442,48 +514,6 @@ class RootStore {
         return newNames;
     }
 
-    /**
-     * creates a dictionary mapping sample IDs onto clinical sample data
-     */
-    createClinicalSampleMapping(data) {
-        data.forEach(d => {
-            if (d)
-                if (!(d.clinicalAttributeId in this.staticMappers)) {
-                    this.clinicalSampleCategories.push({
-                        id: d.clinicalAttributeId,
-                        variable: d.clinicalAttribute.displayName,
-                        datatype: d.clinicalAttribute.datatype,
-                        description: d.clinicalAttribute.description
-                    });
-                    this.staticMappers[d.clinicalAttributeId] = {}
-                }
-            if (this.sampleStructure[d.patientId].includes(d.sampleId)) {
-                if (d.clinicalAttribute.datatype !== "NUMBER") {
-                    return this.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
-                }
-                else {
-                    return this.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
-                }
-            }
-        });
-
-    }
-
-    /**
-     * creates a dictionary mapping sample IDs onto mutation counts
-     */
-    createMutationCountsMapping(data) {
-        this.staticMappers[this.mutationCountId] = {};
-        data.forEach(d => {
-            this.staticMappers[this.mutationCountId][d.sampleId] = d.mutationCount;
-        });
-        this.clinicalSampleCategories.push({
-            id: this.mutationCountId,
-            variable: "Mutation Count",
-            datatype: "NUMBER",
-            description: "Number of mutations"
-        });
-    }
 
     /**
      * creates a dictionary mapping sample IDs onto time between timepoints
@@ -501,7 +531,6 @@ class RootStore {
             timeGapMapping[curr[curr.length - 1] + "_post"] = undefined;
         });
         this.staticMappers[this.timeDistanceId] = timeGapMapping;
-
     }
 
     /**
@@ -522,37 +551,8 @@ class RootStore {
                 vaf: mutation.tumorAltCount / (mutation.tumorAltCount + mutation.tumorRefCount)
             });
         });
-
     }
 
-    /**
-     * creates dictionaries mapping sample IDs onto clinical patient data
-     * @param data
-     */
-    createClinicalPatientMappers(data) {
-        data.forEach(d => {
-            d.forEach(d => {
-                if (d)
-                    if (!(d.clinicalAttributeId in this.staticMappers)) {
-                        this.clinicalPatientCategories.push({
-                            id: d.clinicalAttributeId,
-                            variable: d.clinicalAttribute.displayName,
-                            datatype: d.clinicalAttribute.datatype,
-                            description: d.clinicalAttribute.description
-                        });
-                        this.staticMappers[d.clinicalAttributeId] = {}
-                    }
-                this.sampleStructure[d.patientId].forEach(f => {
-                    if (d.clinicalAttribute.datatype !== "NUMBER") {
-                        return this.staticMappers[d.clinicalAttributeId][f] = d.value;
-                    }
-                    else {
-                        return this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
-                    }
-                });
-            })
-        });
-    }
 
     /*
     computes survival events if OS_MONTHS and OS_STATUS exist
@@ -650,7 +650,6 @@ class RootStore {
                         }
                     })
                 }
-
             })
         }
     }

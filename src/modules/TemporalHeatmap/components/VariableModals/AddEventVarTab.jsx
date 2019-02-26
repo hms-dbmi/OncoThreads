@@ -3,7 +3,7 @@ import {observer,inject} from 'mobx-react';
 import EventVariableSelector from "./EventVariableSelector";
 import VariableTable from "./VariableTable";
 
-const AddEventVarTab = inject("variableManagerStore")(observer(class AddEventVarTab extends React.Component {
+const AddEventVarTab = inject("variableManagerStore","rootStore")(observer(class AddEventVarTab extends React.Component {
     static toTitleCase(str) {
         return str.replace(/\w\S*/g, function (txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -11,7 +11,7 @@ const AddEventVarTab = inject("variableManagerStore")(observer(class AddEventVar
     }
 
     render() {
-        let categories = [...this.props.eventCategories.filter(d => d !== "SPECIMEN").map(d => {
+        let categories = [...this.props.rootStore.eventCategories.filter(d => d !== "SPECIMEN").map(d => {
             return {id: d, name: AddEventVarTab.toTitleCase(d)}
         }), {id: "Computed", name: "Computed"}];
         return (

@@ -22,11 +22,7 @@ class UndoRedoStore {
              * undo the last action, add undo log
              */
             undo: action(() => {
-                console.log(this.currentPointer);
                 if (this.currentPointer !== 0) {
-                    if (this.uiStore.realTime) {
-                        this.uiStore.setRealTime(false);
-                    }
                     this.logs.push("UNDO: " + this.logs[this.currentPointer]);
                     this.deserialize(this.currentPointer - 1);
                     this.currentPointer--;
@@ -112,6 +108,15 @@ class UndoRedoStore {
                 }
                 this.saveHistory("switch");
             }),
+            saveRealTimeHistory:action(realTime=>{
+                if (realTime){
+                    this.logs.push("REAL TIME TURNED ON");
+                }
+                else{
+                    this.logs.push("REAL TIME TURNED OFF");
+                }
+                this.saveHistory("real time");
+            }),
 
             /**
              * saves actions happening in the timeline view
@@ -127,12 +132,8 @@ class UndoRedoStore {
              * @param timepointType
              * @param timepointIndex
              */
-            saveRealignToHistory: action((timepointType, timepointIndex) => {
-                let type = "Timepoint";
-                if (timepointType === "between") {
-                    type = "Transition";
-                }
-                this.logs.push("REALIGN PATIENTS: based on " + type + " " + timepointIndex);
+            saveRealignToHistory: action((timepointIndex) => {
+                this.logs.push("REALIGN PATIENTS: based on block" + timepointIndex);
                 this.saveHistory("timepoint");
             }),
 
@@ -162,6 +163,7 @@ class UndoRedoStore {
         this.rootStore.dataStore.variableStores.sample.childStore.timepoints = UndoRedoStore.deserializeTimepoints(this.rootStore.dataStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
         this.rootStore.dataStore.variableStores.between.childStore.timepoints = UndoRedoStore.deserializeTimepoints(this.rootStore.dataStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
         this.uiStore.globalTime = this.stateStack[index].state.globalTime;
+        this.uiStore.realTime =this.stateStack[index].state.realTime;
     }
 
     /**
@@ -269,6 +271,7 @@ class UndoRedoStore {
             allBetweenVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.between.referencedVariables),
             transitionOn: store.rootStore.dataStore.transitionOn,
             globalTime: store.uiStore.globalTime,
+            realTime:store.uiStore.realTime,
             globalPrimary: store.rootStore.dataStore.globalPrimary,
             timepointStructure: toJS(store.rootStore.timepointStructure),
             eventTimelineMap: toJS(store.rootStore.eventTimelineMap)

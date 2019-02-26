@@ -48,7 +48,7 @@ class MultipleTimepointsStore {
      * @param mapper
      */
     addHeatmapRows(variableId, mapper) {
-        this.structure.forEach((d, i) => {
+         this.structure.forEach((d, i) => {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {
@@ -78,6 +78,22 @@ class MultipleTimepointsStore {
      */
     removeHeatmapRows(variableId) {
         this.timepoints.forEach(d => d.removeRow(variableId));
+    }
+    updateHeatmapRows(index,newId,mapper){
+         this.structure.forEach((d, i) => {
+            let variableData = [];
+            d.forEach(function (f) {
+                if (f) {
+                    let value = mapper[f.sample];
+                    variableData.push({
+                        patient: f.patient,
+                        value: value,
+                        sample: f.sample
+                    });
+                }
+            });
+            this.timepoints[i].updateRow(index,newId, variableData);
+        });
     }
 
     /**

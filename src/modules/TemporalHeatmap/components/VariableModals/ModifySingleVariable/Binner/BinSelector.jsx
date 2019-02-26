@@ -1,12 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import Histogram from './Histogram';
 import Slider from './Slider';
 import {Checkbox, Form} from "react-bootstrap";
 import * as d3 from "d3";
 import UtilityFunctions from "../../../../UtilityClasses/UtilityFunctions";
 
-const BinSelector = observer(class BinSelector extends React.Component {
+const BinSelector = inject("binningStore")(observer(class BinSelector extends React.Component {
     constructor(props) {
         super(props);
         this.coordX = 0;
@@ -16,8 +16,8 @@ const BinSelector = observer(class BinSelector extends React.Component {
         this.inverseScale = d3.scaleLinear().range(props.xScale.domain()).domain(props.xScale.range());
         this.state = {
             dragging: false,
-            x: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1).map(d => props.xScale(d)),
-            textFieldTexts: props.bins.filter((d, i) => i !== 0 && i !== props.bins.length - 1).map(d=>UtilityFunctions.getScientificNotation(d)),
+            x: props.binningStore.bins.filter((d, i) => i !== 0 && i !== props.binningStore.bins.length - 1).map(d => props.xScale(d)),
+            textFieldTexts: props.binningStore.bins.filter((d, i) => i !== 0 && i !== props.binningStore.bins.length - 1).map(d=>UtilityFunctions.getScientificNotation(d)),
             currentBin: 0
         };
         this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -58,7 +58,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
         newX.push(newPos);
         textFieldTexts.push(UtilityFunctions.getScientificNotation(this.inverseScale(newPos)));
         this.setState({x: newX, textFieldTexts: textFieldTexts});
-        this.props.handleBinChange(this.getBins(newX));
+        this.props.binningStore.handleBinChange(this.getBins(newX));
     }
 
     handleBinRemoval() {
@@ -67,7 +67,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
         x.pop();
         textFieldTexts.pop();
         this.setState({x: x, textFieldTexts: textFieldTexts});
-        this.props.handleBinChange(this.getBins(x));
+        this.props.binningStore.handleBinChange(this.getBins(x));
     }
 
     handleNumberChange(e) {
@@ -87,7 +87,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
     handleMouseUp() {
         this.setState({currentBin: -1, dragging: false});
         this.coordX = null;
-        this.props.handleBinChange(this.getBins(this.state.x, this.props.xScale));
+        this.props.binningStore.handleBinChange(this.getBins(this.state.x, this.props.xScale));
     }
 
     getBins(x) {
@@ -120,9 +120,9 @@ const BinSelector = observer(class BinSelector extends React.Component {
         let textFieldTexts = this.state.textFieldTexts.slice();
         if (UtilityFunctions.isValidValue(value)) {
             textFieldTexts[index] = value;
-            if (!isNaN(value) && value > this.props.bins[0] && value < this.props.bins[this.props.bins.length - 1]) {
+            if (!isNaN(value) && value > this.props.binningStore.bins[0] && value < this.props.binningStore.bins[this.props.binningStore.bins.length - 1]) {
                 x[index] = this.props.xScale(value);
-                this.props.handleBinChange(this.getBins(x));
+                this.props.binningStore.handleBinChange(this.getBins(x));
             }
         }
         this.setState({x: x, textFieldTexts: textFieldTexts});
@@ -132,7 +132,7 @@ const BinSelector = observer(class BinSelector extends React.Component {
         let checkbox = null;
         if (this.state.x.length === 1) {
             checkbox =
-                <Checkbox onChange={this.props.toggleIsBinary} checked={this.props.isBinary}> make binary</Checkbox>
+                <Checkbox onChange={this.props.binningStore.toggleIsBinary} checked={this.props.binningStore.isBinary}> make binary</Checkbox>
 
         }
         return checkbox;
@@ -171,6 +171,6 @@ const BinSelector = observer(class BinSelector extends React.Component {
             </div>
         )
     }
-});
+}));
 
 export default BinSelector;

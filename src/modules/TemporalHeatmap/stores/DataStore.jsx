@@ -150,16 +150,14 @@ class DataStore {
              * @param timepointIndex
              * @param saveRealign
              */
-            applyPatientOrderToAll: action((timepointIndex, saveRealign) => {
+            applyPatientOrderToAll: action((timepointIndex) => {
+                if(this.timepoints[timepointIndex].isGrouped){
+                    this.timepoints[timepointIndex].sortHeatmapLikeGroup();
+                }
                 let sorting = this.timepoints[timepointIndex].heatmapOrder;
                 this.timepoints.forEach(d => {
-                    d.heatmapOrder = sorting;
+                    d.setHeatmapOrder(sorting);
                 });
-                if (saveRealign) {
-                    //TODO:change
-                    this.rootStore.undoRedoStore.saveRealignToHistory(this.timepoints[timepointIndex].type, this.timepoints[timepointIndex].localIndex)
-                }
-                //this.rootStore.visStore.resetTransitionSpace();
             }),
         });
         reaction(() => this.transitionOn, isOn => {

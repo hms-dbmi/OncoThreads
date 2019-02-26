@@ -77,4 +77,17 @@ ColorScales.defaultCategoricalRange = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f
 ColorScales.defaultContinuousTwoColors = ['#e6e6e6', '#000000'];
 ColorScales.defaultContinuousThreeColors = ['#0571b0', '#f7f7f7', '#ca0020'];
 
+ColorScales.continuousThreeColorRanges=[
+                ['#0571b0', '#f7f7f7', '#ca0020'],
+                ['#08ff00', '#000000', '#ff0000']
+            ];
+ColorScales.continuousTwoColorRanges=[
+                ['rgb(214, 230, 244)', 'rgb(8, 48, 107)'],
+                ['rgb(218, 241, 213)', 'rgb(0, 68, 27)'],
+                ['rgb(232, 232, 232)', 'rgb(0, 0, 0)'],
+                ['rgb(254, 222, 191)', 'rgb(127, 39, 4)'],
+                ['rgb(232, 230, 242)', 'rgb(63, 0, 125)'],
+                ['rgb(253, 211, 193)', 'rgb(103, 0, 13)'],
+            ];
+
 export default ColorScales;
