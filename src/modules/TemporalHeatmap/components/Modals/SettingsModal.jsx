@@ -1,11 +1,11 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import {Button, Modal} from 'react-bootstrap';
 import FormGroup from "react-bootstrap/es/FormGroup";
 import Radio from "react-bootstrap/es/Radio";
 
 
-const SettingsModal = observer(class SettingsModal extends React.Component {
+const SettingsModal = inject("uiStore")(observer(class SettingsModal extends React.Component {
 
     handleApply() {
         this.props.close();
@@ -84,5 +84,5 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
             </Modal>
         )
     }
-});
+}));
 export default SettingsModal;

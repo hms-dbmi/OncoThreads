@@ -1,12 +1,12 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {observer,inject} from "mobx-react";
 import * as d3 from "d3";
 
 /*
  * bands
  * TODO: make more react-like (no reason to use d3, create <rects>)
  */
-const GlobalBands = observer(class GlobalBands extends React.Component {
+const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React.Component {
 
 
     //render() {
@@ -92,8 +92,8 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
 
 
 
-           let timeV = this.props.maxTimeInDays / this.props.store.rootStore.timeVar;
-        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.visMap.svgHeight - 35]).nice();
+           let timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
+        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.rootStore.visStore.svgHeight - 35]).nice();
 
 
         const yAxis = d3.axisLeft().scale(y);
@@ -110,7 +110,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
             .attr("class", "grid")
             .call(//this.make_y_gridlines(yAxis)
                 yAxis
-                    .tickSize(-this.props.visMap.plotWidth)
+                    .tickSize(-this.props.rootStore.visStore.plotWidth)
                     .tickFormat("")
             )
             .style("stroke-width", 0)
@@ -137,7 +137,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
          });*/
 
 
-        var ht = (this.props.visMap.svgHeight - 35) / yval.length, wd = this.props.visMap.plotWidth;
+        var ht = (this.props.rootStore.visStore.svgHeight - 35) / yval.length, wd = this.props.rootStore.visStore.plotWidth;
 
         //d3.selectAll('g').selectAll('intBands').remove();
 
@@ -171,10 +171,10 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
 
         return (
             <div className="overlaid">
-                <svg height={this.props.visMap.svgHeight} width={this.props.visMap.plotWidth}>
+                <svg height={this.props.rootStore.visStore.svgHeight} width={this.props.rootStore.visStore.plotWidth}>
 
 
-                    <g className="axisGlobal2" transform={"translate(0,"+this.props.visMap.timelineRectSize/2+")"}>
+                    <g className="axisGlobal2" transform={"translate(0,"+this.props.rootStore.visStore.timelineRectSize/2+")"}>
                     </g>
                 </svg>
 
@@ -182,5 +182,5 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
             </div>
         );
     }
-});
+}));
 export default GlobalBands;

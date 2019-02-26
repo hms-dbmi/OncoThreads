@@ -1,9 +1,9 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {observer,inject} from "mobx-react";
 import {MenuItem, NavDropdown} from 'react-bootstrap';
 
 
-const GetStudy = observer(class GetStudy extends React.Component {
+const GetStudy = inject("rootStore","undoRedoStore")(observer(class GetStudy extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
@@ -15,8 +15,10 @@ const GetStudy = observer(class GetStudy extends React.Component {
      * @param study
      */
     getStudy(event, study) {
-        this.props.cbioAPI.constructor();
-        this.props.setRoot(study, false, true);
+        this.props.rootStore.constructor();
+        this.props.uiStore.constructor();
+        this.props.undoRedoStore(this.props.rootStore,this.props.uiStore);
+        this.props.rootStore.parseCBio(study);
     }
 
     /**
@@ -40,5 +42,5 @@ const GetStudy = observer(class GetStudy extends React.Component {
             </NavDropdown>
         );
     }
-});
+}));
 export default GetStudy;

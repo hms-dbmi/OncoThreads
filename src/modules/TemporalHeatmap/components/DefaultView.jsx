@@ -1,5 +1,5 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {observer,inject} from "mobx-react";
 import Select from 'react-select';
 import {Button, Panel} from "react-bootstrap";
 import StudySummary from "./StudySummary";
@@ -8,11 +8,10 @@ import StudySummary from "./StudySummary";
 /*
  * View if no study has been loaded
  */
-const DefaultView = observer(class DefaultView extends React.Component {
+const DefaultView = inject("rootStore")(observer(class DefaultView extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
-        this.displayStudy = this.displayStudy.bind(this);
         this.state = {studyClicked: false,}
     }
 
@@ -22,7 +21,7 @@ const DefaultView = observer(class DefaultView extends React.Component {
      */
     getStudy(selectedOption) {
         this.setState({studyClicked: true});
-        this.props.setRoot(this.props.studies.filter(d => d.studyId === selectedOption.value)[0], true, false);
+        this.props.rootStore.parseCBio(this.props.studies.filter(d => d.studyId === selectedOption.value)[0]);
     }
 
     /**
@@ -37,13 +36,6 @@ const DefaultView = observer(class DefaultView extends React.Component {
         return options;
     }
 
-    /**
-     * initiates displaying the study
-     */
-    displayStudy() {
-        this.props.rootStore.display = true;
-        this.props.rootStore.firstLoad = false;
-    }
 
     /**
      * gets information about study
@@ -91,5 +83,5 @@ const DefaultView = observer(class DefaultView extends React.Component {
             </div>
         );
     }
-});
+}));
 export default DefaultView;

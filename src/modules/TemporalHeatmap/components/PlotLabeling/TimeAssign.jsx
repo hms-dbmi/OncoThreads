@@ -1,13 +1,12 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {observer,inject} from "mobx-react";
 import {ButtonToolbar, DropdownButton, MenuItem} from 'react-bootstrap';
-//import FontAwesome from 'react-fontawesome';
 
 
 /*
  * Patient axis pointing to the right
  */
-const TimeAssign = observer(class TimeAssign extends React.Component {
+const TimeAssign = inject("rootStore")(observer(class TimeAssign extends React.Component {
 
     /*constructor(props){
         super(props)
@@ -97,16 +96,15 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
     /*handleClick(e) {
         e.preventDefault();
         //console.log(e.target.id);
-        this.props.store.rootStore.timeVar=e.target.id;
-        this.props.store.rootStore.timeValue=e.target.value;
+        this.props.rootStore.timeVar=e.target.id;
+        this.props.rootStore.timeValue=e.target.value;
       }*/
 
 
     handleClick2(id, value) {
         //e.preventDefault();
         //console.log(e.target.id);
-        this.props.store.rootStore.timeVar = id;
-        this.props.store.rootStore.timeValue = value;
+        this.props.rootStore.setTimeData(id,value)
     }
 
 
@@ -190,7 +188,7 @@ const TimeAssign = observer(class TimeAssign extends React.Component {
 
         );
     }
-});
+}));
 export default TimeAssign;
 
 //<tspan x="39" dy="1em">(months)</tspan>

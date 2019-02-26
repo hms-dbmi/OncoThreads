@@ -7,17 +7,15 @@ import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
 import MolProfileMapping from "./MolProfileMapping";
 import SvgExport from "./SvgExport";
-import UIStore from "./TemporalHeatmap/UIStore";
+import cBioAPI from "../cBioAPI";
 
 
 /*
 gets the data with the cBioAPI and gives it to the other stores
  */
 class RootStore {
-    constructor(cbioAPI, study, firstLoad, display) {
-        this.cbioAPI = cbioAPI;
-        this.study = study;
-
+    constructor() {
+        this.study = "";
 
         this.hasMutations = false;
         this.mutations = [];
@@ -43,9 +41,8 @@ class RootStore {
         this.sampleStructure = [];
         extendObservable(this, {
             parsed: false,
-            dataLoading: false,
-            firstLoad: firstLoad,
-            display: display,
+            firstLoad: true,
+            display: false,
             eventTimelineMap: observable.map(),
 
             timeVar: 1,
@@ -64,6 +61,11 @@ class RootStore {
                 this.resetTimepointStructure(false);
                 this.addInitialVariable(this.clinicalSampleCategories[0].id);
                 this.parsed = true;
+            }),
+            setTimeData: action((id, value) => {
+                console.log("called");
+                this.timeValue = value;
+                this.timeVar = id;
             }),
             /**
              * resets the timepoint structure to the default alignment
@@ -98,7 +100,10 @@ class RootStore {
             /*
             gets data from cBio and sets parameters in other stores
              */
-            parseCBio: action(() => {
+            parseCBio: action((study) => {
+                this.study = study;
+                this.firstLoad = false;
+                this.parsed = false;
                 this.cbioAPI.getPatients(this.study.studyId, patients => {
                     this.patients = patients;
                     this.cbioAPI.getEvents(this.study.studyId, patients, events => {
@@ -114,6 +119,8 @@ class RootStore {
                             this.visStore.fitToScreenWidth();
                             this.addInitialVariable(data[0].clinicalAttributeId);
                             this.parsed = true;
+                            this.firstLoad = false;
+                            this.display = true;
                         });
                         this.cbioAPI.getAvailableMolecularProfiles(this.study.studyId, profiles => {
                             this.availableProfiles = profiles;
@@ -129,8 +136,7 @@ class RootStore {
                             }
                         })
                     })
-                });
-
+                })
             }),
 
             /**
@@ -230,10 +236,10 @@ class RootStore {
                 }
                 if (!timepointStructure.map(d => d.length).includes(0)) {
                     if (!up) {
-                        this.timepointStructure.replace(this.undoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure.reverse()));
+                        this.timepointStructure.replace(UndoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure.reverse()));
                     }
                     else {
-                        this.timepointStructure.replace(this.undoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure));
+                        this.timepointStructure.replace(UndoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure));
                     }
                 }
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
@@ -370,11 +376,10 @@ class RootStore {
 
         });
         this.reset = this.reset.bind(this);
+        this.cbioAPI = new cBioAPI();
         this.molProfileMapping = new MolProfileMapping(this);
         this.dataStore = new DataStore(this);
-        this.uiStore=new UIStore(this);
         this.visStore = new VisStore(this);
-        this.undoRedoStore = new UndoRedoStore(this);
         this.svgExport = new SvgExport(this);
     }
 

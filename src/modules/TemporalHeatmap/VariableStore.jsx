@@ -5,8 +5,8 @@ import MultipleTimepointsStore from "./MultipleTimepointsStore";
 Store containing information about variables
  */
 class VariableStore {
-    constructor(rootStore, structure, type) {
-        this.childStore = new MultipleTimepointsStore(rootStore, structure, type);
+    constructor(rootStore, type) {
+        this.childStore = new MultipleTimepointsStore(rootStore, type);
         this.rootStore = rootStore;
         this.type = type;
         //Variables that are referenced (displayed or used to create a derived variable)
@@ -93,9 +93,7 @@ class VariableStore {
              * @param variableId
              */
             removeVariable:action(function(variableId) {
-                let name = this.referencedVariables[variableId].name;
                 this.removeCurrentVariable(variableId);
-                this.rootStore.undoRedoStore.saveVariableHistory("REMOVED", name, true);
             })
 
         });
@@ -136,13 +134,12 @@ class VariableStore {
      * Update children if structure changes
      * @param structure
      * @param order
-     * @param names
      */
-    update(structure, order, names) {
-        this.childStore.updateTimepointStructure(structure, order, names);
+    update(structure, order) {
+        this.childStore.updateTimepointStructure(structure, order);
         this.currentVariables.forEach(d=>{
             this.childStore.addHeatmapRows(d,this.getById(d).mapper);
-        })
+        });
     }
 
     /**

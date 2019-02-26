@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import TimelineTimepoint from "./Timepoints/GlobalTimeline/TimelineTimepoint";
 import GlobalTransition from "./Transitions/GlobalTransition";
 
@@ -7,7 +7,7 @@ import GlobalTransition from "./Transitions/GlobalTransition";
 /*
 creates the timepoints (either sampleTimepoints or betweenTimepoints)
  */
-const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
+const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends React.Component {
     constructor() {
         super();
         this.updateDimensions = this.updateDimensions.bind(this);
@@ -29,8 +29,8 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
     }
 
     updateDimensions() {
-        this.props.visMap.setPlotWidth(this.refs.globalTime.parentNode.getBoundingClientRect().width);
-        this.props.visMap.setPlotHeight(this.refs.globalTime.parentNode.getBoundingClientRect().height);
+        this.props.rootStore.visStore.setPlotWidth(this.refs.globalTime.parentNode.getBoundingClientRect().width);
+        this.props.rootStore.visStore.setPlotHeight(this.refs.globalTime.parentNode.getBoundingClientRect().height);
     }
 
     getGlobalTimepoints() {
@@ -40,11 +40,11 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
 
         let globalIndex = 0;
 
-        this.props.store.timepoints.forEach(function (d, i) {
+        this.props.rootStore.dataStore.timepoints.forEach(function (d, i) {
 
 
             let numEventsForEachPatient = [], count;
-            let p = _self.props.store.rootStore.patients;
+            let p = _self.props.rootStore.patients;
 
             p.forEach(function (d1) {
                 count = 1;
@@ -62,9 +62,7 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
                     index={i}
                     timeScale={_self.props.timeScale}
                     numEventsForEachPatient={numEventsForEachPatient}
-                    currentVariables={_self.props.store.variableStores[d.type].fullCurrentVariables}
-                    store={_self.props.store}
-                    visMap={_self.props.visMap}
+                    currentVariables={_self.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables}
                     heatmapScale={_self.props.heatmapScales[0]}
                     {..._self.props.tooltipFunctions}
                     primaryVariableId={d.primaryVariableId}
@@ -88,7 +86,7 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
 
         //var timepoint_sample, heatmapScale_sample, ind_sample;
 
-        this.props.store.timepoints.forEach(function (d, i) {
+        this.props.rootStore.dataStore.timepoints.forEach(function (d, i) {
             let count;
 
             let transform;
@@ -97,21 +95,21 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
 
             //var sampleEventLengthForThisTimeLine=[];
 
-            let p = _self.props.store.rootStore.patients;
+            let p = _self.props.rootStore.patients;
 
 
             let transFlag = false;
 
-            //if(_self.props.store.timepoints[i].primaryVariable.datatype!=="NUMBER"){
+            //if(_self.props.rootStore.dataStore.timepoints[i].primaryVariable.datatype!=="NUMBER"){
             //check the type of the timepoint to get the correct list of currentVariables and the correct width of the heatmap rectangles
-            if (_self.props.store.timepoints[i].type === "between") {
+            if (_self.props.rootStore.dataStore.timepoints[i].type === "between") {
 
                 transFlag = true;
                 //  return timepoints;
                 //}
 
 
-                //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.visMap.primaryHeight);
+                //ht = k.map(d => (d.eventEndDate - d.eventDate) * 700 / max + _self.props.rootStore.visStore.primaryHeight);
 
                 transform = "translate(0, 0)";
 
@@ -126,7 +124,7 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
                 transform = "translate(0, 0)";
 
 
-                //p=_self.props.store.rootStore.patients;
+                //p=_self.props.rootStore.patients;
                 p.forEach(function (d1, j) {
                     count = 1;
 
@@ -157,9 +155,7 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
                             primaryVariable={d.primaryVariable} index={heatmapi}
                             timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
-                            currentVariables={_self.props.store.variableStores[heatmapd.type].fullCurrentVariables}
-                            store={_self.props.store}
-                            visMap={_self.props.visMap}
+                            currentVariables={_self.props.rootStore.dataStore.variableStores[heatmapd.type].fullCurrentVariables}
                             heatmapScale={_self.props.heatmapScales[0]}
                             {..._self.props.tooltipFunctions}/>
                     </g>);
@@ -172,10 +168,8 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
                             primaryVariable={d.primaryVariable} index={heatmapi}
                             timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
-                            currentVariables={_self.props.store.variableStores[heatmapd.type].fullCurrentVariables}
+                            currentVariables={_self.props.rootStore.dataStore.variableStores[heatmapd.type].fullCurrentVariables}
                             width={_self.props.heatmapWidth}
-                            store={_self.props.store}
-                            visMap={_self.props.visMap}
                             heatmapScale={_self.props.heatmapScales[0]}
                             {..._self.props.tooltipFunctions}/>
                     </g>);
@@ -189,13 +183,13 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
     }
 
     getGlobalTransitions() {
-        return (<GlobalTransition key={"globalTransition"}
-                                  patients={this.props.store.rootStore.patients}
-                                  minMax={this.props.store.rootStore.minMax}
-                                  store={this.props.store} visMap={this.props.visMap}
-                                  heatmapScale={this.props.heatmapScales[0]}
-                                  timeScale={this.props.timeScale}
-                                  {...this.props.tooltipFunctions}/>)
+        return (<Provider dataStore={this.props.rootStore.dataStore} visStore={this.props.rootStore.visStore}>
+            <GlobalTransition key={"globalTransition"}
+                              patients={this.props.rootStore.patients}
+                              minMax={this.props.rootStore.minMax}
+                              heatmapScale={this.props.heatmapScales[0]}
+                              timeScale={this.props.timeScale}
+                              {...this.props.tooltipFunctions}/></Provider>)
     }
 
 
@@ -203,7 +197,7 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
         let timepoints = [];
         let transitions = this.getGlobalTransitions();
 
-        if (this.props.store.transitionOn) {
+        if (this.props.rootStore.dataStore.transitionOn) {
             timepoints = this.getTreatmentTimepoints()
         }
         else {
@@ -211,13 +205,13 @@ const GlobalTimeline = observer(class GlobalTimeline extends React.Component {
 
         }
         return <div ref="globalTime" className="scrollableX">
-            <svg width={this.props.visMap.svgWidth} height={this.props.visMap.svgHeight}>
-                <g transform={"translate(0," + this.props.visMap.timelineRectSize / 2 + ")"}>
+            <svg width={this.props.rootStore.visStore.svgWidth} height={this.props.rootStore.visStore.svgHeight}>
+                <g transform={"translate(0," + this.props.rootStore.visStore.timelineRectSize / 2 + ")"}>
                     {transitions}
                     {timepoints}
                 </g>
             </svg>
         </div>
     }
-});
+}));
 export default GlobalTimeline;

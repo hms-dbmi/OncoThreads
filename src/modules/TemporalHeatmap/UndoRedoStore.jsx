@@ -10,8 +10,9 @@ import DerivedVariable from "./DerivedVariable";
  * when undoing/redoing map saved datastructures back to observable datastructures (deserializing)
  */
 class UndoRedoStore {
-    constructor(rootStore) {
+    constructor(rootStore, uiStore) {
         this.rootStore = rootStore;
+        this.uiStore = uiStore;
         this.undoRedoMode = false;
         this.stateStack = [];
         extendObservable(this, {
@@ -27,8 +28,8 @@ class UndoRedoStore {
      */
     undo() {
         if (this.currentPointer !== 0) {
-            if (this.rootStore.uiStore.realTime) {
-                this.rootStore.setRealTime(false);
+            if (this.uiStore.realTime) {
+                this.uiStore.setRealTime(false);
             }
             this.logs.push("UNDO: " + this.logs[this.currentPointer]);
             this.deserialize(this.currentPointer - 1);
@@ -57,11 +58,11 @@ class UndoRedoStore {
      */
     deserialize(index) {
         this.deserializeVariables(index);
-        this.rootStore.timepointStructure = this.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].state.timepointStructure);
+        this.rootStore.timepointStructure = UndoRedoStore.deserializeTPStructure(this.rootStore.timepointStructure, this.stateStack[index].state.timepointStructure);
         this.rootStore.dataStore.update(this.rootStore.dataStore.variableStores.sample.childStore.timepoints[0].heatmapOrder);
-        this.rootStore.dataStore.variableStores.sample.childStore.timepoints = this.deserializeTimepoints(this.rootStore.dataStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
-        this.rootStore.dataStore.variableStores.between.childStore.timepoints = this.deserializeTimepoints(this.rootStore.dataStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
-        this.rootStore.uiStore.globalTime = this.stateStack[index].state.globalTime;
+        this.rootStore.dataStore.variableStores.sample.childStore.timepoints = UndoRedoStore.deserializeTimepoints(this.rootStore.dataStore.variableStores.sample.childStore.timepoints.slice(), this.stateStack[index].state.sampleTimepoints);
+        this.rootStore.dataStore.variableStores.between.childStore.timepoints = UndoRedoStore.deserializeTimepoints(this.rootStore.dataStore.variableStores.between.childStore.timepoints.slice(), this.stateStack[index].state.betweenTimepoints);
+        this.uiStore.globalTime = this.stateStack[index].state.globalTime;
     }
 
     /**
@@ -75,7 +76,14 @@ class UndoRedoStore {
         this.rootStore.dataStore.variableStores.between.replaceVariables(UndoRedoStore.deserializeReferencedVariables(this.rootStore.dataStore.variableStores.between.referencedVariables
             , this.stateStack[index].state.allBetweenVar),
             this.stateStack[index].state.currentBetweenVar);
-        this.rootStore.eventTimelineMap = this.stateStack[index].state.eventTimelineMap;
+        this.rootStore.eventTimelineMap.forEach((key, value) => {
+            if (key in this.stateStack[index].state.eventTimelineMap) {
+                this.rootStore.eventTimelineMap[key] = this.stateStack[index].state.eventTimelineMap[key]
+            }
+            else {
+                this.rootStore.eventTimelineMap.delete(key);
+            }
+        });
         this.rootStore.dataStore.transitionOn = this.stateStack[index].state.transitionOn;
         this.rootStore.dataStore.globalPrimary = this.stateStack[index].state.globalPrimary;
     }
@@ -118,14 +126,14 @@ class UndoRedoStore {
      * @param observable
      * @param saved
      */
-    deserializeTimepoints(observable, saved) {
+    static deserializeTimepoints(observable, saved) {
         saved.forEach(function (d, i) {
             UndoRedoStore.remapProperties(observable[i], d);
         });
         return observable;
     }
 
-    deserializeTPStructure(observable, saved) {
+    static deserializeTPStructure(observable, saved) {
         observable = [];
         saved.forEach(function (d) {
             observable.push(d)
@@ -161,7 +169,7 @@ class UndoRedoStore {
             allSampleVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.sample.referencedVariables),
             allBetweenVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.between.referencedVariables),
             transitionOn: store.rootStore.dataStore.transitionOn,
-            globalTime: store.rootStore.uiStore.globalTime,
+            globalTime: store.uiStore.globalTime,
             globalPrimary: store.rootStore.dataStore.globalPrimary,
             timepointStructure: toJS(store.rootStore.timepointStructure),
             eventTimelineMap: toJS(store.rootStore.eventTimelineMap)

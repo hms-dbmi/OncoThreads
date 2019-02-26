@@ -232,7 +232,6 @@ class SingleTimepoint {
                     }
                 }
                 this.rootStore.dataStore.applyPatientOrderToAll(this.globalIndex, false);
-                this.rootStore.undoRedoStore.saveTimepointHistory("MAGIC SORT", variable, this.type, this.globalIndex);
             }),
             /**
              * sorts the timepoint by a variable (handled differently for grouped and ungrouped timepoints)
@@ -248,7 +247,7 @@ class SingleTimepoint {
                 }
                 //case: the timepoint is not grouped
                 else {
-                    this.rootStore.uiStore.setRealTime(false);
+                    //this.rootStore.uiStore.setRealTime(false);
                     this.setPrimaryVariable(variableId);
                     let order = 1;
                     if (this.heatmapSorting.variable === variableId) {

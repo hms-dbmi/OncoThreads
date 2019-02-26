@@ -1,5 +1,5 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {observer,inject} from "mobx-react";
 import {Button, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../OriginalVariable";
@@ -7,7 +7,7 @@ import OriginalVariable from "../../OriginalVariable";
 /*
 creates the selector for sample variables (left side of main view, top)
  */
-const QuickAddVariable = observer(class QuickAddVariable extends React.Component {
+const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class QuickAddVariable extends React.Component {
     constructor(props) {
         super();
         this.state = QuickAddVariable.getInitialState(props);
@@ -23,8 +23,8 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
 
     static getInitialState(props) {
         let profile = '';
-        if (props.availableProfiles.length > 0) {
-            profile = props.availableProfiles[0].molecularProfileId;
+        if (props.rootStore.availableProfiles.length > 0) {
+            profile = props.rootStore.availableProfiles[0].molecularProfileId;
         }
         return {
             category: "clinical",
@@ -61,12 +61,12 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         if (this.state.category !== "computed") {
             if (this.state.selectedValues.length > 0) {
                 this.addVariablesSeperate();
-                this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
+                this.props.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
             }
         }
         else {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id, "computed"))
+                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id, "computed"))
             })
         }
         this.setState({selectedValues: [], selectedKey: ""})
@@ -77,16 +77,16 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.state.selectedValues.forEach(d => this.props.store.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.value, d.label, "BINARY", "Indicates if event: \"" + d.label + "\" has happened between two timepoints", [], [], this.props.store.rootStore.getSampleEventMapping(this.state.category, d.object), this.state.category, "event")));
+        this.state.selectedValues.forEach(d => this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.value, d.label, "BINARY", "Indicates if event: \"" + d.label + "\" has happened between two timepoints", [], [], this.props.rootStore.getSampleEventMapping(this.state.category, d.object), this.state.category, "event")));
     }
 
 
     createEventOptions() {
         let options = [];
         if (this.state.category !== "computed") {
-            for (let key in this.props.eventAttributes[this.state.category]) {
+            for (let key in this.props.rootStore.eventAttributes[this.state.category]) {
                 let subOptions = [];
-                this.props.eventAttributes[this.state.category][key].forEach(d => {
+                this.props.rootStore.eventAttributes[this.state.category][key].forEach(d => {
                     let option = {
                         label: d.name,
                         value: d.id,
@@ -101,9 +101,9 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
         else {
             options.push({
                 label: "Timepoint Distance",
-                value: this.props.store.rootStore.timeDistanceId,
+                value: this.props.rootStore.timeDistanceId,
                 object: {
-                    id: this.props.store.rootStore.timeDistanceId,
+                    id: this.props.rootStore.timeDistanceId,
                     name: "Timepoint Distance",
                     description: "Time between timepoints",
                     datatype: "NUMBER"
@@ -152,16 +152,16 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
-                this.props.store.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.profile,"clinical"));
+                this.props.rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], d.profile,"clinical"));
             });
-            this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
+            this.props.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
             this.setState({selectedValues: []})
         }
     }
 
     createTimepointOptions() {
         let sampleOptions = [];
-        this.props.clinicalSampleCategories.filter((d) => !this.props.currentVariables.sample.map(d => d.id).includes(d.id)).forEach(d => {
+        this.props.rootStore.clinicalSampleCategories.filter((d) => !this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -169,7 +169,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
         });
         let patientOptions = [];
-        this.props.clinicalPatientCategories.filter((d) => !this.props.currentVariables.sample.map(d => d.id).includes(d.id)).forEach(d => {
+        this.props.rootStore.clinicalPatientCategories.filter((d) => !this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -213,10 +213,10 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.store.rootStore.molProfileMapping.getProfileData(this.state.profile,
+        this.props.rootStore.molProfileMapping.getProfileData(this.state.profile,
             geneList, "Binary", newVariables => {
-                this.props.store.variableStores.sample.addVariablesToBeDisplayed(newVariables);
-                this.props.store.rootStore.undoRedoStore.saveVariableHistory("ADD", geneList, true);
+                this.props.rootStore.dataStore.variableStores.sample.addVariablesToBeDisplayed(newVariables);
+                this.props.undoRedoStore.saveVariableHistory("ADD", geneList, true);
             });
         this.setState({geneListString: ""});
     }
@@ -239,7 +239,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     }
 
     handleMappingSelect(e) {
-        let profile = this.props.availableProfiles.filter(d => d.molecularProfileId === e.target.value)[0];
+        let profile = this.props.rootStore.availableProfiles.filter(d => d.molecularProfileId === e.target.value)[0];
         this.setState({
             profile: profile.molecularProfileId,
         })
@@ -274,7 +274,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
     }
 
     getSearchField() {
-        if (this.state.category === "clinical" || this.state.category === "computed" || this.props.eventCategories.includes(this.state.category)) {
+        if (this.state.category === "clinical" || this.state.category === "computed" || this.props.rootStore.eventCategories.includes(this.state.category)) {
             return <Select
                 value={this.state.selectedValues}
                 type="text"
@@ -305,17 +305,17 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             selectMappingType = <Col sm={colSize} style={{padding: 0}}>
                 <FormControl style={{height: 38}} componentClass="select" onChange={this.handleMappingSelect}
                              placeholder="Select Category">
-                    {this.props.availableProfiles.map(d => <option value={d.molecularProfileId}
+                    {this.props.rootStore.availableProfiles.map(d => <option value={d.molecularProfileId}
                                                                    key={d.molecularProfileId}>{d.name}</option>)}
                 </FormControl>
             </Col>
 
         }
         let options = [];
-        if (this.props.clinicalSampleCategories.length > 0 || this.props.clinicalPatientCategories.length > 0) {
+        if (this.props.rootStore.clinicalSampleCategories.length > 0 || this.props.rootStore.clinicalPatientCategories.length > 0) {
             options.push(<option key="clinical" value={"clinical"}>Predefined</option>)
         }
-        if (this.props.availableProfiles.length > 0) {
+        if (this.props.rootStore.availableProfiles.length > 0) {
             options.push(<option key="genes" value={"genes"}>Genomic</option>)
         }
 
@@ -329,7 +329,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
                                 {options}
                             </optgroup>
                             <optgroup label="Event Variables">
-                                {this.props.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option value={d}
+                                {this.props.rootStore.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option value={d}
                                                                                                              key={d}>{QuickAddVariable.toTitleCase(d)}</option>)}
                                 <option value="computed" key="computed">Computed variables</option>
                             </optgroup>
@@ -348,7 +348,7 @@ const QuickAddVariable = observer(class QuickAddVariable extends React.Component
             </Form>
         )
     }
-});
+}));
 export default QuickAddVariable;
 
 

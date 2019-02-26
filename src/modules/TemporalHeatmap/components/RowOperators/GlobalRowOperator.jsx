@@ -1,12 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import UtilityFunctions from "../../UtilityFunctions";
 
 
 /*
 implements the icons and their functionality on the left side of the plot
  */
-const GlobalRowOperator = observer(class GlobalRowOperator extends React.Component {
+const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observer(class GlobalRowOperator extends React.Component {
         constructor() {
             super();
             this.promote = this.promote.bind(this);
@@ -18,8 +18,8 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * @param variable: variable to be the primary variable
          */
         promote(variable) {
-            this.props.store.setGlobalPrimary(variable);
-            this.props.store.rootStore.undoRedoStore.saveGlobalHistory("PROMOTE");
+            this.props.dataStore.setGlobalPrimary(variable);
+            this.props.undoRedoStore.saveGlobalHistory("PROMOTE");
         }
 
         /**
@@ -57,10 +57,10 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * @param timepoint
          */
         handleDelete(variable, timepoint) {
-            if (timepoint.type === "between" || this.props.store.variableStores[timepoint.type].currentVariables.length > 1) {
-                this.props.store.variableStores[timepoint.type].removeVariable(variable);
+            if (timepoint.type === "between" || this.props.dataStore.variableStores[timepoint.type].currentVariables.length > 1) {
+                this.props.dataStore.variableStores[timepoint.type].removeVariable(variable);
                 if (timepoint.type === "sample") {
-                    this.promote(this.props.store.variableStores.sample.currentVariables[0]);
+                    this.promote(this.props.dataStore.variableStores.sample.currentVariables[0]);
                 }
             }
             else {
@@ -100,10 +100,10 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
 
         getRowLabel(timepoint, variable, yPos, iconScale, width, fontWeight, fontSize) {
             const _self = this;
-            const currVar = this.props.store.variableStores[timepoint.type].getById(variable);
+            const currVar = this.props.dataStore.variableStores[timepoint.type].getById(variable);
             let label;
             if (timepoint.type === 'between') {
-                if (this.props.store.variableStores[timepoint.type].isEventDerived(variable)) {
+                if (this.props.dataStore.variableStores[timepoint.type].isEventDerived(variable)) {
                     //let labels = [];
                     //let oIds = currVar.originalIds;
                     label = <g key={currVar.id}
@@ -118,10 +118,10 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                               width={fontSize} height={fontSize}
                               x={this.props.width - iconScale * 24 - fontSize}
                               y={-fontSize + 2}
-                              fill={this.props.visMap.globalTimelineColors(currVar.id)}
+                              fill={this.props.visStore.globalTimelineColors(currVar.id)}
                               opacity={0.5}/>
                     </g>;
-                    this.position += this.props.visMap.secondaryHeight;
+                    this.position += this.props.visStore.secondaryHeight;
                 }
             }
 
@@ -132,11 +132,11 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
                         <text style={{fontWeight: fontWeight, fontSize: fontSize}}
                               onClick={() => this.promote(variable)}
                         >
-                            {GlobalRowOperator.cropText(this.props.store.variableStores[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
+                            {GlobalRowOperator.cropText(this.props.dataStore.variableStores[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
                         </text>
                         {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
                     </g>;
-                this.position += this.props.visMap.secondaryHeight;
+                this.position += this.props.visStore.secondaryHeight;
             }
             return label
         }
@@ -145,22 +145,22 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
          * Creates the Row operator for a timepoint
          */
         getRowOperator() {
-            this.position = this.props.visMap.secondaryHeight;
+            this.position = this.props.visStore.secondaryHeight;
             const _self = this;
             if (this.props.timepoint) {
                 return this.props.timepoint.heatmap.map(function (d, i) {
                     let lineHeight;
                     let fontWeight;
-                    if (d.variable === _self.props.store.globalPrimary) {
-                        lineHeight = _self.props.visMap.secondaryHeight;// _self.props.visMap.primaryHeight;
+                    if (d.variable === _self.props.dataStore.globalPrimary) {
+                        lineHeight = _self.props.visStore.secondaryHeight;// _self.props.visStore.primaryHeight;
                         fontWeight = "bold";
                     }
                     else {
-                        lineHeight = _self.props.visMap.secondaryHeight;
+                        lineHeight = _self.props.visStore.secondaryHeight;
                         fontWeight = "normal";
                     }
                     const transform = "translate(0," + _self.position + ")";
-                    const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
+                    const iconScale = (_self.props.visStore.secondaryHeight - _self.props.visStore.gap) / 20;
                     let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
@@ -185,6 +185,6 @@ const GlobalRowOperator = observer(class GlobalRowOperator extends React.Compone
             )
         }
     }
-    )
+    ))
 ;
 export default GlobalRowOperator;

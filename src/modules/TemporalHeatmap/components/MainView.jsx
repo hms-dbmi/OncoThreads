@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import {Button, Col, Grid, Row, Tab, Tabs} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
@@ -23,7 +23,7 @@ import BlockView from "./BlockView";
 Main View
 Creates the Row operators, the Plot and the Legend
  */
-const MainView = observer(class MainView extends React.Component {
+const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class MainView extends React.Component {
     constructor(props) {
         super(props);
         this.handleTimeClick = this.handleTimeClick.bind(this);
@@ -45,24 +45,25 @@ const MainView = observer(class MainView extends React.Component {
     }
 
     handleTimeClick() {
-        this.props.store.applyPatientOrderToAll(0);
-        this.props.store.rootStore.uiStore.setRealTime(!this.props.store.rootStore.uiStore.realTime);
+        this.props.rootStore.dataStore.applyPatientOrderToAll(0);
+        this.props.uiStore.setRealTime(!this.props.uiStore.realTime);
     }
 
     handleGlobalTimeClick(key) {
-        if (key !== this.props.store.rootStore.uiStore.globalTime) {
-            this.props.store.rootStore.uiStore.setGlobalTime(key);
-            this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.globalTime);
+        if (key !== this.props.uiStore.globalTime) {
+            this.props.uiStore.setGlobalTime(key);
+            this.props.undoRedoStore.saveSwitchHistory(this.props.globalTime);
         }
     }
-        /**
+
+    /**
      * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
      * @param w: width of the plot
      * @param rectWidth: width of a heatmap cell
      * @returns any[] scales
      */
     createSampleHeatMapScales(w, rectWidth) {
-        return this.props.store.timepoints.map(function (d) {
+        return this.props.rootStore.dataStore.timepoints.map(function (d) {
             return d3.scalePoint()
                 .domain(d.heatmapOrder)
                 .range([0, w - rectWidth]);
@@ -75,7 +76,7 @@ const MainView = observer(class MainView extends React.Component {
      * @param w: width of the plot
      */
     createGroupScale(w) {
-        return (d3.scaleLinear().domain([0, this.props.store.numberOfPatients]).range([0, w]));
+        return (d3.scaleLinear().domain([0, this.props.rootStore.dataStore.numberOfPatients]).range([0, w]));
 
     }
 
@@ -84,52 +85,46 @@ const MainView = observer(class MainView extends React.Component {
     }
 
 
-    getBlockView(sampleHeatmapScales,groupScale,timeScale) {
+    getBlockView(sampleHeatmapScales, groupScale, timeScale) {
         return (
             <div>
                 <div className="view" id="block-view">
                     <Row>
                         <Button bsSize="xsmall" onClick={this.handleTimeClick}
-                                disabled={this.props.store.rootStore.uiStore.globalTime || this.props.store.variableStores.between.currentVariables.length > 0}
+                                disabled={this.props.uiStore.globalTime || this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0}
                                 key={"actualTimeline"}>
                             <FontAwesome
-                                name="clock"/> {(this.props.store.rootStore.uiStore.realTime) ? "Hide relative time" : "Show relative time"}
+                                name="clock"/> {(this.props.uiStore.realTime) ? "Hide relative time" : "Show relative time"}
                         </Button>
                     </Row>
                     <Row>
                         <Col lg={1} md={1} xs={1} style={{padding: 0}}>
-                            <TimepointLabels store={this.props.store}
-                                             {...this.props.tooltipFunctions}
-                                             visMap={this.props.visMap}/>
+                            <Provider dataStore={this.props.rootStore.dataStore}
+                                      visStore={this.props.rootStore.visStore}>
+                                <TimepointLabels{...this.props.tooltipFunctions}/>
+                            </Provider>
                         </Col>
-                        <Col lg={2} xs={2} md={2} style={{padding: 0,  marginTop:20}}>
+                        <Col lg={2} xs={2} md={2} style={{padding: 0, marginTop: 20}}>
                             <RowOperators highlightedVariable={this.state.highlightedVariable}
                                           setHighlightedVariable={this.setHighlightedVariable}
                                           removeHighlightedVariable={this.removeHighlightedVariable}
-                                          visMap={this.props.visMap}
-                                          store={this.props.store}
                                           tooltipFunctions={this.props.tooltipFunctions}
                                           showContextMenu={this.props.showContextMenu}
                                           openBinningModal={this.props.openBinningModal}/>
 
                         </Col>
-                        <Col lg={8} xs={7} md={7} style={{padding: 0, marginTop:20}}>
-                            <BlockView visMap={this.props.visMap}
-                                    store={this.props.store}
-                                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                    tooltipFunctions={this.props.tooltipFunctions}
-                                    groupScale={groupScale}
-                                    timeScale={timeScale}
-                                    heatmapScales={sampleHeatmapScales}/>
+                        <Col lg={8} xs={7} md={7} style={{padding: 0, marginTop: 20}}>
+                            <BlockView showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                       tooltipFunctions={this.props.tooltipFunctions}
+                                       groupScale={groupScale}
+                                       timeScale={timeScale}
+                                       heatmapScales={sampleHeatmapScales}/>
                         </Col>
-                        <Col lg={1} xs={2} md={2} style={{padding: 0, marginTop:20}}>
+                        <Col lg={1} xs={2} md={2} style={{padding: 0, marginTop: 20}}>
                             <Legend highlightedVariable={this.state.highlightedVariable}
                                     setHighlightedVariable={this.setHighlightedVariable}
                                     removeHighlightedVariable={this.removeHighlightedVariable}
-                                    timepoints={this.props.store.timepoints}
-                                    {...this.props.tooltipFunctions}
-                                    visMap={this.props.visMap}
-                                    store={this.props.store}/>
+                                    {...this.props.tooltipFunctions}/>
                         </Col>
                     </Row>
                 </div>
@@ -141,41 +136,33 @@ const MainView = observer(class MainView extends React.Component {
         );
     }
 
-    getGlobalView(sampleHeatmapScales,groupScale,timeScale) {
-        let maxTime = this.props.store.rootStore.maxTimeInDays;
-        const globalPrimaryName = this.props.store.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
+    getGlobalView(sampleHeatmapScales, groupScale, timeScale) {
+        const globalPrimaryName = this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
         return (
             <div>
                 <div className="view" id="timeline-view">
                     <Row>
                         <Col xs={2} md={2} style={{padding: 0}}>
-                            <TimeAssign store={this.props.store}/>
-                            <GlobalRowOperators store={this.props.store}
-                                                visMap={this.props.visMap}
-                                                tooltipFunctions={this.props.tooltipFunctions}/>
+                            <TimeAssign/>
+                            <Provider dataStore={this.props.rootStore.dataStore}
+                                      visStore={this.props.rootStore.visStore}>
+                                <GlobalRowOperators tooltipFunctions={this.props.tooltipFunctions}/>
+                            </Provider>
 
                             <h5>{"Legend of " + globalPrimaryName}</h5>
-                            <Legend store={this.props.store} visMap={this.props.visMap} {...this.props.tooltipFunctions}/>
+                            <Legend  {...this.props.tooltipFunctions}/>
                         </Col>
                         <Col xs={1} md={1} style={{padding: 0, width: 55}}>
-                            <GlobalTimeAxis store={this.props.store}
-                                            visMap={this.props.visMap}
-                                            timeValue={this.props.store.rootStore.timeValue}
-                                            width={55}
-                                            maxTimeInDays={maxTime}/>
+                            <GlobalTimeAxis timeValue={this.props.rootStore.timeValue}
+                                            width={55}/>
                         </Col>
                         <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
-                            <GlobalBands store={this.props.store}
-                                         timeValue={this.props.store.rootStore.timeValue}
-                                         visMap={this.props.visMap}//timeVar={this.props.store.rootStore.timeVar}
-                                         maxTimeInDays={maxTime}/>
-                            <GlobalTimeline visMap={this.props.visMap}
-                                    store={this.props.store}
-                                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                    tooltipFunctions={this.props.tooltipFunctions}
-                                    groupScale={groupScale}
-                                    timeScale={timeScale}
-                                    heatmapScales={sampleHeatmapScales}/>
+                            <GlobalBands timeValue={this.props.rootStore.timeValue}/>
+                            <GlobalTimeline showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                            tooltipFunctions={this.props.tooltipFunctions}
+                                            groupScale={groupScale}
+                                            timeScale={timeScale}
+                                            heatmapScales={sampleHeatmapScales}/>
                         </Col>
                     </Row>
                 </div>
@@ -189,22 +176,22 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.visMap.heatmapWidth, this.props.visMap.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.visMap.plotWidth - this.props.visMap.partitionGap * (this.props.store.maxPartitions - 1));
+        const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.rootStore.visStore.heatmapWidth, this.props.rootStore.visStore.sampleRectWidth);
+        const groupScale = this.createGroupScale(this.props.rootStore.visStore.plotWidth - this.props.rootStore.visStore.partitionGap * (this.props.rootStore.dataStore.maxPartitions - 1));
         let transform = "translate(0," + 20 + ")";
-        const timeScale = MainView.createTimeScale(this.props.visMap.svgHeight - this.props.visMap.primaryHeight * 2, 0, this.props.store.rootStore.maxTimeInDays);
+        const timeScale = MainView.createTimeScale(this.props.rootStore.visStore.svgHeight - this.props.rootStore.visStore.primaryHeight * 2, 0, this.props.rootStore.maxTimeInDays);
         let blockView = null;
         let timelineView = null;
-        if (!this.props.store.rootStore.uiStore.globalTime) {
-            blockView = this.getBlockView(sampleHeatmapScales,groupScale,timeScale,transform);
+        if (!this.props.uiStore.globalTime) {
+            blockView = this.getBlockView(sampleHeatmapScales, groupScale, timeScale, transform);
         }
         else {
-            timelineView = this.getGlobalView(sampleHeatmapScales,groupScale,timeScale,transform);
+            timelineView = this.getGlobalView(sampleHeatmapScales, groupScale, timeScale, transform);
         }
         return (
             <Grid fluid={true} onClick={this.closeContextMenu}>
                 <Tabs mountOnEnter unmountOnExit animation={false}
-                      activeKey={this.props.store.rootStore.uiStore.globalTime}
+                      activeKey={this.props.uiStore.globalTime}
                       onSelect={this.handleGlobalTimeClick} id={"viewTab"}>
                     <Tab eventKey={false} style={{paddingTop: 10}} title="Block view">
                         {blockView}
@@ -217,11 +204,5 @@ const MainView = observer(class MainView extends React.Component {
         )
 
     }
-});
-
-MainView.defaultProps = {
-    width: 700,
-    height: 700
-};
-
+}));
 export default MainView;

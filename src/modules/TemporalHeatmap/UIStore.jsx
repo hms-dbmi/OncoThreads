@@ -4,8 +4,7 @@ import {action, extendObservable} from "mobx";
 stores current UI state
  */
 class UIStore {
-    constructor(rootStore) {
-        this.rootStore = rootStore;
+    constructor() {
         extendObservable(this, {
             continuousRepresentation: 'gradient', //gradient/ boxplot/ medium
             realTime: false,
@@ -13,23 +12,22 @@ class UIStore {
             advancedSelection: true,
             showUndefined: true,
             setContinuousRepresentation: action(representation => {
-               this.continuousRepresentation=representation;
+                this.continuousRepresentation = representation;
             }),
-            setRealTime:action(boolean=>{
-                this.realTime=boolean;
+            setRealTime: action(boolean => {
+                this.realTime = boolean;
             }),
-            setGlobalTime:action(boolean=>{
-                this.globalTime=boolean;
+            setGlobalTime: action(boolean => {
+                this.globalTime = boolean;
             }),
-            setAdvancedSelection:action(boolean=>{
-                this.advancedSelection=boolean;
+            setAdvancedSelection: action(boolean => {
+                this.advancedSelection = boolean;
             }),
-            setShowUndefined:action(boolean=>{
-                this.showUndefined=boolean
+            setShowUndefined: action(boolean => {
+                this.showUndefined = boolean
             })
         })
-
-
     }
 }
+
 export default UIStore;

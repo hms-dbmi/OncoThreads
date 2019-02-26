@@ -1,11 +1,11 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import GlobalRowOperator from './GlobalRowOperator'
 
 /*
 implements the icons and their functionality on the left side of the plot
  */
-const GlobalRowOperators = observer(class GlobalRowOperators extends React.Component {
+const GlobalRowOperators = inject("dataStore")(observer(class GlobalRowOperators extends React.Component {
         constructor() {
             super();
             this.state = {width: 100};
@@ -36,27 +36,25 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
 
         getSampleRowHeader() {
             let i;
-            if (this.props.store.transitionOn) {
+            if (this.props.dataStore.transitionOn) {
                 i = 1;
             }
             else {
                 i = 0;
             }
-            const d = this.props.store.timepoints[i];
+            const d = this.props.dataStore.timepoints[i];
             return <GlobalRowOperator timepoint={d} width={this.state.width}
-                                      height={this.props.store.variableStores.sample.currentVariables.length * 20}
-                                      visMap={this.props.visMap} store={this.props.store}
+                                      height={this.props.dataStore.variableStores.sample.currentVariables.length * 20}
                                       {...this.props.tooltipFunctions}/>
         }
 
         getEventRowHeader() {
             let i;
-            if (this.props.store.transitionOn) {
+            if (this.props.dataStore.transitionOn) {
                 i = 0;
-                const d = this.props.store.timepoints[i];
+                const d = this.props.dataStore.timepoints[i];
                 return <GlobalRowOperator timepoint={d} width={this.state.width}
-                                          height={this.props.store.variableStores.between.getRelatedVariables("event").length * 20}
-                                          visMap={this.props.visMap} store={this.props.store}
+                                          height={this.props.dataStore.variableStores.between.getRelatedVariables("event").length * 20}
                                           {...this.props.tooltipFunctions}/>
             }
             else {
@@ -75,6 +73,6 @@ const GlobalRowOperators = observer(class GlobalRowOperators extends React.Compo
             )
         }
     }
-    )
+    ))
 ;
 export default GlobalRowOperators;

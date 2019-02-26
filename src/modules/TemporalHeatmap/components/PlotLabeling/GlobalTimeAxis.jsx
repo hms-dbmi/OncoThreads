@@ -1,5 +1,5 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {observer,inject} from "mobx-react";
 import * as d3 from "d3";
 //import ReactDOM from 'react-dom'
 
@@ -7,7 +7,7 @@ import * as d3 from "d3";
  * Time axis
  * TODO: Make more react like (see Axis in VariableModals/ModifySingleVariables/Binner)
  */
-const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
+const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends React.Component {
 
 
     //render() {
@@ -91,8 +91,8 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
 
     renderAxis() {
 
-        var timeV = this.props.maxTimeInDays / this.props.store.rootStore.timeVar;
-        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.visMap.svgHeight - 35]).nice();
+        var timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
+        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.rootStore.visStore.svgHeight - 35]).nice();
 
 
         const yAxis = d3.axisLeft().scale(y);
@@ -111,7 +111,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .attr("class", "axisLabel")
             .attr("transform", "rotate(-90)")
             .attr("y", -50)
-            .attr("x", -1 * this.props.visMap.svgHeight / 4)
+            .attr("x", -1 * this.props.rootStore.visStore.svgHeight / 4)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
             .style("font-family", "times")
@@ -119,7 +119,7 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
             .style("stroke-width", 0.5)
             .style("stroke", "black")
             .style("fill", "black")
-            .text(this.props.timeValue);
+            .text(this.props.rootStore.timeValue);
         //.text(this.props.store.rootStore.timeValue);
 
 
@@ -191,13 +191,13 @@ const GlobalTimeAxis = observer(class GlobalTimeAxis extends React.Component {
     render() {
         return (
             <div>
-                <svg height={this.props.visMap.svgHeight} width={this.props.width}>
+                <svg height={this.props.rootStore.visStore.svgHeight} width={this.props.width}>
                     <g className="axisGlobal"
-                       transform={"translate(50," + this.props.visMap.timelineRectSize / 2 + ")"}>
+                       transform={"translate(50," + this.props.rootStore.visStore.timelineRectSize / 2 + ")"}>
                     </g>
                 </svg>
             </div>
         );
     }
-});
+}));
 export default GlobalTimeAxis;

@@ -1,9 +1,9 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 /*
 implements a Global Transition
  */
-const GlobalTransition = observer(class GlobalTransition extends React.Component {
+const GlobalTransition = inject("dataStore","visStore")(observer(class GlobalTransition extends React.Component {
     /**
      * Draws a line for the Line transition
      * @param x0: x pos on first timepoint
@@ -28,7 +28,7 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
         let lines = [];
         this.props.patients.forEach(d => {
             let strokeColor = "lightgray";
-            if (this.props.store.selectedPatients.includes(d)) {
+            if (this.props.dataStore.selectedPatients.includes(d)) {
                 strokeColor = "black"
             }
             let finalValueColor="lightgray";
@@ -42,15 +42,15 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
                 }
             }
             lines.push(
-                GlobalTransition.drawLine(this.props.heatmapScale(d) + this.props.visMap.timelineRectSize / 2,
-                    this.props.heatmapScale(d) + this.props.visMap.timelineRectSize / 2,
+                GlobalTransition.drawLine(this.props.heatmapScale(d) + this.props.visStore.timelineRectSize / 2,
+                    this.props.heatmapScale(d) + this.props.visStore.timelineRectSize / 2,
                     this.props.timeScale(this.props.minMax[d].start),
                     this.props.timeScale(this.props.minMax[d].end),
                     d, strokeColor,1));
             lines.push(<rect key={d+"endpoint"}
                 x={this.props.heatmapScale(d)}
                              y={this.props.timeScale(this.props.minMax[d].end)}
-                             width={this.props.visMap.timelineRectSize}
+                             width={this.props.visStore.timelineRectSize}
                                 height={endHeight}
                              fill={finalValueColor}
                              {...mouseProperties}
@@ -64,5 +64,5 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
             this.drawLines()
         )
     }
-});
+}));
 export default GlobalTransition;

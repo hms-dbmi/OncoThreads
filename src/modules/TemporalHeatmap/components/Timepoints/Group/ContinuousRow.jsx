@@ -1,12 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import uuidv4 from "uuid/v4";
 import * as d3 from 'd3';
 import UtilityFunctions from "../../../UtilityFunctions";
 /*
 creates a row of a continuous variable in a partition of a grouped timepoint
  */
-const ContinuousRow = observer(class ContinuousRow extends React.Component {
+const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow extends React.Component {
     static getTooltipContent(value, numPatients) {
         let content = "";
         if (numPatients === 1) {
@@ -47,7 +47,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
                 else {
                     rectColor = "black";
                 }
-                if (_self.props.store.rootStore.uiStore.advancedSelection) {
+                if (_self.props.uiStore.advancedSelection) {
                     let x = selectedScale(stepwidth * i);
                     if (i === 0) {
                         x = x + 1;
@@ -67,7 +67,7 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             {stops}
         </linearGradient>;
         let selectUndefinedRect = null;
-        if (undefinedValuesCounter > 0 && this.props.store.rootStore.uiStore.advancedSelection) {
+        if (undefinedValuesCounter > 0 && this.props.uiStore.advancedSelection) {
             selectUndefinedRect = <rect x={this.props.groupScale(values.length) + 1} height={this.props.height}
                                         width={this.props.groupScale(undefinedValuesCounter) - 1}
                                         fill={"none"}
@@ -199,13 +199,13 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             return (a.value - b.value)
         });
         let boxPlotValues = ContinuousRow.computeBoxPlotValues(values);
-        if (this.props.store.rootStore.uiStore.continuousRepresentation === 'gradient') {
-            let selectedPartitionPatients = this.props.row.map(d => d.patients[0]).filter(element => -1 !== this.props.store.selectedPatients.indexOf(element));
+        if (this.props.uiStore.continuousRepresentation === 'gradient') {
+            let selectedPartitionPatients = this.props.row.map(d => d.patients[0]).filter(element => -1 !== this.props.dataStore.selectedPatients.indexOf(element));
             return (
                 this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
             )
         }
-        else if (this.props.store.rootStore.uiStore.continuousRepresentation === 'boxplot')
+        else if (this.props.uiStore.continuousRepresentation === 'boxplot')
             return (
                 this.createBoxPlot(boxPlotValues, values.length)
             );
@@ -213,5 +213,5 @@ const ContinuousRow = observer(class ContinuousRow extends React.Component {
             return (this.createMedianValue(boxPlotValues, values.length));
         }
     }
-});
+}));
 export default ContinuousRow;

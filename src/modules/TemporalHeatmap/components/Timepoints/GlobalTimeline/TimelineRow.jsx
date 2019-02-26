@@ -1,9 +1,9 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 /*
 creats a row in the heatmap
  */
-const TimelineRow = observer(class TimelineRow extends React.Component {
+const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React.Component {
         constructor(props) {
             super(props);
             this.handleMouseLeave = this.handleMouseLeave.bind(this);
@@ -13,7 +13,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
         }
 
         handleClick(patient) {
-            this.props.store.handlePatientSelection(patient)
+            this.props.rootStore.dataStore.handlePatientSelection(patient)
         }
 
         getRow() {
@@ -32,7 +32,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                         let opc1 = _self.props.opacity;
                         let height = _self.props.timeScale(ev.eventEndDate - ev.eventStartDate);
                         let offset = 0;
-                        let val = _self.props.store.variableStores.between.getById(_self.props.row.variable).name;
+                        let val = _self.props.rootStore.dataStore.variableStores.between.getById(_self.props.row.variable).name;
                         if (height === 0) {
                             height = _self.props.rectWidth * (2 / 3);
                             offset = _self.props.rectWidth * (1 / 3);
@@ -85,15 +85,15 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
             else {
                 this.props.row.data.forEach(function (d, i) {
 
-                    if (_self.props.store.rootStore.dataStore.timepoints.length !== _self.props.index) {
-                        //if(_self.props.store.rootStore.dataStore.timepoints.length!==-1){
+                    if (_self.props.rootStore.dataStore.timepoints.length !== _self.props.index) {
+                        //if(_self.props.rootStore.dataStore.rootStore.dataStore.timepoints.length!==-1){
                         let stroke = "none";
                         let fill = _self.props.color(d.value);
                         if (d.value === undefined) {
                             stroke = "lightgray";
                             fill = "white";
                         }
-                        if (_self.props.store.selectedPatients.includes(d.patient)) {
+                        if (_self.props.rootStore.dataStore.selectedPatients.includes(d.patient)) {
                             stroke = "black";
                         }
 
@@ -111,7 +111,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
                         rects.push(<rect stroke={stroke}
-                                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.store.rootStore.sampleTimelineMap[d.sample], 0)
+                                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.rootStore.sampleTimelineMap[d.sample], 0)
                                          }
                                          onMouseLeave={_self.handleMouseLeave}
                                          onDoubleClick={() => _self.handleDoubleClick(d.patient)}
@@ -120,12 +120,12 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                          height={_self.props.rectWidth}//{_self.props.height}
                                          width={_self.props.rectWidth}
                                          x={_self.props.heatmapScale(d.patient)}
-                                         y={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
+                                         y={_self.props.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
                                          fill={fill}
                                          opacity={_self.props.opacity}
                         />);
                         /*rects.push(<circle stroke={stroke}
-                                           onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.store.rootStore.sampleTimelineMap[d.sample], 0)
+                                           onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample], 0)
                                            }
                                            onMouseLeave={_self.handleMouseLeave}
                                            onDoubleClick={() => _self.handleDoubleClick(d.patient)}
@@ -133,19 +133,19 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                            key={d.patient + i + j}
                                            r={_self.props.rectWidth / 2}//{_self.props.height}
                                            cx={_self.props.heatmapScale(d.patient) + _self.props.rectWidth / 2}
-                                           cy={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample])}
+                                           cy={_self.props.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])}
                                            fill={fill}
                                            opacity={_self.props.opacity}
                         />);
 
-                        rects.push(<text onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.store.rootStore.sampleTimelineMap[d.sample], 0)
+                        rects.push(<text onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample], 0)
                                          }
                                          onMouseLeave={_self.handleMouseLeave}
                                          onDoubleClick={() => _self.handleDoubleClick(d.patient)}
                                          onClick={() => _self.handleClick(d.patient)}
                                          key={d.patient + i + j +"number"}
                                          x={_self.props.heatmapScale(d.patient)}
-                                         y={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample])  +_self.props.rectWidth / 2}
+                                         y={_self.props.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])  +_self.props.rectWidth / 2}
                                          >{_self.props.index}</text>);*/
 
 
@@ -155,8 +155,8 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
                                              width={_self.props.rectWidth}
                                              x1={_self.props.heatmapScale(d.patient)}
                                              x2={_self.props.heatmapScale(d.patient) + _self.props.rectWidth / 2}
-                                             y1={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
-                                             y2={_self.props.timeScale(_self.props.store.rootStore.sampleTimelineMap[d.sample]) + _self.props.rectWidth / 2}
+                                             y1={_self.props.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
+                                             y2={_self.props.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) + _self.props.rectWidth / 2}
                                              opacity={_self.props.opacity}/>);
                         }
                     }
@@ -168,7 +168,7 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
         handleDoubleClick(patient) {
-            window.open("http://www.cbiohack.org/case.do#/patient?studyId=" + this.props.store.rootStore.study.studyId + "&caseId=" + patient);
+            window.open("http://www.cbiohack.org/case.do#/patient?studyId=" + this.props.rootStore.study.studyId + "&caseId=" + patient);
         }
 
 
@@ -176,12 +176,12 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
             var timeVariable = "Day";
 
-            if (this.props.store.rootStore.timeVar === "30") {
+            if (this.props.rootStore.timeVar === "30") {
                 startDay = Math.round((startDay / 30) * 100) / 100;
                 duration = Math.round((duration / 30) * 100) / 100;
                 timeVariable = "Month";
             }
-            else if (this.props.store.rootStore.timeVar === "365") {
+            else if (this.props.rootStore.timeVar === "365") {
                 startDay = Math.round((startDay / 365) * 100) / 100;
                 duration = Math.round((duration / 365) * 100) / 100;
                 timeVariable = "Year";
@@ -210,6 +210,6 @@ const TimelineRow = observer(class TimelineRow extends React.Component {
 
 
         }
-    })
+    }))
 ;
 export default TimelineRow;

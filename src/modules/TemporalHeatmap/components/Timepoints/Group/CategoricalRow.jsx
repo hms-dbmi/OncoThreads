@@ -1,9 +1,9 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 /*
 creates a row in a partition of a grouped timepoint
  */
-const CategoricalRow = observer(class CategoricalRow extends React.Component {
+const CategoricalRow = inject("dataStore","uiStore")(observer(class CategoricalRow extends React.Component {
     static getTooltipContent(value, numPatients) {
         let content = "";
         if (numPatients === 1) {
@@ -33,7 +33,7 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
                              onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.patients.length)}
                              x={_self.props.groupScale(currCounts)} height={_self.props.height}
                              fill={fill} stroke={stroke} opacity={_self.props.opacity}/>);
-            if (_self.props.store.rootStore.uiStore.advancedSelection) {
+            if (_self.props.uiStore.advancedSelection) {
                 rects.push(
                     <rect key={f.key + 'selected'}
                           width={_self.props.groupScale(_self.getSelected(f.patients))}
@@ -52,7 +52,7 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
      * @returns {number}
      */
     getSelected(patients) {
-        return patients.filter(patient=>this.props.store.selectedPatients.includes(patient)).length
+        return patients.filter(patient=>this.props.dataStore.selectedPatients.includes(patient)).length
     }
 
     render() {
@@ -60,5 +60,5 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
             this.createRow()
         )
     }
-});
+}));
 export default CategoricalRow;

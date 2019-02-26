@@ -1,11 +1,11 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 
 import GroupPartition from './GroupPartition'
 /*
 creates a grouped timepoint
  */
-const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
+const GroupTimepoint = inject("dataStore","uiStore")(observer(class GroupTimepoint extends React.Component {
     constructor() {
         super();
         this.handleMouseClick = this.handleMouseClick.bind(this);
@@ -17,17 +17,15 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
     getPartitions() {
         let partitions = [];
         let previousXPosition = 0;
-        this.props.group.forEach((d, i)=> {
+        this.props.group.forEach((d, i) => {
             const transform = "translate(" + previousXPosition + ",0)";
             let stroke = "none";
-            if (this.isSelected(d.patients) && !this.props.store.rootStore.uiStore.advancedSelection) {
+            if (this.isSelected(d.patients) && !this.props.uiStore.advancedSelection) {
                 stroke = "black";
             }
             partitions.push(<g key={d.partition} style={{backgroundColor: "darkgray"}}
                                onClick={(e) => this.handleMouseClick(e, d.patients)}
-                               transform={transform}><GroupPartition visMap={this.props.visMap}
-                                                                     store={this.props.store}
-                                                                     heatmap={this.props.heatmap}
+                               transform={transform}><GroupPartition heatmap={this.props.heatmap}
                                                                      currentVariables={this.props.currentVariables}
                                                                      groupScale={this.props.groupScale}
                                                                      tooltipFunctions={this.props.tooltipFunctions}
@@ -45,7 +43,7 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
 
     handleMouseClick(event, patients) {
         if (event.button === 0) {
-            this.props.store.handlePartitionSelection(patients);
+            this.props.dataStore.handlePartitionSelection(patients);
         }
     }
 
@@ -57,7 +55,7 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
     isSelected(patients) {
         let isSelected = true;
         for (let i = 0; i < patients.length; i++) {
-            if (!this.props.store.selectedPatients.includes(patients[i])) {
+            if (!this.props.dataStore.selectedPatients.includes(patients[i])) {
                 isSelected = false;
                 break;
             }
@@ -70,5 +68,5 @@ const GroupTimepoint = observer(class GroupTimepoint extends React.Component {
             this.getPartitions()
         )
     }
-});
+}));
 export default GroupTimepoint;

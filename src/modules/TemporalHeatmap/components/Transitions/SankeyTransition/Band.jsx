@@ -1,10 +1,10 @@
 import React from 'react';
 import * as d3 from 'd3';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 /*
 implements a Band for Sankey Transition
  */
-const Band = observer(class Band extends React.Component {
+const Band = inject("dataStore","visStore")(observer(class Band extends React.Component {
 
     /**
      * creates the partition names for the tooltip: adapts the partition names of the primary variables
@@ -33,7 +33,7 @@ const Band = observer(class Band extends React.Component {
     getSelectedWidth() {
         let numSelected = 0;
         const _self = this;
-        this.props.store.selectedPatients.forEach(function (d, i) {
+        this.props.dataStore.selectedPatients.forEach(function (d, i) {
             if (_self.props.patients.includes(d)) {
                 numSelected += 1;
             }
@@ -64,8 +64,8 @@ const Band = observer(class Band extends React.Component {
         const source = Band.getTooltipPartitionName(this.props.firstPrimary, this.props.firstPartition);
         const target = Band.getTooltipPartitionName(this.props.secondPrimary, this.props.secondPartition);
         const selectedWidth = this.getSelectedWidth();
-        const y0 = this.props.visMap.gap + this.props.visMap.helperRectHeight,
-            y1 = this.props.visMap.transitionSpace - this.props.visMap.gap * 2 - this.props.visMap.helperRectHeight;
+        const y0 = this.props.visStore.gap + this.props.visStore.helperRectHeight,
+            y1 = this.props.visStore.transitionSpace - this.props.visStore.gap * 2 - this.props.visStore.helperRectHeight;
         let selected = null;
         if (selectedWidth !== 0) {
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
@@ -81,5 +81,5 @@ const Band = observer(class Band extends React.Component {
                 {notSelected}
             </g>)
     }
-});
+}));
 export default Band;

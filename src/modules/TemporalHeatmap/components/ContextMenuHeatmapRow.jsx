@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import {Button, ButtonGroup} from 'react-bootstrap';
 
 //import Content from "./Content";
@@ -7,7 +7,7 @@ import {Button, ButtonGroup} from 'react-bootstrap';
 /*
 sort context menu, appears after a right click on the sort button
  */
-const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React.Component {
+const ContextMenuHeatmapRow = inject("rootStore","undoRedoStore")(observer(class ContextMenuHeatmapRow extends React.Component {
     constructor() {
         super();
         this.move = this.move.bind(this);
@@ -21,11 +21,11 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
     move(patient, isUp) {
         if (this.props.rootStore.dataStore.selectedPatients.length === 0) {
             this.props.rootStore.updateTimepointStructure([patient], this.props.timepoint, isUp);
-            this.props.rootStore.undoRedoStore.saveTPMovement(isUp ? "UP" : "DOWN", patient);
+            this.props.undoRedoStore.saveTPMovement(isUp ? "UP" : "DOWN", patient);
         }
         else {
             this.props.rootStore.updateTimepointStructure(this.props.rootStore.dataStore.selectedPatients, this.props.timepoint, isUp);
-            this.props.rootStore.undoRedoStore.saveTPMovement(isUp ? "UP" : "DOWN", this.props.rootStore.dataStore.selectedPatients);
+            this.props.undoRedoStore.saveTPMovement(isUp ? "UP" : "DOWN", this.props.rootStore.dataStore.selectedPatients);
         }
     }
 
@@ -51,5 +51,5 @@ const ContextMenuHeatmapRow = observer(class ContextMenuHeatmapRow extends React
             </ButtonGroup>
         )
     }
-});
+}));
 export default ContextMenuHeatmapRow;

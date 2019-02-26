@@ -1,12 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 
 
 /*
 implements the icons and their functionality on the left side of the plot
  */
-const RowOperator = observer(class RowOperator extends React.Component {
+const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(class RowOperator extends React.Component {
         constructor() {
             super();
             this.state = {
@@ -39,14 +39,14 @@ const RowOperator = observer(class RowOperator extends React.Component {
         group(timepoint, variable) {
             if (variable.datatype === "NUMBER") {
                 this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
-                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
+                    this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
-                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
+                    this.props.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
                 });
             }
             else {
                 timepoint.group(variable.id);
-                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
+                this.props.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
             }
         }
 
@@ -59,19 +59,19 @@ const RowOperator = observer(class RowOperator extends React.Component {
         sortTimepoint(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
                 this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
-                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
+                    this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
-                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
+                    this.props.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
 
                 });
             }
             else {
                 timepoint.sort(variable.id, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
-                if (this.props.store.rootStore.uiStore.realTime) {
-                    this.props.store.applyPatientOrderToAll(timepoint.globalIndex, false);
+                if (this.props.uiStore.realTime) {
+                    this.props.rootStore.dataStore.applyPatientOrderToAll(timepoint.globalIndex, false);
                 }
-                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
+                this.props.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
             }
         }
 
@@ -83,7 +83,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
          */
         unGroup(timepoint, variableId) {
             timepoint.unGroup(variableId);
-            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("UNGROUP", variableId, timepoint.type, timepoint.localIndex)
+            this.props.undoRedoStore.saveTimepointHistory("UNGROUP", variableId, timepoint.type, timepoint.localIndex)
         }
 
         /**
@@ -94,26 +94,29 @@ const RowOperator = observer(class RowOperator extends React.Component {
         promote(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
                 this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
-                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
+                    this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.promote(derivedVariable.id);
-                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
+                    this.props.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
                 });
             }
             else {
                 timepoint.promote(variable.id);
-                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
+                this.props.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
             }
         }
 
         removeVariable(variable, type) {
+            const variableName = variable.name;
             if (variable.derived) {
                 this.openSaveModal(variable, save => {
-                    this.props.store.variableStores[type].updateSavedVariables(variable.id, save);
-                    this.props.store.variableStores[type].removeVariable(variable.id);
+                    this.props.rootStore.dataStore.variableStores[type].updateSavedVariables(variable.id, save);
+                    this.props.rootStore.dataStore.variableStores[type].removeVariable(variable.id);
+                    this.props.undoRedoStore.saveVariableHistory("REMOVE", variableName, true);
                 })
             }
             else {
-                this.props.store.variableStores[type].removeVariable(variable.id);
+                this.props.rootStore.dataStore.variableStores[type].removeVariable(variable.id);
+                this.props.undoRedoStore.saveVariableHistory("REMOVE", variableName, true);
             }
         }
 
@@ -166,7 +169,7 @@ const RowOperator = observer(class RowOperator extends React.Component {
         handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
-            if (timepoint.type === "between" || this.props.store.variableStores[timepoint.type].currentVariables.length > 1) {
+            if (timepoint.type === "between" || this.props.rootStore.dataStore.variableStores[timepoint.type].currentVariables.length > 1) {
                 this.removeVariable(variable, timepoint.type);
             }
             else {
@@ -255,21 +258,21 @@ const RowOperator = observer(class RowOperator extends React.Component {
             const _self = this;
             let pos = 0;
             let rowOperators = [];
-            this.props.store.variableStores[this.props.timepoint.type].fullCurrentVariables.forEach((d,i)=> {
-                if (!this.props.timepoint.heatmap[i].isUndef || _self.props.store.rootStore.uiStore.showUndefined || d.id === _self.props.timepoint.primaryVariableId) {
-                    let lineHeight = _self.props.visMap.secondaryHeight;
+            this.props.rootStore.dataStore.variableStores[this.props.timepoint.type].fullCurrentVariables.forEach((d, i) => {
+                if (!this.props.timepoint.heatmap[i].isUndef || _self.props.uiStore.showUndefined || d.id === _self.props.timepoint.primaryVariableId) {
+                    let lineHeight = _self.props.rootStore.visStore.secondaryHeight;
                     let fontWeight = "normal";
                     if (d.id === _self.props.timepoint.primaryVariableId) {
-                        lineHeight = _self.props.visMap.primaryHeight;
+                        lineHeight = _self.props.rootStore.visStore.primaryHeight;
                         fontWeight = "bold";
                     }
                     const transform = "translate(0," + pos + ")";
-                    const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
+                    const iconScale = (_self.props.rootStore.visStore.secondaryHeight - _self.props.rootStore.visStore.gap) / 20;
                     let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
-                    pos = pos + lineHeight + _self.props.visMap.gap;
+                    pos = pos + lineHeight + _self.props.rootStore.visStore.gap;
                     const yPos = -(iconScale * 24 - lineHeight) / 2;
                     let secondIcon;
                     if (!_self.props.timepoint.isGrouped) {
@@ -309,7 +312,6 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 </g>
             )
         }
-    }
-    )
+    }))
 ;
 export default RowOperator;
