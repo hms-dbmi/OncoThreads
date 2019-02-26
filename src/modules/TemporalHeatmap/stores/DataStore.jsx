@@ -47,6 +47,9 @@ class DataStore {
             setGlobalTime: action(boolean => {
                 this.globalTime = boolean;
             }),
+            setTransitionOn: action(boolean => {
+                this.transitionOn = boolean
+            }),
             /**
              * handles currently selected patients
              * @param patient
@@ -102,8 +105,8 @@ class DataStore {
              * combines the two sets of timepoints (samples, events)
              */
             combineTimepoints: action(isOn => {
-                let betweenTimepoints = this.variableStores.between.childStore.timepoints.slice();
-                let sampleTimepoints = this.variableStores.sample.childStore.timepoints.slice();
+                let betweenTimepoints = this.variableStores.between.childStore.timepoints;
+                let sampleTimepoints = this.variableStores.sample.childStore.timepoints;
                 let timepoints = [];
                 if (!isOn) {
                     timepoints = sampleTimepoints;
@@ -111,12 +114,11 @@ class DataStore {
                 else {
                     for (let i = 0; i < sampleTimepoints.length; i++) {
                         timepoints.push(betweenTimepoints[i]);
-                        betweenTimepoints[i].heatmapOrder = sampleTimepoints[i].heatmapOrder;
+                        betweenTimepoints[i].setHeatmapOrder(sampleTimepoints[i].heatmapOrder);
                         timepoints.push(sampleTimepoints[i]);
                     }
-                    betweenTimepoints[betweenTimepoints.length - 1].heatmapOrder = sampleTimepoints[sampleTimepoints.length - 1].heatmapOrder;
+                    betweenTimepoints[betweenTimepoints.length - 1].setHeatmapOrder(sampleTimepoints[sampleTimepoints.length - 1].heatmapOrder);
                     timepoints.push(betweenTimepoints[betweenTimepoints.length - 1]);
-
                 }
                 timepoints.forEach((d, i) => d.globalIndex = i);
                 this.timepoints.replace(timepoints);
@@ -126,8 +128,10 @@ class DataStore {
             /**
              * initializes the datastructures
              */
-            initialize: action(numPatients => {
-                this.numberOfPatients = numPatients;
+            initialize: action(() => {
+                this.numberOfPatients = this.rootStore.patients.length;
+                this.variableStores.sample.resetVariables();
+                this.variableStores.sample.resetVariables();
                 this.variableStores.sample.update(this.rootStore.timepointStructure, this.rootStore.patients);
                 this.variableStores.between.update(this.rootStore.eventBlockStructure, this.rootStore.patients);
                 this.combineTimepoints(false);
@@ -140,7 +144,6 @@ class DataStore {
                 this.variableStores.sample.update(this.rootStore.timepointStructure, order);
                 this.variableStores.between.update(this.rootStore.eventBlockStructure, order);
                 this.combineTimepoints(this.transitionOn);
-
             }),
             /**
              * applies the patient order of the current timepoint to all the other timepoints
@@ -161,7 +164,6 @@ class DataStore {
         });
         reaction(() => this.transitionOn, isOn => {
             this.combineTimepoints(isOn);
-            //this.rootStore.transitionStore.initializeTransitions(this.timepoints.length - 1);
         });
     }
 

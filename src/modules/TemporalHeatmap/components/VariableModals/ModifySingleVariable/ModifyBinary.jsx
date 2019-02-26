@@ -2,9 +2,9 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
-import DerivedVariable from "../../../DerivedVariable";
-import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
-import ColorScales from "../../../ColorScales";
+import DerivedVariable from "../../../stores/DerivedVariable";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
+import ColorScales from "../../../UtilityClasses/ColorScales";
 import BinaryTable from "../VariableTables/BinaryTable";
 
 

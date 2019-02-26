@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer,inject} from 'mobx-react';
 import uuidv4 from 'uuid/v4';
-import UtilityFunctions from "../UtilityFunctions";
+import UtilityFunctions from "../UtilityClasses/UtilityFunctions";
 
 /*
 implements the legend on the right side of the main view

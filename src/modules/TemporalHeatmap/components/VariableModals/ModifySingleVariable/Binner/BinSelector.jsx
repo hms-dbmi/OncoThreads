@@ -4,7 +4,7 @@ import Histogram from './Histogram';
 import Slider from './Slider';
 import {Checkbox, Form} from "react-bootstrap";
 import * as d3 from "d3";
-import UtilityFunctions from "../../../../UtilityFunctions";
+import UtilityFunctions from "../../../../UtilityClasses/UtilityFunctions";
 
 const BinSelector = observer(class BinSelector extends React.Component {
     constructor(props) {

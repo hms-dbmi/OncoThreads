@@ -1,6 +1,6 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
-import UtilityFunctions from "../../../UtilityFunctions";
+import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
 /*
 creats a row in the heatmap
  */
@@ -20,11 +20,10 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
 
     getRow() {
         let rects = [];
-
-
         this.props.row.data.forEach((d, j) => {
             let stroke = "none";
-            let fill = this.props.currVar.colorScale(d.value);
+            const variable = this.props.dataStore.variableStores[this.props.timepointType].getById(this.props.row.variable);
+            let fill = variable.colorScale(d.value);
             if (d.value === undefined) {
                 stroke = "lightgray";
                 fill = "white";
@@ -34,11 +33,11 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
             }
             let str;
 
-            if (this.props.currVar.datatype === "NUMBER") {
+            if (variable.datatype === "NUMBER") {
                 str = UtilityFunctions.getScientificNotation(d.value);
             }
-            else if (this.props.currVar.derived && this.props.currVar.datatype === "ORDINAL" && this.props.currVar.modification.type === "continuousTransform") {
-                str = d.value + " (" + UtilityFunctions.getScientificNotation(this.props.variableStore.getById(this.props.currVar.originalIds[0]).mapper[d.sample]) + ")";
+            else if (variable.derived && variable.datatype === "ORDINAL" && variable.modification.type === "continuousTransform") {
+                str = d.value + " (" + UtilityFunctions.getScientificNotation(this.props.variableStore.getById(variable.originalIds[0]).mapper[d.sample]) + ")";
             }
             else {
                 str = d.value;
@@ -47,7 +46,6 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
                              onMouseLeave={this.handleMouseLeave}
                              onMouseDown={(e) => this.handleMouseDown(e, d.patient)}
                              onMouseUp={this.handleMouseUp} onDoubleClick={() => this.handleDoubleClick(d.patient)}
-                             onClick={this.handleClick}
                              onContextMenu={(e) => this.handleRightClick(e, d.patient, this.props.timepointIndex, j)}
                              key={d.patient} height={this.props.height}
                              width={this.props.rectWidth}
@@ -82,7 +80,6 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
                 dragging: true
             });
         }
-
     }
 
     handleMouseUp() {
@@ -112,7 +109,6 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
     }
 
     handleRightClick(e, patient, timepointIndex, xposition) {
-        //console.log("\n Right Clicked!");
         e.preventDefault();
         this.setState({
             dragging: false

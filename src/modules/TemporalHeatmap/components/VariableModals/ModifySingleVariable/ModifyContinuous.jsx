@@ -5,11 +5,11 @@ import * as d3 from 'd3';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, OverlayTrigger, Popover, Radio} from "react-bootstrap";
 import FontAwesome from 'react-fontawesome';
 import Histogram from "./Binner/Histogram";
-import DerivedVariable from "../../../DerivedVariable";
+import DerivedVariable from "../../../stores/DerivedVariable";
 import uuidv4 from "uuid/v4";
-import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
-import ColorScales from "../../../ColorScales";
-import UtilityFunctions from "../../../UtilityFunctions";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
+import ColorScales from "../../../UtilityClasses/ColorScales";
+import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
 
 //TODO: create store
 const ModifyContinuous = observer(class ModifyContinuous extends React.Component {

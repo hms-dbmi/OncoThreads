@@ -1,22 +1,22 @@
-import ColorScales from './ColorScales';
+import ColorScales from "../UtilityClasses/ColorScales";
 import {extendObservable} from "mobx";
 
-class OriginalVariable {
-    constructor(id, name, datatype, description, range, domain, mapper, profile, type) {
+class DerivedVariable {
+    constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper) {
         this.id = id;
-        this.originalIds = [id];
         this.name = name;
         this.datatype = datatype;
+        this.derived = true;
         this.description = description;
-        this.range = range;
+        this.originalIds = originalIds;
+        this.modification = modification;
         this.mapper = mapper;
-        this.profile = profile;
-        this.type = type;
+        this.type = "derived";
+        this.profile = "derived";
         this.referenced = 0;
-        this.derived = false;
         extendObservable(this,
-            this.initializeObservable(domain, range)
-        );
+            this.initializeObservable(domain, range))
+
     }
 
     /**
@@ -44,7 +44,7 @@ class OriginalVariable {
         };
     }
 
-    /**
+     /**
      * creates domain (use provided domain if given, otherwise use default domain)
      * @param domain
      * @returns {*}
@@ -96,7 +96,7 @@ class OriginalVariable {
                 currRange = ColorScales.defaultCategoricalRange;
             }
             else if (this.datatype === "BINARY") {
-                currRange = ColorScales.defaultBinaryRange;
+                currRange = ColorScales.defaultBinaryRange
             }
             else if (this.datatype === "NUMBER") {
                 let min = Math.min(...domain);
@@ -112,5 +112,4 @@ class OriginalVariable {
     }
 }
 
-
-export default OriginalVariable;
+export default DerivedVariable;

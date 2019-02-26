@@ -1,4 +1,4 @@
-import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
+import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import * as d3 from "d3";
 
 

@@ -1,10 +1,11 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
+import OriginalVariable from "../../stores/OriginalVariable";
 
 
-const EventVariableSelector = observer(class EventVariableSelector extends React.Component {
+const EventVariableSelector = inject("variableManagerStore", "rootStore")(observer(class EventVariableSelector extends React.Component {
 
     constructor(props) {
         super(props);
@@ -23,15 +24,15 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
     createOptions() {
         let options = [];
         if (this.state.category === "saved") {
-            return (this.props.savedReferences.map(variableId => {
-                let variable = this.props.store.dataStore.variableStores.between.getById(variableId);
+            return (this.props.variableManagerStore.savedReferences.map(variableId => {
+                let variable = this.props.rootStore.dataStore.variableStores.between.getById(variableId);
                 return ({label: variable.name, value: variableId, object: variableId});
             }))
         }
         else if (this.state.category !== "Computed") {
-            for (let key in this.props.eventAttributes[this.state.category]) {
+            for (let key in this.props.rootStore.eventAttributes[this.state.category]) {
                 let subOptions = [];
-                this.props.eventAttributes[this.state.category][key].forEach(d => {
+                this.props.rootStore.eventAttributes[this.state.category][key].forEach(d => {
                     let option = {
                         label: d.name,
                         value: d.id,
@@ -45,9 +46,9 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
         else {
             options.push({
                 label: "Timepoint Distance",
-                value: this.props.store.timeDistanceId,
+                value: this.props.rootStore.timeDistanceId,
                 object: {
-                    id: this.props.store.timeDistanceId,
+                    id: this.props.rootStore.timeDistanceId,
                     name: "Timepoint Distance",
                     description: "Time between timepoints",
                     datatype: "NUMBER"
@@ -75,13 +76,13 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
             if (this.state.category === "saved") {
-                this.props.handleSavedVariableAdd(selectedOption.object);
+                this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(selectedOption.object));
             }
             else if (this.state.category !== "Computed") {
-                this.props.addEventVariable(selectedOption.object, this.state.category);
+                this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, "BINARY", "Indicates if event: \"" + selectedOption.object.name + "\" has happened between two timepoints", [], [], this.props.rootStore.getSampleEventMapping(this.state.category, selectedOption.object), this.state.category, "event"));
             }
             else {
-                this.props.addTimepointDistance(selectedOption.object);
+                this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, selectedOption.object.datatype, selectedOption.object.description, [], [], this.props.rootStore.staticMappers[selectedOption.object.id], "Computed", false));
             }
         }
     }
@@ -105,7 +106,7 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
 
     render() {
         let savedOption = null;
-        if (this.props.savedReferences.length > 0) {
+        if (this.props.variableManagerStore.savedReferences.length > 0) {
             savedOption = <option value={"saved"} key={"saved"}>Saved variables</option>
         }
         return (<Form horizontal>
@@ -126,5 +127,5 @@ const EventVariableSelector = observer(class EventVariableSelector extends React
             </Form>
         )
     }
-});
+}));
 export default EventVariableSelector;

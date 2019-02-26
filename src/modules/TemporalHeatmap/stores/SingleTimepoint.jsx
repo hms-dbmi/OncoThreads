@@ -62,31 +62,34 @@ class SingleTimepoint {
             /**
              * sets timepoint name
              */
-            setName: action(function (name) {
+            setName: action(name=> {
                 this.name = name
             }),
             /**
              * sets isGrouped
              */
-            setIsGrouped: action(function (isGrouped) {
+            setIsGrouped: action(isGrouped=> {
                 this.isGrouped = isGrouped;
             }),
             /**
              * sets order in groups
              */
-            setGroupOrder: action(function (order) {
+            setGroupOrder: action(order=> {
                 this.groupOrder = order;
             }),
             /**
              * sets primary variable
              */
-            setPrimaryVariable: action(function (id) {
+            setPrimaryVariable: action(id=> {
                 this.primaryVariableId = id;
+            }),
+            setHeatmapOrder:action(order=>{
+                this.heatmapOrder.replace(order);
             }),
             /**
              * resets the heatmap
              */
-            reset: action(function () {
+            reset: action(()=> {
                 this.heatmap = [];
             }),
 
@@ -95,7 +98,7 @@ class SingleTimepoint {
              * @param variableId
              * @param variableData
              */
-            addRow: action(function (variableId, variableData) {
+            addRow: action((variableId, variableData)=> {
                 this.heatmap.push({
                     variable: variableId,
                     data: variableData,
@@ -110,7 +113,7 @@ class SingleTimepoint {
              * removes a row
              * @param variableId
              */
-            removeRow: action(function (variableId) {
+            removeRow: action(variableId=>{
                 let deleteIndex = -1;
                 for (let i = 0; i < this.heatmap.length; i++) {
                     if (this.heatmap[i].variable === variableId) {
@@ -140,7 +143,7 @@ class SingleTimepoint {
              * @param variableId
              * @param variableData
              */
-            updateRow: action(function (index, variableId, variableData) {
+            updateRow: action((index, variableId, variableData)=> {
                 const isPrimary = this.heatmap[index].variable === this.primaryVariableId;
                 this.heatmap[index].variable = variableId;
                 this.heatmap[index].data = variableData;
@@ -152,7 +155,7 @@ class SingleTimepoint {
             /**
              * changes the order of the rows
              */
-            resortRows: action(function (order) {
+            resortRows: action(order=> {
                 this.heatmap = this.heatmap.sort((a, b) => {
                     if (order.indexOf(a.variable) < order.indexOf(b.variable)) {
                         return -1;
@@ -166,13 +169,13 @@ class SingleTimepoint {
             /**
              * sorts heatmap (sets new heatmap order)
              */
-            sortHeatmap: action(function (variable, order) {
+            sortHeatmap: action((variable, order)=> {
                 const _self = this;
                 let varToSort = this.rootStore.dataStore.variableStores[this.type].getById(variable);
                 this.heatmapSorting = {variable: variable, order: order};
                 const previousOrder = this.heatmapOrder.slice();
                 const variableIndex = this.rootStore.dataStore.variableStores[this.type].currentVariables.indexOf(variable);
-                let helper = this.heatmapOrder.map(function (d) {
+                let helper = this.heatmapOrder.map(d=> {
                     let patientIndex = _self.heatmap[variableIndex].data.map(d => d.patient).indexOf(d);
                     if (patientIndex === -1) {
                         return ({patient: d, value: undefined})
@@ -182,7 +185,7 @@ class SingleTimepoint {
                     }
                 });
                 //first sort after primary variable values
-                this.heatmapOrder = helper.sort(function (a, b) {
+                this.heatmapOrder = helper.sort((a, b)=> {
                     if (varToSort.datatype === "NUMBER") {
                         if (a.value < b.value)
                             return -order;
@@ -217,14 +220,14 @@ class SingleTimepoint {
                             return 0
                         }
                     }
-                }).map(function (d) {
+                }).map(d=> {
                     return d.patient;
                 });
             }),
             /**
              * hierachical sorting of all rows plus realigning afterwards
              */
-            magicSort: action(function (variable) {
+            magicSort: action(variable=> {
                 for (let i = 0; i < this.heatmap.length; i++) {
                     this.sort(this.heatmap[i].variable);
                     if (this.heatmap[i].variable === variable) {
@@ -237,7 +240,7 @@ class SingleTimepoint {
              * sorts the timepoint by a variable (handled differently for grouped and ungrouped timepoints)
              * @param variableId
              */
-            sort: action(function (variableId) {
+            sort: action(variableId=> {
                 //case: the timepoint is grouped
                 if (this.isGrouped) {
                     if (this.primaryVariableId !== variableId) {
@@ -261,7 +264,7 @@ class SingleTimepoint {
              * groups a timepoint
              * @param variable
              */
-            group: action(function (variable) {
+            group: action(variable=> {
                 this.setPrimaryVariable(variable);
                 this.setIsGrouped(true);
             }),
@@ -270,7 +273,7 @@ class SingleTimepoint {
              * promotes a timepoint
              * @param variableId
              */
-            promote: action(function (variableId) {
+            promote: action(variableId=> {
                 this.setPrimaryVariable(variableId);
             }),
 
@@ -278,7 +281,7 @@ class SingleTimepoint {
              * ungroupes a timepoint by swapping to the heatmap representation
              * @param variable
              */
-            unGroup: action(function (variable) {
+            unGroup: action(variable=> {
                 this.setPrimaryVariable(variable);
                 this.setIsGrouped(false);
             })

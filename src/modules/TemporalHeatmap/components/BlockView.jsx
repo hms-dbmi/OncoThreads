@@ -70,17 +70,14 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
                 else {
                     timepoints.push(<g key={i + "timepoint"} transform={transform}>
                         <Provider dataStore={this.props.rootStore.dataStore}
-                                  visStore={this.props.rootStore.visStore}
-                                  variableStore={this.props.rootStore.dataStore.variableStores[d.type]}>
+                                  visStore={this.props.rootStore.visStore}>
                             <HeatmapTimepoint
                                 tooltipFunctions={this.props.tooltipFunctions}
                                 showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                                 xOffset={(this.props.rootStore.visStore.sampleRectWidth - rectWidth) / 2}
+                                timepoint={d}
                                 rectWidth={rectWidth}
-                                heatmap={d.heatmap}
-                                index={i}
                                 heatmapScale={this.props.heatmapScales[i]}
-                                primaryVariableId={d.primaryVariableId}
                             />
                         </Provider>
                     </g>)

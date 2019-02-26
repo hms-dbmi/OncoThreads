@@ -1,13 +1,13 @@
 import React from 'react';
-import {observer, Provider,inject} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import {Button, Modal, Tab, Tabs} from 'react-bootstrap';
 import AddTimepointVarTab from "./AddTimepointVarTab"
-import UndoRedoStore from "../../UndoRedoStore";
+import UndoRedoStore from "../../../UndoRedoStore";
 import AddEventVarTab from "./AddEventVarTab";
 import VariableManagerStore from "./VariableManagerStore";
 
 
-const AddVarModal = inject("rootStore","undoRedoStore")(observer(class AddVarModal extends React.Component {
+const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarModal extends React.Component {
 
     constructor(props) {
         super(props);
@@ -50,23 +50,13 @@ const AddVarModal = inject("rootStore","undoRedoStore")(observer(class AddVarMod
                 <Modal.Body>
                     <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
                         <Tab eventKey={1} title="Timepoint Variables">
-                            <AddTimepointVarTab
-                                variableManagerStore={this.timepointVariableManager}
-                                currentVariables={this.props.rootStore.dataStore.variableStores.sample.currentVariables}
-                                availableProfiles={this.props.rootStore.availableProfiles}
-                                mutationMappingTypes={this.props.rootStore.mutationMappingTypes}
-                                molProfileMapping={this.props.rootStore.molProfileMapping}
-                                staticMappers={this.props.rootStore.staticMappers}
-                                clinicalSampleCategories={this.props.clinicalSampleCategories}
-                                clinicalPatientCategories={this.props.clinicalPatientCategories}/>
+                            <Provider variableManagerStore={this.timepointVariableManager}>
+                                <AddTimepointVarTab/>
+                            </Provider>
                         </Tab>
                         <Tab eventKey={2} title="Event Variables">
-                            <Provider rootStore={this.props.rootStore}><AddEventVarTab
-                                variableManagerStore={this.eventVariableManager}
-                                currentVariables={this.props.rootStore.dataStore.variableStores.between.currentVariables}
-                                eventCategories={this.props.rootStore.eventCategories}
-                                eventAttributes={this.props.rootStore.eventAttributes}
-                                staticMappers={this.props.rootStore.staticMappers}/>
+                            <Provider variableManagerStore={this.eventVariableManager}>
+                                <AddEventVarTab/>
                             </Provider>
                         </Tab>
                     </Tabs>

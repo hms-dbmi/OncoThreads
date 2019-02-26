@@ -1,5 +1,5 @@
 import React from "react";
-import {observer,inject} from "mobx-react";
+import {inject, observer} from "mobx-react";
 import Select from 'react-select';
 import {Button, Panel} from "react-bootstrap";
 import StudySummary from "./StudySummary";
@@ -8,7 +8,7 @@ import StudySummary from "./StudySummary";
 /*
  * View if no study has been loaded
  */
-const DefaultView = inject("rootStore")(observer(class DefaultView extends React.Component {
+const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultView extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
@@ -21,7 +21,10 @@ const DefaultView = inject("rootStore")(observer(class DefaultView extends React
      */
     getStudy(selectedOption) {
         this.setState({studyClicked: true});
-        this.props.rootStore.parseCBio(this.props.studies.filter(d => d.studyId === selectedOption.value)[0]);
+        const selectedStudy = this.props.studies.filter(d => d.studyId === selectedOption.value)[0]
+        this.props.rootStore.parseCBio(selectedStudy, () => {
+            this.props.undoRedoStore.saveLoadHistory(selectedStudy.name)
+        });
     }
 
     /**

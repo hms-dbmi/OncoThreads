@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer,inject} from 'mobx-react';
-import UtilityFunctions from "../../UtilityFunctions";
+import UtilityFunctions from "../../UtilityClasses/UtilityFunctions";
 
 
 /*

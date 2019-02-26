@@ -8,12 +8,12 @@ import studyAPI from "./studyAPI.jsx";
 import App from "./modules/TemporalHeatmap/components/App.jsx";
 import RootStore from "./modules/RootStore";
 import {Provider} from "mobx-react";
-import UIStore from "./modules/TemporalHeatmap/UIStore";
-import UndoRedoStore from "./modules/TemporalHeatmap/UndoRedoStore";
+import UIStore from "./modules/UIStore";
+import UndoRedoStore from "./modules/UndoRedoStore";
 
 
-const rootStore = new RootStore();
 const uiStore = new UIStore();
+const rootStore = new RootStore(uiStore);
 const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
 const studyapi=new studyAPI();
 studyapi.getStudies();

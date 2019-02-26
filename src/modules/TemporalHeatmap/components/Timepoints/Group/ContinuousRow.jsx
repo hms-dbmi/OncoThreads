@@ -2,7 +2,7 @@ import React from 'react';
 import {observer,inject} from 'mobx-react';
 import uuidv4 from "uuid/v4";
 import * as d3 from 'd3';
-import UtilityFunctions from "../../../UtilityFunctions";
+import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
 /*
 creates a row of a continuous variable in a partition of a grouped timepoint
  */

@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import {
     Button,
     ControlLabel,
@@ -21,7 +21,7 @@ import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 import CombineModal from "./CombineVariables/CombineModal";
 
-const VariableTable = observer(class VariableTable extends React.Component {
+const VariableTable = inject("variableManagerStore", "rootStore")(observer(class VariableTable extends React.Component {
 
     constructor(props) {
         super(props);
@@ -36,7 +36,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
             callback: '',
         };
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
-        this.setColorRange=this.setColorRange.bind(this);
+        this.setColorRange = this.setColorRange.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.handleSort = this.handleSort.bind(this);
         this.combineSelected = this.combineSelected.bind(this);
@@ -73,8 +73,9 @@ const VariableTable = observer(class VariableTable extends React.Component {
             }
         })
     }
-    setColorRange(id,range){
-        this.props.variableManagerStore.getById(id).range=range;
+
+    setColorRange(id, range) {
+        this.props.variableManagerStore.getById(id).range = range;
     }
 
 
@@ -157,11 +158,12 @@ const VariableTable = observer(class VariableTable extends React.Component {
         if (variable.derived) {
             this.openSaveVariableModal(variable, save => {
                 this.props.variableManagerStore.updateSavedVariables(variable.id, save);
-                this.props.removeVariable(variable.id);
+                this.props.variableManagerStore.removeVariable(variable.id);
+
             });
         }
         else {
-            this.props.removeVariable(variable.id);
+            this.props.variableManagerStore.removeVariable(variable.id);
         }
     }
 
@@ -299,7 +301,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
             this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id));
         }
         else if (e.target.value === "addOrder") {
-            this.props.variableManagerStore.sortByAddOrder(this.props.addOrder);
+            this.props.variableManagerStore.sortByAddOrder();
         }
         else if (e.target.value === "alphabet") {
             this.props.variableManagerStore.sortAlphabetically();
@@ -391,5 +393,5 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
         )
     }
-});
+}));
 export default VariableTable;

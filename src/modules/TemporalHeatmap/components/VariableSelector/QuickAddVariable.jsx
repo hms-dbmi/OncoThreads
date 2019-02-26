@@ -2,7 +2,7 @@ import React from "react";
 import {observer,inject} from "mobx-react";
 import {Button, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
-import OriginalVariable from "../../OriginalVariable";
+import OriginalVariable from "../../stores/OriginalVariable";
 
 /*
 creates the selector for sample variables (left side of main view, top)

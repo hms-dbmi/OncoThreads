@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import UtilityFunctions from "../UtilityFunctions";
+import UtilityFunctions from "../UtilityClasses/UtilityFunctions";
 /*
 tooltip for hovering over Sankey Transition
  */

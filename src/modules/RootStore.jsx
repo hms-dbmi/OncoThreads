@@ -1,10 +1,10 @@
-import DataStore from "./TemporalHeatmap/DataStore"
+import DataStore from "./TemporalHeatmap/stores/DataStore"
 
-import VisStore from "./TemporalHeatmap/VisStore.jsx"
+import VisStore from "./TemporalHeatmap/stores/VisStore.jsx"
 import {action, extendObservable, observable, toJS} from "mobx";
 import uuidv4 from 'uuid/v4';
-import UndoRedoStore from "./TemporalHeatmap/UndoRedoStore";
-import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
+import UndoRedoStore from "./UndoRedoStore";
+import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import MolProfileMapping from "./MolProfileMapping";
 import SvgExport from "./SvgExport";
 import cBioAPI from "../cBioAPI";
@@ -14,7 +14,7 @@ import cBioAPI from "../cBioAPI";
 gets the data with the cBioAPI and gives it to the other stores
  */
 class RootStore {
-    constructor() {
+    constructor(uiStore) {
         this.study = "";
 
         this.hasMutations = false;
@@ -63,7 +63,6 @@ class RootStore {
                 this.parsed = true;
             }),
             setTimeData: action((id, value) => {
-                console.log("called");
                 this.timeValue = value;
                 this.timeVar = id;
             }),
@@ -93,14 +92,18 @@ class RootStore {
                     this.dataStore.update(this.patients);
                 }
                 else {
-                    this.dataStore.initialize(this.patients);
+                    this.dataStore.initialize();
                 }
             }),
 
             /*
             gets data from cBio and sets parameters in other stores
              */
-            parseCBio: action((study) => {
+            parseCBio: action((study, callback) => {
+                this.staticMappers={};
+                this.eventTimelineMap.clear();
+                this.clinicalPatientCategories=[];
+                this.clinicalSampleCategories=[];
                 this.study = study;
                 this.firstLoad = false;
                 this.parsed = false;
@@ -115,9 +118,10 @@ class RootStore {
                         });
                         this.cbioAPI.getClinicalSampleData(this.study.studyId, data => {
                             this.createClinicalSampleMapping(data);
-                            this.dataStore.initialize(patients.length);
-                            this.visStore.fitToScreenWidth();
+                            this.dataStore.initialize();
                             this.addInitialVariable(data[0].clinicalAttributeId);
+                            callback();
+                            this.visStore.fitToScreenWidth();
                             this.parsed = true;
                             this.firstLoad = false;
                             this.display = true;
@@ -242,6 +246,7 @@ class RootStore {
                         this.timepointStructure.replace(UndoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure));
                     }
                 }
+                console.log(timepoint,this.dataStore.timepoints);
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
                 this.dataStore.variableStores.sample.childStore.updateNames(this.createNameList(up, this.dataStore.variableStores.sample.childStore.timepoints, oldSampleTimepointNames, patients));
             }),
@@ -381,6 +386,7 @@ class RootStore {
         this.dataStore = new DataStore(this);
         this.visStore = new VisStore(this);
         this.svgExport = new SvgExport(this);
+        this.uiStore=uiStore;
     }
 
     /**

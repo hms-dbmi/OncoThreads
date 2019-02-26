@@ -69,7 +69,7 @@ const HeatmapGroupTransition = inject("dataStore","visStore")(observer(class Hea
     render() {
         let y0, y1, recty;
         if (this.props.inverse) {
-            y0 = this.props.visStore.transitionSpace - this.props.visStore.helperRectHeight - 2 * this.props.visStore.gap;
+            y0 = this.props.visStore.transitionSpace - this.props.visStore.helperRectHeight - this.props.visStore.gap;
             y1 = this.props.visStore.gap;
             recty = y0;
         }

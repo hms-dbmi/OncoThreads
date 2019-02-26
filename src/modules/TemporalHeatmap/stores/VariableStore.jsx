@@ -19,6 +19,10 @@ class VariableStore {
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
+            resetVariables:action(()=>{
+                this.referencedVariables={};
+                this.currentVariables.clear();
+            }),
             /**
              * removes a variable from view
              */
@@ -114,13 +118,14 @@ class VariableStore {
                         }
                     });
                 }
-                this.childStore.resortHeatmapRows(this.currentVariables);
-                if (this.type === "sample" && change.removed.includes(this.rootStore.dataStore.globalPrimary)) {
-                    this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
-                }
-
-                if (this.type === "between") {
-                    this.rootStore.dataStore.transitionOn = this.currentVariables.length !== 0;
+                if(this.currentVariables.length>0) {
+                    this.childStore.resortHeatmapRows(this.currentVariables);
+                    if (this.type === "sample" && change.removed.includes(this.rootStore.dataStore.globalPrimary)) {
+                        this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
+                    }
+                    if (this.type === "between") {
+                        this.rootStore.dataStore.setTransitionOn(this.currentVariables.length !== 0);
+                    }
                 }
             }
             this.updateReferences();
@@ -269,7 +274,6 @@ class VariableStore {
         return this.currentVariables.indexOf(id);
     }
 
-
     /**
      * gets variables of a certain type
      * @param type
@@ -323,7 +327,6 @@ class VariableStore {
         }
         return false;
     }
-
 
     /**
      * checks is a variable is derived from a variable with a certain type

@@ -14,8 +14,10 @@ class VariableManagerStore {
             currentVariables: currentVariables.map(d => {
                 return {id: d, isNew: false, isSelected: false}
             }),
+            addOrder:[],
             removeVariable: action(variableId => {
                 this.currentVariables.remove(this.currentVariables.filter(d => d.id === variableId)[0]);
+                this.addOrder.splice(this.addOrder.indexOf(variableId),1);
                 if (this.primaryVariables.includes(variableId)) {
                     this.primaryVariables.forEach((d, i) => {
                         if (d === variableId) {
@@ -28,6 +30,7 @@ class VariableManagerStore {
                 this.addVariableToBeReferenced(variable);
                 if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
                     this.currentVariables.push({id: variable.id, isNew: true, isSelected: false});
+                    this.addOrder.push(variable.id);
                 }
             }),
 
@@ -42,6 +45,7 @@ class VariableManagerStore {
                         isSelected: this.currentVariables[replaceIndex].isSelected
                     };
                 }
+                this.addOrder[this.addOrder.indexOf(oldId)]=newVariable.id;
                 if (this.primaryVariables.includes(oldId)) {
                     for (let i = 0; i < this.primaryVariables.length; i++)
                         if (this.primaryVariables[i] === oldId) {
@@ -67,12 +71,12 @@ class VariableManagerStore {
                 ))
             }),
 
-            sortByAddOrder: action(addOrder => {
+            sortByAddOrder: action(() => {
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                        if (addOrder.indexOf(a.id) < addOrder.indexOf(b.id)) {
+                        if (this.addOrder.indexOf(a.id) < this.addOrder.indexOf(b.id)) {
                             return -1
                         }
-                        if (addOrder.indexOf(a.id) > addOrder.indexOf(b.id)) {
+                        if (this.addOrder.indexOf(a.id) > this.addOrder.indexOf(b.id)) {
                             return 1;
                         }
                         else return 0;
@@ -125,7 +129,7 @@ class VariableManagerStore {
              * @param isUp
              * @param indices
              */
-            moveToExtreme: action => ((isUp, indices) => {
+            moveToExtreme: action((isUp, indices) => {
                 let currentVariables = this.currentVariables.slice();
                 let selectedVariables = currentVariables.filter((d, i) => indices.includes(i));
                 let notSelectedVariables = currentVariables.filter((d, i) => !indices.includes(i));
@@ -264,17 +268,6 @@ class VariableManagerStore {
     getById(id) {
         return this.referencedVariables[id];
     }
-
-
-    /**
-     * gets the index of a variable in current variables (-1 if not contained)
-     * @param id
-     * @returns {number}
-     */
-    getIndex(id) {
-        return this.currentVariables.indexOf(id);
-    }
-
 
     getSelectedVariables() {
         return this.currentVariables.filter(d => d.isSelected).map(d => this.referencedVariables[d.id]);

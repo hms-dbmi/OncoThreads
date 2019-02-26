@@ -2,10 +2,10 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import BinaryCombine from "./BinaryCombine";
-import DerivedVariable from "../../../DerivedVariable";
+import DerivedVariable from "../../../stores/DerivedVariable";
 import uuidv4 from 'uuid/v4';
-import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
-import ColorScales from "../../../ColorScales";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
+import ColorScales from "../../../UtilityClasses/ColorScales";
 
 
 const CombineModal = observer(class CombineModal extends React.Component {

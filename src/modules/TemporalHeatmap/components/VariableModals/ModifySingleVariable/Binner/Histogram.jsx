@@ -2,7 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import Axis from "./Axis";
 import * as d3 from "d3";
-import UtilityFunctions from "../../../../UtilityFunctions";
+import UtilityFunctions from "../../../../UtilityClasses/UtilityFunctions";
 
 const Histogram = observer(class Histogram extends React.Component {
     render() {

@@ -35,7 +35,7 @@ const SankeyTransition = inject("dataStore", "visStore")(observer(class SankeyTr
             let targetPartitionPos = 0;
             this.props.secondGrouped.forEach(targetPartition => {
                 if (i === 0) {
-                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visStore.transitionSpace - this.props.visStore.helperRectHeight - this.props.visStore.gap * 2, this.props.groupScale(targetPartition.patients.length), this.props.visStore.helperRectHeight, this.props.secondPrimary.colorScale(targetPartition.partition), targetPartition.partition + "target"));
+                    rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visStore.transitionSpace - this.props.visStore.helperRectHeight - this.props.visStore.gap, this.props.groupScale(targetPartition.patients.length), this.props.visStore.helperRectHeight, this.props.secondPrimary.colorScale(targetPartition.partition), targetPartition.partition + "target"));
                 }
                 let patientIntersection = sourcePartition.patients.filter(patient => targetPartition.patients.includes(patient));
                 if (!(targetPartition.partition in currXtarget)) {

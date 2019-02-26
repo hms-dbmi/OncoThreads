@@ -2,10 +2,10 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
-import DerivedVariable from "../../../DerivedVariable";
-import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
+import DerivedVariable from "../../../stores/DerivedVariable";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import * as d3 from "d3";
-import ColorScales from "../../../ColorScales";
+import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoricalTable from "../VariableTables/CategoricalTable";
 import ConvertBinaryTable from "../VariableTables/ConvertBinaryTable";
 

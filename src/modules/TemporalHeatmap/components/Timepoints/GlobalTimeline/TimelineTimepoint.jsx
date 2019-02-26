@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer,inject} from 'mobx-react';
 import TimelineRow from "./TimelineRow";
-import DerivedMapperFunctions from "../../../DeriveMapperFunctions";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 //import * as d3 from 'd3';
 
 /*
