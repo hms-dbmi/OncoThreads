@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {
     Button,
     ControlLabel,
@@ -308,6 +308,33 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      */
     moveSingle(isUp, toExtreme, index) {
         this.props.variableManagerStore.move(isUp, toExtreme, [index]);
+    }
+
+    /**
+     * check if variable has changed
+     * @param oldVariable
+     * @param newVariable
+     * @returns {boolean}
+     */
+    static variableChanged(oldVariable, newVariable) {
+        //case: datatype changed?
+        if (oldVariable.datatype !== newVariable.datatype) {
+            return true;
+        }
+        else {
+            //case: domain changed?
+            if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
+                return true
+            }
+            //case: mapper changed?
+            else {
+                for (let sample in oldVariable.mapper) {
+                    if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
+                        return true;
+                    }
+                }
+            }
+        }
     }
 
 

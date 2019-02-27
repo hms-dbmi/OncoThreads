@@ -8,6 +8,7 @@ import * as d3 from "d3";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoricalTable from "../VariableTables/CategoricalTable";
 import ConvertBinaryTable from "../VariableTables/ConvertBinaryTable";
+import VariableTable from "../VariableTable";
 
 
 const ModifyCategorical = inject("variableManagerStore")(observer(class ModifyCategorical extends React.Component {
@@ -84,7 +85,7 @@ const ModifyCategorical = inject("variableManagerStore")(observer(class ModifyCa
         }
         returnVariable=new DerivedVariable(newId, name, datatype, this.props.variable.description, [this.props.variable.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
         const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
-        if (ModifyCategorical.variableChanged(oldVariable,returnVariable)) {
+        if (VariableTable.variableChanged(oldVariable,returnVariable)) {
             this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
         }
         else {
@@ -93,32 +94,7 @@ const ModifyCategorical = inject("variableManagerStore")(observer(class ModifyCa
         this.props.closeModal();
     }
 
-    /**
-     * check if variable has changed
-     * @param oldVariable
-     * @param newVariable
-     * @returns {boolean}
-     */
-    static variableChanged(oldVariable, newVariable) {
-        //case: datatype changed?
-        if (oldVariable.datatype !== newVariable.datatype) {
-            return true;
-        }
-        else {
-          //case: domain changed?
-            if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
-                return true
-            }
-            //case: mapper changed?
-            else {
-                for (let sample in oldVariable.mapper) {
-                    if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+
 
     /**
      * creates the initial list of current categories

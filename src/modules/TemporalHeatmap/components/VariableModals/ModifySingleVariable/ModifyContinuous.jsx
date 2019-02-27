@@ -11,10 +11,13 @@ import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunction
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
 import BinningStore from "./Binner/BinningStore";
+import VariableTable from "../VariableTable";
 
 const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyContinuous extends React.Component {
     constructor(props) {
         super(props);
+        this.width=350;
+        this.height=200;
         this.data = this.getInitialData();
         this.state = this.setInitialState();
         this.binningStore = this.createBinningStore();
@@ -66,7 +69,10 @@ const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyCon
             });
             isBinary = this.props.derivedVariable.datatype === "BINARY";
         }
-        return new BinningStore(bins, binNames, isBinary);
+        const min = Math.min(...this.data);
+        const max = Math.max(...this.data);
+        let xScale = d3.scaleLinear().domain([min, max]).range([0, this.width]);
+        return new BinningStore(bins, binNames, isBinary,xScale);
     }
 
     /**
@@ -103,16 +109,10 @@ const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyCon
         if (min < 0) {
             med = 0;
         }
+        this.binningStore.setBins([min, med, max],d3.scaleLinear().domain([min, max]).range([0, this.width]));
+        this.binningStore.resetBinNames();
         this.setState({
             isXLog: isLog,
-            bins: [min, med, max],
-            binNames: [{
-                name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
-                modified: false
-            }, {
-                name: UtilityFunctions.getScientificNotation(med) + " to " + UtilityFunctions.getScientificNotation(max),
-                modified: false
-            }]
         });
     }
 
@@ -158,34 +158,13 @@ const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyCon
             range = this.state.colorRange;
         }
         const returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description + " (binned)", [this.props.variable.id], modification, range, domain, mapper);
-        if (this.variableChanged(oldVariable, returnVariable)) {
+        if (VariableTable.variableChanged(oldVariable, returnVariable)) {
             this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
         }
         else {
             oldVariable.changeRange(this.state.colorRange);
         }
         this.props.closeModal();
-    }
-
-    variableChanged(oldVariable, newVariable) {
-        //case: datatype changed?
-        if (oldVariable.datatype !== newVariable.datatype) {
-            return true;
-        }
-        else {
-            //case: domain changed?
-            if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
-                return true
-            }
-            //case: mapper changed?
-            else {
-                for (let sample in oldVariable.mapper) {
-                    if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
-                        return true;
-                    }
-                }
-            }
-        }
     }
 
 
@@ -219,38 +198,34 @@ const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyCon
      * @returns {*}
      */
     getBinning() {
-        const width = 350;
-        const height = 200;
         const min = Math.min(...this.data);
         const max = Math.max(...this.data);
-        let xScale = d3.scaleLinear().domain([min, max]).range([0, width]);
         const bins = d3.histogram()
             .domain([min, max])
-            .thresholds(xScale.ticks(30))(this.data);
+            .thresholds(this.binningStore.xScale.ticks(30))(this.data);
         const yScale = d3.scaleLinear()
             .domain([0, d3.max(bins, function (d) {
                 return d.length;
-            })]).range([height, 0]);
+            })]).range([this.height, 0]);
         if (this.state.bin) {
             return <Provider binningStore={this.binningStore}>
                 <Binner data={this.data}
-                        xScale={xScale}
                         yScale={yScale}
                         xLabel={this.state.name}
-                        width={width}
-                        height={height}
+                        width={this.width}
+                        height={this.height}
                         histBins={bins}/>
             </Provider>
         }
         else {
             const margin = {top: 20, right: 20, bottom: 90, left: 50},
-                w = width + (margin.left + margin.right),
-                h = height + (margin.top + margin.bottom);
+                w = this.width + (margin.left + margin.right),
+                h = this.height + (margin.top + margin.bottom);
             const transform = 'translate(' + margin.left + ',' + margin.top + ')';
             return <svg width={w} height={h}>
-                <g transform={transform}><Histogram bins={bins} xScale={xScale} yScale={yScale}
-                                                    h={height}
-                                                    w={width} xLabel={this.state.name}
+                <g transform={transform}><Histogram bins={bins} xScale={this.binningStore.xScale} yScale={yScale}
+                                                    h={this.height}
+                                                    w={this.width} xLabel={this.state.name}
                                                     numValues={this.data.length}/></g>
             </svg>
         }
@@ -353,7 +328,6 @@ const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyCon
                             bsStyle="primary">{this.state.bin ? "<< Cancel Binning" : "Bin >>"}</Button>
                     <Button onClick={() => this.handleApply()}>
                         Apply
-
                     </Button>
                 </Modal.Footer>
             </Modal>

@@ -6,7 +6,7 @@ class UtilityFunctions{
      */
     static getScientificNotation(value){
         let roundedValue=Math.round(value*100)/100;
-        if(roundedValue.toString().length<7){
+        if(roundedValue.toString().length<8){
             return roundedValue;
         }
         else{
