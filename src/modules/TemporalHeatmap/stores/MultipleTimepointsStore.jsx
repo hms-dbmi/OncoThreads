@@ -4,11 +4,11 @@ import SingleTimepoint from "./SingleTimepoint"
 stores information about sample timepoints
  */
 class MultipleTimepointsStore {
-    constructor(rootStore, structure, type) {
+    constructor(rootStore, type) {
         this.rootStore = rootStore;
-        this.structure = structure;
+        this.structure = [];
         this.type = type;
-        this.timepoints = this.structure.map((d, i) => new SingleTimepoint(this.rootStore, d.map(d => d.patient), this.type, i, this.rootStore.patientOrderPerTimepoint))
+        this.timepoints = []
     }
 
     /**
@@ -26,17 +26,21 @@ class MultipleTimepointsStore {
         });
     }
 
+    /**
+     * resets timepoints
+     */
     reset() {
         this.timepoints.forEach(d => d.reset())
     }
 
+    /**
+     * updates all names
+     * @param names
+     */
     updateNames(names) {
-        this.timepoints.forEach((d, i) => d.name = names[i]);
+        this.timepoints.forEach((d, i) => d.setName(names[i]));
     }
 
-    ungroupAll() {
-        this.timepoints.forEach(d => d.isGrouped = false)
-    }
 
     /**
      * adds rows to heatmaps
@@ -44,7 +48,7 @@ class MultipleTimepointsStore {
      * @param mapper
      */
     addHeatmapRows(variableId, mapper) {
-        this.structure.forEach((d, i) => {
+         this.structure.forEach((d, i) => {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {
@@ -61,14 +65,22 @@ class MultipleTimepointsStore {
     }
 
     /**
-     * updates the rows at index of the heatmaps
-     * @param variableId
-     * @param mapper
-     * @param index
+     * resort rows of all timepints
+     * @param order
      */
-    updateHeatmapRows(variableId, mapper, index) {
-        const _self = this;
-        this.structure.forEach(function (d, i) {
+    resortHeatmapRows(order) {
+        this.timepoints.forEach(d => d.resortRows(order));
+    }
+
+    /**
+     * Removes rows from the heatmaps
+     * @param variableId
+     */
+    removeHeatmapRows(variableId) {
+        this.timepoints.forEach(d => d.removeRow(variableId));
+    }
+    updateHeatmapRows(index,newId,mapper){
+         this.structure.forEach((d, i) => {
             let variableData = [];
             d.forEach(function (f) {
                 if (f) {
@@ -80,20 +92,8 @@ class MultipleTimepointsStore {
                     });
                 }
             });
-            _self.timepoints[i].updateRow(index, variableId, variableData);
+            this.timepoints[i].updateRow(index,newId, variableData);
         });
-    }
-
-    resortHeatmapRows(order) {
-        this.timepoints.forEach(d => d.resortRows(order));
-    }
-
-    /**
-     * Removes rows from the heatmaps
-     * @param variableId
-     */
-    removeHeatmapRows(variableId) {
-        this.timepoints.forEach(d => d.removeRow(variableId));
     }
 
     /**
@@ -158,7 +158,6 @@ class MultipleTimepointsStore {
         if (timepointIndex - 1 >= 0) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex - 1], this.timepoints[timepointIndex]);
         }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO PREVIOUS", variable, this.type, timepointIndex);
     }
 
     /**
@@ -172,7 +171,6 @@ class MultipleTimepointsStore {
         if (timepointIndex + 1 < this.timepoints.length) {
             MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex + 1], this.timepoints[timepointIndex]);
         }
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO NEXT", variable, this.type, timepointIndex);
     }
 
     /**
@@ -189,7 +187,6 @@ class MultipleTimepointsStore {
                 MultipleTimepointsStore.actionFunction(action, variable, d, _self.timepoints[timepointIndex]);
             }
         });
-        this.rootStore.undoRedoStore.saveTimepointHistory("APPLY " + action + " TO ALL", variable, this.type, timepointIndex);
     }
 
 }

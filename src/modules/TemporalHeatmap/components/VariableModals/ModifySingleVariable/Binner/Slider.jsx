@@ -1,18 +1,18 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 
 
-const Slider = observer(class Slider extends React.Component {
+const Slider = inject("binningStore")(observer(class Slider extends React.Component {
     /**
      * creats the slider dots and associated lines
      * @returns {Array}
      */
     getSliderEntries() {
         let sliderEntries = [];
-        for (let i = 0; i < this.props.x.length; i++) {
-            sliderEntries.push(<line key={"line" + i} x1={this.props.x[i]} x2={this.props.x[i]} y1={0}
+        for (let i = 0; i < this.props.binningStore.x.length; i++) {
+            sliderEntries.push(<line key={"line" + i} x1={this.props.binningStore.x[i]} x2={this.props.binningStore.x[i]} y1={0}
                                      y2={this.props.yPos} stroke="black"/>);
-            sliderEntries.push(<circle key={"circle" + i} fill="darkgrey" cx={this.props.x[i]} cy={this.props.yPos}
+            sliderEntries.push(<circle key={"circle" + i} fill="darkgrey" cx={this.props.binningStore.x[i]} cy={this.props.yPos}
                                        r={5}
                                        onMouseDown={(e) => this.props.handleMouseDown(e, i)}/>);
         }
@@ -26,14 +26,14 @@ const Slider = observer(class Slider extends React.Component {
     getPositionTextfields() {
         let positionText = [];
         const _self = this;
-        this.props.x.forEach(function (d, i) {
+        this.props.binningStore.x.forEach(function (d, i) {
             positionText.push(
                 <foreignObject key={i} x={d}>
-                    <input onChange={(e) =>_self.props.handlePositionTextFieldChange(e.target.value,i)}
+                    <input onChange={(e) =>_self.props.binningStore.handlePositionTextFieldChange(e.target.value,i)}
                            type="text"
                            style={{
                                width: 75 + "px"
-                           }} value={_self.props.textFieldTexts[i]}/>
+                           }} value={_self.props.binningStore.textFieldTexts[i]}/>
                 </foreignObject>)
         });
         return positionText;
@@ -45,7 +45,7 @@ const Slider = observer(class Slider extends React.Component {
      * @returns {*}
      */
     getBinLabels() {
-        let x = this.props.x.slice();
+        let x = this.props.binningStore.x.slice();
         x.sort(function (a, b) {
             return a - b;
         });
@@ -96,6 +96,7 @@ const Slider = observer(class Slider extends React.Component {
 
 
     render() {
+        console.log(this.props.width);
         const sliderLine = this.getSliderLine();
         const sliderEntries = this.getSliderEntries();
         const binLabels = this.getBinLabels();
@@ -108,6 +109,6 @@ const Slider = observer(class Slider extends React.Component {
                 {positionTextFields}</g>
         )
     }
-});
+}));
 
 export default Slider;

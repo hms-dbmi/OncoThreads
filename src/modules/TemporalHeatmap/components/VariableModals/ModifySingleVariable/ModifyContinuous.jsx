@@ -1,28 +1,27 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import Binner from './Binner/Binner';
 import * as d3 from 'd3';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, OverlayTrigger, Popover, Radio} from "react-bootstrap";
 import FontAwesome from 'react-fontawesome';
 import Histogram from "./Binner/Histogram";
-import DerivedVariable from "../../../DerivedVariable";
+import DerivedVariable from "../../../stores/DerivedVariable";
 import uuidv4 from "uuid/v4";
-import MapperCombine from "../../../MapperCombineFunctions";
-import ColorScales from "../../../ColorScales";
-import UtilityFunctions from "../../../UtilityFunctions";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
+import ColorScales from "../../../UtilityClasses/ColorScales";
+import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
+import BinningStore from "./Binner/BinningStore";
+import VariableTable from "../VariableTable";
 
-
-const ModifyContinuous = observer(class ModifyContinuous extends React.Component {
+const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyContinuous extends React.Component {
     constructor(props) {
         super(props);
+        this.width=350;
+        this.height=200;
         this.data = this.getInitialData();
         this.state = this.setInitialState();
+        this.binningStore = this.createBinningStore();
         this.changeTransformation = this.changeTransformation.bind(this);
-        this.handleNameChange = this.handleNameChange.bind(this);
-        this.handleBinChange = this.handleBinChange.bind(this);
-        this.toggleIsBinary = this.toggleIsBinary.bind(this);
-        this.toggleBinningActive = this.toggleBinningActive.bind(this);
-        this.handleBinNameChange = this.handleBinNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.close = this.close.bind(this);
     }
@@ -32,7 +31,20 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
      * @returns {{bins: *, binNames: *, bin: boolean, colorRange: *, isXLog: boolean, name: string}}
      */
     setInitialState() {
-        let bins, binNames, bin, isBinary;
+        let bin = true;
+        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
+            bin = false;
+        }
+        return {
+            bin: bin,
+            colorRange: this.props.variable.range,
+            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform !== false,
+            name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name,
+        }
+    }
+
+    createBinningStore() {
+        let bins, binNames, isBinary;
         if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
             let min = d3.min(this.data);
             let max = d3.max(this.data);
@@ -48,104 +60,19 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                 name: UtilityFunctions.getScientificNotation(med) + " to " + UtilityFunctions.getScientificNotation(max),
                 modified: false
             }];
-            bin = false;
             isBinary = false;
         }
         else {
-            bins = this.props.derivedVariable.modification.binning.bins;
-            binNames = this.props.derivedVariable.modification.binning.binNames;
-            bin = true;
+            bins = this.props.derivedVariable.modification.binning.bins.slice();
+            binNames = this.props.derivedVariable.modification.binning.binNames.map(d => {
+                return {name: d.name, modified: d.modified}
+            });
             isBinary = this.props.derivedVariable.datatype === "BINARY";
         }
-        return {
-            bins: bins,
-            binNames: binNames,
-            bin: bin,
-            colorRange: this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range,
-            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform !== false,
-            name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name,
-            isBinary: isBinary
-        }
-    }
-
-    /**
-     * handles the name change
-     * @param event
-     */
-    handleNameChange(event) {
-        this.setState({name: event.target.value});
-    }
-
-    /**
-     * handles the change of bins
-     * @param bins
-     */
-    handleBinChange(bins) {
-        let isBinary = this.state.isBinary;
-        let binNames = this.state.binNames.slice();
-        if (bins.length !== 3) {
-            isBinary = false;
-        }
-        if(!isBinary) {
-            if (bins.length === this.state.bins.length) {
-                for (let i = 1; i < bins.length; i++) {
-                    if (!binNames[i - 1].modified) {
-                        binNames[i - 1].name = UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]);
-                    }
-                }
-                this.setState({bins: bins, binNames: binNames})
-            }
-            else {
-                binNames = [];
-                for (let i = 1; i < bins.length; i++) {
-                    binNames.push({
-                        name: UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]),
-                        modified: false
-                    });
-                }
-            }
-        }
-        this.setState({bins: bins, binNames: binNames, isBinary: isBinary})
-
-    }
-
-    /**
-     * handles the change of a bin name
-     * @param e
-     * @param index
-     */
-    handleBinNameChange(e, index) {
-        let binNames = this.state.binNames.slice();
-        if (!this.state.isBinary) {
-            binNames[index] = {name: e.target.value, modified: true};
-        }
-        else {
-            binNames.forEach((d, i) => {
-                if (i === index) {
-                    d.name = e.target.value === "true";
-                    d.modified = true;
-                }
-                else {
-                    d.name = e.target.value !== "true";
-                    d.modified = true;
-                }
-            })
-        }
-        this.setState({binNames: binNames});
-    }
-
-    toggleIsBinary() {
-        let binNames = this.state.binNames;
-        if (this.state.isBinary) {
-            for (let i = 1; i < this.state.bins.length; i++) {
-                binNames[i - 1].name = UtilityFunctions.getScientificNotation(this.state.bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(this.state.bins[i]);
-                binNames[i - 1].modified = false;
-            }
-        }
-        else {
-            binNames[0].name = true;
-        }
-        this.setState({isBinary: !this.state.isBinary, binNames: binNames});
+        const min = Math.min(...this.data);
+        const max = Math.max(...this.data);
+        let xScale = d3.scaleLinear().domain([min, max]).range([0, this.width]);
+        return new BinningStore(bins, binNames, isBinary,xScale);
     }
 
     /**
@@ -182,13 +109,10 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         if (min < 0) {
             med = 0;
         }
+        this.binningStore.setBins([min, med, max],d3.scaleLinear().domain([min, max]).range([0, this.width]));
+        this.binningStore.resetBinNames();
         this.setState({
             isXLog: isLog,
-            bins: [min, med, max],
-            binNames: [{
-                name: UtilityFunctions.getScientificNotation(min) + " to " + UtilityFunctions.getScientificNotation(med),
-                modified: false
-            }, {name: UtilityFunctions.getScientificNotation(med) + " to " +UtilityFunctions.getScientificNotation(max), modified: false}]
         });
     }
 
@@ -206,28 +130,40 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         let modification = {
             type: "continuousTransform",
             logTransform: this.state.isXLog ? Math.log10 : false, binning: this.state.bin ? {
-                bins: this.state.bins,
-                binNames: this.state.binNames
+                bins: this.binningStore.bins,
+                binNames: this.binningStore.binNames
             } : false
         };
-        let returnVariable;
+        const mapper = DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]);
+        let datatype = "NUMBER";
+        let range = [];
+        let domain = [];
+        const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
+        //case: data has been binned
         if (this.state.bin) {
-            if (!this.state.isBinary) {
-                let binnedRange = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.state.binNames, this.state.bins);
-                returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], modification, binnedRange, this.state.binNames.map(d => d.name), MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+            //case: data is not converted to binary
+            if (!this.binningStore.isBinary) {
+                datatype = "ORDINAL";
+                range = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.binningStore.binNames, this.binningStore.bins);
+                domain = this.binningStore.binNames.map(d => d.name);
             }
+            //case: data is converted to binary
             else {
-                returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description + " (binned)", [this.props.variable.id], modification, [], [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+                datatype = "BINARY";
             }
+            oldVariable.changeRange(this.state.colorRange);
         }
+        //case: data is not binned, but transformed
         else if (this.state.isXLog) {
-            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], modification, this.state.colorRange, [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]));
+            range = this.state.colorRange;
+        }
+        const returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description + " (binned)", [this.props.variable.id], modification, range, domain, mapper);
+        if (VariableTable.variableChanged(oldVariable, returnVariable)) {
+            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
         }
         else {
-            returnVariable = this.props.variable;
-            returnVariable.range = this.state.colorRange;
+            oldVariable.changeRange(this.state.colorRange);
         }
-        this.props.callback(returnVariable);
         this.props.closeModal();
     }
 
@@ -262,68 +198,39 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
      * @returns {*}
      */
     getBinning() {
-        const width = 350;
-        const height = 200;
         const min = Math.min(...this.data);
         const max = Math.max(...this.data);
-        let xScale = d3.scaleLinear().domain([min, max]).range([0, width]);
         const bins = d3.histogram()
             .domain([min, max])
-            .thresholds(xScale.ticks(30))(this.data);
+            .thresholds(this.binningStore.xScale.ticks(30))(this.data);
         const yScale = d3.scaleLinear()
             .domain([0, d3.max(bins, function (d) {
                 return d.length;
-            })]).range([height, 0]);
+            })]).range([this.height, 0]);
         if (this.state.bin) {
-            return <Binner data={this.data}
-                           variable={this.props.variable}
-                           bins={this.state.bins}
-                           binNames={this.state.binNames}
-                           xScale={xScale}
-                           yScale={yScale}
-                           xLabel={this.state.name}
-                           width={width}
-                           height={height}
-                           histBins={bins}
-                           isBinary={this.state.isBinary}
-                           handleBinChange={this.handleBinChange}
-                           handleBinNameChange={this.handleBinNameChange}
-                           toggleIsBinary={this.toggleIsBinary}/>
+            return <Provider binningStore={this.binningStore}>
+                <Binner data={this.data}
+                        yScale={yScale}
+                        xLabel={this.state.name}
+                        width={this.width}
+                        height={this.height}
+                        histBins={bins}/>
+            </Provider>
         }
         else {
             const margin = {top: 20, right: 20, bottom: 90, left: 50},
-                w = width + (margin.left + margin.right),
-                h = height + (margin.top + margin.bottom);
+                w = this.width + (margin.left + margin.right),
+                h = this.height + (margin.top + margin.bottom);
             const transform = 'translate(' + margin.left + ',' + margin.top + ')';
             return <svg width={w} height={h}>
-                <g transform={transform}><Histogram bins={bins} xScale={xScale} yScale={yScale}
-                                                    h={height}
-                                                    w={width} xLabel={this.state.name}
+                <g transform={transform}><Histogram bins={bins} xScale={this.binningStore.xScale} yScale={yScale}
+                                                    h={this.height}
+                                                    w={this.width} xLabel={this.state.name}
                                                     numValues={this.data.length}/></g>
             </svg>
         }
     }
 
-    /**
-     * toggles the bin state
-     */
-    toggleBinningActive() {
-        this.setState({bin: !this.state.bin});
-    }
-
-    /**
-     * gets the button for binning
-     * @returns {*}
-     */
-    getBinButton() {
-        if (this.state.bin) {
-            return <Button onClick={this.toggleBinningActive} bsStyle="primary">{"<< Cancel Binning"}</Button>
-        }
-        else {
-            return <Button onClick={this.toggleBinningActive} bsStyle="primary">{"Bin >>"}</Button>
-
-        }
-    }
 
     static handleOverlayClick(event) {
         event.stopPropagation();
@@ -367,38 +274,19 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
         const height = 20;
         let linearColorRange = [];
         if (Math.min(...this.data) < 0) {
-            linearColorRange = [
-                ['#0571b0', '#f7f7f7', '#ca0020'],
-                ['#08ff00', '#000000', '#ff0000']
-            ]
+            linearColorRange = ColorScales.continuousThreeColorRanges;
         }
         else {
-            linearColorRange = [
-                ['rgb(214, 230, 244)', 'rgb(8, 48, 107)'],
-                ['rgb(218, 241, 213)', 'rgb(0, 68, 27)'],
-                ['rgb(232, 232, 232)', 'rgb(0, 0, 0)'],
-                ['rgb(254, 222, 191)', 'rgb(127, 39, 4)'],
-                ['rgb(232, 230, 242)', 'rgb(63, 0, 125)'],
-                ['rgb(253, 211, 193)', 'rgb(103, 0, 13)'],
-            ]
-
+            linearColorRange = ColorScales.continuousTwoColorRanges;
         }
         return <form>
             <FormGroup>
-                {linearColorRange.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d)}
+                {linearColorRange.map((d, i) => <Radio key={i} onChange={() => this.setState({colorRange: d})}
                                                        name="ColorScaleGroup">
                     {ModifyContinuous.getGradient(d, width, height)}
                 </Radio>)}
             </FormGroup>
         </form>
-    }
-
-    /**
-     * handles the change of the color scale
-     * @param scale
-     */
-    handleColorScaleChange(scale,) {
-        this.setState({colorRange: scale});
     }
 
     render() {
@@ -417,7 +305,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                         <FormControl
                             type="text"
                             value={this.state.name}
-                            onChange={this.handleNameChange}/>
+                            onChange={(e) => this.setState({name: e.target.value})}/>
                         <ControlLabel>Description</ControlLabel>
                         <p>{this.props.variable.description}</p>
                         <ControlLabel>Color Scale <OverlayTrigger rootClose={true}
@@ -436,14 +324,14 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                     <Button onClick={this.close}>
                         Cancel
                     </Button>
-                    {this.getBinButton()}
+                    <Button onClick={() => this.setState({bin: !this.state.bin})}
+                            bsStyle="primary">{this.state.bin ? "<< Cancel Binning" : "Bin >>"}</Button>
                     <Button onClick={() => this.handleApply()}>
                         Apply
-
                     </Button>
                 </Modal.Footer>
             </Modal>
         )
     }
-});
+}));
 export default ModifyContinuous;

@@ -1,39 +1,191 @@
-import {extendObservable, observe} from "mobx";
+import {action, extendObservable, observe} from "mobx";
+import UndoRedoStore from "../../../UndoRedoStore";
 
 /*
 Store containing information about variables
  */
 class VariableManagerStore {
-    constructor(referencedVariables, currentVariables, primaryVariables,savedReferences) {
+    constructor(referencedVariables, currentVariables, primaryVariables, savedReferences) {
         //Variables that are referenced (displayed or used to create a derived variable)
-        this.referencedVariables = referencedVariables;
+        this.referencedVariables = UndoRedoStore.deserializeReferencedVariables(referencedVariables);
         this.primaryVariables = primaryVariables;
         this.savedReferences = savedReferences;
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: currentVariables.map(d => {
                 return {id: d, isNew: false, isSelected: false}
+            }),
+            addOrder:[],
+            removeVariable: action(variableId => {
+                this.currentVariables.remove(this.currentVariables.filter(d => d.id === variableId)[0]);
+                this.addOrder.splice(this.addOrder.indexOf(variableId),1);
+                if (this.primaryVariables.includes(variableId)) {
+                    this.primaryVariables.forEach((d, i) => {
+                        if (d === variableId) {
+                            this.primaryVariables[i] = "";
+                        }
+                    })
+                }
+            }),
+            addVariableToBeDisplayed: action(variable => {
+                this.addVariableToBeReferenced(variable);
+                if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
+                    this.currentVariables.push({id: variable.id, isNew: true, isSelected: false});
+                    this.addOrder.push(variable.id);
+                }
+            }),
+
+
+            replaceDisplayedVariable: action((oldId, newVariable) => {
+                if (oldId !== newVariable.id) {
+                    this.referencedVariables[newVariable.id] = newVariable;
+                    const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
+                    this.currentVariables[replaceIndex] = {
+                        id: newVariable.id,
+                        isNew: this.currentVariables[replaceIndex].isNew,
+                        isSelected: this.currentVariables[replaceIndex].isSelected
+                    };
+                }
+                this.addOrder[this.addOrder.indexOf(oldId)]=newVariable.id;
+                if (this.primaryVariables.includes(oldId)) {
+                    for (let i = 0; i < this.primaryVariables.length; i++)
+                        if (this.primaryVariables[i] === oldId) {
+                            this.primaryVariables[i] = newVariable.id;
+                        }
+                }
+            }),
+
+            toggleSelected: action(id => {
+                this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected = !this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected;
+            }),
+
+            sortBySource: action(profileOrder => {
+                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+                        if (profileOrder.indexOf(this.referencedVariables[a.id].profile) < profileOrder.indexOf(this.referencedVariables[b.id].profile)) {
+                            return -1
+                        }
+                        if (profileOrder.indexOf(this.referencedVariables[a.id].profile) > profileOrder.indexOf(this.referencedVariables[b.id].profile)) {
+                            return 1;
+                        }
+                        else return 0;
+                    }
+                ))
+            }),
+
+            sortByAddOrder: action(() => {
+                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+                        if (this.addOrder.indexOf(a.id) < this.addOrder.indexOf(b.id)) {
+                            return -1
+                        }
+                        if (this.addOrder.indexOf(a.id) > this.addOrder.indexOf(b.id)) {
+                            return 1;
+                        }
+                        else return 0;
+                    }
+                ))
+            }),
+
+            sortAlphabetically: action(() => {
+                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+                    if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
+                        return -1
+                    }
+                    if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
+                        return 1;
+                    }
+                    else return 0;
+                }));
+            }),
+
+            sortByDatatype: action(() => {
+                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+                        if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
+                            return -1
+                        }
+                        if (this.referencedVariables[a.id].datatype > this.referencedVariables[b.id].datatype) {
+                            return 1;
+                        }
+                        else return 0;
+                    }
+                ))
+            }),
+
+            /**
+             * moves variables up or down
+             * @param isUp: if true move up, if false move down
+             * @param toExtreme: if true move to top/bottom, if false move only by one row
+             * @param indices: move these indices
+             */
+            move: action((isUp, toExtreme, indices) => {
+                if (toExtreme) {
+                    this.moveToExtreme(isUp, indices);
+                }
+                else {
+                    this.moveByOneRow(isUp, indices);
+                }
+            }),
+
+            /**
+             * move a group of variables at indices to the top or the bottom
+             * @param isUp
+             * @param indices
+             */
+            moveToExtreme: action((isUp, indices) => {
+                let currentVariables = this.currentVariables.slice();
+                let selectedVariables = currentVariables.filter((d, i) => indices.includes(i));
+                let notSelectedVariables = currentVariables.filter((d, i) => !indices.includes(i));
+                if (isUp) {
+                    currentVariables = [...selectedVariables, ...notSelectedVariables]
+                }
+                else {
+                    currentVariables = [...notSelectedVariables, ...selectedVariables];
+                }
+                this.currentVariables.replace(currentVariables);
+            }),
+
+            /**
+             * move variable(s) up or down by one row
+             * @param isUp
+             * @param indices
+             */
+            moveByOneRow: action((isUp, indices) => {
+                let currentVariables = this.currentVariables.slice();
+                let extreme, getNextIndex;
+                if (isUp) {
+                    extreme = 0;
+                    getNextIndex = function (index) {
+                        return index - 1;
+                    }
+                }
+                else {
+                    extreme = currentVariables.length - 1;
+                    indices.reverse();
+                    getNextIndex = function (index) {
+                        return index + 1;
+                    }
+                }
+                indices.forEach(d => {
+                    if ((d !== extreme)) {
+                        if (!(indices.includes(extreme) && VariableManagerStore.isBlock(indices))) {
+                            let save = currentVariables[getNextIndex(d)];
+                            currentVariables[getNextIndex(d)] = currentVariables[d];
+                            currentVariables[d] = save;
+                        }
+                    }
+                });
+                this.currentVariables.replace(currentVariables);
             })
         });
+        /**
+         * removes a variable from current variables
+         * @param variableId
+         */
+
         observe(this.currentVariables, () => {
             this.updateReferences();
         });
     }
 
-    /**
-     * removes a variable from current variables
-     * @param variableId
-     */
-    removeVariable(variableId) {
-        this.currentVariables.remove(this.currentVariables.filter(d => d.id === variableId)[0]);
-        if(this.primaryVariables.includes(variableId)){
-            this.primaryVariables.forEach((d,i)=>{
-                if(d===variableId){
-                    this.primaryVariables[i]="";
-                }
-            })
-        }
-    }
 
     saveVariable(variableId) {
         if (!this.savedReferences.includes(variableId)) {
@@ -90,152 +242,6 @@ class VariableManagerStore {
         }
     }
 
-    addVariableToBeDisplayed(variable) {
-        this.addVariableToBeReferenced(variable);
-        if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
-            this.currentVariables.push({id: variable.id, isNew: true, isSelected: false});
-        }
-    }
-
-
-    replaceDisplayedVariable(oldId, newVariable) {
-        if (oldId !== newVariable.id) {
-            this.referencedVariables[newVariable.id] = newVariable;
-            const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
-            this.currentVariables[replaceIndex] = {
-                id: newVariable.id,
-                isNew: this.currentVariables[replaceIndex].isNew,
-                isSelected: this.currentVariables[replaceIndex].isSelected
-            };
-        }
-        if (this.primaryVariables.includes(oldId)) {
-            for (let i = 0; i < this.primaryVariables.length; i++)
-                if (this.primaryVariables[i] === oldId) {
-                    this.primaryVariables[i] = newVariable.id;
-                }
-        }
-    }
-
-    toggleSelected(id) {
-        this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected = !this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected;
-    }
-
-    sortBySource(profileOrder) {
-        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                if (profileOrder.indexOf(this.referencedVariables[a.id].profile) < profileOrder.indexOf(this.referencedVariables[b.id].profile)) {
-                    return -1
-                }
-                if (profileOrder.indexOf(this.referencedVariables[a.id].profile) > profileOrder.indexOf(this.referencedVariables[b.id].profile)) {
-                    return 1;
-                }
-                else return 0;
-            }
-        ))
-    }
-
-    sortByAddOrder(addOrder) {
-        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                if (addOrder.indexOf(a.id) < addOrder.indexOf(b.id)) {
-                    return -1
-                }
-                if (addOrder.indexOf(a.id) > addOrder.indexOf(b.id)) {
-                    return 1;
-                }
-                else return 0;
-            }
-        ))
-    }
-
-    sortAlphabetically() {
-        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-            if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
-                return -1
-            }
-            if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
-                return 1;
-            }
-            else return 0;
-        }));
-    }
-
-    sortByDatatype() {
-        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
-                    return -1
-                }
-                if (this.referencedVariables[a.id].datatype > this.referencedVariables[b.id].datatype) {
-                    return 1;
-                }
-                else return 0;
-            }
-        ))
-    }
-
-    /**
-     * moves variables up or down
-     * @param isUp: if true move up, if false move down
-     * @param toExtreme: if true move to top/bottom, if false move only by one row
-     * @param indices: move these indices
-     */
-    move(isUp, toExtreme, indices) {
-        if (toExtreme) {
-            this.moveToExtreme(isUp, indices);
-        }
-        else {
-            this.moveByOneRow(isUp, indices);
-        }
-    }
-
-    /**
-     * move a group of variables at indices to the top or the bottom
-     * @param isUp
-     * @param indices
-     */
-    moveToExtreme(isUp, indices) {
-        let currentVariables = this.currentVariables.slice();
-        let selectedVariables = currentVariables.filter((d, i) => indices.includes(i));
-        let notSelectedVariables = currentVariables.filter((d, i) => !indices.includes(i));
-        if (isUp) {
-            currentVariables = [...selectedVariables, ...notSelectedVariables]
-        }
-        else {
-            currentVariables = [...notSelectedVariables, ...selectedVariables];
-        }
-        this.currentVariables.replace(currentVariables);
-    }
-
-    /**
-     * move variable(s) up or down by one row
-     * @param isUp
-     * @param indices
-     */
-    moveByOneRow(isUp, indices) {
-        let currentVariables = this.currentVariables.slice();
-        let extreme, getNextIndex;
-        if (isUp) {
-            extreme = 0;
-            getNextIndex = function (index) {
-                return index - 1;
-            }
-        }
-        else {
-            extreme = currentVariables.length - 1;
-            indices.reverse();
-            getNextIndex = function (index) {
-                return index + 1;
-            }
-        }
-        indices.forEach(d => {
-            if ((d !== extreme)) {
-                if (!(indices.includes(extreme) && VariableManagerStore.isBlock(indices))) {
-                    let save = currentVariables[getNextIndex(d)];
-                    currentVariables[getNextIndex(d)] = currentVariables[d];
-                    currentVariables[d] = save;
-                }
-            }
-        });
-        this.currentVariables.replace(currentVariables);
-    }
 
     /**
      * checks if the selected indices are a block (no not selected variable in between)
@@ -263,17 +269,6 @@ class VariableManagerStore {
     getById(id) {
         return this.referencedVariables[id];
     }
-
-
-    /**
-     * gets the index of a variable in current variables (-1 if not contained)
-     * @param id
-     * @returns {number}
-     */
-    getIndex(id) {
-        return this.currentVariables.indexOf(id);
-    }
-
 
     getSelectedVariables() {
         return this.currentVariables.filter(d => d.isSelected).map(d => this.referencedVariables[d.id]);

@@ -1,12 +1,12 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {observer,inject} from "mobx-react";
 import * as d3 from "d3";
-//import ReactDOM from 'react-dom'
 
 /*
- * Patient axis pointing to the right
+ * bands
+ * TODO: make more react-like (no reason to use d3, create <rects>)
  */
-const GlobalBands = observer(class GlobalBands extends React.Component {
+const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React.Component {
 
 
     //render() {
@@ -90,56 +90,10 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
 
     renderAxis() {
 
-        /* var timeV=this.props.maxTimeInDays;
-
-         if(this.props.store.rootStore.timeVar==="30"){
-             timeV=this.props.maxTimeInDays/30;
-         }
-         else if(this.props.store.rootStore.timeVar==="365"){
-             timeV=this.props.maxTimeInDays/365;
-         }
-         const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.height - 35]).nice();
 
 
-         const yAxis = d3.axisLeft().scale(y);
-             //.scale(y);
-             //.ticks(5);
-
-         //const node = ReactDOM.findDOMNode(this);
-         //d3.select(node).call(yAxis);
-         d3.select(".axisGlobal").call(yAxis);
-
-         d3.selectAll(".axisLabel").remove();
-
-
-         d3.select(".axisGlobal")
-         .append("text")
-         .attr("class", "axisLabel")
-         .attr("transform", "rotate(-90)")
-         .attr("y", -50)
-         .attr("x", -1*this.props.height/4)
-         .attr("dy", ".71em")
-         .style("text-anchor", "end")
-         .style("font-family", "times")
-         .style("font-size", "12px")
-         .style("stroke-width", 0.5)
-         .style("stroke", "black")
-         .style("fill", "black")
-         .text(this.props.timeValue);
-         //.text(this.props.store.rootStore.timeValue);
-
-         */
-
-
-        var timeV = this.props.maxTimeInDays;
-
-        if (this.props.store.rootStore.timeVar === "30") {
-            timeV = this.props.maxTimeInDays / 30;
-        }
-        else if (this.props.store.rootStore.timeVar === "365") {
-            timeV = this.props.maxTimeInDays / 365;
-        }
-        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.visMap.svgHeight - 35]).nice();
+           let timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
+        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.rootStore.visStore.svgHeight - 35]).nice();
 
 
         const yAxis = d3.axisLeft().scale(y);
@@ -156,7 +110,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
             .attr("class", "grid")
             .call(//this.make_y_gridlines(yAxis)
                 yAxis
-                    .tickSize(-this.props.visMap.plotWidth)
+                    .tickSize(-this.props.rootStore.visStore.plotWidth)
                     .tickFormat("")
             )
             .style("stroke-width", 0)
@@ -168,7 +122,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
 
         var rects = d3.select(".axisGlobal2")
             .append('g')
-            .attr('class', 'intBands')
+            .attr('class', 'intBands');
 
 
         var yval = yAxis.scale().ticks(yAxis.ticks()[0]);//[0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
@@ -183,7 +137,7 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
          });*/
 
 
-        var ht = (this.props.visMap.svgHeight - 35) / yval.length, wd = this.props.visMap.plotWidth;
+        var ht = (this.props.rootStore.visStore.svgHeight - 35) / yval.length, wd = this.props.rootStore.visStore.plotWidth;
 
         //d3.selectAll('g').selectAll('intBands').remove();
 
@@ -217,10 +171,10 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
 
         return (
             <div className="overlaid">
-                <svg height={this.props.visMap.svgHeight} width={this.props.visMap.plotWidth}>
+                <svg height={this.props.rootStore.visStore.svgHeight} width={this.props.rootStore.visStore.plotWidth}>
 
 
-                    <g className="axisGlobal2" transform="translate(0, 25)">
+                    <g className="axisGlobal2" transform={"translate(0,"+this.props.rootStore.visStore.timelineRectSize/2+")"}>
                     </g>
                 </svg>
 
@@ -228,5 +182,5 @@ const GlobalBands = observer(class GlobalBands extends React.Component {
             </div>
         );
     }
-});
+}));
 export default GlobalBands;

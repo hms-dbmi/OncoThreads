@@ -1,5 +1,5 @@
 import React from "react";
-import {observer} from "mobx-react";
+import {inject, observer} from "mobx-react";
 import Select from 'react-select';
 import {Button, Panel} from "react-bootstrap";
 import StudySummary from "./StudySummary";
@@ -8,20 +8,29 @@ import StudySummary from "./StudySummary";
 /*
  * View if no study has been loaded
  */
-const DefaultView = observer(class DefaultView extends React.Component {
+const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultView extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
-        this.displayStudy = this.displayStudy.bind(this);
         this.state = {studyClicked: false,}
     }
 
+    /**
+     * selects a study
+     * @param selectedOption
+     */
     getStudy(selectedOption) {
         this.setState({studyClicked: true});
-        this.props.setRoot(this.props.studies.filter(d => d.studyId === selectedOption.value)[0], true, false);
+        const selectedStudy = this.props.studies.filter(d => d.studyId === selectedOption.value)[0]
+        this.props.rootStore.parseCBio(selectedStudy, () => {
+            this.props.undoRedoStore.saveLoadHistory(selectedStudy.name)
+        });
     }
 
-
+    /**
+     * creates different options for study selection
+     * @returns {Array}
+     */
     setOptions() {
         let options = [];
         this.props.studies.forEach(function (d, i) {
@@ -30,11 +39,11 @@ const DefaultView = observer(class DefaultView extends React.Component {
         return options;
     }
 
-    displayStudy() {
-        this.props.rootStore.display = true;
-        this.props.rootStore.firstLoad = false;
-    }
 
+    /**
+     * gets information about study
+     * @returns {*}
+     */
     getStudyInfo() {
         let info = null;
         if (this.props.rootStore.parsed) {
@@ -48,7 +57,7 @@ const DefaultView = observer(class DefaultView extends React.Component {
                     <StudySummary studyName={this.props.rootStore.study.name}
                                   studyDescription={this.props.rootStore.study.description}
                                   studyCitation={this.props.rootStore.study.citation}
-                                  numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
+                                  numPatients={this.props.rootStore.patients.length}
                                   minTP={this.props.rootStore.minTP}
                                   maxTP={this.props.rootStore.maxTP}/>
                 </Panel.Body>
@@ -77,5 +86,5 @@ const DefaultView = observer(class DefaultView extends React.Component {
             </div>
         );
     }
-});
+}));
 export default DefaultView;

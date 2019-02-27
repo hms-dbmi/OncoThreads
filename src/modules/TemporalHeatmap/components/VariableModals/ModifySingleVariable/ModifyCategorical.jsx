@@ -1,16 +1,17 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
-import DerivedVariable from "../../../DerivedVariable";
-import MapperCombine from "../../../MapperCombineFunctions";
+import DerivedVariable from "../../../stores/DerivedVariable";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import * as d3 from "d3";
-import ColorScales from "../../../ColorScales";
+import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoricalTable from "../VariableTables/CategoricalTable";
 import ConvertBinaryTable from "../VariableTables/ConvertBinaryTable";
+import VariableTable from "../VariableTable";
 
 
-const ModifyCategorical = observer(class ModifyCategorical extends React.Component {
+const ModifyCategorical = inject("variableManagerStore")(observer(class ModifyCategorical extends React.Component {
 
     constructor(props) {
         super(props);
@@ -49,6 +50,16 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
      */
     handleApply() {
         let returnVariable;
+        const newId = uuidv4();
+        let name = this.state.name;
+        let datatype="STRING";
+        let range=[];
+        let domain=[];
+        let modification;
+        if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
+            name = this.state.name + "_MODIFIED";
+        }
+        //case: no binary conversion
         if (!this.state.convertBinary) {
             let categoryMapping = {};
             this.props.variable.domain.forEach((d) => {
@@ -58,45 +69,32 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
                     }
                 });
             });
-            let newId = uuidv4();
-            const datatype = this.state.ordinal ? "ORDINAL" : "STRING";
-            const range = this.state.currentData.map(d => d.color);
-            const domain = this.state.currentData.map(d => d.name);
-            let modification={type: "modifyCategorical",mapping: categoryMapping};
-            returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description, [this.props.variable.id],modification, range, domain, MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
-            if (this.state.ordinal || this.categoriesChanged(returnVariable)) {
-                if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
-                    returnVariable.name = this.state.name + "_MODIFIED";
-                }
+            //case: ordinal color scale
+            if(this.state.ordinal){
+                datatype="ORDINAL";
             }
-            else {
-                returnVariable = this.props.variable;
-                returnVariable.range = range;
-            }
+            range = this.state.currentData.map(d => d.color);
+            domain = this.state.currentData.map(d => d.name);
+            modification = {type: "modifyCategorical", mapping: categoryMapping};
+        }
+        //case: binary conversion
+        else {
+            datatype="BINARY";
+            range=this.state.binaryColors;
+            modification = {type: "convertBinary", mapping: this.state.binaryMapping};
+        }
+        returnVariable=new DerivedVariable(newId, name, datatype, this.props.variable.description, [this.props.variable.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
+        const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
+        if (VariableTable.variableChanged(oldVariable,returnVariable)) {
+            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
         }
         else {
-            let newId = uuidv4();
-            let modification={type:"convertBinary",mapping: this.state.binaryMapping};
-            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], modification, this.state.binaryColors, [], MapperCombine.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
-            if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
-                returnVariable.name = this.state.name + "_MODIFIED";
-            }
-
+            oldVariable.changeRange(range)
         }
-        this.props.callback(returnVariable);
         this.props.closeModal();
     }
 
-    categoriesChanged(newVariable) {
-        let categoriesChanged = false;
-        for (let i = 0; i < this.props.variable.domain.length; i++) {
-            if (this.props.variable.domain[i] !== newVariable.domain[i]) {
-                categoriesChanged = true;
-                break;
-            }
-        }
-        return categoriesChanged;
-    }
+
 
     /**
      * creates the initial list of current categories
@@ -233,5 +231,5 @@ const ModifyCategorical = observer(class ModifyCategorical extends React.Compone
             </Modal>
         )
     }
-});
+}));
 export default ModifyCategorical;

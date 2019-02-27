@@ -1,14 +1,14 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import BinaryCombine from "./BinaryCombine";
-import DerivedVariable from "../../../DerivedVariable";
+import DerivedVariable from "../../../stores/DerivedVariable";
 import uuidv4 from 'uuid/v4';
-import MapperCombine from "../../../MapperCombineFunctions";
-import ColorScales from "../../../ColorScales";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
+import ColorScales from "../../../UtilityClasses/ColorScales";
 
 
-const CombineModal = observer(class CombineModal extends React.Component {
+const CombineModal = inject("variableManagerStore")(observer(class CombineModal extends React.Component {
 
     constructor(props) {
         super(props);
@@ -160,7 +160,6 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 colors = ColorScales.defaultBinaryRange;
             }
         }
-        console.log(modification);
         this.setState({
             modification: modification,
             currentVarCategories: currentVarCategories,
@@ -176,7 +175,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
      */
     getDomain(modification) {
         let currDomain = [];
-        let mapper = MapperCombine.getModificationMapper(modification, this.props.variables.map(d => d.mapper));
+        let mapper = DerivedMapperFunctions.getModificationMapper(modification, this.props.variables.map(d => d.mapper));
         for (let sample in mapper) {
             if (!(currDomain.includes(mapper[sample]))) {
                 currDomain.push(mapper[sample]);
@@ -233,7 +232,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             return <BinaryCombine setModification={this.setModification}
                                   ordinal={this.state.ordinal}
                                   modification={this.state.modification}
-                                  mapper={MapperCombine.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper))}
+                                  mapper={DerivedMapperFunctions.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper))}
                                   variableRange={this.state.variableRange}
                                   variableDomain={this.getDomain(this.state.modification)}
                                   currentVarCategories={this.state.currentVarCategories}
@@ -246,7 +245,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
 
     handleApply() {
         let dataType, description;
-        let mapper = MapperCombine.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper));
+        let mapper = DerivedMapperFunctions.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper));
         if (this.modificationType === "binaryCombine") {
             if (this.state.modification.datatype === "BINARY") {
                 dataType = "BINARY";
@@ -261,7 +260,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 }
                 description = "Binary combination of " + this.props.variables.map(d => d.name);
                 if (this.state.modification.mapping !== null) {
-                    mapper = MapperCombine.createModifyCategoriesMapper(mapper, this.state.modification.mapping);
+                    mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.state.modification.mapping);
                 }
             }
         }
@@ -275,7 +274,12 @@ const CombineModal = observer(class CombineModal extends React.Component {
             description = "Numerical combination of " + this.props.variables.map(d => d.name);
 
         }
-        this.props.callback(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper), this.state.keep);
+        this.props.variableManagerStore.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper), this.state.keep);
+        if(!this.state.keep){
+            this.props.currentVariables.forEach(d=>{
+                this.props.variableManagerStore.removeVariable(d.id);
+            })
+        }
         this.props.closeModal();
     }
 
@@ -309,5 +313,5 @@ const CombineModal = observer(class CombineModal extends React.Component {
             </Modal>
         )
     }
-});
+}));
 export default CombineModal;

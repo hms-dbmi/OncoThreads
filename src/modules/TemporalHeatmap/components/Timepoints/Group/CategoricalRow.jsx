@@ -1,20 +1,18 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 /*
 creates a row in a partition of a grouped timepoint
  */
-const CategoricalRow = observer(class CategoricalRow extends React.Component {
+const CategoricalRow = inject("dataStore","uiStore")(observer(class CategoricalRow extends React.Component {
     static getTooltipContent(value, numPatients) {
-        {
-            let content = "";
-            if (numPatients === 1) {
-                content = value + ": " + numPatients + " patient";
-            }
-            else {
-                content = value + ": " + numPatients + " patients";
-            }
-            return content;
+        let content = "";
+        if (numPatients === 1) {
+            content = value + ": " + numPatients + " patient";
         }
+        else {
+            content = value + ": " + numPatients + " patients";
+        }
+        return content;
     }
 
     createRow() {
@@ -31,11 +29,11 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
                 fill = "white"
             }
             rects.push(<rect key={f.key}
-                             onMouseEnter={(e) => _self.props.showTooltip(e, CategoricalRow.getTooltipContent(f.key, f.value))}
-                             onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.value)}
+                             onMouseEnter={(e) => _self.props.showTooltip(e, CategoricalRow.getTooltipContent(f.key, f.patients.length))}
+                             onMouseLeave={_self.props.hideTooltip} width={_self.props.groupScale(f.patients.length)}
                              x={_self.props.groupScale(currCounts)} height={_self.props.height}
                              fill={fill} stroke={stroke} opacity={_self.props.opacity}/>);
-            if (_self.props.store.advancedSelection) {
+            if (_self.props.uiStore.advancedSelection) {
                 rects.push(
                     <rect key={f.key + 'selected'}
                           width={_self.props.groupScale(_self.getSelected(f.patients))}
@@ -43,7 +41,7 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
                           fill='none' stroke='black'/>
                 );
             }
-            currCounts += f.value
+            currCounts += f.patients.length
         });
         return rects
     }
@@ -51,16 +49,10 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
     /**
      * checks if the patients in the partition are selected
      * @param patients
-     * @returns {boolean}
+     * @returns {number}
      */
     getSelected(patients) {
-        let selected = 0;
-        for (let i = 0; i < patients.length; i++) {
-            if (this.props.store.selectedPatients.includes(patients[i])) {
-                selected += 1;
-            }
-        }
-        return selected;
+        return patients.filter(patient=>this.props.dataStore.selectedPatients.includes(patient)).length
     }
 
     render() {
@@ -68,5 +60,5 @@ const CategoricalRow = observer(class CategoricalRow extends React.Component {
             this.createRow()
         )
     }
-});
+}));
 export default CategoricalRow;

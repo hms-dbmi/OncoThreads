@@ -1,46 +1,41 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import HeatmapRow from './HeatmapRow';
-//import * as d3 from 'd3';
 
 /*
 creates a heatmap timepoint
  */
-const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component {
+const HeatmapTimepoint = inject("visStore", "uiStore")(observer(class HeatmapTimepoint extends React.Component {
     getTimepoint() {
-        const _self = this;
         let rows = [];
         let previousYposition = 0;
-        this.props.currentVariables.forEach((variable, i)=> {
+        this.props.timepoint.heatmap.forEach((d) => {
             const transform = "translate(0," + previousYposition + ")";
-            if (!this.props.heatmap[i].isUndef || _self.props.store.showUndefined || this.props.heatmap[i].variable === _self.props.primaryVariableId) {
-                let rowHeight = _self.props.visMap.secondaryHeight;
+            if (!d.isUndef || this.props.uiStore.showUndefined || d.variable === this.props.timepoint.primaryVariableId) {
+                let rowHeight = this.props.visStore.secondaryHeight;
                 let opacity = 0.5;
-                if (variable.id === _self.props.primaryVariableId) {
-                    rowHeight = _self.props.visMap.primaryHeight;
+                if (d.variable === this.props.timepoint.primaryVariableId) {
+                    rowHeight = this.props.visStore.primaryHeight;
                     opacity = 1;
                 }
-                rows.push(<g key={variable.id} transform={transform}>
-                    <HeatmapRow showContextMenuHeatmapRow={_self.props.showContextMenuHeatmapRow}
-                                store={_self.props.store}
-                                {..._self.props.tooltipFunctions}
+                rows.push(<g key={d.variable} transform={transform}>
+                    <HeatmapRow showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                {...this.props.tooltipFunctions}
 
-                                heatmapScale={_self.props.heatmapScale}
-                                row={this.props.heatmap[i]}
-                                timepointIndex={_self.props.index}
-                                variableStore={_self.props.variableStore}
-                                rectWidth={_self.props.rectWidth}
-                                xOffset={_self.props.xOffset}
-                                currVar={variable}
+                                heatmapScale={this.props.heatmapScale}
+                                row={d}
+                                timepointIndex={this.props.timepoint.globalIndex}
+                                timepointType={this.props.timepoint.type}
+                                rectWidth={this.props.rectWidth}
+                                xOffset={this.props.xOffset}
 
                                 height={rowHeight}
-                                opacity={opacity}/>;
+                                opacity={opacity}/>
                 </g>);
-                previousYposition += rowHeight + _self.props.visMap.gap;
-
+                previousYposition += rowHeight + this.props.visStore.gap;
             }
         });
-        return (rows)
+        return rows
     }
 
     render() {
@@ -48,5 +43,5 @@ const HeatmapTimepoint = observer(class HeatmapTimepoint extends React.Component
             this.getTimepoint()
         )
     }
-});
+}));
 export default HeatmapTimepoint;

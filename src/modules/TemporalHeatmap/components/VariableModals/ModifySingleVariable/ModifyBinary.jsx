@@ -1,21 +1,20 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
-import DerivedVariable from "../../../DerivedVariable";
-import MapperCombine from "../../../MapperCombineFunctions";
-import ColorScales from "../../../ColorScales";
+import DerivedVariable from "../../../stores/DerivedVariable";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import BinaryTable from "../VariableTables/BinaryTable";
 
 
-const ModifyBinary = observer(class ModifyBinary extends React.Component {
+const ModifyBinary = inject("variableManagerStore")(observer(class ModifyBinary extends React.Component {
 
     constructor(props) {
         super(props);
         this.state =
             {
                 name: props.derivedVariable !== null ? props.derivedVariable.name : props.variable.name,
-                binaryColors: props.derivedVariable !== null ? props.derivedVariable.range : ColorScales.defaultBinaryRange,
+                binaryColors: props.derivedVariable !== null ? props.derivedVariable.range : props.variable.range,
                 invert: props.derivedVariable !== null
             };
         this.toggleInvert = this.toggleInvert.bind(this);
@@ -38,29 +37,34 @@ const ModifyBinary = observer(class ModifyBinary extends React.Component {
      */
     handleApply() {
         let returnVariable;
+        //case: data has been inverted
         if (this.state.invert && this.props.derivedVariable === null) {
             let newId = uuidv4();
-            let modification = {true: false, false: true};
-            returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description, [this.props.variable.id], {type:"invertBinary", mapping:modification}, this.state.binaryColors, [], MapperCombine.getModificationMapper("modifyCategorical", modification.mapping, [this.props.variable.mapper]), this.props.variable.profile);
+            let modification = {
+                    type: "modifyCategorical",
+                    mapping: {true: false, false: true}
+                };
+            let name=this.state.name;
             if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
-                returnVariable.name = this.state.name + "_INVERTED";
+                name = this.state.name + "_INVERTED";
             }
+            returnVariable = new DerivedVariable(newId, name, "BINARY", this.props.variable.description, [this.props.variable.id], modification, this.state.binaryColors, [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), this.props.variable.profile);
+            this.props.variableManagerStore.replaceDisplayedVariable(this.props.variable.id, returnVariable);
         }
         else {
-            returnVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
-            returnVariable.range = this.state.binaryColors;
-
+            const oldId = this.props.derivedVariable !== null ? this.props.derivedVariable.id : this.props.variable.id;
+            //case: inversion has been undone
+            if (!this.state.invert && this.props.derivedVariable !== null) {
+                this.props.variableManagerStore.getById(this.props.variable.id).changeRange(this.state.binaryColors);
+                this.props.variableManagerStore.replaceDisplayedVariable(oldId, this.props.variableManagerStore.getById(this.props.variable.id));
+            }
+            else {
+                //case: only color changed
+                this.props.variableManagerStore.getById(oldId).changeRange(this.state.binaryColors);
+            }
         }
-        console.log(returnVariable);
-        this.props.callback(returnVariable);
         this.props.closeModal();
     }
-
-
-    static handleOverlayClick(event) {
-        document.body.click();
-    }
-
 
     toggleInvert() {
         this.setState({invert: !this.state.invert});
@@ -103,5 +107,5 @@ const ModifyBinary = observer(class ModifyBinary extends React.Component {
             </Modal>
         )
     }
-});
+}));
 export default ModifyBinary;

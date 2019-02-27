@@ -1,4 +1,4 @@
-import OriginalVariable from "./TemporalHeatmap/OriginalVariable";
+import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import * as d3 from "d3";
 
 
@@ -219,7 +219,7 @@ class MolProfileMapping {
         return variables
     }
 
-        /**
+    /**
      * creates sample id mapping for mutations
      * @param list
      * @param mappingType
@@ -301,6 +301,11 @@ class MolProfileMapping {
         return mapper;
     }
 
+    /**
+     * get simplified mutation type
+     * @param type
+     * @returns {string}
+     */
     static getMutationType(type) {
         let ret = "";
         type = (typeof type === "string") ? type.toLowerCase() : "";

@@ -1,35 +1,35 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import {Button, ButtonGroup, Col, ControlLabel, Form, FormControl, FormGroup} from 'react-bootstrap';
 
 
-const BinNames = observer(class BinNames extends React.Component {
+const BinNames = inject("binningStore")(observer(class BinNames extends React.Component {
     render() {
         let binNameFields = [];
-        if (!this.props.isBinary) {
-            for (let i = 0; i < this.props.binNames.length; i++) {
+        if (!this.props.binningStore.isBinary) {
+            for (let i = 0; i < this.props.binningStore.binNames.length; i++) {
                 binNameFields.push([<FormGroup key={"Bin" + (i + 1)}>
                     <Col componentClass={ControlLabel} sm={2}>
                         Bin {i + 1}:
                     </Col>
                     <Col sm={10}>
                         <FormControl
-                            onChange={(e) => this.props.handleBinNameChange(e, i)} type="text"
-                            value={this.props.binNames[i].name}/></Col></FormGroup>]);
+                            onChange={(e) => this.props.binningStore.handleBinNameChange(e, i)} type="text"
+                            value={this.props.binningStore.binNames[i].name}/></Col></FormGroup>]);
             }
         }
         else {
-            for (let i = 0; i < this.props.binNames.length; i++) {
+            for (let i = 0; i < this.props.binningStore.binNames.length; i++) {
                 binNameFields.push(<FormGroup key={"Bin" + (i + 1)}>
                     <Col componentClass={ControlLabel} sm={2}>
                         Bin {i + 1}:
                     </Col>
                     <Col sm={10}>
                         <ButtonGroup>
-                            <Button onClick={(e) => this.props.handleBinNameChange(e, i)}
-                                    active={this.props.binNames[i].name === true} value={true}>true</Button>
-                            <Button onClick={(e) => this.props.handleBinNameChange(e, i)}
-                                    active={this.props.binNames[i].name !== true} value={false}>false</Button>
+                            <Button onClick={(e) => this.props.binningStore.handleBinNameChange(e, i)}
+                                    active={this.props.binningStore.binNames[i].name === true} value={true}>true</Button>
+                            <Button onClick={(e) => this.props.binningStore.handleBinNameChange(e, i)}
+                                    active={this.props.binningStore.binNames[i].name !== true} value={false}>false</Button>
                         </ButtonGroup>
                     </Col></FormGroup>);
             }
@@ -40,5 +40,5 @@ const BinNames = observer(class BinNames extends React.Component {
             </Form>
         )
     }
-});
+}));
 export default BinNames;

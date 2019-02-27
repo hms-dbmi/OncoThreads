@@ -1,27 +1,13 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import {Button, Modal} from 'react-bootstrap';
 import FormGroup from "react-bootstrap/es/FormGroup";
 import Radio from "react-bootstrap/es/Radio";
 
 
-const SettingsModal = observer(class SettingsModal extends React.Component {
-
-
-    handleContiuousRepresentationSetting(type) {
-        this.props.store.continuousRepresentation = type;
-    }
-
-    handleSelectionSetting(advanced) {
-        this.props.store.advancedSelection = advanced;
-    }
-
-    handleUndefinedRowsSetting(showUndefined) {
-        this.props.store.showUndefined = showUndefined;
-    }
+const SettingsModal = inject("uiStore")(observer(class SettingsModal extends React.Component {
 
     handleApply() {
-        this.props.store.continuousRepresentation = this.continuousRepresentation;
         this.props.close();
     }
 
@@ -29,10 +15,10 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
         let gradient = false;
         let boxplot = false;
         let median = false;
-        if (this.props.store.continuousRepresentation === "gradient") {
+        if (this.props.uiStore.continuousRepresentation === "gradient") {
             gradient = true;
         }
-        else if (this.props.store.continuousRepresentation === "boxplot") {
+        else if (this.props.uiStore.continuousRepresentation === "boxplot") {
             boxplot = true;
         }
         else {
@@ -51,15 +37,15 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                         <FormGroup>
                             <h5>Show continuous variable distributions in groups as</h5>
                             <Radio checked={gradient} name="radioGroup" inline
-                                   onChange={() => this.handleContiuousRepresentationSetting('gradient')}>
+                                   onChange={() => this.props.uiStore.setContinuousRepresentation('gradient')}>
                                 Color Gradients
                             </Radio>{' '}
                             <Radio checked={boxplot} name="radioGroup" inline
-                                   onChange={() => this.handleContiuousRepresentationSetting('boxplot')}>
+                                   onChange={() => this.props.uiStore.setContinuousRepresentation('boxplot')}>
                                 Boxplots
                             </Radio>{' '}
                             <Radio checked={median} name="radioGroup" inline
-                                   onChange={() => this.handleContiuousRepresentationSetting('median')}>
+                                   onChange={() => this.props.uiStore.setContinuousRepresentation('median')}>
                                 Median Color
                             </Radio>
                         </FormGroup>
@@ -67,12 +53,12 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                     <form>
                         <FormGroup>
                             <h5>Selection Type</h5>
-                            <Radio checked={this.props.store.advancedSelection} name="radioGroup" inline
-                                   onChange={() => this.handleSelectionSetting(true)}>
+                            <Radio checked={this.props.uiStore.advancedSelection} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setAdvancedSelection(true)}>
                                 Advanced
                             </Radio>{' '}
-                            <Radio checked={!this.props.store.advancedSelection} name="radioGroup" inline
-                                   onChange={() => this.handleSelectionSetting(false)}>
+                            <Radio checked={!this.props.uiStore.advancedSelection} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setAdvancedSelection(false)}>
                                 Simplified
                             </Radio>{' '}
                         </FormGroup>
@@ -80,12 +66,12 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
                     <form>
                         <FormGroup>
                             <h5>Show rows with only undefined values</h5>
-                            <Radio checked={this.props.store.showUndefined} name="radioGroup" inline
-                                   onChange={() => this.handleUndefinedRowsSetting(true)}>
+                            <Radio checked={this.props.uiStore.showUndefined} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setShowUndefined(true)}>
                                 Yes
                             </Radio>{' '}
-                            <Radio checked={!this.props.store.showUndefined} name="radioGroup" inline
-                                   onChange={() => this.handleUndefinedRowsSetting(false)}>
+                            <Radio checked={!this.props.uiStore.showUndefined} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setShowUndefined(false)}>
                                 No
                             </Radio>{' '}
 
@@ -98,5 +84,5 @@ const SettingsModal = observer(class SettingsModal extends React.Component {
             </Modal>
         )
     }
-});
+}));
 export default SettingsModal;

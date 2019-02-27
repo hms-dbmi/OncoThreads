@@ -1,20 +1,20 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import TimelineRow from "./TimelineRow";
-import MapperCombine from "../../../MapperCombineFunctions";
+import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 //import * as d3 from 'd3';
 
 /*
 creates a heatmap timepoint
  */
-const TimelineTimepoint = observer(class TimelineTimepoint extends React.Component {
+const TimelineTimepoint = inject("rootStore")(observer(class TimelineTimepoint extends React.Component {
 
 
     getAllEvents(variableId, index, array) {
         const _self = this;
-        let current = this.props.store.variableStores.between.referencedVariables[variableId];
+        let current = this.props.rootStore.dataStore.variableStores.between.referencedVariables[variableId];
         if (current.type === "event") {
-            this.props.store.rootStore.eventTimelineMap[variableId].filter(d => d.time === index).forEach(d => array.push(d));
+            this.props.rootStore.eventTimelineMap.get(variableId).filter(d => d.time === index).forEach(d => array.push(d));
             return array;
         }
         else if (current.type === "derived") {
@@ -29,13 +29,13 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
     }
 
     filterEvents(variableId, events) {
-        let variable = this.props.store.variableStores.between.getById(variableId);
+        let variable = this.props.rootStore.dataStore.variableStores.between.getById(variableId);
         let filterMapper = {};
         if (variable.datatype === "BINARY") {
             filterMapper = variable.mapper;
         }
         if (variable.derived && variable.modificationType === "binaryCombine" && variable.modification.datatype === "STRING") {
-            filterMapper = MapperCombine.createBinaryCombinedMapper(variable.originalIds.map(d => this.props.store.variableStores.between.getById(d).mapper),
+            filterMapper = DerivedMapperFunctions.createBinaryCombinedMapper(variable.originalIds.map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).mapper),
                 {operator: variable.modification.operator, datatype: "BINARY"}, []);
         }
         return events.filter((d) => filterMapper[d.sampleId]);
@@ -57,7 +57,7 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
 
-        if (!(_self.props.store.variableStores.sample.getNumberOfReferencedVariables() === 0)) {
+        if (!(_self.props.rootStore.dataStore.variableStores.sample.getNumberOfReferencedVariables() === 0)) {
             index = Math.floor(_self.props.index / 2);
         }
 
@@ -65,26 +65,26 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
         //let color2 =  d3.scaleOrdinal(d3.schemeCategory10); ;
         this.props.timepoint.forEach(function (row, i) {
             //get the correct color scale depending on the type of the variable (STRING, continous or binary)
-            //let color = _self.props.visMap.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
+            //let color = _self.props.rootStore.visStore.getBlockColorScale("Timeline",_self.props.currentVariables[i].type);
             //let color = x => { return "#ffd92f" };
 
             let color;
 
             if (_self.props.timepointType === 'between') {
                 opacity = 0.5;
-                color = _self.props.visMap.globalTimelineColors;
+                color = _self.props.rootStore.visStore.globalTimelineColors;
                 let events = _self.getAllEvents(row.variable, index, []);
                 events = _self.filterEvents(row.variable, events);
                 rows.push(<g key={row.variable + i + globalIndex}>
 
                     <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
                                  color={color}
-                        //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
-                                 x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                        //x={(_self.props.rootStore.visStore.primaryHeight-_self.props.rectWidth)/2}
+                                 x={_self.props.rootStore.visStore.timelineRectSize / 2}
                                  max={_self.props.max}
                                  events={events}
                                  opacity={opacity}
-                                 rectWidth={_self.props.visMap.sampleRectWidth / 2}
+                                 rectWidth={_self.props.rootStore.visStore.timelineRectSize}
                                  dtype={_self.props.currentVariables[i].datatype}
                         //fillBin={fillBin}
 
@@ -95,15 +95,16 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
 
             }
             else {
-                if (row.variable === _self.props.store.globalPrimary) {
-                    color = _self.props.currentVariables.filter(d => d.id === _self.props.store.globalPrimary)[0].colorScale;
+                if (row.variable === _self.props.rootStore.dataStore.globalPrimary) {
+                    color = _self.props.currentVariables.filter(d => d.id === _self.props.rootStore.dataStore.globalPrimary)[0].colorScale;
                     rows.push(<g key={row.variable + i + globalIndex}>
 
                         <TimelineRow {..._self.props} row={row} timepoint={_self.props.index}
                                      color={color}
-                            //x={(_self.props.visMap.primaryHeight-_self.props.rectWidth)/2}
-                                     x={(_self.props.visMap.sampleRectWidth - _self.props.rectWidth) / 2}
+                            //x={(_self.props.rootStore.visStore.primaryHeight-_self.props.rectWidth)/2}
+                                     x={_self.props.rootStore.visStore.timelineRectSize / 2}
                                      max={_self.props.max}
+                                     rectWidth={_self.props.rootStore.visStore.timelineRectSize}
                                      opacity={opacity}
                                      dtype={_self.props.currentVariables[i].datatype}
                             //fillBin={fillBin}
@@ -123,5 +124,5 @@ const TimelineTimepoint = observer(class TimelineTimepoint extends React.Compone
         )
 
     }
-});
+}));
 export default TimelineTimepoint;

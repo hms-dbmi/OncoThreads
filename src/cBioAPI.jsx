@@ -318,6 +318,6 @@ class cBioAPI {
     }
 
 }
-cBioAPI.verbose = false;
+cBioAPI.verbose = true;
 
 export default cBioAPI;
