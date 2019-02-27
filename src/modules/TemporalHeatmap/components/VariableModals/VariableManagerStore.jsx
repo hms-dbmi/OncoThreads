@@ -1,4 +1,5 @@
 import {action, extendObservable, observe} from "mobx";
+import UndoRedoStore from "../../../UndoRedoStore";
 
 /*
 Store containing information about variables
@@ -6,7 +7,7 @@ Store containing information about variables
 class VariableManagerStore {
     constructor(referencedVariables, currentVariables, primaryVariables, savedReferences) {
         //Variables that are referenced (displayed or used to create a derived variable)
-        this.referencedVariables = referencedVariables;
+        this.referencedVariables = UndoRedoStore.deserializeReferencedVariables(referencedVariables);
         this.primaryVariables = primaryVariables;
         this.savedReferences = savedReferences;
         extendObservable(this, {

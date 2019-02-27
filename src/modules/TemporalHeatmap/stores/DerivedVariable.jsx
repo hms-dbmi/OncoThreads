@@ -1,5 +1,5 @@
 import ColorScales from "../UtilityClasses/ColorScales";
-import {extendObservable} from "mobx";
+import {extendObservable,action} from "mobx";
 
 class DerivedVariable {
     constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper) {
@@ -31,6 +31,9 @@ class DerivedVariable {
         return {
             domain: currDomain,
             range: currRange,
+            changeRange:action(range=>{
+                this.range=range
+            }),
             get colorScale() {
                 let scale;
                 if (this.datatype === "ORDINAL" || this.datatype === "STRING" || this.datatype === "BINARY") {

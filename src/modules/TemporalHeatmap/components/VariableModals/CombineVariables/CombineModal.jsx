@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import BinaryCombine from "./BinaryCombine";
 import DerivedVariable from "../../../stores/DerivedVariable";
@@ -8,7 +8,7 @@ import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunction
 import ColorScales from "../../../UtilityClasses/ColorScales";
 
 
-const CombineModal = observer(class CombineModal extends React.Component {
+const CombineModal = inject("variableManagerStore")(observer(class CombineModal extends React.Component {
 
     constructor(props) {
         super(props);
@@ -160,7 +160,6 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 colors = ColorScales.defaultBinaryRange;
             }
         }
-        console.log(modification);
         this.setState({
             modification: modification,
             currentVarCategories: currentVarCategories,
@@ -275,7 +274,12 @@ const CombineModal = observer(class CombineModal extends React.Component {
             description = "Numerical combination of " + this.props.variables.map(d => d.name);
 
         }
-        this.props.callback(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper), this.state.keep);
+        this.props.variableManagerStore.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper), this.state.keep);
+        if(!this.state.keep){
+            this.props.currentVariables.forEach(d=>{
+                this.props.variableManagerStore.removeVariable(d.id);
+            })
+        }
         this.props.closeModal();
     }
 
@@ -309,5 +313,5 @@ const CombineModal = observer(class CombineModal extends React.Component {
             </Modal>
         )
     }
-});
+}));
 export default CombineModal;

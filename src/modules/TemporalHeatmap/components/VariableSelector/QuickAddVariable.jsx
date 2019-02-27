@@ -1,5 +1,5 @@
 import React from "react";
-import {observer,inject} from "mobx-react";
+import {inject, observer} from "mobx-react";
 import {Button, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../stores/OriginalVariable";
@@ -7,7 +7,7 @@ import OriginalVariable from "../../stores/OriginalVariable";
 /*
 creates the selector for sample variables (left side of main view, top)
  */
-const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class QuickAddVariable extends React.Component {
+const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class QuickAddVariable extends React.Component {
     constructor(props) {
         super();
         this.state = QuickAddVariable.getInitialState(props);
@@ -55,7 +55,7 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
     }
 
     /**
-     * calls functions to add a variable
+     * adds an event variable
      */
     addEventVariable() {
         if (this.state.category !== "computed") {
@@ -66,8 +66,9 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
         }
         else {
             this.state.selectedValues.forEach(d => {
-                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.store.rootStore.staticMappers[d.object.id], d.object.id, "computed"))
-            })
+                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "Computed"))
+            });
+            this.props.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
         }
         this.setState({selectedValues: [], selectedKey: ""})
     }
@@ -80,7 +81,10 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
         this.state.selectedValues.forEach(d => this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.value, d.label, "BINARY", "Indicates if event: \"" + d.label + "\" has happened between two timepoints", [], [], this.props.rootStore.getSampleEventMapping(this.state.category, d.object), this.state.category, "event")));
     }
 
-
+    /**
+     * creates oprtions for event variables
+     * @returns {Array}
+     */
     createEventOptions() {
         let options = [];
         if (this.state.category !== "computed") {
@@ -121,6 +125,10 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
         });
     }
 
+    /**
+     * handles adding variables when enter is pressed
+     * @param e
+     */
     addVariablesEnter(e) {
         if (QuickAddVariable.checkEnterPressed(e)) {
             this.handleAdd();
@@ -135,6 +143,9 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
         return false;
     }
 
+    /**
+     * handles adding a variable
+     */
     handleAdd() {
         if (this.state.isEvent) {
             this.addEventVariable();
@@ -149,16 +160,23 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
         }
     }
 
+    /**
+     * adds a clinical variable
+     */
     addClinicalVariables() {
         if (this.state.selectedValues.length > 0) {
             this.state.selectedValues.forEach(d => {
-                this.props.rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], d.profile,"clinical"));
+                this.props.rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.variable, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], d.profile, "clinical"));
             });
             this.props.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.object.variable), true);
             this.setState({selectedValues: []})
         }
     }
 
+    /**
+     * creates options for sample variables
+     * @returns {*[]}
+     */
     createTimepointOptions() {
         let sampleOptions = [];
         this.props.rootStore.clinicalSampleCategories.filter((d) => !this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.map(d => d.id).includes(d.id)).forEach(d => {
@@ -181,7 +199,10 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
         }];
     }
 
-
+    /**
+     * creates selection options
+     * @returns {*}
+     */
     createOptions() {
         if (this.state.isEvent) {
             return this.createEventOptions();
@@ -306,7 +327,7 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
                 <FormControl style={{height: 38}} componentClass="select" onChange={this.handleMappingSelect}
                              placeholder="Select Category">
                     {this.props.rootStore.availableProfiles.map(d => <option value={d.molecularProfileId}
-                                                                   key={d.molecularProfileId}>{d.name}</option>)}
+                                                                             key={d.molecularProfileId}>{d.name}</option>)}
                 </FormControl>
             </Col>
 
@@ -329,8 +350,9 @@ const QuickAddVariable = inject("rootStore","undoRedoStore")(observer(class Quic
                                 {options}
                             </optgroup>
                             <optgroup label="Event Variables">
-                                {this.props.rootStore.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option value={d}
-                                                                                                             key={d}>{QuickAddVariable.toTitleCase(d)}</option>)}
+                                {this.props.rootStore.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option
+                                    value={d}
+                                    key={d}>{QuickAddVariable.toTitleCase(d)}</option>)}
                                 <option value="computed" key="computed">Computed variables</option>
                             </optgroup>
                         </FormControl>

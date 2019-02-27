@@ -1,6 +1,7 @@
 class DerivedMapperFunctions {
     /**
      * gets a mapper based on a modification an mappers of original variables
+     * modification types: binaryCombine, modifyCategorical, convertBinary, continuousModification
      * @param modification
      * @param mappers
      * @returns {*}

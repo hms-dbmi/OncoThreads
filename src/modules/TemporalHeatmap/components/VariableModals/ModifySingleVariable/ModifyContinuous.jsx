@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer, Provider} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import Binner from './Binner/Binner';
 import * as d3 from 'd3';
 import {Button, ControlLabel, FormControl, FormGroup, Modal, OverlayTrigger, Popover, Radio} from "react-bootstrap";
@@ -12,7 +12,7 @@ import ColorScales from "../../../UtilityClasses/ColorScales";
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
 import BinningStore from "./Binner/BinningStore";
 
-const ModifyContinuous = observer(class ModifyContinuous extends React.Component {
+const ModifyContinuous = inject("variableManagerStore")(observer(class ModifyContinuous extends React.Component {
     constructor(props) {
         super(props);
         this.data = this.getInitialData();
@@ -28,7 +28,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
      * @returns {{bins: *, binNames: *, bin: boolean, colorRange: *, isXLog: boolean, name: string}}
      */
     setInitialState() {
-        let bin;
+        let bin = true;
         if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
             bin = false;
         }
@@ -134,60 +134,57 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                 binNames: this.binningStore.binNames
             } : false
         };
-        console.log(this.variableChanged());
-        let returnVariable;
+        const mapper = DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]);
+        let datatype = "NUMBER";
+        let range = [];
+        let domain = [];
+        const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
+        //case: data has been binned
         if (this.state.bin) {
+            //case: data is not converted to binary
             if (!this.binningStore.isBinary) {
-                let binnedRange = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.binningStore.binNames, this.binningStore.bins);
-                returnVariable = new DerivedVariable(newId, this.state.name, "ORDINAL", this.props.variable.description + " (binned)", [this.props.variable.id], modification, binnedRange, this.binningStore.binNames.map(d => d.name), DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]));
+                datatype = "ORDINAL";
+                range = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), this.binningStore.binNames, this.binningStore.bins);
+                domain = this.binningStore.binNames.map(d => d.name);
             }
+            //case: data is converted to binary
             else {
-                returnVariable = new DerivedVariable(newId, this.state.name, "BINARY", this.props.variable.description + " (binned)", [this.props.variable.id], modification, [], [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]));
+                datatype = "BINARY";
             }
-            this.props.setColorRange(this.props.variable.id, this.state.colorRange);
+            oldVariable.changeRange(this.state.colorRange);
         }
+        //case: data is not binned, but transformed
         else if (this.state.isXLog) {
-            returnVariable = new DerivedVariable(newId, this.state.name, "NUMBER", this.props.variable.description, [this.props.variable.id], modification, this.state.colorRange, [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]));
+            range = this.state.colorRange;
+        }
+        const returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description + " (binned)", [this.props.variable.id], modification, range, domain, mapper);
+        if (this.variableChanged(oldVariable, returnVariable)) {
+            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
         }
         else {
-            returnVariable = this.props.variable;
-            returnVariable.range = this.state.colorRange;
+            oldVariable.changeRange(this.state.colorRange);
         }
-        this.props.callback(returnVariable);
         this.props.closeModal();
     }
 
-    variableChanged() {
-        if (this.props.derivedVariable === null) {
-            return !this.state.isXLog;
+    variableChanged(oldVariable, newVariable) {
+        //case: datatype changed?
+        if (oldVariable.datatype !== newVariable.datatype) {
+            return true;
         }
         else {
-            if (this.binningStore.isBinary !== (this.props.derivedVariable.datatype === "BINARY")) {
-                return true;
+            //case: domain changed?
+            if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
+                return true
             }
-            if (this.state.bin) {
-                if (!this.props.derivedVariable.modification.binning) {
-                    return true;
-                }
-                else {
-                    if (this.props.derivedVariable.modification.binning.bins.length !== this.binningStore.bins.length) {
+            //case: mapper changed?
+            else {
+                for (let sample in oldVariable.mapper) {
+                    if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
                         return true;
                     }
-                    else {
-                        for (let i = 0; i < this.props.derivedVariable.modification.binning.binNames.length; i++) {
-                            if (this.props.derivedVariable.modification.binning.binNames[i] !== this.binningStore.binNames[i]) {
-                                return true;
-                            }
-                        }
-                        for (let i = 0; i < this.props.derivedVariable.modification.binning.bins.length; i++) {
-                            if (this.props.derivedVariable.modification.binning.bins[i] !== this.binningStore.bins[i]) {
-                                return true;
-                            }
-                        }
-                    }
                 }
             }
-            return false;
         }
     }
 
@@ -353,7 +350,7 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
                         Cancel
                     </Button>
                     <Button onClick={() => this.setState({bin: !this.state.bin})}
-                            bsStyle="primary">{this.state.bin ? "<< Cancel Binning" : "Bin >>"}>}</Button>
+                            bsStyle="primary">{this.state.bin ? "<< Cancel Binning" : "Bin >>"}</Button>
                     <Button onClick={() => this.handleApply()}>
                         Apply
 
@@ -362,5 +359,5 @@ const ModifyContinuous = observer(class ModifyContinuous extends React.Component
             </Modal>
         )
     }
-});
+}));
 export default ModifyContinuous;

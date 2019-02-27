@@ -27,11 +27,9 @@ const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarMo
      * handles clicking the add button
      */
     handleAddButton() {
-        this.props.rootStore.dataStore.variableStores.sample.replaceAll(UndoRedoStore.deserializeReferencedVariables(this.props.rootStore.dataStore.variableStores.sample.referencedVariables,
-            this.timepointVariableManager.referencedVariables), this.timepointVariableManager.currentVariables.map(d => d.id),
+        this.props.rootStore.dataStore.variableStores.sample.replaceAll(this.timepointVariableManager.referencedVariables, this.timepointVariableManager.currentVariables.map(d => d.id),
             this.timepointVariableManager.primaryVariables);
-        this.props.rootStore.dataStore.variableStores.between.replaceAll(UndoRedoStore.deserializeReferencedVariables(this.props.rootStore.dataStore.variableStores.between.referencedVariables,
-            this.eventVariableManager.referencedVariables), this.eventVariableManager.currentVariables.map(d => d.id),
+        this.props.rootStore.dataStore.variableStores.between.replaceAll(this.eventVariableManager.referencedVariables, this.eventVariableManager.currentVariables.map(d => d.id),
             this.eventVariableManager.primaryVariables);
         this.props.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.rootStore.dataStore.variableStores.sample.currentVariables.map(d => this.props.rootStore.dataStore.variableStores.sample.getById(d).name) + "\n" + this.props.rootStore.dataStore.variableStores.between.currentVariables.map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).name), true);
         this.props.closeAddModal();

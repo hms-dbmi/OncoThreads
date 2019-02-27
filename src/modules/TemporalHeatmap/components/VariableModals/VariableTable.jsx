@@ -36,46 +36,9 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             callback: '',
         };
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
-        this.setColorRange = this.setColorRange.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.handleSort = this.handleSort.bind(this);
         this.combineSelected = this.combineSelected.bind(this);
-    }
-
-
-    /**
-     * opens modal to modify a variable or change an existing modification
-     * @param originalVariable
-     * @param derivedVariable
-     * @param type
-     */
-    modifyVariable(originalVariable, derivedVariable, type) {
-        this.openModifyModal(originalVariable, derivedVariable, type, newVariable => {
-            if (derivedVariable !== null) {
-                this.props.variableManagerStore.replaceDisplayedVariable(derivedVariable.id, newVariable);
-            }
-            else {
-                this.props.variableManagerStore.replaceDisplayedVariable(originalVariable.id, newVariable);
-            }
-        });
-    }
-
-    combineVariables(variables, derivedVariable) {
-        this.openCombineModal(variables, derivedVariable, (newVariable, keep) => {
-            if (derivedVariable !== null) {
-                this.props.variableManagerStore.replaceDisplayedVariable(derivedVariable.id, newVariable);
-            }
-            else {
-                this.props.variableManagerStore.addVariableToBeDisplayed(newVariable);
-                if (!keep) {
-                    variables.forEach(d => this.props.variableManagerStore.removeVariable(d.id));
-                }
-            }
-        })
-    }
-
-    setColorRange(id, range) {
-        this.props.variableManagerStore.getById(id).range = range;
     }
 
 
@@ -95,28 +58,25 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * opens modal to modify variable
-     * @param variable
-     * @param derivedVariable
+     * @param variableId
+     * @param derivedVariableId
      * @param type
-     * @param callback
      */
-    openModifyModal(variable, derivedVariable, type, callback) {
+    openModifyModal(variableId, derivedVariableId, type) {
         this.setState({
             modifyContinuousIsOpen: type === "NUMBER",
             modifyCategoricalIsOpen: type === "STRING" || type === "ORDINAL",
             modifyBinaryIsOpen: type === "BINARY",
-            derivedVariable: derivedVariable,
-            currentVariable: variable,
-            callback: callback
+            derivedVariable: derivedVariableId,
+            currentVariable: variableId,
         });
     }
 
-    openCombineModal(variables, derivedVariable, callback) {
+    openCombineModal(variables, derivedVariable) {
         this.setState({
             combineVariables: variables,
             derivedVariable: derivedVariable,
             combineVariablesIsOpen: true,
-            callback: callback
         })
     }
 
@@ -136,7 +96,6 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      */
     handleCogWheelClick(event, id) {
         let variable = this.props.variableManagerStore.getById(id);
-
         if (variable.originalIds.length === 1) {
             let originalVariable;
             let derivedVariable = null;
@@ -147,10 +106,10 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             else {
                 originalVariable = variable;
             }
-            this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype);
+            this.openModifyModal(originalVariable, derivedVariable, originalVariable.datatype);
         }
         else {
-            this.combineVariables(variable.originalIds.map(d => this.props.variableManagerStore.getById(d)), variable);
+            this.openCombineModal(variable.originalIds.map(d => this.props.variableManagerStore.getById(d)), variable);
         }
     }
 
@@ -159,7 +118,6 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             this.openSaveVariableModal(variable, save => {
                 this.props.variableManagerStore.updateSavedVariables(variable.id, save);
                 this.props.variableManagerStore.removeVariable(variable.id);
-
             });
         }
         else {
@@ -254,7 +212,6 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
         if (this.state.modifyContinuousIsOpen) {
             modal = <ModifyContinuous modalIsOpen={this.state.modifyContinuousIsOpen}
                                       variable={this.state.currentVariable}
-                                      callback={this.state.callback}
                                       derivedVariable={this.state.derivedVariable}
                                       setColorRange={this.setColorRange}
                                       closeModal={this.closeModal}/>
@@ -262,14 +219,12 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
         else if (this.state.modifyCategoricalIsOpen) {
             modal = <ModifyCategorical modalIsOpen={this.state.modifyCategoricalIsOpen}
                                        variable={this.state.currentVariable}
-                                       callback={this.state.callback}
                                        derivedVariable={this.state.derivedVariable}
                                        closeModal={this.closeModal}/>
         }
         else if (this.state.modifyBinaryIsOpen) {
             modal = <ModifyBinary modalIsOpen={this.state.modifyBinaryIsOpen}
                                   variable={this.state.currentVariable}
-                                  callback={this.state.callback}
                                   derivedVariable={this.state.derivedVariable}
                                   closeModal={this.closeModal}/>
         }
@@ -283,7 +238,6 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             modal = <CombineModal modalIsOpen={this.state.combineVariablesIsOpen}
                                   variables={this.state.combineVariables}
                                   derivedVariable={this.state.derivedVariable}
-                                  callback={this.state.callback}
                                   closeModal={this.closeModal}/>
         }
         return (
@@ -328,7 +282,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
                 alert("Please select two binary variables");
             }
             else {
-                this.combineVariables(this.props.variableManagerStore.getSelectedVariables(), null);
+                this.openCombineModal(this.props.variableManagerStore.getSelectedVariables(), null);
             }
         }
         else {
