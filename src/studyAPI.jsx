@@ -5,7 +5,8 @@ class StudyAPI {
     constructor() {
         extendObservable(this, {
             studies: []
-        })
+        });
+        this.getStudies();
     }
 
     getStudies() {

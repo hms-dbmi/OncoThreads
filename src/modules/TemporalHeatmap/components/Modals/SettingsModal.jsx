@@ -1,8 +1,6 @@
 import React from 'react';
 import {observer,inject} from 'mobx-react';
-import {Button, Modal} from 'react-bootstrap';
-import FormGroup from "react-bootstrap/es/FormGroup";
-import Radio from "react-bootstrap/es/Radio";
+import {Button, Modal,Radio,FormGroup} from 'react-bootstrap';
 
 
 const SettingsModal = inject("uiStore")(observer(class SettingsModal extends React.Component {

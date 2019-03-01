@@ -13,7 +13,7 @@ import SettingsModal from "./Modals/SettingsModal";
 import AboutModal from "./Modals/AboutModal";
 import StudySummary from "./StudySummary";
 
-const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App extends React.Component {
+const App = inject("rootStore", "uiStore", "undoRedoStore", "studyapi")(observer(class App extends React.Component {
     constructor() {
         super();
         this.state = {
@@ -84,6 +84,7 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
      */
     getMainContent() {
         if (this.props.rootStore.firstLoad) {
+            console.log(this.props.studyapi.studies);
             return (
                 <DefaultView studies={this.props.studyapi.studies}/>
             )

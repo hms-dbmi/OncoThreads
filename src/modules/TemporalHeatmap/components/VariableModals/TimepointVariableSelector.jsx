@@ -1,8 +1,7 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
-import {Alert, Button, Checkbox, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
+import {Alert, Button, Checkbox, Col, Form, FormControl, FormGroup,ControlLabel} from 'react-bootstrap';
 import Select from 'react-select';
-import ControlLabel from "react-bootstrap/es/ControlLabel";
 import OriginalVariable from "../../stores/OriginalVariable";
 
 

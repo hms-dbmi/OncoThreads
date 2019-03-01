@@ -25,15 +25,14 @@ const Slider = inject("binningStore")(observer(class Slider extends React.Compon
      */
     getPositionTextfields() {
         let positionText = [];
-        const _self = this;
-        this.props.binningStore.x.forEach(function (d, i) {
+        this.props.binningStore.x.forEach((d, i)=> {
             positionText.push(
-                <foreignObject key={i} x={d}>
-                    <input onChange={(e) =>_self.props.binningStore.handlePositionTextFieldChange(e.target.value,i)}
+                <foreignObject key={i} x={d} width={75} height={26}>
+                    <input onChange={(e) =>this.props.binningStore.handlePositionTextFieldChange(e.target.value,i)}
                            type="text"
                            style={{
                                width: 75 + "px"
-                           }} value={_self.props.binningStore.textFieldTexts[i]}/>
+                           }} value={this.props.binningStore.textFieldTexts[i]}/>
                 </foreignObject>)
         });
         return positionText;
