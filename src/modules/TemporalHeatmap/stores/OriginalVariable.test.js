@@ -11,13 +11,10 @@ describe("OriginalVariable", () => {
             }
         });
         const variable = new OriginalVariable("id1", "name1", "STRING", "description1", [], [], mapper1, "", "");
-        expect(variable.domain.slice().length).toBe(3);
+        expect(variable.domain.length).toBe(3);
         expect(variable.domain).toContain("x");
         expect(variable.domain).toContain("y");
         expect(variable.domain).toContain("z");
         expect(variable.range.slice()).toEqual(ColorScales.defaultCategoricalRange);
-        expect(variable.colorScale.domain()).toEqual(variable.domain);
-        expect(variable.colorScale.range()).toEqual(variable.range);
-
     });
 });
