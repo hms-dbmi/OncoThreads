@@ -1,5 +1,5 @@
 import ColorScales from '../UtilityClasses/ColorScales';
-import {extendObservable,action} from "mobx";
+import {action, extendObservable} from "mobx";
 
 class OriginalVariable {
     constructor(id, name, datatype, description, range, domain, mapper, profile, type) {
@@ -31,8 +31,8 @@ class OriginalVariable {
         return {
             domain: currDomain,
             range: currRange,
-            changeRange:action(range=>{
-                this.range=range
+            changeRange: action(range => {
+                this.range = range
             }),
             get colorScale() {
                 let scale;
