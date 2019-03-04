@@ -16,7 +16,6 @@ class DataStore {
             timepoints: [],
             selectedPatients: [],
             globalPrimary: '',
-            transitionOn: false,
             /**
              * get thr maximum number of currently displayed partitions
              * @returns {number}
@@ -28,6 +27,9 @@ class DataStore {
                     maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length));
                 }
                 return maxPartitions;
+            },
+            get transitionOn(){
+                return this.variableStores.between.currentVariables.length>0;
             },
             /**
              * set global primary
@@ -46,9 +48,6 @@ class DataStore {
              */
             setGlobalTime: action(boolean => {
                 this.globalTime = boolean;
-            }),
-            setTransitionOn: action(boolean => {
-                this.transitionOn = boolean
             }),
             /**
              * handles currently selected patients

@@ -92,7 +92,7 @@ class MolProfileMapping {
         this.currentMutations = {};
         this.currentMolecular = {};
         this.isInGenePanel = {};
-        this.rootStore.cbioAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
+        this.rootStore.api.getGeneIDs(HUGOsymbols, entrezIDs => {
             this.currentIds = entrezIDs;
 
             callback();
@@ -156,7 +156,7 @@ class MolProfileMapping {
                     this.currentMutations[d.entrezGeneId] = this.rootStore.mutations[d.entrezGeneId];
                 }
             });
-            this.rootStore.cbioAPI.areProfiled(this.rootStore.study.studyId, this.currentIds.map(d => d.entrezGeneId), profiledDict => {
+            this.rootStore.api.areProfiled(this.rootStore.study.studyId, this.currentIds.map(d => d.entrezGeneId), profiledDict => {
                 this.isInGenePanel = profiledDict;
                 callback()
             });
@@ -170,7 +170,7 @@ class MolProfileMapping {
      */
     loadMolecularData(profileId, callback) {
         if (this.currentIds.length !== 0) {
-            this.rootStore.cbioAPI.getMolecularValues(this.rootStore.study.studyId, profileId, this.currentIds, response => {
+            this.rootStore.api.getMolecularValues(this.rootStore.study.studyId, profileId, this.currentIds, response => {
                 this.currentMolecular[profileId] = response;
                 callback()
             })

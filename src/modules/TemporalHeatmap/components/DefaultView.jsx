@@ -1,8 +1,9 @@
 import React from "react";
 import {inject, observer} from "mobx-react";
 import Select from 'react-select';
-import {Button, Panel} from "react-bootstrap";
+import {Button, ControlLabel, FormControl, FormGroup, Panel} from "react-bootstrap";
 import StudySummary from "./StudySummary";
+import FontAwesome from 'react-fontawesome';
 
 
 /*
@@ -12,7 +13,11 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
-        this.state = {studyClicked: false,}
+        this.state = {studyClicked: false,};
+        this.displayStudy = this.displayStudy.bind(this);
+        this.handleSpecimenLoad = this.handleSpecimenLoad.bind(this);
+        this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
+        this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
     }
 
     /**
@@ -20,11 +25,11 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
      * @param selectedOption
      */
     getStudy(selectedOption) {
+        this.props.rootStore.setIsOwnData(false);
         this.setState({studyClicked: true});
-        const selectedStudy = this.props.studies.filter(d => d.studyId === selectedOption.value)[0]
-        this.props.rootStore.parseCBio(selectedStudy, () => {
-            this.props.undoRedoStore.saveLoadHistory(selectedStudy.name)
-        });
+        this.props.rootStore.study = this.props.studies.filter(d => d.studyId === selectedOption.value)[0];
+        this.props.rootStore.parseCBio(this.props.rootStore.study);
+
     }
 
     /**
@@ -39,6 +44,17 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         return options;
     }
 
+    displayStudy() {
+        if (this.props.rootStore.isOwnData) {
+            this.props.rootStore.parseCBio(this.props.rootStore.study);
+            this.props.undoRedoStore.saveLoadHistory("own data");
+        }
+        else {
+            this.props.undoRedoStore.saveLoadHistory(this.props.rootStore.study.name);
+        }
+        this.props.rootStore.display = true;
+        this.props.rootStore.firstLoad = false;
+    }
 
     /**
      * gets information about study
@@ -62,7 +78,6 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                                   maxTP={this.props.rootStore.maxTP}/>
                 </Panel.Body>
             </Panel>
-                <Button onClick={this.displayStudy}>Select study</Button>
             </div>
 
         }
@@ -72,9 +87,26 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         return info;
     }
 
+    handleSpecimenLoad(e) {
+        this.props.rootStore.setIsOwnData(true);
+        this.props.rootStore.localFileLoader.loadSpecimenFile(e.target.files[0])
+    }
+
+    handleClinicalSampleLoad(e) {
+        this.props.rootStore.setIsOwnData(true);
+        this.props.rootStore.localFileLoader.loadClinicalFile(e.target.files[0], true)
+    }
+
+    handleClinicalPatientLoad(e) {
+        this.props.rootStore.setIsOwnData(true);
+        this.props.rootStore.localFileLoader.loadClinicalFile(e.target.files[0], false)
+    }
+
     render() {
+        let launchDisabled = !this.props.rootStore.parsed && !(this.props.rootStore.localFileLoader.specimenParsed && (this.props.rootStore.localFileLoader.clinicalPatientParsed || this.props.rootStore.localFileLoader.clinicalSampleParsed));
         return (
             <div className="defaultView">
+                <h2>Load cBio data</h2>
                 <Select
                     type="text"
                     searchable={true}
@@ -83,6 +115,42 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                     onChange={this.getStudy}
                 />
                 {this.getStudyInfo()}
+                <h2>Load own data</h2>
+                <form>
+                    <FormGroup>
+                        <ControlLabel>Specimen Timeline File</ControlLabel>
+                        <FormControl type="file"
+                                     label="File"
+                                     onChange={this.handleSpecimenLoad}
+                                     help="Example block-level help text here."/>
+                        {this.props.rootStore.localFileLoader.specimenParsed ?
+                            <FontAwesome name={"check"}/> : ""}
+
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel>Clinical Sample Data File</ControlLabel>
+                        <FormControl type="file"
+                                     label="File"
+                                     onChange={this.handleClinicalSampleLoad}
+                                     help="Example block-level help text here."/>
+                        {this.props.rootStore.localFileLoader.clinicalSampleParsed ?
+                            <FontAwesome name={"check"}/> : ""}
+
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel>Clinical Patient Data File</ControlLabel>
+                        <FormControl type="file"
+                                     label="File"
+                                     onChange={this.handleClinicalPatientLoad}
+                                     help="Example block-level help text here."/>
+                        {this.props.rootStore.localFileLoader.clinicalPatientParsed ?
+                            <FontAwesome name={"check"}/> : ""}
+
+                    </FormGroup>
+                </form>
+                <Button
+                    disabled={launchDisabled}
+                    onClick={this.displayStudy}>Launch</Button>
             </div>
         );
     }

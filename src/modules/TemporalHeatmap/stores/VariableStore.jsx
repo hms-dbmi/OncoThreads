@@ -123,13 +123,10 @@ class VariableStore {
                     if (this.type === "sample" && change.removed.includes(this.rootStore.dataStore.globalPrimary)) {
                         this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
                     }
-                    if (this.type === "between") {
-                        this.rootStore.dataStore.setTransitionOn(this.currentVariables.length !== 0);
-                    }
                 }
             }
             else if (change.type === "update") {
-                this.childStore.updateHeatmapRows(change.index, change.newValue,this.getById(change.newValue).mapper);
+                this.childStore.updateHeatmapRows(change.index, change.newValue, this.getById(change.newValue).mapper);
             }
             this.updateReferences();
             this.updateVariableRanges();
