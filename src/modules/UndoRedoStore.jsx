@@ -176,7 +176,6 @@ class UndoRedoStore {
         this.rootStore.dataStore.variableStores.between.replaceVariables(UndoRedoStore.deserializeReferencedVariables(this.stateStack[index].state.allBetweenVar),
             this.stateStack[index].state.currentBetweenVar);
         this.rootStore.eventTimelineMap.replace(this.stateStack[index].state.eventTimelineMap);
-        this.rootStore.dataStore.transitionOn = this.stateStack[index].state.transitionOn;
         this.rootStore.dataStore.globalPrimary = this.stateStack[index].state.globalPrimary;
     }
 
@@ -256,7 +255,6 @@ class UndoRedoStore {
             currentBetweenVar: store.rootStore.dataStore.variableStores.between.currentVariables.slice(),
             allSampleVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.sample.referencedVariables),
             allBetweenVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.between.referencedVariables),
-            transitionOn: store.rootStore.dataStore.transitionOn,
             globalTime: store.uiStore.globalTime,
             realTime: store.uiStore.realTime,
             globalPrimary: store.rootStore.dataStore.globalPrimary,
