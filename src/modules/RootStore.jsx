@@ -107,8 +107,8 @@ class RootStore {
             /**
              * parses timeline data
              */
-            parseTimeline: action((study,callback) => {
-                this.study=study;
+            parseTimeline: action((study, callback) => {
+                this.study = study;
                 if (this.isOwnData) {
                     this.api = new FileAPI(this.localFileLoader);
                 }
@@ -123,6 +123,7 @@ class RootStore {
                 this.timelineParsed = false;
                 this.api.getPatients(patients => {
                     this.patients = patients;
+                    console.log(this.patients);
                     this.api.getEvents(patients, events => {
                         this.events = events;
                         console.log(events);
@@ -262,18 +263,19 @@ class RootStore {
                             eventCategories.push(e.eventType);
                         }
                         if (e.eventType === "SPECIMEN") {
+                            let sampleId=e.attributes.filter(d=>d.key==="SAMPLE_ID")[0].value;
                             excludeDates[patient].push(e.startNumberOfDaysSinceDiagnosis);
-                            sampleTimelineMap[e.attributes[1].value] = e.startNumberOfDaysSinceDiagnosis;
+                            sampleTimelineMap[sampleId] = e.startNumberOfDaysSinceDiagnosis;
                             if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
-                                sampleStructure[patient].push(e.attributes[1].value);
+                                sampleStructure[patient].push(sampleId);
                                 timelineStructure[patient].push({
-                                    sampleId: e.attributes[1].value,
+                                    sampleId:sampleId,
                                     date: e.startNumberOfDaysSinceDiagnosis
                                 });
                                 if (timepointStructure.length <= currTP) {
                                     timepointStructure.push([]);
                                 }
-                                timepointStructure[currTP].push({patient: patient, sample: e.attributes[1].value});
+                                timepointStructure[currTP].push({patient: patient, sample: sampleId});
                                 currTP += 1;
 
                             }

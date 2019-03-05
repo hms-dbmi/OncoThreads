@@ -15,7 +15,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.getStudy = this.getStudy.bind(this);
         this.state = {studyClicked: false,};
         this.displayStudy = this.displayStudy.bind(this);
-        this.handleSpecimenLoad = this.handleSpecimenLoad.bind(this);
+        this.handleEventsLoad = this.handleEventsLoad.bind(this);
         this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
         this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
     }
@@ -44,20 +44,14 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     }
 
     displayStudy() {
-        if (this.props.rootStore.isOwnData) {
-            this.props.rootStore.parseTimeline(null, () => {
-                this.props.rootStore.parseCBio(() => {
-                    this.props.undoRedoStore.saveLoadHistory("own data");
-                })
-            });
-        }
-        else {
-            this.props.rootStore.parseCBio(() => {
+        this.props.rootStore.parseCBio(() => {
+            if (this.props.rootStore.isOwnData) {
+                this.props.undoRedoStore.saveLoadHistory("own data");
+            }
+            else {
                 this.props.undoRedoStore.saveLoadHistory(this.props.rootStore.study.name);
-            });
-
-        }
-
+            }
+        });
     }
 
     /**
@@ -86,9 +80,9 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         return info;
     }
 
-    handleSpecimenLoad(e) {
+    handleEventsLoad(e) {
         this.props.rootStore.setIsOwnData(true);
-        this.props.rootStore.localFileLoader.setSpecimenFile(e.target.files[0], () => {
+        this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
             this.props.rootStore.parseTimeline(null, () => {
             });
         });
@@ -104,18 +98,29 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false)
     }
 
+    static getStateIcon(value) {
+        let icon = null;
+        if (value) {
+            icon = <FontAwesome name={"check"} style={{color: "green"}}/>;
+        }
+        else if (value === undefined) {
+            icon = <FontAwesome name={"times"} style={{color: "red"}}/>;
+        }
+        return icon;
+    }
+
     render() {
-        let launchDisabled=true;
-        if(this.props.rootStore.isOwnData){
-            if(this.props.rootStore.localFileLoader.specimenParsed){
-                if(this.props.rootStore.localFileLoader.clinicalPatientParsed||this.props.rootStore.localFileLoader.clinicalSampleParsed){
-                    launchDisabled=false
+        let launchDisabled = true;
+        if (this.props.rootStore.isOwnData) {
+            if (this.props.rootStore.localFileLoader.eventsParsed) {
+                if (this.props.rootStore.localFileLoader.clinicalPatientParsed || this.props.rootStore.localFileLoader.clinicalSampleParsed) {
+                    launchDisabled = false
                 }
             }
         }
-        else{
-            if(this.props.rootStore.timelineParsed){
-                launchDisabled=false;
+        else {
+            if (this.props.rootStore.timelineParsed) {
+                launchDisabled = false;
             }
         }
         return (
@@ -130,35 +135,60 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                 />
                 <h2>Load own data</h2>
                 <form>
+                    <h4>Required files</h4>
                     <FormGroup>
-                        <ControlLabel>Specimen Timeline File</ControlLabel>
+                        <ControlLabel>Timeline {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.eventsParsed)}</ControlLabel>
                         <FormControl type="file"
                                      label="File"
-                                     onChange={this.handleSpecimenLoad}
-                                     help="Example block-level help text here."/>
-                        {this.props.rootStore.localFileLoader.specimenParsed ?
-                            <FontAwesome name={"check"}/> : ""}
-
+                                     multiple={true}
+                                     onChange={this.handleEventsLoad}/>
                     </FormGroup>
+                    <h4>Optional files (at least one is required)</h4>
                     <FormGroup>
-                        <ControlLabel>Clinical Sample Data File</ControlLabel>
+                        <ControlLabel>Clinical Sample
+                            Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalSampleParsed)}</ControlLabel>
                         <FormControl type="file"
                                      label="File"
                                      onChange={this.handleClinicalSampleLoad}
                                      help="Example block-level help text here."/>
-                        {this.props.rootStore.localFileLoader.clinicalSampleParsed ?
-                            <FontAwesome name={"check"}/> : ""}
+
 
                     </FormGroup>
                     <FormGroup>
-                        <ControlLabel>Clinical Patient Data File</ControlLabel>
+                        <ControlLabel>Clinical Patient
+                            Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalPatientParsed)}</ControlLabel>
                         <FormControl type="file"
                                      label="File"
                                      onChange={this.handleClinicalPatientLoad}
                                      help="Example block-level help text here."/>
-                        {this.props.rootStore.localFileLoader.clinicalPatientParsed ?
-                            <FontAwesome name={"check"}/> : ""}
-
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel>Mutations</ControlLabel>
+                        <FormControl type="file"
+                                     label="File"
+                                     multiple={true}
+                                     help="Example block-level help text here."/>
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel>Expression</ControlLabel>
+                        <FormControl type="file"
+                                     label="File"
+                                     multiple={true}
+                                     help="Example block-level help text here."/>
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel>Copy Number variation</ControlLabel>
+                        <FormControl type="file"
+                                     label="File"
+                                     multiple={true}
+                                     help="Example block-level help text here."/>
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel>All Files (Please follow naming conventions)</ControlLabel>
+                        <FormControl type="file"
+                                     label="File"
+                                     multiple={true}
+                                     help="Example block-level help text here."/>
                     </FormGroup>
                 </form>
                 {this.getStudyInfo()}
