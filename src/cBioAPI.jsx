@@ -113,6 +113,7 @@ class cBioAPI {
     getAllMutations(molecularProfile, callback) {
         axios.get("http://www.cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutations?sampleListId=" + this.studyId + "_all&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
+                console.log(response.data);
                 callback(response.data);
             }).catch((error) => {
             if (cBioAPI.verbose) {

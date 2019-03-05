@@ -27,9 +27,8 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     getStudy(selectedOption) {
         this.props.rootStore.setIsOwnData(false);
         this.setState({studyClicked: true});
-        this.props.rootStore.study = this.props.studies.filter(d => d.studyId === selectedOption.value)[0];
-        this.props.rootStore.parseCBio(this.props.rootStore.study);
-
+        this.props.rootStore.parseTimeline(this.props.studies.filter(d => d.studyId === selectedOption.value)[0], () => {
+        });
     }
 
     /**
@@ -46,14 +45,19 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
 
     displayStudy() {
         if (this.props.rootStore.isOwnData) {
-            this.props.rootStore.parseCBio(this.props.rootStore.study);
-            this.props.undoRedoStore.saveLoadHistory("own data");
+            this.props.rootStore.parseTimeline(null, () => {
+                this.props.rootStore.parseCBio(() => {
+                    this.props.undoRedoStore.saveLoadHistory("own data");
+                })
+            });
         }
         else {
-            this.props.undoRedoStore.saveLoadHistory(this.props.rootStore.study.name);
+            this.props.rootStore.parseCBio(() => {
+                this.props.undoRedoStore.saveLoadHistory(this.props.rootStore.study.name);
+            });
+
         }
-        this.props.rootStore.display = true;
-        this.props.rootStore.firstLoad = false;
+
     }
 
     /**
@@ -62,7 +66,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
      */
     getStudyInfo() {
         let info = null;
-        if (this.props.rootStore.parsed) {
+        if (this.props.rootStore.timelineParsed) {
             info = <div><Panel>
                 <Panel.Heading>
                     <Panel.Title>
@@ -70,12 +74,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                     </Panel.Title>
                 </Panel.Heading>
                 <Panel.Body>
-                    <StudySummary studyName={this.props.rootStore.study.name}
-                                  studyDescription={this.props.rootStore.study.description}
-                                  studyCitation={this.props.rootStore.study.citation}
-                                  numPatients={this.props.rootStore.patients.length}
-                                  minTP={this.props.rootStore.minTP}
-                                  maxTP={this.props.rootStore.maxTP}/>
+                    <StudySummary/>
                 </Panel.Body>
             </Panel>
             </div>
@@ -89,21 +88,36 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
 
     handleSpecimenLoad(e) {
         this.props.rootStore.setIsOwnData(true);
-        this.props.rootStore.localFileLoader.loadSpecimenFile(e.target.files[0])
+        this.props.rootStore.localFileLoader.setSpecimenFile(e.target.files[0], () => {
+            this.props.rootStore.parseTimeline(null, () => {
+            });
+        });
     }
 
     handleClinicalSampleLoad(e) {
         this.props.rootStore.setIsOwnData(true);
-        this.props.rootStore.localFileLoader.loadClinicalFile(e.target.files[0], true)
+        this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], true)
     }
 
     handleClinicalPatientLoad(e) {
         this.props.rootStore.setIsOwnData(true);
-        this.props.rootStore.localFileLoader.loadClinicalFile(e.target.files[0], false)
+        this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false)
     }
 
     render() {
-        let launchDisabled = !this.props.rootStore.parsed && !(this.props.rootStore.localFileLoader.specimenParsed && (this.props.rootStore.localFileLoader.clinicalPatientParsed || this.props.rootStore.localFileLoader.clinicalSampleParsed));
+        let launchDisabled=true;
+        if(this.props.rootStore.isOwnData){
+            if(this.props.rootStore.localFileLoader.specimenParsed){
+                if(this.props.rootStore.localFileLoader.clinicalPatientParsed||this.props.rootStore.localFileLoader.clinicalSampleParsed){
+                    launchDisabled=false
+                }
+            }
+        }
+        else{
+            if(this.props.rootStore.timelineParsed){
+                launchDisabled=false;
+            }
+        }
         return (
             <div className="defaultView">
                 <h2>Load cBio data</h2>
@@ -114,7 +128,6 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                     options={this.setOptions()}
                     onChange={this.getStudy}
                 />
-                {this.getStudyInfo()}
                 <h2>Load own data</h2>
                 <form>
                     <FormGroup>
@@ -148,6 +161,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
 
                     </FormGroup>
                 </form>
+                {this.getStudyInfo()}
                 <Button
                     disabled={launchDisabled}
                     onClick={this.displayStudy}>Launch</Button>

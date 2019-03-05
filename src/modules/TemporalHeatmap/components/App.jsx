@@ -58,7 +58,7 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
     }
 
     getNavbarContent() {
-        if (this.props.rootStore.display && this.props.rootStore.parsed) {
+        if (this.props.rootStore.variablesParsed) {
             return ([
                     <GetStudy key="getStudy" studies={this.props.studyapi.studies}/>,
                     <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
@@ -88,8 +88,8 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
                 <DefaultView studies={this.props.studyapi.studies}/>
             )
         }
-        //if everything is parsed show the main view
-        else if (this.props.rootStore.display && this.props.rootStore.parsed) {
+        //if everything is variablesParsed show the main view
+        else if (this.props.rootStore.variablesParsed) {
             return (
                 <Content/>
             )
@@ -124,12 +124,7 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
                         Study Information
                     </Modal.Header>
                     <Modal.Body>
-                        <StudySummary studyName={this.props.rootStore.study.name}
-                                      studyDescription={this.props.rootStore.study.description}
-                                      studyCitation={this.props.rootStore.study.citation}
-                                      numPatients={this.props.rootStore.patients.length}
-                                      minTP={this.props.rootStore.minTP}
-                                      maxTP={this.props.rootStore.maxTP}/>
+                        <StudySummary/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.closeModal}>Close</Button>

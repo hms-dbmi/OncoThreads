@@ -6,10 +6,11 @@ import {extendObservable} from "mobx";
 class LocalFileLoader {
     constructor() {
         this.patients = [];
-        this.rawEvents = [];
-        this.rawClinicalSampleData = [];
-        this.rawClinicalPatientData = [];
-        this.molecularProfiles=[];
+        this.samples = [];
+        this.eventFiles = new Map();
+        this.clinicalSampleFile = null;
+        this.clinicalPatientFile = null;
+        this.molecularProfiles = [];
         extendObservable(this, {
             specimenParsed: false,
             clinicalPatientParsed: false,
@@ -18,12 +19,14 @@ class LocalFileLoader {
     }
 
     /**
-     * Parse specimen file
+     * sets the file for specimen information
      * @param file
+     * @param callback
      */
-    loadSpecimenFile(file) {
+    setSpecimenFile(file, callback) {
         this.specimenParsed = false;
         let allKeysPresent = false;
+        let dateCorrect = true;
         Papa.parse(file, {
             delimiter: "\t",
             header: true,
@@ -58,34 +61,21 @@ class LocalFileLoader {
                 if (!this.patients.includes(row.data[0]["PATIENT_ID"])) {
                     this.patients.push(row.data[0]["PATIENT_ID"]);
                 }
-                if (!(row.data[0]["PATIENT_ID"] in this.rawEvents)) {
-                    this.rawEvents[row.data[0]["PATIENT_ID"]] = [];
+                if (!this.samples.includes(row.data[0]["SAMPLE_ID"])) {
+                    this.samples.push(row.data[0]["SAMPLE_ID"]);
                 }
                 let date = parseInt(row.data[0]["START_DATE"], 10);
-                if (!isNaN(date)) {
-                    this.rawEvents[row.data[0]["PATIENT_ID"]].push({
-                        attributes: [{key: "SURGERY", value: row.data[0]["SURGERY"]}, {
-                            key: "SAMPLE_ID",
-                            value: row.data[0]["SAMPLE_ID"]
-                        }],
-                        eventType: row.data[0]["EVENT_TYPE"],
-                        patientId: row.data[0]["PATIENT_ID"],
-                        startNumberOfDaysSinceDiagnosis: parseInt(row.data[0]["START_DATE"], 10)
-                    });
-                }
-                else {
-                    alert("ABORT: START_DATE is not a number");
+                if (isNaN(date)) {
+                    alert("ERROR: START_DATE is not a number");
+                    dateCorrect = false;
                     parser.abort();
                 }
             },
             complete: () => {
-                if (allKeysPresent) {
-                    for (let patient in this.rawEvents) {
-                        this.rawEvents[patient].sort((a, b) => {
-                            return a.startNumberOfDaysSinceDiagnosis - b.startNumberOfDaysSinceDiagnosis;
-                        })
-                    }
+                if (allKeysPresent && dateCorrect) {
                     this.specimenParsed = true;
+                    this.eventFiles.set("SPECIMEN", file);
+                    callback();
                 }
 
             }
@@ -93,85 +83,213 @@ class LocalFileLoader {
     }
 
     /**
-     * Parse clinical data file
+     * Parse specimen file
+     * @param file
+     * @param rawEvents
+     * @param callback
+     */
+    loadSpecimenFile(file, rawEvents, callback) {
+        Papa.parse(file, {
+            delimiter: "\t",
+            header: true,
+            skipEmptyLines: true,
+            step: row => {
+                if (!(row.data[0]["PATIENT_ID"] in rawEvents)) {
+                    rawEvents[row.data[0]["PATIENT_ID"]] = [];
+                }
+                rawEvents[row.data[0]["PATIENT_ID"]].push({
+                    attributes: [{key: "SURGERY", value: row.data[0]["SURGERY"]}, {
+                        key: "SAMPLE_ID",
+                        value: row.data[0]["SAMPLE_ID"]
+                    }],
+                    eventType: row.data[0]["EVENT_TYPE"],
+                    patientId: row.data[0]["PATIENT_ID"],
+                    startNumberOfDaysSinceDiagnosis: parseInt(row.data[0]["START_DATE"], 10)
+                });
+            },
+            complete: () => {
+                for (let patient in rawEvents) {
+                    rawEvents[patient].sort((a, b) => {
+                        return a.startNumberOfDaysSinceDiagnosis - b.startNumberOfDaysSinceDiagnosis;
+                    })
+                }
+                callback();
+
+            }
+        });
+    }
+
+    loadEvents(callback) {
+        let rawEvents = [];
+        if (this.eventFiles.has("SPECIMEN")) {
+            this.loadSpecimenFile(this.eventFiles.get("SPECIMEN"), rawEvents, () => {
+                callback(rawEvents);
+            })
+        }
+    }
+
+    /**
+     * sets the clinical file if the header is in the right format
      * @param file
      * @param isSample
      */
-    loadClinicalFile(file, isSample) {
+    setClinicalFile(file, isSample) {
         if (isSample) {
             this.clinicalSampleParsed = false;
         }
         else {
             this.clinicalPatientParsed = false
         }
-        let clinicalAttributes = {};
-        let allKeysPresent = false;
-        let rows = [];
-        let sampleData = false;
+
+        let correctHeader = true;
         let rowCounter = 0;
-        //parse header
         Papa.parse(file, {
             delimiter: "\t",
-            header: true,
+            header: false,
             skipEmptyLines: true,
             step: (row, parser) => {
-                if (rowCounter === 0) {
-                    for (let key in row.data[0]) {
-                        clinicalAttributes[key] = {displayName: key, description: row.data[0][key]}
-                    }
+                if (rowCounter === 0 && !row.data[0][0].startsWith("#")) {
+                    alert("ERROR: wrong header format, first row has to start with #");
+                    correctHeader = false;
                 }
-                else if (rowCounter === 1) {
-                    for (let key in row.data[0]) {
-                        clinicalAttributes[key].datatype = row.data[0][key]
-                    }
+                else if (rowCounter === 1 && !row.data[0][0].startsWith("#")) {
+                    alert("ERROR: wrong header format, second row has to start with #");
+                    correctHeader = false;
                 }
-                else if (rowCounter === 3) {
-                    for (let key in row.data[0]) {
-                        if (row.data[0][key] === "PATIENT_ID") {
-                            allKeysPresent = true
-                        }
-                        if (row.data[0][key] === "SAMPLE_ID") {
-                            if (!isSample) {
-                                alert("ABORT: Clinical patient data files should not contain column SAMPLE_ID");
-                                allKeysPresent = false;
-                                parser.abort()
+                else if (rowCounter === 2 && !row.data[0][0].startsWith("#")) {
+                    alert("ERROR: wrong header format, third row has to start with #");
+                    correctHeader = false
+                }
+                else if (rowCounter === 3 && !row.data[0][0].startsWith("#")) {
+                    alert("ERROR: wrong header format, fourth row has to start with #");
+                    correctHeader = false
+                }
+                else if (rowCounter === 4) {
+                    if (row.data[0][0].startsWith("#")) {
+                        alert("ERROR: wrong header format, fifth row should not start with #");
+                        correctHeader = false
+                    }
+                    else {
+                        if (row.data[0].includes("PATIENT_ID")) {
+                            if (isSample && !row.data[0].includes("SAMPLE_ID")) {
+                                alert("ERROR: no SAMPLE_ID column found");
+                                correctHeader = false;
                             }
-                            sampleData = true;
+                            else if (!isSample && row.data[0].includes("SAMPLE_ID")) {
+                                alert("ERROR: SAMPLE_ID provided for non-sample specific clinical data");
+                                correctHeader = false;
+                            }
                         }
-                        clinicalAttributes[key].clinicalAttributeId = row.data[0][key];
-                        clinicalAttributes[row.data[0][key]] = clinicalAttributes[key];
-                        delete clinicalAttributes[key];
-                    }
-                    if (sampleData === false && isSample) {
-                        alert("ABORT: Column SAMPLE_ID missing");
-                        allKeysPresent = false;
+                        else {
+                            alert("ERROR: No PATIENT_ID data column found");
+                            correctHeader = false;
+                        }
                     }
                 }
-                else if (rowCounter > 3) {
+                else if (rowCounter > 4) {
                     parser.abort();
                 }
                 rowCounter++;
             },
             complete: () => {
-                //parse data
-                if (allKeysPresent) {
+                if (correctHeader) {
+                    if (isSample) {
+                        this.clinicalSampleFile = file;
+                        this.clinicalSampleParsed = true
+                    }
+                    else {
+                        this.clinicalPatientFile = file;
+                        this.clinicalPatientParsed = true
+
+                    }
+
+                }
+            }
+        });
+    }
+
+    /**
+     * Parse clinical data file
+     * @param isSample
+     * @param callback
+     */
+    loadClinicalFile(isSample, callback) {
+        let file;
+        if (isSample) {
+            file = this.clinicalSampleFile;
+        }
+        else {
+            file = this.clinicalPatientFile;
+        }
+        let clinicalAttributes = {};
+        let rows = [];
+        let abort = false;
+        let rowCounter = 0;
+        //parse header
+        if (file !== null) {
+            Papa.parse(file, {
+                delimiter: "\t",
+                header: true,
+                skipEmptyLines: true,
+                step: (row, parser) => {
+                    if (rowCounter === 0) {
+                        for (let key in row.data[0]) {
+                            clinicalAttributes[key] = {displayName: key, description: row.data[0][key]}
+                        }
+                    }
+                    else if (rowCounter === 1) {
+                        for (let key in row.data[0]) {
+                            clinicalAttributes[key].datatype = row.data[0][key]
+                        }
+                    }
+                    else if (rowCounter === 3) {
+                        for (let key in row.data[0]) {
+                            clinicalAttributes[key].clinicalAttributeId = row.data[0][key];
+                            clinicalAttributes[row.data[0][key]] = clinicalAttributes[key];
+                            delete clinicalAttributes[key];
+                        }
+                    }
+                    else if (rowCounter > 3) {
+                        parser.abort();
+                    }
+                    rowCounter++;
+                },
+                complete: () => {
+                    //parse data
                     Papa.parse(file, {
                         delimiter: "\t",
                         header: true,
                         skipEmptyLines: true,
                         comments: "#",
-                        step: row => {
+                        step: (row, parser) => {
                             const patientId = row.data[0]["PATIENT_ID"];
                             const sampleId = row.data[0]["SAMPLE_ID"];
+                            if (!this.patients.includes(patientId)) {
+                                abort = true;
+                                alert("ERROR: Unknown PATIENT_ID " + patientId + " in " + file.name);
+                            }
+                            else if (isSample && !this.samples.includes(sampleId)) {
+                                abort = true;
+                                alert("ERROR: Unknown PATIENT_ID " + patientId + " in " + file.name);
+                            }
+                            if (abort) {
+                                parser.abort();
+                            }
                             for (let key in row.data[0]) {
                                 if (!(key === "PATIENT_ID" || key === "SAMPLE_ID")) {
+                                    if (clinicalAttributes[key].datatype === "NUMBER") {
+                                        if (isNaN(parseFloat(row.data[0][key]))) {
+                                            abort = true;
+                                            parser.abort();
+                                        }
+                                    }
                                     let currRow = {
                                         clinicalAttribute: clinicalAttributes[key],
                                         clinicalAttributeId: clinicalAttributes[key].clinicalAttributeId,
                                         patientId: patientId,
                                         value: row.data[0][key]
                                     };
-                                    if (sampleData) {
+                                    if (isSample) {
                                         currRow.sampleId = sampleId;
                                     }
                                     rows.push(currRow);
@@ -179,20 +297,26 @@ class LocalFileLoader {
                             }
                         },
                         complete: () => {
-                            if (sampleData) {
-                                this.rawClinicalSampleData = rows;
-                                this.clinicalSampleParsed = true
+                            if (abort) {
+                                if (isSample) {
+                                    this.clinicalSampleParsed = false;
+                                    this.clinicalSampleFile=null;
+                                }
+                                else {
+                                    this.clinicalPatientParsed = false;
+                                    this.clinicalPatientFile=null;
+                                }
                             }
                             else {
-                                this.rawClinicalPatientData = rows;
-                                this.clinicalPatientParsed = true
-
+                                callback(rows)
                             }
                         }
                     });
+
                 }
-            }
-        });
+            });
+        }
+        else callback([])
 
 
     }

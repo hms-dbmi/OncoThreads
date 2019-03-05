@@ -20,7 +20,9 @@ class FileAPI {
      * @param callback
      */
     getEvents(patients, callback) {
-        callback(this.localFileLoader.rawEvents);
+        this.localFileLoader.loadEvents((rawEvents)=>{
+            callback(rawEvents);
+        });
     }
 
     /**
@@ -28,7 +30,9 @@ class FileAPI {
      * @param callback
      */
     getClinicalPatientData(callback) {
-        callback(this.localFileLoader.rawClinicalPatientData);
+        this.localFileLoader.loadClinicalFile(false, data => {
+            callback(data)
+        });
     }
 
     /**
@@ -44,7 +48,9 @@ class FileAPI {
      * @param callback
      */
     getClinicalSampleData(callback) {
-        callback(this.localFileLoader.rawClinicalSampleData);
+        this.localFileLoader.loadClinicalFile(true, data => {
+            callback(data)
+        });
     }
 
     /**

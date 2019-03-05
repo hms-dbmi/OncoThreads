@@ -16,8 +16,10 @@ const GetStudy = inject("rootStore", "undoRedoStore")(observer(class GetStudy ex
      */
     getStudy(event, study) {
         this.props.undoRedoStore.reset();
-        this.props.rootStore.parseCBio(study, () => {
-            this.props.undoRedoStore.saveLoadHistory(study.name);
+        this.props.rootStore.parseTimeline(study, () => {
+            this.props.rootStore.parseCBio(() => {
+                this.props.undoRedoStore.saveLoadHistory(study.name);
+            });
         });
     }
 

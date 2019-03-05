@@ -43,9 +43,9 @@ class RootStore {
         this.sampleStructure = [];
         extendObservable(this, {
             isOwnData: false,
-            parsed: false,
+            timelineParsed: false,
+            variablesParsed: false,
             firstLoad: true,
-            display: false,
             eventTimelineMap: observable.map(),
 
             timeVar: 1,
@@ -62,11 +62,11 @@ class RootStore {
              * resets everything
              */
             reset: action(() => {
-                this.parsed = false;
+                this.variablesParsed = false;
                 this.dataStore.reset();
                 this.resetTimepointStructure(false);
                 this.addInitialVariable();
-                this.parsed = true;
+                this.variablesParsed = true;
             }),
             setTimeData: action((id, value) => {
                 this.timeValue = value;
@@ -104,12 +104,11 @@ class RootStore {
                     this.dataStore.initialize();
                 }
             }),
-
-            /*
-            gets data from cBio and sets parameters in other stores
+            /**
+             * parses timeline data
              */
-            parseCBio: action((study) => {
-                console.log("parsing");
+            parseTimeline: action((study,callback) => {
+                this.study=study;
                 if (this.isOwnData) {
                     this.api = new FileAPI(this.localFileLoader);
                 }
@@ -120,43 +119,54 @@ class RootStore {
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
-                this.study = study;
-                this.parsed = false;
+                this.variablesParsed = false;
+                this.timelineParsed = false;
                 this.api.getPatients(patients => {
                     this.patients = patients;
                     this.api.getEvents(patients, events => {
                         this.events = events;
+                        console.log(events);
                         this.buildTimelineStructure();
                         this.createTimeGapMapping();
-                        this.api.getClinicalSampleData(data => {
-                            this.createClinicalSampleMapping(data);
-                            if (!this.parsed && data.length !== 0) {
-                                this.initialVariable = this.clinicalSampleCategories[0];
-                                this.parsed = true;
-                            }
-                            this.api.getClinicalPatientData(data => {
-                                this.createClinicalPatientMappers(data);
-                                if (!this.parsed && data.length !== 0) {
-                                    this.initialVariable = this.clinicalPatientCategories[0];
-                                    this.parsed = true;
-                                }
-                            });
-                        });
-                        this.api.getAvailableMolecularProfiles(profiles => {
-                            console.log(profiles);
-                            this.availableProfiles = profiles;
-                            const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
-                            if (mutationIndex !== -1) {
-                                this.hasMutations = true;
-                                this.api.getAllMutations(profiles[mutationIndex].molecularProfileId, data => {
-                                    this.createMutationsStructure(data);
-                                });
-                                this.api.getMutationCounts(profiles[mutationIndex].molecularProfileId, data => {
-                                    this.createMutationCountsMapping(data);
-                                });
-                            }
-                        })
+                        this.timelineParsed = true;
+                        callback();
                     })
+                })
+            }),
+            /*
+            gets data from cBio and sets parameters in other stores
+             */
+            parseCBio: action((callback) => {
+                this.api.getClinicalSampleData(data => {
+                    this.createClinicalSampleMapping(data);
+                    if (!this.variablesParsed && data.length !== 0) {
+                        this.initialVariable = this.clinicalSampleCategories[0];
+                        this.variablesParsed = true;
+                        this.firstLoad = false;
+                        callback();
+                    }
+                    this.api.getClinicalPatientData(data => {
+                        this.createClinicalPatientMappers(data);
+                        if (!this.variablesParsed && data.length !== 0) {
+                            this.initialVariable = this.clinicalPatientCategories[0];
+                            this.variablesParsed = true;
+                            this.firstLoad = false;
+                            callback()
+                        }
+                    });
+                });
+                this.api.getAvailableMolecularProfiles(profiles => {
+                    this.availableProfiles = profiles;
+                    const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
+                    if (mutationIndex !== -1) {
+                        this.hasMutations = true;
+                        this.api.getAllMutations(profiles[mutationIndex].molecularProfileId, data => {
+                            this.createMutationsStructure(data);
+                        });
+                        this.api.getMutationCounts(profiles[mutationIndex].molecularProfileId, data => {
+                            this.createMutationCountsMapping(data);
+                        });
+                    }
                 })
             }),
             /**
@@ -464,10 +474,8 @@ class RootStore {
             },
 
         });
-        reaction(() => this.display, display => {
-            console.log(display);
-            if (display) {
-                console.log("reaction");
+        reaction(() => this.variablesParsed, parsed => {
+            if (parsed) {
                 this.dataStore.initialize();
                 this.addInitialVariable();
                 this.visStore.fitToScreenWidth();
