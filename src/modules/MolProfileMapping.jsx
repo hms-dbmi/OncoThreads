@@ -1,5 +1,6 @@
 import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import * as d3 from "d3";
+import GenomeNexusAPI from "../GenomeNexusAPI";
 
 
 /*
@@ -9,10 +10,11 @@ class MolProfileMapping {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.mutationOrder = ['trunc', 'inframe', 'promoter', 'missense', 'other'];
-        this.currentMutations = {};
+        this.currentMutations = [];
         this.isInGenePanel = {};
         this.currentMolecular = {};
         this.currentIds = [];
+        this.genomeNexusAPI = new GenomeNexusAPI();
 
     }
 
@@ -35,10 +37,7 @@ class MolProfileMapping {
         }
         filteredIds.forEach(d => {
             if (!this.rootStore.dataStore.variableStores.sample.isDisplayed(d.entrezGeneId + mappingType)) {
-                let containedIds=[];
-                if(d.entrezGeneId in this.currentMutations) {
-                    containedIds = this.currentMutations[d.entrezGeneId];
-                }
+                let containedIds = this.currentMutations.filter(mutation => mutation.gene.hugoGeneSymbol === d.hgncSymbol);
                 let domain = [];
                 if (mappingType === "Mutation type") {
                     domain = this.mutationOrder;
@@ -46,7 +45,8 @@ class MolProfileMapping {
                 else if (mappingType === "Variant allele frequency") {
                     domain = [0, 1];
                 }
-                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType,"gene"));
+                console.log(this.createMutationMapping(containedIds, mappingType, d.entrezGeneId));
+                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType, "gene"));
             }
         });
         return variables;
@@ -75,7 +75,7 @@ class MolProfileMapping {
                         });
                         datatype = "ORDINAL";
                     }
-                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId,"gene"));
+                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId, "gene"));
                 }
             });
         }
@@ -89,12 +89,11 @@ class MolProfileMapping {
      */
     loadIds(HUGOsymbols, callback) {
         this.currentIds = [];
-        this.currentMutations = {};
+        this.currentMutations = [];
         this.currentMolecular = {};
         this.isInGenePanel = {};
-        this.rootStore.api.getGeneIDs(HUGOsymbols, entrezIDs => {
+        this.genomeNexusAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
             this.currentIds = entrezIDs;
-
             callback();
         });
     }
@@ -131,7 +130,7 @@ class MolProfileMapping {
         let noMutationsFound = [];
         //Are there mutations?
         availableIds.forEach(d => {
-            if (!(d.entrezGeneId in this.currentMutations)) {
+            if (!(this.currentMutations.map(d => d.gene.hugoGeneSymbol).includes(d.hgncSymbol))) {
                 noMutationsFound.push({hgncSymbol: d.hgncSymbol, entrezGeneId: d.entrezGeneId});
             }
         });
@@ -147,18 +146,17 @@ class MolProfileMapping {
 
     /**
      * loads mutation data
+     * @param profileId
      * @param callback
      */
-    loadMutations(callback) {
+    loadMutations(profileId, callback) {
         if (this.currentIds.length !== 0) {
-            this.currentIds.forEach(d => {
-                if(d.entrezGeneId in this.rootStore.mutations) {
-                    this.currentMutations[d.entrezGeneId] = this.rootStore.mutations[d.entrezGeneId];
-                }
-            });
-            this.rootStore.api.areProfiled(this.rootStore.study.studyId, this.currentIds.map(d => d.entrezGeneId), profiledDict => {
-                this.isInGenePanel = profiledDict;
-                callback()
+            this.rootStore.api.getMutations(this.currentIds, profileId, mutations => {
+                this.currentMutations = mutations;
+                this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profileId, profiledDict => {
+                    this.isInGenePanel = profiledDict;
+                    callback()
+                });
             });
         }
     }
@@ -187,7 +185,7 @@ class MolProfileMapping {
     getProfileData(profileId, HUGOsymbols, mappingType, callback) {
         this.loadIds(HUGOsymbols, () => {
             if (this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
-                this.loadMutations(() => {
+                this.loadMutations(profileId, () => {
                     callback(this.getMutationsProfile(this.filterGeneIDs(), mappingType))
                 });
             }
@@ -278,13 +276,19 @@ class MolProfileMapping {
             mappingFunction = currentSample => {
                 const missense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "missense");
                 const nonsense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "nonsense");
-                let vaf = 1;
+                let vaf = undefined;
+                let altCount = -1;
+                let refCount = -1;
                 if (missense.length > 0) {
-                    vaf = missense[0].vaf;
+                    altCount = missense[0].tumorAltCount;
+                    refCount = missense[0].tumorRefCount;
                 }
                 else if (nonsense.length > 0) {
-                    vaf = nonsense[0].vaf;
-
+                    altCount = nonsense[0].tumorAltCount;
+                    refCount = nonsense[0].tumorRefCount;
+                }
+                if (altCount !== -1 && refCount !== -1) {
+                    vaf = altCount / (altCount + refCount);
                 }
                 return vaf;
             }

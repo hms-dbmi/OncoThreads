@@ -2,9 +2,10 @@ import axios from 'axios';
 
 
 class cBioAPI {
-    constructor(studyId){
-        this.studyId=studyId
+    constructor(studyId) {
+        this.studyId = studyId;
     }
+
     /**
      * get all patients in a study
      * @param callback
@@ -32,7 +33,6 @@ class cBioAPI {
         let clinicalEventRequests = patients.map(patient => axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/patients/" + patient + "/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC"));
         axios.all(clinicalEventRequests)
             .then(eventResults => {
-                console.log(eventResults);
                 let events = {};
                 eventResults.forEach((response, i) => {
                     events[patients[i]] = response.data;
@@ -48,7 +48,7 @@ class cBioAPI {
         });
     }
 
-       /**
+    /**
      * get all available clinical sample data in a study
      * @param callback
      */
@@ -105,33 +105,14 @@ class cBioAPI {
         });
     }
 
-    /**
-     * get all mutations in a study
-     * @param molecularProfile
-     * @param callback
-     */
-    getAllMutations(molecularProfile, callback) {
-        axios.get("http://www.cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutations?sampleListId=" + this.studyId + "_all&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC")
-            .then(response => {
-                console.log(response.data);
-                callback(response.data);
-            }).catch((error) => {
-            if (cBioAPI.verbose) {
-                console.log(error);
-            }
-            else {
-                console.log("Could not load mutations")
-            }
-        });
-    }
 
     /**
      * get mutation counts in a study
-     * @param molecularProfile
+     * @param profileId
      * @param callback
      */
-    getMutationCounts(molecularProfile, callback) {
-        axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutation-counts?sampleListId=" + this.studyId + "_all")
+    getMutationCounts(profileId, callback) {
+        axios.get("http://cbiohack.org/api/molecular-profiles/" + profileId + "/mutation-counts?sampleListId=" + this.studyId + "_all")
             .then(response => {
                 callback(response.data);
             }).catch((error) => {
@@ -161,66 +142,9 @@ class cBioAPI {
         return axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutation-counts?sampleListId=" + this.studyId + "_all");
     }
 
-    static getMutations(molecularProfile) {
-        return axios.get("http://www.cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutations?sampleListId=" + this.studyId + "_all&projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC");
-    }
 
-
-    /**
-     * maps a HUGO Symbol to a entrez gene id
-     * @param hgncSymbols
-     * @returns {AxiosPromise<any>}
-     */
-    static genomNexusMappingMultipleSymbols(hgncSymbols) {
-        return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
-    }
-
-    getHugoSymbols(entrezIds, callback) {
-        axios.post("https://genomenexus.org/ensembl/canonical-gene/entrez", entrezIds).then(function (response) {
-            let mapper = {};
-            response.data.forEach(d => {
-                mapper[d.entrezGeneId] = d.hugoSymbol;
-            });
-            callback(mapper);
-        }).catch(function (error) {
-            if (cBioAPI.verbose) {
-                console.log(error);
-            }
-            else {
-                alert("invalid symbol")
-            }
-        })
-    }
-
-    getGeneIDs(hgncSymbols, callback) {
-        cBioAPI.genomNexusMappingMultipleSymbols(hgncSymbols).then(function (response) {
-            if (response.data.length === 0) {
-                alert("No valid symbols found")
-            }
-            else {
-                let invalidSymbols = [];
-                hgncSymbols.forEach(function (d, i) {
-                    if (!(response.data.map(entry => entry.hugoSymbol).includes(d))) {
-                        invalidSymbols.push(d);
-                    }
-                });
-                if (invalidSymbols.length !== 0) {
-                    alert('WARNING the following symbols are not valid: ' + invalidSymbols);
-                }
-            }
-            callback(response.data.map(d => ({hgncSymbol: d.hugoSymbol, entrezGeneId: parseInt(d.entrezGeneId, 10)})));
-        }).catch(function (error) {
-            if (cBioAPI.verbose) {
-                console.log(error);
-            }
-            else {
-                alert("invalid symbol")
-            }
-        })
-    }
-
-    getMutations(entrezIDs, callback) {
-        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + this.studyId + "_mutations/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC", {
+    getMutations(entrezIDs, profileId, callback) {
+        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + profileId + "/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC", {
             "entrezGeneIds":
                 entrezIDs.map(d => d.entrezGeneId)
             ,
@@ -240,12 +164,12 @@ class cBioAPI {
     /**
      * checks for each sample if entrezIDs have been profiled
      * @param entrezIDs
+     * @param profileId
      * @param callback
      */
-    areProfiled(entrezIDs, callback) {
+    areProfiled(entrezIDs, profileId, callback) {
         let profiledDict = {};
-        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + this.studyId + "_mutations/gene-panel-data/fetch",
-            {
+        axios.post("http://www.cbiohack.org/api/molecular-profiles/" + profileId + "/gene-panel-data/fetch", {
                 "sampleListId": this.studyId + "_all"
             }
         ).then(samplePanels => {
@@ -297,8 +221,8 @@ class cBioAPI {
         }).then(function (response) {
             callback(response.data)
         }).catch(function (error) {
-                console.log(error)
-            });
+            console.log(error)
+        });
     }
 
     /**
@@ -310,6 +234,7 @@ class cBioAPI {
     }
 
 }
+
 cBioAPI.verbose = true;
 
 export default cBioAPI;

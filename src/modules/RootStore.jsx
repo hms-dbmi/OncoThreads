@@ -23,10 +23,6 @@ class RootStore {
         this.mutations = [];
         this.events = [];
 
-        //maximum and minimum amount of timepoints a patient has in the dataset
-        this.maxTP = 0;
-        this.minTP = Number.POSITIVE_INFINITY;
-
         this.initialVariable = "";
 
         this.mutationCountId = uuidv4();
@@ -80,22 +76,13 @@ class RootStore {
              */
             resetTimepointStructure: action(update => {
                 this.timepointStructure = [];
-                for (let i = 0; i < this.maxTP; i++) {
-                    let patientSamples = [];
-                    this.patients.forEach((d, j) => {
-                        if (this.minTP === 0) {
-                            this.minTP = this.sampleStructure[d].length;
+                for (let patient in this.sampleStructure) {
+                    this.sampleStructure[patient].forEach((d, i) => {
+                        if (this.timepointStructure.length === i) {
+                            this.timepointStructure.push([]);
                         }
-                        else {
-                            if (this.sampleStructure[d].length < this.minTP) {
-                                this.minTP = this.sampleStructure[d].length;
-                            }
-                        }
-                        if (this.sampleStructure[d].length > i) {
-                            patientSamples.push({patient: d, sample: this.sampleStructure[d][i]})
-                        }
-                    });
-                    this.timepointStructure.push(patientSamples);
+                        this.timepointStructure[i].push({patient: patient, sample: d})
+                    })
                 }
                 if (update) {
                     this.dataStore.update(this.patients);
@@ -123,10 +110,8 @@ class RootStore {
                 this.timelineParsed = false;
                 this.api.getPatients(patients => {
                     this.patients = patients;
-                    console.log(this.patients);
                     this.api.getEvents(patients, events => {
                         this.events = events;
-                        console.log(events);
                         this.buildTimelineStructure();
                         this.createTimeGapMapping();
                         this.timelineParsed = true;
@@ -161,11 +146,14 @@ class RootStore {
                     const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
                     if (mutationIndex !== -1) {
                         this.hasMutations = true;
-                        this.api.getAllMutations(profiles[mutationIndex].molecularProfileId, data => {
-                            this.createMutationsStructure(data);
-                        });
                         this.api.getMutationCounts(profiles[mutationIndex].molecularProfileId, data => {
                             this.createMutationCountsMapping(data);
+                            if (!this.variablesParsed && data.length !== 0) {
+                                this.initialVariable = this.clinicalSampleCategories[0];
+                                this.variablesParsed = true;
+                                this.firstLoad = false;
+                                callback()
+                            }
                         });
                     }
                 })
@@ -244,17 +232,13 @@ class RootStore {
              */
             buildTimelineStructure: action(() => {
                 let sampleStructure = {};
-                let timelineStructure = [];
                 let sampleTimelineMap = {};
                 let eventCategories = [];
-                let maxTP = 0;
-                let minTP = Number.POSITIVE_INFINITY;
                 let timepointStructure = [];
                 let excludeDates = {};
 
                 this.patients.forEach(patient => {
                     sampleStructure[patient] = [];
-                    timelineStructure[patient] = [];
                     excludeDates[patient] = [];
                     let previousDate = -1;
                     let currTP = 0;
@@ -263,34 +247,21 @@ class RootStore {
                             eventCategories.push(e.eventType);
                         }
                         if (e.eventType === "SPECIMEN") {
-                            let sampleId=e.attributes.filter(d=>d.key==="SAMPLE_ID")[0].value;
+                            let sampleId = e.attributes.filter(d => d.key === "SAMPLE_ID")[0].value;
                             excludeDates[patient].push(e.startNumberOfDaysSinceDiagnosis);
                             sampleTimelineMap[sampleId] = e.startNumberOfDaysSinceDiagnosis;
                             if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
                                 sampleStructure[patient].push(sampleId);
-                                timelineStructure[patient].push({
-                                    sampleId:sampleId,
-                                    date: e.startNumberOfDaysSinceDiagnosis
-                                });
                                 if (timepointStructure.length <= currTP) {
                                     timepointStructure.push([]);
                                 }
                                 timepointStructure[currTP].push({patient: patient, sample: sampleId});
                                 currTP += 1;
-
                             }
                             previousDate = e.startNumberOfDaysSinceDiagnosis;
                         }
                     });
-                    if (sampleStructure[patient].length > maxTP) {
-                        maxTP = currTP;
-                    }
-                    if (sampleStructure[patient].length < minTP) {
-                        minTP = currTP;
-                    }
                 });
-                this.maxTP = maxTP;
-                this.minTP = minTP;
                 this.sampleTimelineMap = sampleTimelineMap;
                 this.eventCategories = eventCategories;
                 this.sampleStructure = sampleStructure;
@@ -564,26 +535,6 @@ class RootStore {
         this.staticMappers[this.timeDistanceId] = timeGapMapping;
     }
 
-    /**
-     * creates data structure for mutations
-     * @param data
-     */
-    createMutationsStructure(data) {
-        this.mutations = {};
-        data.forEach(mutation => {
-            if (!(mutation.entrezGeneId in this.mutations)) {
-                this.mutations[mutation.entrezGeneId] = [];
-            }
-            this.mutations[mutation.entrezGeneId].push({
-                patientId: mutation.patientId,
-                sampleId: mutation.sampleId,
-                mutationType: mutation.mutationType,
-                proteinChange: mutation.proteinChange,
-                vaf: mutation.tumorAltCount / (mutation.tumorAltCount + mutation.tumorRefCount)
-            });
-        });
-    }
-
 
     /*
     computes survival events if OS_MONTHS and OS_STATUS exist
@@ -655,7 +606,7 @@ class RootStore {
         this.eventAttributes = {};
         for (let patient in this.events) {
             this.events[patient].forEach(d => {
-                if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+                //if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
                     if (!(d.eventType in this.eventAttributes)) {
                         this.eventAttributes[d.eventType] = {}
                     }
@@ -680,7 +631,7 @@ class RootStore {
                             }
                         }
                     })
-                }
+                //}
             })
         }
     }

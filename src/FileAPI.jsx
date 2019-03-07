@@ -1,6 +1,3 @@
-import axios from 'axios';
-
-
 class FileAPI {
     constructor(localFileLoader) {
         this.localFileLoader = localFileLoader;
@@ -20,7 +17,7 @@ class FileAPI {
      * @param callback
      */
     getEvents(patients, callback) {
-        this.localFileLoader.loadEvents((rawEvents)=>{
+        this.localFileLoader.loadEvents((rawEvents) => {
             callback(rawEvents);
         });
     }
@@ -40,7 +37,7 @@ class FileAPI {
      * @param callback
      */
     getAvailableMolecularProfiles(callback) {
-        callback([]);
+        callback(this.localFileLoader.molecularProfiles);
     }
 
     /**
@@ -54,53 +51,30 @@ class FileAPI {
     }
 
     /**
-     * get all mutations in a study
-     * @param molecularProfile
-     * @param callback
-     */
-    getAllMutations(molecularProfile, callback) {
-        callback([]);
-    }
-
-    /**
      * get mutation counts in a study
-     * @param molecularProfile
+     * @param profileId
      * @param callback
      */
-    getMutationCounts(molecularProfile, callback) {
-        callback([]);
+    getMutationCounts(profileId, callback) {
+        callback(this.localFileLoader.mutationCounts);
     }
 
 
-    getHugoSymbols(entrezIds, callback) {
-        axios.post("https://genomenexus.org/ensembl/canonical-gene/entrez", entrezIds).then(function (response) {
-            let mapper = {};
-            response.data.forEach(d => {
-                mapper[d.entrezGeneId] = d.hugoSymbol;
-            });
-            callback(mapper);
-        }).catch(function (error) {
-            if (FileAPI.verbose) {
-                console.log(error);
-            }
-            else {
-                alert("invalid symbol")
-            }
-        })
-    }
-
-
-    getMutations(entrezIDs, callback) {
-
+    getMutations(entrezIDs, profileId, callback) {
+        callback(this.localFileLoader.mutations.filter(d => entrezIDs.map(d => d.hgncSymbol).includes(d.gene.hugoGeneSymbol)));
     }
 
     /**
      * checks for each sample if entrezIDs have been profiled
-     * @para* @param entrezIDs
+     * @param entrezIDs
      * @param callback
      */
-    areProfiled(entrezIDs, callback) {
-
+    areProfiled(entrezIDs, profileId, callback) {
+        let profileDict = {};
+        this.localFileLoader.samples.forEach(d => {
+            profileDict[d] = entrezIDs
+        });
+        callback(profileDict);
     }
 
     getMolecularValues(profileId, entrezIDs, callback) {

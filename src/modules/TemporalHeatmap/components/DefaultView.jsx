@@ -18,6 +18,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.handleEventsLoad = this.handleEventsLoad.bind(this);
         this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
         this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
+        this.handleMutationsLoad = this.handleMutationsLoad.bind(this);
     }
 
     /**
@@ -98,12 +99,20 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false)
     }
 
+    handleMutationsLoad(e) {
+        this.props.rootStore.setIsOwnData(true);
+        this.props.rootStore.localFileLoader.setMutations(e.target.files[0])
+    }
+
     static getStateIcon(value) {
         let icon = null;
-        if (value) {
+        if (value==="finished") {
             icon = <FontAwesome name={"check"} style={{color: "green"}}/>;
         }
-        else if (value === undefined) {
+        else if(value==="loading"){
+            icon=<FontAwesome name={"spinner"} style={{color: "red"}}/>;
+        }
+        else if (value === "error") {
             icon = <FontAwesome name={"times"} style={{color: "red"}}/>;
         }
         return icon;
@@ -112,8 +121,8 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     render() {
         let launchDisabled = true;
         if (this.props.rootStore.isOwnData) {
-            if (this.props.rootStore.localFileLoader.eventsParsed) {
-                if (this.props.rootStore.localFileLoader.clinicalPatientParsed || this.props.rootStore.localFileLoader.clinicalSampleParsed) {
+            if (this.props.rootStore.localFileLoader.eventsParsed==="finished") {
+                if (this.props.rootStore.localFileLoader.clinicalPatientParsed==="finished" || this.props.rootStore.localFileLoader.clinicalSampleParsed==="finished" || this.props.rootStore.localFileLoader.mutationsParsed==="finished") {
                     launchDisabled = false
                 }
             }
@@ -163,10 +172,10 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                                      help="Example block-level help text here."/>
                     </FormGroup>
                     <FormGroup>
-                        <ControlLabel>Mutations</ControlLabel>
+                        <ControlLabel>Mutations {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.mutationsParsed)}</ControlLabel>
                         <FormControl type="file"
                                      label="File"
-                                     multiple={true}
+                                     onChange={this.handleMutationsLoad}
                                      help="Example block-level help text here."/>
                     </FormGroup>
                     <FormGroup>

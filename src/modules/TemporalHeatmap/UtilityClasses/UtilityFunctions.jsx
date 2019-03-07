@@ -5,13 +5,16 @@ class UtilityFunctions{
      * @returns {*}
      */
     static getScientificNotation(value){
-        let roundedValue=Math.round(value*100)/100;
-        if(roundedValue.toString().length<8){
-            return roundedValue;
+        if(value!==undefined) {
+            let roundedValue = Math.round(value * 100) / 100;
+            if (roundedValue.toString().length < 8) {
+                return roundedValue;
+            }
+            else {
+                return value.toExponential(2);
+            }
         }
-        else{
-            return value.toExponential(2);
-        }
+        else return value;
 
     }
 

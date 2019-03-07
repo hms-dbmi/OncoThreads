@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 
 
 /*
@@ -8,13 +8,16 @@ Displays study information
 const StudySummary = inject('rootStore')(observer(class StudySummary extends React.Component {
     render() {
         let numberOfTimepoints;
-        if (this.props.rootStore.minTP === this.props.rootStore.maxTP) {
-            numberOfTimepoints = this.props.rootStore.minTP;
+        const minTP = Math.min(...Object.keys(this.props.rootStore.sampleStructure).map(key => this.props.rootStore.sampleStructure[key].length));
+        const maxTP = Math.max(...Object.keys(this.props.rootStore.sampleStructure).map(key => this.props.rootStore.sampleStructure[key].length));
+
+        if (minTP === maxTP) {
+            numberOfTimepoints = minTP;
         }
         else {
-            numberOfTimepoints = this.props.rootStore.minTP + "-" + this.props.rootStore.maxTP;
+            numberOfTimepoints = minTP + "-" + maxTP;
         }
-        if(!this.props.rootStore.isOwnData) {
+        if (!this.props.rootStore.isOwnData) {
             return (
                 <div>
                     <b>Study:</b> {this.props.rootStore.study.name}
@@ -30,7 +33,7 @@ const StudySummary = inject('rootStore')(observer(class StudySummary extends Rea
                 </div>
             )
         }
-        else{
+        else {
             return (
                 <div>
                     <b>Number of patients:</b> {this.props.rootStore.patients.length}
