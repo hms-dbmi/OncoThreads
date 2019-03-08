@@ -1,7 +1,7 @@
 import React from "react";
 import {inject, observer} from "mobx-react";
 import Select from 'react-select';
-import {Button, ControlLabel, FormControl, FormGroup, Panel} from "react-bootstrap";
+import {Button, Col, Form, FormControl, FormGroup, Grid, Panel, Row, Tab, Tabs} from "react-bootstrap";
 import StudySummary from "./StudySummary";
 import FontAwesome from 'react-fontawesome';
 
@@ -13,12 +13,20 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
-        this.state = {studyClicked: false,};
+        this.state = {studyClicked: false, CNVisDiscrete: false, selectedTab: "cBio", numCNVFiles: 0};
+        this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
         this.handleEventsLoad = this.handleEventsLoad.bind(this);
         this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
         this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
         this.handleMutationsLoad = this.handleMutationsLoad.bind(this);
+        this.handleExpressionsLoad = this.handleExpressionsLoad.bind(this);
+        this.handleCNVLoad = this.handleCNVLoad.bind(this);
+    }
+
+    handleSelectTab(key) {
+        this.props.rootStore.setIsOwnData(key !== 'cBio');
+        this.setState({selectedTab: key, studyClicked: false});
     }
 
     /**
@@ -26,7 +34,6 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
      * @param selectedOption
      */
     getStudy(selectedOption) {
-        this.props.rootStore.setIsOwnData(false);
         this.setState({studyClicked: true});
         this.props.rootStore.parseTimeline(this.props.studies.filter(d => d.studyId === selectedOption.value)[0], () => {
         });
@@ -81,6 +88,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         return info;
     }
 
+
     handleEventsLoad(e) {
         this.props.rootStore.setIsOwnData(true);
         this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
@@ -90,27 +98,32 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     }
 
     handleClinicalSampleLoad(e) {
-        this.props.rootStore.setIsOwnData(true);
         this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], true)
     }
 
     handleClinicalPatientLoad(e) {
-        this.props.rootStore.setIsOwnData(true);
         this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false)
     }
 
     handleMutationsLoad(e) {
-        this.props.rootStore.setIsOwnData(true);
         this.props.rootStore.localFileLoader.setMutations(e.target.files[0])
+    }
+
+    handleExpressionsLoad(e) {
+        this.props.rootStore.localFileLoader.setExpressions(e.target.files)
+    }
+
+    handleCNVLoad(e) {
+        this.props.rootStore.localFileLoader.setCNVs(e.target.files, "DISCRETE")
     }
 
     static getStateIcon(value) {
         let icon = null;
-        if (value==="finished") {
+        if (value === "finished") {
             icon = <FontAwesome name={"check"} style={{color: "green"}}/>;
         }
-        else if(value==="loading"){
-            icon=<FontAwesome name={"spinner"} style={{color: "red"}}/>;
+        else if (value === "loading") {
+            icon = <FontAwesome name={"spinner"} spin style={{color: "gray"}}/>;
         }
         else if (value === "error") {
             icon = <FontAwesome name={"times"} style={{color: "red"}}/>;
@@ -121,8 +134,8 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     render() {
         let launchDisabled = true;
         if (this.props.rootStore.isOwnData) {
-            if (this.props.rootStore.localFileLoader.eventsParsed==="finished") {
-                if (this.props.rootStore.localFileLoader.clinicalPatientParsed==="finished" || this.props.rootStore.localFileLoader.clinicalSampleParsed==="finished" || this.props.rootStore.localFileLoader.mutationsParsed==="finished") {
+            if (this.props.rootStore.localFileLoader.eventsParsed === "finished") {
+                if (this.props.rootStore.localFileLoader.clinicalPatientParsed === "finished" || this.props.rootStore.localFileLoader.clinicalSampleParsed === "finished" || this.props.rootStore.localFileLoader.mutationsParsed === "finished") {
                     launchDisabled = false
                 }
             }
@@ -133,78 +146,104 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
             }
         }
         return (
-            <div className="defaultView">
-                <h2>Load cBio data</h2>
-                <Select
-                    type="text"
-                    searchable={true}
-                    componentClass="select" placeholder="Select Study"
-                    options={this.setOptions()}
-                    onChange={this.getStudy}
-                />
-                <h2>Load own data</h2>
-                <form>
-                    <h4>Required files</h4>
-                    <FormGroup>
-                        <ControlLabel>Timeline {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.eventsParsed)}</ControlLabel>
-                        <FormControl type="file"
-                                     label="File"
-                                     multiple={true}
-                                     onChange={this.handleEventsLoad}/>
-                    </FormGroup>
-                    <h4>Optional files (at least one is required)</h4>
-                    <FormGroup>
-                        <ControlLabel>Clinical Sample
-                            Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalSampleParsed)}</ControlLabel>
-                        <FormControl type="file"
-                                     label="File"
-                                     onChange={this.handleClinicalSampleLoad}
-                                     help="Example block-level help text here."/>
+            <Grid>
+                <Row>
+                    <Col xs={6} xsOffset={3}>
+                        <Tabs activeKey={this.state.selectedTab}
+                              id="controlled-tab"
+                              animation={false}
+                              onSelect={this.handleSelectTab}>
+                            <Tab eventKey={"cBio"} title={"Load cBio dataset"}>
+                                <Select
+                                    type="text"
+                                    searchable={true}
+                                    componentClass="select" placeholder="Select Study"
+                                    options={this.setOptions()}
+                                    onChange={this.getStudy}
+                                />
+                            </Tab>
+                            <Tab eventKey={"own"} title={"Load own dataset"}>
+                                <Form horizontal>
+                                    <h4>Required files</h4>
+                                    <FormGroup>
+                                        <Col sm={4}>
+                                            Timeline {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.eventsParsed)}
+                                        </Col>
+                                        <Col sm={8}>
+                                            <FormControl type="file"
+                                                         label="File"
+                                                         multiple={true}
+                                                         onChange={this.handleEventsLoad}/>
+                                        </Col>
+                                    </FormGroup>
+                                    <h4>At least one required</h4>
+                                    <FormGroup>
+                                        <Col sm={4}>
+                                            Clinical Sample
+                                            Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalSampleParsed)}
+                                        </Col>
+                                        <Col sm={8}>
+                                            <FormControl type="file"
+                                                         label="File"
+                                                         onChange={this.handleClinicalSampleLoad}/>
+                                        </Col>
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Col sm={4}>
+                                            Clinical Patient
+                                            Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalPatientParsed)}
+                                        </Col>
+                                        <Col sm={8}>
+                                            <FormControl type="file"
+                                                         label="File"
+                                                         onChange={this.handleClinicalPatientLoad}/>
+                                        </Col>
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Col sm={4}>
+                                            Mutations {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.mutationsParsed)}
+                                        </Col>
+                                        <Col sm={8}>
+                                            <FormControl type="file"
+                                                         label="File"
+                                                         onChange={this.handleMutationsLoad}/>
+                                        </Col>
+                                    </FormGroup>
+                                    <h4>Optional files</h4>
+                                    <FormGroup>
+                                        <Col sm={4}>
+                                            Expression {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.expressionsParsed)}
+                                        </Col>
+                                        <Col sm={8}>
+                                            <FormControl type="file"
+                                                         label="File"
+                                                         multiple={true}
+                                                         onChange={this.handleExpressionsLoad}/>
+                                        </Col>
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Col sm={4}>
+                                            Copy Number
+                                            variation {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.cnvsParsed)}
+                                        </Col>
+                                        <Col sm={8}>
+                                            <FormControl type="file"
+                                                         label="File"
+                                                         multiple={true}
+                                                         onChange={this.handleCNVLoad}/>
+                                        </Col>
+                                    </FormGroup>
+                                </Form>
+                            </Tab>
+                        </Tabs>
+                        {this.getStudyInfo()}
+                        <Button
+                            disabled={launchDisabled}
+                            onClick={this.displayStudy}>Launch</Button>
+                    </Col>
 
-
-                    </FormGroup>
-                    <FormGroup>
-                        <ControlLabel>Clinical Patient
-                            Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalPatientParsed)}</ControlLabel>
-                        <FormControl type="file"
-                                     label="File"
-                                     onChange={this.handleClinicalPatientLoad}
-                                     help="Example block-level help text here."/>
-                    </FormGroup>
-                    <FormGroup>
-                        <ControlLabel>Mutations {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.mutationsParsed)}</ControlLabel>
-                        <FormControl type="file"
-                                     label="File"
-                                     onChange={this.handleMutationsLoad}
-                                     help="Example block-level help text here."/>
-                    </FormGroup>
-                    <FormGroup>
-                        <ControlLabel>Expression</ControlLabel>
-                        <FormControl type="file"
-                                     label="File"
-                                     multiple={true}
-                                     help="Example block-level help text here."/>
-                    </FormGroup>
-                    <FormGroup>
-                        <ControlLabel>Copy Number variation</ControlLabel>
-                        <FormControl type="file"
-                                     label="File"
-                                     multiple={true}
-                                     help="Example block-level help text here."/>
-                    </FormGroup>
-                    <FormGroup>
-                        <ControlLabel>All Files (Please follow naming conventions)</ControlLabel>
-                        <FormControl type="file"
-                                     label="File"
-                                     multiple={true}
-                                     help="Example block-level help text here."/>
-                    </FormGroup>
-                </form>
-                {this.getStudyInfo()}
-                <Button
-                    disabled={launchDisabled}
-                    onClick={this.displayStudy}>Launch</Button>
-            </div>
+                </Row>
+            </Grid>
         );
     }
 }));

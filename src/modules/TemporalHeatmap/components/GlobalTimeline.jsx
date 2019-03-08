@@ -18,6 +18,7 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
      */
     componentDidMount() {
         this.updateDimensions();
+        this.props.rootStore.visStore.setPlotHeight(this.refs.globalTime.parentNode.getBoundingClientRect().height);
         window.addEventListener("resize", this.updateDimensions);
     }
 
@@ -30,7 +31,6 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
 
     updateDimensions() {
         this.props.rootStore.visStore.setPlotWidth(this.refs.globalTime.parentNode.getBoundingClientRect().width);
-        this.props.rootStore.visStore.setPlotHeight(this.refs.globalTime.parentNode.getBoundingClientRect().height);
     }
 
     getGlobalTimepoints() {

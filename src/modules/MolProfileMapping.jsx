@@ -15,13 +15,12 @@ class MolProfileMapping {
         this.currentMolecular = {};
         this.currentIds = [];
         this.genomeNexusAPI = new GenomeNexusAPI();
-
     }
 
     /**
      * Gets all currently selected mutations
-     * @param filteredIds
-     * @param mappingType
+     * @param {Object[]} filteredIds
+     * @param {string} mappingType
      */
     getMutationsProfile(filteredIds, mappingType) {
         let variables = [];
@@ -45,7 +44,6 @@ class MolProfileMapping {
                 else if (mappingType === "Variant allele frequency") {
                     domain = [0, 1];
                 }
-                console.log(this.createMutationMapping(containedIds, mappingType, d.entrezGeneId));
                 variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType, "gene"));
             }
         });
@@ -54,8 +52,8 @@ class MolProfileMapping {
 
     /**
      * gets data corresponding to selected HUGOsymbols in a molecular profile
-     * @param filteredIds
-     * @param profileId
+     * @param {Object[]} filteredIds
+     * @param {string} profileId
      */
     getMolecularProfile(filteredIds, profileId) {
         let variables = [];
@@ -67,7 +65,7 @@ class MolProfileMapping {
                     let domain = [];
                     let range = [];
                     let datatype = "NUMBER";
-                    if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
+                    if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION" && profile.datatype === "DISCRETE") {
                         let helper = d3.scaleLinear().domain([0, 0.5, 1]).range(['#0571b0', '#f7f7f7', '#ca0020']);
                         domain = ["-2", "-1", "0", "1", "2"];
                         range = domain.map((d, i) => {
@@ -112,7 +110,7 @@ class MolProfileMapping {
             }
         });
         if (noMutationsFound.length > 0) {
-            window.alert("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + " of profile " + this.rootStore.molecularProfiles.filter(d => d.molecularProfileId === profileId).name + "\n No track will be added");
+            window.alert("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + " of profile " + this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId).name + "\n No track will be added");
         }
         return this.currentIds.filter(d => !(noMutationsFound.map(f => f.entrezGeneId).includes(d.entrezGeneId)));
     }
@@ -168,8 +166,9 @@ class MolProfileMapping {
      */
     loadMolecularData(profileId, callback) {
         if (this.currentIds.length !== 0) {
-            this.rootStore.api.getMolecularValues(this.rootStore.study.studyId, profileId, this.currentIds, response => {
+            this.rootStore.api.getMolecularValues(profileId, this.currentIds, response => {
                 this.currentMolecular[profileId] = response;
+                console.log(this.currentMolecular);
                 callback()
             })
         }
@@ -380,17 +379,22 @@ class MolProfileMapping {
      */
     createMolecularMapping(list, datatype) {
         let mapper = {};
-        this.rootStore.timepointStructure.forEach(d => {
-            d.forEach(f => {
-                if (list.length === 0) {
-                    mapper[f.sample] = undefined;
+        this.rootStore.timepointStructure.forEach(row => {
+            row.forEach(element => {
+                if (list.filter(d => d.sampleId === element.sample) === 0) {
+                    mapper[element.sample] = undefined;
                 }
                 else {
-                    let value = list.filter(d => d.sampleId === f.sample)[0].value;
+                    let value = list.filter(d => d.sampleId === element.sample)[0].value;
                     if (datatype === "NUMBER") {
-                        value = parseFloat(value);
+                        if (value !== "NA") {
+                            value = parseFloat(value);
+                        }
+                        else {
+                            value = undefined;
+                        }
                     }
-                    mapper[f.sample] = value;
+                    mapper[element.sample] = value;
                 }
             });
         });

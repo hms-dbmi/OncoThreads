@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-
+/**
+ * retrieves data using the cBio API
+ */
 class cBioAPI {
     constructor(studyId) {
         this.studyId = studyId;
@@ -8,7 +10,7 @@ class cBioAPI {
 
     /**
      * get all patients in a study
-     * @param callback
+     * @param {returnDataCallback} callback
      */
     getPatients(callback) {
         axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
@@ -26,8 +28,8 @@ class cBioAPI {
 
     /**
      * get all events for all patients in a study
-     * @param patients
-     * @param callback
+     * @param {string[]} patients
+     * @param {returnDataCallback} callback
      */
     getEvents(patients, callback) {
         let clinicalEventRequests = patients.map(patient => axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/patients/" + patient + "/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC"));
@@ -50,12 +52,11 @@ class cBioAPI {
 
     /**
      * get all available clinical sample data in a study
-     * @param callback
+     * @param {returnDataCallback} callback
      */
     getClinicalPatientData(callback) {
         axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/clinical-data?clinicalDataType=PATIENT&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
-                console.log(response.data);
                 callback(response.data);
             }).catch((error) => {
             if (cBioAPI.verbose) {
@@ -69,7 +70,7 @@ class cBioAPI {
 
     /**
      * get all available molecular profiles for a study
-     * @param callback
+     * @param {returnDataCallback} callback
      */
     getAvailableMolecularProfiles(callback) {
         axios.get("http://www.cbiohack.org/api/studies/" + this.studyId + "/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
@@ -88,12 +89,11 @@ class cBioAPI {
 
     /**
      * get all available clinical sample data in a study
-     * @param callback
+     * @param {returnDataCallback} callback
      */
     getClinicalSampleData(callback) {
         axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC")
             .then(response => {
-                console.log(response.data);
                 callback(response.data);
             }).catch((error) => {
             if (cBioAPI.verbose) {
@@ -108,8 +108,8 @@ class cBioAPI {
 
     /**
      * get mutation counts in a study
-     * @param profileId
-     * @param callback
+     * @param {string} profileId
+     * @param {returnDataCallback} callback
      */
     getMutationCounts(profileId, callback) {
         axios.get("http://cbiohack.org/api/molecular-profiles/" + profileId + "/mutation-counts?sampleListId=" + this.studyId + "_all")
@@ -127,22 +127,11 @@ class cBioAPI {
     }
 
     /**
-     * Gets clinical data from the cBio Portal
-     * @returns {AxiosPromise<any>}
+     *
+     * @param {Object[]} entrezIDs
+     * @param {string} profileId
+     * @param {returnDataCallback} callback
      */
-    static getClinicalData() {
-        return axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC");
-    }
-
-    /**
-     * Gets mutation counts from the cBio Portal
-     * @returns {AxiosPromise<any>}
-     */
-    static getMutationCounts(molecularProfile) {
-        return axios.get("http://cbiohack.org/api/molecular-profiles/" + molecularProfile + "/mutation-counts?sampleListId=" + this.studyId + "_all");
-    }
-
-
     getMutations(entrezIDs, profileId, callback) {
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + profileId + "/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC", {
             "entrezGeneIds":
@@ -163,9 +152,9 @@ class cBioAPI {
 
     /**
      * checks for each sample if entrezIDs have been profiled
-     * @param entrezIDs
-     * @param profileId
-     * @param callback
+     * @param {Object[]} entrezIDs
+     * @param {string} profileId
+     * @param {returnDataCallback} callback
      */
     areProfiled(entrezIDs, profileId, callback) {
         let profiledDict = {};
@@ -212,6 +201,12 @@ class cBioAPI {
         });
     }
 
+    /**
+     * gets data for an array of entrezIds in a specified profile
+     * @param {string} profileId
+     * @param {Object[]} entrezIDs
+     * @param {returnDataCallback} callback
+     */
     getMolecularValues(profileId, entrezIDs, callback) {
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + profileId + "/molecular-data/fetch?projection=SUMMARY", {
             "entrezGeneIds":
@@ -224,15 +219,6 @@ class cBioAPI {
             console.log(error)
         });
     }
-
-    /**
-     * gets all the molecular profiles of a study
-     * @returns {AxiosPromise<any>}
-     */
-    static getMolecularProfiles() {
-        return axios.get("http://www.cbiohack.org/api/studies/" + this.studyId + "/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC")
-    }
-
 }
 
 cBioAPI.verbose = true;

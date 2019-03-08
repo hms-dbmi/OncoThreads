@@ -125,7 +125,7 @@ class RootStore {
             parseCBio: action((callback) => {
                 this.api.getClinicalSampleData(data => {
                     this.createClinicalSampleMapping(data);
-                    if (!this.variablesParsed && data.length !== 0) {
+                    if (data.length !== 0) {
                         this.initialVariable = this.clinicalSampleCategories[0];
                         this.variablesParsed = true;
                         this.firstLoad = false;
@@ -133,30 +133,31 @@ class RootStore {
                     }
                     this.api.getClinicalPatientData(data => {
                         this.createClinicalPatientMappers(data);
-                        if (!this.variablesParsed && data.length !== 0) {
+                        if (data.length !== 0) {
                             this.initialVariable = this.clinicalPatientCategories[0];
                             this.variablesParsed = true;
                             this.firstLoad = false;
                             callback()
                         }
+                        this.api.getAvailableMolecularProfiles(profiles => {
+                            this.availableProfiles = profiles;
+                            const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
+                            if (mutationIndex !== -1) {
+                                this.hasMutations = true;
+                                this.api.getMutationCounts(profiles[mutationIndex].molecularProfileId, data => {
+                                    this.createMutationCountsMapping(data);
+                                    if (data.length !== 0) {
+                                        this.initialVariable = this.clinicalSampleCategories[0];
+                                        this.variablesParsed = true;
+                                        this.firstLoad = false;
+                                        callback()
+                                    }
+                                });
+                            }
+                        })
                     });
                 });
-                this.api.getAvailableMolecularProfiles(profiles => {
-                    this.availableProfiles = profiles;
-                    const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
-                    if (mutationIndex !== -1) {
-                        this.hasMutations = true;
-                        this.api.getMutationCounts(profiles[mutationIndex].molecularProfileId, data => {
-                            this.createMutationCountsMapping(data);
-                            if (!this.variablesParsed && data.length !== 0) {
-                                this.initialVariable = this.clinicalSampleCategories[0];
-                                this.variablesParsed = true;
-                                this.firstLoad = false;
-                                callback()
-                            }
-                        });
-                    }
-                })
+
             }),
             /**
              * creates a dictionary mapping sample IDs onto clinical sample data
@@ -454,6 +455,9 @@ class RootStore {
                 this.visStore.fitToScreenWidth();
             }
         });
+        reaction(() => this.isOwnData, () => {
+            this.timelineParsed = false;
+        });
         this.reset = this.reset.bind(this);
         this.api = null;
         this.molProfileMapping = new MolProfileMapping(this);
@@ -607,30 +611,30 @@ class RootStore {
         for (let patient in this.events) {
             this.events[patient].forEach(d => {
                 //if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
-                    if (!(d.eventType in this.eventAttributes)) {
-                        this.eventAttributes[d.eventType] = {}
+                if (!(d.eventType in this.eventAttributes)) {
+                    this.eventAttributes[d.eventType] = {}
+                }
+                d.attributes.forEach(f => {
+                    if (!(f.key in this.eventAttributes[d.eventType])) {
+                        this.eventAttributes[d.eventType][f.key] = [];
+                        this.eventAttributes[d.eventType][f.key].push({
+                            name: f.value,
+                            id: uuidv4(),
+                            eventType: f.key
+                        });
                     }
-                    d.attributes.forEach(f => {
-                        if (!(f.key in this.eventAttributes[d.eventType])) {
-                            this.eventAttributes[d.eventType][f.key] = [];
+                    else {
+                        if (!this.eventAttributes[d.eventType][f.key].map(g => {
+                            return g.name
+                        }).includes(f.value)) {
                             this.eventAttributes[d.eventType][f.key].push({
                                 name: f.value,
                                 id: uuidv4(),
                                 eventType: f.key
                             });
                         }
-                        else {
-                            if (!this.eventAttributes[d.eventType][f.key].map(g => {
-                                return g.name
-                            }).includes(f.value)) {
-                                this.eventAttributes[d.eventType][f.key].push({
-                                    name: f.value,
-                                    id: uuidv4(),
-                                    eventType: f.key
-                                });
-                            }
-                        }
-                    })
+                    }
+                })
                 //}
             })
         }
