@@ -128,8 +128,9 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             }
         });
         this.props.rootStore.molProfileMapping.loadIds(geneList, () => {
-            if (this.props.rootStore.availableProfiles.map(d => d.molecularAlterationType).includes("MUTATION_EXTENDED")) {
-                this.props.rootStore.molProfileMapping.loadMutations(() => {
+            let mutationProfileIndex=this.props.rootStore.availableProfiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
+            if (mutationProfileIndex!==-1) {
+                this.props.rootStore.molProfileMapping.loadMutations(this.props.rootStore.availableProfiles[mutationProfileIndex].molecularProfileId,() => {
                     this.updateMutationCheckBoxOptions(Object.values(this.props.rootStore.molProfileMapping.isInGenePanel).join().length > 0);
                 });
             }

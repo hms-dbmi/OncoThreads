@@ -126,7 +126,7 @@ class VariableStore {
                 }
             }
             else if (change.type === "update") {
-                this.childStore.updateHeatmapRows(change.index, change.newValue,this.getById(change.newValue).mapper);
+                this.childStore.updateHeatmapRows(change.index, change.newValue, this.getById(change.newValue).mapper);
             }
             this.updateReferences();
             this.updateVariableRanges();

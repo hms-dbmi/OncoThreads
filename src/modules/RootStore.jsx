@@ -1,13 +1,15 @@
 import DataStore from "./TemporalHeatmap/stores/DataStore"
 
 import VisStore from "./TemporalHeatmap/stores/VisStore.jsx"
-import {action, extendObservable, observable, toJS} from "mobx";
+import {action, extendObservable, observable, reaction, toJS} from "mobx";
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from "./UndoRedoStore";
 import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import MolProfileMapping from "./MolProfileMapping";
 import SvgExport from "./SvgExport";
 import cBioAPI from "../cBioAPI";
+import FileAPI from "../FileAPI";
+import LocalFileLoader from "../LocalFileLoader";
 
 
 /*
@@ -18,14 +20,9 @@ class RootStore {
         this.study = "";
 
         this.hasMutations = false;
-        this.mutations = [];
         this.events = [];
 
-        //maximum and minimum amount of timepoints a patient has in the dataset
-        this.maxTP = 0;
-        this.minTP = Number.POSITIVE_INFINITY;
-
-        this.initialVariable="";
+        this.initialVariable = "";
 
         this.mutationCountId = uuidv4();
         this.timeDistanceId = uuidv4();
@@ -39,10 +36,20 @@ class RootStore {
         this.staticMappers = {};
 
         this.sampleStructure = [];
+
+        this.api = null;
+        this.molProfileMapping = new MolProfileMapping(this);
+        this.dataStore = new DataStore(this);
+        this.visStore = new VisStore(this);
+        this.svgExport = new SvgExport(this);
+        this.localFileLoader = new LocalFileLoader();
+        this.uiStore = uiStore;
+
         extendObservable(this, {
-            parsed: false,
+            isOwnData: false,
+            timelineParsed: false,
+            variablesParsed: false,
             firstLoad: true,
-            display: false,
             eventTimelineMap: observable.map(),
 
             timeVar: 1,
@@ -59,37 +66,31 @@ class RootStore {
              * resets everything
              */
             reset: action(() => {
-                this.parsed = false;
+                this.variablesParsed = false;
                 this.dataStore.reset();
                 this.resetTimepointStructure(false);
-                this.addInitialVariable(this.initialVariable);
-                this.parsed = true;
+                this.addInitialVariable();
+                this.variablesParsed = true;
             }),
             setTimeData: action((id, value) => {
                 this.timeValue = value;
                 this.timeVar = id;
+            }),
+            setIsOwnData: action(boolean => {
+                this.isOwnData = boolean
             }),
             /**
              * resets the timepoint structure to the default alignment
              */
             resetTimepointStructure: action(update => {
                 this.timepointStructure = [];
-                for (let i = 0; i < this.maxTP; i++) {
-                    let patientSamples = [];
-                    this.patients.forEach((d, j) => {
-                        if (this.minTP === 0) {
-                            this.minTP = this.sampleStructure[d].length;
+                for (let patient in this.sampleStructure) {
+                    this.sampleStructure[patient].forEach((d, i) => {
+                        if (this.timepointStructure.length === i) {
+                            this.timepointStructure.push([]);
                         }
-                        else {
-                            if (this.sampleStructure[d].length < this.minTP) {
-                                this.minTP = this.sampleStructure[d].length;
-                            }
-                        }
-                        if (this.sampleStructure[d].length > i) {
-                            patientSamples.push({patient: d, sample: this.sampleStructure[d][i]})
-                        }
-                    });
-                    this.timepointStructure.push(patientSamples);
+                        this.timepointStructure[i].push({patient: patient, sample: d})
+                    })
                 }
                 if (update) {
                     this.dataStore.update(this.patients);
@@ -98,53 +99,73 @@ class RootStore {
                     this.dataStore.initialize();
                 }
             }),
-
-            /*
-            gets data from cBio and sets parameters in other stores
+            /**
+             * parses timeline data
              */
-            parseCBio: action((study, callback) => {
+            parseTimeline: action((study, callback) => {
+                this.study = study;
+                if (this.isOwnData) {
+                    this.api = new FileAPI(this.localFileLoader);
+                }
+                else {
+                    this.api = new cBioAPI(this.study.studyId);
+                }
                 this.staticMappers = {};
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
-                this.study = study;
-                this.firstLoad = false;
-                this.parsed = false;
-                this.cbioAPI.getPatients(this.study.studyId, patients => {
+                this.variablesParsed = false;
+                this.timelineParsed = false;
+                this.api.getPatients(patients => {
                     this.patients = patients;
-                    this.cbioAPI.getEvents(this.study.studyId, patients, events => {
+                    this.api.getEvents(patients, events => {
                         this.events = events;
                         this.buildTimelineStructure();
                         this.createTimeGapMapping();
-                        this.cbioAPI.getClinialPatientData(this.study.studyId, patients, data => {
-                            this.createClinicalPatientMappers(data);
-                        });
-                        this.cbioAPI.getClinicalSampleData(this.study.studyId, data => {
-                            this.createClinicalSampleMapping(data);
-                            this.dataStore.initialize();
-                            this.initialVariable=data[0].clinicalAttributeId;
-                            this.addInitialVariable(this.initialVariable);
-                            callback();
-                            this.visStore.fitToScreenWidth();
-                            this.parsed = true;
+                        this.timelineParsed = true;
+                        callback();
+                    })
+                })
+            }),
+            /*
+            gets data from cBio and sets parameters in other stores
+             */
+            parseCBio: action((callback) => {
+                this.api.getClinicalSampleData(data => {
+                    this.createClinicalSampleMapping(data);
+                    if (data.length !== 0) {
+                        this.initialVariable = this.clinicalSampleCategories[0];
+                        this.variablesParsed = true;
+                        this.firstLoad = false;
+                        callback();
+                    }
+                    this.api.getClinicalPatientData(data => {
+                        this.createClinicalPatientMappers(data);
+                        if (data.length !== 0) {
+                            this.initialVariable = this.clinicalPatientCategories[0];
+                            this.variablesParsed = true;
                             this.firstLoad = false;
-                            this.display = true;
-                        });
-                        this.cbioAPI.getAvailableMolecularProfiles(this.study.studyId, profiles => {
+                            callback()
+                        }
+                        this.api.getAvailableMolecularProfiles(profiles => {
                             this.availableProfiles = profiles;
                             const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
                             if (mutationIndex !== -1) {
                                 this.hasMutations = true;
-                                this.cbioAPI.getAllMutations(this.study.studyId, profiles[mutationIndex].molecularProfileId, data => {
-                                    this.createMutationsStructure(data);
-                                });
-                                this.cbioAPI.getMutationCounts(this.study.studyId, profiles[mutationIndex].molecularProfileId, data => {
+                                this.api.getMutationCounts(profiles[mutationIndex].molecularProfileId, data => {
                                     this.createMutationCountsMapping(data);
+                                    if (data.length !== 0) {
+                                        this.initialVariable = this.clinicalSampleCategories[0];
+                                        this.variablesParsed = true;
+                                        this.firstLoad = false;
+                                        callback()
+                                    }
                                 });
                             }
                         })
-                    })
-                })
+                    });
+                });
+
             }),
             /**
              * creates a dictionary mapping sample IDs onto clinical sample data
@@ -193,27 +214,25 @@ class RootStore {
              */
             createClinicalPatientMappers: action(data => {
                 data.forEach(d => {
-                    d.forEach(d => {
-                        if (d)
-                            if (!(d.clinicalAttributeId in this.staticMappers)) {
-                                this.clinicalPatientCategories.push({
-                                    id: d.clinicalAttributeId,
-                                    variable: d.clinicalAttribute.displayName,
-                                    datatype: d.clinicalAttribute.datatype,
-                                    description: d.clinicalAttribute.description
-                                });
-                                this.staticMappers[d.clinicalAttributeId] = {}
-                            }
-                        this.sampleStructure[d.patientId].forEach(f => {
-                            if (d.clinicalAttribute.datatype !== "NUMBER") {
-                                return this.staticMappers[d.clinicalAttributeId][f] = d.value;
-                            }
-                            else {
-                                return this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
-                            }
-                        });
-                    })
-                });
+                    if (d)
+                        if (!(d.clinicalAttributeId in this.staticMappers)) {
+                            this.clinicalPatientCategories.push({
+                                id: d.clinicalAttributeId,
+                                variable: d.clinicalAttribute.displayName,
+                                datatype: d.clinicalAttribute.datatype,
+                                description: d.clinicalAttribute.description
+                            });
+                            this.staticMappers[d.clinicalAttributeId] = {}
+                        }
+                    this.sampleStructure[d.patientId].forEach(f => {
+                        if (d.clinicalAttribute.datatype !== "NUMBER") {
+                            return this.staticMappers[d.clinicalAttributeId][f] = d.value;
+                        }
+                        else {
+                            return this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
+                        }
+                    });
+                })
             }),
 
             /**
@@ -222,17 +241,13 @@ class RootStore {
              */
             buildTimelineStructure: action(() => {
                 let sampleStructure = {};
-                let timelineStructure = [];
                 let sampleTimelineMap = {};
                 let eventCategories = [];
-                let maxTP = 0;
-                let minTP = Number.POSITIVE_INFINITY;
                 let timepointStructure = [];
                 let excludeDates = {};
 
                 this.patients.forEach(patient => {
                     sampleStructure[patient] = [];
-                    timelineStructure[patient] = [];
                     excludeDates[patient] = [];
                     let previousDate = -1;
                     let currTP = 0;
@@ -241,33 +256,21 @@ class RootStore {
                             eventCategories.push(e.eventType);
                         }
                         if (e.eventType === "SPECIMEN") {
+                            let sampleId = e.attributes.filter(d => d.key === "SAMPLE_ID")[0].value;
                             excludeDates[patient].push(e.startNumberOfDaysSinceDiagnosis);
-                            sampleTimelineMap[e.attributes[1].value] = e.startNumberOfDaysSinceDiagnosis;
+                            sampleTimelineMap[sampleId] = e.startNumberOfDaysSinceDiagnosis;
                             if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
-                                sampleStructure[patient].push(e.attributes[1].value);
-                                timelineStructure[patient].push({
-                                    sampleId: e.attributes[1].value,
-                                    date: e.startNumberOfDaysSinceDiagnosis
-                                });
+                                sampleStructure[patient].push(sampleId);
                                 if (timepointStructure.length <= currTP) {
                                     timepointStructure.push([]);
                                 }
-                                timepointStructure[currTP].push({patient: patient, sample: e.attributes[1].value});
+                                timepointStructure[currTP].push({patient: patient, sample: sampleId});
                                 currTP += 1;
-
                             }
                             previousDate = e.startNumberOfDaysSinceDiagnosis;
                         }
                     });
-                    if (sampleStructure[patient].length > maxTP) {
-                        maxTP = currTP;
-                    }
-                    if (sampleStructure[patient].length < minTP) {
-                        minTP = currTP;
-                    }
                 });
-                this.maxTP = maxTP;
-                this.minTP = minTP;
                 this.sampleTimelineMap = sampleTimelineMap;
                 this.eventCategories = eventCategories;
                 this.sampleStructure = sampleStructure;
@@ -449,26 +452,35 @@ class RootStore {
                     }
                 }
                 return max;
+
             },
 
         });
+        reaction(() => this.variablesParsed, parsed => {
+            if (parsed) {
+                this.dataStore.initialize();
+                this.addInitialVariable();
+                this.visStore.fitToScreenWidth();
+            }
+        });
+        reaction(() => this.isOwnData, () => {
+            this.timelineParsed = false;
+        });
+        reaction(() => this.localFileLoader.eventsParsed, parsed => {
+            if (!parsed) {
+                this.timelineParsed = false;
+            }
+        });
         this.reset = this.reset.bind(this);
-        this.cbioAPI = new cBioAPI();
-        this.molProfileMapping = new MolProfileMapping(this);
-        this.dataStore = new DataStore(this);
-        this.visStore = new VisStore(this);
-        this.svgExport = new SvgExport(this);
-        this.uiStore = uiStore;
+
     }
 
     /**
      * adds variable in the beginning or after reset
-     * @param id: id of variable to add
      */
-    addInitialVariable(id) {
-        let initialVariable = this.clinicalSampleCategories.filter(d => d.id === id)[0];
-        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(initialVariable.id, initialVariable.variable, initialVariable.datatype, initialVariable.description, [], [], this.staticMappers[initialVariable.id], "clinSample", "clinical"));
-        this.dataStore.globalPrimary = initialVariable.id;
+    addInitialVariable() {
+        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], "clinSample", "clinical"));
+        this.dataStore.globalPrimary = this.initialVariable.id;
     }
 
     /**
@@ -531,26 +543,6 @@ class RootStore {
             timeGapMapping[curr[curr.length - 1] + "_post"] = undefined;
         });
         this.staticMappers[this.timeDistanceId] = timeGapMapping;
-    }
-
-    /**
-     * creates data structure for mutations
-     * @param data
-     */
-    createMutationsStructure(data) {
-        this.mutations = {};
-        data.forEach(mutation => {
-            if (!(mutation.entrezGeneId in this.mutations)) {
-                this.mutations[mutation.entrezGeneId] = [];
-            }
-            this.mutations[mutation.entrezGeneId].push({
-                patientId: mutation.patientId,
-                sampleId: mutation.sampleId,
-                mutationType: mutation.mutationType,
-                proteinChange: mutation.proteinChange,
-                vaf: mutation.tumorAltCount / (mutation.tumorAltCount + mutation.tumorRefCount)
-            });
-        });
     }
 
 
@@ -624,32 +616,32 @@ class RootStore {
         this.eventAttributes = {};
         for (let patient in this.events) {
             this.events[patient].forEach(d => {
-                if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
-                    if (!(d.eventType in this.eventAttributes)) {
-                        this.eventAttributes[d.eventType] = {}
+                //if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+                if (!(d.eventType in this.eventAttributes)) {
+                    this.eventAttributes[d.eventType] = {}
+                }
+                d.attributes.forEach(f => {
+                    if (!(f.key in this.eventAttributes[d.eventType])) {
+                        this.eventAttributes[d.eventType][f.key] = [];
+                        this.eventAttributes[d.eventType][f.key].push({
+                            name: f.value,
+                            id: uuidv4(),
+                            eventType: f.key
+                        });
                     }
-                    d.attributes.forEach(f => {
-                        if (!(f.key in this.eventAttributes[d.eventType])) {
-                            this.eventAttributes[d.eventType][f.key] = [];
+                    else {
+                        if (!this.eventAttributes[d.eventType][f.key].map(g => {
+                            return g.name
+                        }).includes(f.value)) {
                             this.eventAttributes[d.eventType][f.key].push({
                                 name: f.value,
                                 id: uuidv4(),
                                 eventType: f.key
                             });
                         }
-                        else {
-                            if (!this.eventAttributes[d.eventType][f.key].map(g => {
-                                return g.name
-                            }).includes(f.value)) {
-                                this.eventAttributes[d.eventType][f.key].push({
-                                    name: f.value,
-                                    id: uuidv4(),
-                                    eventType: f.key
-                                });
-                            }
-                        }
-                    })
-                }
+                    }
+                })
+                //}
             })
         }
     }

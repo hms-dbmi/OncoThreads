@@ -21,6 +21,7 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
      */
     componentDidMount() {
         this.updateDimensions();
+        this.props.rootStore.visStore.setPlotHeight(this.refs.blockView.parentNode.getBoundingClientRect().height);
         window.addEventListener("resize", this.updateDimensions);
     }
 
@@ -33,7 +34,6 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
 
     updateDimensions() {
         this.props.rootStore.visStore.setPlotWidth(this.refs.blockView.parentNode.getBoundingClientRect().width);
-        this.props.rootStore.visStore.setPlotHeight(this.refs.blockView.parentNode.getBoundingClientRect().height);
 
     }
 
