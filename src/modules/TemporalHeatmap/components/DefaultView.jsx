@@ -24,6 +24,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
             fileNames: [],
             datatypes: [],
         };
+        // random keys for file inputs used for reset (inputs are reset if key changes)
         this.timelineKey = uuidv4();
         this.clinicalPatientKey = uuidv4();
         this.clinicalSampleKey = uuidv4();
@@ -41,6 +42,10 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.setDatatype = this.setDatatype.bind(this);
     }
 
+    /**
+     * handle click on tab
+     * @param {string} key
+     */
     handleSelectTab(key) {
         this.props.rootStore.setIsOwnData(key !== 'cBio');
         if (key === 'cBio') {
@@ -278,7 +283,6 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         if (this.props.rootStore.localFileLoader.cnvsParsed === "empty") {
             this.cnvKey = uuidv4();
         }
-
     }
 
 

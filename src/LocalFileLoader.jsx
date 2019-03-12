@@ -42,7 +42,10 @@ class LocalFileLoader {
             cnvsParsed: "empty",
             clinicalPatientParsed: "empty",
             clinicalSampleParsed: "empty",
-            // is any of the files currently loading
+            /**
+             * is any of the files currently loading
+             * @returns {boolean}
+             */
             get dataLoading() {
                 return this.eventsParsed === "loading"
                     || this.mutationsParsed === "loading"
@@ -51,7 +54,10 @@ class LocalFileLoader {
                     || this.clinicalPatientParsed === "loading"
                     || this.clinicalSampleParsed === "loading";
             },
-            // were there errors when files were parsed
+            /**
+             * were there errors during the file parsing
+             * @returns {boolean}
+             */
             get dataHasErrors(){
                  return this.eventsParsed === "error"
                     || this.mutationsParsed === "error"
@@ -60,7 +66,10 @@ class LocalFileLoader {
                     || this.clinicalPatientParsed === "error"
                     || this.clinicalSampleParsed === "error";
             },
-            // is data ready to be displayed
+            /**
+             * is data ready to be displayed
+             * @returns {boolean}
+             */
             get dataReady() {
                 return !this.dataLoading
                     && !this.dataHasErrors
@@ -102,6 +111,7 @@ class LocalFileLoader {
                         skipEmptyLines: true,
                         step: (row, parser) => {
                             parser.pause();
+                            // check header
                             if (LocalFileLoader.checkTimelineFileHeader(row.data[0]["EVENT_TYPE"], row.meta.fields, d.name)) {
                                 eventFiles.set(row.data[0]["EVENT_TYPE"], d);
                             }
@@ -189,6 +199,7 @@ class LocalFileLoader {
                     step: (row, parser) => {
                         if (row.errors.length === 0) {
                             if (firstRow) {
+                                // check header when parsing first row
                                 if (LocalFileLoader.checkMutationFileHeader(row.meta.fields, file.name)) {
                                     if ("t_ref_count" in row.data[0] && "t_alt_count" in row.data[0]) {
                                         hasVaf = true;
@@ -201,6 +212,7 @@ class LocalFileLoader {
                                     parser.abort();
                                 }
                             }
+                            // add mutation if it's not in the list of excluded mutations
                             if (!aborted && !skipMutations.includes(row.data[0]["Variant_Classification"])) {
                                 let mutation = {
                                     sampleId: row.data[0]["Tumor_Sample_Barcode"],
@@ -253,6 +265,7 @@ class LocalFileLoader {
                             this.mutationsParsed = "finished";
                         }
                         else {
+                            // if linebreaks are inconsistent replace them and retry
                             if (inconsistentLinebreaks) {
                                 this.replaceLinebreaks(file, newFile => {
                                     this.setMutations(newFile);
@@ -763,7 +776,7 @@ class LocalFileLoader {
                 })
             }),
         });
-        // reactions to errors or removal of files
+        // reactions to errors or removal of files: clears data fields if there is an error or the file is removed
         reaction(() => this.eventsParsed, parsed => {
             if (parsed === "error" || parsed === "empty") {
                 this.eventFiles.clear();

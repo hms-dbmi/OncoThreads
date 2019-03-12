@@ -20,7 +20,6 @@ class RootStore {
         this.study = "";
 
         this.hasMutations = false;
-        this.mutations = [];
         this.events = [];
 
         this.initialVariable = "";
@@ -37,6 +36,15 @@ class RootStore {
         this.staticMappers = {};
 
         this.sampleStructure = [];
+
+        this.api = null;
+        this.molProfileMapping = new MolProfileMapping(this);
+        this.dataStore = new DataStore(this);
+        this.visStore = new VisStore(this);
+        this.svgExport = new SvgExport(this);
+        this.localFileLoader = new LocalFileLoader();
+        this.uiStore = uiStore;
+
         extendObservable(this, {
             isOwnData: false,
             timelineParsed: false,
@@ -458,14 +466,12 @@ class RootStore {
         reaction(() => this.isOwnData, () => {
             this.timelineParsed = false;
         });
+        reaction(() => this.localFileLoader.eventsParsed, parsed => {
+            if (!parsed) {
+                this.timelineParsed = false;
+            }
+        });
         this.reset = this.reset.bind(this);
-        this.api = null;
-        this.molProfileMapping = new MolProfileMapping(this);
-        this.dataStore = new DataStore(this);
-        this.visStore = new VisStore(this);
-        this.svgExport = new SvgExport(this);
-        this.localFileLoader = new LocalFileLoader();
-        this.uiStore = uiStore;
 
     }
 
