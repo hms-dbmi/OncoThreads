@@ -4,16 +4,32 @@ import Select from 'react-select';
 import {Button, Col, Form, FormControl, FormGroup, Grid, Panel, Row, Tab, Tabs} from "react-bootstrap";
 import StudySummary from "./StudySummary";
 import FontAwesome from 'react-fontawesome';
+import SelectDatatype from "./Modals/SelectDatatype";
+import uuidv4 from 'uuid/v4';
 
 
 /*
- * View if no study has been loaded
+ * View if no study has been loaded used for selection of studies from cBio or own data sets
  */
 const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultView extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
-        this.state = {studyClicked: false, CNVisDiscrete: false, selectedTab: "cBio", numCNVFiles: 0};
+        this.state = {
+            selectedStudy: null,
+            selectedTab: "cBio",
+            callback: null,
+            modalIsOpen: false,
+            fileType: "",
+            fileNames: [],
+            datatypes: [],
+        };
+        this.timelineKey = uuidv4();
+        this.clinicalPatientKey = uuidv4();
+        this.clinicalSampleKey = uuidv4();
+        this.mutationKey = uuidv4();
+        this.expressionKey = uuidv4();
+        this.cnvKey = uuidv4();
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
         this.handleEventsLoad = this.handleEventsLoad.bind(this);
@@ -22,26 +38,39 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.handleMutationsLoad = this.handleMutationsLoad.bind(this);
         this.handleExpressionsLoad = this.handleExpressionsLoad.bind(this);
         this.handleCNVLoad = this.handleCNVLoad.bind(this);
+        this.setDatatype = this.setDatatype.bind(this);
     }
 
     handleSelectTab(key) {
         this.props.rootStore.setIsOwnData(key !== 'cBio');
-        this.setState({selectedTab: key, studyClicked: false});
+        if (key === 'cBio') {
+            if (this.state.selectedStudy !== null) {
+                this.props.rootStore.parseTimeline(this.props.studies.filter(d => d.studyId === this.state.selectedStudy)[0], () => {
+                });
+            }
+        }
+        else {
+            if (this.props.rootStore.localFileLoader.eventsParsed) {
+                this.props.rootStore.parseTimeline(null, () => {
+                });
+            }
+        }
+        this.setState({selectedTab: key});
     }
 
     /**
      * selects a study
-     * @param selectedOption
+     * @param {Object} selectedOption
      */
     getStudy(selectedOption) {
-        this.setState({studyClicked: true});
+        this.setState({selectedStudy: selectedOption.value});
         this.props.rootStore.parseTimeline(this.props.studies.filter(d => d.studyId === selectedOption.value)[0], () => {
         });
     }
 
     /**
      * creates different options for study selection
-     * @returns {Array}
+     * @returns {Object[]}
      */
     setOptions() {
         let options = [];
@@ -51,6 +80,9 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         return options;
     }
 
+    /**
+     * initiates data parsing
+     */
     displayStudy() {
         this.props.rootStore.parseCBio(() => {
             if (this.props.rootStore.isOwnData) {
@@ -64,7 +96,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
 
     /**
      * gets information about study
-     * @returns {*}
+     * @returns {Component}
      */
     getStudyInfo() {
         let info = null;
@@ -82,41 +114,133 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
             </div>
 
         }
-        else if (this.state.studyClicked) {
+        else if ((this.state.selectedStudy !== null && !this.props.rootStore.isOwnData)
+            || (this.props.rootStore.isOwnData && this.props.rootStore.localFileLoader.eventsParsed === "loading")) {
             info = <div className="smallLoader"/>
         }
         return info;
     }
 
-
+    /**
+     * handles selection of event files
+     * @param {event} e
+     */
     handleEventsLoad(e) {
-        this.props.rootStore.setIsOwnData(true);
-        this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
-            this.props.rootStore.parseTimeline(null, () => {
+        if (e.target.files.length > 0) {
+            this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
+                this.props.rootStore.parseTimeline(null, () => {
+                });
             });
-        });
+        }
+        else {
+            this.props.rootStore.localFileLoader.setEventsParsed("empty");
+        }
     }
 
+    /**
+     * handles selection of clinical sample specific file
+     * @param {event} e
+     */
     handleClinicalSampleLoad(e) {
-        this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], true)
+        if (e.target.files.length > 0) {
+            this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], true)
+        }
+        else {
+            this.props.rootStore.localFileLoader.setClinicalSampleParsed("empty");
+        }
     }
 
+    /**
+     * handles selection of clinical patient specific file
+     * @param {event} e
+     */
     handleClinicalPatientLoad(e) {
-        this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false)
+        if (e.target.files.length > 0) {
+            this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false)
+        }
+        else {
+            this.props.rootStore.localFileLoader.setClinicalPatientParsed("empty");
+        }
     }
 
+    /**
+     * handles selection of mutation file
+     * @param {event} e
+     */
     handleMutationsLoad(e) {
-        this.props.rootStore.localFileLoader.setMutations(e.target.files[0])
+        if (e.target.files.length > 0) {
+            this.props.rootStore.localFileLoader.setMutations(e.target.files[0])
+        }
+        else {
+            this.props.rootStore.localFileLoader.setMutationsParsed("empty");
+        }
     }
 
+    /**
+     * handles selection of expression data files
+     * @param {event} e
+     */
     handleExpressionsLoad(e) {
-        this.props.rootStore.localFileLoader.setExpressions(e.target.files)
+        if (e.target.files.length > 0) {
+            this.props.rootStore.localFileLoader.setExpressions(e.target.files)
+        }
+        else {
+            this.props.rootStore.localFileLoader.setExpressionsParsed("empty");
+        }
     }
 
+    /**
+     * sets datatypes of currently selected files
+     * @param {number} index
+     * @param {string} datatype
+     */
+    setDatatype(index, datatype) {
+        let datatypes = this.state.datatypes.slice();
+        datatypes[index] = datatype;
+        this.setState({datatypes: datatypes});
+    }
+
+    /**
+     * opens modal for datatype selection
+     * @param {FileList} files
+     * @param {Function} callback
+     */
+    openModal(files, callback) {
+        this.setState({
+            modalIsOpen: true,
+            fileType: "CNV",
+            datatypes: Array.from(files).map(() => "STRING"),
+            fileNames: Array.from(files).map(d => d.name),
+            callback: callback
+        })
+    }
+
+    /**
+     * handles selection of CNV files
+     * @param {event} e
+     */
     handleCNVLoad(e) {
-        this.props.rootStore.localFileLoader.setCNVs(e.target.files, "DISCRETE")
+        e.persist();
+        if (e.target.files.length > 0) {
+            this.openModal(e.target.files, (setFiles) => {
+                if (setFiles) {
+                    this.props.rootStore.localFileLoader.setCNVs(e.target.files, this.state.datatypes);
+                }
+                else {
+                    e.target.value = null;
+                }
+            });
+        }
+        else {
+            this.props.rootStore.localFileLoader.setCNVsParsed("empty");
+        }
     }
 
+    /**
+     * gets the icon corresponding to the current laoding state
+     * @param {string} value - loading, error, finished or empty
+     * @returns {FontAwesome}
+     */
     static getStateIcon(value) {
         let icon = null;
         if (value === "finished") {
@@ -131,106 +255,181 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         return icon;
     }
 
+    /**
+     * updates keys of file inputs in order to reset them when the reset button is clicked.
+     * file inputs can only be uncontrolled and therefore cannot be reset in a "react" way
+     */
+    updateKeys() {
+        if (this.props.rootStore.localFileLoader.eventsParsed === "empty") {
+            this.timelineKey = uuidv4();
+        }
+        if (this.props.rootStore.localFileLoader.clinicalSampleParsed === "empty") {
+            this.clinicalSampleKey = uuidv4();
+        }
+        if (this.props.rootStore.localFileLoader.clinicalPatientParsed === "empty") {
+            this.clinicalPatientKey = uuidv4();
+        }
+        if (this.props.rootStore.localFileLoader.mutationsParsed === "empty") {
+            this.mutationKey = uuidv4();
+        }
+        if (this.props.rootStore.localFileLoader.expressionsParsed === "empty") {
+            this.expressionKey = uuidv4();
+        }
+        if (this.props.rootStore.localFileLoader.cnvsParsed === "empty") {
+            this.cnvKey = uuidv4();
+        }
+
+    }
+
+
     render() {
+        // check if data is ready
         let launchDisabled = true;
         if (this.props.rootStore.isOwnData) {
-            if (this.props.rootStore.localFileLoader.eventsParsed === "finished") {
-                if (this.props.rootStore.localFileLoader.clinicalPatientParsed === "finished" || this.props.rootStore.localFileLoader.clinicalSampleParsed === "finished" || this.props.rootStore.localFileLoader.mutationsParsed === "finished") {
-                    launchDisabled = false
-                }
-            }
+            launchDisabled = !this.props.rootStore.localFileLoader.dataReady;
         }
         else {
-            if (this.props.rootStore.timelineParsed) {
-                launchDisabled = false;
-            }
+            launchDisabled = !this.props.rootStore.timelineParsed;
         }
+        this.updateKeys();
+
         return (
             <Grid>
                 <Row>
-                    <Col xs={6} xsOffset={3}>
+                    <Col xs={8} xsOffset={2}>
                         <Tabs activeKey={this.state.selectedTab}
                               id="controlled-tab"
                               animation={false}
                               onSelect={this.handleSelectTab}>
                             <Tab eventKey={"cBio"} title={"Load cBio dataset"}>
-                                <Select
-                                    type="text"
-                                    searchable={true}
-                                    componentClass="select" placeholder="Select Study"
-                                    options={this.setOptions()}
-                                    onChange={this.getStudy}
-                                />
+                                <div style={{marginTop: "10px", marginBottom: "10px"}}>
+                                    <Select
+                                        type="text"
+                                        searchable={true}
+                                        componentClass="select" placeholder="Select Study"
+                                        options={this.setOptions()}
+                                        onChange={this.getStudy}
+                                    />
+                                </div>
                             </Tab>
                             <Tab eventKey={"own"} title={"Load own dataset"}>
                                 <Form horizontal>
                                     <h4>Required files</h4>
                                     <FormGroup>
-                                        <Col sm={4}>
+                                        <Col sm={5}>
                                             Timeline {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.eventsParsed)}
                                         </Col>
-                                        <Col sm={8}>
-                                            <FormControl type="file"
-                                                         label="File"
-                                                         multiple={true}
-                                                         onChange={this.handleEventsLoad}/>
+                                        <Col sm={6}>
+                                            <FormControl
+                                                type="file"
+                                                key={this.timelineKey}
+                                                label="File"
+                                                multiple={true}
+                                                onChange={this.handleEventsLoad}/>
+                                        </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.eventsParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setEventsParsed("empty")}/>
+                                            </div>
                                         </Col>
                                     </FormGroup>
                                     <h4>At least one required</h4>
                                     <FormGroup>
-                                        <Col sm={4}>
+                                        <Col sm={5}>
                                             Clinical Sample
                                             Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalSampleParsed)}
                                         </Col>
-                                        <Col sm={8}>
+                                        <Col sm={6}>
                                             <FormControl type="file"
+                                                         key={this.clinicalSampleKey}
                                                          label="File"
                                                          onChange={this.handleClinicalSampleLoad}/>
                                         </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.clinicalSampleParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setClinicalSampleParsed("empty")}/>
+                                            </div>
+                                        </Col>
                                     </FormGroup>
                                     <FormGroup>
-                                        <Col sm={4}>
+                                        <Col sm={5}>
                                             Clinical Patient
                                             Data {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.clinicalPatientParsed)}
                                         </Col>
-                                        <Col sm={8}>
+                                        <Col sm={6}>
                                             <FormControl type="file"
+                                                         key={this.clinicalPatientKey}
                                                          label="File"
                                                          onChange={this.handleClinicalPatientLoad}/>
                                         </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.clinicalPatientParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setClinicalPatientParsed("empty")}/>
+                                            </div>
+                                        </Col>
                                     </FormGroup>
                                     <FormGroup>
-                                        <Col sm={4}>
+                                        <Col sm={5}>
                                             Mutations {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.mutationsParsed)}
                                         </Col>
-                                        <Col sm={8}>
+                                        <Col sm={6}>
                                             <FormControl type="file"
+                                                         key={this.mutationKey}
                                                          label="File"
                                                          onChange={this.handleMutationsLoad}/>
+                                        </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.mutationsParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setMutationsParsed("empty")}/>
+                                            </div>
                                         </Col>
                                     </FormGroup>
                                     <h4>Optional files</h4>
                                     <FormGroup>
-                                        <Col sm={4}>
+                                        <Col sm={5}>
                                             Expression {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.expressionsParsed)}
                                         </Col>
-                                        <Col sm={8}>
+                                        <Col sm={6}>
                                             <FormControl type="file"
+                                                         key={this.expressionKey}
                                                          label="File"
                                                          multiple={true}
                                                          onChange={this.handleExpressionsLoad}/>
                                         </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.expressionsParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setExpressionsParsed("empty")}/>
+                                            </div>
+                                        </Col>
                                     </FormGroup>
                                     <FormGroup>
-                                        <Col sm={4}>
+                                        <Col sm={5}>
                                             Copy Number
-                                            variation {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.cnvsParsed)}
+                                            Variation {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.cnvsParsed)}
                                         </Col>
-                                        <Col sm={8}>
+                                        <Col sm={6}>
                                             <FormControl type="file"
+                                                         key={this.cnvKey}
                                                          label="File"
                                                          multiple={true}
                                                          onChange={this.handleCNVLoad}/>
+                                        </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.cnvsParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setCNVsParsed("empty")}/>
+                                            </div>
                                         </Col>
                                     </FormGroup>
                                 </Form>
@@ -241,8 +440,13 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                             disabled={launchDisabled}
                             onClick={this.displayStudy}>Launch</Button>
                     </Col>
-
                 </Row>
+                <SelectDatatype modalIsOpen={this.state.modalIsOpen} type={this.state.fileType}
+                                fileNames={this.state.fileNames}
+                                datatypes={this.state.datatypes}
+                                setDatatype={this.setDatatype}
+                                callback={this.state.callback}
+                                closeModal={() => this.setState({modalIsOpen: false})}/>
             </Grid>
         );
     }

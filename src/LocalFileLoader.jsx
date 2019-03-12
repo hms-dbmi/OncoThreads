@@ -1,5 +1,5 @@
 import * as Papa from "papaparse"
-import {action, extendObservable} from "mobx";
+import {action, extendObservable, reaction} from "mobx";
 import uuidv4 from 'uuid/v4';
 
 /**
@@ -42,6 +42,51 @@ class LocalFileLoader {
             cnvsParsed: "empty",
             clinicalPatientParsed: "empty",
             clinicalSampleParsed: "empty",
+            // is any of the files currently loading
+            get dataLoading() {
+                return this.eventsParsed === "loading"
+                    || this.mutationsParsed === "loading"
+                    || this.expressionsParsed === "loading"
+                    || this.cnvsParsed === "loading"
+                    || this.clinicalPatientParsed === "loading"
+                    || this.clinicalSampleParsed === "loading";
+            },
+            // were there errors when files were parsed
+            get dataHasErrors(){
+                 return this.eventsParsed === "error"
+                    || this.mutationsParsed === "error"
+                    || this.expressionsParsed === "error"
+                    || this.cnvsParsed === "error"
+                    || this.clinicalPatientParsed === "error"
+                    || this.clinicalSampleParsed === "error";
+            },
+            // is data ready to be displayed
+            get dataReady() {
+                return !this.dataLoading
+                    && !this.dataHasErrors
+                    && this.eventsParsed === "finished"
+                    && (this.mutationsParsed === "finished"
+                        || this.clinicalSampleParsed === "finished"
+                        || this.clinicalPatientParsed === "finished")
+            },
+            setEventsParsed: action(loadingState => {
+                this.eventsParsed = loadingState;
+            }),
+            setMutationsParsed: action(loadingState => {
+                this.mutationsParsed = loadingState;
+            }),
+            setExpressionsParsed: action(loadingState => {
+                this.expressionsParsed = loadingState;
+            }),
+            setCNVsParsed: action(loadingState => {
+                this.cnvsParsed = loadingState;
+            }),
+            setClinicalPatientParsed: action(loadingState => {
+                this.clinicalPatientParsed = loadingState;
+            }),
+            setClinicalSampleParsed: action(loadingState => {
+                this.clinicalSampleParsed = loadingState
+            }),
             /**
              * sets current event files if headers are correct and file of type SPECIMEN is contained
              * @param {FileList} files: all event files
@@ -416,7 +461,7 @@ class LocalFileLoader {
 
             /**
              * Parse clinical data file
-             * @param {boolean} isSample - sample related of patient related clinical data
+             * @param {boolean} isSample - sample related or patient related clinical data
              * @param {function} callback
              */
             loadClinicalFile: action((isSample, callback) => {
@@ -589,7 +634,7 @@ class LocalFileLoader {
 
 
             /**
-             * set expression data files
+             * parse expression data files
              * @param {FileList} files - all expression data files
              */
             setExpressions: action(files => {
@@ -604,11 +649,16 @@ class LocalFileLoader {
                     })
                 })
             }),
-            setCNVs: action((files, datatype) => {
+            /**
+             * parse cnv data files
+             * @param {FileList} files - all cnv data files
+             * @param {string[]} datatypes - datatypes of files: ORDINAL or NUMBER
+             */
+            setCNVs: action((files, datatypes) => {
                 let filesParsed = 0;
                 this.cnvsParsed = "loading";
-                Array.from(files).forEach(file => {
-                    this.setMolecular(file, false, datatype, () => {
+                Array.from(files).forEach((file, i) => {
+                    this.setMolecular(file, false, datatypes[i], () => {
                         filesParsed++;
                         if (filesParsed === files.length) {
                             this.cnvsParsed = "finished";
@@ -652,23 +702,21 @@ class LocalFileLoader {
                                     entrezGeneId: entrezId
                                 };
                                 if (hasHugoSymbol) {
-                                    dataPoint.hugoGeneSymbol = row.data[0]["Hugo_Symbol"];
                                     dataPoint.gene.hugoGeneSymbol = row.data[0]["Hugo_Symbol"];
                                 }
-                                if (row.data[0][key] !== "NA") {
-                                    if (key !== "Entrez_Gene_Id" && key !== "Hugo_Symbol") {
-                                        let value = parseFloat(row.data[0][key]);
-                                        if (!isNaN(value)) {
-                                            dataPoint.sampleId = key;
-                                            dataPoint.value = value;
-                                            dataRow.push(dataPoint);
-                                        }
-                                        else {
+                                if (key !== "Entrez_Gene_Id" && key !== "Hugo_Symbol") {
+                                    let value = row.data[0][key];
+                                    if (value !== "NA" && datatype === "NUMBER") {
+                                        value = parseFloat(row.data[0][key]);
+                                        if (isNaN(value)) {
                                             aborted = true;
-                                            alert("ERROR: file " + file.name + " expression value is not a number");
+                                            alert("ERROR: file " + file.name + " value is not a number");
                                             parser.abort();
                                         }
                                     }
+                                    dataPoint.sampleId = key;
+                                    dataPoint.value = value;
+                                    dataRow.push(dataPoint);
                                 }
                             }
                             data.set(entrezId, dataRow);
@@ -694,7 +742,6 @@ class LocalFileLoader {
                                 molecularProfileId: id
                             });
                             this.profileData.set(id, data);
-                            console.log(this.profileData);
                             callback();
                         }
                         else {
@@ -715,7 +762,56 @@ class LocalFileLoader {
                     }
                 })
             }),
-        })
+        });
+        // reactions to errors or removal of files
+        reaction(() => this.eventsParsed, parsed => {
+            if (parsed === "error" || parsed === "empty") {
+                this.eventFiles.clear();
+            }
+        });
+        reaction(() => this.mutationsParsed, parsed => {
+            if (parsed === "error" || parsed === "empty") {
+                this.mutations=[];
+            }
+        });
+        reaction(() => this.expressionsParsed, parsed => {
+            if (parsed === "error" || parsed === "empty") {
+                let spliceIndices = [];
+                this.molecularProfiles.forEach((profile, i) => {
+                    if (profile.molecularAlterationType === "MRNA_EXPRESSION") {
+                        spliceIndices.push(i);
+                        this.profileData.delete(profile.molecularProfileId);
+                    }
+                });
+                for (let i = spliceIndices.length - 1; i >= 0; i--) {
+                    this.molecularProfiles.splice(spliceIndices[i], 1);
+                }
+            }
+        });
+        reaction(() => this.cnvsParsed, parsed => {
+            if (parsed === "error" || parsed === "empty") {
+                let spliceIndices = [];
+                this.molecularProfiles.forEach((profile, i) => {
+                    if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
+                        spliceIndices.push(i);
+                        this.profileData.delete(profile.molecularProfileId);
+                    }
+                });
+                for (let i = spliceIndices.length - 1; i >= 0; i--) {
+                    this.molecularProfiles.splice(spliceIndices[i], 1);
+                }
+            }
+        });
+        reaction(() => this.clinicalSampleParsed, parsed => {
+            if (parsed === "error" || parsed === "empty") {
+                this.clinicalSampleFile = null;
+            }
+        });
+        reaction(() => this.clinicalPatientParsed, parsed => {
+            if (parsed === "error" || parsed === "empty") {
+                this.clinicalPatientFile = null;
+            }
+        });
     }
 
     /**
@@ -775,18 +871,14 @@ class LocalFileLoader {
                         break;
                     }
                 }
-                if (inconsistentLinebreak) {
-                    errorMessages.push("Inconsistent use of linebreaks at data row " + error.row);
-                }
-                else {
-                    errorMessages.push(error.message + " at data row " + error.row);
-                }
             }
-            else {
+            if (!inconsistentLinebreak) {
                 errorMessages.push(error.message + " at data row " + error.row);
             }
         });
-        alert("ERROR wrong file format in file " + fileName + ": " + errorMessages);
+        if (errorMessages.length > 0) {
+            alert("ERROR wrong file format in file " + fileName + ": " + errorMessages);
+        }
         return inconsistentLinebreak;
     }
 

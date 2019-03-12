@@ -32,8 +32,7 @@ class cBioAPI {
      * @param {returnDataCallback} callback
      */
     getEvents(patients, callback) {
-        let clinicalEventRequests = patients.map(patient => axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/patients/" + patient + "/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC"));
-        axios.all(clinicalEventRequests)
+        axios.all(patients.map(patient => axios.get("http://cbiohack.org/api/studies/" + this.studyId + "/patients/" + patient + "/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC")))
             .then(eventResults => {
                 let events = {};
                 eventResults.forEach((response, i) => {
