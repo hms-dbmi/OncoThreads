@@ -10,7 +10,7 @@ import uuidv4 from 'uuid/v4';
 
 /**
  * Returns data when file is loaded
- * @param {*[]} data
+ * @param {*} data
  * @callback returnDataCallback
  */
 
@@ -38,8 +38,7 @@ class LocalFileLoader {
             // states reflecting the load status of the different types of files: empty, loading, finished, or error
             eventsParsed: "empty",
             mutationsParsed: "empty",
-            expressionsParsed: "empty",
-            cnvsParsed: "empty",
+            molecularParsed: "empty",
             clinicalPatientParsed: "empty",
             clinicalSampleParsed: "empty",
             /**
@@ -49,8 +48,7 @@ class LocalFileLoader {
             get dataLoading() {
                 return this.eventsParsed === "loading"
                     || this.mutationsParsed === "loading"
-                    || this.expressionsParsed === "loading"
-                    || this.cnvsParsed === "loading"
+                    || this.molecularParsed === "loading"
                     || this.clinicalPatientParsed === "loading"
                     || this.clinicalSampleParsed === "loading";
             },
@@ -61,8 +59,7 @@ class LocalFileLoader {
             get dataHasErrors(){
                  return this.eventsParsed === "error"
                     || this.mutationsParsed === "error"
-                    || this.expressionsParsed === "error"
-                    || this.cnvsParsed === "error"
+                    || this.molecularParsed === "error"
                     || this.clinicalPatientParsed === "error"
                     || this.clinicalSampleParsed === "error";
             },
@@ -87,8 +84,8 @@ class LocalFileLoader {
             setExpressionsParsed: action(loadingState => {
                 this.expressionsParsed = loadingState;
             }),
-            setCNVsParsed: action(loadingState => {
-                this.cnvsParsed = loadingState;
+            setMolecularParsed: action(loadingState => {
+                this.molecularParsed = loadingState;
             }),
             setClinicalPatientParsed: action(loadingState => {
                 this.clinicalPatientParsed = loadingState;
@@ -645,47 +642,30 @@ class LocalFileLoader {
                 });
             }),
 
-
-            /**
-             * parse expression data files
-             * @param {FileList} files - all expression data files
-             */
-            setExpressions: action(files => {
-                let filesParsed = 0;
-                this.expressionsParsed = "loading";
-                Array.from(files).forEach(file => {
-                    this.setMolecular(file, true, "", () => {
-                        filesParsed++;
-                        if (filesParsed === files.length) {
-                            this.expressionsParsed = "finished";
-                        }
-                    })
-                })
-            }),
             /**
              * parse cnv data files
              * @param {FileList} files - all cnv data files
-             * @param {string[]} datatypes - datatypes of files: ORDINAL or NUMBER
+             * @param {string[]} metaData - datatypes and molecularAlteration types
              */
-            setCNVs: action((files, datatypes) => {
+            setMolecularFiles: action((files, metaData) => {
                 let filesParsed = 0;
-                this.cnvsParsed = "loading";
+                this.molecularParsed = "loading";
                 Array.from(files).forEach((file, i) => {
-                    this.setMolecular(file, false, datatypes[i], () => {
+                    this.setMolecular(file, metaData[i], () => {
                         filesParsed++;
                         if (filesParsed === files.length) {
-                            this.cnvsParsed = "finished";
+                            this.molecularParsed = "finished";
                         }
                     })
                 })
             }),
 
             /**
-             * parses an expression data file into an array of objects
+             * parses an molecular data file into an array of objects
              * @param {File} file
              * @param {loadFinishedCallback} callback
              */
-            setMolecular: action((file, isExpressionData, datatype, callback) => {
+            setMolecular: action((file, metaData, callback) => {
                 let firstRow = true;
                 let hasEntrezId, hasHugoSymbol;
                 let aborted = false;
@@ -719,7 +699,7 @@ class LocalFileLoader {
                                 }
                                 if (key !== "Entrez_Gene_Id" && key !== "Hugo_Symbol") {
                                     let value = row.data[0][key];
-                                    if (value !== "NA" && datatype === "NUMBER") {
+                                    if (value !== "NA" && metaData === "NUMBER") {
                                         value = parseFloat(row.data[0][key]);
                                         if (isNaN(value)) {
                                             aborted = true;
@@ -744,14 +724,10 @@ class LocalFileLoader {
                     complete: () => {
                         if (!aborted) {
                             let id = uuidv4();
-                            let alterationType = "MRNA_EXPRESSION";
-                            if (!isExpressionData) {
-                                alterationType = "COPY_NUMBER_ALTERATION";
-                            }
                             this.molecularProfiles.push({
-                                molecularAlterationType: alterationType,
+                                molecularAlterationType: metaData.alterationType,
                                 name: file.name,
-                                datatype: datatype,
+                                datatype: metaData.datatype,
                                 molecularProfileId: id
                             });
                             this.profileData.set(id, data);
@@ -760,16 +736,11 @@ class LocalFileLoader {
                         else {
                             if (inconsistentLinebreaks) {
                                 this.replaceLinebreaks(file, newFile => {
-                                    this.setMolecular(newFile, isExpressionData, datatype, callback);
+                                    this.setMolecular(newFile, metaData, callback);
                                 })
                             }
                             else {
-                                if (isExpressionData) {
-                                    this.expressionsParsed = "error";
-                                }
-                                else {
-                                    this.cnvsParsed = "error";
-                                }
+                                this.molecularParsed = "error";
                             }
                         }
                     }
@@ -787,21 +758,7 @@ class LocalFileLoader {
                 this.mutations=[];
             }
         });
-        reaction(() => this.expressionsParsed, parsed => {
-            if (parsed === "error" || parsed === "empty") {
-                let spliceIndices = [];
-                this.molecularProfiles.forEach((profile, i) => {
-                    if (profile.molecularAlterationType === "MRNA_EXPRESSION") {
-                        spliceIndices.push(i);
-                        this.profileData.delete(profile.molecularProfileId);
-                    }
-                });
-                for (let i = spliceIndices.length - 1; i >= 0; i--) {
-                    this.molecularProfiles.splice(spliceIndices[i], 1);
-                }
-            }
-        });
-        reaction(() => this.cnvsParsed, parsed => {
+        reaction(() => this.molecularParsed, parsed => {
             if (parsed === "error" || parsed === "empty") {
                 let spliceIndices = [];
                 this.molecularProfiles.forEach((profile, i) => {

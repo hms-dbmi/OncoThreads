@@ -4,7 +4,9 @@ import {Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../stores/OriginalVariable";
 
-
+/**
+ * Component for selecting event variables in variable manager
+ */
 const EventVariableSelector = inject("variableManagerStore", "rootStore")(observer(class EventVariableSelector extends React.Component {
 
     constructor(props) {
@@ -19,7 +21,7 @@ const EventVariableSelector = inject("variableManagerStore", "rootStore")(observ
 
     /**
      * creates a searchable list of clinical attributes
-     * @returns {Array}
+     * @returns {Object[]}
      */
     createOptions() {
         let options = [];
@@ -61,7 +63,7 @@ const EventVariableSelector = inject("variableManagerStore", "rootStore")(observ
 
     /**
      * handles selecting a category
-     * @param e
+     * @param {event} e
      */
     handleCategorySelect(e) {
         this.setState({
@@ -71,7 +73,7 @@ const EventVariableSelector = inject("variableManagerStore", "rootStore")(observ
 
     /**
      * handles selecting an option
-     * @param selectedOption
+     * @param {Object} selectedOption
      */
     handleOptionSelect(selectedOption) {
         if (!Array.isArray(selectedOption)) {
@@ -82,14 +84,14 @@ const EventVariableSelector = inject("variableManagerStore", "rootStore")(observ
                 this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, "BINARY", "Indicates if event: \"" + selectedOption.object.name + "\" has happened between two timepoints", [], [], this.props.rootStore.getSampleEventMapping(this.state.category, selectedOption.object), this.state.category, "event"));
             }
             else {
-                this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, selectedOption.object.datatype, selectedOption.object.description, [], [], this.props.rootStore.staticMappers[selectedOption.object.id], "Computed", "Computed"));
+                this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, selectedOption.object.datatype, selectedOption.object.description, [], [], this.props.rootStore.staticMappers[selectedOption.object.id], "Computed", "computed"));
             }
         }
     }
 
     /**
      * get Select element for current category
-     * @returns {*}
+     * @returns {Select}
      */
     getSelect() {
         return <Select

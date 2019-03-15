@@ -26,6 +26,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         if (props.rootStore.availableProfiles.length > 0) {
             profile = props.rootStore.availableProfiles[0].molecularProfileId;
         }
+        console.log(profile);
         return {
             category: "clinical",
             profile: profile,
@@ -66,7 +67,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
         else {
             this.state.selectedValues.forEach(d => {
-                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "Computed"))
+                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "computed"))
             });
             this.props.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
         }
@@ -251,11 +252,16 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
     }
 
     handleSelect(e) {
+        let profile = '';
+        if (this.props.rootStore.availableProfiles.length !== 0) {
+            profile = this.props.rootStore.availableProfiles[0].molecularProfileId;
+        }
         this.setState({
             isEvent: e.target.value !== "genes" && e.target.value !== "clinical",
             category: e.target.value,
             geneListString: "",
-            isClinical: e.target.value === "clinical"
+            isClinical: e.target.value === "clinical",
+            profile: profile
         });
     }
 

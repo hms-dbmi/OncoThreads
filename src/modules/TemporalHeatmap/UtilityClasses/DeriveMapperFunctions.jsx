@@ -18,7 +18,7 @@ class DerivedMapperFunctions {
             case "convertBinary":
                 mapper=DerivedMapperFunctions.createModifyCategoriesMapper(mappers[0],modification.mapping);
                 break;
-            default:
+            default: // continuous transform
                 let intermedMapper = {};
                 if (modification.logTransform) {
                     intermedMapper = DerivedMapperFunctions.createContinuousTransformMapper(mappers[0], modification.logTransform);

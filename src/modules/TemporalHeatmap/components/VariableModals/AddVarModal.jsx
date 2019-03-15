@@ -6,11 +6,13 @@ import UndoRedoStore from "../../../UndoRedoStore";
 import AddEventVarTab from "./AddEventVarTab";
 import VariableManagerStore from "./VariableManagerStore";
 
-
+/**
+ * Component for variable management
+ */
 const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarModal extends React.Component {
-
     constructor(props) {
         super(props);
+        // serialize variables to copy them. Without copying them operations in the variable modal would be applied immediately to the variables in the view
         this.timepointVariableManager = new VariableManagerStore(UndoRedoStore.serializeVariables(this.props.rootStore.dataStore.variableStores.sample.referencedVariables),
             this.props.rootStore.dataStore.variableStores.sample.currentVariables,
             this.props.rootStore.dataStore.variableStores.sample.childStore.timepoints.map(d => d.primaryVariableId),
@@ -24,7 +26,8 @@ const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarMo
 
 
     /**
-     * handles clicking the add button
+     * adds variables to the view
+     * currentVariables, referencedVariables and primaryVariables have to be adapted in the view to the changes in the variable manager
      */
     handleAddButton() {
         this.props.rootStore.dataStore.variableStores.sample.replaceAll(this.timepointVariableManager.referencedVariables, this.timepointVariableManager.currentVariables.map(d => d.id),

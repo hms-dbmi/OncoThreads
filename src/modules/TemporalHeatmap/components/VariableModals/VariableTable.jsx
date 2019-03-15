@@ -317,19 +317,25 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @returns {boolean}
      */
     static variableChanged(oldVariable, newVariable) {
+        console.log(oldVariable,newVariable);
         //case: datatype changed?
         if (oldVariable.datatype !== newVariable.datatype) {
+            console.log("datatype changed");
             return true;
         }
         else {
             //case: domain changed?
             if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
+                            console.log("domain changed");
+
                 return true
             }
             //case: mapper changed?
             else {
                 for (let sample in oldVariable.mapper) {
                     if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
+                                    console.log("mapper changed");
+
                         return true;
                     }
                 }

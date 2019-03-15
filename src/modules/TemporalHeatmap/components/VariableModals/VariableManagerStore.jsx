@@ -1,24 +1,38 @@
 import {action, extendObservable, observe} from "mobx";
 import UndoRedoStore from "../../../UndoRedoStore";
+import DerivedVariable from "../../stores/DerivedVariable";
+import DerivedMapperFunctions from "../../UtilityClasses/DeriveMapperFunctions";
+import uuidv4 from 'uuid/v4';
 
 /*
-Store containing information about variables
+Store containing information about variables in variable management
  */
 class VariableManagerStore {
+    /**
+     * constructs the store. Variables are deserialized to recreate variable Objects
+     * @param {{}} referencedVariables
+     * @param {Object[]} currentVariables
+     * @param {Object[]} primaryVariables
+     * @param {Object[]} savedReferences
+     */
     constructor(referencedVariables, currentVariables, primaryVariables, savedReferences) {
         //Variables that are referenced (displayed or used to create a derived variable)
         this.referencedVariables = UndoRedoStore.deserializeReferencedVariables(referencedVariables);
         this.primaryVariables = primaryVariables;
         this.savedReferences = savedReferences;
         extendObservable(this, {
-            //List of ids of currently displayed variables
+            //List of ids of currently displayed variables and if they are new and/or selected
             currentVariables: currentVariables.map(d => {
                 return {id: d, isNew: false, isSelected: false}
             }),
-            addOrder:[],
+            addOrder: [],
+            /**
+             * removes a variable and updates primary variables
+             * @param {string} variableId
+             */
             removeVariable: action(variableId => {
                 this.currentVariables.remove(this.currentVariables.filter(d => d.id === variableId)[0]);
-                this.addOrder.splice(this.addOrder.indexOf(variableId),1);
+                this.addOrder.splice(this.addOrder.indexOf(variableId), 1);
                 if (this.primaryVariables.includes(variableId)) {
                     this.primaryVariables.forEach((d, i) => {
                         if (d === variableId) {
@@ -27,6 +41,10 @@ class VariableManagerStore {
                     })
                 }
             }),
+            /**
+             * adds a variable to the table
+             * @param {(OriginalVariable|DerivedVariable)} variable
+             */
             addVariableToBeDisplayed: action(variable => {
                 this.addVariableToBeReferenced(variable);
                 if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
@@ -34,8 +52,11 @@ class VariableManagerStore {
                     this.addOrder.push(variable.id);
                 }
             }),
-
-
+            /**
+             * replaces a variable in the table
+             * @param {string} oldId - id of variable to be displayed
+             * @param {(OriginalVariable|DerivedVariable)} new variable
+             */
             replaceDisplayedVariable: action((oldId, newVariable) => {
                 if (oldId !== newVariable.id) {
                     this.referencedVariables[newVariable.id] = newVariable;
@@ -46,7 +67,7 @@ class VariableManagerStore {
                         isSelected: this.currentVariables[replaceIndex].isSelected
                     };
                 }
-                this.addOrder[this.addOrder.indexOf(oldId)]=newVariable.id;
+                this.addOrder[this.addOrder.indexOf(oldId)] = newVariable.id;
                 if (this.primaryVariables.includes(oldId)) {
                     for (let i = 0; i < this.primaryVariables.length; i++)
                         if (this.primaryVariables[i] === oldId) {
@@ -54,7 +75,31 @@ class VariableManagerStore {
                         }
                 }
             }),
-
+            /**
+             * applies a modification of a single variable (no combinations) to all variables in that profile
+             * @param {string} profileId - id of profile that is affected
+             * @param {string} derivedProfile - id of new profile
+             * @param {Object} modification - modification that should be applied to all variables in that profile
+             * @param {string[]} domain - domain that should be applied to all variables in that profile
+             * @param {string[]} range - range that should be applied to all variables in that profile
+             */
+            applyToEntireProfile: action((profileId, derivedProfile, datatype, modification, domain, range) => {
+                this.currentVariables.forEach(variable => {
+                    let variableReference = this.getById(variable.id);
+                    if (variableReference.profile === profileId) {
+                        let derivedVariable;
+                        if (variableReference.derived) {
+                            let originalVariable = this.getById(variableReference.originalIds[0]);
+                            derivedVariable = new DerivedVariable(uuidv4(), originalVariable.name + "_derived", datatype, originalVariable.description, [originalVariable.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [originalVariable.mapper]), derivedProfile, originalVariable.type);
+                        }
+                        else {
+                            derivedVariable = new DerivedVariable(uuidv4(), variableReference.name + "_derived", datatype, variableReference.description, [variableReference.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [variableReference.mapper]), derivedProfile, variableReference.type);
+                        }
+                        console.log(derivedVariable, modification);
+                        this.replaceDisplayedVariable(variable.id, derivedVariable, modification);
+                    }
+                });
+            }),
             toggleSelected: action(id => {
                 this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected = !this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected;
             }),
@@ -208,6 +253,14 @@ class VariableManagerStore {
         }
     }
 
+    applyRangeToEntireProfile(profileId, range) {
+        for (let variable in this.referencedVariables) {
+            if (this.referencedVariables[variable].profile === profileId) {
+                this.referencedVariables[variable].changeRange(range);
+            }
+        }
+    }
+
     /**
      * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
      * @param currentId
@@ -239,6 +292,29 @@ class VariableManagerStore {
     addVariableToBeReferenced(variable) {
         if (!(variable.id in this.referencedVariables)) {
             this.referencedVariables[variable.id] = variable;
+        }
+    }
+
+    getMinOfProfile(profile) {
+        return Math.min(...Object.keys(this.referencedVariables).filter(variable => this.getById(variable).profile === profile)
+            .map(variable => this.getById(variable).domain[0]));
+    }
+
+    getMaxOfProfile(profile) {
+        return Math.max(...Object.keys(this.referencedVariables).filter(variable => this.getById(variable).profile === profile)
+            .map(variable => this.getById(variable).domain[this.getById(variable).domain.length - 1]));
+    }
+
+    getProfileDomain(profile) {
+        console.log(Object.keys(this.referencedVariables).filter(variable => this.getById(variable).profile === profile)
+            .map(variable => this.getById(variable).domain[this.getById(variable).domain.length - 1]));
+        const min = this.getMinOfProfile(profile);
+        const max = this.getMaxOfProfile(profile);
+        if (min > 0) {
+            return [min, max]
+        }
+        else {
+            return [min, 0, max]
         }
     }
 

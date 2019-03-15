@@ -186,25 +186,23 @@ class VariableStore {
      */
     updateVariableRanges() {
         let profileDomains = {};
-        let profileVariables = this.currentVariables
-            .filter(d => this.rootStore.availableProfiles.map(d => d.molecularProfileId).includes(this.referencedVariables[d].profile)
-                && this.referencedVariables[d].datatype === "NUMBER");
+        //only variables that are associated with a molecular profile and have a numerical range
+        let profileVariables = this.currentVariables.filter(d => this.referencedVariables[d].type === "molecular" && this.referencedVariables[d].datatype === "NUMBER");
+        console.log(profileVariables);
         profileVariables.forEach(variableId => {
             const variable = this.referencedVariables[variableId];
-            let min = Math.min(...Object.values(variable.mapper));
-            let max = Math.max(...Object.values(variable.mapper));
+            const domain = variable.getDefaultDomain();
             if (!(variable.profile in profileDomains)) {
-                profileDomains[variable.profile] = [min, max];
+                profileDomains[variable.profile] = domain;
             }
             else {
-                if (profileDomains[variable.profile][0] > min) {
-                    profileDomains[variable.profile][0] = min;
+                if (profileDomains[variable.profile][0] > domain[0]) {
+                    profileDomains[variable.profile][0] = domain[0];
                 }
-                if (profileDomains[variable.profile][1] < max) {
-                    profileDomains[variable.profile][1] = max;
+                if (profileDomains[variable.profile][1] < domain[1]) {
+                    profileDomains[variable.profile][1] = domain[1];
                 }
             }
-
         });
         profileVariables.forEach(variableId => {
             if (this.referencedVariables[variableId].profile in profileDomains) {

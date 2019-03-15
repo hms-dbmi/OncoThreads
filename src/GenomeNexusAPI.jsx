@@ -4,13 +4,18 @@ import axios from 'axios';
 class GenomeNexusAPI {
     /**
      * maps a HUGO Symbol to a entrez gene id
-     * @param hgncSymbols
+     * @param {string[]} hgncSymbols
      * @returns {AxiosPromise<any>}
      */
     static genomNexusMappingMultipleSymbols(hgncSymbols) {
         return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
     }
 
+    /**
+     * gets hugo symbols for entrezIds
+     * @param {number[]} entrezIds
+     * @param {returnDataCallback} callback
+     */
     getHugoSymbols(entrezIds, callback) {
         axios.post("https://genomenexus.org/ensembl/canonical-gene/entrez", entrezIds).then(function (response) {
             let mapper = {};
@@ -28,6 +33,11 @@ class GenomeNexusAPI {
         })
     }
 
+    /**
+     * gets entrez gene ids for hgnc symbols
+     * @param {string[]} hgncSymbols
+     * @param {returnDataCallback} callback
+     */
     getGeneIDs(hgncSymbols, callback) {
         GenomeNexusAPI.genomNexusMappingMultipleSymbols(hgncSymbols).then(function (response) {
             if (response.data.length === 0) {
@@ -66,5 +76,4 @@ class GenomeNexusAPI {
     }
 }
 GenomeNexusAPI.verbose=true;
-
 export default GenomeNexusAPI;

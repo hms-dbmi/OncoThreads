@@ -18,7 +18,7 @@ import * as d3ScaleChromatic from 'd3-scale-chromatic';
 import * as d3 from "d3";
 
 /**
- * table for displaying and editing categories of a categorical or ordinal variable
+ * table for displaying and editing categories of a categorical or isOrdinal variable
  */
 const CategoricalTable = observer(class CategoricalTable extends React.Component {
 
@@ -48,9 +48,9 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
      * @param e
      */
     handleRenameCategory(index, e) {
-        let currentData = this.props.currentData.slice();
+        let currentData = this.props.currentCategories.slice();
         currentData[index].name = e.target.value;
-        this.props.setCurrentData(currentData);
+        this.props.setCurrentCategories(currentData);
     }
 
 
@@ -61,7 +61,7 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
      * @param moveUp
      */
     move(event, index, moveUp) {
-        let currentData = this.props.currentData.slice();
+        let currentData = this.props.currentCategories.slice();
         let currentEntry = currentData[index];
         if (moveUp && index > 0) {
             currentData[index] = currentData[index - 1];
@@ -71,19 +71,19 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
             currentData[index] = currentData[index + 1];
             currentData[index + 1] = currentEntry;
         }
-        if (this.props.ordinal) {
+        if (this.props.isOrdinal) {
             currentData.forEach((d, i) => {
                 d.color = this.props.colorScale((i * 2 + 1) / (currentData.length * 2 + 1));
             });
         }
-        this.props.setCurrentData(currentData);
+        this.props.setCurrentCategories(currentData);
     }
 
     /**
      * merges the selected categories
      */
     merge() {
-        let currentData = this.props.currentData.slice();
+        let currentData = this.props.currentCategories.slice();
         let mergedEntry = {selected: false, name: '', categories: [], color: ''};
         let indicesToDelete = [];
         currentData.forEach((d, i) => {
@@ -107,14 +107,14 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
                 currentData.splice(indicesToDelete[i], 1);
             }
         }
-        this.props.setCurrentData(currentData);
+        this.props.setCurrentCategories(currentData);
     }
 
     /**
      * unmerges all the currently selected merged categories
      */
     unMerge() {
-        let currentData = this.props.currentData.slice();
+        let currentData = this.props.currentCategories.slice();
         let unmergedEntries = [];
         let mergedIndeces = [];
         currentData.forEach((d, i) => {
@@ -137,12 +137,12 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
         }
         currentData.forEach((d, i) => {
             let value = d.name;
-            if (this.props.ordinal) {
+            if (this.props.isOrdinal) {
                 value = (i * 2 + 1) / (currentData.length * 2 + 1);
             }
             d.color = this.props.colorScale(value);
         });
-        this.setState({currentData: currentData});
+        this.setState({currentCategories: currentData});
     }
 
     /**
@@ -152,9 +152,9 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
      */
     toggleSelect(e, index) {
         if (e.target.nodeName === "TD") {
-            let currentData = this.props.currentData.slice();
+            let currentData = this.props.currentCategories.slice();
             currentData[index].selected = !currentData[index].selected;
-            this.props.setCurrentData(currentData);
+            this.props.setCurrentCategories(currentData);
         }
     }
 
@@ -165,9 +165,9 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
      * @param index
      */
     handleColorChange(color, index) {
-        let currentData = this.props.currentData.slice();
+        let currentData = this.props.currentCategories.slice();
         currentData[index].color = color.hex;
-        this.props.setCurrentData(currentData);
+        this.props.setCurrentCategories(currentData);
 
     }
 
@@ -181,7 +181,6 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
      * @returns {any[]}
      */
     displayTable() {
-
         return <div>
             <Table bordered condensed responsive>
                 <thead>
@@ -192,10 +191,10 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
                 </tbody>
             </Table>
             <form>
-                <Button disabled={!(this.props.currentData.filter(d => d.selected).length > 1)} onClick={this.merge}>Merge
+                <Button disabled={!(this.props.currentCategories.filter(d => d.selected).length > 1)} onClick={this.merge}>Merge
                     selected</Button>
                 <Button
-                    disabled={!(this.props.currentData.filter(d => d.selected && d.categories.length > 1).length > 0)}
+                    disabled={!(this.props.currentCategories.filter(d => d.selected && d.categories.length > 1).length > 0)}
                     onClick={this.unMerge}>Unmerge selected</Button>
             </form>
             {this.getUniqueCategoryWarning()}
@@ -222,7 +221,7 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     getTableContent() {
         let tableContent=[];
-        this.props.currentData.forEach((d, i) => {
+        this.props.currentCategories.forEach((d, i) => {
             if(d.name!==undefined) {
                 let bgColor = "white";
                 if (d.selected) {
@@ -239,7 +238,7 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
                     <rect stroke="black" width="10" height="10"
                           fill={d.color}/>
                 </svg>;
-                if (!this.props.ordinal) {
+                if (!this.props.isOrdinal) {
                     colorRect =
                         <OverlayTrigger rootClose={true} onClick={(e) => CategoricalTable.handleOverlayClick(e)}
                                         trigger="click"
@@ -278,22 +277,22 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
 
     /**
-     * handle the change of color scale. Changes ordinal state depending on the chosen scale
+     * handle the change of color scale. Changes isOrdinal state depending on the chosen scale
      * @param scale
      * @param ordinal
      */
     handleColorScaleChange(scale, ordinal) {
-        let currentData = this.props.currentData.slice();
+        let currentData = this.props.currentCategories.slice();
         currentData.forEach((d, i) => {
             d.color = scale((i * 2 + 1) / (currentData.length * 2 + 1));
         });
         this.props.setColorScale(scale);
-        this.props.setCurrentData(currentData);
+        this.props.setCurrentCategories(currentData);
         this.props.setOrdinal(ordinal);
     }
 
     /**
-     * gets the rects representing an ordinal scale
+     * gets the rects representing an isOrdinal scale
      * @param scale
      * @param rectDim
      * @param numRect
@@ -361,7 +360,7 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     getUniqueCategoryWarning() {
         let alert = null;
-        if (new Set(this.props.currentData.map(d => d.name)).size !== this.props.currentData.length) {
+        if (new Set(this.props.currentCategories.map(d => d.name)).size !== this.props.currentCategories.length) {
             alert = <Alert>Please choose unique category names</Alert>
         }
         return alert;

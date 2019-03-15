@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, FormGroup, Modal, Radio} from 'react-bootstrap';
+import {Button, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
 
 
 const SelectDatatype = observer(class SelectDatatype extends React.Component {
@@ -14,8 +14,8 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
         return this.props.fileNames.map((fileName, i) => {
             return <FormGroup key={fileName}>
                 {fileName}:
-                {' '}<Radio checked={this.props.datatypes[i] === "STRING"} value="STRING"
-                            onChange={() => this.props.setDatatype(i, "STRING")} inline>
+                {' '}<Radio checked={this.props.datatypes[i] === "DISCRETE"} value="STRING"
+                            onChange={() => this.props.setDatatype(i, "DISCRETE")} inline>
                 Discrete
             </Radio>{' '}
                 <Radio checked={this.props.datatypes[i] === "NUMBER"} value="NUMBER"
@@ -24,6 +24,35 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
                 </Radio>
             </FormGroup>
         });
+    }
+
+    handleChange(fileName, value, index) {
+        switch (value) {
+            case "UnspecCont":
+                this.props.setDatatype(index, "CONTINUOUS", fileName);
+                break;
+            case "UnspecDisc":
+                this.props.setDatatype(index, "DISCRETE", fileName);
+                break;
+            case "CNVDisc":
+                this.props.setDatatype(index, "DISCRETE", "COPY_NUMBER_ALTERATION");
+                break;
+
+        }
+    }
+
+    getSelect() {
+        return this.props.fileNames.map((fileName, i) => {
+            return <FormGroup key={fileName} controlId="formControlsSelect">
+                <ControlLabel>{fileName + " datatype"}</ControlLabel>
+                <FormControl onChange={(e) => this.handleChange(fileName, e.target.value, i)} componentClass="select"
+                             placeholder="select">
+                    <option value="UnspecCont">Continuous</option>
+                    <option value="CNVDisc">Discrete CNV data</option>
+                    <option value="UnspecDisc">Other discrete</option>
+                </FormControl>
+            </FormGroup>
+        })
     }
 
     handleOkay() {
@@ -42,11 +71,11 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
                 show={this.props.modalIsOpen}
                 onHide={this.props.closeModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{"Select data types for " + this.props.type + " data files."}</Modal.Title>
+                    <Modal.Title>{"Select data types for provided files"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <form>
-                        {this.getRadios()}
+                        {this.getSelect()}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

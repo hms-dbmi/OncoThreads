@@ -4,16 +4,16 @@ import GenomeNexusAPI from "../GenomeNexusAPI";
 
 
 /*
-gets the data with the cBioAPI and gives it to the other stores
+gets mutation and molecular data on demand and transforms the data to variables
  */
 class MolProfileMapping {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.mutationOrder = ['trunc', 'inframe', 'promoter', 'missense', 'other'];
-        this.currentMutations = [];
-        this.isInGenePanel = {};
-        this.currentMolecular = {};
-        this.currentIds = [];
+        this.mutationOrder = ['trunc', 'inframe', 'promoter', 'missense', 'other']; // "importance" order of mutation types
+        this.currentMutations = []; // current mutations
+        this.isInGenePanel = {}; // current gene panel mapping
+        this.currentMolecular = {}; // current molecular data (maps arrays of molecular data to profile ids
+        this.currentIds = []; // current entrezIds
         this.genomeNexusAPI = new GenomeNexusAPI();
     }
 
@@ -65,15 +65,20 @@ class MolProfileMapping {
                     let domain = [];
                     let range = [];
                     let datatype = "NUMBER";
-                    if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION" && profile.datatype === "DISCRETE") {
-                        let helper = d3.scaleLinear().domain([0, 0.5, 1]).range(['#0571b0', '#f7f7f7', '#ca0020']);
-                        domain = ["-2", "-1", "0", "1", "2"];
-                        range = domain.map((d, i) => {
-                            return helper(i / (domain.length - 1));
-                        });
-                        datatype = "ORDINAL";
+                    if (profile.datatype === "DISCRETE") {
+                        if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
+                            datatype = "ORDINAL";
+                            let helper = d3.scaleLinear().domain([0, 0.5, 1]).range(['#0571b0', '#f7f7f7', '#ca0020']);
+                            domain = ["-2", "-1", "0", "1", "2"];
+                            range = domain.map((d, i) => {
+                                return helper(i / (domain.length - 1));
+                            });
+                        }
+                        else {
+                            datatype = "STRING";
+                        }
                     }
-                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId, "gene"));
+                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId, "molecular"));
                 }
             });
         }
@@ -82,8 +87,8 @@ class MolProfileMapping {
 
     /**
      * loads the entrezIDs corresponding to the HUGO Symbols
-     * @param HUGOsymbols
-     * @param callback
+     * @param {string[]} HUGOsymbols
+     * @param {loadFinishedCallback} callback
      */
     loadIds(HUGOsymbols, callback) {
         this.currentIds = [];
@@ -98,8 +103,8 @@ class MolProfileMapping {
 
     /**
      * filters currentIDs to exclude not available data
-     * @param profileId
-     * @returns {T[]}
+     * @param {string} profileId
+     * @returns {Object[]} filtered ids
      */
     filterMolecularData(profileId) {
         let noMutationsFound = [];
@@ -117,6 +122,7 @@ class MolProfileMapping {
 
     /**
      * filters geneIDs based on if the genes were sequenced and if there are mutations
+     * @return {Object} filtered ids
      */
     filterGeneIDs() {
         //Is gene panel sequenced?
@@ -144,8 +150,8 @@ class MolProfileMapping {
 
     /**
      * loads mutation data
-     * @param profileId
-     * @param callback
+     * @param {string} profileId
+     * @param {loadFinishedCallback} callback
      */
     loadMutations(profileId, callback) {
         if (this.currentIds.length !== 0) {
@@ -161,8 +167,8 @@ class MolProfileMapping {
 
     /**
      * loads data for molecular profiles
-     * @param profileId
-     * @param callback
+     * @param {string} profileId
+     * @param {loadFinishedCallback} callback
      */
     loadMolecularData(profileId, callback) {
         if (this.currentIds.length !== 0) {
@@ -176,10 +182,10 @@ class MolProfileMapping {
 
     /**
      * gets data for one molecular profile/one mutation mapping type
-     * @param profileId
-     * @param HUGOsymbols
-     * @param mappingType
-     * @param callback
+     * @param {string} profileId
+     * @param {string[]} HUGOsymbols
+     * @param {string} mappingType
+     * @param {returnDataCallback} callback
      */
     getProfileData(profileId, HUGOsymbols, mappingType, callback) {
         this.loadIds(HUGOsymbols, () => {
@@ -198,9 +204,9 @@ class MolProfileMapping {
 
     /**
      * gets multiple profiles and mapping types at once
-     * @param profileIds
-     * @param mappingTypes
-     * @returns {Array}
+     * @param {string[]} profileIds
+     * @param {string[]} mappingTypes
+     * @returns {OriginalVariable[]} array of new variables
      */
     getMultipleProfiles(profileIds, mappingTypes) {
         let variables = [];
@@ -218,9 +224,10 @@ class MolProfileMapping {
 
     /**
      * creates sample id mapping for mutations
-     * @param list
-     * @param mappingType
-     * @param entrezID
+     * @param {Object[]} list - list of muatation data
+     * @param {string} mappingType - current mapping type (Binary, Protein change, Mutation type, Variant Allele Frequency)
+     * @param {number} entrezID - current entrezID
+     * @return {Object} mapper sampleID - value
      */
     createMutationMapping(list, mappingType, entrezID) {
         let mappingFunction;
@@ -306,7 +313,7 @@ class MolProfileMapping {
 
     /**
      * get simplified mutation type
-     * @param type
+     * @param {string} type - raw mutation type
      * @returns {string}
      */
     static getMutationType(type) {
@@ -374,8 +381,9 @@ class MolProfileMapping {
 
     /**
      * creates mapping for a molecular profile
-     * @param list
-     * @param datatype
+     * @param {Object[]} list - array of molecular data
+     * @param {string} datatype - current data type
+     * @return {Object} mapper sampleId - molecular value
      */
     createMolecularMapping(list, datatype) {
         let mapper = {};
@@ -400,8 +408,6 @@ class MolProfileMapping {
         });
         return mapper;
     }
-
-
 }
 
 export default MolProfileMapping

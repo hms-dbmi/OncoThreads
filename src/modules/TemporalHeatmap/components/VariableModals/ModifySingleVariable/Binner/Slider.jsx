@@ -1,18 +1,22 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 
-
+/**
+ * Component for the sliders that display the bin boarders while binning
+ */
 const Slider = inject("binningStore")(observer(class Slider extends React.Component {
     /**
      * creats the slider dots and associated lines
-     * @returns {Array}
+     * @returns {g} - all sliders
      */
     getSliderEntries() {
         let sliderEntries = [];
         for (let i = 0; i < this.props.binningStore.x.length; i++) {
-            sliderEntries.push(<line key={"line" + i} x1={this.props.binningStore.x[i]} x2={this.props.binningStore.x[i]} y1={0}
+            sliderEntries.push(<line key={"line" + i} x1={this.props.binningStore.x[i]}
+                                     x2={this.props.binningStore.x[i]} y1={0}
                                      y2={this.props.yPos} stroke="black"/>);
-            sliderEntries.push(<circle key={"circle" + i} fill="darkgrey" cx={this.props.binningStore.x[i]} cy={this.props.yPos}
+            sliderEntries.push(<circle key={"circle" + i} fill="darkgrey" cx={this.props.binningStore.x[i]}
+                                       cy={this.props.yPos}
                                        r={5}
                                        onMouseDown={(e) => this.props.handleMouseDown(e, i)}/>);
         }
@@ -21,14 +25,14 @@ const Slider = inject("binningStore")(observer(class Slider extends React.Compon
 
     /**
      * creates little textfields for the slider entries to enable specifying values manually
-     * @returns {Array}
+     * @returns {[]}
      */
     getPositionTextfields() {
         let positionText = [];
-        this.props.binningStore.x.forEach((d, i)=> {
+        this.props.binningStore.x.forEach((d, i) => {
             positionText.push(
                 <foreignObject key={i} x={d} width={75} height={26}>
-                    <input onChange={(e) =>this.props.binningStore.handlePositionTextFieldChange(e.target.value,i)}
+                    <input onChange={(e) => this.props.binningStore.handlePositionTextFieldChange(e.target.value, i)}
                            type="text"
                            style={{
                                width: 75 + "px"
@@ -40,8 +44,8 @@ const Slider = inject("binningStore")(observer(class Slider extends React.Compon
     }
 
     /**
-     * creates the labes for the bins
-     * @returns {*}
+     * creates the labels for the bins
+     * @returns {g} labels for bins
      */
     getBinLabels() {
         let x = this.props.binningStore.x.slice();
@@ -86,20 +90,18 @@ const Slider = inject("binningStore")(observer(class Slider extends React.Compon
 
     /**
      * creates the slider line
-     * @returns {*}
+     * @returns {line} slider line
      */
     getSliderLine() {
         return (<line x1={0} x2={this.props.width} y1={this.props.yPos} y2={this.props.yPos} stroke={"black"}
                       strokeWidth={3}/>)
     }
 
-
     render() {
         const sliderLine = this.getSliderLine();
         const sliderEntries = this.getSliderEntries();
         const binLabels = this.getBinLabels();
         const positionTextFields = this.getPositionTextfields();
-
         return (
             <g>{sliderLine}
                 {sliderEntries}
