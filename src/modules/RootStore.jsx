@@ -173,7 +173,6 @@ class RootStore {
                             this.firstLoad = false;
                         }
                         this.api.getAvailableMolecularProfiles(profiles => {
-                            console.log(profiles);
                             this.availableProfiles = profiles;
                             const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
                             if (mutationIndex !== -1) {

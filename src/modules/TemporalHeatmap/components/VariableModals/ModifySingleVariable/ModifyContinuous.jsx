@@ -165,10 +165,10 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
                 datatype = "ORDINAL";
                 domain = modification.binning.binNames.map(d => d.name);
                 if (this.state.applyToAll) {
-                    range = ColorScales.getBinnedRange(d3.scaleLinear().domain(profileDomain).range(this.state.colorRange), modification.binning.binNames, modification.binning.bins);
+                    range = ColorScales.getBinnedRange(d3.scaleLinear().domain(profileDomain).range(this.state.colorRange), modification.binning.bins);
                 }
                 else {
-                    range = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), modification.binning.binNames, modification.binning.bins);
+                    range = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), modification.binning.bins);
                 }
             }
             //case: values are converted to binary

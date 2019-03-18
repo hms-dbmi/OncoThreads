@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 import * as d3ScaleChromatic from "d3-scale-chromatic";
 
-/*
-stores information about current visual parameters
+/**
+ * class for retrieving and storing color scales
  */
 class ColorScales {
     /**
@@ -39,9 +39,9 @@ class ColorScales {
 
     /**
      * creates a continuous color scale based on a range and domain
-     * @param range
-     * @param domain
-     * @returns {*}
+     * @param {string[]} range
+     * @param {number[]} domain
+     * @returns {d3.scaleLinear}
      */
     static getContinousColorScale(range, domain) {
         let min = Math.min(...domain);
@@ -63,9 +63,15 @@ class ColorScales {
         }
     }
 
-    static getBinnedRange(oldScale, binNames, binValues) {
+    /**
+     * gets a color scale for binning using the old scale as a basis. Each bin receives the average color of its minimum and maximum value
+     * @param {function} oldScale
+     * @param {number[]} binValues
+     * @return {string[]}
+     */
+    static getBinnedRange(oldScale, binValues) {
         let range = [];
-        for (let i = 0; i < binNames.length; i++) {
+        for (let i = 0; i < binValues.length - 1; i++) {
             range.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
         }
         return range;
@@ -73,9 +79,9 @@ class ColorScales {
 
     /**
      * creates an isOrdinal color scale based on a range and domain
-     * @param range
-     * @param domain
-     * @returns {Function}
+     * @param {string[]} range
+     * @param {(string[]|boolean[])} domain
+     * @returns {function}
      */
     static getOrdinalScale(range, domain) {
         return function (value) {
@@ -91,8 +97,8 @@ class ColorScales {
 
     /**
      * gets default range for isOrdinal variable
-     * @param domainLength
-     * @returns {*}
+     * @param {number} domainLength
+     * @returns {string[]}
      */
     static getDefaultOrdinalRange(domainLength) {
         let step = 1 / domainLength;
@@ -104,12 +110,13 @@ class ColorScales {
     }
 }
 
-//default color ranges
+// default color ranges
 ColorScales.defaultBinaryRange = ['#ffd92f', 'lightgray'];
 ColorScales.defaultCategoricalRange = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'];
 ColorScales.defaultContinuousTwoColors = ['#e6e6e6', '#000000'];
 ColorScales.defaultContinuousThreeColors = ['#0571b0', '#f7f7f7', '#ca0020'];
 
+// other color ranges that can be chosen
 ColorScales.continuousThreeColorRanges = [
     ['#0571b0', '#f7f7f7', '#ca0020'],
     ['#08ff00', '#000000', '#ff0000']

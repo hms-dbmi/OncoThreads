@@ -188,7 +188,6 @@ class VariableStore {
         let profileDomains = {};
         //only variables that are associated with a molecular profile and have a numerical range
         let profileVariables = this.currentVariables.filter(d => this.referencedVariables[d].type === "molecular" && this.referencedVariables[d].datatype === "NUMBER");
-        console.log(profileVariables);
         profileVariables.forEach(variableId => {
             const variable = this.referencedVariables[variableId];
             const domain = variable.getDefaultDomain();

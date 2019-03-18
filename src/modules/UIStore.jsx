@@ -1,7 +1,7 @@
 import {action, extendObservable} from "mobx";
 
-/*
-stores current UI state
+/**
+ * store for storing the UI state
  */
 class UIStore {
     constructor() {

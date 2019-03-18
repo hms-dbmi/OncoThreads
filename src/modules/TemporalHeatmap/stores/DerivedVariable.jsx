@@ -1,6 +1,5 @@
 import ColorScales from "../UtilityClasses/ColorScales";
 import {action, extendObservable} from "mobx";
-import DerivedMapperFunctions from "../UtilityClasses/DeriveMapperFunctions";
 
 /**
  * a derived variable is derived of one or multiple other variables

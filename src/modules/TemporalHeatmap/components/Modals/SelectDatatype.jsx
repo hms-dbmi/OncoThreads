@@ -1,8 +1,10 @@
 import React from 'react';
 import {observer} from 'mobx-react';
-import {Button, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
+import {Button, ControlLabel, FormControl, FormGroup, Modal} from 'react-bootstrap';
 
-
+/**
+ * Modal for selecting the datatype of a molecular file during loading of local files
+ */
 const SelectDatatype = observer(class SelectDatatype extends React.Component {
     constructor(props) {
         super(props);
@@ -10,22 +12,12 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
         this.handleOkay = this.handleOkay.bind(this);
     }
 
-    getRadios() {
-        return this.props.fileNames.map((fileName, i) => {
-            return <FormGroup key={fileName}>
-                {fileName}:
-                {' '}<Radio checked={this.props.datatypes[i] === "DISCRETE"} value="STRING"
-                            onChange={() => this.props.setDatatype(i, "DISCRETE")} inline>
-                Discrete
-            </Radio>{' '}
-                <Radio checked={this.props.datatypes[i] === "NUMBER"} value="NUMBER"
-                       onChange={() => this.props.setDatatype(i, "NUMBER")} inline>
-                    Continuous (log2)
-                </Radio>
-            </FormGroup>
-        });
-    }
-
+    /**
+     * handles selecting a different datatype
+     * @param {string} fileName
+     * @param {string} value - selected option
+     * @param {number} index - index of the file in fileName array
+     */
     handleChange(fileName, value, index) {
         switch (value) {
             case "UnspecCont":
@@ -34,13 +26,17 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
             case "UnspecDisc":
                 this.props.setDatatype(index, "DISCRETE", fileName);
                 break;
-            case "CNVDisc":
+            default:
                 this.props.setDatatype(index, "DISCRETE", "COPY_NUMBER_ALTERATION");
                 break;
 
         }
     }
 
+    /**
+     * gets the select inputs for each file
+     * @return {FormGroup[]}
+     */
     getSelect() {
         return this.props.fileNames.map((fileName, i) => {
             return <FormGroup key={fileName} controlId="formControlsSelect">

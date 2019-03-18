@@ -73,7 +73,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         // case: variable is transformed to binary
         if (!this.binningStore.isBinary) {
             derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)",
-                [this.props.variable.id], modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.binningStore.binNames, this.binningStore.bins),
+                [this.props.variable.id], modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.binningStore.bins),
                 this.binningStore.binNames.map(d => d.name), DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]),
                 uuidv4(), this.props.variable.type);
         }

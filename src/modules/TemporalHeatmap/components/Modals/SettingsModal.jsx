@@ -4,7 +4,10 @@ import {Button, Modal} from 'react-bootstrap';
 import FormGroup from "react-bootstrap/es/FormGroup";
 import Radio from "react-bootstrap/es/Radio";
 
-
+/**
+ * Modal for choosing settings of the visualization
+ * Settings: Visual representation of grouped continuous variables, mode of selection (advanced/simplified), show rows of undefined values
+ */
 const SettingsModal = inject("uiStore")(observer(class SettingsModal extends React.Component {
 
     handleApply() {

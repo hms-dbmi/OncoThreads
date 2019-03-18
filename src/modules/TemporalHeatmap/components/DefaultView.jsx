@@ -9,7 +9,7 @@ import uuidv4 from 'uuid/v4';
 
 
 /*
- * View if no study has been loaded used for selection of studies from cBio or own data sets
+ * Component for view if no study has been loaded used for selection of studies from cBio or own data sets
  */
 const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultView extends React.Component {
     constructor() {

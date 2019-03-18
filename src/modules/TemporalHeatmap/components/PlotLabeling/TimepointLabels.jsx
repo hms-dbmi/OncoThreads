@@ -4,8 +4,8 @@ import BlockTextField from "./BlockTextField";
 
 
 /*
- * BlockViewTimepoint Labels on the left side of the main view
- * Sample Timepoints are displayed as numbers, Between Timepoints are displayed al
+ * BlockView: Timepoint Labels on the left side of the main view
+ * Sample Timepoints are displayed as numbers
  */
 const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observer(class TimepointLabels extends React.Component {
     constructor() {
@@ -39,11 +39,19 @@ const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observe
         });
     }
 
-
+    /**
+     * sets the name of a timepoint
+     * @param {number} index
+     * @param {event} event
+     */
     setName(index, event) {
         this.props.dataStore.timepoints[index].setName(event.target.value)
     }
 
+    /**
+     * realigns patiens so column order of patients is restored
+     * @param {number} index - timepoint index
+     */
     realignPatients(index) {
         this.props.dataStore.applyPatientOrderToAll(index);
         this.props.undoRedoStore.saveRealignToHistory(index);
@@ -52,12 +60,13 @@ const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observe
     render() {
         const iconDimension = 20;
         const gap = 10;
-        let labels = [];
-        this.props.dataStore.timepoints.forEach((d, i) => {
+        // create textfields for sample timepoints, but not for between timepoints
+        let labels = this.props.dataStore.timepoints.map((d, i) => {
             let pos;
             if (d.type === 'sample') {
                 pos = this.props.visStore.timepointPositions.timepoint[i] + this.props.visStore.getTPHeight(d) / 2 + 4;
-                labels.push(<g key={d.globalIndex} transform={"translate(0," + pos + ")"}><BlockTextField
+                return <g key={d.globalIndex} transform={"translate(0," + pos + ")"}>
+                    <BlockTextField
                     width={this.state.width - (iconDimension + gap)}
                     timepoint={d}/>
                     <g className="not_exported"
@@ -73,27 +82,25 @@ const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observe
                                   pointerEvents="visible"/>
                         </g>
                     </g>
-                </g>)
+                </g>
             }
             else {
                 pos = this.props.visStore.timepointPositions.timepoint[i] + this.props.visStore.getTPHeight(d) / 2 + 4;
-                labels.push(
-                    <g key={d.globalIndex} className="not_exported"
-                       transform={"translate(" + (this.state.width - (iconDimension + gap)) + "," + pos + ")"}
-                       onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
-                       onMouseLeave={this.props.hideTooltip}>
-                        <g transform={"translate(0,4)"}>
-                            <path fill="gray"
-                                  d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
-                            <rect onClick={() => this.realignPatients(d.globalIndex)}
-                                  width={iconDimension} height={iconDimension}
-                                  fill="none"
-                                  pointerEvents="visible"/>
-                        </g>
-                    </g>)
+                return <g key={d.globalIndex} className="not_exported"
+                          transform={"translate(" + (this.state.width - (iconDimension + gap)) + "," + pos + ")"}
+                          onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
+                          onMouseLeave={this.props.hideTooltip}>
+                    <g transform={"translate(0,4)"}>
+                        <path fill="gray"
+                              d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"/>
+                        <rect onClick={() => this.realignPatients(d.globalIndex)}
+                              width={iconDimension} height={iconDimension}
+                              fill="none"
+                              pointerEvents="visible"/>
+                    </g>
+                </g>
             }
         });
-
         let offset = 15 + this.props.visStore.getTPHeight(this.props.dataStore.timepoints[0]) / 2;
         return (
             <div ref="timepointLabels">

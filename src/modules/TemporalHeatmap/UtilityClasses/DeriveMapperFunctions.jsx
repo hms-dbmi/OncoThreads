@@ -1,10 +1,13 @@
+/**
+ * class for creating derived mappers
+ */
 class DerivedMapperFunctions {
     /**
      * gets a mapper based on a modification an mappers of original variables
      * modification types: binaryCombine, modifyCategorical, convertBinary, continuousModification
-     * @param modification
-     * @param mappers
-     * @returns {*}
+     * @param {Object} modification
+     * @param {Object[]} mappers
+     * @returns {Object}
      */
     static getModificationMapper(modification, mappers) {
         let mapper;
@@ -37,9 +40,9 @@ class DerivedMapperFunctions {
 
     /**
      * creates mapper for binning a variable
-     * @param mapper
-     * @param bins
-     * @param binNames
+     * @param {Object} mapper
+     * @param {number[]} bins
+     * @param {Object[]} binNames
      */
     static createBinnedMapper(mapper, bins, binNames) {
         let newMapper = {};
@@ -67,8 +70,8 @@ class DerivedMapperFunctions {
 
     /**
      * creates mapper for combining binary variables
-     * @param mappers
-     * @param modification
+     * @param {Object[]} mappers
+     * @param {Object} modification
      */
     static createBinaryCombinedMapper(mappers, modification) {
         let newMapper = {};
@@ -124,8 +127,8 @@ class DerivedMapperFunctions {
 
     /**
      * creates mapper for modifying categories
-     * @param mapper
-     * @param categoryMapping
+     * @param {Object} mapper
+     * @param {Object} categoryMapping
      */
     static createModifyCategoriesMapper(mapper, categoryMapping) {
         let newMapper = {};
@@ -137,8 +140,8 @@ class DerivedMapperFunctions {
 
     /**
      * creates mapper for transforming a continuous variable (e.g. log transform)
-     * @param mapper
-     * @param transformFunction
+     * @param {Object} mapper
+     * @param {function} transformFunction
      */
     static createContinuousTransformMapper(mapper, transformFunction) {
         let newMapper = {};

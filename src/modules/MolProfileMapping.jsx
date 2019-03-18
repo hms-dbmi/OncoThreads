@@ -174,7 +174,6 @@ class MolProfileMapping {
         if (this.currentIds.length !== 0) {
             this.rootStore.api.getMolecularValues(profileId, this.currentIds, response => {
                 this.currentMolecular[profileId] = response;
-                console.log(this.currentMolecular);
                 callback()
             })
         }

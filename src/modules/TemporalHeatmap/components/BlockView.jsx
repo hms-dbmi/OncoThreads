@@ -7,8 +7,8 @@ import HeatmapTimepoint from "./Timepoints/Heatmap/HeatmapTimepoint";
 import GroupTimepoint from "./Timepoints/Group/GroupTimepoint";
 
 
-/*
-creates the timepoints (either sampleTimepoints or betweenTimepoints)
+/**
+ * Component for the Block view
  */
 const BlockView = inject("rootStore")(observer(class BlockView extends React.Component {
     constructor() {
@@ -49,7 +49,7 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
             else {
                 rectWidth = this.props.rootStore.visStore.sampleRectWidth;
             }
-
+            // create timepoints
             const transform = "translate(0," + this.props.rootStore.visStore.timepointPositions.timepoint[i] + ")";
             if (d.heatmap.length > 0) {
                 if (d.isGrouped) {
@@ -62,7 +62,6 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
                                 index={i}
                                 currentVariables={this.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables}
                                 rectWidth={rectWidth}
-                                groupScale={this.props.groupScale}
                                 tooltipFunctions={this.props.tooltipFunctions}
                                 primaryVariableId={d.primaryVariableId}/>
                         </Provider></g>)
@@ -77,14 +76,14 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
                                 xOffset={(this.props.rootStore.visStore.sampleRectWidth - rectWidth) / 2}
                                 timepoint={d}
                                 rectWidth={rectWidth}
-                                heatmapScale={this.props.heatmapScales[i]}
+                                heatmapScale={this.props.rootStore.visStore.heatmapScales[i]}
                             />
                         </Provider>
                     </g>)
 
                 }
             }
-
+            // create transitions
             if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
                 const transform = "translate(0," + this.props.rootStore.visStore.timepointPositions.connection[i] + ")";
                 const firstTP = d;
@@ -96,7 +95,6 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
                                                visStore={this.props.rootStore.visStore}>
                             <SankeyTransition firstGrouped={firstTP.grouped}
                                               secondGrouped={secondTP.grouped}
-                                              groupScale={this.props.groupScale}
                                               firstPrimary={this.props.rootStore.dataStore.variableStores[firstTP.type].getById(firstTP.primaryVariableId)}
                                               secondPrimary={this.props.rootStore.dataStore.variableStores[secondTP.type].getById(secondTP.primaryVariableId)}
                                               tooltipFunctions={this.props.tooltipFunctions}/>
@@ -109,8 +107,7 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
                                 inverse={false}
                                 partitions={firstTP.grouped}
                                 nonGrouped={secondTP}
-                                heatmapScale={this.props.heatmapScales[i + 1]}
-                                groupScale={this.props.groupScale}
+                                heatmapScale={this.props.rootStore.visStore.heatmapScales[i + 1]}
                                 colorScale={this.props.rootStore.dataStore.variableStores[firstTP.type].getById(firstTP.primaryVariableId).colorScale}/>
                         </Provider>
                     }
@@ -123,8 +120,7 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
                                 inverse={true}
                                 partitions={secondTP.grouped}
                                 nonGrouped={firstTP}
-                                heatmapScale={this.props.heatmapScales[i]}
-                                groupScale={this.props.groupScale}
+                                heatmapScale={this.props.rootStore.visStore.heatmapScales[i]}
                                 colorScale={this.props.rootStore.dataStore.variableStores[secondTP.type].getById(secondTP.primaryVariableId).colorScale}/>
                         </Provider>
                     }
@@ -134,8 +130,8 @@ const BlockView = inject("rootStore")(observer(class BlockView extends React.Com
                             <LineTransition
                                 from={firstTP.patients}
                                 to={secondTP.patients}
-                                firstHeatmapScale={this.props.heatmapScales[i]}
-                                secondHeatmapScale={this.props.heatmapScales[i + 1]}
+                                firstHeatmapScale={this.props.rootStore.visStore.heatmapScales[i]}
+                                secondHeatmapScale={this.props.rootStore.visStore.heatmapScales[i + 1]}
                                 secondTimepoint={secondTP}
                                 timeGapMapper={this.props.rootStore.staticMappers[this.props.rootStore.timeDistanceId]}
                                 colorScale={this.props.rootStore.dataStore.variableStores[secondTP.type].getById(secondTP.primaryVariableId).colorScale}/>

@@ -4,8 +4,8 @@ import DerivedVariable from "../../stores/DerivedVariable";
 import DerivedMapperFunctions from "../../UtilityClasses/DeriveMapperFunctions";
 import uuidv4 from 'uuid/v4';
 
-/*
-Store containing information about variables in variable management
+/**
+ * store containing variables in variable manager
  */
 class VariableManagerStore {
     /**
@@ -95,28 +95,35 @@ class VariableManagerStore {
                         else {
                             derivedVariable = new DerivedVariable(uuidv4(), variableReference.name + "_derived", datatype, variableReference.description, [variableReference.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [variableReference.mapper]), derivedProfile, variableReference.type);
                         }
-                        console.log(derivedVariable, modification);
                         this.replaceDisplayedVariable(variable.id, derivedVariable, modification);
                     }
                 });
             }),
+            /**
+             * selects/unselect variable
+             */
             toggleSelected: action(id => {
                 this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected = !this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected;
             }),
-
-            sortBySource: action(profileOrder => {
+            /**
+             * sorts variables by data source
+             * @param {string[]} sourceOrder
+             */
+            sortBySource: action(sourceOrder => {
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                        if (profileOrder.indexOf(this.referencedVariables[a.id].profile) < profileOrder.indexOf(this.referencedVariables[b.id].profile)) {
+                        if (sourceOrder.indexOf(this.referencedVariables[a.id].profile) < sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
                             return -1
                         }
-                        if (profileOrder.indexOf(this.referencedVariables[a.id].profile) > profileOrder.indexOf(this.referencedVariables[b.id].profile)) {
+                        if (sourceOrder.indexOf(this.referencedVariables[a.id].profile) > sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
                             return 1;
                         }
                         else return 0;
                     }
                 ))
             }),
-
+            /**
+             * sort variables by add order
+             */
             sortByAddOrder: action(() => {
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                         if (this.addOrder.indexOf(a.id) < this.addOrder.indexOf(b.id)) {
@@ -129,7 +136,9 @@ class VariableManagerStore {
                     }
                 ))
             }),
-
+            /**
+             * sort variables alphabetically
+             */
             sortAlphabetically: action(() => {
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                     if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
@@ -141,7 +150,9 @@ class VariableManagerStore {
                     else return 0;
                 }));
             }),
-
+            /**
+             * sort variables by datatype (alphabetically)
+             */
             sortByDatatype: action(() => {
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                         if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
@@ -157,9 +168,9 @@ class VariableManagerStore {
 
             /**
              * moves variables up or down
-             * @param isUp: if true move up, if false move down
-             * @param toExtreme: if true move to top/bottom, if false move only by one row
-             * @param indices: move these indices
+             * @param {boolean} isUp - if true move up, if false move down
+             * @param {boolean} toExtreme - if true move to top/bottom, if false move only by one row
+             * @param {number[]} indices: move these indices
              */
             move: action((isUp, toExtreme, indices) => {
                 if (toExtreme) {
@@ -172,8 +183,8 @@ class VariableManagerStore {
 
             /**
              * move a group of variables at indices to the top or the bottom
-             * @param isUp
-             * @param indices
+             * @param {boolean} isUp
+             * @param {number[]} indices
              */
             moveToExtreme: action((isUp, indices) => {
                 let currentVariables = this.currentVariables.slice();
@@ -190,8 +201,8 @@ class VariableManagerStore {
 
             /**
              * move variable(s) up or down by one row
-             * @param isUp
-             * @param indices
+             * @param {boolean} isUp
+             * @param {number[]} indices
              */
             moveByOneRow: action((isUp, indices) => {
                 let currentVariables = this.currentVariables.slice();
@@ -223,7 +234,7 @@ class VariableManagerStore {
         });
         /**
          * removes a variable from current variables
-         * @param variableId
+         * @param {string} variableId
          */
 
         observe(this.currentVariables, () => {
@@ -231,19 +242,31 @@ class VariableManagerStore {
         });
     }
 
-
+    /**
+     * saves a variable in saved references
+     * @param {string} variableId
+     */
     saveVariable(variableId) {
         if (!this.savedReferences.includes(variableId)) {
             this.savedReferences.push(variableId);
         }
     }
 
+    /**
+     * removes a variable from saved references
+     * @param {string} variableId
+     */
     removeSavedVariable(variableId) {
         if (this.savedReferences.includes(variableId)) {
             this.savedReferences.splice(this.savedReferences.indexOf(variableId), 1);
         }
     }
 
+    /**
+     * updates saving a variable
+     * @param {string} variableId
+     * @param {boolean} save - save variable (true) remove variable completely (false)
+     */
     updateSavedVariables(variableId, save) {
         if (save) {
             this.saveVariable(variableId);
@@ -253,6 +276,11 @@ class VariableManagerStore {
         }
     }
 
+    /**
+     * applies a color range to all variables in a profile
+     * @param {string} profileId
+     * @param {string} range
+     */
     applyRangeToEntireProfile(profileId, range) {
         for (let variable in this.referencedVariables) {
             if (this.referencedVariables[variable].profile === profileId) {
@@ -263,7 +291,7 @@ class VariableManagerStore {
 
     /**
      * Increment the referenced property of all the variables which are used by the current variable (and their "child variables")
-     * @param currentId
+     * @param {string} currentId
      */
     setReferences(currentId) {
         const _self = this;
@@ -275,6 +303,9 @@ class VariableManagerStore {
         this.referencedVariables[currentId].referenced += 1;
     }
 
+    /**
+     * updates references, removes variables that are no longer references
+     */
     updateReferences() {
         for (let variable in this.referencedVariables) {
             this.referencedVariables[variable].referenced = 0;
@@ -288,26 +319,42 @@ class VariableManagerStore {
         }
     }
 
-
+    /**
+     * adds a variable to referenced variables
+     * @param {(DerivedVariable|OriginalVariable)} variable
+     */
     addVariableToBeReferenced(variable) {
         if (!(variable.id in this.referencedVariables)) {
             this.referencedVariables[variable.id] = variable;
         }
     }
 
+    /**
+     * gets the minimum value of all variables in a continuous profile
+     * @param {string} profile
+     * @return {number}
+     */
     getMinOfProfile(profile) {
         return Math.min(...Object.keys(this.referencedVariables).filter(variable => this.getById(variable).profile === profile)
             .map(variable => this.getById(variable).domain[0]));
     }
 
+    /**
+     * gets the maximum value of all variables in a continuous profile
+     * @param {string} profile
+     * @return {number}
+     */
     getMaxOfProfile(profile) {
         return Math.max(...Object.keys(this.referencedVariables).filter(variable => this.getById(variable).profile === profile)
             .map(variable => this.getById(variable).domain[this.getById(variable).domain.length - 1]));
     }
 
+    /**
+     * gets the domain of values of all variables in a continuous profile
+     * @param {string} profile
+     * @return {number[]}
+     */
     getProfileDomain(profile) {
-        console.log(Object.keys(this.referencedVariables).filter(variable => this.getById(variable).profile === profile)
-            .map(variable => this.getById(variable).domain[this.getById(variable).domain.length - 1]));
         const min = this.getMinOfProfile(profile);
         const max = this.getMaxOfProfile(profile);
         if (min > 0) {
@@ -320,8 +367,8 @@ class VariableManagerStore {
 
 
     /**
-     * checks if the selected indices are a block (no not selected variable in between)
-     * @param array
+     * checks if the selected variables indices are a block (no not selected variable in between)
+     * @param {number[]} array
      * @returns {boolean}
      */
     static isBlock(array) {
@@ -340,16 +387,24 @@ class VariableManagerStore {
 
     /**
      * gets a variable by id
-     * @param id
+     * @param {string} id
      */
     getById(id) {
         return this.referencedVariables[id];
     }
 
+    /**
+     * gets all variables that are selected
+     * @return {(OriginalVariable|DerivedVariable)[]}
+     */
     getSelectedVariables() {
         return this.currentVariables.filter(d => d.isSelected).map(d => this.referencedVariables[d.id]);
     }
 
+    /**
+     * gets all selected variable indices
+     * @return {number[]}
+     */
     getSelectedIndices() {
         return this.currentVariables.map((d, i) => {
             return {isSelected: d.isSelected, index: i}
@@ -359,8 +414,8 @@ class VariableManagerStore {
 
     /**
      * checks is a variable is derived from a variable with a certain type
-     * @param id
-     * @param variableType
+     * @param {string} id
+     * @param {string} variableType
      * @returns {boolean}
      */
     recursiveSearch(id, variableType) {

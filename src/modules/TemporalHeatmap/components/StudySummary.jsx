@@ -2,8 +2,8 @@ import React from 'react';
 import {inject, observer} from 'mobx-react';
 
 
-/*
-Displays study information
+/**
+ * Component for showing study information
  */
 const StudySummary = inject('rootStore')(observer(class StudySummary extends React.Component {
     render() {

@@ -9,7 +9,7 @@ import VariableManagerStore from "./VariableManagerStore";
 /**
  * Component for variable management
  */
-const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarModal extends React.Component {
+const VariableManager = inject("rootStore", "undoRedoStore")(observer(class VariableManager extends React.Component {
     constructor(props) {
         super(props);
         // serialize variables to copy them. Without copying them operations in the variable modal would be applied immediately to the variables in the view
@@ -35,7 +35,7 @@ const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarMo
         this.props.rootStore.dataStore.variableStores.between.replaceAll(this.eventVariableManager.referencedVariables, this.eventVariableManager.currentVariables.map(d => d.id),
             this.eventVariableManager.primaryVariables);
         this.props.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.rootStore.dataStore.variableStores.sample.currentVariables.map(d => this.props.rootStore.dataStore.variableStores.sample.getById(d).name) + "\n" + this.props.rootStore.dataStore.variableStores.between.currentVariables.map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).name), true);
-        this.props.closeAddModal();
+        this.props.closeVariableManager();
     }
 
 
@@ -43,8 +43,8 @@ const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarMo
         return (
             <Modal bsSize={"large"}
                    backdrop={"static"}
-                   show={this.props.addModalIsOpen}
-                   onHide={this.props.closeAddModal}>
+                   show={this.props.variableManagerOpen}
+                   onHide={this.props.closeVariableManager}>
                 <Modal.Header closeButton>
                     <Modal.Title>Variable Manager</Modal.Title>
                 </Modal.Header>
@@ -63,7 +63,7 @@ const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarMo
                     </Tabs>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.props.closeAddModal}>
+                    <Button onClick={this.props.closeVariableManager}>
                         Close
                     </Button>
                     <Button onClick={this.handleAddButton}>
@@ -74,4 +74,4 @@ const AddVarModal = inject("rootStore", "undoRedoStore")(observer(class AddVarMo
         )
     }
 }));
-export default AddVarModal;
+export default VariableManager;

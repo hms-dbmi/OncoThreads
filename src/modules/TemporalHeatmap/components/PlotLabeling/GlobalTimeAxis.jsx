@@ -4,7 +4,7 @@ import * as d3 from "d3";
 //import ReactDOM from 'react-dom'
 
 /*
- * Time axis
+ * Axis for showing the time scale in the global timeline
  * TODO: Make more react like (see Axis in VariableModals/ModifySingleVariables/Binner)
  */
 const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends React.Component {

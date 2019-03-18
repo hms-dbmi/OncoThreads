@@ -1,4 +1,4 @@
-import {action, createTransformer, extendObservable, observable, toJS} from "mobx";
+import {action, createTransformer, extendObservable, toJS} from "mobx";
 import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import DerivedVariable from "./TemporalHeatmap/stores/DerivedVariable";
 
@@ -199,7 +199,6 @@ class UndoRedoStore {
                 returnVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modification, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile, savedVariables[variable].type)
             }
         }
-        console.log(returnVariables,savedVariables);
         return returnVariables;
     }
 

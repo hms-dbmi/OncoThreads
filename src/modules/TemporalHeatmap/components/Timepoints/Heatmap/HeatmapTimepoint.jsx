@@ -2,8 +2,8 @@ import React from 'react';
 import {inject, observer} from 'mobx-react';
 import HeatmapRow from './HeatmapRow';
 
-/*
-creates a heatmap timepoint
+/**
+ * Component for creating a heatmap timepoint
  */
 const HeatmapTimepoint = inject("visStore", "uiStore")(observer(class HeatmapTimepoint extends React.Component {
     getTimepoint() {

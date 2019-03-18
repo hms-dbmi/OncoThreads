@@ -11,8 +11,8 @@ const GetStudy = inject("rootStore", "undoRedoStore")(observer(class GetStudy ex
 
     /**
      * selects a study
-     * @param event
-     * @param study
+     * @param {e} event
+     * @param {Object} study
      */
     getStudy(event, study) {
         this.props.rootStore.setIsOwnData(false);
@@ -26,7 +26,7 @@ const GetStudy = inject("rootStore", "undoRedoStore")(observer(class GetStudy ex
 
     /**
      * creates options for study selection
-     * @returns {Array}
+     * @returns {MenuItem[]}
      */
     setOptions() {
         let options = [];

@@ -2,8 +2,8 @@ import React from 'react';
 import {inject, observer} from 'mobx-react';
 import GlobalRowOperator from './GlobalRowOperator'
 
-/*
-implements the icons and their functionality on the left side of the plot
+/**
+ * Component for the Row operators of the variables in the global timeline
  */
 const GlobalRowOperators = inject("dataStore")(observer(class GlobalRowOperators extends React.Component {
         constructor() {
@@ -34,6 +34,10 @@ const GlobalRowOperators = inject("dataStore")(observer(class GlobalRowOperators
             });
         }
 
+        /**
+         * gets row operators for sample variables
+         * @return {GlobalRowOperator}
+         */
         getSampleRowHeader() {
             let i;
             if (this.props.dataStore.transitionOn) {
@@ -48,6 +52,10 @@ const GlobalRowOperators = inject("dataStore")(observer(class GlobalRowOperators
                                       {...this.props.tooltipFunctions}/>
         }
 
+        /**
+         * gets row operators for event variables
+         * @return {(GlobalRowOperator|string)}
+         */
         getEventRowHeader() {
             let i;
             if (this.props.dataStore.transitionOn) {
