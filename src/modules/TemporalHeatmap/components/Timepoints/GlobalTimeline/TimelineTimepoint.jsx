@@ -2,14 +2,18 @@ import React from 'react';
 import {observer,inject} from 'mobx-react';
 import TimelineRow from "./TimelineRow";
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
-//import * as d3 from 'd3';
 
-/*
-creates a heatmap timepoint
+/**
+ * component for a timepoint in the global timeline
  */
 const TimelineTimepoint = inject("rootStore")(observer(class TimelineTimepoint extends React.Component {
-
-
+    /**
+     * gets all events associated with an event variable
+     * @param {string} variableId
+     * @param {number} index
+     * @param {Object[]} array
+     * @return {Object[]}
+     */
     getAllEvents(variableId, index, array) {
         const _self = this;
         let current = this.props.rootStore.dataStore.variableStores.between.referencedVariables[variableId];
@@ -28,6 +32,12 @@ const TimelineTimepoint = inject("rootStore")(observer(class TimelineTimepoint e
         }
     }
 
+    /**
+     * filters events to reflect event combinations
+     * @param {string} variableId
+     * @param {Object[]} events
+     * @return {Object[]}
+     */
     filterEvents(variableId, events) {
         let variable = this.props.rootStore.dataStore.variableStores.between.getById(variableId);
         let filterMapper = {};
@@ -41,7 +51,10 @@ const TimelineTimepoint = inject("rootStore")(observer(class TimelineTimepoint e
         return events.filter((d) => filterMapper[d.sampleId]);
     }
 
-
+    /**
+     * creates a timepoint
+     * @return {g[]}
+     */
     getGlobalTimepointWithTransition() {
         const _self = this;
         let rows = [];

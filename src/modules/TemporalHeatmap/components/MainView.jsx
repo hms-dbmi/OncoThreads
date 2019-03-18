@@ -15,78 +15,64 @@ import GlobalBands from "./PlotLabeling/GlobalBands";
 
 import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
-import * as d3 from "d3";
 import GlobalTimeline from "./GlobalTimeline";
 import BlockView from "./BlockView";
 
-/*
-Main View
-Creates the Row operators, the Plot and the Legend
+/**
+ * Component containing the main visualization
  */
 const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class MainView extends React.Component {
     constructor(props) {
         super(props);
         this.handleTimeClick = this.handleTimeClick.bind(this);
-        this.handleGlobalTimeClick = this.handleGlobalTimeClick.bind(this);
+        this.handleSwitchView = this.handleSwitchView.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.state = {
-            highlightedVariable: '',
+            highlightedVariable: '', // variableId of currently highlighted variable
         }
     }
 
-
+    /**
+     * sets a variable to be highlighted
+     * @param {string} newHighlighted
+     */
     setHighlightedVariable(newHighlighted) {
         this.setState({highlightedVariable: newHighlighted});
     }
 
+    /**
+     * removes the highlighted variable
+     */
     removeHighlightedVariable() {
         this.setState({highlightedVariable: ''});
     }
 
+    /**
+     * handle visualizing real time
+     */
     handleTimeClick() {
         this.props.rootStore.dataStore.applyPatientOrderToAll(0);
         this.props.uiStore.setRealTime(!this.props.uiStore.realTime);
         this.props.undoRedoStore.saveRealTimeHistory(this.props.uiStore.realTime);
     }
 
-    handleGlobalTimeClick(key) {
+    /**
+     * handles switching to global timeline and back
+     * @param {boolean} key - global timeline (true) or block view (false)
+     */
+    handleSwitchView(key) {
         if (key !== this.props.uiStore.globalTime) {
             this.props.uiStore.setGlobalTime(key);
-            this.props.undoRedoStore.saveSwitchHistory(this.props.globalTime);
+            this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.globalTime);
         }
     }
 
     /**
-     * Creates scales ecoding the positions for the different patients in the heatmap (one scale per timepoint)
-     * @param w: width of the plot
-     * @param rectWidth: width of a heatmap cell
-     * @returns any[] scales
+     * Gets block view
+     * @return {div}
      */
-    createSampleHeatMapScales(w, rectWidth) {
-        return this.props.rootStore.dataStore.timepoints.map(function (d) {
-            return d3.scalePoint()
-                .domain(d.heatmapOrder)
-                .range([0, w - rectWidth]);
-        })
-    }
-
-
-    /**
-     * creates scales for computing the length of the partitions in grouped timepoints
-     * @param w: width of the plot
-     */
-    createGroupScale(w) {
-        return (d3.scaleLinear().domain([0, this.props.rootStore.dataStore.numberOfPatients]).range([0, w]));
-
-    }
-
-    static createTimeScale(height, min, max) {
-        return (d3.scaleLinear().domain([min, max]).rangeRound([0, height]));
-    }
-
-
-    getBlockView(sampleHeatmapScales, groupScale, timeScale) {
+    getBlockView() {
         return (
             <div>
                 <div className="view" id="block-view">
@@ -116,10 +102,7 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
                         </Col>
                         <Col lg={8} xs={7} md={7} style={{padding: 0, marginTop: 20}}>
                             <BlockView showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                       tooltipFunctions={this.props.tooltipFunctions}
-                                       groupScale={groupScale}
-                                       timeScale={timeScale}
-                                       heatmapScales={sampleHeatmapScales}/>
+                                       tooltipFunctions={this.props.tooltipFunctions}/>
                         </Col>
                         <Col lg={1} xs={2} md={2} style={{padding: 0, marginTop: 20}}>
                             <Legend highlightedVariable={this.state.highlightedVariable}
@@ -137,7 +120,11 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
         );
     }
 
-    getGlobalView(sampleHeatmapScales, groupScale, timeScale) {
+    /**
+     * gets global timeline view
+     * @return {div}
+     */
+    getGlobalView() {
         const globalPrimaryName = this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
         return (
             <div>
@@ -160,10 +147,7 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
                         <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
                             <GlobalBands timeValue={this.props.rootStore.timeValue}/>
                             <GlobalTimeline showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                            tooltipFunctions={this.props.tooltipFunctions}
-                                            groupScale={groupScale}
-                                            timeScale={timeScale}
-                                            heatmapScales={sampleHeatmapScales}/>
+                                            tooltipFunctions={this.props.tooltipFunctions}/>
                         </Col>
                     </Row>
                 </div>
@@ -177,23 +161,20 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
 
 
     render() {
-        const sampleHeatmapScales = this.createSampleHeatMapScales(this.props.rootStore.visStore.heatmapWidth, this.props.rootStore.visStore.sampleRectWidth);
-        const groupScale = this.createGroupScale(this.props.rootStore.visStore.plotWidth - this.props.rootStore.visStore.partitionGap * (this.props.rootStore.dataStore.maxPartitions - 1));
-        let transform = "translate(0," + 20 + ")";
-        const timeScale = MainView.createTimeScale(this.props.rootStore.visStore.svgHeight - this.props.rootStore.visStore.primaryHeight * 2, 0, this.props.rootStore.maxTimeInDays);
+        //create  views
         let blockView = null;
         let timelineView = null;
         if (!this.props.uiStore.globalTime) {
-            blockView = this.getBlockView(sampleHeatmapScales, groupScale, timeScale, transform);
+            blockView = this.getBlockView();
         }
         else {
-            timelineView = this.getGlobalView(sampleHeatmapScales, groupScale, timeScale, transform);
+            timelineView = this.getGlobalView();
         }
         return (
-            <Grid fluid={true} onClick={this.closeContextMenu}>
+            <Grid fluid={true}>
                 <Tabs mountOnEnter unmountOnExit animation={false}
                       activeKey={this.props.uiStore.globalTime}
-                      onSelect={this.handleGlobalTimeClick} id={"viewTab"}>
+                      onSelect={this.handleSwitchView} id={"viewTab"}>
                     <Tab eventKey={false} style={{paddingTop: 10}} title="Block view">
                         {blockView}
                     </Tab>

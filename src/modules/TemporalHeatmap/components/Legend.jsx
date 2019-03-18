@@ -3,8 +3,8 @@ import {observer,inject} from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 import UtilityFunctions from "../UtilityClasses/UtilityFunctions";
 
-/*
-implements the legend on the right side of the main view
+/**
+ * Legend Component
  */
 const Legend = inject("rootStore","uiStore")(observer(class Legend extends React.Component {
     constructor() {
@@ -15,16 +15,16 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * gets a single entry of the legend
-     * @param value: text to display
-     * @param opacity: 1 if primary, lower for secondary
-     * @param rectWidth
-     * @param fontSize
-     * @param currX: current x position
-     * @param lineheight
-     * @param rectColor
-     * @param textColor
-     * @param tooltipText
-     * @returns [] legendEntry
+     * @param {string} value - text to display
+     * @param {number} opacity - 1 if primary, lower for secondary
+     * @param {number} rectWidth
+     * @param {number} fontSize
+     * @param {number} currX - current x position
+     * @param {number} lineheight
+     * @param {string} rectColor
+     * @param {string} textColor
+     * @param {string} tooltipText
+     * @returns {g} legendEntry
      */
     getLegendEntry(value, opacity, rectWidth, fontSize, currX, lineheight, rectColor, textColor, tooltipText) {
         return <g key={value} onMouseEnter={(e) => {
@@ -41,9 +41,9 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * computes the width of a text. Returns 30 if the text width would be shorter than 30
-     * @param min
-     * @param text
-     * @param fontSize
+     * @param {number} min
+     * @param {string} text
+     * @param {number} fontSize
      * @returns {number}
      */
     static getTextWidth(min, text, fontSize) {
@@ -54,6 +54,10 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
         else return min;
     }
 
+    /**
+     * updates maximum legend withd
+     * @param {number} width
+     */
     updateMaxWidth(width) {
         if (width > this.maxWidth) {
             this.maxWidth = width;
@@ -62,11 +66,11 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * gets a legend for a continuous variable
-     * @param opacity
-     * @param fontSize
-     * @param lineheight
-     * @param color
-     * @returns {Array}
+     * @param {number} opacity
+     * @param {number} fontSize
+     * @param {number} lineheight
+     * @param {string} color
+     * @returns {(g|null)}
      */
     getContinuousLegend(opacity, fontSize, lineheight, color) {
         const min = color.domain()[0];
@@ -125,12 +129,12 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * gets a legend for a categorical variable
-     * @param variable
-     * @param row
-     * @param opacity
-     * @param fontSize
-     * @param lineheight
-     * @returns {Array}
+     * @param {(DerivedVariable|OriginalVariable)} variable
+     * @param {Object[]} row
+     * @param {number} opacity
+     * @param {number} fontSize
+     * @param {number} lineheight
+     * @returns {g[]}
      */
     getCategoricalLegend(variable, row, opacity, fontSize, lineheight) {
         const _self = this;
@@ -158,7 +162,7 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * gets the ideal color of the text depending on the background color
-     * @param backgroundColor
+     * @param {string} backgroundColor
      * @returns {string}
      */
     static getTextColor(backgroundColor) {
@@ -174,10 +178,10 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * gets a legend for a binary variable
-     * @param opacity
-     * @param fontSize
-     * @param lineheight
-     * @param color
+     * @param {number} opacity
+     * @param {number} fontSize
+     * @param {number} lineheight
+     * @param {string} color
      * @returns {Array}
      */
     getBinaryLegend(opacity, fontSize, lineheight, color) {
@@ -191,7 +195,7 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * creates a grey rectangle in order to highlight a row
-     * @param height
+     * @param {number} height
      * @returns {*}
      */
     getHighlightRect(height) {
@@ -200,11 +204,11 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * gets the legend
-     * @param data
-     * @param primary
-     * @param fontSize
-     * @param currentVariables
-     * @returns {Array}
+     * @param {Object[]} data
+     * @param {string} primary
+     * @param {number} fontSize
+     * @param {(DerivedVariable|OriginalVariable)[]} currentVariables
+     * @returns {g[]}
      */
     getBlockLegend(data, primary, fontSize, currentVariables) {
         const _self = this;
@@ -238,7 +242,7 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
                 const transform = "translate(0," + currPos + ")";
                 currPos += lineheight + _self.props.rootStore.visStore.gap;
                 let highlightRect = null;
-                if (d.variable === _self.props.highlightedVariable) {
+                if (d.id === _self.props.highlightedVariable) {
                     highlightRect = _self.getHighlightRect(lineheight)
                 }
                 legend.push(<g key={d.id} transform={transform}>{highlightRect}{legendEntries}</g>)
@@ -249,9 +253,9 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
 
     /**
      * gets global legend
-     * @param fontSize
-     * @param primaryVariable
-     * @returns {Array}
+     * @param {number} fontSize
+     * @param {(DerivedVariable|OriginalVariable)} primaryVariable
+     * @returns {g[]}
      */
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;

@@ -2,8 +2,8 @@ import React from 'react';
 import * as d3 from 'd3';
 import {observer} from 'mobx-react';
 
-/*
-Creates a Triangle Curve
+/**
+ * Component for the creation of a "TriangleCurve" for the heatmap group transition
  */
 const TriangleCurve = observer(class TriangleCurve extends React.Component {
     render() {

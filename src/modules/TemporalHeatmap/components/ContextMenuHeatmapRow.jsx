@@ -1,11 +1,8 @@
 import React from 'react';
 import {observer,inject} from 'mobx-react';
 import {Button, ButtonGroup} from 'react-bootstrap';
-
-//import Content from "./Content";
-
-/*
-sort context menu, appears after a right click on the sort button
+/**
+ * Component for Context Menu for moving patients up/down
  */
 const ContextMenuHeatmapRow = inject("rootStore","undoRedoStore")(observer(class ContextMenuHeatmapRow extends React.Component {
     constructor() {
@@ -15,8 +12,8 @@ const ContextMenuHeatmapRow = inject("rootStore","undoRedoStore")(observer(class
 
     /**
      * moves single patient of all selected patients
-     * @param patient
-     * @param isUp
+     * @param {string} patient
+     * @param {boolean} isUp - move up (true) or down (false)
      */
     move(patient, isUp) {
         if (this.props.rootStore.dataStore.selectedPatients.length === 0) {
@@ -36,11 +33,6 @@ const ContextMenuHeatmapRow = inject("rootStore","undoRedoStore")(observer(class
                 position: "absolute",
                 top: this.props.contextY,
                 left: this.props.contextX,
-
-                patient: this.props.patient,
-                timepoint: this.props.timepoint,
-                xposition: this.props.xposition
-
             }}>
                 <Button
                     onClick={() => this.move(this.props.patient, true)}> Move patient(s)

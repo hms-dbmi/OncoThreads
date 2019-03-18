@@ -2,9 +2,9 @@ import React from 'react';
 import {inject, observer} from 'mobx-react';
 import RowOperator from './RowOperator'
 
-/*
-implements the icons and their functionality on the left side of the plot
- */
+/**
+ * Component for rowOperators of the timepoints
+= */
 const RowOperators = inject("rootStore")(observer(class RowOperators extends React.Component {
     constructor() {
         super();
@@ -35,10 +35,17 @@ const RowOperators = inject("rootStore")(observer(class RowOperators extends Rea
         });
     }
 
-    highlightVariable(variable) {
-        this.setState({highlightedVariable: variable})
+    /**
+     * highlights a variable
+     * @param {string} variableId
+     */
+    highlightVariable(variableId) {
+        this.setState({highlightedVariable: variableId})
     }
 
+    /**
+     * unhighlights all variables
+     */
     unhighlightVariable() {
         this.setState({highlightedVariable: ""})
     }

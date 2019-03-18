@@ -1,8 +1,9 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
-/*
-creats a row in the heatmap
+
+/**
+ * Component for creating a row of a heatmap (ungrouped) timepoint
  */
 const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.Component {
     constructor(props) {
@@ -18,9 +19,13 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
         this.handleMouseEnter = this.handleMouseEnter.bind(this);
     }
 
+    /**
+     * creates a row for the timepoint
+     * @return {(rect|line)[]}
+     */
     getRow() {
         let rects = [];
-        this.props.row.data.forEach((d, j) => {
+        this.props.row.data.forEach(d => {
             let stroke = "none";
             const variable = this.props.dataStore.variableStores[this.props.timepointType].getById(this.props.row.variable);
             let fill = variable.colorScale(d.value);
@@ -46,7 +51,7 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
                              onMouseLeave={this.handleMouseLeave}
                              onMouseDown={(e) => this.handleMouseDown(e, d.patient)}
                              onMouseUp={this.handleMouseUp} onDoubleClick={() => this.handleDoubleClick(d.patient)}
-                             onContextMenu={(e) => this.handleRightClick(e, d.patient, this.props.timepointIndex, j)}
+                             onContextMenu={(e) => this.handleRightClick(e, d.patient, this.props.timepointIndex)}
                              key={d.patient} height={this.props.height}
                              width={this.props.rectWidth}
                              x={this.props.heatmapScale(d.patient) + this.props.xOffset}
@@ -66,11 +71,21 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
 
     }
 
+    /**
+     * point to cbio to show more patient specific informatiom
+     * @param {string} patient
+     */
     handleDoubleClick(patient) {
-        window.open("http://www.cbiohack.org/case.do#/patient?studyId=" + this.props.dataStore.rootStore.study.studyId + "&caseId=" + patient);
+        if(!this.props.dataStore.rootStore.isOwnData) {
+            window.open("http://www.cbiohack.org/case.do#/patient?studyId=" + this.props.dataStore.rootStore.study.studyId + "&caseId=" + patient);
+        }
     }
 
-
+    /**
+     * when mouse button is pressed activate dragging
+     * @param {event} event
+     * @param {string} patient
+     */
     handleMouseDown(event, patient) {
         if (event.button === 0) {
             if (!this.state.dragging) {
@@ -82,6 +97,9 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
         }
     }
 
+    /**
+     * when mouse button is released deactivate dragging
+     */
     handleMouseUp() {
         this.setState({
             dragging: false
@@ -101,21 +119,19 @@ const HeatmapRow = inject("dataStore")(observer(class HeatmapRow extends React.C
         this.props.hideTooltip();
     }
 
-
-    hideContextMenu() {
-        this.setState({
-            contextType: "",
-        })
-    }
-
+    /**
+     * open context menu for moving a patient/patients
+     * @param {event} e
+     * @param {string} patient
+     * @param {number} timepointIndex
+     * @param {number} xposition
+     */
     handleRightClick(e, patient, timepointIndex, xposition) {
         e.preventDefault();
         this.setState({
             dragging: false
         });
         this.props.showContextMenuHeatmapRow(e, patient, timepointIndex, xposition);
-
-
     }
 
 

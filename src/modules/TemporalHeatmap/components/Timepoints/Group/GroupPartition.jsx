@@ -3,8 +3,9 @@ import {inject, observer} from 'mobx-react';
 
 import CategoricalRow from './CategoricalRow'
 import ContinuousRow from "./ContinuousRow";
-/*
-creates a partition in the grouped timepoint
+
+/**
+ * Component for a partition in a grouped timepiint
  */
 const GroupPartition = inject("dataStore", "visStore","uiStore")(observer(class GroupPartition extends React.Component {
     createPartition() {
@@ -26,13 +27,13 @@ const GroupPartition = inject("dataStore", "visStore","uiStore")(observer(class 
                     height = _self.props.visStore.secondaryHeight;
                     opacity = 0.5;
                 }
+                // create different types of rows depending on the variables datatype
                 if (_self.props.currentVariables[i].datatype === "NUMBER") {
                     rows.push(<g key={d.variable} transform={transform}><ContinuousRow row={d.counts}
                                                                                        height={height}
                                                                                        opacity={opacity} color={color}
                                                                                        stroke={stroke}
                                                                                        variableDomain={_self.props.currentVariables[i].domain}
-                                                                                       groupScale={_self.props.groupScale}
                                                                                        {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
@@ -42,7 +43,6 @@ const GroupPartition = inject("dataStore", "visStore","uiStore")(observer(class 
                                                                                         opacity={opacity}
                                                                                         color={color}
                                                                                         stroke={stroke}
-                                                                                        groupScale={_self.props.groupScale}
                                                                                         {..._self.props.tooltipFunctions}/>
                     </g>);
                 }

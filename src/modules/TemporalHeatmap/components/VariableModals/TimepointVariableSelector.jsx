@@ -5,7 +5,9 @@ import Select from 'react-select';
 import ControlLabel from "react-bootstrap/es/ControlLabel";
 import OriginalVariable from "../../stores/OriginalVariable";
 
-
+/**
+ * Component for selecting timepoint variables in variable manager
+ */
 const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(observer(class TimepointVariableSelector extends React.Component {
 
     constructor(props) {
@@ -26,6 +28,10 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         this.addGenes = this.addGenes.bind(this);
     }
 
+    /**
+     * creates all selectable options
+     * @return {Object[]}
+     */
     createOptions() {
         let savedOptions = [];
         this.props.variableManagerStore.savedReferences.forEach(d => {
@@ -65,11 +71,11 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     /**
      * handle selection of an option
-     * @param selectedOption
+     * @param {Object} selectedOption
      */
     handleOptionSelect(selectedOption) {
         if (selectedOption.type !== 'saved') {
-            this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.variable, selectedOption.object.datatype, selectedOption.object.description, [], [], this.props.rootStore.staticMappers[selectedOption.object.id], selectedOption.type, selectedOption.type));
+            this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.variable, selectedOption.object.datatype, selectedOption.object.description, [], [], this.props.rootStore.staticMappers[selectedOption.object.id], selectedOption.type, "clinical"));
         }
         else {
             this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(selectedOption.object));
@@ -79,7 +85,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     /**
      * updates the checkboxes showing the different mutation data types
-     * @param hasData
+     * @param {boolean} hasData
      */
     updateMutationCheckBoxOptions(hasData) {
         let mutationOptions = [];
@@ -93,8 +99,8 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     /**
      * updates the checkboxes showing the different molecular profiles
-     * @param profile
-     * @param hasData
+     * @param {string} profile
+     * @param {boolean} hasData
      */
     updateMolecularCheckBoxOptions(profile, hasData) {
         let molecularOptions = this.state.molecularOptions.slice();
@@ -128,9 +134,9 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             }
         });
         this.props.rootStore.molProfileMapping.loadIds(geneList, () => {
-            let mutationProfileIndex=this.props.rootStore.availableProfiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
-            if (mutationProfileIndex!==-1) {
-                this.props.rootStore.molProfileMapping.loadMutations(this.props.rootStore.availableProfiles[mutationProfileIndex].molecularProfileId,() => {
+            let mutationProfileIndex = this.props.rootStore.availableProfiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
+            if (mutationProfileIndex !== -1) {
+                this.props.rootStore.molProfileMapping.loadMutations(this.props.rootStore.availableProfiles[mutationProfileIndex].molecularProfileId, () => {
                     this.updateMutationCheckBoxOptions(Object.values(this.props.rootStore.molProfileMapping.isInGenePanel).join().length > 0);
                 });
             }
@@ -159,7 +165,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     /**
      * updates the value of geneListString with the current content of the search field
-     * @param event
+     * @param {event} event
      */
     updateSearchValue(event) {
         this.setState({geneListString: event.target.value, showCheckBoxOptions: false});
@@ -167,7 +173,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     /**
      * handles pressing enter after entering genes into the search field
-     * @param event
+     * @param {event} event
      */
     handleEnterPressed(event) {
         if (TimepointVariableSelector.checkEnterPressed(event)) {
@@ -175,6 +181,11 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         }
     }
 
+    /**
+     * checks if the pressed key was the enter key
+     * @param {event} event
+     * @return {boolean}
+     */
     static checkEnterPressed(event) {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -186,8 +197,8 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     /**
      * toggles selection of a checkbox
-     * @param index
-     * @param isMutation
+     * @param {number} index
+     * @param {boolean} isMutation
      */
     toggleSelect(index, isMutation) {
         if (isMutation) {
@@ -205,7 +216,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     /**
      * gets the checkboxes for the available genomic data
-     * @returns {*}
+     * @returns {Form}
      */
     getAvailableCheckBoxes() {
         let checkBoxes = [];

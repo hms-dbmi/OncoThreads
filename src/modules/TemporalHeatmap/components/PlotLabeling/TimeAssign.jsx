@@ -4,7 +4,8 @@ import {ButtonToolbar, DropdownButton, MenuItem} from 'react-bootstrap';
 
 
 /*
- * Patient axis pointing to the right
+ * Select element for selecting the current time scale
+ * TODO: maybe we don't need a separate class for this, integrate somewhere else?
  */
 const TimeAssign = inject("rootStore")(observer(class TimeAssign extends React.Component {
 

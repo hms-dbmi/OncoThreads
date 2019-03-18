@@ -1,7 +1,7 @@
 import React from "react";
 import {inject, observer} from "mobx-react";
 import Select from 'react-select';
-import {Button, Col, Form, FormControl, FormGroup, Grid, Panel, Row, Tab, Tabs} from "react-bootstrap";
+import {Button, Col, Form, FormControl, FormGroup, Grid, HelpBlock, Panel, Row, Tab, Tabs} from "react-bootstrap";
 import StudySummary from "./StudySummary";
 import FontAwesome from 'react-fontawesome';
 import SelectDatatype from "./Modals/SelectDatatype";
@@ -9,7 +9,7 @@ import uuidv4 from 'uuid/v4';
 
 
 /*
- * View if no study has been loaded used for selection of studies from cBio or own data sets
+ * Component for view if no study has been loaded used for selection of studies from cBio or own data sets
  */
 const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultView extends React.Component {
     constructor() {
@@ -29,8 +29,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.clinicalPatientKey = uuidv4();
         this.clinicalSampleKey = uuidv4();
         this.mutationKey = uuidv4();
-        this.expressionKey = uuidv4();
-        this.cnvKey = uuidv4();
+        this.molecularKey = uuidv4();
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
         this.handleEventsLoad = this.handleEventsLoad.bind(this);
@@ -38,7 +37,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
         this.handleMutationsLoad = this.handleMutationsLoad.bind(this);
         this.handleExpressionsLoad = this.handleExpressionsLoad.bind(this);
-        this.handleCNVLoad = this.handleCNVLoad.bind(this);
+        this.handleMolecularLoad = this.handleMolecularLoad.bind(this);
         this.setDatatype = this.setDatatype.bind(this);
     }
 
@@ -197,11 +196,12 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
     /**
      * sets datatypes of currently selected files
      * @param {number} index
+     * @param {string} alterationType
      * @param {string} datatype
      */
-    setDatatype(index, datatype) {
+    setDatatype(index, datatype, alterationType) {
         let datatypes = this.state.datatypes.slice();
-        datatypes[index] = datatype;
+        datatypes[index] = {alterationType: alterationType, datatype: datatype};
         this.setState({datatypes: datatypes});
     }
 
@@ -214,7 +214,9 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         this.setState({
             modalIsOpen: true,
             fileType: "CNV",
-            datatypes: Array.from(files).map(() => "STRING"),
+            datatypes: Array.from(files).map(() => {
+                return {alterationType: "ANY", datatype: "CONTINUOUS"}
+            }),
             fileNames: Array.from(files).map(d => d.name),
             callback: callback
         })
@@ -224,12 +226,12 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
      * handles selection of CNV files
      * @param {event} e
      */
-    handleCNVLoad(e) {
+    handleMolecularLoad(e) {
         e.persist();
         if (e.target.files.length > 0) {
             this.openModal(e.target.files, (setFiles) => {
                 if (setFiles) {
-                    this.props.rootStore.localFileLoader.setCNVs(e.target.files, this.state.datatypes);
+                    this.props.rootStore.localFileLoader.setMolecularFiles(e.target.files, this.state.datatypes);
                 }
                 else {
                     e.target.value = null;
@@ -237,7 +239,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
             });
         }
         else {
-            this.props.rootStore.localFileLoader.setCNVsParsed("empty");
+            this.props.rootStore.localFileLoader.setMolecularParsed("empty");
         }
     }
 
@@ -277,11 +279,8 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
         if (this.props.rootStore.localFileLoader.mutationsParsed === "empty") {
             this.mutationKey = uuidv4();
         }
-        if (this.props.rootStore.localFileLoader.expressionsParsed === "empty") {
-            this.expressionKey = uuidv4();
-        }
-        if (this.props.rootStore.localFileLoader.cnvsParsed === "empty") {
-            this.cnvKey = uuidv4();
+        if (this.props.rootStore.localFileLoader.molecularParsed === "empty") {
+            this.molecularKey = uuidv4();
         }
     }
 
@@ -399,40 +398,23 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                                     <h4>Optional files</h4>
                                     <FormGroup>
                                         <Col sm={5}>
-                                            Expression {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.expressionsParsed)}
+                                            Other
+                                            files {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.molecularParsed)}
                                         </Col>
                                         <Col sm={6}>
                                             <FormControl type="file"
-                                                         key={this.expressionKey}
+                                                         key={this.molecularKey}
                                                          label="File"
                                                          multiple={true}
-                                                         onChange={this.handleExpressionsLoad}/>
+                                                         onChange={this.handleMolecularLoad}/>
+                                            <HelpBlock>Expression data, cnv data, protein levels, methylation
+                                                data</HelpBlock>
                                         </Col>
                                         <Col sm={1}>
                                             <div
-                                                style={{visibility: this.props.rootStore.localFileLoader.expressionsParsed === "empty" ? "hidden" : "visible"}}>
+                                                style={{visibility: this.props.rootStore.localFileLoader.molecularParsed === "empty" ? "hidden" : "visible"}}>
                                                 <FontAwesome name={"times"}
-                                                             onClick={() => this.props.rootStore.localFileLoader.setExpressionsParsed("empty")}/>
-                                            </div>
-                                        </Col>
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Col sm={5}>
-                                            Copy Number
-                                            Variation {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.cnvsParsed)}
-                                        </Col>
-                                        <Col sm={6}>
-                                            <FormControl type="file"
-                                                         key={this.cnvKey}
-                                                         label="File"
-                                                         multiple={true}
-                                                         onChange={this.handleCNVLoad}/>
-                                        </Col>
-                                        <Col sm={1}>
-                                            <div
-                                                style={{visibility: this.props.rootStore.localFileLoader.cnvsParsed === "empty" ? "hidden" : "visible"}}>
-                                                <FontAwesome name={"times"}
-                                                             onClick={() => this.props.rootStore.localFileLoader.setCNVsParsed("empty")}/>
+                                                             onClick={() => this.props.rootStore.localFileLoader.setMolecularParsed("empty")}/>
                                             </div>
                                         </Col>
                                     </FormGroup>

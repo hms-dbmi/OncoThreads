@@ -3,9 +3,10 @@ import {inject, observer} from "mobx-react";
 import {Button, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../stores/OriginalVariable";
+import UtilityFunctions from "../../UtilityClasses/UtilityFunctions";
 
-/*
-creates the selector for sample variables (left side of main view, top)
+/**
+ * Component for fast selection of variables
  */
 const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class QuickAddVariable extends React.Component {
     constructor(props) {
@@ -16,30 +17,32 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
-        this.handleMappingSelect = this.handleMappingSelect.bind(this);
+        this.handleProfileSelect = this.handleProfileSelect.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.addVariablesEnter = this.addVariablesEnter.bind(this);
     }
 
+    /**
+     * gets initial state
+     * @return {{category: string, profile: string, geneListString: string, selectedValues: Object[], selectedKey: string}}
+     */
     static getInitialState(props) {
         let profile = '';
         if (props.rootStore.availableProfiles.length > 0) {
             profile = props.rootStore.availableProfiles[0].molecularProfileId;
         }
         return {
-            category: "clinical",
-            profile: profile,
-            geneListString: "",
-            selectedValues: [],
-            isClinical: true,
-            isEvent: false,
-            selectedKey: "",
+            category: "clinical", // either clinical, computed, gene or any of the event categories
+            profile: profile, // selected molecular profile
+            geneListString: "", // text entered in gene search fiels
+            selectedValues: [], // selected values
+            selectedKey: "", // selected key
         }
     }
 
     /**
      * Creates a name using the combined values
-     * @param selectedValues
+     * @param {Object[]} selectedValues
      * @returns {string}
      */
     createCompositeName(selectedValues) {
@@ -66,7 +69,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
         else {
             this.state.selectedValues.forEach(d => {
-                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "Computed"))
+                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "computed"))
             });
             this.props.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
         }
@@ -83,7 +86,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
 
     /**
      * creates oprtions for event variables
-     * @returns {Array}
+     * @returns {Object[]}
      */
     createEventOptions() {
         let options = [];
@@ -118,16 +121,9 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         return options;
     }
 
-
-    static toTitleCase(str) {
-        return str.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        });
-    }
-
     /**
      * handles adding variables when enter is pressed
-     * @param e
+     * @param {event} e
      */
     addVariablesEnter(e) {
         if (QuickAddVariable.checkEnterPressed(e)) {
@@ -135,6 +131,11 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
     }
 
+    /**
+     * checks if the pressed key is the enter key
+     * @param {event} event
+     * @return {boolean}
+     */
     static checkEnterPressed(event) {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -147,11 +148,11 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
      * handles adding a variable
      */
     handleAdd() {
-        if (this.state.isEvent) {
+        if (this.props.rootStore.eventCategories.includes(this.state.category)) {
             this.addEventVariable();
         }
         else {
-            if (this.state.isClinical) {
+            if (this.state.category === "clinical") {
                 this.addClinicalVariables();
             }
             else {
@@ -175,7 +176,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
 
     /**
      * creates options for sample variables
-     * @returns {*[]}
+     * @returns {Object[]}
      */
     createTimepointOptions() {
         let sampleOptions = [];
@@ -201,10 +202,10 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
 
     /**
      * creates selection options
-     * @returns {*}
+     * @returns {Object[]}
      */
     createOptions() {
-        if (this.state.isEvent) {
+        if (this.props.rootStore.eventCategories.includes(this.state.category)) {
             return this.createEventOptions();
         }
         else {
@@ -215,7 +216,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
 
     /**
      * handles pressing enter after entering genes into the search field
-     * @param event
+     * @param {event} event
      */
     handleEnterPressed(event) {
         if (QuickAddVariable.checkEnterPressed(event)) {
@@ -234,6 +235,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
+        console.log(this.state.profile);
         this.props.rootStore.molProfileMapping.getProfileData(this.state.profile,
             geneList, "Binary", newVariables => {
                 this.props.rootStore.dataStore.variableStores.sample.addVariablesToBeDisplayed(newVariables);
@@ -244,29 +246,43 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
 
     /**
      * updates the value of geneListString with the current content of the search field
-     * @param event
+     * @param {event} event
      */
     updateSearchValue(event) {
         this.setState({geneListString: event.target.value});
     }
 
+    /**
+     * handles selecting a category
+     * @param {event} e
+     */
     handleSelect(e) {
+        let profile = '';
+        if (this.props.rootStore.availableProfiles.length > 0) {
+            profile = this.props.rootStore.availableProfiles[0].molecularProfileId;
+        }
         this.setState({
-            isEvent: e.target.value !== "genes" && e.target.value !== "clinical",
             category: e.target.value,
             geneListString: "",
-            isClinical: e.target.value === "clinical"
+            profile: profile
         });
     }
 
-    handleMappingSelect(e) {
+    /**
+     * handles selecting a molecular profile
+     * @param {event} e
+     */
+    handleProfileSelect(e) {
         let profile = this.props.rootStore.availableProfiles.filter(d => d.molecularProfileId === e.target.value)[0];
         this.setState({
             profile: profile.molecularProfileId,
         })
     }
 
-
+    /**
+     * handles selecting a sample variable option
+     * @param {Object[]} selectedOptions
+     */
     handleTimepointOptionSelect(selectedOptions) {
         if (selectedOptions.length > 0) {
             this.setState({selectedValues: selectedOptions})
@@ -276,6 +292,10 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
     }
 
+    /**
+     * handles selecting an event variable option
+     * @param {Object[]} selectedOptions
+     */
     handleEventOptionSelect(selectedOptions) {
         if (selectedOptions.length > 0) {
             this.setState({selectedKey: selectedOptions[0].object.eventType, selectedValues: selectedOptions})
@@ -285,8 +305,12 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
     }
 
+    /**
+     * handles selecting an option
+     * @param {Object[]} selectedOptions
+     */
     handleOptionSelect(selectedOptions) {
-        if (this.state.isEvent) {
+        if (this.props.rootStore.eventCategories.includes(this.state.category)) {
             this.handleEventOptionSelect(selectedOptions);
         }
         else {
@@ -294,6 +318,10 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
     }
 
+    /**
+     * gets either a Select component or a text field depending on the currently selected category
+     * @return {(Select|FormControl)}
+     */
     getSearchField() {
         if (this.state.category === "clinical" || this.state.category === "computed" || this.props.rootStore.eventCategories.includes(this.state.category)) {
             return <Select
@@ -324,7 +352,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         if (this.state.category === "genes") {
             colSize = 2;
             selectMappingType = <Col sm={colSize} style={{padding: 0}}>
-                <FormControl style={{height: 38}} componentClass="select" onChange={this.handleMappingSelect}
+                <FormControl style={{height: 38}} componentClass="select" onChange={this.handleProfileSelect}
                              placeholder="Select Category">
                     {this.props.rootStore.availableProfiles.map(d => <option value={d.molecularProfileId}
                                                                              key={d.molecularProfileId}>{d.name}</option>)}
@@ -352,7 +380,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
                             <optgroup label="Event Variables">
                                 {this.props.rootStore.eventCategories.filter(d => d !== "SPECIMEN").map((d) => <option
                                     value={d}
-                                    key={d}>{QuickAddVariable.toTitleCase(d)}</option>)}
+                                    key={d}>{UtilityFunctions.toTitleCase(d)}</option>)}
                                 <option value="computed" key="computed">Computed variables</option>
                             </optgroup>
                         </FormControl>

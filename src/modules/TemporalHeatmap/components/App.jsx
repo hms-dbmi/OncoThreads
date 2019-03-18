@@ -13,6 +13,9 @@ import SettingsModal from "./Modals/SettingsModal";
 import AboutModal from "./Modals/AboutModal";
 import StudySummary from "./StudySummary";
 
+/**
+ * Base Component
+ */
 const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App extends React.Component {
     constructor() {
         super();
@@ -26,7 +29,10 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
         this.closeModal = this.closeModal.bind(this);
     }
 
-
+    /**
+     * opens a modal of a certain type
+     * @param {string} type
+     */
     openModal(type) {
         if (type === 'about') {
             this.setState({
@@ -51,12 +57,19 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
 
     }
 
+    /**
+     * closes all modals
+     */
     closeModal() {
         this.setState({
             logModalIsOpen: false, aboutModalIsOpen: false, settingsModalIsOpen: false, studyInfoModalIsOpen: false,
         });
     }
 
+    /**
+     * gets Navbar on top
+     * @return {[]|NavItem}
+     */
     getNavbarContent() {
         if (this.props.rootStore.variablesParsed) {
             return ([
@@ -80,7 +93,7 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
 
     /**
      * get content in the main panel
-     * @returns {*}
+     * @returns {(DefaultView|Content|div)}
      */
     getMainContent() {
         if (this.props.rootStore.firstLoad) {

@@ -10,7 +10,9 @@ import UtilityFunctions from "../../../../UtilityClasses/UtilityFunctions";
 import BinningStore from "./BinningStore";
 import Binner from "./Binner";
 
-
+/**
+ * Modal for binning while grouping
+ */
 const GroupBinningModal = observer(class GroupBinningModal extends React.Component {
     constructor(props) {
         super(props);
@@ -22,6 +24,10 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         this.close = this.close.bind(this);
     }
 
+    /**
+     * creates store for binning
+     * @return {BinningStore}
+     */
     createBinningStore() {
         let bins, binNames;
         let min = d3.min(this.data);
@@ -42,17 +48,16 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         return new BinningStore(bins, binNames, false, xScale);
     }
 
-
+    /**
+     * closes Modal
+     */
     close() {
         this.props.closeModal();
-    }
-    setWidth(width){
-        this.setState({width:width});
     }
 
 
     /**
-     * applies binning to data and color scales
+     * creates new variable based on binning
      */
     handleApply() {
         const newId = uuidv4();
@@ -65,16 +70,18 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                 binNames: this.binningStore.binNames
             }
         };
+        // case: variable is transformed to binary
         if (!this.binningStore.isBinary) {
             derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)",
-                [this.props.variable.id], modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.binningStore.binNames, this.binningStore.bins),
+                [this.props.variable.id], modification, ColorScales.getBinnedRange(this.props.variable.colorScale, this.binningStore.bins),
                 this.binningStore.binNames.map(d => d.name), DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]),
-                this.props.variable.profile);
+                uuidv4(), this.props.variable.type);
         }
+        // case: variable is not transformed to binary
         else {
             derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "BINARY", this.props.variable.description + " (binned)",
                 [this.props.variable.id], modification, [], [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]),
-                this.props.variable.profile);
+                uuidv4(), this.props.variable.type);
 
         }
         this.props.callback(derivedVariable);

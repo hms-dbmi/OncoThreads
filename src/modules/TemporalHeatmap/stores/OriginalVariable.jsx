@@ -1,7 +1,22 @@
 import ColorScales from '../UtilityClasses/ColorScales';
-import {extendObservable,action} from "mobx";
+import {action, extendObservable} from "mobx";
 
+/**
+ * original variable that is based on the input data
+ */
 class OriginalVariable {
+    /**
+     *
+     * @param {string} id
+     * @param {string} name
+     * @param {string} datatype
+     * @param {string} description
+     * @param {string[]} range - color range
+     * @param {(string[]|boolean[]|number[])} domain
+     * @param {Object} mapper - mapper mapping sampleIds to values
+     * @param {string} profile - profile (group of variables) that this variable belongs to
+     * @param {string} type - gene, clinical, computed, event
+     */
     constructor(id, name, datatype, description, range, domain, mapper, profile, type) {
         this.id = id;
         this.originalIds = [id];
@@ -21,18 +36,18 @@ class OriginalVariable {
 
     /**
      * initializes observable values
-     * @param domain
-     * @param range
-     * @returns {*}
+     * @param {(number[]|string[]|boolean[])} domain
+     * @param {string[]} range
+     * @returns {Object} observable values
      */
     initializeObservable(domain, range) {
-        let currDomain = this.createDefaultDomain(domain);
-        let currRange = this.createDefaultRange(currDomain, range);
+        let currDomain = this.createDomain(domain);
+        let currRange = ColorScales.createRange(currDomain, range, this.datatype);
         return {
             domain: currDomain,
             range: currRange,
-            changeRange:action(range=>{
-                this.range=range
+            changeRange: action(range => {
+                this.range = range
             }),
             get colorScale() {
                 let scale;
@@ -49,69 +64,31 @@ class OriginalVariable {
 
     /**
      * creates domain (use provided domain if given, otherwise use default domain)
-     * @param domain
-     * @returns {*}
+     * @param {(number[]|string[]|boolean[])} domain
+     * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
-    createDefaultDomain(domain) {
+    createDomain(domain) {
         let currDomain = domain;
         if (domain.length === 0) {
-            if (this.datatype === 'NUMBER') {
-                let max = Number.NEGATIVE_INFINITY;
-                let min = Number.POSITIVE_INFINITY;
-                for (let sample in this.mapper) {
-                    if (this.mapper[sample] > max) {
-                        max = this.mapper[sample];
-                    }
-                    if (this.mapper[sample] < min) {
-                        min = this.mapper[sample];
-                    }
-                }
-                currDomain = [min, max];
-            }
-            else if (this.datatype === "BINARY") {
-                currDomain = [true, false];
-            }
-            else {
-                currDomain = [];
-                for (let sample in this.mapper) {
-                    if (!(currDomain.includes(this.mapper[sample]))) {
-                        currDomain.push(this.mapper[sample]);
-                    }
-                }
-            }
+            return this.getDefaultDomain()
         }
         return currDomain;
     }
 
     /**
-     * creates range (use provided range if given, otherwise use default range)
-     * @param domain
-     * @param range
-     * @returns {*}
+     * gets default domain for a variable based on its datatype and its values
+     * @return {(number[]|string[]|boolean[])} domain array
      */
-    createDefaultRange(domain, range) {
-        let currRange = range;
-        if (currRange.length === 0) {
-            if (this.datatype === "ORDINAL") {
-                currRange = ColorScales.getDefaultOrdinalRange(domain.length);
-            }
-            else if (this.datatype === "STRING") {
-                currRange = ColorScales.defaultCategoricalRange;
-            }
-            else if (this.datatype === "BINARY") {
-                currRange = ColorScales.defaultBinaryRange;
-            }
-            else if (this.datatype === "NUMBER") {
-                let min = Math.min(...domain);
-                if (min < 0) {
-                    currRange = ColorScales.defaultContinuousThreeColors;
-                }
-                else {
-                    currRange = ColorScales.defaultContinuousTwoColors;
-                }
-            }
+    getDefaultDomain() {
+        if (this.datatype === 'NUMBER') {
+            return [Math.min(...Object.values(this.mapper)), Math.max(...Object.values(this.mapper))];
         }
-        return currRange;
+        else if (this.datatype === "BINARY") {
+            return [true, false];
+        }
+        else {
+            return [...new Set(Object.values(this.mapper))]
+        }
     }
 }
 

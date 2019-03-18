@@ -1,8 +1,25 @@
 import ColorScales from "../UtilityClasses/ColorScales";
-import {extendObservable,action} from "mobx";
+import {action, extendObservable} from "mobx";
 
+/**
+ * a derived variable is derived of one or multiple other variables
+ */
 class DerivedVariable {
-    constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper) {
+    /**
+     * constructs a derived variable
+     * @param {string} id
+     * @param {string} name
+     * @param {string} datatype - ORDINAL, STRING, NUMBER, BINARY
+     * @param {string} description
+     * @param {string[]} originalIds - ids of variables that were used to derive the derived variable
+     * @param {Object} modification - exact way of how variable has been modified
+     * @param {string[]} range
+     * @param {(number[]|string[]|boolean[])} domain
+     * @param {Object} mapper - mapper mapping sampleIds to values
+     * @param {string} profile - profile (group of variables) that this variable belongs to
+     * @param {string} type  - gene, clinical, computed, event, derived
+     */
+    constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper, profile, type) {
         this.id = id;
         this.name = name;
         this.datatype = datatype;
@@ -11,9 +28,9 @@ class DerivedVariable {
         this.originalIds = originalIds;
         this.modification = modification;
         this.mapper = mapper;
-        this.type = "derived";
-        this.profile = "derived";
-        this.referenced = 0;
+        this.type = type;
+        this.profile = profile;
+        this.referenced = 0; // number of variables that reference this variable
         extendObservable(this,
             this.initializeObservable(domain, range))
 
@@ -21,18 +38,18 @@ class DerivedVariable {
 
     /**
      * initializes observable values
-     * @param domain
-     * @param range
-     * @returns {*}
+     * @param {(number[]|string[]|boolean[])} domain
+     * @param {string[]} range
+     * @returns {Object}
      */
     initializeObservable(domain, range) {
-        let currDomain = this.createDefaultDomain(domain);
-        let currRange = this.createDefaultRange(currDomain, range);
+        let currDomain = this.createDomain(domain);
+        let currRange = ColorScales.createRange(currDomain, range, this.datatype);
         return {
             domain: currDomain,
             range: currRange,
-            changeRange:action(range=>{
-                this.range=range
+            changeRange: action(range => {
+                this.range = range
             }),
             get colorScale() {
                 let scale;
@@ -47,72 +64,35 @@ class DerivedVariable {
         };
     }
 
-     /**
+    /**
      * creates domain (use provided domain if given, otherwise use default domain)
-     * @param domain
-     * @returns {*}
+     * @param {(number[]|string[]|boolean[])} domain
+     * @returns {(number[]|string[]|boolean[])}
      */
-    createDefaultDomain(domain) {
+    createDomain(domain) {
         let currDomain = domain;
         if (domain.length === 0) {
-            if (this.datatype === 'NUMBER') {
-                let max = Number.NEGATIVE_INFINITY;
-                let min = Number.POSITIVE_INFINITY;
-                for (let sample in this.mapper) {
-                    if (this.mapper[sample] > max) {
-                        max = this.mapper[sample];
-                    }
-                    if (this.mapper[sample] < min) {
-                        min = this.mapper[sample];
-                    }
-                }
-                currDomain = [min, max];
-            }
-            else if (this.datatype === "BINARY") {
-                currDomain = [true, false];
-            }
-            else {
-                currDomain = [];
-                for (let sample in this.mapper) {
-                    if (!(currDomain.includes(this.mapper[sample]))) {
-                        currDomain.push(this.mapper[sample]);
-                    }
-                }
-            }
+            return this.getDefaultDomain();
         }
         return currDomain;
     }
 
     /**
-     * creates range (use provided range if given, otherwise use default range)
-     * @param domain
-     * @param range
-     * @returns {*}
+     * gets default domain for a variable based on its datatype and its values
+     * @return {(number[]|string[]|boolean[])} domain array
      */
-    createDefaultRange(domain, range) {
-        let currRange = range;
-        if (currRange.length === 0) {
-            if (this.datatype === "ORDINAL") {
-                currRange = ColorScales.getDefaultOrdinalRange(domain.length);
-            }
-            else if (this.datatype === "STRING") {
-                currRange = ColorScales.defaultCategoricalRange;
-            }
-            else if (this.datatype === "BINARY") {
-                currRange = ColorScales.defaultBinaryRange
-            }
-            else if (this.datatype === "NUMBER") {
-                let min = Math.min(...domain);
-                if (min < 0) {
-                    currRange = ColorScales.defaultContinuousThreeColors;
-                }
-                else {
-                    currRange = ColorScales.defaultContinuousTwoColors;
-                }
-            }
+    getDefaultDomain() {
+        if (this.datatype === 'NUMBER') {
+            return [Math.min(...Object.values(this.mapper)), Math.max(...Object.values(this.mapper))];
         }
-        return currRange;
+        else if (this.datatype === "BINARY") {
+            return [true, false];
+        }
+        else {
+            return [...new Set(Object.values(this.mapper))]
+        }
     }
+
 }
 
 export default DerivedVariable;

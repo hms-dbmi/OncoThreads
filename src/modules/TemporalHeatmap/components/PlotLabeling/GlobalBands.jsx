@@ -3,7 +3,7 @@ import {observer,inject} from "mobx-react";
 import * as d3 from "d3";
 
 /*
- * bands
+ * Bands for the visualization of the current time scale in the global timeline
  * TODO: make more react-like (no reason to use d3, create <rects>)
  */
 const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React.Component {
