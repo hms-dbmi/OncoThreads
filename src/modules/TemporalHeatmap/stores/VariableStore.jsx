@@ -319,7 +319,7 @@ class VariableStore {
         if (this.referencedVariables[variableId].type === "event") {
             return true;
         }
-        else if (this.referencedVariables[variableId].type === "derived") {
+        else if (this.referencedVariables[variableId].derived) {
             return this.referencedVariables[variableId].originalIds.map(d => this.isEventDerived(d)).includes(true);
         }
         return false;
@@ -335,7 +335,7 @@ class VariableStore {
         if (this.referencedVariables[id].type === variableType) {
             return true;
         }
-        else if (this.referencedVariables[id].type === "derived") {
+        else if (this.referencedVariables[id].derived) {
             return this.referencedVariables[id].originalIds.map(d => this.recursiveSearch(d, variableType)).includes(true);
         }
         else {

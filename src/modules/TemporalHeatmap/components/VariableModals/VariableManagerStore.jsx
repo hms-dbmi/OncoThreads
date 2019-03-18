@@ -410,25 +410,6 @@ class VariableManagerStore {
             return {isSelected: d.isSelected, index: i}
         }).filter(d => d.isSelected).map(d => d.index);
     }
-
-
-    /**
-     * checks is a variable is derived from a variable with a certain type
-     * @param {string} id
-     * @param {string} variableType
-     * @returns {boolean}
-     */
-    recursiveSearch(id, variableType) {
-        if (this.referencedVariables[id].type === variableType) {
-            return true;
-        }
-        else if (this.referencedVariables[id].type === "derived") {
-            return this.referencedVariables[id].originalIds.map(d => this.recursiveSearch(d, variableType)).includes(true);
-        }
-        else {
-            return false;
-        }
-    }
 }
 
 export default VariableManagerStore;

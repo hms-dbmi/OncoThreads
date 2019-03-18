@@ -296,7 +296,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
         }
         this.props.variableManagerStore.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper, uuidv4(), "combined"), this.state.keep);
         if (!this.state.keep) {
-            this.props.currentVariables.forEach(d => {
+            this.props.variables.forEach(d => {
                 this.props.variableManagerStore.removeVariable(d.id);
             })
         }

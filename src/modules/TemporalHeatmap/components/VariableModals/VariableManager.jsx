@@ -34,7 +34,10 @@ const VariableManager = inject("rootStore", "undoRedoStore")(observer(class Vari
             this.timepointVariableManager.primaryVariables);
         this.props.rootStore.dataStore.variableStores.between.replaceAll(this.eventVariableManager.referencedVariables, this.eventVariableManager.currentVariables.map(d => d.id),
             this.eventVariableManager.primaryVariables);
-        this.props.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.rootStore.dataStore.variableStores.sample.currentVariables.map(d => this.props.rootStore.dataStore.variableStores.sample.getById(d).name) + "\n" + this.props.rootStore.dataStore.variableStores.between.currentVariables.map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).name), true);
+        this.props.undoRedoStore.saveVariableHistory("VARIABLE MANAGER", this.props.rootStore.dataStore.variableStores.sample.currentVariables
+                .map(d => this.props.rootStore.dataStore.variableStores.sample.getById(d).name) + "\n"
+            + this.props.rootStore.dataStore.variableStores.between.currentVariables
+                .map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).name), true);
         this.props.closeVariableManager();
     }
 

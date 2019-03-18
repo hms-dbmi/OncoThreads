@@ -38,12 +38,12 @@ const BinaryCombine = observer(class BinaryCombine extends React.Component {
             else {
                 result = [<ControlLabel key={"label"}>Result</ControlLabel>
                     , <CategoricalTable key={"table"}
-                                        currentData={this.props.currentVarCategories}
+                                        currentCategories={this.props.currentVarCategories}
                                         mapper={this.props.mapper}
                                         ordinal={this.props.isOrdinal}
                                         colorScale={d3.scaleOrdinal().range(this.props.variableRange).domain(this.props.variableDomain)}
                                         setColorScale={this.setColorScale}
-                                        setCurrentData={this.props.setCurrentVarCategories}
+                                        setCurrentCategories={this.props.setCurrentVarCategories}
                                         setOrdinal={this.props.setOrdinal}
                     />]
             }
