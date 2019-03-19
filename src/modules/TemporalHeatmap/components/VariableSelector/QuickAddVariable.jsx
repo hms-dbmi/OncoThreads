@@ -69,7 +69,9 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
         else {
             this.state.selectedValues.forEach(d => {
-                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "computed"))
+                let variable=new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "computed");
+                console.log(variable);
+                this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(variable);
             });
             this.props.undoRedoStore.saveVariableHistory("ADD", this.state.selectedValues.map(d => d.label), true);
         }
@@ -148,7 +150,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
      * handles adding a variable
      */
     handleAdd() {
-        if (this.props.rootStore.eventCategories.includes(this.state.category)) {
+        if (this.state.category!=="clinical") {
             this.addEventVariable();
         }
         else {
@@ -205,7 +207,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
      * @returns {Object[]}
      */
     createOptions() {
-        if (this.props.rootStore.eventCategories.includes(this.state.category)) {
+        if (this.state.category !== "clinical") {
             return this.createEventOptions();
         }
         else {
@@ -235,7 +237,6 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        console.log(this.state.profile);
         this.props.rootStore.molProfileMapping.getProfileData(this.state.profile,
             geneList, "Binary", newVariables => {
                 this.props.rootStore.dataStore.variableStores.sample.addVariablesToBeDisplayed(newVariables);
@@ -254,7 +255,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
 
     /**
      * handles selecting a category
-     * @param {event} e
+     * @param {Object} e
      */
     handleSelect(e) {
         let profile = '';
@@ -310,7 +311,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
      * @param {Object[]} selectedOptions
      */
     handleOptionSelect(selectedOptions) {
-        if (this.props.rootStore.eventCategories.includes(this.state.category)) {
+        if (this.state.category !== "clinical") {
             this.handleEventOptionSelect(selectedOptions);
         }
         else {

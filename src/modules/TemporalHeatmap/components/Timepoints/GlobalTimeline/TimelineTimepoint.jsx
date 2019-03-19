@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import TimelineRow from "./TimelineRow";
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 
@@ -21,7 +21,7 @@ const TimelineTimepoint = inject("rootStore")(observer(class TimelineTimepoint e
             this.props.rootStore.eventTimelineMap.get(variableId).filter(d => d.time === index).forEach(d => array.push(d));
             return array;
         }
-        else if (current.type === "derived") {
+        else if (current.derived) {
             current.originalIds.forEach(function (f) {
                 _self.getAllEvents(f, index, array);
             });
@@ -44,9 +44,12 @@ const TimelineTimepoint = inject("rootStore")(observer(class TimelineTimepoint e
         if (variable.datatype === "BINARY") {
             filterMapper = variable.mapper;
         }
-        if (variable.derived && variable.modificationType === "binaryCombine" && variable.modification.datatype === "STRING") {
-            filterMapper = DerivedMapperFunctions.createBinaryCombinedMapper(variable.originalIds.map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).mapper),
-                {operator: variable.modification.operator, datatype: "BINARY"}, []);
+        if (variable.derived && variable.modification.type === "binaryCombine" && variable.modification.datatype === "STRING") {
+            filterMapper = DerivedMapperFunctions.getModificationMapper({
+                type: "binaryCombine",
+                operator: variable.modification.operator,
+                datatype: "BINARY"
+            }, variable.originalIds.map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).mapper),);
         }
         return events.filter((d) => filterMapper[d.sampleId]);
     }

@@ -83,13 +83,13 @@ class DerivedVariable {
      */
     getDefaultDomain() {
         if (this.datatype === 'NUMBER') {
-            return [Math.min(...Object.values(this.mapper)), Math.max(...Object.values(this.mapper))];
+            return [Math.min(...Object.values(this.mapper).filter(d=>d!==undefined)), Math.max(...Object.values(this.mapper).filter(d=>d!==undefined))];
         }
         else if (this.datatype === "BINARY") {
             return [true, false];
         }
         else {
-            return [...new Set(Object.values(this.mapper))]
+            return [...new Set(Object.values(this.mapper))].filter(d=>d!==undefined);
         }
     }
 
