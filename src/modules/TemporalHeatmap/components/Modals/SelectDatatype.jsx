@@ -23,9 +23,6 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
             case "UnspecCont":
                 this.props.setDatatype(index, "CONTINUOUS", fileName);
                 break;
-            case "UnspecDisc":
-                this.props.setDatatype(index, "DISCRETE", fileName);
-                break;
             default:
                 this.props.setDatatype(index, "DISCRETE", "COPY_NUMBER_ALTERATION");
                 break;
@@ -45,7 +42,6 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
                              placeholder="select">
                     <option value="UnspecCont">Continuous</option>
                     <option value="CNVDisc">Discrete CNV data</option>
-                    <option value="UnspecDisc">Other discrete</option>
                 </FormControl>
             </FormGroup>
         })

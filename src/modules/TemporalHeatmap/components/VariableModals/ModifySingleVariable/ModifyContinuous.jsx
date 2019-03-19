@@ -40,7 +40,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
     }
 
     /**
-     * sets the initial state depending on the existance of an already derived variable
+     * sets the initial state depending on the existence of an already derived variable
      * @returns {{bins: Object, binNames: Object, bin: boolean, colorRange: string[], isXLog: boolean, name: string}}
      */
     setInitialState() {
@@ -109,7 +109,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
 
     /**
      * changes the transformation of the data, adapts all values
-     * @param {event} event
+     * @param {Object} event
      */
     changeTransformation(event) {
         let isLog;
@@ -124,7 +124,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         let min = d3.min(this.allValues);
         let max = d3.max(this.allValues);
         let med = (max + min) / 2;
-        if (min < 0) {
+        if (min < 0 && max > 0) {
             med = 0;
         }
         this.binningStore.setBins([min, med, max], d3.scaleLinear().domain([min, max]).range([0, this.width]));
@@ -147,29 +147,56 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      * creates a new derived variable if the variable has been modified
      */
     handleApply() {
-        const newId = uuidv4();
-        let modification = {};
-        let datatype = "NUMBER";
-        let range = this.state.colorRange;
-        let domain = [];
         let profileDomain = [];
         const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
         if (this.state.applyToAll) {
             profileDomain = this.props.variableManagerStore.getProfileDomain(this.props.variable.profile);
         }
+        const returnVariable = this.getReturnVariable(profileDomain, oldVariable);
+        // if variable has been modified replace the variable with the new variable
+        if (VariableTable.variableChanged(oldVariable, returnVariable)) {
+            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
+            if (this.state.applyToAll) {
+                if (this.state.isXLog && profileDomain[0] < 0) {
+                    alert("Modification could not be applied to other variables, since variables with negative values cannot be log transformed");
+                }
+                else {
+                    this.props.variableManagerStore.applyToEntireProfile(returnVariable, oldVariable.profile, this.getNameEnding())
+                }
+            }
+        }
+        // if variable has not been modified (except for the colors) only change color range
+        else {
+            if (this.state.applyToAll) {
+                this.props.variableManagerStore.applyRangeToEntireProfile(oldVariable.profile, returnVariable.range);
+            }
+            else {
+                oldVariable.changeRange(returnVariable.range);
+            }
+        }
+        this.props.closeModal();
+    }
+
+    /**
+     * gets modified variable
+     * @param {number[]} profileDomain
+     * @param {(DerivedVariable|OriginalVariable)} oldVariable
+     * @return {DerivedVariable}
+     */
+    getReturnVariable(profileDomain, oldVariable) {
+        const newId = uuidv4();
+        let modification = {};
+        let datatype = "NUMBER";
+        let range = this.state.colorRange;
+        let domain = [];
         //case:  values have been binned
         if (this.state.bin) {
-            modification = this.getBinnedModification();
+            modification = this.getBinnedModification(profileDomain);
             //case: values are converted to binary
             if (!this.binningStore.isBinary) {
                 datatype = "ORDINAL";
                 domain = modification.binning.binNames.map(d => d.name);
-                if (this.state.applyToAll) {
-                    range = ColorScales.getBinnedRange(d3.scaleLinear().domain(profileDomain).range(this.state.colorRange), modification.binning.bins);
-                }
-                else {
-                    range = ColorScales.getBinnedRange(d3.scaleLinear().domain(this.props.variable.domain).range(this.state.colorRange), modification.binning.bins);
-                }
+                range = this.getBinnedRange(modification, profileDomain);
             }
             //case: values are converted to binary
             else {
@@ -185,42 +212,30 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         }
         const mapper = DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]);
         let derivedProfile = uuidv4();
-        const returnVariable = new DerivedVariable(newId, this.state.name, datatype, this.props.variable.description + "_modified", [this.props.variable.id], modification, range, domain, mapper, derivedProfile, this.props.variable.type);
-        let profile = this.props.derivedVariable === null ? this.props.variable.profile : this.props.derivedVariable.profile;
-        // if variable has been modified replace the variable with the new variable
-        if (VariableTable.variableChanged(oldVariable, returnVariable)) {
-            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
-            if (this.state.applyToAll) {
-                if (this.state.isXLog && profileDomain[0] < 0) {
-                    alert("Modification could not be applied to other variables, since variables with negative values cannot be log transformed");
-                }
-                else {
-                    this.props.variableManagerStore.applyToEntireProfile(profile, derivedProfile, datatype, modification, domain, range)
-                }
-            }
-        }
-        // if variable has not been modified (except for the colors) only change color range
-        else {
-            if (this.state.applyToAll) {
-                this.props.variableManagerStore.applyRangeToEntireProfile(profile, range);
-            }
-            else {
-                oldVariable.changeRange(range);
-            }
-        }
-        this.props.closeModal();
+        return new DerivedVariable(newId, this.getName(), datatype, this.props.variable.description + "_modified",
+            [this.props.variable.id], modification, range, domain, mapper, derivedProfile, this.props.variable.type);
     }
 
     /**
      * creates a modification object for binning a variable
      * @return {{type: string, logTransform: function|false, binning: {bins: number[], binNames: Object[]}}}
      */
-    getBinnedModification() {
+    getBinnedModification(profileDomain) {
         let bins = this.binningStore.bins.slice();
         let binNames = this.binningStore.binNames.slice();
         if (this.state.applyToAll) {
-            bins[0] = this.props.variableManagerStore.getMinOfProfile(this.props.variable.profile);
-            bins[bins.length - 1] = this.props.variableManagerStore.getMaxOfProfile(this.props.variable.profile);
+            let min = profileDomain[0];
+            let max = profileDomain[1];
+            if (min < 0 && max > 0) {
+                if (-min > max) {
+                    max = -min;
+                }
+                else {
+                    min = -max
+                }
+            }
+            bins[0] = min;
+            bins[bins.length - 1] = max;
             if (!binNames[0].modified) {
                 binNames[0].name = UtilityFunctions.getScientificNotation(bins[0]) + " to " + UtilityFunctions.getScientificNotation(bins[1]);
             }
@@ -235,6 +250,49 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
                 binNames: binNames
             }
         };
+    }
+
+    /**
+     * gets the range of a binned variable. If the modification is applied to all variables of the profile, gets the range of thr profile
+     * @param {Object} modification
+     * @param {number[]} profileDomain
+     * @return {string[]}
+     */
+    getBinnedRange(modification, profileDomain) {
+        if (this.state.applyToAll) {
+            return ColorScales.getBinnedRange(this.state.colorRange, profileDomain, this.state.isXLog, modification.binning.bins);
+        }
+        else {
+            return ColorScales.getBinnedRange(this.state.colorRange, this.props.variable.domain, this.state.isXLog, modification.binning.bins);
+        }
+    }
+
+    /**
+     * gets the name for the modified variable
+     * @return {string}
+     */
+    getName() {
+        if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
+            return this.state.name + this.getNameEnding();
+        }
+        else {
+            return this.state.name;
+        }
+    }
+
+    /**
+     * gets the fitting name ending for the modified variable
+     * @return {string}
+     */
+    getNameEnding() {
+        let nameEnding = '';
+        if (this.state.bin) {
+            nameEnding = "_BINNED"
+        }
+        else if (this.state.isXLog) {
+            nameEnding = "_LOG"
+        }
+        return nameEnding;
     }
 
 

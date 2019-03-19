@@ -46,17 +46,14 @@ class ColorScales {
     static getContinousColorScale(range, domain) {
         let min = Math.min(...domain);
         let max = Math.max(...domain);
-        if (min < 0) {
-            let lowerLimit, upperLimit;
+        if (min < 0 && max > 0) {
             if (-min > max) {
-                lowerLimit = min;
-                upperLimit = -min;
+                max = -min;
             }
             else {
-                lowerLimit = -max;
-                upperLimit = max;
+                min = -max;
             }
-            return d3.scaleLinear().range(range).domain([lowerLimit, 0, upperLimit]);
+            return d3.scaleLinear().range(range).domain([min, 0, max]);
         }
         else {
             return d3.scaleLinear().range(range).domain([min, max])
@@ -65,16 +62,23 @@ class ColorScales {
 
     /**
      * gets a color scale for binning using the old scale as a basis. Each bin receives the average color of its minimum and maximum value
-     * @param {function} oldScale
+     * @param {string[]} range
+     * @param {number[]} domain
+     * @param {boolean} isLog
      * @param {number[]} binValues
      * @return {string[]}
      */
-    static getBinnedRange(oldScale, binValues) {
-        let range = [];
-        for (let i = 0; i < binValues.length - 1; i++) {
-            range.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
+    static getBinnedRange(range, domain, isLog, binValues) {
+        let oldDomain = domain;
+        if (isLog) {
+            oldDomain = domain.map(d => Math.log10(d));
         }
-        return range;
+        let oldScale = ColorScales.getContinousColorScale(range, oldDomain);
+        let binnedRange = [];
+        for (let i = 0; i < binValues.length - 1; i++) {
+            binnedRange.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
+        }
+        return binnedRange;
     }
 
     /**
@@ -129,5 +133,17 @@ ColorScales.continuousTwoColorRanges = [
     ['rgb(232, 230, 242)', 'rgb(63, 0, 125)'],
     ['rgb(253, 211, 193)', 'rgb(103, 0, 13)'],
 ];
+ColorScales.categoricalColors = [
+    ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'],
+    ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'],
+    ['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec'],
+    ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666']
+];
+ColorScales.ordinalScales = [d3ScaleChromatic.interpolateBlues,
+    d3ScaleChromatic.interpolateGreens,
+    d3ScaleChromatic.interpolateGreys,
+    d3ScaleChromatic.interpolateOranges,
+    d3ScaleChromatic.interpolatePurples,
+    d3ScaleChromatic.interpolateReds];
 
 export default ColorScales;

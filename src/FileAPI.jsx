@@ -44,7 +44,7 @@ class FileAPI {
      * @param {returnDataCallback} callback
      */
     getClinicalSampleData(callback) {
-        this.localFileLoader.loadClinicalFile(true,callback);
+        this.localFileLoader.loadClinicalFile(true, callback);
     }
 
     /**
@@ -87,10 +87,11 @@ class FileAPI {
      * @param {returnDataCallback} callback
      */
     getMolecularValues(profileId, entrezIDs, callback) {
-        callback(entrezIDs.map(d => this.localFileLoader.profileData.get(profileId).get(d.entrezGeneId))[0])
+        let returnArr = [];
+        entrezIDs.forEach(d => returnArr = returnArr.concat(this.localFileLoader.profileData.get(profileId).get(d.entrezGeneId)));
+        callback(returnArr);
     }
 }
 
 FileAPI.verbose = true;
-
 export default FileAPI;

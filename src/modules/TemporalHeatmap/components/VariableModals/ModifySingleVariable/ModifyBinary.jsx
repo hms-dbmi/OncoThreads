@@ -27,7 +27,7 @@ const ModifyBinary = inject("variableManagerStore", "rootStore")(observer(class 
 
     /**
      * handles the name change
-     * @param {event} event
+     * @param {Object} event
      */
     handleNameChange(event) {
         this.setState({name: event.target.value});
@@ -62,7 +62,7 @@ const ModifyBinary = inject("variableManagerStore", "rootStore")(observer(class 
             returnVariable = new DerivedVariable(newId, name, "BINARY", this.props.variable.description, [this.props.variable.id], modification, this.state.binaryColors, [], DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), derivedProfile, this.props.variable.type);
             this.props.variableManagerStore.replaceDisplayedVariable(this.props.variable.id, returnVariable);
             if (this.state.applyToAll) {
-                this.props.variableManagerStore.applyToEntireProfile(profile, derivedProfile, "BINARY", modification, [], this.state.binaryColors)
+                this.props.variableManagerStore.applyToEntireProfile(returnVariable, profile, "_INVERTED")
             }
         }
         else {
