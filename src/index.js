@@ -3,17 +3,22 @@
  */
 import React from "react";
 import ReactDOM from "react-dom";
-import cBioAPI from "./cBioAPI.jsx";
 import studyAPI from "./studyAPI.jsx";
 
 import App from "./modules/TemporalHeatmap/components/App.jsx";
+import RootStore from "./modules/RootStore";
+import {Provider} from "mobx-react";
+import UIStore from "./modules/UIStore";
+import UndoRedoStore from "./modules/UndoRedoStore";
 
 
-const studyapi = new studyAPI();
-const cbioAPI = new cBioAPI();
+const uiStore = new UIStore();
+const rootStore = new RootStore(uiStore);
+const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
+const studyapi=new studyAPI();
 studyapi.getStudies();
-
-ReactDOM.render(<App studyapi={studyapi} cbioAPI={cbioAPI} parsed="false"
-                     firstload="false"/>, document.getElementById("app"));
+ReactDOM.render(<Provider rootStore={rootStore} uiStore={uiStore} undoRedoStore={undoRedoStore}><App
+    studyapi={studyapi} parsed="false"
+    firstload="false"/></Provider>, document.getElementById("app"));
 
 

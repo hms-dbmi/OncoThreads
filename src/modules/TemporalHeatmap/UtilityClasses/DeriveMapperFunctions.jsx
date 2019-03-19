@@ -1,25 +1,35 @@
-class MapperCombine {
+/**
+ * class for creating derived mappers
+ */
+class DerivedMapperFunctions {
+    /**
+     * gets a mapper based on a modification an mappers of original variables
+     * modification types: binaryCombine, modifyCategorical, convertBinary, continuousModification
+     * @param {Object} modification
+     * @param {Object[]} mappers
+     * @returns {Object}
+     */
     static getModificationMapper(modification, mappers) {
         let mapper;
         switch (modification.type) {
             case "binaryCombine":
-                mapper = MapperCombine.createBinaryCombinedMapper(mappers, modification);
+                mapper = DerivedMapperFunctions.createBinaryCombinedMapper(mappers, modification);
                 break;
             case "modifyCategorical":
-                mapper = MapperCombine.createModifyCategoriesMapper(mappers[0], modification.mapping);
+                mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mappers[0], modification.mapping);
                 break;
             case "convertBinary":
-                mapper=MapperCombine.createModifyCategoriesMapper(mappers[0],modification.mapping);
+                mapper=DerivedMapperFunctions.createModifyCategoriesMapper(mappers[0],modification.mapping);
                 break;
-            default:
+            default: // continuous transform
                 let intermedMapper = {};
                 if (modification.logTransform) {
-                    intermedMapper = MapperCombine.createContinuousTransformMapper(mappers[0], modification.logTransform);
+                    intermedMapper = DerivedMapperFunctions.createContinuousTransformMapper(mappers[0], modification.logTransform);
                 } else {
                     intermedMapper = mappers[0];
                 }
                 if (modification.binning) {
-                    mapper = MapperCombine.createBinnedMapper(intermedMapper, modification.binning.bins, modification.binning.binNames);
+                    mapper = DerivedMapperFunctions.createBinnedMapper(intermedMapper, modification.binning.bins, modification.binning.binNames);
                 }
                 else {
                     mapper = intermedMapper;
@@ -28,6 +38,12 @@ class MapperCombine {
         return mapper;
     }
 
+    /**
+     * creates mapper for binning a variable
+     * @param {Object} mapper
+     * @param {number[]} bins
+     * @param {Object[]} binNames
+     */
     static createBinnedMapper(mapper, bins, binNames) {
         let newMapper = {};
         for (let entry in mapper) {
@@ -52,6 +68,11 @@ class MapperCombine {
         return newMapper
     }
 
+    /**
+     * creates mapper for combining binary variables
+     * @param {Object[]} mappers
+     * @param {Object} modification
+     */
     static createBinaryCombinedMapper(mappers, modification) {
         let newMapper = {};
         for (let entry in mappers[0]) {
@@ -104,7 +125,11 @@ class MapperCombine {
         return newMapper;
     }
 
-
+    /**
+     * creates mapper for modifying categories
+     * @param {Object} mapper
+     * @param {Object} categoryMapping
+     */
     static createModifyCategoriesMapper(mapper, categoryMapping) {
         let newMapper = {};
         for (let entry in mapper) {
@@ -113,6 +138,11 @@ class MapperCombine {
         return newMapper;
     }
 
+    /**
+     * creates mapper for transforming a continuous variable (e.g. log transform)
+     * @param {Object} mapper
+     * @param {function} transformFunction
+     */
     static createContinuousTransformMapper(mapper, transformFunction) {
         let newMapper = {};
         for (let entry in mapper) {
@@ -123,4 +153,4 @@ class MapperCombine {
 
 }
 
-export default MapperCombine;
+export default DerivedMapperFunctions;

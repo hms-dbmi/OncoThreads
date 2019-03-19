@@ -4,12 +4,12 @@ import {Button, ButtonGroup, OverlayTrigger, Popover, Table} from 'react-bootstr
 import {SketchPicker} from 'react-color';
 
 /**
- * table for the conversion of a categorical variable to a binary variable
+ * Component for the conversion of a categorical variable to a binary variable
  */
 const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Component {
     /**
      * gets percent occurrences for each category
-     * @param categories
+     * @param {string[]} categories
      * @returns {number}
      */
     getPercentOccurence(categories) {
@@ -23,8 +23,8 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
 
     /**
      * handles change in binary Mapping
-     * @param name
-     * @param value
+     * @param {string} name
+     * @param {string} value
      */
     handleBinaryChange(name, value) {
         let binaryMapping = Object.assign({}, this.props.binaryMapping);
@@ -33,7 +33,7 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
     }
 
 
-    static handleOverlayClick(event) {
+    static handleOverlayClick() {
         document.body.click();
     }
 
@@ -87,7 +87,10 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
         </div>
     }
 
-
+    /**
+     * gets the content of the conversion table
+     * @return {*}
+     */
     getTableContent() {
         return this.props.variableDomain.map(d => {
             return (<tr key={d}>

@@ -1,12 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 import uuidv4 from 'uuid/v4';
-import UtilityFunctions from "../UtilityFunctions";
+import UtilityFunctions from "../UtilityClasses/UtilityFunctions";
 
-/*
-implements the legend on the right side of the main view
+/**
+ * Legend Component
  */
-const Legend = observer(class Legend extends React.Component {
+const Legend = inject("rootStore","uiStore")(observer(class Legend extends React.Component {
     constructor() {
         super();
         this.maxWidth = 0;
@@ -15,16 +15,16 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * gets a single entry of the legend
-     * @param value: text to display
-     * @param opacity: 1 if primary, lower for secondary
-     * @param rectWidth
-     * @param fontSize
-     * @param currX: current x position
-     * @param lineheight
-     * @param rectColor
-     * @param textColor
-     * @param tooltipText
-     * @returns [] legendEntry
+     * @param {string} value - text to display
+     * @param {number} opacity - 1 if primary, lower for secondary
+     * @param {number} rectWidth
+     * @param {number} fontSize
+     * @param {number} currX - current x position
+     * @param {number} lineheight
+     * @param {string} rectColor
+     * @param {string} textColor
+     * @param {string} tooltipText
+     * @returns {g} legendEntry
      */
     getLegendEntry(value, opacity, rectWidth, fontSize, currX, lineheight, rectColor, textColor, tooltipText) {
         return <g key={value} onMouseEnter={(e) => {
@@ -41,21 +41,23 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * computes the width of a text. Returns 30 if the text width would be shorter than 30
-     * @param min
-     * @param text
-     * @param fontSize
+     * @param {number} min
+     * @param {string} text
+     * @param {number} fontSize
      * @returns {number}
      */
     static getTextWidth(min, text, fontSize) {
-        const context = document.createElement("canvas").getContext("2d");
-        context.font = fontSize + "px Arial";
-        const width = context.measureText(text).width;
+        const width = UtilityFunctions.getTextWidth(text, fontSize);
         if (width > min) {
             return width;
         }
         else return min;
     }
 
+    /**
+     * updates maximum legend withd
+     * @param {number} width
+     */
     updateMaxWidth(width) {
         if (width > this.maxWidth) {
             this.maxWidth = width;
@@ -64,11 +66,11 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * gets a legend for a continuous variable
-     * @param opacity
-     * @param fontSize
-     * @param lineheight
-     * @param color
-     * @returns {Array}
+     * @param {number} opacity
+     * @param {number} fontSize
+     * @param {number} lineheight
+     * @param {string} color
+     * @returns {(g|null)}
      */
     getContinuousLegend(opacity, fontSize, lineheight, color) {
         const min = color.domain()[0];
@@ -127,21 +129,21 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * gets a legend for a categorical variable
-     * @param variable
-     * @param row
-     * @param opacity
-     * @param fontSize
-     * @param lineheight
-     * @returns {Array}
+     * @param {(DerivedVariable|OriginalVariable)} variable
+     * @param {Object[]} row
+     * @param {number} opacity
+     * @param {number} fontSize
+     * @param {number} lineheight
+     * @returns {g[]}
      */
     getCategoricalLegend(variable, row, opacity, fontSize, lineheight) {
         const _self = this;
         let currX = this.borderLeft;
         let legendEntries = [];
         variable.domain.forEach((d, i) => {
-            if (variable.datatype==="ORDINAL"||row.includes(d)) {
+            if (variable.datatype === "ORDINAL" || row.includes(d)) {
                 let tooltipText;
-                if (variable.derived && variable.datatype === "ORDINAL" && variable.modification.type === "continuousTransform"&&variable.modification.binning.binNames[i].modified) {
+                if (variable.derived && variable.datatype === "ORDINAL" && variable.modification.type === "continuousTransform" && variable.modification.binning.binNames[i].modified) {
                     tooltipText = d + ": " + UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i]) + " to " + UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i + 1]);
                 }
                 else {
@@ -160,7 +162,7 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * gets the ideal color of the text depending on the background color
-     * @param backgroundColor
+     * @param {string} backgroundColor
      * @returns {string}
      */
     static getTextColor(backgroundColor) {
@@ -176,10 +178,10 @@ const Legend = observer(class Legend extends React.Component {
 
     /**
      * gets a legend for a binary variable
-     * @param opacity
-     * @param fontSize
-     * @param lineheight
-     * @param color
+     * @param {number} opacity
+     * @param {number} fontSize
+     * @param {number} lineheight
+     * @param {string} color
      * @returns {Array}
      */
     getBinaryLegend(opacity, fontSize, lineheight, color) {
@@ -191,31 +193,36 @@ const Legend = observer(class Legend extends React.Component {
         return (legendEntries);
     }
 
+    /**
+     * creates a grey rectangle in order to highlight a row
+     * @param {number} height
+     * @returns {*}
+     */
     getHighlightRect(height) {
         return <rect height={height} width={this.maxWidth} fill="lightgray"/>
     }
 
     /**
      * gets the legend
-     * @param data
-     * @param primary
-     * @param fontSize
-     * @param currentVariables
-     * @returns {Array}
+     * @param {Object[]} data
+     * @param {string} primary
+     * @param {number} fontSize
+     * @param {(DerivedVariable|OriginalVariable)[]} currentVariables
+     * @returns {g[]}
      */
     getBlockLegend(data, primary, fontSize, currentVariables) {
         const _self = this;
         let legend = [];
         let currPos = 0;
         currentVariables.forEach(function (d, i) {
-            if (!data[i].isUndef || _self.props.store.showUndefined || primary === d.id) {
+            if (!data[i].isUndef || _self.props.uiStore.showUndefined || primary === d.id) {
                 let lineheight;
                 let opacity = 1;
                 if (primary === d.id) {
-                    lineheight = _self.props.visMap.primaryHeight;
+                    lineheight = _self.props.rootStore.visStore.primaryHeight;
                 }
                 else {
-                    lineheight = _self.props.visMap.secondaryHeight;
+                    lineheight = _self.props.rootStore.visStore.secondaryHeight;
                     opacity = 0.5
                 }
                 let color = d.colorScale;
@@ -233,9 +240,9 @@ const Legend = observer(class Legend extends React.Component {
                     legendEntries = _self.getContinuousLegend(opacity, fontSize, lineheight, color);
                 }
                 const transform = "translate(0," + currPos + ")";
-                currPos += lineheight + _self.props.visMap.gap;
+                currPos += lineheight + _self.props.rootStore.visStore.gap;
                 let highlightRect = null;
-                if (d.variable === _self.props.highlightedVariable) {
+                if (d.id === _self.props.highlightedVariable) {
                     highlightRect = _self.getHighlightRect(lineheight)
                 }
                 legend.push(<g key={d.id} transform={transform}>{highlightRect}{legendEntries}</g>)
@@ -244,25 +251,31 @@ const Legend = observer(class Legend extends React.Component {
         return legend
     }
 
+    /**
+     * gets global legend
+     * @param {number} fontSize
+     * @param {(DerivedVariable|OriginalVariable)} primaryVariable
+     * @returns {g[]}
+     */
     getGlobalLegend(fontSize, primaryVariable) {
         let legend;
         const _self = this;
         if (primaryVariable.datatype === "STRING" || primaryVariable.datatype === "ORDINAL") {
             let allValues = [];
-            this.props.store.timepoints.forEach(function (d) {
+            this.props.rootStore.dataStore.timepoints.forEach(function (d) {
                 d.heatmap.forEach(function (f) {
-                    if (f.variable === _self.props.store.globalPrimary) {
+                    if (f.variable === _self.props.rootStore.dataStore.globalPrimary) {
                         allValues = allValues.concat(f.data.map(element => element.value));
                     }
                 })
             });
-            legend = this.getCategoricalLegend(primaryVariable, allValues, 1, fontSize, this.props.visMap.primaryHeight);
+            legend = this.getCategoricalLegend(primaryVariable, allValues, 1, fontSize, this.props.rootStore.visStore.primaryHeight);
         }
         else if (primaryVariable.datatype === "BINARY") {
-            legend = this.getBinaryLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
+            legend = this.getBinaryLegend(1, fontSize, this.props.rootStore.visStore.primaryHeight, primaryVariable.colorScale);
         }
         else {
-            legend = this.getContinuousLegend(1, fontSize, this.props.visMap.primaryHeight, primaryVariable.colorScale);
+            legend = this.getContinuousLegend(1, fontSize, this.props.rootStore.visStore.primaryHeight, primaryVariable.colorScale);
         }
         return legend;
     }
@@ -273,13 +286,11 @@ const Legend = observer(class Legend extends React.Component {
         const _self = this;
         let legends = [];
 
-        let transform = "";
-        if (!this.props.store.globalTime) {
-            transform = "translate(0," + 20 + ")";
-            this.props.store.timepoints.forEach(function (d, i) {
-                let transform = "translate(0," + _self.props.visMap.timepointPositions.timepoint[i] + ")";
+        if (!this.props.uiStore.globalTime) {
+            this.props.rootStore.dataStore.timepoints.forEach(function (d, i) {
+                let transform = "translate(0," + _self.props.rootStore.visStore.timepointPositions.timepoint[i] + ")";
 
-                const lg = _self.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.store.variableStores[d.type].fullCurrentVariables);
+                const lg = _self.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight, _self.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables);
 
                 legends.push(<g key={i + d}
                                 transform={transform}
@@ -290,19 +301,16 @@ const Legend = observer(class Legend extends React.Component {
             });
         }
         else {
-            //let primaryVariable = this.props.store.variableStore["sample"].currentVariables.filter(variable => variable.id === _self.props.store.rootStore.globalPrimary)[0];
-            let primaryVariable = this.props.store.variableStores.sample.fullCurrentVariables.filter(variable => variable.id === _self.props.store.globalPrimary)[0];
+            let primaryVariable = this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.filter(variable => variable.id === _self.props.rootStore.dataStore.globalPrimary)[0];
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }
         return (
             <div className="scrollableX">
-                <svg width={this.maxWidth} height={this.props.visMap.svgHeight}>
-                    <g transform={transform}>
-                        {legends}
-                    </g>
+                <svg width={this.maxWidth} height={this.props.rootStore.visStore.svgHeight}>
+                    {legends}
                 </svg>
             </div>
         )
     }
-});
+}));
 export default Legend;

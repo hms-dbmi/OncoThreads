@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import {Button, Col, Grid, Row, Tab, Tabs} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
@@ -9,106 +9,106 @@ import RowOperators from "./RowOperators/RowOperators"
 import GlobalRowOperators from "./RowOperators/GlobalRowOperators"
 
 import Legend from "./Legend"
-import Plot from "./Plot";
 import GlobalTimeAxis from "./PlotLabeling/GlobalTimeAxis";
 import GlobalBands from "./PlotLabeling/GlobalBands";
 
 
 import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
+import GlobalTimeline from "./GlobalTimeline";
+import BlockView from "./BlockView";
 
-/*
-Main View
-Creates the Row operators, the Plot and the Legend
-Sets the basic parameters, e.g. the dimensions of the rectangles or the height of the transitions ("transition space")
+/**
+ * Component containing the main visualization
  */
-const MainView = observer(class MainView extends React.Component {
+const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class MainView extends React.Component {
     constructor(props) {
         super(props);
         this.handleTimeClick = this.handleTimeClick.bind(this);
-        this.handleGlobalTimeClick = this.handleGlobalTimeClick.bind(this);
+        this.handleSwitchView = this.handleSwitchView.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.state = {
-            highlightedVariable: '',
+            highlightedVariable: '', // variableId of currently highlighted variable
         }
     }
 
-
+    /**
+     * sets a variable to be highlighted
+     * @param {string} newHighlighted
+     */
     setHighlightedVariable(newHighlighted) {
         this.setState({highlightedVariable: newHighlighted});
     }
 
+    /**
+     * removes the highlighted variable
+     */
     removeHighlightedVariable() {
         this.setState({highlightedVariable: ''});
     }
 
+    /**
+     * handle visualizing real time
+     */
     handleTimeClick() {
-        this.props.store.applyPatientOrderToAll(0);
-        this.props.store.toggleRealtime();
+        this.props.rootStore.dataStore.applyPatientOrderToAll(0);
+        this.props.uiStore.setRealTime(!this.props.uiStore.realTime);
+        this.props.undoRedoStore.saveRealTimeHistory(this.props.uiStore.realTime);
     }
 
-    handleGlobalTimeClick(key) {
-        if (key !== this.props.globalTime) {
-            this.props.store.setGlobalTime(key);
-            this.props.store.rootStore.undoRedoStore.saveSwitchHistory(this.props.globalTime);
+    /**
+     * handles switching to global timeline and back
+     * @param {boolean} key - global timeline (true) or block view (false)
+     */
+    handleSwitchView(key) {
+        if (key !== this.props.uiStore.globalTime) {
+            this.props.uiStore.setGlobalTime(key);
+            this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.globalTime);
         }
     }
 
-
     /**
-     * set visual parameters
-     * @param rectWidth
+     * Gets block view
+     * @return {div}
      */
-    setVisualParameters(rectWidth) {
-        this.props.visMap.setSampleRectWidth(rectWidth);
-    }
-
-
     getBlockView() {
         return (
             <div>
                 <div className="view" id="block-view">
                     <Row>
                         <Button bsSize="xsmall" onClick={this.handleTimeClick}
-                                disabled={this.props.store.globalTime || this.props.store.variableStores.between.currentVariables.length > 0}
+                                disabled={this.props.uiStore.globalTime || this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0}
                                 key={"actualTimeline"}>
                             <FontAwesome
-                                name="clock"/> {(this.props.store.realTime) ? "Hide relative time" : "Show relative time"}
+                                name="clock"/> {(this.props.uiStore.realTime) ? "Hide relative time" : "Show relative time"}
                         </Button>
                     </Row>
                     <Row>
                         <Col lg={1} md={1} xs={1} style={{padding: 0}}>
-                            <TimepointLabels store={this.props.store}
-                                             {...this.props.tooltipFunctions}
-                                             visMap={this.props.visMap}/>
+                            <Provider dataStore={this.props.rootStore.dataStore}
+                                      visStore={this.props.rootStore.visStore}>
+                                <TimepointLabels{...this.props.tooltipFunctions}/>
+                            </Provider>
                         </Col>
-                        <Col lg={2} xs={2} md={2} style={{padding: 0}}>
+                        <Col lg={2} xs={2} md={2} style={{padding: 0, marginTop: 20}}>
                             <RowOperators highlightedVariable={this.state.highlightedVariable}
                                           setHighlightedVariable={this.setHighlightedVariable}
                                           removeHighlightedVariable={this.removeHighlightedVariable}
-                                          visMap={this.props.visMap}
-                                          store={this.props.store}
                                           tooltipFunctions={this.props.tooltipFunctions}
                                           showContextMenu={this.props.showContextMenu}
                                           openBinningModal={this.props.openBinningModal}/>
 
                         </Col>
-                        <Col lg={8} xs={7} md={7} style={{padding: 0}}>
-                            <Plot showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                  visMap={this.props.visMap}
-                                  store={this.props.store}
-                                  transitionStore={this.props.transitionStore}
-                                  tooltipFunctions={this.props.tooltipFunctions}/>
+                        <Col lg={8} xs={7} md={7} style={{padding: 0, marginTop: 20}}>
+                            <BlockView showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                       tooltipFunctions={this.props.tooltipFunctions}/>
                         </Col>
-                        <Col lg={1} xs={2} md={2} style={{padding: 0}}>
+                        <Col lg={1} xs={2} md={2} style={{padding: 0, marginTop: 20}}>
                             <Legend highlightedVariable={this.state.highlightedVariable}
                                     setHighlightedVariable={this.setHighlightedVariable}
                                     removeHighlightedVariable={this.removeHighlightedVariable}
-                                    timepoints={this.props.store.timepoints}
-                                    {...this.props.tooltipFunctions}
-                                    visMap={this.props.visMap}
-                                    store={this.props.store}/>
+                                    {...this.props.tooltipFunctions}/>
                         </Col>
                     </Row>
                 </div>
@@ -120,39 +120,34 @@ const MainView = observer(class MainView extends React.Component {
         );
     }
 
+    /**
+     * gets global timeline view
+     * @return {div}
+     */
     getGlobalView() {
-        let maxTime = this.props.store.rootStore.maxTimeInDays;
-        const globalPrimaryName = this.props.store.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.store.globalPrimary)[0].name;
-        //const axisHorizontalZoom = (300 - this.props.horizontalZoom) / (this.props.store.numberOfPatients < 300 ? this.props.store.numberOfPatients : 300);
+        const globalPrimaryName = this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
         return (
             <div>
                 <div className="view" id="timeline-view">
                     <Row>
                         <Col xs={2} md={2} style={{padding: 0}}>
-                            <TimeAssign store={this.props.store}/>
-                            <GlobalRowOperators store={this.props.store}
-                                                visMap={this.props.visMap}
-                                                tooltipFunctions={this.props.tooltipFunctions}/>
+                            <TimeAssign/>
+                            <Provider dataStore={this.props.rootStore.dataStore}
+                                      visStore={this.props.rootStore.visStore}>
+                                <GlobalRowOperators tooltipFunctions={this.props.tooltipFunctions}/>
+                            </Provider>
 
                             <h5>{"Legend of " + globalPrimaryName}</h5>
-                            <Legend store={this.props.store} visMap={this.props.visMap} {...this.props.tooltipFunctions}/>
+                            <Legend  {...this.props.tooltipFunctions}/>
                         </Col>
                         <Col xs={1} md={1} style={{padding: 0, width: 55}}>
-                            <GlobalTimeAxis store={this.props.store}
-                                            visMap={this.props.visMap}
-                                            timeValue={this.props.store.rootStore.timeValue}
-                                            width={55}
-                                            maxTimeInDays={maxTime}/>
+                            <GlobalTimeAxis timeValue={this.props.rootStore.timeValue}
+                                            width={55}/>
                         </Col>
                         <Col xs={9} md={9} style={{padding: 0, overflow: "hidden"}}>
-
-                            <GlobalBands store={this.props.store}
-                                         visMap={this.props.visMap}//timeVar={this.props.store.rootStore.timeVar}
-                                         maxTimeInDays={maxTime}/>
-                            <Plot visMap={this.props.visMap}
-                                  store={this.props.store}
-                                  transitionStore={this.props.transitionStore}
-                                  tooltipFunctions={this.props.tooltipFunctions}/>
+                            <GlobalBands timeValue={this.props.rootStore.timeValue}/>
+                            <GlobalTimeline showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                            tooltipFunctions={this.props.tooltipFunctions}/>
                         </Col>
                     </Row>
                 </div>
@@ -166,21 +161,20 @@ const MainView = observer(class MainView extends React.Component {
 
 
     render() {
-        //this.props.visMap.setVisParameters(this.state.plotWidth, 300 - this.props.horizontalZoom, this.props.store.maxPartitions);
-
+        //create  views
         let blockView = null;
         let timelineView = null;
-        if (!this.props.store.globalTime) {
+        if (!this.props.uiStore.globalTime) {
             blockView = this.getBlockView();
         }
         else {
             timelineView = this.getGlobalView();
         }
         return (
-            <Grid fluid={true} onClick={this.closeContextMenu}>
+            <Grid fluid={true}>
                 <Tabs mountOnEnter unmountOnExit animation={false}
-                      activeKey={this.props.store.globalTime}
-                      onSelect={this.handleGlobalTimeClick} id={"viewTab"}>
+                      activeKey={this.props.uiStore.globalTime}
+                      onSelect={this.handleSwitchView} id={"viewTab"}>
                     <Tab eventKey={false} style={{paddingTop: 10}} title="Block view">
                         {blockView}
                     </Tab>
@@ -192,11 +186,5 @@ const MainView = observer(class MainView extends React.Component {
         )
 
     }
-});
-
-MainView.defaultProps = {
-    width: 700,
-    height: 700
-};
-
+}));
 export default MainView;

@@ -2,58 +2,44 @@
  * Created by theresa on 30.01.18.
  */
 import React from "react";
-import {observer} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import {Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import MainView from "./MainView"
 import GroupBinningModal from "./VariableModals/ModifySingleVariable/Binner/GroupBinningModal"
-import StudySummary from "./StudySummary";
 import Tooltip from "./Tooltip";
-import ContextMenus from "./RowOperators/ContextMenus";
 import QuickAddVariable from "./VariableSelector/QuickAddVariable"
 
 import ContextMenuHeatmapRow from "./ContextMenuHeatmapRow";
 
-import AddVarModal from "./VariableModals/AddVarModal";
+import VariableManager from "./VariableModals/VariableManager";
+import ContextMenu from "./RowOperators/ContextMenu";
 
-/*
-Creates all components except for the top navbar
+/**
+ * Component containing the view and controls
  */
-const Content = observer(class Content extends React.Component {
-    constructor(props) {
+const Content = inject("rootStore", "undoRedoStore")(observer(class Content extends React.Component {
+    constructor() {
         super();
         this.state = {
-            modalIsOpen: false,
+            binningModalIsOpen: false,
             callback: null,
             clickedVariable: "",
             clickedTimepoint: -1,
-            display: false,
-            modify: false,
-            type: "",
             x: 0,
             y: 0,
-            sidebarSize: 0,
-            displaySidebar: "none",
-            displayShowButton: "",
-            tooltipContent: "",
             showTooltip: "hidden",
             contextType: "",
-            contextX: 0,
-            contextY: 0,
-            showContextMenu: false,
             showContextMenuHeatmapRow: false,
-            horizontalZoom: 300 - (props.rootStore.dataStore.numberOfPatients < 300 ? props.rootStore.dataStore.numberOfPatients : 300),
-
-            addModalIsOpen: false
-            //varList:[]
+            variableManagerOpen: false
         }
         ;
-        this.openModal = this.openModal.bind(this);
-        this.openAddModal = this.openAddModal.bind(this);
+        this.openBinningModal = this.openBinningModal.bind(this);
+        this.openVariableManager = this.openVariableManager.bind(this);
 
 
-        this.closeModal = this.closeModal.bind(this);
-        this.closeAddModal = this.closeAddModal.bind(this);
+        this.closeBinningModal = this.closeBinningModal.bind(this);
+        this.closeVariableManager = this.closeVariableManager.bind(this);
 
         this.showTooltip = this.showTooltip.bind(this);
         this.hideTooltip = this.hideTooltip.bind(this);
@@ -70,35 +56,47 @@ const Content = observer(class Content extends React.Component {
     }
 
     /**
-     * Opens the modal window and sets the state parameters which are passed to the ContinousBinner
-     * @param variable: future primary variable
-     * @param type: type of timepoint (sample/between)
-     * @param callback: Function which should be executed after the binning was applied: either group or promote
+     * Opens the modal window and sets the state parameters which are passed to GroupBinningModal
+     * @param {string} variableId - future primary variable
+     * @param {returnDataCallback} callback -  returns the newly derived variable
      */
-    openModal(variable, type, callback) {
+    openBinningModal(variableId, callback) {
         this.setState({
-            modalIsOpen: true,
-            clickedVariable: variable,
-            type: type,
+            binningModalIsOpen: true,
+            clickedVariable: variableId,
             callback: callback,
         });
     }
 
-
-    closeModal() {
-        this.setState({modalIsOpen: false, variable: "", timepointIndex: -1, callback: null});
+    /**
+     * closes binning modal
+     */
+    closeBinningModal() {
+        this.setState({binningModalIsOpen: false, variable: "", timepointIndex: -1, callback: null});
     }
 
-    openAddModal() {
+    /**
+     * opens variable manager
+     */
+    openVariableManager() {
         this.setState({
-            addModalIsOpen: true,
+            variableManagerOpen: true,
         });
     }
 
-    closeAddModal() {
-        this.setState({addModalIsOpen: false});
+    /**
+     * closes variable manager
+     */
+    closeVariableManager() {
+        this.setState({variableManagerOpen: false});
     }
 
+    /**
+     * shows tooltip
+     * @param {event}e
+     * @param {string} line1
+     * @param {string} line2
+     */
     showTooltip(e, line1, line2) {
         this.setState({
             showTooltip: "visible",
@@ -109,36 +107,53 @@ const Content = observer(class Content extends React.Component {
         })
     }
 
+    /**
+     * hides tooltip
+     */
     hideTooltip() {
         this.setState({
             showTooltip: "hidden",
         })
     }
 
-    showContextMenu(e, timepointIndex, variable, type) {
+    /**
+     * shows contextMenu
+     * @param {event} e
+     * @param {number} timepointIndex
+     * @param {string} variableId
+     * @param {string} type
+     */
+    showContextMenu(e, timepointIndex, variableId, type) {
         this.setState({
             x: e.pageX,
             y: e.pageY,
             clickedTimepoint: timepointIndex,
-            clickedVariable: variable,
+            clickedVariable: variableId,
             contextType: type,
         });
         e.preventDefault();
     }
 
-
-    showContextMenuHeatmapRow(e, patient, timepoint, xposition) {
+    /**
+     * show context menu for moving patients up/down
+     * @param {event} e
+     * @param {string} patient
+     * @param {number} timepointIndex
+     */
+    showContextMenuHeatmapRow(e, patient, timepointIndex) {
         this.setState({
-            contextX: e.pageX,
-            contextY: e.pageY,
+            x: e.pageX,
+            y: e.pageY,
             showContextMenuHeatmapRow: true,
             patient: patient,
-            timepoint: timepoint,
-            xposition: xposition
+            clickedTimepoint: timepointIndex,
         });
         e.preventDefault();
     }
 
+    /**
+     * hide context menu for moving patients up/down
+     */
     hideContextMenu() {
         this.setState({
             contextType: "",
@@ -146,28 +161,62 @@ const Content = observer(class Content extends React.Component {
         })
     }
 
-
+    /**
+     * resets everything
+     */
     handleResetAll() {
         this.props.rootStore.reset();
     }
 
+    /**
+     * resets timpoint structure
+     */
     handleResetAlignment() {
         this.props.rootStore.resetTimepointStructure(true);
     }
 
+    /**
+     * resets current selection
+     */
     handleResetSelection() {
-        this.props.rootStore.dataStore.selectedPatients = []
+        this.props.rootStore.dataStore.resetSelection();
     }
 
-
+    /**
+     * gets binning modal
+     * @returns {(GroupBinningModal|null)}
+     */
     getBinner() {
-        if (this.state.modalIsOpen) {
-            return (<GroupBinningModal modalIsOpen={this.state.modalIsOpen}
-                                       variable={this.state.clickedVariable}
-                                       type={this.state.type}
-                                       callback={this.state.callback}
-                                       closeModal={this.closeModal} store={this.props.rootStore.dataStore}
-                                       visMap={this.props.rootStore.visStore}
+        if (this.state.binningModalIsOpen) {
+            return (
+                <GroupBinningModal
+                    modalIsOpen={this.state.binningModalIsOpen}
+                    variable={this.state.clickedVariable}
+                    callback={this.state.callback}
+                    closeModal={this.closeBinningModal}/>);
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * updates the currently selected variable
+     * @param {string} variableId
+     */
+    updateVariable(variableId) {
+        this.setState({clickedVariable: variableId});
+    }
+
+    /**
+     * gets modal for variable manager
+     * @returns {(VariableManager|null)}
+     */
+    getVariableManager() {
+        if (this.state.variableManagerOpen) {
+            return (<VariableManager
+                variableManagerOpen={this.state.variableManagerOpen}
+                closeVariableManager={this.closeVariableManager}
             />);
         }
         else {
@@ -176,37 +225,17 @@ const Content = observer(class Content extends React.Component {
     }
 
 
-    updateVariable(variable) {
-        //this.state.clickedVariable=variable;
-
-        this.setState({clickedVariable: variable});
-    }
-
-    getVarListModal() {
-        if (this.state.addModalIsOpen) {
-            return (<AddVarModal addModalIsOpen={this.state.addModalIsOpen}
-                                 closeAddModal={this.closeAddModal}
-                                 openBinningModal={this.openModal}
-                                 clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
-                                 clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
-                                 store={this.props.rootStore.dataStore}
-            />);
-        }
-        else {
-            return null;
-        }
-    }
-
-
+    /**
+     * gets context Menu to move patient(s) up or down
+     * @returns {(ContextMenuHeatmapRow|null)}
+     */
     getContextMenuHeatmapRow() {
         if (this.state.showContextMenuHeatmapRow) {
             return (<ContextMenuHeatmapRow showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
-                                           contextX={this.state.contextX}
-                                           contextY={this.state.contextY}
+                                           contextX={this.state.x}
+                                           contextY={this.state.y}
                                            patient={this.state.patient}
-                                           timepoint={this.state.timepoint}
-                                           xposition={this.state.xposition}
-                                           {...this.props}
+                                           timepoint={this.state.clickedTimepoint}
 
             />);
         } else {
@@ -216,7 +245,7 @@ const Content = observer(class Content extends React.Component {
 
 
     render() {
-          const tooltipFunctions = {
+        const tooltipFunctions = {
             showTooltip: this.showTooltip,
             hideTooltip: this.hideTooltip,
         };
@@ -228,24 +257,13 @@ const Content = observer(class Content extends React.Component {
                             <h5>Add Variables</h5>
                         </Col>
                         <Col md={7} xs={7}>
-                            <QuickAddVariable
-                                clinicalSampleCategories={this.props.rootStore.clinicalSampleCategories}
-                                clinicalPatientCategories={this.props.rootStore.clinicalPatientCategories}
-                                currentVariables={{
-                                        sample: this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables,
-                                        between: this.props.rootStore.dataStore.variableStores.between.fullCurrentVariables
-                                    }}
-                                availableProfiles={this.props.rootStore.availableProfiles}
-                                store={this.props.rootStore.dataStore}
-                                eventCategories={this.props.rootStore.eventCategories}
-                                eventAttributes={this.props.rootStore.eventAttributes}
-                            />
+                            <QuickAddVariable/>
                         </Col>
                         <Col sm={3} xs={3}>
                             <ButtonToolbar>
                                 <ButtonGroup>
                                     <Button color="secondary"
-                                            onClick={this.openAddModal}>Variable manager
+                                            onClick={this.openVariableManager}>Variable manager
                                     </Button>
                                 </ButtonGroup>
                                 <ButtonGroup>
@@ -255,22 +273,25 @@ const Content = observer(class Content extends React.Component {
                                         id={"zoom"}
                                     >
                                         <div style={{padding: "5px"}}>
-                                            Horizontal: <input type="range" value={this.props.rootStore.visStore.horizontalZoom}
-                                                               onChange={(e)=>this.props.rootStore.visStore.setHorizontalZoom(parseInt(e.target.value,10))} step={1}
+                                            Horizontal: <input type="range"
+                                                               value={this.props.rootStore.visStore.horizontalZoom}
+                                                               onChange={(e) => this.props.rootStore.visStore.setHorizontalZoom(parseInt(e.target.value, 10))}
+                                                               step={1}
                                                                min={0} max={290}/>
-                                            <Button onClick={this.props.rootStore.visStore.fitToScreenWidth}>Set to screen width</Button>
+                                            <Button onClick={this.props.rootStore.visStore.fitToScreenWidth}>Set to
+                                                screen width</Button>
                                             <br/>
                                             Vertical: <input type="range"
                                                              value={this.props.rootStore.visStore.transitionSpace}
-                                                             onChange={(e)=>this.props.rootStore.visStore.setTransitionSpace(parseInt(e.target.value,10))} step={1}
+                                                             onChange={(e) => this.props.rootStore.visStore.setTransitionSpace(parseInt(e.target.value, 10))}
+                                                             step={1}
                                                              min={5} max={700}/>
-                                            <Button onClick={this.props.rootStore.visStore.fitToScreenHeight}>Set to screen height</Button>
+                                            <Button onClick={this.props.rootStore.visStore.fitToScreenHeight}>Set to
+                                                screen height</Button>
                                         </div>
                                     </DropdownButton>
                                 </ButtonGroup>
                                 <ButtonGroup>
-                                    {/*<Button onClick={this.props.store.rootStore.exportSVG}>Export
-                            </Button>*/}
                                     <DropdownButton
                                         title={"Reset"}
                                         key={"ResetButton"}
@@ -282,9 +303,9 @@ const Content = observer(class Content extends React.Component {
                                                   onClick={this.handleResetSelection}>...selection</MenuItem>
                                         <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
                                     </DropdownButton>
-                                    <Button onClick={this.props.rootStore.undoRedoStore.undo}><FontAwesome
+                                    <Button onClick={this.props.undoRedoStore.undo}><FontAwesome
                                         name="undo"/></Button>
-                                    <Button onClick={this.props.rootStore.undoRedoStore.redo}><FontAwesome
+                                    <Button onClick={this.props.undoRedoStore.redo}><FontAwesome
                                         name="redo"/></Button>
 
                                 </ButtonGroup>
@@ -292,54 +313,41 @@ const Content = observer(class Content extends React.Component {
                         </Col>
                     </Row>
                     <Row>
-                        <Col sm={this.state.sidebarSize} md={this.state.sidebarSize}
-                             style={{display: this.state.displaySidebar, paddingTop: 0}}>
-                            <StudySummary studyName={this.props.rootStore.study.name}
-                                          studyDescription={this.props.rootStore.study.description}
-                                          studyCitation={this.props.rootStore.study.citation}
-                                          numPatients={this.props.rootStore.patientOrderPerTimepoint.length}
-                                          minTP={this.props.rootStore.minTP}
-                                          maxTP={this.props.rootStore.maxTP}/>
-                        </Col>
-                        <Col sm={12 - this.state.sidebarSize} md={12 - this.state.sidebarSize}
+                        <Col sm={12} md={12}
                              onMouseEnter={this.hideContextMenu}
                              style={{paddingTop: 0}}>
                             <Row>
                                 <MainView
-                                    horizontalZoom={this.state.horizontalZoom}
-
                                     tooltipFunctions={tooltipFunctions}
-                                    openBinningModal={this.openModal}
+                                    openBinningModal={this.openBinningModal}
                                     showContextMenu={this.showContextMenu}
                                     hideContextMenu={this.hideContextMenu}
                                     showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
-
-                                    store={this.props.rootStore.dataStore}
-                                    transitionStore={this.props.rootStore.transitionStore}
-                                    visMap={this.props.rootStore.visStore}
                                 />
                             </Row>
                         </Col>
                     </Row>
                 </Grid>
                 {this.getBinner()}
-                {this.getVarListModal()}
+                {this.getVariableManager()}
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
                          y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>
-                <ContextMenus key="contextMenu" showContextMenu={this.showContextMenu}
-                              hideContextMenu={this.hideContextMenu} contextX={this.state.x}
-                              contextY={this.state.y} clickedTimepoint={this.state.clickedTimepoint}
-                              clickedVariable={this.state.clickedVariable}
-                              type={this.state.contextType}
-                              store={this.props.rootStore.dataStore}
-                              openBinningModal={this.openModal}/>
-
-
+                {this.state.contextType !== "" ?
+                    <Provider dataStore={this.props.rootStore.dataStore}>
+                        <ContextMenu action={this.state.contextType}
+                                     contextX={this.state.x}
+                                     contextY={this.state.y}
+                                     clickedVariable={this.state.clickedVariable}
+                                     clickedTimepoint={this.state.clickedTimepoint}
+                                     hideContextMenu={this.hideContextMenu}
+                                     openBinningModal={this.openBinningModal}/>
+                    </Provider>
+                    : null}
             </div>
         )
     }
-});
+}));
 
 export default Content;
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {
     Button,
     ControlLabel,
@@ -21,19 +21,23 @@ import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 import CombineModal from "./CombineVariables/CombineModal";
 
-const VariableTable = observer(class VariableTable extends React.Component {
+/**
+ * Component for displaying and modifying current variables in a table
+ */
+const VariableTable = inject("variableManagerStore", "rootStore")(observer(class VariableTable extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            // controlling visibility of modals
             modifyCategoricalIsOpen: false,
             modifyContinuousIsOpen: false,
             modifyBinaryIsOpen: false,
             saveVariableIsOpen: false,
-            currentVariable: '',
-            derivedVariable: '',
-            combineVariables: [],
-            callback: '',
+            currentVariable: '', // non-modified variable selected for modification
+            derivedVariable: '', // modified variable selected for modification
+            combineVariables: [], // variables selected for combination
+            callback: '', // callback for saving a variable
         };
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -43,39 +47,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
 
     /**
-     * opens modal to modify a variable or change an existing modification
-     * @param originalVariable
-     * @param derivedVariable
-     * @param type
-     */
-    modifyVariable(originalVariable, derivedVariable, type) {
-        this.openModifyModal(originalVariable, derivedVariable, type, newVariable => {
-            if (derivedVariable !== null) {
-                this.props.variableManagerStore.replaceDisplayedVariable(derivedVariable.id, newVariable);
-            }
-            else {
-                this.props.variableManagerStore.replaceDisplayedVariable(originalVariable.id, newVariable);
-            }
-        });
-    }
-
-    combineVariables(variables, derivedVariable) {
-        this.openCombineModal(variables, derivedVariable, (newVariable, keep) => {
-            if (derivedVariable !== null) {
-                this.props.variableManagerStore.replaceDisplayedVariable(derivedVariable.id, newVariable);
-            }
-            else {
-                this.props.variableManagerStore.addVariableToBeDisplayed(newVariable);
-                if (!keep) {
-                    variables.forEach(d => this.props.variableManagerStore.removeVariable(d.id));
-                }
-            }
-        })
-    }
-
-
-    /**
-     * closes the categorical modal
+     * closes all modals
      */
     closeModal() {
         this.setState({
@@ -90,31 +62,38 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     /**
      * opens modal to modify variable
-     * @param variable
-     * @param derivedVariable
-     * @param type
-     * @param callback
+     * @param {OriginalVariable} originalVariable
+     * @param {DerivedVariable} derivedVariable
+     * @param {string} datatype
      */
-    openModifyModal(variable, derivedVariable, type, callback) {
+    openModifyModal(originalVariable, derivedVariable, datatype) {
         this.setState({
-            modifyContinuousIsOpen: type === "NUMBER",
-            modifyCategoricalIsOpen: type === "STRING" || type === "ORDINAL",
-            modifyBinaryIsOpen: type === "BINARY",
+            modifyContinuousIsOpen: datatype === "NUMBER",
+            modifyCategoricalIsOpen: datatype === "STRING" || datatype === "ORDINAL",
+            modifyBinaryIsOpen: datatype === "BINARY",
             derivedVariable: derivedVariable,
-            currentVariable: variable,
-            callback: callback
+            currentVariable: originalVariable,
         });
     }
 
-    openCombineModal(variables, derivedVariable, callback) {
+    /**
+     * opens modal to combine variables
+     * @param {OriginalVariable[]} variables
+     * @param {DerivedVariable} derivedVariable
+     */
+    openCombineModal(variables, derivedVariable) {
         this.setState({
             combineVariables: variables,
             derivedVariable: derivedVariable,
             combineVariablesIsOpen: true,
-            callback: callback
         })
     }
 
+    /**
+     * opens modal to save variable
+     * @param {DerivedVariable} variable
+     * @param callback
+     */
     openSaveVariableModal(variable, callback) {
         this.setState({
             currentVariable: variable,
@@ -126,12 +105,11 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     /**
      * handles a cogwheelClick
-     * @param event
-     * @param id
+     * @param {event} event
+     * @param {string} id
      */
     handleCogWheelClick(event, id) {
         let variable = this.props.variableManagerStore.getById(id);
-
         if (variable.originalIds.length === 1) {
             let originalVariable;
             let derivedVariable = null;
@@ -142,28 +120,32 @@ const VariableTable = observer(class VariableTable extends React.Component {
             else {
                 originalVariable = variable;
             }
-            this.modifyVariable(originalVariable, derivedVariable, originalVariable.datatype);
+            this.openModifyModal(originalVariable, derivedVariable, originalVariable.datatype);
         }
         else {
-            this.combineVariables(variable.originalIds.map(d => this.props.variableManagerStore.getById(d)), variable);
+            this.openCombineModal(variable.originalIds.map(d => this.props.variableManagerStore.getById(d)), variable);
         }
     }
 
+    /**
+     * removes a variable
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     */
     removeVariable(variable) {
         if (variable.derived) {
             this.openSaveVariableModal(variable, save => {
                 this.props.variableManagerStore.updateSavedVariables(variable.id, save);
-                this.props.removeVariable(variable.id);
+                this.props.variableManagerStore.removeVariable(variable.id);
             });
         }
         else {
-            this.props.removeVariable(variable.id);
+            this.props.variableManagerStore.removeVariable(variable.id);
         }
     }
 
     /**
      * displays the currently selected variables
-     * @returns {Array}
+     * @returns {Table}
      */
     showCurrentVariables() {
         let elements = [];
@@ -241,28 +223,26 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     /**
      * creates the modal for modification
-     * @returns {*}
+     * @returns {(ModifyBinary|ModifyContinuous|ModifyBinary|SaveVariableDialog|CombineModal)}
      */
     getModal() {
         let modal = null;
         if (this.state.modifyContinuousIsOpen) {
             modal = <ModifyContinuous modalIsOpen={this.state.modifyContinuousIsOpen}
                                       variable={this.state.currentVariable}
-                                      callback={this.state.callback}
                                       derivedVariable={this.state.derivedVariable}
+                                      setColorRange={this.setColorRange}
                                       closeModal={this.closeModal}/>
         }
         else if (this.state.modifyCategoricalIsOpen) {
             modal = <ModifyCategorical modalIsOpen={this.state.modifyCategoricalIsOpen}
                                        variable={this.state.currentVariable}
-                                       callback={this.state.callback}
                                        derivedVariable={this.state.derivedVariable}
                                        closeModal={this.closeModal}/>
         }
         else if (this.state.modifyBinaryIsOpen) {
             modal = <ModifyBinary modalIsOpen={this.state.modifyBinaryIsOpen}
                                   variable={this.state.currentVariable}
-                                  callback={this.state.callback}
                                   derivedVariable={this.state.derivedVariable}
                                   closeModal={this.closeModal}/>
         }
@@ -276,7 +256,6 @@ const VariableTable = observer(class VariableTable extends React.Component {
             modal = <CombineModal modalIsOpen={this.state.combineVariablesIsOpen}
                                   variables={this.state.combineVariables}
                                   derivedVariable={this.state.derivedVariable}
-                                  callback={this.state.callback}
                                   closeModal={this.closeModal}/>
         }
         return (
@@ -287,14 +266,14 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     /**
      * sorts current variables
-     * @param e
+     * @param {Object} e
      */
     handleSort(e) {
         if (e.target.value === "source") {
             this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id));
         }
         else if (e.target.value === "addOrder") {
-            this.props.variableManagerStore.sortByAddOrder(this.props.addOrder);
+            this.props.variableManagerStore.sortByAddOrder();
         }
         else if (e.target.value === "alphabet") {
             this.props.variableManagerStore.sortAlphabetically();
@@ -321,7 +300,7 @@ const VariableTable = observer(class VariableTable extends React.Component {
                 alert("Please select two binary variables");
             }
             else {
-                this.combineVariables(this.props.variableManagerStore.getSelectedVariables(), null);
+                this.openCombineModal(this.props.variableManagerStore.getSelectedVariables(), null);
             }
         }
         else {
@@ -331,8 +310,8 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     /**
      * moves selected variables
-     * @param isUp
-     * @param toExtreme
+     * @param {boolean} isUp
+     * @param {boolean} toExtreme
      */
     moveSelected(isUp, toExtreme) {
         let indices = this.props.variableManagerStore.getSelectedIndices();
@@ -341,12 +320,39 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
     /**
      * moves single variable
-     * @param isUp
-     * @param toExtreme
-     * @param index
+     * @param {boolean} isUp
+     * @param {boolean} toExtreme
+     * @param {number} index
      */
     moveSingle(isUp, toExtreme, index) {
         this.props.variableManagerStore.move(isUp, toExtreme, [index]);
+    }
+
+    /**
+     * check if variable has changed
+     * @param {(OriginalVariable|DerivedVariable)} oldVariable
+     * @param {DerivedVariable} newVariable
+     * @returns {boolean}
+     */
+    static variableChanged(oldVariable, newVariable) {
+        //case: datatype changed?
+        if (oldVariable.datatype !== newVariable.datatype) {
+            return true;
+        }
+        else {
+            //case: domain changed?
+            if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
+                return true
+            }
+            //case: mapper changed?
+            else {
+                for (let sample in oldVariable.mapper) {
+                    if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
+                        return true;
+                    }
+                }
+            }
+        }
     }
 
 
@@ -386,5 +392,5 @@ const VariableTable = observer(class VariableTable extends React.Component {
 
         )
     }
-});
+}));
 export default VariableTable;

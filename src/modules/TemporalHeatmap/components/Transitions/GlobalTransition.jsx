@@ -1,54 +1,68 @@
 import React from 'react';
-import {observer} from 'mobx-react';
-/*
-implements a LineTransition
+import {inject, observer} from 'mobx-react';
+
+/**
+ * Component for creating lines for each patient in the global timeline
  */
-const GlobalTransition = observer(class GlobalTransition extends React.Component {
+const GlobalTransition = inject("dataStore", "visStore")(observer(class GlobalTransition extends React.Component {
+
     /**
      * Draws a line for the Line transition
-     * @param x0: x pos on first timepoint
-     * @param x1: x pos on second timepoint
-     * @param y0: y pos
-     * @param y1: y pos + height
-     * @param key (unique)
-     * @param strokeColor
-     * @returns Line
+     * @param {number} x0 - x pos on first timepoint
+     * @param {number} x1 - x pos on second timepoint
+     * @param {number} y0 - y pos
+     * @param {number} y1 - y pos + height
+     * @param {string} key - (unique)
+     * @param {string} strokeColor
+     * @param {number} strokeWidth
+     * @returns {path}
      */
-
-
-    static drawLine(x0, x1, y0, y1, key, strokeColor) {
+    static drawLine(x0, x1, y0, y1, key, strokeColor, strokeWidth) {
         let path = "M" + x0 + "," + y0
             + "L" + x1 + "," + y1;
-        return (<path key={key} d={path} stroke={strokeColor} fill="none"/>)
+        return (<path key={key} d={path} stroke={strokeColor} strokeWidth={strokeWidth} fill="none"/>)
     }
 
+    /**
+     * draws one line for each patient
+     * @returns {(rect|path)[]}
+     */
     drawLines() {
         let lines = [];
-        const _self = this;
-        let y1 = _self.props.allYPositionsy1.map(y => _self.props.timeScale(y));
-        let y2 = _self.props.allYPositionsy2.map(y => _self.props.timeScale(y));
-        let globalInd = 2;
-        _self.props.from.forEach(function (d, i) {
-            let j = _self.props.to.indexOf(d);
-            if (j !== -1) {
-                let strokeColor = "lightgray";
-                if (_self.props.store.selectedPatients.includes(d)) {
-                    strokeColor = "black"
-                }
-                lines.push(
-                    GlobalTransition.drawLine(_self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                        _self.props.patientScale(d) + _self.props.visMap.sampleRectWidth / 2 - _self.props.visMap.sampleRectWidth / 4,
-                        y1[i] + _self.props.visMap.sampleRectWidth / 2,
-                        y2[j],
-                        d + globalInd + i, strokeColor));
-                globalInd = globalInd + 2;
+        this.props.patients.forEach(d => {
+            let strokeColor = "lightgray";
+            if (this.props.dataStore.selectedPatients.includes(d)) {
+                strokeColor = "black"
             }
+            let finalValueColor = "lightgray";
+            let endHeight = 1;
+            let mouseProperties = [];
+            if (this.props.minMax[d].value !== undefined) {
+                endHeight = 3;
+                mouseProperties = {
+                    onMouseEnter: (e) => this.props.showTooltip(e, this.props.minMax[d].value + ": ", this.props.minMax[d].end + " days"),
+                    onMouseLeave: this.props.hideTooltip
+                };
+                if (this.props.minMax[d].value === "DECEASED") {
+                    finalValueColor = "black"
+                }
+            }
+            lines.push(
+                GlobalTransition.drawLine(this.props.heatmapScale(d) + this.props.visStore.timelineRectSize / 2,
+                    this.props.heatmapScale(d) + this.props.visStore.timelineRectSize / 2,
+                    this.props.visStore.timeScale(this.props.minMax[d].start),
+                    this.props.visStore.timeScale(this.props.minMax[d].end),
+                    d, strokeColor, 1));
+            lines.push(<rect key={d + "endpoint"}
+                             x={this.props.heatmapScale(d)}
+                             y={this.props.visStore.timeScale(this.props.minMax[d].end)}
+                             width={this.props.visStore.timelineRectSize}
+                             height={endHeight}
+                             fill={finalValueColor}
+                             {...mouseProperties}
+            />);
         });
         return lines;
-    }
-
-    static getMax(max, num) {
-        return max > num ? max : num;
     }
 
     render() {
@@ -56,5 +70,5 @@ const GlobalTransition = observer(class GlobalTransition extends React.Component
             this.drawLines()
         )
     }
-});
+}));
 export default GlobalTransition;

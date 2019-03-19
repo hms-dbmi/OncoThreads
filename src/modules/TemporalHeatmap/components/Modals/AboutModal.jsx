@@ -2,7 +2,9 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, Modal} from 'react-bootstrap';
 
-
+/**
+ * Modal showing information about OncoThreads
+ */
 const AboutModal = observer(class AboutModal extends React.Component {
     render() {
         return (

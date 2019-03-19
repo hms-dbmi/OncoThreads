@@ -1,12 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 
 
-/*
-implements the icons and their functionality on the left side of the plot
+/**
+ * Component for row operators of one timepoint in BlockView
  */
-const RowOperator = observer(class RowOperator extends React.Component {
+const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(class RowOperator extends React.Component {
         constructor() {
             super();
             this.state = {
@@ -23,106 +23,119 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
 
-        openSaveModal(variable, callback) {
+        /**
+         * opens the modal for saving a variable
+         * @param {string} variableId
+         * @param callback
+         */
+        openSaveModal(variableId, callback) {
             this.setState({
                 modalIsOpen: true,
-                currentVariable: variable,
+                currentVariable: variableId,
                 callback: callback,
             })
         }
 
         /**
          * calls the store function to group a timepoint
-         * @param timepoint: timepoint to be grouped
-         * @param variable
+         * @param {SingleTimepoint} timepoint - timepoint to be grouped
+         * @param {(DerivedVariable|OriginalVariable)} variable
          */
         group(timepoint, variable) {
             if (variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
-                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
+                this.props.openBinningModal(variable, derivedVariable => {
+                    this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
-                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
+                    this.props.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
                 });
             }
             else {
                 timepoint.group(variable.id);
-                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
+                this.props.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
             }
         }
 
         /**
          * sorts a timepoint
          * the variable has to be declared a primary variable, then the timepoint is sorted
-         * @param timepoint: timepoint to be sorted
-         * @param variable
+         * @param {SingleTimepoint} timepoint - timepoint to be sorted
+         * @param {(DerivedVariable|OriginalVariable)} variable
          */
         sortTimepoint(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
-                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
+                this.props.openBinningModal(variable, derivedVariable => {
+                    this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
-                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
+                    this.props.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
 
                 });
             }
             else {
                 timepoint.sort(variable.id, this.props.selectedPatients);
                 //If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
-                if (this.props.store.rootStore.realTime) {
-                    this.props.store.applyPatientOrderToAll(timepoint.globalIndex, false);
+                if (this.props.uiStore.realTime) {
+                    this.props.rootStore.dataStore.applyPatientOrderToAll(timepoint.globalIndex);
                 }
-                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
+                this.props.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
             }
         }
 
 
         /**
          * ungoups a grouped timepoint
-         * @param timepoint: timepoint to be regrouped
-         * @param variableId: variable which will be the future primary variable
+         * @param {SingleTimepoint} timepoint - timepoint to be regrouped
+         * @param {string} variableId - variable which will be the future primary variable
          */
         unGroup(timepoint, variableId) {
             timepoint.unGroup(variableId);
-            this.props.store.rootStore.undoRedoStore.saveTimepointHistory("UNGROUP", variableId, timepoint.type, timepoint.localIndex)
+            this.props.undoRedoStore.saveTimepointHistory("UNGROUP", variableId, timepoint.type, timepoint.localIndex)
         }
 
         /**
          * promotes a variable at a timepoint to a primary variable
-         * @param timepoint: timepoint where the primary variable is changes
-         * @param variable
+         * @param {SingleTimepoint} timepoint - timepoint of which the primary variable is changed
+         * @param {(DerivedVariable|OriginalVariable)} variable
          */
         promote(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
-                    this.props.store.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
+                this.props.openBinningModal(variable, derivedVariable => {
+                    this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.promote(derivedVariable.id);
-                    this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
+                    this.props.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
                 });
             }
             else {
                 timepoint.promote(variable.id);
-                this.props.store.rootStore.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
+                this.props.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
             }
         }
 
+        /**
+         *
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {string} type
+         */
         removeVariable(variable, type) {
+            const variableName = variable.name;
             if (variable.derived) {
                 this.openSaveModal(variable, save => {
-                    this.props.store.variableStores[type].updateSavedVariables(variable.id, save);
-                    this.props.store.variableStores[type].removeVariable(variable.id);
+                    this.props.rootStore.dataStore.variableStores[type].updateSavedVariables(variable.id, save);
+                    this.props.rootStore.dataStore.variableStores[type].removeVariable(variable.id);
+                    this.props.undoRedoStore.saveVariableHistory("REMOVE", variableName, true);
                 })
             }
             else {
-                this.props.store.variableStores[type].removeVariable(variable.id);
+                this.props.rootStore.dataStore.variableStores[type].removeVariable(variable.id);
+                this.props.undoRedoStore.saveVariableHistory("REMOVE", variableName, true);
             }
         }
 
         /**
          * crops text to a certain width and appends "..."
-         * @param text
-         * @param fontSize
-         * @param fontweight
-         * @param maxWidth
+         * @param {string} text
+         * @param {number} fontSize
+         * @param {*} fontweight
+         * @param {number} maxWidth
          * @returns {number}
          */
         static cropText(text, fontSize, fontweight, maxWidth) {
@@ -146,9 +159,10 @@ const RowOperator = observer(class RowOperator extends React.Component {
 
         /**
          * highlights variable
+         * @param {string} variableId
          */
-        handleRowEnter(variable) {
-            this.props.highlightVariable(variable);
+        handleRowEnter(variableId) {
+            this.props.highlightVariable(variableId);
         }
 
         /**
@@ -159,14 +173,14 @@ const RowOperator = observer(class RowOperator extends React.Component {
         }
 
         /**
-         * handle click on delete button
-         * @param variable
-         * @param timepoint
+         * handles click on delete button
+         * @param {(OriginalVariable|DerivedVariable)} variable
+         * @param {SingleTimepoint} timepoint
          */
         handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
             this.props.hideTooltip();
-            if (timepoint.type === "between" || this.props.store.variableStores[timepoint.type].currentVariables.length > 1) {
+            if (timepoint.type === "between" || this.props.rootStore.dataStore.variableStores[timepoint.type].currentVariables.length > 1) {
                 this.removeVariable(variable, timepoint.type);
             }
             else {
@@ -174,6 +188,15 @@ const RowOperator = observer(class RowOperator extends React.Component {
             }
         }
 
+        /**
+         * creates an icon for sorting and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (<g id="sort" className="not_exported"
                        transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
@@ -188,6 +211,15 @@ const RowOperator = observer(class RowOperator extends React.Component {
             </g>);
         }
 
+        /**
+         * creates an icon for grouping and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (<g id="group" className="not_exported"
                        transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
@@ -203,6 +235,15 @@ const RowOperator = observer(class RowOperator extends React.Component {
             </g>);
         }
 
+        /**
+         * creates an icon for ungrouping and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getUnGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
                 <g id="ungroup" className="not_exported"
@@ -219,6 +260,15 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 </g>);
         }
 
+        /**
+         * creates an icon for deleting and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
                 <g id="delete" className="not_exported"
@@ -234,6 +284,18 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 </g>);
         }
 
+        /**
+         * gets the label for a rot in a timepoint
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} xPos
+         * @param {number} yPos
+         * @param {number} iconScale
+         * @param {number} width
+         * @param {*} fontWeight
+         * @param {number} fontSize
+         * @return {g}
+         */
         getRowLabel(timepoint, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
             return (<g transform={"translate(" + xPos + "," + yPos + ")"}
                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote variable " + variable.name, variable.description)}
@@ -244,32 +306,37 @@ const RowOperator = observer(class RowOperator extends React.Component {
             </g>);
         }
 
+        /**
+         * gets grey rectangle for highlighting a row
+         * @param {number} height
+         * @return {rect}
+         */
         getHighlightRect(height) {
             return <rect height={height} width={this.props.width} fill="#e8e8e8"/>
         }
 
         /**
-         * Creates the Row operator for a timepoint
+         * Creates the Row operators for a timepoint
          */
         getRowOperator() {
             const _self = this;
             let pos = 0;
             let rowOperators = [];
-            this.props.store.variableStores[this.props.timepoint.type].fullCurrentVariables.forEach((d,i)=> {
-                if (!this.props.timepoint.heatmap[i].isUndef || _self.props.store.showUndefined || d.id === _self.props.timepoint.primaryVariableId) {
-                    let lineHeight = _self.props.visMap.secondaryHeight;
+            this.props.rootStore.dataStore.variableStores[this.props.timepoint.type].fullCurrentVariables.forEach((d, i) => {
+                if (!this.props.timepoint.heatmap[i].isUndef || _self.props.uiStore.showUndefined || d.id === _self.props.timepoint.primaryVariableId) {
+                    let lineHeight = _self.props.rootStore.visStore.secondaryHeight;
                     let fontWeight = "normal";
                     if (d.id === _self.props.timepoint.primaryVariableId) {
-                        lineHeight = _self.props.visMap.primaryHeight;
+                        lineHeight = _self.props.rootStore.visStore.primaryHeight;
                         fontWeight = "bold";
                     }
                     const transform = "translate(0," + pos + ")";
-                    const iconScale = (_self.props.visMap.secondaryHeight - _self.props.visMap.gap) / 20;
+                    const iconScale = (_self.props.rootStore.visStore.secondaryHeight - _self.props.rootStore.visStore.gap) / 20;
                     let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
-                    pos = pos + lineHeight + _self.props.visMap.gap;
+                    pos = pos + lineHeight + _self.props.rootStore.visStore.gap;
                     const yPos = -(iconScale * 24 - lineHeight) / 2;
                     let secondIcon;
                     if (!_self.props.timepoint.isGrouped) {
@@ -309,7 +376,6 @@ const RowOperator = observer(class RowOperator extends React.Component {
                 </g>
             )
         }
-    }
-    )
+    }))
 ;
 export default RowOperator;

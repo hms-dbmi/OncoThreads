@@ -1,11 +1,14 @@
 import React from 'react';
-import {observer} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {Alert, Button, Checkbox, Col, Form, FormControl, FormGroup} from 'react-bootstrap';
 import Select from 'react-select';
 import ControlLabel from "react-bootstrap/es/ControlLabel";
+import OriginalVariable from "../../stores/OriginalVariable";
 
-
-const TimepointVariableSelector = observer(class TimepointVariableSelector extends React.Component {
+/**
+ * Component for selecting timepoint variables in variable manager
+ */
+const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(observer(class TimepointVariableSelector extends React.Component {
 
     constructor(props) {
         super(props);
@@ -17,7 +20,6 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             showCheckBoxOptions: false,
         };
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
-        this.handleSavedOptionSelect = this.handleSavedOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
@@ -26,10 +28,14 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
         this.addGenes = this.addGenes.bind(this);
     }
 
+    /**
+     * creates all selectable options
+     * @return {Object[]}
+     */
     createOptions() {
         let savedOptions = [];
-        this.props.savedReferences.forEach(d => {
-            let variable = this.props.variableStore.getById(d);
+        this.props.variableManagerStore.savedReferences.forEach(d => {
+            let variable = this.props.variableManagerStore.getById(d);
             let lb = (
                 <div style={{textAlign: "left"}}
                      key={d}><b>{variable.name}</b>{": " + variable.description}
@@ -42,7 +48,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             })
         });
         let sampleOptions = [];
-        this.props.clinicalSampleCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
+        this.props.rootStore.clinicalSampleCategories.filter(d => !this.props.variableManagerStore.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -50,7 +56,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, type: "clinSample"})
         });
         let patientOptions = [];
-        this.props.clinicalPatientCategories.filter(d => !this.props.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
+        this.props.rootStore.clinicalPatientCategories.filter(d => !this.props.variableManagerStore.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div style={{textAlign: "left"}}
                      key={d.variable}><b>{d.variable}</b>{": " + d.description}
@@ -65,35 +71,26 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
 
     /**
      * handle selection of an option
-     * @param selectedOption
+     * @param {Object} selectedOption
      */
     handleOptionSelect(selectedOption) {
         if (selectedOption.type !== 'saved') {
-            this.props.handleVariableAdd(selectedOption.object, selectedOption.type)
+            this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.variable, selectedOption.object.datatype, selectedOption.object.description, [], [], this.props.rootStore.staticMappers[selectedOption.object.id], selectedOption.type, "clinical"));
         }
         else {
-            this.props.handleSavedVariableAdd(selectedOption.object);
+            this.props.variableManagerStore.addVariableToBeDisplayed(this.props.variableManagerStore.getById(selectedOption.object));
         }
     }
 
-
-    /**
-     * handle selection of an option
-     * @param selectedOption
-     */
-    handleSavedOptionSelect(selectedOption) {
-        this.props.handleSavedVariableAdd(selectedOption.object);
-
-    }
 
     /**
      * updates the checkboxes showing the different mutation data types
-     * @param hasData
+     * @param {boolean} hasData
      */
     updateMutationCheckBoxOptions(hasData) {
         let mutationOptions = [];
         if (hasData) {
-            this.props.mutationMappingTypes.forEach(d => {
+            this.props.rootStore.mutationMappingTypes.forEach(d => {
                 mutationOptions.push({id: d, selected: false});
             })
         }
@@ -102,8 +99,8 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
 
     /**
      * updates the checkboxes showing the different molecular profiles
-     * @param profile
-     * @param hasData
+     * @param {string} profile
+     * @param {boolean} hasData
      */
     updateMolecularCheckBoxOptions(profile, hasData) {
         let molecularOptions = this.state.molecularOptions.slice();
@@ -112,7 +109,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 molecularOptions.push({
                     id: profile,
                     profile: profile,
-                    name: this.props.availableProfiles.filter(d => d.molecularProfileId === profile)[0].name,
+                    name: this.props.rootStore.availableProfiles.filter(d => d.molecularProfileId === profile)[0].name,
                     selected: false
                 });
             }
@@ -136,15 +133,16 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.molProfileMapping.loadIds(geneList, () => {
-            if (this.props.availableProfiles.map(d => d.molecularAlterationType).includes("MUTATION_EXTENDED")) {
-                this.props.molProfileMapping.loadMutations(() => {
-                    this.updateMutationCheckBoxOptions(Object.values(this.props.molProfileMapping.isInGenePanel).join().length > 0);
+        this.props.rootStore.molProfileMapping.loadIds(geneList, () => {
+            let mutationProfileIndex = this.props.rootStore.availableProfiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
+            if (mutationProfileIndex !== -1) {
+                this.props.rootStore.molProfileMapping.loadMutations(this.props.rootStore.availableProfiles[mutationProfileIndex].molecularProfileId, () => {
+                    this.updateMutationCheckBoxOptions(Object.values(this.props.rootStore.molProfileMapping.isInGenePanel).join().length > 0);
                 });
             }
-            this.props.availableProfiles.filter(d => d.molecularAlterationType !== "MUTATION_EXTENDED").forEach(d => {
-                this.props.molProfileMapping.loadMolecularData(d.molecularProfileId, () => {
-                    this.updateMolecularCheckBoxOptions(d.molecularProfileId, this.props.molProfileMapping.currentMolecular[d.molecularProfileId].length > 0);
+            this.props.rootStore.availableProfiles.filter(d => d.molecularAlterationType !== "MUTATION_EXTENDED").forEach(d => {
+                this.props.rootStore.molProfileMapping.loadMolecularData(d.molecularProfileId, () => {
+                    this.updateMolecularCheckBoxOptions(d.molecularProfileId, this.props.rootStore.molProfileMapping.currentMolecular[d.molecularProfileId].length > 0);
                 })
             });
         });
@@ -157,13 +155,17 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
     addGenes() {
         const mappingTypes = this.state.mutationOptions.filter(d => d.selected).map(d => d.id);
         const profiles = this.state.molecularOptions.filter(d => d.selected).map(d => d.profile);
-        this.props.handleGeneSelect(this.props.molProfileMapping.getMultipleProfiles(profiles, mappingTypes));
+        const variables = this.props.rootStore.molProfileMapping.getMultipleProfiles(profiles, mappingTypes);
+        variables.forEach(variable => {
+            this.props.variableManagerStore.addVariableToBeDisplayed(variable);
+            this.props.variableManagerStore.toggleSelected(variable.id);
+        });
         this.setState({geneListString: "", showCheckBoxOptions: false});
     }
 
     /**
      * updates the value of geneListString with the current content of the search field
-     * @param event
+     * @param {event} event
      */
     updateSearchValue(event) {
         this.setState({geneListString: event.target.value, showCheckBoxOptions: false});
@@ -171,7 +173,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
 
     /**
      * handles pressing enter after entering genes into the search field
-     * @param event
+     * @param {event} event
      */
     handleEnterPressed(event) {
         if (TimepointVariableSelector.checkEnterPressed(event)) {
@@ -179,6 +181,11 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
         }
     }
 
+    /**
+     * checks if the pressed key was the enter key
+     * @param {event} event
+     * @return {boolean}
+     */
     static checkEnterPressed(event) {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -190,8 +197,8 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
 
     /**
      * toggles selection of a checkbox
-     * @param index
-     * @param isMutation
+     * @param {number} index
+     * @param {boolean} isMutation
      */
     toggleSelect(index, isMutation) {
         if (isMutation) {
@@ -209,7 +216,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
 
     /**
      * gets the checkboxes for the available genomic data
-     * @returns {*}
+     * @returns {Form}
      */
     getAvailableCheckBoxes() {
         let checkBoxes = [];
@@ -250,7 +257,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
 
     render() {
         let formGroups = [];
-        if (this.props.clinicalSampleCategories.length > 0 || this.props.clinicalPatientCategories.length > 0) {
+        if (this.props.rootStore.clinicalSampleCategories.length > 0 || this.props.rootStore.clinicalPatientCategories.length > 0) {
             formGroups.push(<FormGroup key={"clinical"}>
                 <Col componentClass={ControlLabel} sm={2}>
                     Variables
@@ -268,7 +275,7 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
                 </Col>
             </FormGroup>);
         }
-        if (this.props.availableProfiles.length > 0) {
+        if (this.props.rootStore.availableProfiles.length > 0) {
             formGroups.push(<FormGroup key={"genetic"}>
                 <Col componentClass={ControlLabel} sm={2}>
                     Find gene
@@ -290,5 +297,5 @@ const TimepointVariableSelector = observer(class TimepointVariableSelector exten
             {this.state.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
         </div>)
     }
-});
+}));
 export default TimepointVariableSelector;
