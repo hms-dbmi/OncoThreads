@@ -75,16 +75,37 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      * If the only change is a change in color scale the no derived variable is created but only the range is modified
      */
     handleApply() {
-        let returnVariable;
+        const returnVariable = this.getReturnVariable();
+        const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
+        if (VariableTable.variableChanged(oldVariable, returnVariable)) {
+            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
+            if (this.state.applyToAll) {
+                this.props.variableManagerStore.applyToEntireProfile(returnVariable, oldVariable.profile, this.getNameEnding())
+            }
+        }
+        else {
+            if (this.state.applyToAll) {
+                this.props.variableManagerStore.applyRangeToEntireProfile(oldVariable.profile, returnVariable.range);
+            }
+            else {
+                oldVariable.changeRange(returnVariable.range);
+            }
+
+        }
+        this.props.closeModal();
+    }
+
+    /**
+     * gets the variable corresponding to the modifications that were made
+     * @return {DerivedVariable}
+     */
+    getReturnVariable() {
         const newId = uuidv4();
         let name = this.state.name;
         let datatype = this.props.variable.datatype;
         let range = [];
         let domain = [];
         let modification;
-        if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
-            name = this.state.name + "_MODIFIED";
-        }
         //case: no binary conversion
         if (!this.state.convertBinary) {
             let categoryMapping = {};
@@ -113,25 +134,24 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             modification = {type: "convertBinary", mapping: this.state.binaryMapping};
         }
         const derivedProfile = uuidv4();
-        returnVariable = new DerivedVariable(newId, name, datatype, this.props.variable.description, [this.props.variable.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), derivedProfile, this.props.variable.type);
-        const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
-        let profile = this.props.derivedVariable === null ? this.props.variable.profile : this.props.derivedVariable.profile;
-        if (VariableTable.variableChanged(oldVariable, returnVariable)) {
-            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
-            if (this.state.applyToAll) {
-                this.props.variableManagerStore.applyToEntireProfile(profile, derivedProfile, datatype, modification, domain, range)
-            }
+        if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
+            name = this.state.name + this.getNameEnding();
+        }
+        return new DerivedVariable(newId, name, datatype, this.props.variable.description, [this.props.variable.id], modification, range, domain,
+            DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), derivedProfile, this.props.variable.type);
+    }
+
+    /**
+     * gets name ending fitting the modified variable
+     * @return {string}
+     */
+    getNameEnding() {
+        if (this.state.convertBinary) {
+            return "_BINARY"
         }
         else {
-            if (this.state.applyToAll) {
-                this.props.variableManagerStore.applyRangeToEntireProfile(profile, range);
-            }
-            else {
-                oldVariable.changeRange(range);
-            }
-
+            return "_MODIFIED"
         }
-        this.props.closeModal();
     }
 
     /**
@@ -266,10 +286,11 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      */
     getApplyToAll() {
         let checkbox = null;
-        if (this.props.variable.profile==="Mutation type") {
+        let profileIndex = this.props.rootStore.availableProfiles.map(d => d.molecularProfileId).indexOf(this.props.variable.profile);
+        if (this.props.variable.profile === "Mutation type" || profileIndex !== -1) {
             checkbox =
                 <Checkbox checked={this.state.applyToAll} value={this.state.applyToAll}
-                          onChange={() => this.setState({applyToAll: !this.state.applyToAll})}>{"Apply action to all Mutation type variables"}</Checkbox>
+                          onChange={() => this.setState({applyToAll: !this.state.applyToAll})}>{"Apply action to all variables of this type"}</Checkbox>
         }
         return checkbox;
 

@@ -77,25 +77,24 @@ class VariableManagerStore {
             }),
             /**
              * applies a modification of a single variable (no combinations) to all variables in that profile
-             * @param {string} profileId - id of profile that is affected
-             * @param {string} derivedProfile - id of new profile
-             * @param {Object} modification - modification that should be applied to all variables in that profile
-             * @param {string[]} domain - domain that should be applied to all variables in that profile
-             * @param {string[]} range - range that should be applied to all variables in that profile
+             * @param {DerivedVariable} newVariable - modified variable, which modification should be applied to profile
+             * @param {string} oldProfile - id of old Profile;
              */
-            applyToEntireProfile: action((profileId, derivedProfile, datatype, modification, domain, range) => {
+            applyToEntireProfile: action((newVariable, oldProfile, nameEnding) => {
                 this.currentVariables.forEach(variable => {
                     let variableReference = this.getById(variable.id);
-                    if (variableReference.profile === profileId) {
+                    if (variableReference.profile === oldProfile) {
                         let derivedVariable;
                         if (variableReference.derived) {
                             let originalVariable = this.getById(variableReference.originalIds[0]);
-                            derivedVariable = new DerivedVariable(uuidv4(), originalVariable.name + "_derived", datatype, originalVariable.description, [originalVariable.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [originalVariable.mapper]), derivedProfile, originalVariable.type);
+                            derivedVariable = new DerivedVariable(uuidv4(), originalVariable.name + nameEnding, newVariable.datatype, originalVariable.description, [originalVariable.id], newVariable.modification, newVariable.range, newVariable.domain,
+                                DerivedMapperFunctions.getModificationMapper(newVariable.modification, [originalVariable.mapper]), newVariable.profile, originalVariable.type);
                         }
                         else {
-                            derivedVariable = new DerivedVariable(uuidv4(), variableReference.name + "_derived", datatype, variableReference.description, [variableReference.id], modification, range, domain, DerivedMapperFunctions.getModificationMapper(modification, [variableReference.mapper]), derivedProfile, variableReference.type);
+                            derivedVariable = new DerivedVariable(uuidv4(), variableReference.name + nameEnding, newVariable.datatype, variableReference.description, [variableReference.id], newVariable.modification, newVariable.range, newVariable.domain,
+                                DerivedMapperFunctions.getModificationMapper(newVariable.modification, [variableReference.mapper]), newVariable.profile, variableReference.type);
                         }
-                        this.replaceDisplayedVariable(variable.id, derivedVariable, modification);
+                        this.replaceDisplayedVariable(variable.id, derivedVariable);
                     }
                 });
             }),
@@ -355,14 +354,9 @@ class VariableManagerStore {
      * @return {number[]}
      */
     getProfileDomain(profile) {
-        const min = this.getMinOfProfile(profile);
-        const max = this.getMaxOfProfile(profile);
-        if (min > 0) {
-            return [min, max]
-        }
-        else {
-            return [min, 0, max]
-        }
+        let min = this.getMinOfProfile(profile);
+        let max = this.getMaxOfProfile(profile);
+        return [min, max];
     }
 
 

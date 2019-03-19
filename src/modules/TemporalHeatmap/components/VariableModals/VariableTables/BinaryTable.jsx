@@ -4,9 +4,14 @@ import {OverlayTrigger, Popover, Table} from 'react-bootstrap';
 import {SketchPicker} from 'react-color';
 
 /**
- * table for displaying a binary variable
+ * Component for displaying categories and their occurences for a binary variable
  */
 const BinaryTable = observer(class BinaryTable extends React.Component {
+    /**
+     * gets percent occurences for categories
+     * @param {String[]} categories
+     * @return {number}
+     */
     getPercentOccurence(categories) {
         let allOccurences = Object.values(this.props.mapper);
         let numOccurences = 0;
@@ -16,10 +21,14 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
         return numOccurences / allOccurences.length * 100
     }
 
-    static handleOverlayClick(event) {
+    static handleOverlayClick() {
         document.body.click();
     }
 
+    /**
+     * get content of table
+     * @return {*}
+     */
     getBinaryContent() {
         let colorRects = this.props.binaryColors.map((d, i) => {
             const popover = (

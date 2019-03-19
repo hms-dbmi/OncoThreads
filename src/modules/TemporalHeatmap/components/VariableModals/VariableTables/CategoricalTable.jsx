@@ -14,11 +14,11 @@ import {
 } from 'react-bootstrap';
 import {SketchPicker} from 'react-color';
 import FontAwesome from 'react-fontawesome';
-import * as d3ScaleChromatic from 'd3-scale-chromatic';
 import * as d3 from "d3";
+import ColorScales from "../../../UtilityClasses/ColorScales";
 
 /**
- * table for displaying and editing categories of a categorical or isOrdinal variable
+ * Component for displaying and editing categories of a categorical or ordinal variable
  */
 const CategoricalTable = observer(class CategoricalTable extends React.Component {
 
@@ -30,7 +30,7 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     /**
      * gets percent occurences for each category
-     * @param categories
+     * @param {String[]} categories
      * @returns {number}
      */
     getPercentOccurence(categories) {
@@ -43,9 +43,9 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
     }
 
     /**
-     * handles renaming a profile
-     * @param index
-     * @param e
+     * handles renaming a category
+     * @param {number} index
+     * @param {Object} e
      */
     handleRenameCategory(index, e) {
         let currentData = this.props.currentCategories.slice();
@@ -55,10 +55,10 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
 
     /**
-     * moves a profile up or down
-     * @param event
-     * @param index
-     * @param moveUp
+     * moves a category up or down
+     * @param {Object} event
+     * @param {number} index
+     * @param {boolean} moveUp
      */
     move(event, index, moveUp) {
         let currentData = this.props.currentCategories.slice();
@@ -147,8 +147,8 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     /**
      * toggles selecting categories
-     * @param e
-     * @param index
+     * @param {Object} e
+     * @param {number} index
      */
     toggleSelect(e, index) {
         if (e.target.nodeName === "TD") {
@@ -161,8 +161,8 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     /**
      * handles the change of a single color
-     * @param color
-     * @param index
+     * @param {String} color
+     * @param {number} index
      */
     handleColorChange(color, index) {
         let currentData = this.props.currentCategories.slice();
@@ -171,14 +171,14 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     }
 
-    static handleOverlayClick(event) {
+    static handleOverlayClick() {
         document.body.click();
     }
 
 
     /**
      * shows the current categories in a table
-     * @returns {any[]}
+     * @returns {*}
      */
     displayTable() {
         return <div>
@@ -191,7 +191,8 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
                 </tbody>
             </Table>
             <form>
-                <Button disabled={!(this.props.currentCategories.filter(d => d.selected).length > 1)} onClick={this.merge}>Merge
+                <Button disabled={!(this.props.currentCategories.filter(d => d.selected).length > 1)}
+                        onClick={this.merge}>Merge
                     selected</Button>
                 <Button
                     disabled={!(this.props.currentCategories.filter(d => d.selected && d.categories.length > 1).length > 0)}
@@ -201,6 +202,10 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
         </div>
     }
 
+    /**
+     * gets head of table
+     * @return {*}
+     */
     getTableHead() {
         const colorScalePopOver = <Popover id="popover-positioned-right" title="Choose color scale">
             {this.getColorScalePopover()}
@@ -219,10 +224,14 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     }
 
+    /**
+     * gets table content
+     * @return {[]}
+     */
     getTableContent() {
-        let tableContent=[];
+        let tableContent = [];
         this.props.currentCategories.forEach((d, i) => {
-            if(d.name!==undefined) {
+            if (d.name !== undefined) {
                 let bgColor = "white";
                 if (d.selected) {
                     bgColor = "lightgrey";
@@ -278,25 +287,25 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     /**
      * handle the change of color scale. Changes isOrdinal state depending on the chosen scale
-     * @param scale
-     * @param ordinal
+     * @param {function} scale
+     * @param {boolean} isOrdinal
      */
-    handleColorScaleChange(scale, ordinal) {
+    handleColorScaleChange(scale, isOrdinal) {
         let currentData = this.props.currentCategories.slice();
         currentData.forEach((d, i) => {
             d.color = scale((i * 2 + 1) / (currentData.length * 2 + 1));
         });
         this.props.setColorScale(scale);
         this.props.setCurrentCategories(currentData);
-        this.props.setOrdinal(ordinal);
+        this.props.setOrdinal(isOrdinal);
     }
 
     /**
      * gets the rects representing an isOrdinal scale
-     * @param scale
-     * @param rectDim
-     * @param numRect
-     * @returns {Array}
+     * @param {function} scale
+     * @param {number} rectDim
+     * @param {number} numRect
+     * @returns {rect[]}
      */
     static getOrdinalRects(scale, rectDim, numRect) {
         let rects = [];
@@ -310,10 +319,10 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
 
     /**
      * gets the rects representing a categorical scale
-     * @param scale
-     * @param rectDim
-     * @param numRect
-     * @returns {Array}
+     * @param {function} scale
+     * @param {number} rectDim
+     * @param {number} numRect
+     * @returns {rect[]}
      */
     static getCategoricalRects(scale, rectDim, numRect) {
         let rects = [];
@@ -332,19 +341,10 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
     getColorScalePopover() {
         let rectDim = 20;
         let numRect = 5;
-        let ordinalScales = [d3ScaleChromatic.interpolateBlues, d3ScaleChromatic.interpolateGreens, d3ScaleChromatic.interpolateGreys, d3ScaleChromatic.interpolateOranges, d3ScaleChromatic.interpolatePurples, d3ScaleChromatic.interpolateReds];
-        let categoricalScales = [d3.scaleOrdinal().range(['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a']),
-            d3.scaleOrdinal().range(['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f']),
-            d3.scaleOrdinal().range(['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec']),
-            d3.scaleOrdinal().range(['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666'])];
+        let ordinalScales =ColorScales.ordinalScales;
+        let categoricalScales = ColorScales.categoricalColors.map(d=>d3.scaleOrdinal().range(d));
         return <form>
             <FormGroup>
-                <ControlLabel>Ordinal Scales</ControlLabel>
-                {ordinalScales.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, true)}
-                                                    name="ColorScaleGroup">
-                    <svg width={rectDim * numRect}
-                         height={rectDim}>{CategoricalTable.getOrdinalRects(d, rectDim, numRect)}</svg>
-                </Radio>)}
                 <ControlLabel>Categorical Scales</ControlLabel>
                 {categoricalScales.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, false)}
                                                         name="ColorScaleGroup">
@@ -352,12 +352,21 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
                          height={rectDim}>{CategoricalTable.getCategoricalRects(d, rectDim, numRect)}</svg>
                     {"  Colors: " + d.range().length}
                 </Radio>)}
+                <ControlLabel>Ordinal Scales</ControlLabel>
+                {ordinalScales.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, true)}
+                                                    name="ColorScaleGroup">
+                    <svg width={rectDim * numRect}
+                         height={rectDim}>{CategoricalTable.getOrdinalRects(d, rectDim, numRect)}</svg>
+                </Radio>)}
             </FormGroup>
         </form>
 
     }
 
-
+    /**
+     * creates a warning if category names are not unique
+     * @return {*}
+     */
     getUniqueCategoryWarning() {
         let alert = null;
         if (new Set(this.props.currentCategories.map(d => d.name)).size !== this.props.currentCategories.length) {
@@ -365,7 +374,6 @@ const CategoricalTable = observer(class CategoricalTable extends React.Component
         }
         return alert;
     }
-
 
     render() {
         return (
