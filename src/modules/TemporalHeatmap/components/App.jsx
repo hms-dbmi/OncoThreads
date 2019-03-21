@@ -13,7 +13,10 @@ import SettingsModal from "./Modals/SettingsModal";
 import AboutModal from "./Modals/AboutModal";
 import StudySummary from "./StudySummary";
 
-const App = inject("rootStore", "uiStore", "undoRedoStore", "studyapi")(observer(class App extends React.Component {
+/**
+ * Base Component
+ */
+const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App extends React.Component {
     constructor() {
         super();
         this.state = {
@@ -26,7 +29,10 @@ const App = inject("rootStore", "uiStore", "undoRedoStore", "studyapi")(observer
         this.closeModal = this.closeModal.bind(this);
     }
 
-
+    /**
+     * opens a modal of a certain type
+     * @param {string} type
+     */
     openModal(type) {
         if (type === 'about') {
             this.setState({
@@ -51,14 +57,21 @@ const App = inject("rootStore", "uiStore", "undoRedoStore", "studyapi")(observer
 
     }
 
+    /**
+     * closes all modals
+     */
     closeModal() {
         this.setState({
             logModalIsOpen: false, aboutModalIsOpen: false, settingsModalIsOpen: false, studyInfoModalIsOpen: false,
         });
     }
 
+    /**
+     * gets Navbar on top
+     * @return {[]|NavItem}
+     */
     getNavbarContent() {
-        if (this.props.rootStore.display && this.props.rootStore.parsed) {
+        if (this.props.rootStore.variablesParsed) {
             return ([
                     <GetStudy key="getStudy" studies={this.props.studyapi.studies}/>,
                     <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
@@ -80,17 +93,16 @@ const App = inject("rootStore", "uiStore", "undoRedoStore", "studyapi")(observer
 
     /**
      * get content in the main panel
-     * @returns {*}
+     * @returns {(DefaultView|Content|div)}
      */
     getMainContent() {
         if (this.props.rootStore.firstLoad) {
-            console.log(this.props.studyapi.studies);
             return (
                 <DefaultView studies={this.props.studyapi.studies}/>
             )
         }
-        //if everything is parsed show the main view
-        else if (this.props.rootStore.display && this.props.rootStore.parsed) {
+        //if everything is variablesParsed show the main view
+        else if (this.props.rootStore.variablesParsed) {
             return (
                 <Content/>
             )
@@ -125,12 +137,7 @@ const App = inject("rootStore", "uiStore", "undoRedoStore", "studyapi")(observer
                         Study Information
                     </Modal.Header>
                     <Modal.Body>
-                        <StudySummary studyName={this.props.rootStore.study.name}
-                                      studyDescription={this.props.rootStore.study.description}
-                                      studyCitation={this.props.rootStore.study.citation}
-                                      numPatients={this.props.rootStore.patients.length}
-                                      minTP={this.props.rootStore.minTP}
-                                      maxTP={this.props.rootStore.maxTP}/>
+                        <StudySummary/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.closeModal}>Close</Button>

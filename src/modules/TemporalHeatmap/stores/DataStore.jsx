@@ -7,18 +7,17 @@ stores information about timepoints. Combines betweenTimepoints and sampleTimepo
 class DataStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.numberOfPatients = 300;
-        this.variableStores = {
+        this.numberOfPatients = 300; //default number of patients
+        this.variableStores = { // one store for the two different type of blocks (sample/between)
             sample: new VariableStore(rootStore, "sample"),
             between: new VariableStore(rootStore, "between")
         };
         extendObservable(this, {
-            timepoints: [],
-            selectedPatients: [],
-            globalPrimary: '',
-            transitionOn: false,
+            timepoints: [], // all timepoints
+            selectedPatients: [], // currently selected patients
+            globalPrimary: '', // global primary for sample timepoints of global timeline
             /**
-             * get thr maximum number of currently displayed partitions
+             * get the maximum number of currently displayed partitions
              * @returns {number}
              */
             get maxPartitions() {
@@ -30,7 +29,15 @@ class DataStore {
                 return maxPartitions;
             },
             /**
+             * are variables of type "between" displayed
+             * @return {boolean}
+             */
+            get transitionOn(){
+                return this.variableStores.between.currentVariables.length>0;
+            },
+            /**
              * set global primary
+             * @param {string} varId
              */
             setGlobalPrimary: action(varId => {
                 this.globalPrimary = varId;
@@ -43,16 +50,14 @@ class DataStore {
             }),
             /**
              * changes display global timeline
+             * @param {boolean} globalTime
              */
-            setGlobalTime: action(boolean => {
-                this.globalTime = boolean;
-            }),
-            setTransitionOn: action(boolean => {
-                this.transitionOn = boolean
+            setGlobalTime: action(globalTime => {
+                this.globalTime = globalTime;
             }),
             /**
-             * handles currently selected patients
-             * @param patient
+             * handles selecting/removing a patient
+             * @param {string} patient
              */
             handlePatientSelection: action(patient => {
                 if (this.selectedPatients.includes(patient)) {
@@ -64,7 +69,7 @@ class DataStore {
             }),
             /**
              * handles the selection of patients in a partition
-             * @param patients
+             * @param {string[]} patients
              */
             handlePartitionSelection: action((patients) => {
                 //isContained: true if all patients are contained
@@ -89,6 +94,9 @@ class DataStore {
                     });
                 }
             }),
+            /**
+             * resets selected patients
+             */
             resetSelection: action(() => {
                 this.selectedPatients.clear();
             }),
@@ -103,6 +111,7 @@ class DataStore {
             }),
             /**
              * combines the two sets of timepoints (samples, events)
+             * @param {boolean} isOn - between variables contained/not contained
              */
             combineTimepoints: action(isOn => {
                 let betweenTimepoints = this.variableStores.between.childStore.timepoints;
@@ -139,6 +148,7 @@ class DataStore {
 
             /**
              * updates timepoints after structures are changed
+             * @param {string[]} order - order of patients
              */
             update: action(order => {
                 this.variableStores.sample.update(this.rootStore.timepointStructure, order);
@@ -147,8 +157,7 @@ class DataStore {
             }),
             /**
              * applies the patient order of the current timepoint to all the other timepoints
-             * @param timepointIndex
-             * @param saveRealign
+             * @param {number} timepointIndex
              */
             applyPatientOrderToAll: action((timepointIndex) => {
                 if(this.timepoints[timepointIndex].isGrouped){
@@ -160,6 +169,7 @@ class DataStore {
                 });
             }),
         });
+        // combines/uncombines timepoints if variables of type "between" are displayed/removed
         reaction(() => this.transitionOn, isOn => {
             this.combineTimepoints(isOn);
         });
@@ -167,7 +177,7 @@ class DataStore {
 
     /**
      * sets number of patients
-     * @param numP
+     * @param {number} numP
      */
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
@@ -175,8 +185,8 @@ class DataStore {
 
     /**
      * gets all values of a variable, indepently of their timepoint
-     * @param mapper
-     * @param type
+     * @param {Object} mapper
+     * @param {string} type - "sample" or "between"
      * @returns {Array}
      */
     getAllValues(mapper, type) {

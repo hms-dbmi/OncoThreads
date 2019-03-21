@@ -3,10 +3,10 @@ import {observer,inject} from 'mobx-react';
 import uuidv4 from "uuid/v4";
 import * as d3 from 'd3';
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
-/*
-creates a row of a continuous variable in a partition of a grouped timepoint
+/**
+ * Component representing a row of a categorical variable in a grouped partition of a timepoint
  */
-const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow extends React.Component {
+const ContinuousRow = inject("dataStore","uiStore","visStore")(observer(class ContinuousRow extends React.Component {
     static getTooltipContent(value, numPatients) {
         let content = "";
         if (numPatients === 1) {
@@ -20,10 +20,10 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
 
     /**
      * creates a gradient representing the distribution of the values of a continuous variable
-     * @param values
-     * @param boxPlotValues
-     * @param selectedPatients
-     * @returns {*}
+     * @param {Object[]} values - patients contained in the row and their associated continuous values
+     * @param {number[]} boxPlotValues - quartiles and median of the values in the row
+     * @param {string[]} selectedPatients
+     * @returns {g}
      */
     createGradientRow(values, boxPlotValues, selectedPatients) {
         let randomId = uuidv4();
@@ -31,7 +31,7 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
         let gradient;
         const stepwidth = 100 / (values.length - 1);
         let stops = [];
-        let selectedScale = d3.scaleLinear().domain([0, 100]).range([0, this.props.groupScale(values.length)]);
+        let selectedScale = d3.scaleLinear().domain([0, 100]).range([0, this.props.visStore.groupScale(values.length)]);
         let selectedRects = [];
         let undefinedValuesCounter = selectedPatients.length;
         values.forEach(function (d, i) {
@@ -68,8 +68,8 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
         </linearGradient>;
         let selectUndefinedRect = null;
         if (undefinedValuesCounter > 0 && this.props.uiStore.advancedSelection) {
-            selectUndefinedRect = <rect x={this.props.groupScale(values.length) + 1} height={this.props.height}
-                                        width={this.props.groupScale(undefinedValuesCounter) - 1}
+            selectUndefinedRect = <rect x={this.props.visStore.groupScale(values.length) + 1} height={this.props.height}
+                                        width={this.props.visStore.groupScale(undefinedValuesCounter) - 1}
                                         fill={"none"}
                                         stroke="black"/>
         }
@@ -77,12 +77,12 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
             <defs>
                 {gradient}
             </defs>
-            <rect x="0" height={this.props.height} width={this.props.groupScale(values.length)}
+            <rect x="0" height={this.props.height} width={this.props.visStore.groupScale(values.length)}
                   fill={"url(#" + randomId + ")"} opacity={this.props.opacity}
                   onMouseEnter={(e) => this.props.showTooltip(e, values.length + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                   onMouseLeave={this.props.hideTooltip}/>
-            <rect x={this.props.groupScale(values.length)} height={this.props.height}
-                  width={this.props.groupScale(this.props.row.length - values.length)} fill={"white"}
+            <rect x={this.props.visStore.groupScale(values.length)} height={this.props.height}
+                  width={this.props.visStore.groupScale(this.props.row.length - values.length)} fill={"white"}
                   stroke="lightgray"
                   opacity={this.props.opacity}
                   onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - values.length))}
@@ -94,13 +94,13 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
 
     /**
      * creates a boxplot representing the distribution of the values of a continuous variable
-     * @param boxPlotValues
-     * @param numValues
-     * @returns {*}
+     * @param {number[]} boxPlotValues - quartiles and median of the values in the row
+     * @param {number} numValues - number of values in the row
+     * @returns {g}
      */
     createBoxPlot(boxPlotValues, numValues) {
         let intermediateStop = null;
-        let boxPlotScale = d3.scaleLinear().domain(this.props.variableDomain).range([0, this.props.groupScale(numValues)]);
+        let boxPlotScale = d3.scaleLinear().domain(this.props.variableDomain).range([0, this.props.visStore.groupScale(numValues)]);
         let min = this.props.color(this.props.color.domain()[0]);
         let max;
         if (this.props.color.domain().length === 3) {
@@ -124,7 +124,7 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
                         </linearGradient>
                     </defs>
                 </defs>
-                <rect x={0} width={this.props.groupScale(numValues)} height={this.props.height}
+                <rect x={0} width={this.props.visStore.groupScale(numValues)} height={this.props.height}
                       fill={"url(#" + randomId + ")"} stroke={'lightgray'} opacity={this.props.opacity}
                       onMouseEnter={(e) => this.props.showTooltip(e, 'Minimum: ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median: ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum: ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                       onMouseLeave={this.props.hideTooltip}/>
@@ -147,8 +147,8 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
         return (
             <g>
                 {boxPlot}
-                <rect x={this.props.groupScale(numValues)}
-                      width={this.props.groupScale(this.props.row.length - numValues)} height={this.props.height}
+                <rect x={this.props.visStore.groupScale(numValues)}
+                      width={this.props.visStore.groupScale(this.props.row.length - numValues)} height={this.props.height}
                       fill={'white'} stroke={'lightgray'}
                       onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
                       onMouseLeave={this.props.hideTooltip}/>
@@ -158,18 +158,18 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
 
     /**
      * creates a rectangle colored with the median value of the set of values at the partition
-     * @param boxPlotValues
-     * @param numValues
-     * @returns {*}
+     * @param {number[]} boxPlotValues - quartiles and median of the values in the row
+     * @param {number} numValues - number of values in a row
+     * @returns {g}
      */
     createMedianValue(boxPlotValues, numValues) {
         return (<g>
-            <rect x="0" height={this.props.height} width={this.props.groupScale(numValues)}
+            <rect x="0" height={this.props.height} width={this.props.visStore.groupScale(numValues)}
                   fill={this.props.color(boxPlotValues[2])} opacity={this.props.opacity}
                   onMouseEnter={(e) => this.props.showTooltip(e, numValues + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
                   onMouseLeave={this.props.hideTooltip}/>
-            <rect x={this.props.groupScale(numValues)} height={this.props.height}
-                  width={this.props.groupScale(this.props.row.length - numValues)} fill={"white"}
+            <rect x={this.props.visStore.groupScale(numValues)} height={this.props.height}
+                  width={this.props.visStore.groupScale(this.props.row.length - numValues)} fill={"white"}
                   stroke="lightgray"
                   opacity={this.props.opacity}
                   onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
@@ -179,8 +179,8 @@ const ContinuousRow = inject("dataStore","uiStore")(observer(class ContinuousRow
 
     /**
      * computes the values of the boxplot
-     * @param values
-     * @returns {*[]}
+     * @param {number[]} values
+     * @returns {number[]}
      */
     static computeBoxPlotValues(values) {
         values = values.map(element => element.value);

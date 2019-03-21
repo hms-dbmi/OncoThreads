@@ -1,8 +1,9 @@
 import React from 'react';
 import {observer,inject} from 'mobx-react';
-/*
-creats a row in the heatmap
- */
+
+/**
+ * Component for a row in a timepoint in the global timeline
+= */
 const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React.Component {
         constructor(props) {
             super(props);
@@ -30,7 +31,7 @@ const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React
 
                 _self.props.events.forEach(function (ev, j) {
                         let opc1 = _self.props.opacity;
-                        let height = _self.props.timeScale(ev.eventEndDate - ev.eventStartDate);
+                        let height = _self.props.rootStore.visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
                         let offset = 0;
                         let val = _self.props.rootStore.dataStore.variableStores.between.getById(_self.props.row.variable).name;
                         if (height === 0) {
@@ -49,7 +50,7 @@ const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React
                                 key={ev.patientId + j}
                                 r={_self.props.rectWidth * (1 / 3)}
                                 cx={_self.props.heatmapScale(ev.patientId) + _self.props.rectWidth * (1 / 2)}
-                                cy={_self.props.timeScale(ev.eventDate)}
+                                cy={_self.props.rootStore.visStore.timeScale(ev.eventDate)}
                                 //fill={_self.props.color(ev.varId)}
 
                                 fill={_self.props.color(_self.props.row.variable)}
@@ -70,7 +71,7 @@ const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React
                                 height={height}//{_self.props.height}
                                 width={_self.props.rectWidth * (2 / 3)}
                                 x={_self.props.heatmapScale(ev.patientId) + _self.props.rectWidth * (1 / 6)}
-                                y={_self.props.timeScale(ev.eventStartDate) - offset}
+                                y={_self.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
                                 //fill={_self.props.color(ev.varId)}
 
                                 fill={_self.props.color(_self.props.row.variable)}
@@ -120,7 +121,7 @@ const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React
                                          height={_self.props.rectWidth}//{_self.props.height}
                                          width={_self.props.rectWidth}
                                          x={_self.props.heatmapScale(d.patient)}
-                                         y={_self.props.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
+                                         y={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
                                          fill={fill}
                                          opacity={_self.props.opacity}
                         />);
@@ -133,7 +134,7 @@ const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React
                                            key={d.patient + i + j}
                                            r={_self.props.rectWidth / 2}//{_self.props.height}
                                            cx={_self.props.heatmapScale(d.patient) + _self.props.rectWidth / 2}
-                                           cy={_self.props.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])}
+                                           cy={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])}
                                            fill={fill}
                                            opacity={_self.props.opacity}
                         />);
@@ -145,7 +146,7 @@ const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React
                                          onClick={() => _self.handleClick(d.patient)}
                                          key={d.patient + i + j +"number"}
                                          x={_self.props.heatmapScale(d.patient)}
-                                         y={_self.props.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])  +_self.props.rectWidth / 2}
+                                         y={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])  +_self.props.rectWidth / 2}
                                          >{_self.props.index}</text>);*/
 
 
@@ -155,8 +156,8 @@ const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React
                                              width={_self.props.rectWidth}
                                              x1={_self.props.heatmapScale(d.patient)}
                                              x2={_self.props.heatmapScale(d.patient) + _self.props.rectWidth / 2}
-                                             y1={_self.props.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
-                                             y2={_self.props.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) + _self.props.rectWidth / 2}
+                                             y1={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
+                                             y2={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) + _self.props.rectWidth / 2}
                                              opacity={_self.props.opacity}/>);
                         }
                     }

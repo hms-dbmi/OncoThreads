@@ -21,19 +21,23 @@ import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 import CombineModal from "./CombineVariables/CombineModal";
 
+/**
+ * Component for displaying and modifying current variables in a table
+ */
 const VariableTable = inject("variableManagerStore", "rootStore")(observer(class VariableTable extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            // controlling visibility of modals
             modifyCategoricalIsOpen: false,
             modifyContinuousIsOpen: false,
             modifyBinaryIsOpen: false,
             saveVariableIsOpen: false,
-            currentVariable: '',
-            derivedVariable: '',
-            combineVariables: [],
-            callback: '',
+            currentVariable: '', // non-modified variable selected for modification
+            derivedVariable: '', // modified variable selected for modification
+            combineVariables: [], // variables selected for combination
+            callback: '', // callback for saving a variable
         };
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -43,7 +47,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
 
     /**
-     * closes the categorical modal
+     * closes all modals
      */
     closeModal() {
         this.setState({
@@ -58,20 +62,25 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * opens modal to modify variable
-     * @param variableId
-     * @param derivedVariableId
-     * @param type
+     * @param {OriginalVariable} originalVariable
+     * @param {DerivedVariable} derivedVariable
+     * @param {string} datatype
      */
-    openModifyModal(variableId, derivedVariableId, type) {
+    openModifyModal(originalVariable, derivedVariable, datatype) {
         this.setState({
-            modifyContinuousIsOpen: type === "NUMBER",
-            modifyCategoricalIsOpen: type === "STRING" || type === "ORDINAL",
-            modifyBinaryIsOpen: type === "BINARY",
-            derivedVariable: derivedVariableId,
-            currentVariable: variableId,
+            modifyContinuousIsOpen: datatype === "NUMBER",
+            modifyCategoricalIsOpen: datatype === "STRING" || datatype === "ORDINAL",
+            modifyBinaryIsOpen: datatype === "BINARY",
+            derivedVariable: derivedVariable,
+            currentVariable: originalVariable,
         });
     }
 
+    /**
+     * opens modal to combine variables
+     * @param {OriginalVariable[]} variables
+     * @param {DerivedVariable} derivedVariable
+     */
     openCombineModal(variables, derivedVariable) {
         this.setState({
             combineVariables: variables,
@@ -80,6 +89,11 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
         })
     }
 
+    /**
+     * opens modal to save variable
+     * @param {DerivedVariable} variable
+     * @param callback
+     */
     openSaveVariableModal(variable, callback) {
         this.setState({
             currentVariable: variable,
@@ -91,8 +105,8 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * handles a cogwheelClick
-     * @param event
-     * @param id
+     * @param {event} event
+     * @param {string} id
      */
     handleCogWheelClick(event, id) {
         let variable = this.props.variableManagerStore.getById(id);
@@ -113,6 +127,10 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
         }
     }
 
+    /**
+     * removes a variable
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     */
     removeVariable(variable) {
         if (variable.derived) {
             this.openSaveVariableModal(variable, save => {
@@ -127,7 +145,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * displays the currently selected variables
-     * @returns {Array}
+     * @returns {Table}
      */
     showCurrentVariables() {
         let elements = [];
@@ -205,7 +223,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * creates the modal for modification
-     * @returns {*}
+     * @returns {(ModifyBinary|ModifyContinuous|ModifyBinary|SaveVariableDialog|CombineModal)}
      */
     getModal() {
         let modal = null;
@@ -248,7 +266,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * sorts current variables
-     * @param e
+     * @param {Object} e
      */
     handleSort(e) {
         if (e.target.value === "source") {
@@ -292,8 +310,8 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * moves selected variables
-     * @param isUp
-     * @param toExtreme
+     * @param {boolean} isUp
+     * @param {boolean} toExtreme
      */
     moveSelected(isUp, toExtreme) {
         let indices = this.props.variableManagerStore.getSelectedIndices();
@@ -302,9 +320,9 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * moves single variable
-     * @param isUp
-     * @param toExtreme
-     * @param index
+     * @param {boolean} isUp
+     * @param {boolean} toExtreme
+     * @param {number} index
      */
     moveSingle(isUp, toExtreme, index) {
         this.props.variableManagerStore.move(isUp, toExtreme, [index]);
@@ -312,8 +330,8 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * check if variable has changed
-     * @param oldVariable
-     * @param newVariable
+     * @param {(OriginalVariable|DerivedVariable)} oldVariable
+     * @param {DerivedVariable} newVariable
      * @returns {boolean}
      */
     static variableChanged(oldVariable, newVariable) {

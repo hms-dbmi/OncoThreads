@@ -11,19 +11,22 @@ const GetStudy = inject("rootStore", "undoRedoStore")(observer(class GetStudy ex
 
     /**
      * selects a study
-     * @param event
-     * @param study
+     * @param {e} event
+     * @param {Object} study
      */
     getStudy(event, study) {
+        this.props.rootStore.setIsOwnData(false);
         this.props.undoRedoStore.reset();
-        this.props.rootStore.parseCBio(study, () => {
-            this.props.undoRedoStore.saveLoadHistory(study.name);
+        this.props.rootStore.parseTimeline(study, () => {
+            this.props.rootStore.parseCBio(() => {
+                this.props.undoRedoStore.saveLoadHistory(study.name);
+            });
         });
     }
 
     /**
      * creates options for study selection
-     * @returns {Array}
+     * @returns {MenuItem[]}
      */
     setOptions() {
         let options = [];

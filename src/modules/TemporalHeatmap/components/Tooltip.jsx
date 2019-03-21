@@ -1,8 +1,9 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 import UtilityFunctions from "../UtilityClasses/UtilityFunctions";
-/*
-tooltip for hovering over Sankey Transition
+
+/**
+ * Basic tooltip component
  */
 const Tooltip = observer(class SankeyTransitionTooltip extends React.Component {
     render() {

@@ -5,7 +5,7 @@ import DerivedVariable from "./TemporalHeatmap/stores/DerivedVariable";
 /**
  * handles undoing/redoing actions
  * Principle:
- * save datastructures which describe the state to a stack (variables, timepoints)
+ * save datastructures which describe the state to a stack (variables, timepoints, timepointStructure, uiStore parameters)
  * observable datastructures have to be serialized to be saved
  * when undoing/redoing map saved datastructures back to observable datastructures (deserializing)
  */
@@ -14,10 +14,10 @@ class UndoRedoStore {
         this.rootStore = rootStore;
         this.uiStore = uiStore;
         this.undoRedoMode = false;
-        this.stateStack = [];
+        this.stateStack = []; // array to save states
         extendObservable(this, {
-            logs: [],
-            currentPointer: -1,
+            logs: [], // current logs
+            currentPointer: -1, // currently displayed state in stateStack
             /**
              * undo the last action, add undo log
              */
@@ -43,20 +43,28 @@ class UndoRedoStore {
                     this.undoRedoMode = true;
                 }
             }),
+            /**
+             * resets undoRedo parameters
+             */
             reset: action(() => {
                 this.stateStack = [];
                 this.logs.clear();
+                this.currentPointer = -1;
             }),
+            /**
+             * saves state when loading a new dataset
+             * @param {string} studyName - name of displayed study/dataset
+             */
             saveLoadHistory: action(studyName => {
                 this.logs.push("LOAD STUDY: " + studyName);
                 this.saveHistory("load");
             }),
             /**
              * saves the history of a timepoint (in logs and in stateStack)
-             * @param operation
-             * @param variableId
-             * @param timepointType
-             * @param timepointIndex
+             * @param {string} operation
+             * @param {string} variableId
+             * @param {string} timepointType
+             * @param {number} timepointIndex
              */
             saveTimepointHistory: action((operation, variableId, timepointType, timepointIndex) => {
                 const variableName = this.rootStore.dataStore.variableStores[timepointType].getById(variableId).name;
@@ -70,9 +78,8 @@ class UndoRedoStore {
 
             /**
              * saves the history of a variale (in logs and in stateStack)
-             * @param operation
-             * @param variable
-             * @param saveToStack
+             * @param {string} operation
+             * @param {string} variable
              */
             saveVariableHistory: action((operation, variable) => {
                 this.logs.push(operation + ": " + variable);
@@ -80,24 +87,8 @@ class UndoRedoStore {
             }),
 
             /**
-             * saves the modification of a variable
-             * @param type
-             * @param variable
-             * @param saveToStack
-             */
-            saveVariableModification: action((type, variable, saveToStack) => {
-                if (saveToStack) {
-                    this.logs.push("MODIFY VARIABLE: " + variable + ", Type: " + type);
-                    this.saveHistory("variable");
-                }
-                else {
-                    this.logs.push("(MODIFY VARIABLE: " + variable + ", Type: " + type + ")");
-                }
-            }),
-
-            /**
              * Saves when the view has been switched
-             * @param globalTL
+             * @param {boolean} globalTL
              */
             saveSwitchHistory: action(globalTL => {
                 if (globalTL) {
@@ -108,6 +99,10 @@ class UndoRedoStore {
                 }
                 this.saveHistory("switch");
             }),
+            /**
+             * Saves when realTime has been turned on/off
+             * @param {boolean} realTime
+             */
             saveRealTimeHistory: action(realTime => {
                 if (realTime) {
                     this.logs.push("REAL TIME TURNED ON");
@@ -120,7 +115,7 @@ class UndoRedoStore {
 
             /**
              * saves actions happening in the timeline view
-             * @param action
+             * @param {string} action
              */
             saveGlobalHistory: action(action => {
                 this.logs.push(action + ": in timeline view");
@@ -129,8 +124,8 @@ class UndoRedoStore {
 
             /**
              * saves realigning to the history
-             * @param timepointType
-             * @param timepointIndex
+             * @param {string} timepointType
+             * @param {number} timepointIndex
              */
             saveRealignToHistory: action((timepointIndex) => {
                 this.logs.push("REALIGN PATIENTS: based on block" + timepointIndex);
@@ -139,11 +134,11 @@ class UndoRedoStore {
 
             /**
              * saves moving patients up/down
-             * @param dir
-             * @param patient
+             * @param {string} direction
+             * @param {string} patient
              */
-            saveTPMovement: action((dir, patient) => {
-                this.logs.push("MOVE PATIENT: " + patient + " " + dir);
+            saveTPMovement: action((direction, patient) => {
+                this.logs.push("MOVE PATIENT: " + patient + " " + direction);
                 this.saveHistory("structure");
             })
         });
@@ -154,7 +149,7 @@ class UndoRedoStore {
 
     /**
      * deserializes the state at index
-     * @param index
+     * @param {number} index
      */
     deserialize(index) {
         this.deserializeVariables(index);
@@ -168,7 +163,7 @@ class UndoRedoStore {
 
     /**
      * deserialize variable related data
-     * @param index
+     * @param {number} index
      */
     deserializeVariables(index) {
         this.rootStore.dataStore.variableStores.sample.replaceVariables(UndoRedoStore.deserializeReferencedVariables(this.stateStack[index].state.allSampleVar),
@@ -176,7 +171,6 @@ class UndoRedoStore {
         this.rootStore.dataStore.variableStores.between.replaceVariables(UndoRedoStore.deserializeReferencedVariables(this.stateStack[index].state.allBetweenVar),
             this.stateStack[index].state.currentBetweenVar);
         this.rootStore.eventTimelineMap.replace(this.stateStack[index].state.eventTimelineMap);
-        this.rootStore.dataStore.transitionOn = this.stateStack[index].state.transitionOn;
         this.rootStore.dataStore.globalPrimary = this.stateStack[index].state.globalPrimary;
     }
 
@@ -192,18 +186,18 @@ class UndoRedoStore {
 
     /**
      * updates observed variables to the state of saved variables. If necessary, new variables are added (if saved contains a variable not contained in observed)
-     * @param savedVariables
-     * @returns {*}
+     * @param {{}} savedVariables
+     * @returns {*[]}
      */
     static deserializeReferencedVariables(savedVariables) {
-        let returnVariables={};
+        let returnVariables = {};
         for (let variable in savedVariables) {
-                if (!savedVariables[variable].derived) {
-                    returnVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile, savedVariables[variable].type);
-                }
-                else {
-                    returnVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modification, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper)
-                }
+            if (!savedVariables[variable].derived) {
+                returnVariables[variable] = new OriginalVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile, savedVariables[variable].type);
+            }
+            else {
+                returnVariables[variable] = new DerivedVariable(savedVariables[variable].id, savedVariables[variable].name, savedVariables[variable].datatype, savedVariables[variable].description, savedVariables[variable].originalIds, savedVariables[variable].modification, savedVariables[variable].range, savedVariables[variable].domain, savedVariables[variable].mapper, savedVariables[variable].profile, savedVariables[variable].type)
+            }
         }
         return returnVariables;
     }
@@ -211,8 +205,9 @@ class UndoRedoStore {
 
     /**
      * deserializes the timepoint data structure
-     * @param observable
-     * @param saved
+     * @param {SingleTimepoint[]} observable
+     * @param {Object[]} saved
+     * @return {SingleTimepoint[]}
      */
     static deserializeTimepoints(observable, saved) {
         saved.forEach(function (d, i) {
@@ -221,6 +216,12 @@ class UndoRedoStore {
         return observable;
     }
 
+    /**
+     *
+     * @param {observable[]} observable
+     * @param {Object[]} saved
+     * @return {Array}
+     */
     static deserializeTPStructure(observable, saved) {
         observable = [];
         saved.forEach(function (d) {
@@ -235,8 +236,8 @@ class UndoRedoStore {
 
     /**
      * remaps the property the saved entry to the observable entry
-     * @param observableEntry
-     * @param savedEntry
+     * @param {observable} observableEntry
+     * @param {Object} savedEntry
      */
     static remapProperties(observableEntry, savedEntry) {
         for (let property in savedEntry) {
@@ -247,6 +248,7 @@ class UndoRedoStore {
 
     /**
      * saves the history to the stateStack. For this the datastructures have to be serialized (put into a simple, non-observable object)
+     * @param {string} type - type of history entry
      */
     saveHistory(type) {
         const serializeState = createTransformer(store => ({
@@ -256,7 +258,6 @@ class UndoRedoStore {
             currentBetweenVar: store.rootStore.dataStore.variableStores.between.currentVariables.slice(),
             allSampleVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.sample.referencedVariables),
             allBetweenVar: UndoRedoStore.serializeVariables(store.rootStore.dataStore.variableStores.between.referencedVariables),
-            transitionOn: store.rootStore.dataStore.transitionOn,
             globalTime: store.uiStore.globalTime,
             realTime: store.uiStore.realTime,
             globalPrimary: store.rootStore.dataStore.globalPrimary,
@@ -286,20 +287,21 @@ class UndoRedoStore {
     }
 
     /**
-     * makes an object non-observable by transforming each attribute
-     * @param object
+     * makes an observable non-observable by transforming each attribute
+     * @param {{}} observable
+     * @return {Object[]} serialized version of observable object
      */
-    static serializeAttributes(object) {
+    static serializeAttributes(observable) {
         let returnDict = {};
-        for (let attribute in object) {
-            returnDict[attribute] = toJS(object[attribute]);
+        for (let attribute in observable) {
+            returnDict[attribute] = toJS(observable[attribute]);
         }
         return returnDict;
     }
 
     /**
-     * makes a variable non-observable
-     * @param variables
+     * creates a serialized version of each variable
+     * @param {{}} variables
      */
     static serializeVariables(variables) {
         let serializedVariables = {};

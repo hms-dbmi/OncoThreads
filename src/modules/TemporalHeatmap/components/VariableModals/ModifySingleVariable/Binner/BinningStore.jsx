@@ -15,24 +15,29 @@ class BinningStore {
             dragging: false,
             /**
              * set bin names
+             * @param: {Object[]} binNames
              */
             setBinNames: action((binNames) => {
                 this.binNames = binNames
             }),
             /**
              * set if mouse is dragged at the moment
+             * @param {boolean} isDragging
              */
-            setDragging: action(boolean => {
-                this.dragging = boolean
+            setDragging: action(isDragging => {
+                this.dragging = isDragging
             }),
             /**
              * set the currently selected bin border
+             * @param {number} index - currently selected bin border (slider)
              */
             setSelectedIndex: action(index => {
                 this.selectedIndex = index
             }),
             /**
              * set x and textFieldTexts based on input bins
+             * @param {number[]} bins
+             * @param {d3.scaleLinear} scale
              */
             setBins: action((bins, scale) => {
                 this.xScale = scale;
@@ -78,6 +83,7 @@ class BinningStore {
             }),
             /**
              * handles changes in number of bins
+             * @param {number} number - new number of bins
              */
             handleNumberChange: action((number) => {
                 if (number > this.x.length) {
@@ -88,7 +94,8 @@ class BinningStore {
                 }
             }),
             /**
-             * handles moving a bin
+             * handles moving a bin border
+             * @param {number} xDiff - distance to new position
              */
             handleBinMove: action((xDiff) => {
                 if (this.x[this.selectedIndex] - xDiff > 0 && this.x[this.selectedIndex] - xDiff < this.xScale.range()[1]) {
@@ -128,6 +135,8 @@ class BinningStore {
 
             /**
              * handles changing the name of a bin
+             * @param {event} e
+             * @param {number} index
              */
             handleBinNameChange: action((e, index) => {
                 if (!this.isBinary) {
@@ -148,19 +157,20 @@ class BinningStore {
             }),
             /**
              * handles changing the content of the textfields at the bin borders
+             * @param {string} value - entered in textfield
+             * @param {number} index - index of bin border
              */
             handlePositionTextFieldChange: action((value, index) => {
                 if (UtilityFunctions.isValidValue(value)) {
                     this.textFieldTexts[index] = value;
                     if (!isNaN(value) && value > this.bins[0] && value < this.bins[this.bins.length - 1]) {
                         this.x[index] = this.xScale(value);
-                        //this.adaptBinNames();
                     }
                 }
             }),
             /**
-             * returns current bins
-             * @returns {Array}
+             * returns current bins by translating pixels into actual values and adding minimum and maximum value at front and end of the array
+             * @returns {number[]}
              */
             get bins() {
                 let bins = [];
@@ -174,19 +184,22 @@ class BinningStore {
             },
             /**
              * inverses the scale
-             * @returns {*}
+             * @returns {d3.scaleLinear}
              */
             get inverseXScale() {
                 return d3.scaleLinear().domain(this.xScale.range()).range(this.xScale.domain());
             },
 
         });
+        // reaction to change in bins
         reaction(() => this.bins, bins => {
+            // if there are not exactly three bin borders the variable cannot be converted into binary
             if (bins.length !== 3) {
                 this.isBinary = false;
             }
+            // adapt bin names if number of bins changes
             if (!this.isBinary) {
-                if (this.binNames.length === bins.length-1) {
+                if (this.binNames.length === bins.length - 1) {
                     for (let i = 1; i < bins.length; i++) {
                         if (!this.binNames[i - 1].modified) {
                             this.binNames[i - 1].name = UtilityFunctions.getScientificNotation(bins[i - 1]) + " to " + UtilityFunctions.getScientificNotation(bins[i]);

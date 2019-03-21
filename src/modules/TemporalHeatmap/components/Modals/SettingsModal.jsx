@@ -2,7 +2,10 @@ import React from 'react';
 import {observer,inject} from 'mobx-react';
 import {Button, Modal,Radio,FormGroup} from 'react-bootstrap';
 
-
+/**
+ * Modal for choosing settings of the visualization
+ * Settings: Visual representation of grouped continuous variables, mode of selection (advanced/simplified), show rows of undefined values
+ */
 const SettingsModal = inject("uiStore")(observer(class SettingsModal extends React.Component {
 
     handleApply() {

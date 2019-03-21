@@ -2,7 +2,9 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, Modal} from 'react-bootstrap';
 
-
+/**
+ * Dialog for asking the user if she wants to save the modified variable after deleting it from the view
+ */
 const SaveVariableDialog = observer(class SaveVariableDialog extends React.Component {
     constructor(){
         super();

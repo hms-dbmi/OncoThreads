@@ -1,25 +1,26 @@
 import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import * as d3 from "d3";
+import GenomeNexusAPI from "../GenomeNexusAPI";
 
 
 /*
-gets the data with the cBioAPI and gives it to the other stores
+gets mutation and molecular data on demand and transforms the data to variables
  */
 class MolProfileMapping {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.mutationOrder = ['trunc', 'inframe', 'promoter', 'missense', 'other'];
-        this.currentMutations = {};
-        this.isInGenePanel = {};
-        this.currentMolecular = {};
-        this.currentIds = [];
-
+        this.mutationOrder = ['trunc', 'inframe', 'promoter', 'missense', 'other']; // "importance" order of mutation types
+        this.currentMutations = []; // current mutations
+        this.isInGenePanel = {}; // current gene panel mapping
+        this.currentMolecular = {}; // current molecular data (maps arrays of molecular data to profile ids
+        this.currentIds = []; // current entrezIds
+        this.genomeNexusAPI = new GenomeNexusAPI();
     }
 
     /**
      * Gets all currently selected mutations
-     * @param filteredIds
-     * @param mappingType
+     * @param {Object[]} filteredIds
+     * @param {string} mappingType
      */
     getMutationsProfile(filteredIds, mappingType) {
         let variables = [];
@@ -35,10 +36,7 @@ class MolProfileMapping {
         }
         filteredIds.forEach(d => {
             if (!this.rootStore.dataStore.variableStores.sample.isDisplayed(d.entrezGeneId + mappingType)) {
-                let containedIds=[];
-                if(d.entrezGeneId in this.currentMutations) {
-                    containedIds = this.currentMutations[d.entrezGeneId];
-                }
+                let containedIds = this.currentMutations.filter(mutation => mutation.gene.hugoGeneSymbol === d.hgncSymbol);
                 let domain = [];
                 if (mappingType === "Mutation type") {
                     domain = this.mutationOrder;
@@ -46,7 +44,7 @@ class MolProfileMapping {
                 else if (mappingType === "Variant allele frequency") {
                     domain = [0, 1];
                 }
-                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType,"gene"));
+                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType, "gene"));
             }
         });
         return variables;
@@ -54,8 +52,8 @@ class MolProfileMapping {
 
     /**
      * gets data corresponding to selected HUGOsymbols in a molecular profile
-     * @param filteredIds
-     * @param profileId
+     * @param {Object[]} filteredIds
+     * @param {string} profileId
      */
     getMolecularProfile(filteredIds, profileId) {
         let variables = [];
@@ -67,15 +65,20 @@ class MolProfileMapping {
                     let domain = [];
                     let range = [];
                     let datatype = "NUMBER";
-                    if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
-                        let helper = d3.scaleLinear().domain([0, 0.5, 1]).range(['#0571b0', '#f7f7f7', '#ca0020']);
-                        domain = ["-2", "-1", "0", "1", "2"];
-                        range = domain.map((d, i) => {
-                            return helper(i / (domain.length - 1));
-                        });
-                        datatype = "ORDINAL";
+                    if (profile.datatype === "DISCRETE") {
+                        if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
+                            datatype = "ORDINAL";
+                            let helper = d3.scaleLinear().domain([0, 0.5, 1]).range(['#0571b0', '#f7f7f7', '#ca0020']);
+                            domain = ["-2", "-1", "0", "1", "2"];
+                            range = domain.map((d, i) => {
+                                return helper(i / (domain.length - 1));
+                            });
+                        }
+                        else {
+                            datatype = "STRING";
+                        }
                     }
-                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId,"gene"));
+                    variables.push(new OriginalVariable(d.entrezGeneId + "_" + profileId, d.hgncSymbol + "_" + profile.name, datatype, profile.name + ": " + d.hgncSymbol, range, domain, this.createMolecularMapping(containedIds, datatype), profileId, "molecular"));
                 }
             });
         }
@@ -84,25 +87,24 @@ class MolProfileMapping {
 
     /**
      * loads the entrezIDs corresponding to the HUGO Symbols
-     * @param HUGOsymbols
-     * @param callback
+     * @param {string[]} HUGOsymbols
+     * @param {loadFinishedCallback} callback
      */
     loadIds(HUGOsymbols, callback) {
         this.currentIds = [];
-        this.currentMutations = {};
+        this.currentMutations = [];
         this.currentMolecular = {};
         this.isInGenePanel = {};
-        this.rootStore.cbioAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
+        this.genomeNexusAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
             this.currentIds = entrezIDs;
-
             callback();
         });
     }
 
     /**
      * filters currentIDs to exclude not available data
-     * @param profileId
-     * @returns {T[]}
+     * @param {string} profileId
+     * @returns {Object[]} filtered ids
      */
     filterMolecularData(profileId) {
         let noMutationsFound = [];
@@ -113,13 +115,14 @@ class MolProfileMapping {
             }
         });
         if (noMutationsFound.length > 0) {
-            window.alert("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + " of profile " + this.rootStore.molecularProfiles.filter(d => d.molecularProfileId === profileId).name + "\n No track will be added");
+            window.alert("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + " of profile " + this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId).name + "\n No track will be added");
         }
         return this.currentIds.filter(d => !(noMutationsFound.map(f => f.entrezGeneId).includes(d.entrezGeneId)));
     }
 
     /**
      * filters geneIDs based on if the genes were sequenced and if there are mutations
+     * @return {Object} filtered ids
      */
     filterGeneIDs() {
         //Is gene panel sequenced?
@@ -131,7 +134,7 @@ class MolProfileMapping {
         let noMutationsFound = [];
         //Are there mutations?
         availableIds.forEach(d => {
-            if (!(d.entrezGeneId in this.currentMutations)) {
+            if (!(this.currentMutations.map(d => d.gene.hugoGeneSymbol).includes(d.hgncSymbol))) {
                 noMutationsFound.push({hgncSymbol: d.hgncSymbol, entrezGeneId: d.entrezGeneId});
             }
         });
@@ -147,30 +150,29 @@ class MolProfileMapping {
 
     /**
      * loads mutation data
-     * @param callback
+     * @param {string} profileId
+     * @param {loadFinishedCallback} callback
      */
-    loadMutations(callback) {
+    loadMutations(profileId, callback) {
         if (this.currentIds.length !== 0) {
-            this.currentIds.forEach(d => {
-                if(d.entrezGeneId in this.rootStore.mutations) {
-                    this.currentMutations[d.entrezGeneId] = this.rootStore.mutations[d.entrezGeneId];
-                }
-            });
-            this.rootStore.cbioAPI.areProfiled(this.rootStore.study.studyId, this.currentIds.map(d => d.entrezGeneId), profiledDict => {
-                this.isInGenePanel = profiledDict;
-                callback()
+            this.rootStore.api.getMutations(this.currentIds, profileId, mutations => {
+                this.currentMutations = mutations;
+                this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profileId, profiledDict => {
+                    this.isInGenePanel = profiledDict;
+                    callback()
+                });
             });
         }
     }
 
     /**
      * loads data for molecular profiles
-     * @param profileId
-     * @param callback
+     * @param {string} profileId
+     * @param {loadFinishedCallback} callback
      */
     loadMolecularData(profileId, callback) {
         if (this.currentIds.length !== 0) {
-            this.rootStore.cbioAPI.getMolecularValues(this.rootStore.study.studyId, profileId, this.currentIds, response => {
+            this.rootStore.api.getMolecularValues(profileId, this.currentIds, response => {
                 this.currentMolecular[profileId] = response;
                 callback()
             })
@@ -179,15 +181,15 @@ class MolProfileMapping {
 
     /**
      * gets data for one molecular profile/one mutation mapping type
-     * @param profileId
-     * @param HUGOsymbols
-     * @param mappingType
-     * @param callback
+     * @param {string} profileId
+     * @param {string[]} HUGOsymbols
+     * @param {string} mappingType
+     * @param {returnDataCallback} callback
      */
     getProfileData(profileId, HUGOsymbols, mappingType, callback) {
         this.loadIds(HUGOsymbols, () => {
             if (this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
-                this.loadMutations(() => {
+                this.loadMutations(profileId, () => {
                     callback(this.getMutationsProfile(this.filterGeneIDs(), mappingType))
                 });
             }
@@ -201,9 +203,9 @@ class MolProfileMapping {
 
     /**
      * gets multiple profiles and mapping types at once
-     * @param profileIds
-     * @param mappingTypes
-     * @returns {Array}
+     * @param {string[]} profileIds
+     * @param {string[]} mappingTypes
+     * @returns {OriginalVariable[]} array of new variables
      */
     getMultipleProfiles(profileIds, mappingTypes) {
         let variables = [];
@@ -221,9 +223,10 @@ class MolProfileMapping {
 
     /**
      * creates sample id mapping for mutations
-     * @param list
-     * @param mappingType
-     * @param entrezID
+     * @param {Object[]} list - list of muatation data
+     * @param {string} mappingType - current mapping type (Binary, Protein change, Mutation type, Variant Allele Frequency)
+     * @param {number} entrezID - current entrezID
+     * @return {Object} mapper sampleID - value
      */
     createMutationMapping(list, mappingType, entrezID) {
         let mappingFunction;
@@ -278,13 +281,19 @@ class MolProfileMapping {
             mappingFunction = currentSample => {
                 const missense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "missense");
                 const nonsense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "nonsense");
-                let vaf = 1;
+                let vaf = undefined;
+                let altCount = -1;
+                let refCount = -1;
                 if (missense.length > 0) {
-                    vaf = missense[0].vaf;
+                    altCount = missense[0].tumorAltCount;
+                    refCount = missense[0].tumorRefCount;
                 }
                 else if (nonsense.length > 0) {
-                    vaf = nonsense[0].vaf;
-
+                    altCount = nonsense[0].tumorAltCount;
+                    refCount = nonsense[0].tumorRefCount;
+                }
+                if (altCount !== -1 && refCount !== -1) {
+                    vaf = altCount / (altCount + refCount);
                 }
                 return vaf;
             }
@@ -303,7 +312,7 @@ class MolProfileMapping {
 
     /**
      * get simplified mutation type
-     * @param type
+     * @param {string} type - raw mutation type
      * @returns {string}
      */
     static getMutationType(type) {
@@ -371,29 +380,33 @@ class MolProfileMapping {
 
     /**
      * creates mapping for a molecular profile
-     * @param list
-     * @param datatype
+     * @param {Object[]} list - array of molecular data
+     * @param {string} datatype - current data type
+     * @return {Object} mapper sampleId - molecular value
      */
     createMolecularMapping(list, datatype) {
         let mapper = {};
-        this.rootStore.timepointStructure.forEach(d => {
-            d.forEach(f => {
-                if (list.length === 0) {
-                    mapper[f.sample] = undefined;
+        this.rootStore.timepointStructure.forEach(row => {
+            row.forEach(element => {
+                if (list.filter(d => d.sampleId === element.sample) === 0) {
+                    mapper[element.sample] = undefined;
                 }
                 else {
-                    let value = list.filter(d => d.sampleId === f.sample)[0].value;
+                    let value = list.filter(d => d.sampleId === element.sample)[0].value;
                     if (datatype === "NUMBER") {
-                        value = parseFloat(value);
+                        if (value !== "NA") {
+                            value = parseFloat(value);
+                        }
+                        else {
+                            value = undefined;
+                        }
                     }
-                    mapper[f.sample] = value;
+                    mapper[element.sample] = value;
                 }
             });
         });
         return mapper;
     }
-
-
 }
 
 export default MolProfileMapping

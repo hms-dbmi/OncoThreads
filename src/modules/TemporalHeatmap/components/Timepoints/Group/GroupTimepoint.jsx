@@ -1,11 +1,8 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
-
 import GroupPartition from './GroupPartition'
-/*
-creates a grouped timepoint
- */
-const GroupTimepoint = inject("dataStore","uiStore")(observer(class GroupTimepoint extends React.Component {
+
+const GroupTimepoint = inject("dataStore", "uiStore","visStore")(observer(class GroupTimepoint extends React.Component {
     constructor() {
         super();
         this.handleMouseClick = this.handleMouseClick.bind(this);
@@ -27,7 +24,6 @@ const GroupTimepoint = inject("dataStore","uiStore")(observer(class GroupTimepoi
                                onClick={(e) => this.handleMouseClick(e, d.patients)}
                                transform={transform}><GroupPartition heatmap={this.props.heatmap}
                                                                      currentVariables={this.props.currentVariables}
-                                                                     groupScale={this.props.groupScale}
                                                                      tooltipFunctions={this.props.tooltipFunctions}
                                                                      partition={d}
                                                                      partitionIndex={i}
@@ -35,7 +31,7 @@ const GroupTimepoint = inject("dataStore","uiStore")(observer(class GroupTimepoi
                                                                      primaryVariableId={this.props.primaryVariableId}/>
             </g>);
 
-            previousXPosition += this.props.groupScale(d.patients.length) + 10;
+            previousXPosition += this.props.visStore.groupScale(d.patients.length) + 10;
 
         });
         return partitions;
@@ -49,7 +45,7 @@ const GroupTimepoint = inject("dataStore","uiStore")(observer(class GroupTimepoi
 
     /**
      * checks if the patients in the partition are selected
-     * @param patients
+     * @param {string[]} patients
      * @returns {boolean}
      */
     isSelected(patients) {

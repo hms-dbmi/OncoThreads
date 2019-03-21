@@ -3,8 +3,8 @@ import {inject, observer} from 'mobx-react';
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 
 
-/*
-implements the icons and their functionality on the left side of the plot
+/**
+ * Component for row operators of one timepoint in BlockView
  */
 const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(class RowOperator extends React.Component {
         constructor() {
@@ -23,22 +23,27 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
         }
 
 
-        openSaveModal(variable, callback) {
+        /**
+         * opens the modal for saving a variable
+         * @param {string} variableId
+         * @param callback
+         */
+        openSaveModal(variableId, callback) {
             this.setState({
                 modalIsOpen: true,
-                currentVariable: variable,
+                currentVariable: variableId,
                 callback: callback,
             })
         }
 
         /**
          * calls the store function to group a timepoint
-         * @param timepoint: timepoint to be grouped
-         * @param variable
+         * @param {SingleTimepoint} timepoint - timepoint to be grouped
+         * @param {(DerivedVariable|OriginalVariable)} variable
          */
         group(timepoint, variable) {
             if (variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
+                this.props.openBinningModal(variable, derivedVariable => {
                     this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
                     this.props.undoRedoStore.saveTimepointHistory("GROUP", variable.id, timepoint.type, timepoint.localIndex)
@@ -53,12 +58,12 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
         /**
          * sorts a timepoint
          * the variable has to be declared a primary variable, then the timepoint is sorted
-         * @param timepoint: timepoint to be sorted
-         * @param variable
+         * @param {SingleTimepoint} timepoint - timepoint to be sorted
+         * @param {(DerivedVariable|OriginalVariable)} variable
          */
         sortTimepoint(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
+                this.props.openBinningModal(variable, derivedVariable => {
                     this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.group(derivedVariable.id);
                     this.props.undoRedoStore.saveTimepointHistory("SORT", variable.id, timepoint.type, timepoint.localIndex)
@@ -78,8 +83,8 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
 
         /**
          * ungoups a grouped timepoint
-         * @param timepoint: timepoint to be regrouped
-         * @param variableId: variable which will be the future primary variable
+         * @param {SingleTimepoint} timepoint - timepoint to be regrouped
+         * @param {string} variableId - variable which will be the future primary variable
          */
         unGroup(timepoint, variableId) {
             timepoint.unGroup(variableId);
@@ -88,12 +93,12 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
 
         /**
          * promotes a variable at a timepoint to a primary variable
-         * @param timepoint: timepoint where the primary variable is changes
-         * @param variable
+         * @param {SingleTimepoint} timepoint - timepoint of which the primary variable is changed
+         * @param {(DerivedVariable|OriginalVariable)} variable
          */
         promote(timepoint, variable) {
             if (timepoint.isGrouped && variable.datatype === "NUMBER") {
-                this.props.openBinningModal(variable, timepoint.type, derivedVariable => {
+                this.props.openBinningModal(variable, derivedVariable => {
                     this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(variable.id, derivedVariable);
                     timepoint.promote(derivedVariable.id);
                     this.props.undoRedoStore.saveTimepointHistory("PROMOTE", variable.id, timepoint.type, timepoint.localIndex)
@@ -105,6 +110,11 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
             }
         }
 
+        /**
+         *
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {string} type
+         */
         removeVariable(variable, type) {
             const variableName = variable.name;
             if (variable.derived) {
@@ -122,10 +132,10 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
 
         /**
          * crops text to a certain width and appends "..."
-         * @param text
-         * @param fontSize
-         * @param fontweight
-         * @param maxWidth
+         * @param {string} text
+         * @param {number} fontSize
+         * @param {*} fontweight
+         * @param {number} maxWidth
          * @returns {number}
          */
         static cropText(text, fontSize, fontweight, maxWidth) {
@@ -149,9 +159,10 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
 
         /**
          * highlights variable
+         * @param {string} variableId
          */
-        handleRowEnter(variable) {
-            this.props.highlightVariable(variable);
+        handleRowEnter(variableId) {
+            this.props.highlightVariable(variableId);
         }
 
         /**
@@ -162,9 +173,9 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
         }
 
         /**
-         * handle click on delete button
-         * @param variable
-         * @param timepoint
+         * handles click on delete button
+         * @param {(OriginalVariable|DerivedVariable)} variable
+         * @param {SingleTimepoint} timepoint
          */
         handleDelete(variable, timepoint) {
             this.props.unhighlightVariable();
@@ -177,6 +188,15 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
             }
         }
 
+        /**
+         * creates an icon for sorting and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (<g id="sort" className="not_exported"
                        transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
@@ -191,6 +211,15 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
             </g>);
         }
 
+        /**
+         * creates an icon for grouping and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (<g id="group" className="not_exported"
                        transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
@@ -206,6 +235,15 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
             </g>);
         }
 
+        /**
+         * creates an icon for ungrouping and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getUnGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
                 <g id="ungroup" className="not_exported"
@@ -222,6 +260,15 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
                 </g>);
         }
 
+        /**
+         * creates an icon for deleting and associates it with the corresponding functions
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g}
+         */
         getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
             return (
                 <g id="delete" className="not_exported"
@@ -237,6 +284,18 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
                 </g>);
         }
 
+        /**
+         * gets the label for a rot in a timepoint
+         * @param {SingleTimepoint} timepoint
+         * @param {(DerivedVariable|OriginalVariable)} variable
+         * @param {number} xPos
+         * @param {number} yPos
+         * @param {number} iconScale
+         * @param {number} width
+         * @param {*} fontWeight
+         * @param {number} fontSize
+         * @return {g}
+         */
         getRowLabel(timepoint, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
             return (<g transform={"translate(" + xPos + "," + yPos + ")"}
                        onMouseEnter={(e) => this.props.showTooltip(e, "Promote variable " + variable.name, variable.description)}
@@ -247,12 +306,17 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
             </g>);
         }
 
+        /**
+         * gets grey rectangle for highlighting a row
+         * @param {number} height
+         * @return {rect}
+         */
         getHighlightRect(height) {
             return <rect height={height} width={this.props.width} fill="#e8e8e8"/>
         }
 
         /**
-         * Creates the Row operator for a timepoint
+         * Creates the Row operators for a timepoint
          */
         getRowOperator() {
             const _self = this;

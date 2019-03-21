@@ -3,9 +3,12 @@ import {inject, observer} from 'mobx-react';
 import TimepointVariableSelector from "./TimepointVariableSelector";
 import VariableTable from "./VariableTable";
 
-
+/**
+ * Component for management of timepoint variables
+ */
 const AddTimepointVarTab = inject("variableManagerStore", "rootStore")(observer(class AddVarModal extends React.Component {
     render() {
+        // set available categories (profiles)
         let availableCategories = [{id: "clinPatient", name: "Clinical patient data"}
             , {id: "clinSample", name: "Clinical sample data"}
             , ...this.props.rootStore.mutationMappingTypes.map(d => {

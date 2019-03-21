@@ -2,10 +2,13 @@ import React from 'react';
 import {observer,inject} from 'mobx-react';
 import {Button, ButtonGroup, Col, ControlLabel, Form, FormControl, FormGroup} from 'react-bootstrap';
 
-
+/**
+ * BinNames on the bottom of the binner
+ */
 const BinNames = inject("binningStore")(observer(class BinNames extends React.Component {
     render() {
         let binNameFields = [];
+        //case: non-binary binning
         if (!this.props.binningStore.isBinary) {
             for (let i = 0; i < this.props.binningStore.binNames.length; i++) {
                 binNameFields.push([<FormGroup key={"Bin" + (i + 1)}>
@@ -18,6 +21,7 @@ const BinNames = inject("binningStore")(observer(class BinNames extends React.Co
                             value={this.props.binningStore.binNames[i].name}/></Col></FormGroup>]);
             }
         }
+        //case: binary binning
         else {
             for (let i = 0; i < this.props.binningStore.binNames.length; i++) {
                 binNameFields.push(<FormGroup key={"Bin" + (i + 1)}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import BinaryCombine from "./BinaryCombine";
 import DerivedVariable from "../../../stores/DerivedVariable";
@@ -7,12 +7,14 @@ import uuidv4 from 'uuid/v4';
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 
-
+/**
+ * Component for combining variables
+ */
 const CombineModal = inject("variableManagerStore")(observer(class CombineModal extends React.Component {
 
     constructor(props) {
         super(props);
-        this.modificationType = this.getModificationType();
+        this.modificationType = this.getModificationType(); //type of combination (depends on the input variables)
         this.state = this.getInitialState();
         this.setModification = this.setModification.bind(this);
         this.setColors = this.setColors.bind(this);
@@ -25,7 +27,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
 
     /**
      * get type of combine based on input variables
-     * @returns {*}
+     * @returns {string} binaryCombine, categoryCombine or numberCombine
      */
     getModificationType() {
         let modificationType;
@@ -46,14 +48,19 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
         return modificationType;
     }
 
+    /**
+     * gets the inital state
+     * @return {{name: string, modification: {type: string, operator: string, datatype: string}, nameChanged: boolean, variableRange: string[], keep: boolean, isOrdinal: boolean, currentVarCategories: Object[]}}
+     */
     getInitialState() {
-        let name;
-        let modification = {type: this.modificationType, operator: "", datatype: ""};
-        let nameChanged = false;
+        let name; // name of combined variable
+        let modification = {type: this.modificationType, operator: "", datatype: ""}; // way of modification
+        let nameChanged = false; // has the name been changed
         let variableRange = [];
-        let keep = true;
-        let ordinal = false;
-        let currentVarCategories = [];
+        let keep = true; // keep original variables or discard them
+        let ordinal = false; // is combined variable ordinal
+        let currentVarCategories = []; // current categories of combined variable
+        // if the variable is already combined base parameters on this variable
         if (this.props.derivedVariable !== null) {
             modification = this.props.derivedVariable.modification;
             name = this.props.derivedVariable.name;
@@ -62,7 +69,6 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
             ordinal = this.props.derivedVariable.datatype === "ORDINAL";
             if (this.props.derivedVariable.modification.datatype === "STRING") {
                 currentVarCategories = this.getCurrentDataOfDerivedVariable();
-                console.log(currentVarCategories);
             }
         }
         else {
@@ -82,14 +88,14 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
             nameChanged: nameChanged,
             variableRange: variableRange,
             keep: keep,
-            ordinal: ordinal,
+            isOrdinal: ordinal,
             currentVarCategories: currentVarCategories
         };
     }
 
     /**
      * creates current variable categories for a derived variable
-     * @returns {Array}
+     * @returns {Object[]}
      */
     getCurrentDataOfDerivedVariable() {
         let currentVarCategories = [];
@@ -116,10 +122,10 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
     }
 
     /**
-     * creates current data for displaying variable categories
-     * @param modification
-     * @param colors
-     * @returns {Array}
+     * creates current variable categories for a non-derived variable
+     * @param {Object} modification
+     * @param {string[]}colors
+     * @returns {Object[]}
      */
     createCurrentCategoryData(modification, colors) {
         let currentVarCategories = [];
@@ -136,7 +142,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
 
     /**
      * sets the current modification type and corresponding currentVarCategories and colors
-     * @param modification
+     * @param {Object} modification
      */
     setModification(modification) {
         let currentVarCategories = [];
@@ -170,7 +176,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
 
     /**
      * returns the domain of the current mapper
-     * @param modification
+     * @param {Object} modification
      * @returns {Array}
      */
     getDomain(modification) {
@@ -186,16 +192,24 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
 
     /**
      * sets colors for the combined variable
-     * @param colors
+     * @param {string[]} colors
      */
     setColors(colors) {
         this.setState({variableRange: colors});
     }
 
+    /**
+     * sets if combined variable is ordinal
+     * @param {boolean} ordinal
+     */
     setOrdinal(ordinal) {
-        this.setState({ordinal: ordinal});
+        this.setState({isOrdinal: ordinal});
     }
 
+    /**
+     * sets current variable categories
+     * @param {Object[]} currentVarCategories
+     */
     setCurrentVarCategories(currentVarCategories) {
         let categoryMapping = {};
         this.getDomain(this.state.modification).forEach((d) => {
@@ -221,12 +235,16 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
 
     /**
      * handles the name change
-     * @param event
+     * @param {event} event
      */
     handleNameChange(event) {
         this.setState({name: event.target.value, nameChanged: true});
     }
 
+    /**
+     * returns the component corresponding to the modificationType
+     * @return {BinaryCombine}
+     */
     getModificationPanel() {
         if (this.modificationType === "binaryCombine") {
             return <BinaryCombine setModification={this.setModification}
@@ -242,7 +260,9 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
         }
     }
 
-
+     /**
+     * applies combination of variables
+     */
     handleApply() {
         let dataType, description;
         let mapper = DerivedMapperFunctions.getModificationMapper(this.state.modification, this.props.variables.map(d => d.mapper));
@@ -274,9 +294,9 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
             description = "Numerical combination of " + this.props.variables.map(d => d.name);
 
         }
-        this.props.variableManagerStore.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper), this.state.keep);
-        if(!this.state.keep){
-            this.props.currentVariables.forEach(d=>{
+        this.props.variableManagerStore.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), this.state.name, dataType, description, this.props.variables.map(d => d.id), this.state.modification, this.state.variableRange, [], mapper, uuidv4(), "combined"), this.state.keep);
+        if (!this.state.keep) {
+            this.props.variables.forEach(d => {
                 this.props.variableManagerStore.removeVariable(d.id);
             })
         }

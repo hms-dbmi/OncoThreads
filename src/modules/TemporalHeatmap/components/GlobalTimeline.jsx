@@ -4,8 +4,8 @@ import TimelineTimepoint from "./Timepoints/GlobalTimeline/TimelineTimepoint";
 import GlobalTransition from "./Transitions/GlobalTransition";
 
 
-/*
-creates the timepoints (either sampleTimepoints or betweenTimepoints)
+/**
+ * Component for global timeline
  */
 const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends React.Component {
     constructor() {
@@ -29,8 +29,8 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
     }
 
     updateDimensions() {
-        this.props.rootStore.visStore.setPlotWidth(this.refs.globalTime.parentNode.getBoundingClientRect().width);
-        this.props.rootStore.visStore.setPlotHeight(this.refs.globalTime.parentNode.getBoundingClientRect().height);
+        this.props.rootStore.visStore.setPlotWidth(this.refs.globalTime.getBoundingClientRect().width);
+        this.props.rootStore.visStore.setPlotHeight(window.innerHeight-this.refs.globalTime.getBoundingClientRect().top);
     }
 
     getGlobalTimepoints() {
@@ -63,7 +63,7 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
                     timeScale={_self.props.timeScale}
                     numEventsForEachPatient={numEventsForEachPatient}
                     currentVariables={_self.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables}
-                    heatmapScale={_self.props.heatmapScales[0]}
+                    heatmapScale={_self.props.rootStore.visStore.heatmapScales[0]}
                     {..._self.props.tooltipFunctions}
                     primaryVariableId={d.primaryVariableId}
                 />
@@ -136,7 +136,7 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
 
                 //timepoint_sample=d;
                 //ind_sample=i;
-                //heatmapScale_sample=_self.props.heatmapScales[i];
+                //heatmapScale_sample=_self.props.rootStore.visStore.heatmapScales[i];
             }
 
             //var yp=_self.props.allYPositions[i].map(y => y*700.0/max); //.map(x=>x.timeGapBetweenSample);
@@ -156,7 +156,7 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
                             timeScale={_self.props.timeScale}
                             numEventsForEachPatient={numEventsForEachPatient}
                             currentVariables={_self.props.rootStore.dataStore.variableStores[heatmapd.type].fullCurrentVariables}
-                            heatmapScale={_self.props.heatmapScales[0]}
+                            heatmapScale={_self.props.rootStore.visStore.heatmapScales[0]}
                             {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
@@ -170,7 +170,7 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
                             numEventsForEachPatient={numEventsForEachPatient}
                             currentVariables={_self.props.rootStore.dataStore.variableStores[heatmapd.type].fullCurrentVariables}
                             width={_self.props.heatmapWidth}
-                            heatmapScale={_self.props.heatmapScales[0]}
+                            heatmapScale={_self.props.rootStore.visStore.heatmapScales[0]}
                             {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
@@ -187,7 +187,7 @@ const GlobalTimeline = inject("rootStore")(observer(class GlobalTimeline extends
             <GlobalTransition key={"globalTransition"}
                               patients={this.props.rootStore.patients}
                               minMax={this.props.rootStore.minMax}
-                              heatmapScale={this.props.heatmapScales[0]}
+                              heatmapScale={this.props.rootStore.visStore.heatmapScales[0]}
                               timeScale={this.props.timeScale}
                               {...this.props.tooltipFunctions}/></Provider>)
     }

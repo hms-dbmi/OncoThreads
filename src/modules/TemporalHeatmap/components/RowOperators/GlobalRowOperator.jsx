@@ -1,10 +1,8 @@
 import React from 'react';
 import {observer,inject} from 'mobx-react';
-import UtilityFunctions from "../../UtilityClasses/UtilityFunctions";
 
-
-/*
-implements the icons and their functionality on the left side of the plot
+/**
+ * Component for a a row operators of a timepont type in the Global timeline
  */
 const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observer(class GlobalRowOperator extends React.Component {
         constructor() {
@@ -15,20 +13,20 @@ const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observe
 
         /**
          * promotes a variable at a timepoint to a primary variable
-         * @param variable: variable to be the primary variable
+         * @param {string} variableId - variable to be the primary variable
          */
-        promote(variable) {
-            this.props.dataStore.setGlobalPrimary(variable);
+        promote(variableId) {
+            this.props.dataStore.setGlobalPrimary(variableId);
             this.props.undoRedoStore.saveGlobalHistory("PROMOTE");
         }
 
         /**
          * computes the width of a text. Returns 30 if the text width would be shorter than 30
-         * @param text
-         * @param fontSize
-         * @param fontweight
-         * @param maxWidth
-         * @returns {number}
+         * @param {string} text
+         * @param {number} fontSize
+         * @param {*} fontweight
+         * @param {number} maxWidth
+         * @returns {string}
          */
         static cropText(text, fontSize, fontweight, maxWidth) {
             const context = document.createElement("canvas").getContext("2d");
@@ -52,13 +50,13 @@ const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observe
         }
 
         /**
-         * handle click on delete button
-         * @param variable
-         * @param timepoint
+         * handles deleting a timepoint
+         * @param {string} variableId
+         * @param {Object} timepoint
          */
-        handleDelete(variable, timepoint) {
+        handleDelete(variableId, timepoint) {
             if (timepoint.type === "between" || this.props.dataStore.variableStores[timepoint.type].currentVariables.length > 1) {
-                this.props.dataStore.variableStores[timepoint.type].removeVariable(variable);
+                this.props.dataStore.variableStores[timepoint.type].removeVariable(variableId);
                 if (timepoint.type === "sample") {
                     this.promote(this.props.dataStore.variableStores.sample.currentVariables[0]);
                 }
@@ -69,14 +67,23 @@ const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observe
             }
         }
 
-        getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
+        /**
+         * creates a delete icon and associates it with the delete function
+         * @param {Object} timepoint
+         * @param {string} variableId
+         * @param {number} iconScale
+         * @param {number} xPos
+         * @param {number} yPos
+         * @return {g} icon
+         */
+        getDeleteIcon(timepoint, variableId, iconScale, xPos, yPos) {
             return (
-                <g  className="not_exported" key={"delete" + variable} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
+                <g  className="not_exported" key={"delete" + variableId} transform={"translate(" + xPos + "," + yPos + ")scale(" + iconScale + ")"}
                    onMouseEnter={(e) => this.props.showTooltip(e, "Delete variable from all blocks ")}
                    onMouseLeave={this.props.hideTooltip}>
                     <path fill="gray"
                           d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
-                    <rect onClick={() => this.handleDelete(variable, timepoint)}
+                    <rect onClick={() => this.handleDelete(variableId, timepoint)}
                           width={iconScale * 24} height={24}
                           fill="none"
                           pointerEvents="visible"/>
@@ -84,26 +91,22 @@ const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observe
         }
 
         /**
-         * computes the width of a text. Returns 30 if the text width would be shorter than 30
-         * @param text
-         * @param fontSize
-         * @returns {number}
+         * creates the label for a row
+         * @param {Object} timepoint
+         * @param {string} variableId
+         * @param {number} yPos
+         * @param {number} iconScale
+         * @param {number} width
+         * @param {*} fontWeight
+         * @param {number} fontSize
+         * @return {*}
          */
-        static getTextWidth(text, fontSize) {
-            const minWidth = 30;
-            const width = UtilityFunctions.getTextWidth(text,fontSize);
-            if (width > minWidth) {
-                return width;
-            }
-            else return minWidth;
-        }
-
-        getRowLabel(timepoint, variable, yPos, iconScale, width, fontWeight, fontSize) {
+        getRowLabel(timepoint, variableId, yPos, iconScale, width, fontWeight, fontSize) {
             const _self = this;
-            const currVar = this.props.dataStore.variableStores[timepoint.type].getById(variable);
+            const currVar = this.props.dataStore.variableStores[timepoint.type].getById(variableId);
             let label;
             if (timepoint.type === 'between') {
-                if (this.props.dataStore.variableStores[timepoint.type].isEventDerived(variable)) {
+                if (this.props.dataStore.variableStores[timepoint.type].isEventDerived(variableId)) {
                     //let labels = [];
                     //let oIds = currVar.originalIds;
                     label = <g key={currVar.id}
@@ -113,7 +116,7 @@ const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observe
                         <text style={{fontWeight: fontWeight, fontSize: fontSize}}>
                             {GlobalRowOperator.cropText(currVar.name, fontSize, fontWeight, width - iconScale * 24 - fontSize)}
                         </text>
-                        {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
+                        {_self.getDeleteIcon(timepoint, variableId, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
                         <rect key={"rect"}
                               width={fontSize} height={fontSize}
                               x={this.props.width - iconScale * 24 - fontSize}
@@ -130,11 +133,11 @@ const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observe
                     <g onMouseEnter={(e) => _self.props.showTooltip(e, "Promote variable " + currVar.name, currVar.description)}
                        onMouseLeave={_self.props.hideTooltip}>>
                         <text style={{fontWeight: fontWeight, fontSize: fontSize}}
-                              onClick={() => this.promote(variable)}
+                              onClick={() => this.promote(variableId)}
                         >
-                            {GlobalRowOperator.cropText(this.props.dataStore.variableStores[timepoint.type].getById(variable, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
+                            {GlobalRowOperator.cropText(this.props.dataStore.variableStores[timepoint.type].getById(variableId, timepoint.type).name, fontSize, fontWeight, width - iconScale * 24)}
                         </text>
-                        {_self.getDeleteIcon(timepoint, variable, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
+                        {_self.getDeleteIcon(timepoint, variableId, iconScale, _self.props.width - iconScale * 24, -fontSize - 2)}
                     </g>;
                 this.position += this.props.visStore.secondaryHeight;
             }

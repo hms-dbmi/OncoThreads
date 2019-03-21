@@ -2,7 +2,9 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import {Button, Modal} from 'react-bootstrap';
 
-
+/**
+ * Modal showing logs
+ */
 const LogModal = observer(class LogModal extends React.Component {
     getFormattedLogs() {
         let formattedLogs = [];
