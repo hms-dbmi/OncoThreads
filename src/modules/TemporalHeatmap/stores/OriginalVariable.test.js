@@ -2,6 +2,7 @@ import OriginalVariable from "./OriginalVariable";
 import ColorScales from "../UtilityClasses/ColorScales";
 
 describe("OriginalVariable", () => {
+    // check if the color scale setup works
     it("creates colorScale correctly", () => {
         let mapper1 = {};
         let domain = ["x", "y", "z"];

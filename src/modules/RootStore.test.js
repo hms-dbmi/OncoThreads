@@ -4,6 +4,7 @@ import DerivedVariable from "./TemporalHeatmap/stores/DerivedVariable";
 import UIStore from "./UIStore";
 
 describe("RootStore", () => {
+    // check if new variable is created in the right way
     it("creates new variable", () => {
         const rootStore = new RootStore;
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable("id1", "name1", "datatype1", "description1", [], [], {}, "", ""));
@@ -12,11 +13,12 @@ describe("RootStore", () => {
         expect(rootStore.dataStore.variableStores.sample.currentVariables[0]).toBe("id1");
         expect(rootStore.dataStore.variableStores.sample.currentVariables[1]).toBe("id2");
     });
+    // check if variables that are no longer referenced are removed
     it("removes variables that are no longer referenced", () => {
         const rootStore = new RootStore;
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable("id1", "name1", "datatype1", "description1", [], [], {}, "", ""));
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable("id2", "name2", "datatype2", "description2", [], [], {}, "", ""));
-        rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new DerivedVariable("id3", "name3", "datatype1", "description3", ["id1", "id2"], {}, [], [], []));
+        rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new DerivedVariable("id3", "name3", "datatype1", "description3", ["id1", "id2"], {}, [], [], [],"",""));
         expect(rootStore.dataStore.variableStores.sample.referencedVariables["id1"].referenced).toBe(2);
         expect(rootStore.dataStore.variableStores.sample.referencedVariables["id2"].referenced).toBe(2);
         expect(rootStore.dataStore.variableStores.sample.referencedVariables["id3"].referenced).toBe(1);
@@ -26,6 +28,7 @@ describe("RootStore", () => {
         rootStore.dataStore.variableStores.sample.removeVariable("id3");
         expect(Object.keys(rootStore.dataStore.variableStores.sample.referencedVariables).length).toBe(0);
     });
+    // check if the number of heatmap rows equals the number of variables
     it("creates the correct number of heatmap rows", () => {
         const rootStore = new RootStore(new UIStore());
         rootStore.patients = ["a", "b", "c", "d", "e"];
@@ -43,9 +46,10 @@ describe("RootStore", () => {
         expect(rootStore.dataStore.timepoints.length).toBe(5);
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable("id1", "name1", "datatype1", "description1", [], [], {}, "", ""));
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable("id2", "name2", "datatype2", "description2", [], [], {}, "", ""));
-        rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new DerivedVariable("id3", "name3", "datatype1", "description3", ["id1", "id2"], {}, [], [], []));
+        rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new DerivedVariable("id3", "name3", "datatype1", "description3", ["id1", "id2"], {}, [], [], [],"",""));
         expect(rootStore.dataStore.variableStores.sample.childStore.timepoints[0].heatmap.length).toBe(3);
     });
+    // check if sorting works correctly
     it("sorts correctly", () => {
         const rootStore = new RootStore(new UIStore());
         rootStore.patients = ["a", "b", "c", "d", "e"];
