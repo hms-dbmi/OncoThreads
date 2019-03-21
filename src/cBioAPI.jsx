@@ -1,4 +1,5 @@
 import axios from 'axios';
+import GenomeNexusAPI from "./GenomeNexusAPI";
 
 /**
  * retrieves data using the cBio API
@@ -6,6 +7,7 @@ import axios from 'axios';
 class cBioAPI {
     constructor(studyId) {
         this.studyId = studyId;
+        this.genomeNexusAPI = new GenomeNexusAPI();
     }
 
     /**
@@ -25,6 +27,7 @@ class cBioAPI {
             }
         });
     }
+
 
     /**
      * get all events for all patients in a study
@@ -218,6 +221,11 @@ class cBioAPI {
             console.log(error)
         });
     }
+
+    getGeneIDs(hgncSymbols, callback) {
+        this.genomeNexusAPI(hgncSymbols, callback)
+    }
+
 }
 
 cBioAPI.verbose = true;

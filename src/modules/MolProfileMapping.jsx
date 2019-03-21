@@ -1,7 +1,5 @@
 import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
 import * as d3 from "d3";
-import GenomeNexusAPI from "../GenomeNexusAPI";
-
 
 /*
 gets mutation and molecular data on demand and transforms the data to variables
@@ -14,7 +12,6 @@ class MolProfileMapping {
         this.isInGenePanel = {}; // current gene panel mapping
         this.currentMolecular = {}; // current molecular data (maps arrays of molecular data to profile ids
         this.currentIds = []; // current entrezIds
-        this.genomeNexusAPI = new GenomeNexusAPI();
     }
 
     /**
@@ -95,7 +92,7 @@ class MolProfileMapping {
         this.currentMutations = [];
         this.currentMolecular = {};
         this.isInGenePanel = {};
-        this.genomeNexusAPI.getGeneIDs(HUGOsymbols, entrezIDs => {
+        this.rootStore.api.getGeneIDs(HUGOsymbols, entrezIDs => {
             this.currentIds = entrezIDs;
             callback();
         });

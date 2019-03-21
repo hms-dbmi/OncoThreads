@@ -316,7 +316,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                                 </div>
                             </Tab>
                             <Tab eventKey={"own"} title={"Load own dataset"}>
-                                <Form horizontal>
+                                {this.props.rootStore.geneNamesAPI.geneListLoaded ? <Form horizontal>
                                     <h4>Required files</h4>
                                     <FormGroup>
                                         <Col sm={5}>
@@ -418,7 +418,8 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                                             </div>
                                         </Col>
                                     </FormGroup>
-                                </Form>
+                                </Form> : <div>Fetching gene symbols <FontAwesome name={"spinner"} spin
+                                                                                      style={{color: "gray"}}/></div>}
                             </Tab>
                         </Tabs>
                         {this.getStudyInfo()}

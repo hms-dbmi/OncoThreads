@@ -11,6 +11,10 @@ import cBioAPI from "../cBioAPI";
 import FileAPI from "../FileAPI";
 import LocalFileLoader from "../LocalFileLoader";
 
+// uncomment for using Genenames API
+// import GeneNamesAPI from "../GeneNamesAPI";
+import GeneNamesLocalAPI from "../GeneNamesLocalAPI";
+
 
 /*
 Store containing all the other stores
@@ -30,7 +34,7 @@ class RootStore {
 
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"]; // possible variable types of mutation data
         this.eventCategories = []; // available event types
-        this.eventAttributes = []; // available event atttributes
+        this.eventAttributes = []; // available event attributes
         this.sampleTimelineMap = {}; // map of sample ids to dates of sample collection
         this.staticMappers = {}; // mappers of sample id to pre-loaded variables (clinical sample data, clinical patient data)
 
@@ -41,6 +45,7 @@ class RootStore {
         this.dataStore = new DataStore(this); // substore containing the main data
         this.visStore = new VisStore(this); // substore for visual parameters of the visualiztion
         this.svgExport = new SvgExport(this); // substore for SVG export
+        this.geneNamesAPI=new GeneNamesLocalAPI();
         this.localFileLoader = new LocalFileLoader(); // substore for loading local files
         this.uiStore = uiStore;
 
@@ -131,10 +136,11 @@ class RootStore {
             parseTimeline: action((study, callback) => {
                 this.study = study;
                 if (this.isOwnData) {
-                    this.api = new FileAPI(this.localFileLoader);
+                    this.api = new FileAPI(this.localFileLoader,this.geneNamesAPI);
                 }
                 else {
                     this.api = new cBioAPI(this.study.studyId);
+                    this.geneNamesAPI.geneList={};
                 }
                 this.staticMappers = {};
                 this.eventTimelineMap.clear();
@@ -494,7 +500,10 @@ class RootStore {
             }
         });
         // reset timelineParsed if data input is changed
-        reaction(() => this.isOwnData, () => {
+        reaction(() => this.isOwnData, isOwnData => {
+            if(isOwnData&&!this.geneNamesAPI.geneListLoaded){
+                this.geneNamesAPI.getAllGeneSymbols();
+            }
             this.timelineParsed = false;
         });
         // reset timelineParsed if eventsParsed in localFileLoader is reset
