@@ -418,8 +418,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
                                             </div>
                                         </Col>
                                     </FormGroup>
-                                </Form> : <div>Fetching gene symbols <FontAwesome name={"spinner"} spin
-                                                                                      style={{color: "gray"}}/></div>}
+                                </Form> : <div><FontAwesome name={"spinner"} spin style={{color: "gray"}}/></div>}
                             </Tab>
                         </Tabs>
                         {this.getStudyInfo()}
