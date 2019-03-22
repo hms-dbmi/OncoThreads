@@ -9,7 +9,7 @@ class MolProfileMapping {
         this.rootStore = rootStore;
         this.mutationOrder = ['trunc', 'inframe', 'promoter', 'missense', 'other']; // "importance" order of mutation types
         this.currentMutations = []; // current mutations
-        this.isInGenePanel = {}; // current gene panel mapping
+        this.currentPanels = {}; // current gene panel mapping
         this.currentMolecular = {}; // current molecular data (maps arrays of molecular data to profile ids
         this.currentIds = []; // current entrezIds
     }
@@ -91,11 +91,55 @@ class MolProfileMapping {
         this.currentIds = [];
         this.currentMutations = [];
         this.currentMolecular = {};
-        this.isInGenePanel = {};
+        this.currentPanels = {};
         this.rootStore.api.getGeneIDs(HUGOsymbols, entrezIDs => {
             this.currentIds = entrezIDs;
             callback();
         });
+    }
+
+    /**
+     * Gets the profiles that contain data for the currently selected ids
+     * @param {string[]} HUGOsymbols
+     * @param {returnDataCallback} callback
+     */
+    getDataContainingProfiles(HUGOsymbols, callback) {
+        let loaded = new Array(this.rootStore.availableProfiles.length).fill(false);
+        const setLoaded = (index) => {
+            loaded[index] = true;
+            if (loaded.every(d => d === true)) {
+                callback(Object.keys(this.currentPanels));
+            }
+        };
+        this.loadIds(HUGOsymbols, () => {
+                this.rootStore.availableProfiles.forEach((profile, i) => {
+                    this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profile.molecularProfileId, profileDict => {
+                        if (profile.molecularAlterationType === "MUTATION_EXTENDED") {
+                            if (Object.keys(profileDict).join().length > 0) {
+                                this.loadMutations(profile.molecularProfileId, () => {
+                                    if (this.currentMutations.length > 0) {
+                                        this.currentPanels[profile.molecularProfileId] = profileDict;
+                                    }
+                                    setLoaded(i);
+                                })
+                            }
+                            else setLoaded(i);
+                        }
+                        else {
+                            if (Object.keys(profileDict).join().length > 0) {
+                                this.loadMolecularData(profile.molecularProfileId, () => {
+                                    if (this.currentMolecular[profile.molecularProfileId].length > 0) {
+                                        this.currentPanels[profile.molecularProfileId] = profileDict;
+                                    }
+                                    setLoaded(i);
+                                })
+                            }
+                            else setLoaded(i);
+                        }
+                    });
+                });
+            }
+        );
     }
 
     /**
@@ -104,30 +148,39 @@ class MolProfileMapping {
      * @returns {Object[]} filtered ids
      */
     filterMolecularData(profileId) {
+        const profileName = this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId)[0].name;
+        // Is panel measured?
+        let notInPanel = this.currentIds.filter(entry => !(Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId)));
+        if (notInPanel.length > 0) {
+            window.alert("Gene(s) " + notInPanel.map(d => d.hgncSymbol) + " not measured in profile " + profileName);
+        }
+        let availableIds = this.currentIds.filter(entry => Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId));
         let noMutationsFound = [];
-        this.currentIds.forEach(d => {
+        // Was there any data?
+        availableIds.forEach(d => {
             const containedIds = this.currentMolecular[profileId].filter(entry => entry.entrezGeneId === d.entrezGeneId);
             if (containedIds.length === 0) {
                 noMutationsFound.push({hgncSymbol: d.hgncSymbol, entrezGeneId: d.entrezGeneId});
             }
         });
         if (noMutationsFound.length > 0) {
-            window.alert("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + " of profile " + this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId).name + "\n No track will be added");
+            window.alert("WARNING: No data found for " + noMutationsFound.map(entry => entry.hgncSymbol) + " of profile " + profileName + "\n No track will be added");
         }
-        return this.currentIds.filter(d => !(noMutationsFound.map(f => f.entrezGeneId).includes(d.entrezGeneId)));
+        return availableIds.filter(d => !(noMutationsFound.map(f => f.entrezGeneId).includes(d.entrezGeneId)));
     }
 
     /**
      * filters geneIDs based on if the genes were sequenced and if there are mutations
-     * @return {Object} filtered ids
+     * @return {Object[]} filtered ids
      */
     filterGeneIDs() {
         //Is gene panel sequenced?
-        let notInPanel = this.currentIds.filter(entry => !(Object.values(this.isInGenePanel).join().includes(entry.entrezGeneId)));
+        let profileId = this.rootStore.availableProfiles.filter(d => d.molecularAlterationType === "MUTATION_EXTENDED")[0].molecularProfileId;
+        let notInPanel = this.currentIds.filter(entry => !(Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId)));
         if (notInPanel.length > 0) {
             window.alert("Gene(s) " + notInPanel.map(d => d.hgncSymbol) + " not sequenced");
         }
-        let availableIds = this.currentIds.filter(entry => Object.values(this.isInGenePanel).join().includes(entry.entrezGeneId));
+        let availableIds = this.currentIds.filter(entry => Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId));
         let noMutationsFound = [];
         //Are there mutations?
         availableIds.forEach(d => {
@@ -144,6 +197,7 @@ class MolProfileMapping {
         }
         return availableIds;
     }
+
 
     /**
      * loads mutation data
@@ -171,7 +225,10 @@ class MolProfileMapping {
         if (this.currentIds.length !== 0) {
             this.rootStore.api.getMolecularValues(profileId, this.currentIds, response => {
                 this.currentMolecular[profileId] = response;
-                callback()
+                this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profileId, profiledDict => {
+                    this.isInGenePanel = profiledDict;
+                    callback()
+                })
             })
         }
     }
@@ -185,17 +242,20 @@ class MolProfileMapping {
      */
     getProfileData(profileId, HUGOsymbols, mappingType, callback) {
         this.loadIds(HUGOsymbols, () => {
-            if (this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
-                this.loadMutations(profileId, () => {
-                    callback(this.getMutationsProfile(this.filterGeneIDs(), mappingType))
-                });
-            }
-            else {
-                this.loadMolecularData(profileId, () => {
-                    callback(this.getMolecularProfile(this.filterMolecularData(profileId), profileId));
-                });
-            }
-        })
+            this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profileId, profileDict => {
+                this.currentPanels[profileId] = profileDict;
+                if (this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
+                    this.loadMutations(profileId, () => {
+                        callback(this.getMutationsProfile(this.filterGeneIDs(), mappingType))
+                    });
+                }
+                else {
+                    this.loadMolecularData(profileId, () => {
+                        callback(this.getMolecularProfile(this.filterMolecularData(profileId), profileId));
+                    });
+                }
+            });
+        });
     }
 
     /**
@@ -215,7 +275,7 @@ class MolProfileMapping {
                 variables = variables.concat(this.getMolecularProfile(this.filterMolecularData(d), d));
             }
         );
-        return variables
+        return variables;
     }
 
     /**
@@ -227,6 +287,7 @@ class MolProfileMapping {
      */
     createMutationMapping(list, mappingType, entrezID) {
         let mappingFunction;
+        let profileId = this.rootStore.availableProfiles.filter(d => d.molecularAlterationType === "MUTATION_EXTENDED")[0].molecularProfileId;
         if (mappingType === "Binary") {
             mappingFunction = currentSample => {
                 return (list.filter(d => d.sampleId === currentSample).length > 0)
@@ -260,7 +321,7 @@ class MolProfileMapping {
                         else {
                             let simplifiedMutationType = MolProfileMapping.getMutationType(d.mutationType);
                             if (simplifiedMutationType !== "fusion") {
-                                if (simplifiedMutationType !== "missense" && simplifiedMutationType !== "inframe" && simplifiedMutationType !== "fusion" && simplifiedMutationType !== "other") {
+                                if (simplifiedMutationType !== "missense" && simplifiedMutationType !== "inframe" && simplifiedMutationType !== "other") {
                                     simplifiedMutationType = "trunc"
                                 }
                                 indices.push(this.mutationOrder.indexOf(simplifiedMutationType));
@@ -298,7 +359,7 @@ class MolProfileMapping {
         let mapper = {};
         this.rootStore.timepointStructure.forEach(d => {
             d.forEach(f => {
-                if (this.isInGenePanel[f.sample].includes(entrezID)) {
+                if (this.currentPanels[profileId][f.sample].includes(entrezID)) {
                     mapper[f.sample] = mappingFunction(f.sample);
                 }
                 else mapper[f.sample] = undefined;
