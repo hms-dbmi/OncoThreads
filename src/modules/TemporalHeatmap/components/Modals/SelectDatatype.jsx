@@ -71,8 +71,8 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
+                                        <Button onClick={this.handleCancel}>Cancel</Button>
                     <Button onClick={this.handleOkay}>Okay</Button>
-                    <Button onClick={this.handleCancel}>Cancel</Button>
                 </Modal.Footer>
             </Modal>
         )

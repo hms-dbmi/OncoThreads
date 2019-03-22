@@ -4,7 +4,7 @@ install:
 - nvm install "$(jq -r '.engines.node' package.json)"
 script:
 - npm install --dev
-#- ./tests.sh
+- npm run test
 - npm run build
 deploy:
  provider: s3

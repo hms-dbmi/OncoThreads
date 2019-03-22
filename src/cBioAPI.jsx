@@ -1,4 +1,5 @@
 import axios from 'axios';
+import GenomeNexusAPI from "./GenomeNexusAPI";
 
 /**
  * retrieves data using the cBio API
@@ -6,6 +7,7 @@ import axios from 'axios';
 class cBioAPI {
     constructor(studyId) {
         this.studyId = studyId;
+        this.genomeNexusAPI = new GenomeNexusAPI();
     }
 
     /**
@@ -25,6 +27,7 @@ class cBioAPI {
             }
         });
     }
+
 
     /**
      * get all events for all patients in a study
@@ -170,14 +173,13 @@ class cBioAPI {
                         profiledDict[samplePanel.sampleId] = [];
                         entrezIDs.forEach(entrezId => {
                             if (samplePanel.genePanelId !== undefined) {
-                                if (panelList.data[panelList.data.map(panel => panel.genePanelId).indexOf(samplePanel.genePanelId)].genes.map(gene => gene.entrezGeneId).includes(entrezId)) {
+                                if (panelList[panelList.map(panel => panel.data.genePanelId).indexOf(samplePanel.genePanelId)].data.genes.map(gene => gene.entrezGeneId).includes(entrezId)) {
                                     profiledDict[samplePanel.sampleId].push(entrezId);
                                 }
                             }
                             else {
-                                profiledDict[samplePanel.sampleId] = entrezId;
+                                profiledDict[samplePanel.sampleId].push(entrezId);
                             }
-
                         });
                     });
                     callback(profiledDict);
@@ -218,6 +220,11 @@ class cBioAPI {
             console.log(error)
         });
     }
+
+    getGeneIDs(hgncSymbols, callback) {
+        this.genomeNexusAPI.getGeneIDs(hgncSymbols, callback)
+    }
+
 }
 
 cBioAPI.verbose = true;

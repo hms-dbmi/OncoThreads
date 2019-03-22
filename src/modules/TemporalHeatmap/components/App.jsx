@@ -117,7 +117,7 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
             <div><Navbar fluid style={{marginBottom: 10}}>
                 <Navbar.Header>
                     <Navbar.Brand>
-                        <a>OncoThreads</a>
+                        OncoThreads
                     </Navbar.Brand>
                     <Navbar.Toggle/>
                 </Navbar.Header>
