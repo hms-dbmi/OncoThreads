@@ -16,8 +16,7 @@ const uiStore = new UIStore();
 const rootStore = new RootStore(uiStore);
 const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
 const studyapi=new studyAPI();
-studyapi.getStudies();
-ReactDOM.render(<Provider rootStore={rootStore} uiStore={uiStore} undoRedoStore={undoRedoStore}><App
+ReactDOM.render(<Provider rootStore={rootStore} uiStore={uiStore} undoRedoStore={undoRedoStore} studyapi={studyapi}><App
     studyapi={studyapi} parsed="false"
     firstload="false"/></Provider>, document.getElementById("app"));
 

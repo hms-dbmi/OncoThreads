@@ -11,7 +11,7 @@ import uuidv4 from 'uuid/v4';
 /*
  * Component for view if no study has been loaded used for selection of studies from cBio or own data sets
  */
-const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultView extends React.Component {
+const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(class DefaultView extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
@@ -78,7 +78,7 @@ const DefaultView = inject("rootStore", "undoRedoStore")(observer(class DefaultV
      */
     setOptions() {
         let options = [];
-        this.props.studies.forEach(function (d, i) {
+        this.props.studyapi.studies.forEach(function (d, i) {
             options.push({value: d.studyId, label: d.name});
         });
         return options;
