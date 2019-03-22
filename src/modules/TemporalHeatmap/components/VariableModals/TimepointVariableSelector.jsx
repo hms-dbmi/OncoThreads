@@ -132,20 +132,17 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                 geneList[i] = d.replace("ORF", "orf")
             }
         });
-        this.props.rootStore.molProfileMapping.loadIds(geneList, () => {
-            let mutationProfileIndex = this.props.rootStore.availableProfiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
-            if (mutationProfileIndex !== -1) {
-                this.props.rootStore.molProfileMapping.loadMutations(this.props.rootStore.availableProfiles[mutationProfileIndex].molecularProfileId, () => {
-                    this.updateMutationCheckBoxOptions(Object.values(this.props.rootStore.molProfileMapping.isInGenePanel).join().length > 0);
-                });
-            }
-            this.props.rootStore.availableProfiles.filter(d => d.molecularAlterationType !== "MUTATION_EXTENDED").forEach(d => {
-                this.props.rootStore.molProfileMapping.loadMolecularData(d.molecularProfileId, () => {
-                    this.updateMolecularCheckBoxOptions(d.molecularProfileId, this.props.rootStore.molProfileMapping.currentMolecular[d.molecularProfileId].length > 0);
-                })
+        // check for which profiles data is available for the entered HUGOSymbols
+        this.props.rootStore.molProfileMapping.getDataContainingProfiles(geneList, dataProfiles => {
+            this.props.rootStore.availableProfiles.forEach(d => {
+                if (d.molecularAlterationType === "MUTATION_EXTENDED") {
+                    this.updateMutationCheckBoxOptions(dataProfiles.includes(d.molecularProfileId));
+                }
+                else {
+                    this.updateMolecularCheckBoxOptions(d.molecularProfileId, dataProfiles.includes(d.molecularProfileId));
+                }
             });
         });
-
     }
 
     /**

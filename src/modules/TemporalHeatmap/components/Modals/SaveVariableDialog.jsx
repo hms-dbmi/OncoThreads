@@ -32,8 +32,8 @@ const SaveVariableDialog = observer(class SaveVariableDialog extends React.Compo
                    Save custom variable "{this.props.variable.name}" for later use?
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleOkay}>Okay</Button>
                     <Button onClick={this.handleCancel}>Cancel</Button>
+                    <Button onClick={this.handleOkay}>Okay</Button>
                 </Modal.Footer>
             </Modal>
         )

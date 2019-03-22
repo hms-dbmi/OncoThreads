@@ -11,6 +11,7 @@ class GenomeNexusAPI {
         return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
     }
 
+
     /**
      * gets hugo symbols for entrezIds
      * @param {number[]} entrezIds

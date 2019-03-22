@@ -2,8 +2,9 @@
  * class that gets data from LocalFileLoader. Imitates cBioAPI
  */
 class FileAPI {
-    constructor(localFileLoader) {
+    constructor(localFileLoader,geneNamesAPI) {
         this.localFileLoader = localFileLoader;
+        this.geneNamesAPI = geneNamesAPI;
     }
 
     /**
@@ -91,6 +92,23 @@ class FileAPI {
         entrezIDs.forEach(d => returnArr = returnArr.concat(this.localFileLoader.profileData.get(profileId).get(d.entrezGeneId)));
         callback(returnArr);
     }
+
+    /**
+     * gets gene IDs with geneNamesAPI
+     * @param {String[]} hgncSymbols
+     * @param {returnDataCallback} callback
+     */
+    getGeneIDs(hgncSymbols, callback) {
+        if (this.geneNamesAPI.geneListLoaded) {
+            this.geneNamesAPI.getGeneIDs(hgncSymbols, callback)
+        }
+        else {
+            alert("Could not (yet) load gene list");
+        }
+
+    }
+
+
 }
 
 FileAPI.verbose = true;
