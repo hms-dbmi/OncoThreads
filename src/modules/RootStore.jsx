@@ -141,7 +141,8 @@ class RootStore {
         }
         html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
             const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('l', 'px', [canvas.width, canvas.height]);
+            // Multiplying by 1.33 because canvas.toDataURL increases the size of the image by 33%
+            const pdf = new jsPDF('l', 'px', [canvas.width*1.33, canvas.height*1.33]);
             pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
             pdf.save("download.pdf"); 
         });
