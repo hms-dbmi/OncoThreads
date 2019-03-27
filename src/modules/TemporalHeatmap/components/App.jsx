@@ -76,8 +76,9 @@ const App = inject("rootStore","uiStore","undoRedoStore")(observer(class App ext
                     <GetStudy key="getStudy" studies={this.props.studyapi.studies}/>,
                     <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
                         <NavItem onClick={this.props.rootStore.svgExport.exportSVG}>...as SVG</NavItem>
-                        <NavItem onClick={this.props.rootStore.svgExport.exportSVGandData}>...as SVG with
-                            metadata</NavItem>
+                        <NavItem onClick={this.props.rootStore.svgExport.exportSVGandData}>...as SVG with metadata</NavItem>
+                        <NavItem onClick={this.props.rootStore.svgExport.exportPNG}>...as PNG</NavItem>
+                        <NavItem onClick={this.props.rootStore.svgExport.exportPDF}>...as PDF</NavItem>
                     </NavDropdown>,
                     <NavItem key='settings' onClick={() => this.openModal('settings')}>Settings</NavItem>,
                     <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,

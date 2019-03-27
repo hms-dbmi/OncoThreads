@@ -2,11 +2,17 @@
  * class for handling svg export
  * TODO: tidy up
  */
+
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
 class SvgExport {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.exportSVG = this.exportSVG.bind(this);
         this.exportSVGandData = this.exportSVGandData.bind(this);
+        this.exportPNG = this.exportPNG.bind(this);
+        this.exportPDF = this.exportPDF.bind(this);
     }
 
     /**
@@ -299,8 +305,11 @@ class SvgExport {
             }
         }
 
-        var name = this.study.name.replace('&', 'and');
-        var desc = this.study.description.replace('&', 'and');
+        var name = this.rootStore.study.name.replace('&', 'and');
+        var desc = this.rootStore.study.description.replace('&', 'and');
+
+        const minTP = Math.min(...Object.keys(this.rootStore.sampleStructure).map(key => this.rootStore.sampleStructure[key].length));
+        const maxTP = Math.max(...Object.keys(this.rootStore.sampleStructure).map(key => this.rootStore.sampleStructure[key].length));
 
         var svg_prefix =
             '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 25)">' +
@@ -310,13 +319,13 @@ class SvgExport {
             '<text style="font-size:18px">Description: ' + desc + '</text>' +
             '</g>' +
             '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
-            '<text style="font-size:18px">Citation: ' + this.study.citation + '</text>' +
+            '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
             '</g>' +
             '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
-            '<text style="font-size:18px">Number of patients: ' + this.patients.length + '</text>' +
+            '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
             '</g>' +
             '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
-            '<text style="font-size:18px">Number of timepoints: ' + this.minTP + "-" + this.maxTP + '</text>' +
+            '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
             '</g>'
 
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH).toString() + '">' +
@@ -338,6 +347,38 @@ class SvgExport {
         this.downloadFile(svg_xml);
     }
 
+
+    exportPNG() {
+        var tmp;
+        if (this.rootStore.uiStore.globalTime) {
+            tmp = document.getElementById("timeline-view");
+        } else {
+            tmp = document.getElementById("block-view");
+        }
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+            var element = document.createElement("a");
+            element.href = canvas.toDataURL('image/png');
+            element.download = "download.png";
+            element.click();
+        });
+    }
+
+    
+    exportPDF() {
+        var tmp;
+        if (this.rootStore.uiStore.globalTime) {
+            tmp = document.getElementById("timeline-view");
+        } else {
+            tmp = document.getElementById("block-view");
+        }
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            // Multiplying by 1.33 because canvas.toDataURL increases the size of the image by 33%
+            const pdf = new jsPDF('l', 'px', [canvas.width*1.33, canvas.height*1.33]);
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save("download.pdf"); 
+        });
+    }
     /**
      * downloads file
      * @param content
