@@ -763,7 +763,7 @@ class LocalFileLoader {
             }),
             setGenePanelMatrix: action(file => {
                 this.panelMatrixParsed = "loading";
-                this.panelMatrix={};
+                this.panelMatrix = {};
                 Papa.parse(file, {
                     delimiter: "\t",
                     header: true,
@@ -886,12 +886,12 @@ class LocalFileLoader {
             if (parsed === "empty") {
                 this.panelMatrix = {};
             }
-           else if (parsed === "finished" && (this.genePanelsParsed === "finished"
-                || (this.genePanelsParsed === "error" && this.genePanels.size>0))) {
+            else if (parsed === "finished" && (this.genePanelsParsed === "finished"
+                || (this.genePanelsParsed === "error" && this.genePanels.size > 0))) {
                 let broke = false;
                 for (let sample in this.panelMatrix) {
                     for (let key in this.panelMatrix[sample]) {
-                        if (!this.genePanels.has(this.panelMatrix[sample][key])) {
+                        if (!this.genePanels.has(this.panelMatrix[sample][key]) && this.panelMatrix[sample][key] !== "NA") {
                             this.genePanelsParsed = "error";
                             this.panelMatrixParsed = "error";
                             alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
@@ -903,8 +903,8 @@ class LocalFileLoader {
                         break;
                     }
                 }
-                if(!broke){
-                    this.genePanelsParsed="finished";
+                if (!broke) {
+                    this.genePanelsParsed = "finished";
                 }
             }
         });
@@ -913,11 +913,11 @@ class LocalFileLoader {
                 this.genePanels.clear();
             }
             else if (parsed === "finished" && (this.panelMatrixParsed === "finished"
-                || (this.panelMatrixParsed === "error" && Object.keys(this.panelMatrixParsed).length>0))) {
+                || (this.panelMatrixParsed === "error" && Object.keys(this.panelMatrixParsed).length > 0))) {
                 let broke = false;
                 for (let sample in this.panelMatrix) {
                     for (let key in this.panelMatrix[sample]) {
-                        if (!this.genePanels.has(this.panelMatrix[sample][key])) {
+                        if (!this.genePanels.has(this.panelMatrix[sample][key]) && this.panelMatrix[sample][key] !== "NA") {
                             this.genePanelsParsed = "error";
                             this.panelMatrixParsed = "error";
                             alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
@@ -929,8 +929,8 @@ class LocalFileLoader {
                         break;
                     }
                 }
-                if(!broke){
-                    this.panelMatrixParsed="finished";
+                if (!broke) {
+                    this.panelMatrixParsed = "finished";
                 }
             }
         });

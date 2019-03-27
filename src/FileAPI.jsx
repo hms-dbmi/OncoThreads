@@ -88,12 +88,14 @@ class FileAPI {
             this.localFileLoader.samples.forEach(d => {
                 profiledDict[d] = [];
                 let panel = this.localFileLoader.panelMatrix[d][key];
-                let panelGenes = this.localFileLoader.genePanels.get(panel);
-                genes.forEach(gene => {
-                    if (panelGenes.includes(gene.hgncSymbol)) {
-                        profiledDict[d].push(gene.entrezGeneId);
-                    }
-                })
+                if(panel!=="NA") {
+                    let panelGenes = this.localFileLoader.genePanels.get(panel);
+                    genes.forEach(gene => {
+                        if (panelGenes.includes(gene.hgncSymbol)) {
+                            profiledDict[d].push(gene.entrezGeneId);
+                        }
+                    })
+                }
             })
         }
         else {
@@ -128,10 +130,7 @@ class FileAPI {
         else {
             alert("Could not (yet) load gene list");
         }
-
     }
-
-
 }
 
 FileAPI.verbose = true;
