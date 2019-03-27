@@ -130,6 +130,7 @@ class UndoRedoStore {
             saveRealignToHistory: action((timepointIndex) => {
                 this.logs.push("REALIGN PATIENTS: based on block" + timepointIndex);
                 this.saveHistory("timepoint");
+                console.log(this.stateStack);
             }),
 
             /**
@@ -267,10 +268,10 @@ class UndoRedoStore {
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({
                 name: timepoint.name,
-                heatmapOrder: timepoint.heatmapOrder,
+                heatmapOrder: timepoint.heatmapOrder.slice(),
                 groupOrder: timepoint.groupOrder,
                 isGrouped: timepoint.isGrouped,
-                heatmapSorting: timepoint.heatmapSorting,
+                heatmapSorting: toJS(timepoint.heatmapSorting),
                 primaryVariableId: timepoint.primaryVariableId,
             })
         );
