@@ -2,7 +2,7 @@
  * class that gets data from LocalFileLoader. Imitates cBioAPI
  */
 class FileAPI {
-    constructor(localFileLoader,geneNamesAPI) {
+    constructor(localFileLoader, geneNamesAPI) {
         this.localFileLoader = localFileLoader;
         this.geneNamesAPI = geneNamesAPI;
     }
@@ -69,16 +69,41 @@ class FileAPI {
 
     /**
      * checks for each sample if entrezIDs have been profiled
-     * @param {Object[]} entrezIDs
+     * @param {Object[]} genes
      * @param {string} profileId
      * @param {returnDataCallback} callback
      */
-    areProfiled(entrezIDs, profileId, callback) {
-        let profileDict = {};
-        this.localFileLoader.samples.forEach(d => {
-            profileDict[d] = entrezIDs
-        });
-        callback(profileDict);
+    areProfiled(genes, profileId, callback) {
+        let profiledDict = {};
+        let profile = this.localFileLoader.molecularProfiles.filter(profile => profile.molecularProfileId === profileId)[0];
+        let key = "";
+        if (this.localFileLoader.panelMatrixParsed === "finished" && this.localFileLoader.genePanelsParsed === "finished"
+            && (profile.molecularAlterationType === "MUTATION_EXTENDED" || profile.molecularAlterationType === "COPY_NUMBER_ALTERATION")) {
+            if (profile.molecularAlterationType === "MUTATION_EXTENDED") {
+                key = "mutations"
+            }
+            else {
+                key = "cna"
+            }
+            this.localFileLoader.samples.forEach(d => {
+                profiledDict[d] = [];
+                let panel = this.localFileLoader.panelMatrix[d][key];
+                if(panel!=="NA") {
+                    let panelGenes = this.localFileLoader.genePanels.get(panel);
+                    genes.forEach(gene => {
+                        if (panelGenes.includes(gene.hgncSymbol)) {
+                            profiledDict[d].push(gene.entrezGeneId);
+                        }
+                    })
+                }
+            })
+        }
+        else {
+            this.localFileLoader.samples.forEach(d => {
+                profiledDict[d] = genes.map(d => d.entrezGeneId);
+            })
+        }
+        callback(profiledDict);
     }
 
     /**
@@ -105,10 +130,7 @@ class FileAPI {
         else {
             alert("Could not (yet) load gene list");
         }
-
     }
-
-
 }
 
 FileAPI.verbose = true;
