@@ -113,7 +113,7 @@ class MolProfileMapping {
         };
         this.loadIds(HUGOsymbols, () => {
                 this.rootStore.availableProfiles.forEach((profile, i) => {
-                    this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profile.molecularProfileId, profileDict => {
+                    this.rootStore.api.areProfiled(this.currentIds, profile.molecularProfileId, profileDict => {
                         if (profile.molecularAlterationType === "MUTATION_EXTENDED") {
                             if (Object.keys(profileDict).join().length > 0) {
                                 this.loadMutations(profile.molecularProfileId, () => {
@@ -208,10 +208,7 @@ class MolProfileMapping {
         if (this.currentIds.length !== 0) {
             this.rootStore.api.getMutations(this.currentIds, profileId, mutations => {
                 this.currentMutations = mutations;
-                this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profileId, profiledDict => {
-                    this.isInGenePanel = profiledDict;
-                    callback()
-                });
+                callback()
             });
         }
     }
@@ -225,10 +222,7 @@ class MolProfileMapping {
         if (this.currentIds.length !== 0) {
             this.rootStore.api.getMolecularValues(profileId, this.currentIds, response => {
                 this.currentMolecular[profileId] = response;
-                this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profileId, profiledDict => {
-                    this.isInGenePanel = profiledDict;
-                    callback()
-                })
+                callback()
             })
         }
     }
@@ -242,7 +236,7 @@ class MolProfileMapping {
      */
     getProfileData(profileId, HUGOsymbols, mappingType, callback) {
         this.loadIds(HUGOsymbols, () => {
-            this.rootStore.api.areProfiled(this.currentIds.map(d => d.entrezGeneId), profileId, profileDict => {
+            this.rootStore.api.areProfiled(this.currentIds, profileId, profileDict => {
                 this.currentPanels[profileId] = profileDict;
                 if (this.rootStore.availableProfiles.filter(d => d.molecularProfileId === profileId)[0].molecularAlterationType === "MUTATION_EXTENDED") {
                     this.loadMutations(profileId, () => {

@@ -11,7 +11,7 @@ import uuidv4 from 'uuid/v4';
 /*
  * Component for view if no study has been loaded used for selection of studies from cBio or own data sets
  */
-const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(class DefaultView extends React.Component {
+const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(class DefaultView extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
@@ -30,6 +30,8 @@ const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(cla
         this.clinicalSampleKey = uuidv4();
         this.mutationKey = uuidv4();
         this.molecularKey = uuidv4();
+        this.matrixKey = uuidv4();
+        this.panelKey = uuidv4();
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
         this.handleEventsLoad = this.handleEventsLoad.bind(this);
@@ -39,6 +41,8 @@ const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(cla
         this.handleExpressionsLoad = this.handleExpressionsLoad.bind(this);
         this.handleMolecularLoad = this.handleMolecularLoad.bind(this);
         this.setDatatype = this.setDatatype.bind(this);
+        this.handleGeneMatrixLoad = this.handleGeneMatrixLoad.bind(this);
+        this.handleGenePanelsLoad = this.handleGenePanelsLoad.bind(this);
     }
 
     /**
@@ -104,7 +108,7 @@ const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(cla
      */
     getStudyInfo() {
         let info = null;
-        if (this.props.rootStore.timelineParsed) {
+        if (this.props.rootStore.timelineParsed && (!this.props.rootStore.isOwnData || this.props.rootStore.localFileLoader.eventsParsed==="finished")) {
             info = <div><Panel>
                 <Panel.Heading>
                     <Panel.Title>
@@ -243,6 +247,14 @@ const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(cla
         }
     }
 
+    handleGeneMatrixLoad(e) {
+        this.props.rootStore.localFileLoader.setGenePanelMatrix(e.target.files[0]);
+    }
+
+    handleGenePanelsLoad(e) {
+        this.props.rootStore.localFileLoader.setGenePanels(e.target.files);
+    }
+
     /**
      * gets the icon corresponding to the current laoding state
      * @param {string} value - loading, error, finished or empty
@@ -281,6 +293,12 @@ const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(cla
         }
         if (this.props.rootStore.localFileLoader.molecularParsed === "empty") {
             this.molecularKey = uuidv4();
+        }
+        if (this.props.rootStore.localFileLoader.panelMatrixParsed === "empty") {
+            this.matrixKey = uuidv4();
+        }
+        if (this.props.rootStore.localFileLoader.genePanelsParsed === "empty") {
+            this.panelKey = uuidv4();
         }
     }
 
@@ -415,6 +433,45 @@ const DefaultView = inject("rootStore", "undoRedoStore","studyapi")(observer(cla
                                                 style={{visibility: this.props.rootStore.localFileLoader.molecularParsed === "empty" ? "hidden" : "visible"}}>
                                                 <FontAwesome name={"times"}
                                                              onClick={() => this.props.rootStore.localFileLoader.setMolecularParsed("empty")}/>
+                                            </div>
+                                        </Col>
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Col sm={5}>
+                                            Gene Panel
+                                            Matrix {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.panelMatrixParsed)}
+                                        </Col>
+                                        <Col sm={6}>
+                                            <FormControl type="file"
+                                                         key={this.matrixKey}
+                                                         label="File"
+                                                         onChange={this.handleGeneMatrixLoad}/>
+                                        </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.panelMatrixParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setPanelMatrixParsed("empty")}/>
+                                            </div>
+                                        </Col>
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Col sm={5}>
+                                            Gene
+                                            panels {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.genePanelsParsed)}
+                                        </Col>
+                                        <Col sm={6}>
+                                            <FormControl type="file"
+                                                         key={this.panelKey}
+                                                         label="File"
+                                                         multiple={true}
+                                                         onChange={this.handleGenePanelsLoad}/>
+                                        </Col>
+                                        <Col sm={1}>
+                                            <div
+                                                style={{visibility: this.props.rootStore.localFileLoader.genePanelsParsed === "empty" ? "hidden" : "visible"}}>
+                                                <FontAwesome name={"times"}
+                                                             onClick={() => this.props.rootStore.localFileLoader.setGenePanelsParsed("empty")}/>
                                             </div>
                                         </Col>
                                     </FormGroup>

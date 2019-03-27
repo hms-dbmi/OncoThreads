@@ -34,6 +34,8 @@ class LocalFileLoader {
         this.clinicalSampleFile = null; // file containing clinical sample data
         this.clinicalPatientFile = null; // file containing clinical patient data
         this.molecularProfiles = []; // all available molecular profiles
+        this.panelMatrix = {};
+        this.genePanels = new Map();
         extendObservable(this, {
             // states reflecting the load status of the different types of files: empty, loading, finished, or error
             eventsParsed: "empty",
@@ -41,6 +43,8 @@ class LocalFileLoader {
             molecularParsed: "empty",
             clinicalPatientParsed: "empty",
             clinicalSampleParsed: "empty",
+            panelMatrixParsed: "empty",
+            genePanelsParsed: "empty",
             /**
              * is any of the files currently loading
              * @returns {boolean}
@@ -50,18 +54,22 @@ class LocalFileLoader {
                     || this.mutationsParsed === "loading"
                     || this.molecularParsed === "loading"
                     || this.clinicalPatientParsed === "loading"
-                    || this.clinicalSampleParsed === "loading";
+                    || this.clinicalSampleParsed === "loading"
+                    || this.panelMatrixParsed === "loading"
+                    || this.genePanelsParsed === "loading";
             },
             /**
              * were there errors during the file parsing
              * @returns {boolean}
              */
-            get dataHasErrors(){
-                 return this.eventsParsed === "error"
+            get dataHasErrors() {
+                return this.eventsParsed === "error"
                     || this.mutationsParsed === "error"
                     || this.molecularParsed === "error"
                     || this.clinicalPatientParsed === "error"
-                    || this.clinicalSampleParsed === "error";
+                    || this.clinicalSampleParsed === "error"
+                    || this.panelMatrixParsed === "error"
+                    || this.genePanelsParsed === "error";
             },
             /**
              * is data ready to be displayed
@@ -74,6 +82,7 @@ class LocalFileLoader {
                     && (this.mutationsParsed === "finished"
                         || this.clinicalSampleParsed === "finished"
                         || this.clinicalPatientParsed === "finished")
+                    && this.genePanelsParsed === this.panelMatrixParsed;
             },
             setEventsParsed: action(loadingState => {
                 this.eventsParsed = loadingState;
@@ -92,6 +101,12 @@ class LocalFileLoader {
             }),
             setClinicalSampleParsed: action(loadingState => {
                 this.clinicalSampleParsed = loadingState
+            }),
+            setPanelMatrixParsed: action(loadingState => {
+                this.panelMatrixParsed = loadingState;
+            }),
+            setGenePanelsParsed: action(loadingState => {
+                this.genePanelsParsed = loadingState
             }),
             /**
              * sets current event files if headers are correct and file of type SPECIMEN is contained
@@ -746,7 +761,92 @@ class LocalFileLoader {
                     }
                 })
             }),
+            setGenePanelMatrix: action(file => {
+                this.panelMatrixParsed = "loading";
+                this.panelMatrix={};
+                Papa.parse(file, {
+                    delimiter: "\t",
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: response => {
+                        let hasSampleID = response.meta.fields.includes("SAMPLE_ID");
+                        let hasMutations = response.meta.fields.includes("mutations");
+                        let hasCNA = response.meta.fields.includes("cna");
+                        if (hasSampleID && (hasMutations || hasCNA)) {
+                            response.data.forEach(row => {
+                                this.panelMatrix[row["SAMPLE_ID"]] = {};
+                                if (hasMutations) {
+                                    this.panelMatrix[row["SAMPLE_ID"]].mutations = row.mutations;
+                                }
+                                if (hasCNA) {
+                                    this.panelMatrix[row["SAMPLE_ID"]].cna = row.cna;
+                                }
+                            });
+                            this.panelMatrixParsed = "finished";
+                        }
+                        else {
+                            let missingColumns = [];
+                            if (hasSampleID) {
+                                missingColumns.push("mutations or cna");
+                            }
+                            else {
+                                missingColumns.push("SAMPLE_ID");
+                                if (!hasCNA && !hasMutations) {
+                                    missingColumns.push("mutations or cna")
+                                }
+                                else {
+                                    if (!hasMutations) {
+                                        missingColumns.push("mutations");
+                                    }
+                                    if (!hasCNA) {
+                                        missingColumns.push("cna");
+                                    }
+                                }
+                            }
+                            alert("The following columns are missing " + missingColumns);
+                            this.panelMatrixParsed = "error";
+                        }
+                    }
+                })
+            }),
+            setGenePanels: action(files => {
+                this.genePanelsParsed = "loading";
+                this.genePanels.clear();
+                Array.from(files).forEach(file => {
+                    let reader = new FileReader();
+                    reader.onload = () => {
+                        const lines = reader.result.split(/[\r\n]+/g).filter(line => line.trim() !== ""); // tolerate both Windows and Unix linebreaks
+                        if (lines.length === 4) {
+                            const nameLineEntries = lines[1].split(":");
+                            if (nameLineEntries.length === 2) {
+                                const panelId = nameLineEntries[1].trim();
+                                const geneLineEntries = lines[3].split(":");
+                                if (geneLineEntries.length === 2) {
+                                    this.genePanels.set(panelId, geneLineEntries[1].split("\t").filter(d => d.trim() !== ""));
+                                }
+                                else {
+                                    alert("Line 4 of file " + file.name + " incorrect");
+                                    this.genePanelsParsed = "error";
+                                }
+                            }
+                            else {
+                                alert("Line 1 of file " + file.name + " incorrect");
+                                this.genePanelsParsed = "error";
+                            }
+                        }
+                        else {
+                            alert("Incorrect number of lines");
+                            this.genePanelsParsed = "error";
+                        }
+                        if (this.genePanels.size === files.length) {
+                            this.genePanelsParsed = "finished";
+                        }
+                    };
+                    reader.readAsText(file);
+                })
+            })
         });
+
         // reactions to errors or removal of files: clears data fields if there is an error or the file is removed
         reaction(() => this.eventsParsed, parsed => {
             if (parsed === "error" || parsed === "empty") {
@@ -755,7 +855,7 @@ class LocalFileLoader {
         });
         reaction(() => this.mutationsParsed, parsed => {
             if (parsed === "error" || parsed === "empty") {
-                this.mutations=[];
+                this.mutations = [];
             }
         });
         reaction(() => this.molecularParsed, parsed => {
@@ -780,6 +880,58 @@ class LocalFileLoader {
         reaction(() => this.clinicalPatientParsed, parsed => {
             if (parsed === "error" || parsed === "empty") {
                 this.clinicalPatientFile = null;
+            }
+        });
+        reaction(() => this.panelMatrixParsed, parsed => {
+            if (parsed === "empty") {
+                this.panelMatrix = {};
+            }
+           else if (parsed === "finished" && (this.genePanelsParsed === "finished"
+                || (this.genePanelsParsed === "error" && this.genePanels.size>0))) {
+                let broke = false;
+                for (let sample in this.panelMatrix) {
+                    for (let key in this.panelMatrix[sample]) {
+                        if (!this.genePanels.has(this.panelMatrix[sample][key])) {
+                            this.genePanelsParsed = "error";
+                            this.panelMatrixParsed = "error";
+                            alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
+                            broke = true;
+                            break;
+                        }
+                    }
+                    if (broke) {
+                        break;
+                    }
+                }
+                if(!broke){
+                    this.genePanelsParsed="finished";
+                }
+            }
+        });
+        reaction(() => this.genePanelsParsed, parsed => {
+            if (parsed === "empty") {
+                this.genePanels.clear();
+            }
+            else if (parsed === "finished" && (this.panelMatrixParsed === "finished"
+                || (this.panelMatrixParsed === "error" && Object.keys(this.panelMatrixParsed).length>0))) {
+                let broke = false;
+                for (let sample in this.panelMatrix) {
+                    for (let key in this.panelMatrix[sample]) {
+                        if (!this.genePanels.has(this.panelMatrix[sample][key])) {
+                            this.genePanelsParsed = "error";
+                            this.panelMatrixParsed = "error";
+                            alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
+                            broke = true;
+                            break;
+                        }
+                    }
+                    if (broke) {
+                        break;
+                    }
+                }
+                if(!broke){
+                    this.panelMatrixParsed="finished";
+                }
             }
         });
     }
