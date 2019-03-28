@@ -87,7 +87,7 @@ class OriginalVariable {
             return [true, false];
         }
         else {
-            return [...new Set(Object.values(this.mapper))].filter(d=>d!==undefined);
+            return [...new Set(Object.values(this.mapper))].filter(d=>d!==undefined).sort();
         }
     }
 }

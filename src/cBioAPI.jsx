@@ -153,32 +153,30 @@ class cBioAPI {
     }
 
     /**
-     * checks for each sample if entrezIDs have been profiled
-     * @param {Object[]} entrezIDs
+     * checks for each sample if genes have been profiled
+     * @param {Object[]} genes
      * @param {string} profileId
      * @param {returnDataCallback} callback
      */
-    areProfiled(entrezIDs, profileId, callback) {
+    areProfiled(genes, profileId, callback) {
         let profiledDict = {};
         axios.post("http://www.cbiohack.org/api/molecular-profiles/" + profileId + "/gene-panel-data/fetch", {
                 "sampleListId": this.studyId + "_all"
             }
         ).then(samplePanels => {
-            let differentPanels = samplePanels.data.map(d => d.genePanelId).filter(function (item, i, ar) {
-                return ar.indexOf(item) === i;
-            }).filter(d => d !== undefined);
+            let differentPanels = new Set(samplePanels.data.filter(d => d.hasOwnProperty("genePanelId").map(d => d.genePanelId)));
             if (differentPanels.length > 0) {
                 axios.all(differentPanels.map(d => axios.get("http://www.cbiohack.org/api/gene-panels/" + d))).then(panelList => {
                     samplePanels.data.forEach(samplePanel => {
                         profiledDict[samplePanel.sampleId] = [];
-                        entrezIDs.forEach(entrezId => {
+                        genes.forEach(gene => {
                             if (samplePanel.genePanelId !== undefined) {
-                                if (panelList[panelList.map(panel => panel.data.genePanelId).indexOf(samplePanel.genePanelId)].data.genes.map(gene => gene.entrezGeneId).includes(entrezId)) {
-                                    profiledDict[samplePanel.sampleId].push(entrezId);
+                                if (panelList[panelList.map(panel => panel.data.genePanelId).indexOf(samplePanel.genePanelId)].data.genes.map(gene => gene.entrezGeneId).includes(gene.entrezGeneId)) {
+                                    profiledDict[samplePanel.sampleId].push(gene.entrezGeneId);
                                 }
                             }
                             else {
-                                profiledDict[samplePanel.sampleId].push(entrezId);
+                                profiledDict[samplePanel.sampleId].push(gene.entrezGeneId);
                             }
                         });
                     });
@@ -190,9 +188,14 @@ class cBioAPI {
                 });
             }
             else {
-                samplePanels.data.forEach(samplePanel =>
-                    profiledDict[samplePanel.sampleId] = entrezIDs
-                );
+                samplePanels.data.forEach(samplePanel => {
+                    if (samplePanels.profiled) {
+                        profiledDict[samplePanel.sampleId] = genes.map(d => d.entrezGeneId)
+                    }
+                    else {
+                        profiledDict[samplePanel.sampleId] = [];
+                    }
+                });
                 callback(profiledDict);
             }
         }).catch(function (error) {
