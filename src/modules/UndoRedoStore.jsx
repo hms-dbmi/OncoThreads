@@ -130,7 +130,6 @@ class UndoRedoStore {
             saveRealignToHistory: action((timepointIndex) => {
                 this.logs.push("REALIGN PATIENTS: based on block" + timepointIndex);
                 this.saveHistory("timepoint");
-                console.log(this.stateStack);
             }),
 
             /**
