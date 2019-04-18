@@ -108,7 +108,7 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
      */
     getStudyInfo() {
         let info = null;
-        if (this.props.rootStore.timelineParsed && (!this.props.rootStore.isOwnData || this.props.rootStore.localFileLoader.eventsParsed==="finished")) {
+        if (this.props.rootStore.timelineParsed && (!this.props.rootStore.isOwnData || this.props.rootStore.localFileLoader.eventsParsed === "finished")) {
             info = <div><Panel>
                 <Panel.Heading>
                     <Panel.Title>
@@ -313,7 +313,6 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
             launchDisabled = !this.props.rootStore.timelineParsed;
         }
         this.updateKeys();
-
         return (
             <Grid>
                 <Row>
@@ -334,6 +333,9 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
                                 </div>
                             </Tab>
                             <Tab eventKey={"own"} title={"Load own dataset"}>
+                                <a href={"https://cbioportal.readthedocs.io/en/latest/File-Formats.html#formats"}
+                                   rel="noopener noreferrer"
+                                   target="_blank">File format documentation</a>
                                 {this.props.rootStore.geneNamesAPI.geneListLoaded ? <Form horizontal>
                                     <h4>Required files</h4>
                                     <FormGroup>

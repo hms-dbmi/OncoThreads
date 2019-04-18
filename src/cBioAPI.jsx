@@ -164,8 +164,8 @@ class cBioAPI {
                 "sampleListId": this.studyId + "_all"
             }
         ).then(samplePanels => {
-            let differentPanels = new Set(samplePanels.data.filter(d => d.hasOwnProperty("genePanelId").map(d => d.genePanelId)));
-            if (differentPanels.length > 0) {
+            let differentPanels = new Set(samplePanels.data.filter(d => d.hasOwnProperty("genePanelId")).map(d => d.genePanelId));
+            if (differentPanels.size > 0) {
                 axios.all(differentPanels.map(d => axios.get("http://www.cbiohack.org/api/gene-panels/" + d))).then(panelList => {
                     samplePanels.data.forEach(samplePanel => {
                         profiledDict[samplePanel.sampleId] = [];
@@ -189,7 +189,7 @@ class cBioAPI {
             }
             else {
                 samplePanels.data.forEach(samplePanel => {
-                    if (samplePanels.profiled) {
+                    if (samplePanel.profiled) {
                         profiledDict[samplePanel.sampleId] = genes.map(d => d.entrezGeneId)
                     }
                     else {

@@ -10,9 +10,6 @@ import SvgExport from "./SvgExport";
 import cBioAPI from "../cBioAPI";
 import FileAPI from "../FileAPI";
 import LocalFileLoader from "../LocalFileLoader";
-
-// uncomment for using Genenames API
-// import GeneNamesAPI from "../GeneNamesAPI";
 import GeneNamesLocalAPI from "../GeneNamesLocalAPI";
 
 /*

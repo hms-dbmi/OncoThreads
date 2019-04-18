@@ -5,7 +5,6 @@ import uuidv4 from 'uuid/v4';
 import DerivedVariable from "../../../../stores/DerivedVariable";
 import DerivedMapperFunctions from "../../../../UtilityClasses/DeriveMapperFunctions";
 import {Alert, Button, Modal} from "react-bootstrap";
-import ColorScales from "../../../../UtilityClasses/ColorScales";
 import UtilityFunctions from "../../../../UtilityClasses/UtilityFunctions";
 import BinningStore from "./BinningStore";
 import Binner from "./Binner";
@@ -73,7 +72,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         // case: variable is transformed to binary
         if (!this.binningStore.isBinary) {
             derivedVariable = new DerivedVariable(newId, this.props.variable.name + "_BINNED", "ORDINAL", this.props.variable.description + " (binned)",
-                [this.props.variable.id], modification, ColorScales.getBinnedRange(this.props.variable.range,this.props.variable.domain,false, this.binningStore.bins),
+                [this.props.variable.id], modification, this.props.variable.range,
                 this.binningStore.binNames.map(d => d.name), DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]),
                 uuidv4(), this.props.variable.type);
         }
