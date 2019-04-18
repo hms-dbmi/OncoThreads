@@ -53,8 +53,16 @@ class DerivedVariable {
             }),
             get colorScale() {
                 let scale;
-                if (this.datatype === "ORDINAL" || this.datatype === "STRING" || this.datatype === "BINARY") {
-                    scale = ColorScales.getOrdinalScale(this.range, this.domain);
+                if (this.datatype === "STRING" || this.datatype === "BINARY") {
+                    scale = ColorScales.getCategoricalScale(this.range, this.domain);
+                }
+                else if (this.datatype === "ORDINAL") {
+                    if (this.modification.type === "continuousTransform") {
+                        scale = ColorScales.getCategoricalScale(ColorScales.getBinnedRange(this.range, this.modification.binning.bins), this.domain)
+                    }
+                    else {
+                        scale = ColorScales.getOrdinalScale(this.range, this.domain);
+                    }
                 }
                 else if (this.datatype === "NUMBER") {
                     scale = ColorScales.getContinousColorScale(this.range, this.domain);
@@ -83,13 +91,13 @@ class DerivedVariable {
      */
     getDefaultDomain() {
         if (this.datatype === 'NUMBER') {
-            return [Math.min(...Object.values(this.mapper).filter(d=>d!==undefined)), Math.max(...Object.values(this.mapper).filter(d=>d!==undefined))];
+            return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)), Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
         }
         else if (this.datatype === "BINARY") {
             return [true, false];
         }
         else {
-            return [...new Set(Object.values(this.mapper))].filter(d=>d!==undefined).sort();
+            return [...new Set(Object.values(this.mapper))].filter(d => d !== undefined);
         }
     }
 

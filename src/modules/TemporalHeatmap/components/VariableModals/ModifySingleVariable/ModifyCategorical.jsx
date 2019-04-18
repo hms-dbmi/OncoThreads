@@ -20,7 +20,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
         this.categoryStore = new CategoryStore(this.createCurrentCategoryData(),
             this.props.derivedVariable === null ? this.props.variable.datatype === "ORDINAL" : this.props.derivedVariable.datatype === "ORDINAL",
             Object.values(this.props.variable.mapper),
-            this.props.derivedVariable === null ? this.props.variable.colorScale : this.props.derivedVariable.colorScale);
+            this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range);
         this.state = this.getInitialState();
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
@@ -82,10 +82,6 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             if (this.state.applyToAll) {
                 this.props.variableManagerStore.applyRangeToEntireProfile(oldVariable.profile, returnVariable.range);
             }
-            else {
-                oldVariable.changeRange(returnVariable.range);
-            }
-
         }
         this.props.closeModal();
     }
@@ -106,11 +102,12 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             //case: isOrdinal color scale
             if (this.categoryStore.isOrdinal) {
                 datatype = "ORDINAL";
+                range = [this.categoryStore.colorScale(0),this.categoryStore.colorScale(1)];
             }
             else {
-                datatype = "STRING"
+                datatype = "STRING";
+                range = this.categoryStore.currentCategories.map(d => d.color);
             }
-            range = this.categoryStore.currentCategories.map(d => d.color);
             domain = this.categoryStore.currentCategories.map(d => d.name);
             modification = {type: "modifyCategorical", mapping: this.categoryStore.categoryMapping};
         }
@@ -252,7 +249,6 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
         return checkbox;
 
     }
-
 
 
     render() {

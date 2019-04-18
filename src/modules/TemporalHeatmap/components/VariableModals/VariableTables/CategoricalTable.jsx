@@ -187,12 +187,12 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
      * @param {number} numRect
      * @returns {rect[]}
      */
-    static getOrdinalRects(scale, rectDim, numRect) {
+    static getOrdinalRects(colors, rectDim, numRect) {
         let rects = [];
-        for (let i = 1; i < numRect + 1; i++) {
-            rects.push(<rect key={i} fill={scale((1 / (numRect + 1)) * i)} width={rectDim}
+        for (let i = 0; i < numRect ; i++) {
+            rects.push(<rect key={i} fill={d3.interpolateRgb(...colors)(i/(numRect-1))} width={rectDim}
                              height={rectDim}
-                             x={(i - 1) * rectDim}/>)
+                             x={i* rectDim}/>)
         }
         return rects;
     }
@@ -204,10 +204,10 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
      * @param {number} numRect
      * @returns {rect[]}
      */
-    static getCategoricalRects(scale, rectDim, numRect) {
+    static getCategoricalRects(colors, rectDim, numRect) {
         let rects = [];
         for (let i = 0; i < numRect; i++) {
-            rects.push(<rect key={i} fill={scale.range()[i]} width={rectDim}
+            rects.push(<rect key={i} fill={colors[i]} width={rectDim}
                              height={rectDim}
                              x={i * rectDim}/>)
         }
@@ -221,19 +221,17 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
     getColorScalePopover() {
         let rectDim = 20;
         let numRect = 5;
-        let ordinalScales = ColorScales.ordinalScales;
-        let categoricalScales = ColorScales.categoricalColors.map(d => d3.scaleOrdinal().range(d));
         return <form>
             <FormGroup>
                 <ControlLabel>Categorical Scales</ControlLabel>
-                {categoricalScales.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, false)}
+                {ColorScales.categoricalColors.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, false)}
                                                         name="ColorScaleGroup">
                     <svg width={rectDim * numRect}
                          height={rectDim}>{CategoricalTable.getCategoricalRects(d, rectDim, numRect)}</svg>
-                    {"  Colors: " + d.range().length}
+                    {"  Colors: " + d.length}
                 </Radio>)}
                 <ControlLabel>Ordinal Scales</ControlLabel>
-                {ordinalScales.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, true)}
+                {ColorScales.continuousTwoColorRanges.map((d, i) => <Radio key={i} onChange={() => this.handleColorScaleChange(d, true)}
                                                     name="ColorScaleGroup">
                     <svg width={rectDim * numRect}
                          height={rectDim}>{CategoricalTable.getOrdinalRects(d, rectDim, numRect)}</svg>
@@ -249,7 +247,8 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
      */
     getRestrictCategories() {
         return <div>
-            <Checkbox checked={this.props.categoryStore.restrictCategories} value={this.props.categoryStore.restrictCategories}
+            <Checkbox checked={this.props.categoryStore.restrictCategories}
+                      value={this.props.categoryStore.restrictCategories}
                       onChange={() => this.props.categoryStore.toggleRestrictCategories()}>Restrict number of
                 categories</Checkbox>
             <input style={{visibility: this.props.categoryStore.restrictCategories ? "visible" : "hidden"}}

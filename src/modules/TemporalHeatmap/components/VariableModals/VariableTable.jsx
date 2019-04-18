@@ -344,6 +344,9 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
                 return true
             }
+            else if (!oldVariable.range.every((d, i) => d === newVariable.range[i])) {
+                return true
+            }
             //case: mapper changed?
             else {
                 for (let sample in oldVariable.mapper) {

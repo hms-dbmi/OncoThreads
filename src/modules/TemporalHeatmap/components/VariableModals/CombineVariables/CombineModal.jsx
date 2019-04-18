@@ -12,19 +12,14 @@ const CombineModal = observer(class CombineModal extends React.Component {
      */
     getModificationType() {
         let modificationType;
-        if (this.props.derivedVariable !== null) {
-            modificationType = this.props.derivedVariable.modification.type;
+        if (this.props.variables.filter(d => d.datatype === "BINARY").length === this.props.variables.length) {
+            modificationType = "binaryCombine"
+        }
+        else if (this.props.variables.filter(d => d.datatype === "NUMBER").length === 0) {
+            modificationType = "categoryCombine"
         }
         else {
-            if (this.props.variables.filter(d => d.datatype === "BINARY").length === this.props.variables.length) {
-                modificationType = "binaryCombine"
-            }
-            else if (this.props.variables.filter(d => d.datatype === "NUMBER").length === 0) {
-                modificationType = "categoryCombine"
-            }
-            else {
-                modificationType = "numberCombine";
-            }
+            modificationType = "numberCombine";
         }
         return modificationType;
     }

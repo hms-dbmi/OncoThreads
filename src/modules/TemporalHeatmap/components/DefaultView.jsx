@@ -313,7 +313,6 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
             launchDisabled = !this.props.rootStore.timelineParsed;
         }
         this.updateKeys();
-
         return (
             <Grid>
                 <Row>
@@ -335,6 +334,7 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
                             </Tab>
                             <Tab eventKey={"own"} title={"Load own dataset"}>
                                 <a href={"https://cbioportal.readthedocs.io/en/latest/File-Formats.html#formats"}
+                                   rel="noopener noreferrer"
                                    target="_blank">File format documentation</a>
                                 {this.props.rootStore.geneNamesAPI.geneListLoaded ? <Form horizontal>
                                     <h4>Required files</h4>

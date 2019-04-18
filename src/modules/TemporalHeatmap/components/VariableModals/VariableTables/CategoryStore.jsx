@@ -1,20 +1,27 @@
 import {action, extendObservable, reaction} from "mobx";
+import * as d3 from 'd3';
+
 
 /**
  * store for editing categories of a categorical/ordinal variable
  */
 class CategoryStore {
-    constructor(currentCategories, isOrdinal, allValues, colorScale) {
+    constructor(currentCategories, isOrdinal, allValues, colorRange) {
         this.allValues = allValues; // all possible values
         this.domain = Array.from(new Set(Object.values(this.allValues))).filter(d => d !== undefined).sort(); // domain of variable
         extendObservable(this, {
-            currentCategories: currentCategories.map(d => { // current categories of variable
+            currentCategories: currentCategories.map((d, i) => { // current categories of variable
                 d.percentOccurence = this.getPercentOccurence(d.categories);
-                d.color = colorScale(d.name);
+                if (isOrdinal) {
+                    d.color = d3.interpolateLab(...colorRange)(i / (currentCategories.length - 1));
+                }
+                else {
+                    d.color = colorRange[i % colorRange.length]
+                }
                 return d
             }),
             isOrdinal: isOrdinal, // is variable ordinal
-            colorScale: colorScale, // color scale of variable
+            colorScale: isOrdinal ? d3.scaleLinear().range(colorRange).domain([0, 1]) : d3.scaleOrdinal().range(colorRange), // color scale of variable
             restrictCategories: false, // restrict variable categories to a certain number
             numberOfCategories: currentCategories.length, // number of categories for restricting categories
             /**
@@ -62,10 +69,15 @@ class CategoryStore {
             }),
             /**
              * changes the color scale
-             * @param {string} color
+             * @param {string} colorRange
              */
-            changeColorScale: action(colorScale => {
-                this.colorScale = colorScale;
+            changeColorScale: action(colorRange => {
+                if (this.isOrdinal) {
+                    this.colorScale = d3.scaleLinear().domain([0, 1]).range(colorRange);
+                }
+                else {
+                    this.colorScale = d3.scaleOrdinal().range(colorRange);
+                }
             }),
             /**
              * moves a category up or down
@@ -84,7 +96,7 @@ class CategoryStore {
                 }
                 if (this.isOrdinal) {
                     this.currentCategories.forEach((d, i) => {
-                        d.color = this.colorScale((i * 2 + 1) / (this.currentCategories.length * 2 + 1));
+                        d.color = this.colorScale[i];
                     });
                 }
             }),

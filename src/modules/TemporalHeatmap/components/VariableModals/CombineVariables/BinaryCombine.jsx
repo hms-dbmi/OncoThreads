@@ -8,7 +8,6 @@ import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoryStore from "../VariableTables/CategoryStore";
 import CategoricalTable from "../VariableTables/CategoricalTable";
 import BinaryTable from "../VariableTables/BinaryTable";
-import * as d3 from "d3";
 
 /**
  * Component for combining variables
@@ -31,7 +30,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
      * @return {CategoryStore}
      */
     createCategoryStore() {
-        let currentCategories, isOrdinal, allValues, colorScale;
+        let currentCategories, isOrdinal, allValues, colorRange;
         if (this.props.derivedVariable === null || this.props.derivedVariable.modification.datatype !== "STRING") {
             let mapper = DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), {
                 operator: "or",
@@ -47,18 +46,18 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
             });
             isOrdinal = false;
             allValues = Object.values(mapper);
-            colorScale = d3.scaleOrdinal().range(ColorScales.defaultCategoricalRange);
+            colorRange = ColorScales.defaultCategoricalRange;
         }
         else {
             if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.datatype === "STRING") {
                 currentCategories = this.getCurrentDataOfDerivedVariable();
                 isOrdinal = this.props.derivedVariable.datatype === "ORDINAL";
                 allValues = Object.values(this.props.derivedVariable.mapper);
-                colorScale = this.props.derivedVariable.colorScale;
+                colorRange = this.props.derivedVariable.range;
             }
 
         }
-        return new CategoryStore(currentCategories, isOrdinal, allValues, colorScale);
+        return new CategoryStore(currentCategories, isOrdinal, allValues, colorRange);
     }
 
 
@@ -99,6 +98,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
      */
     getCurrentDataOfDerivedVariable() {
         let currentVarCategories = [];
+        console.log(this.props.derivedVariable.modification);
         this.props.derivedVariable.domain.forEach(d => {
             let categories = [];
             if (this.props.derivedVariable.modification.mapping === null) {
@@ -192,9 +192,16 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
             }
             description = "Binary combination of " + this.props.variables.map(d => d.name);
             mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.categoryStore.categoryMapping);
+            modification.mapping = this.categoryStore.categoryMapping;
             range = this.categoryStore.currentCategories.map(d => d.color);
         }
-        this.props.variableManagerStore.addVariableToBeDisplayed(new DerivedVariable(uuidv4(), this.state.name, datatype, description, this.props.variables.map(d => d.id), this.state.modification, range, [], mapper, uuidv4(), "combined"), this.state.keep);
+        let newVariable=new DerivedVariable(uuidv4(), this.state.name, datatype, description, this.props.variables.map(d => d.id), this.state.modification, range, [], mapper, uuidv4(), "combined");
+        if(this.props.derivedVariable===null) {
+            this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.state.keep);
+        }
+        else{
+            this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id,newVariable)
+        }
         if (!this.state.keep) {
             this.props.variables.forEach(d => {
                 this.props.variableManagerStore.removeVariable(d.id);
