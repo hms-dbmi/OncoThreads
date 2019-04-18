@@ -10,11 +10,7 @@ import SvgExport from "./SvgExport";
 import cBioAPI from "../cBioAPI";
 import FileAPI from "../FileAPI";
 import LocalFileLoader from "../LocalFileLoader";
-
-// uncomment for using Genenames API
-// import GeneNamesAPI from "../GeneNamesAPI";
 import GeneNamesLocalAPI from "../GeneNamesLocalAPI";
-
 
 /*
 Store containing all the other stores
@@ -45,9 +41,18 @@ class RootStore {
         this.dataStore = new DataStore(this); // substore containing the main data
         this.visStore = new VisStore(this); // substore for visual parameters of the visualiztion
         this.svgExport = new SvgExport(this); // substore for SVG export
+
+
         this.geneNamesAPI=new GeneNamesLocalAPI();
         this.localFileLoader = new LocalFileLoader(); // substore for loading local files
         this.uiStore = uiStore;
+
+
+        /*this.exportSVG = this.exportSVG.bind(this);
+        this.exportSVGandData = this.exportSVGandData.bind(this);
+        this.exportPNG = this.exportPNG.bind(this);
+        this.exportPDF = this.exportPDF.bind(this);*/
+        //this.onSubmit = this.onSubmit.bind(this);
 
         extendObservable(this, {
             // current state of data and data parsing

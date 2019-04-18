@@ -51,7 +51,10 @@ class OriginalVariable {
             }),
             get colorScale() {
                 let scale;
-                if (this.datatype === "ORDINAL" || this.datatype === "STRING" || this.datatype === "BINARY") {
+               if (this.datatype === "STRING" || this.datatype === "BINARY") {
+                    scale = ColorScales.getCategoricalScale(this.range, this.domain);
+                }
+                else if (this.datatype === "ORDINAL") {
                     scale = ColorScales.getOrdinalScale(this.range, this.domain);
                 }
                 else if (this.datatype === "NUMBER") {
@@ -87,7 +90,7 @@ class OriginalVariable {
             return [true, false];
         }
         else {
-            return [...new Set(Object.values(this.mapper))].filter(d=>d!==undefined);
+            return [...new Set(Object.values(this.mapper))].filter(d=>d!==undefined).sort();
         }
     }
 }

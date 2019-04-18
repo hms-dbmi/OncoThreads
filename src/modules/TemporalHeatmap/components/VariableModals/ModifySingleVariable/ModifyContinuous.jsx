@@ -45,12 +45,20 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      */
     setInitialState() {
         let bin = true;
-        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
+        let colorRange=this.props.variable.range;
+        if (this.props.derivedVariable === null) {
             bin = false;
+        }
+        else{
+            if(!this.props.derivedVariable.modification.binning){
+                bin=false;
+            }
+           colorRange=this.props.derivedVariable.range;
+
         }
         return {
             bin: bin, // bin/don't bin variable
-            colorRange: this.props.variable.range, // currently selected color range
+            colorRange: colorRange, // currently selected color range
             isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform !== false, // is data log transformed
             name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name, // name of variable
             applyToAll: false // apply modification to all variables in the profile
@@ -170,9 +178,6 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             if (this.state.applyToAll) {
                 this.props.variableManagerStore.applyRangeToEntireProfile(oldVariable.profile, returnVariable.range);
             }
-            else {
-                oldVariable.changeRange(returnVariable.range);
-            }
         }
         this.props.closeModal();
     }
@@ -196,13 +201,12 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             if (!this.binningStore.isBinary) {
                 datatype = "ORDINAL";
                 domain = modification.binning.binNames.map(d => d.name);
-                range = this.getBinnedRange(modification, profileDomain);
             }
             //case: values are converted to binary
             else {
                 datatype = "BINARY";
+                range=[];
             }
-            oldVariable.changeRange(this.state.colorRange);
         }
         else {
             modification = {
