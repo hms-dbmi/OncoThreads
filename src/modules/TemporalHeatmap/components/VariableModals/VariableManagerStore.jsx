@@ -100,6 +100,7 @@ class VariableManagerStore {
             }),
             /**
              * selects/unselect variable
+             * @param {string} id
              */
             toggleSelected: action(id => {
                 this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected = !this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected;
@@ -107,14 +108,19 @@ class VariableManagerStore {
             /**
              * sorts variables by data source
              * @param {string[]} sourceOrder
+             * @param {boolean} asc - sort ascending/descending
              */
-            sortBySource: action(sourceOrder => {
+            sortBySource: action((sourceOrder,asc) => {
+                 let factor=1;
+                if(!asc){
+                    factor=-1
+                }
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                         if (sourceOrder.indexOf(this.referencedVariables[a.id].profile) < sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
-                            return -1
+                            return -factor
                         }
                         if (sourceOrder.indexOf(this.referencedVariables[a.id].profile) > sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
-                            return 1;
+                            return factor;
                         }
                         else return 0;
                     }
@@ -137,14 +143,19 @@ class VariableManagerStore {
             }),
             /**
              * sort variables alphabetically
+             * @param {boolean} asc - sort ascending/descending
              */
-            sortAlphabetically: action(() => {
+            sortAlphabetically: action((asc) => {
+                let factor=1;
+                if(!asc){
+                    factor=-1
+                }
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                     if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
-                        return -1
+                        return -factor
                     }
                     if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
-                        return 1;
+                        return factor;
                     }
                     else return 0;
                 }));
@@ -152,13 +163,17 @@ class VariableManagerStore {
             /**
              * sort variables by datatype (alphabetically)
              */
-            sortByDatatype: action(() => {
+            sortByDatatype: action((asc) => {
+                 let factor=1;
+                if(!asc){
+                    factor=-1
+                }
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                         if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
-                            return -1
+                            return -factor
                         }
                         if (this.referencedVariables[a.id].datatype > this.referencedVariables[b.id].datatype) {
-                            return 1;
+                            return factor;
                         }
                         else return 0;
                     }

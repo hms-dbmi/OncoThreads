@@ -69,7 +69,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
         else {
             this.state.selectedValues.forEach(d => {
-                let variable=new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "computed");
+                let variable = new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], "Computed", "computed");
                 console.log(variable);
                 this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(variable);
             });
@@ -150,16 +150,14 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
      * handles adding a variable
      */
     handleAdd() {
-        if (this.state.category!=="clinical") {
-            this.addEventVariable();
+        if (this.state.category === "clinical") {
+            this.addClinicalVariables();
+        }
+        else if (this.state.category === "genes") {
+            this.searchGenes()
         }
         else {
-            if (this.state.category === "clinical") {
-                this.addClinicalVariables();
-            }
-            else {
-                this.searchGenes()
-            }
+            this.addEventVariable();
         }
     }
 

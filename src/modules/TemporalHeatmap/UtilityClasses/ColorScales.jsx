@@ -67,7 +67,7 @@ class ColorScales {
      * @return {string[]}
      */
     static getBinnedRange(range, binValues) {
-        let oldScale = ColorScales.getContinousColorScale(range, [binValues[0],binValues[binValues.length-1]]);
+        let oldScale = ColorScales.getContinousColorScale(range, [binValues[0], binValues[binValues.length - 1]]);
         let binnedRange = [];
         for (let i = 0; i < binValues.length - 1; i++) {
             binnedRange.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
@@ -76,7 +76,7 @@ class ColorScales {
     }
 
     /**
-     * creates an isOrdinal color scale based on a range and domain
+     * creates a categorical color scale based on a range and domain
      * @param {string[]} range
      * @param {(string[]|boolean[])} domain
      * @returns {function}
@@ -86,16 +86,21 @@ class ColorScales {
             const colorScale = d3.scaleOrdinal().range(range.slice()).domain(domain.slice());
             if (value === undefined) {
                 return '#f7f7f7';
-            } else if (value === "wild type") {
-                return 'lightgray'
             }
             else return colorScale(value);
         };
     }
 
+    /**
+     * creates a color scale for an ordinal variable
+     * @param range
+     * @param domain
+     * @return {Function}
+     */
     static getOrdinalScale(range, domain) {
         return function (value) {
-            let interpolatedRange = domain.map((d, i) => d3.interpolateLab(range[0], range[1])(i/ domain.length));
+            let helper=d3.scaleLinear().range(range.slice()).domain(range.map((d,i)=>i/(range.length-1)));
+            let interpolatedRange = domain.map((d, i) => helper(i / (domain.length-1)));
             const colorScale = d3.scaleOrdinal().range(interpolatedRange).domain(domain.slice());
             if (value === undefined) {
                 return '#f7f7f7';
@@ -131,12 +136,13 @@ ColorScales.continuousThreeColorRanges = [
     ['#08ff00', '#000000', '#ff0000']
 ];
 ColorScales.continuousTwoColorRanges = [
-    [d3ScaleChromatic.interpolateBlues(0),d3ScaleChromatic.interpolateBlues(1)],
-    ['rgb(218, 241, 213)', 'rgb(0, 68, 27)'],
     ['rgb(232, 232, 232)', 'rgb(0, 0, 0)'],
+    ['rgb(218, 241, 213)', 'rgb(0, 68, 27)'],
     ['rgb(254, 222, 191)', 'rgb(127, 39, 4)'],
     ['rgb(232, 230, 242)', 'rgb(63, 0, 125)'],
     ['rgb(253, 211, 193)', 'rgb(103, 0, 13)'],
+    [d3ScaleChromatic.interpolateBlues(0.1), d3ScaleChromatic.interpolateBlues(1)],
+
 ];
 ColorScales.categoricalColors = [
     ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'],
