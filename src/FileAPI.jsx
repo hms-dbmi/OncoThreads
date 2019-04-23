@@ -45,16 +45,9 @@ class FileAPI {
      * @param {returnDataCallback} callback
      */
     getClinicalSampleData(callback) {
-        this.localFileLoader.loadClinicalFile(true, callback);
-    }
-
-    /**
-     * get mutation counts in a study
-     * @param {string} profileId
-     * @param {returnDataCallback} callback
-     */
-    getMutationCounts(profileId, callback) {
-        callback(this.localFileLoader.mutationCounts);
+        this.localFileLoader.loadClinicalFile(true, clinicalData=>{
+            callback(clinicalData.concat(this.localFileLoader.mutationCounts))
+        });
     }
 
     /**
