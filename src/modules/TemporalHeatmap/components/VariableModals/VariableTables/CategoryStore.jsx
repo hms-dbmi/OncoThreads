@@ -152,6 +152,10 @@ class CategoryStore {
                     unmergedEntries[i].forEach((d, j) => this.currentCategories.splice(mergedIndeces[i] + j, 0, d));
                 }
             }),
+            /**
+             * sorts categories by name
+             * @param {boolean} asc - sort ascending/descending
+             */
             sortByName: action(asc => {
                 let factor = 1;
                 if (asc) {
@@ -168,6 +172,10 @@ class CategoryStore {
                     }
                 ))
             }),
+            /**
+             * sorts categories by their percent occurence
+             * @param {boolean} asc - sort ascending/descending
+             */
             sortByPercentage: action(asc => {
                 let factor = 1;
                 if (asc) {

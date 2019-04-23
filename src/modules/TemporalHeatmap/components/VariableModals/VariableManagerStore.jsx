@@ -100,6 +100,7 @@ class VariableManagerStore {
             }),
             /**
              * selects/unselect variable
+             * @param {string} id
              */
             toggleSelected: action(id => {
                 this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected = !this.currentVariables[this.currentVariables.map(d => d.id).indexOf(id)].isSelected;
@@ -107,6 +108,7 @@ class VariableManagerStore {
             /**
              * sorts variables by data source
              * @param {string[]} sourceOrder
+             * @param {boolean} asc - sort ascending/descending
              */
             sortBySource: action((sourceOrder,asc) => {
                  let factor=1;
@@ -141,6 +143,7 @@ class VariableManagerStore {
             }),
             /**
              * sort variables alphabetically
+             * @param {boolean} asc - sort ascending/descending
              */
             sortAlphabetically: action((asc) => {
                 let factor=1;
