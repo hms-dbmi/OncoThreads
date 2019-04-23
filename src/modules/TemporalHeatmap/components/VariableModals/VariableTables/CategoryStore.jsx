@@ -76,7 +76,7 @@ class CategoryStore {
                     this.colorScale = d3.scaleLinear().domain([0, 1]).range(colorRange);
                 }
                 else {
-                    this.colorScale = d3.scaleOrdinal().range(colorRange);
+                    this.colorScale = d3.scaleOrdinal().range(colorRange).domain(this.currentCategories.map(d => d.name));
                 }
             }),
             /**
@@ -93,11 +93,6 @@ class CategoryStore {
                 else if (!moveUp && index < this.currentCategories.length - 1) {
                     this.currentCategories[index] = this.currentCategories[index + 1];
                     this.currentCategories[index + 1] = currentEntry;
-                }
-                if (this.isOrdinal) {
-                    this.currentCategories.forEach((d, i) => {
-                        d.color = this.colorScale[i];
-                    });
                 }
             }),
 
@@ -156,13 +151,38 @@ class CategoryStore {
                     this.currentCategories.splice(mergedIndeces[i], 1);
                     unmergedEntries[i].forEach((d, j) => this.currentCategories.splice(mergedIndeces[i] + j, 0, d));
                 }
-                this.currentCategories.forEach((d, i) => {
-                    let value = d.name;
-                    if (this.isOrdinal) {
-                        value = (i * 2 + 1) / (this.currentCategories.length * 2 + 1);
+            }),
+            sortByName: action(asc => {
+                let factor = 1;
+                if (asc) {
+                    factor = -1;
+                }
+                this.currentCategories.replace(this.currentCategories.sort((a, b) => {
+                        if (a.name < b.name) {
+                            return -factor
+                        }
+                        if (a.name > b.name) {
+                            return factor;
+                        }
+                        else return 0;
                     }
-                    d.color = this.colorScale(value);
-                });
+                ))
+            }),
+            sortByPercentage: action(asc => {
+                let factor = 1;
+                if (asc) {
+                    factor = -1;
+                }
+                this.currentCategories.replace(this.currentCategories.sort((a, b) => {
+                        if (a.percentOccurence < b.percentOccurence) {
+                            return -factor
+                        }
+                        if (a.percentOccurence > b.percentOccurence) {
+                            return factor;
+                        }
+                        else return 0;
+                    }
+                ))
             }),
             /**
              * checks if current categories are unique (no names double)
@@ -215,9 +235,24 @@ class CategoryStore {
         // reaction to changing color scale
         reaction(() => this.colorScale, scale => {
             this.currentCategories.forEach((d, i) => {
-                d.color = scale((i * 2 + 1) / (this.currentCategories.length * 2 + 1));
+                let value = d.name;
+                if (this.isOrdinal) {
+                    value = (i * 2 + 1) / (this.currentCategories.length * 2 + 1);
+                }
+                d.color = scale(value);
             });
         });
+        reaction(() => this.currentCategories.map(d => d.name), categories => {
+            if (this.isOrdinal) {
+                categories.forEach((d, i) => {
+                    let value = d;
+                    if (this.isOrdinal) {
+                        value = (i * 2 + 1) / (categories.length * 2 + 1);
+                    }
+                    this.currentCategories[i].color = this.colorScale(value);
+                });
+            }
+        })
 
     }
 

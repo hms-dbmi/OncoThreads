@@ -66,18 +66,20 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
         });
 
         return <div>
-            <Table bordered condensed responsive>
-                <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>% Occurence</th>
-                    <th>Binary value</th>
-                </tr>
-                </thead>
-                <tbody>
-                {this.getTableContent()}
-                </tbody>
-            </Table>
+            <div style={{maxHeight: "400px", overflowY: "scroll"}}>
+                <Table bordered condensed responsive>
+                    <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>% Occurence</th>
+                        <th>Binary value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {this.getTableContent()}
+                    </tbody>
+                </Table>
+            </div>
             <div>
                 <p>Click to change color:</p>
                 true: {colorRects[0]}

@@ -47,13 +47,6 @@ class RootStore {
         this.localFileLoader = new LocalFileLoader(); // substore for loading local files
         this.uiStore = uiStore;
 
-
-        /*this.exportSVG = this.exportSVG.bind(this);
-        this.exportSVGandData = this.exportSVGandData.bind(this);
-        this.exportPNG = this.exportPNG.bind(this);
-        this.exportPDF = this.exportPDF.bind(this);*/
-        //this.onSubmit = this.onSubmit.bind(this);
-
         extendObservable(this, {
             // current state of data and data parsing
             isOwnData: false,

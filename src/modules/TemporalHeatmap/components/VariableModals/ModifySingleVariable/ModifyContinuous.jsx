@@ -14,9 +14,9 @@ import {
     Radio
 } from "react-bootstrap";
 import FontAwesome from 'react-fontawesome';
+import uuidv4 from "uuid/v4";
 import Histogram from "./Binner/Histogram";
 import DerivedVariable from "../../../stores/DerivedVariable";
-import uuidv4 from "uuid/v4";
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
@@ -45,15 +45,15 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      */
     setInitialState() {
         let bin = true;
-        let colorRange=this.props.variable.range;
+        let colorRange = this.props.variable.range;
         if (this.props.derivedVariable === null) {
             bin = false;
         }
-        else{
-            if(!this.props.derivedVariable.modification.binning){
-                bin=false;
+        else {
+            if (!this.props.derivedVariable.modification.binning) {
+                bin = false;
+                colorRange = this.props.derivedVariable.range;
             }
-           colorRange=this.props.derivedVariable.range;
 
         }
         return {
@@ -205,7 +205,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             //case: values are converted to binary
             else {
                 datatype = "BINARY";
-                range=[];
+                range = [];
             }
         }
         else {
