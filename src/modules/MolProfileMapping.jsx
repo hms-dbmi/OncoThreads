@@ -65,11 +65,8 @@ class MolProfileMapping {
                     if (profile.datatype === "DISCRETE") {
                         if (profile.molecularAlterationType === "COPY_NUMBER_ALTERATION") {
                             datatype = "ORDINAL";
-                            let helper = d3.scaleLinear().domain([0, 0.5, 1]).range(['#0571b0', '#f7f7f7', '#ca0020']);
                             domain = ["-2", "-1", "0", "1", "2"];
-                            range = domain.map((d, i) => {
-                                return helper(i / (domain.length - 1));
-                            });
+                            range = ['#0571b0', '#f7f7f7', '#ca0020'];
                         }
                         else {
                             datatype = "STRING";

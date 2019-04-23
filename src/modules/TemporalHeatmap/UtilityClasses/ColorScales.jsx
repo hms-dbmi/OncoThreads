@@ -76,7 +76,7 @@ class ColorScales {
     }
 
     /**
-     * creates an isOrdinal color scale based on a range and domain
+     * creates a categorical color scale based on a range and domain
      * @param {string[]} range
      * @param {(string[]|boolean[])} domain
      * @returns {function}
@@ -91,9 +91,16 @@ class ColorScales {
         };
     }
 
+    /**
+     * creates a color scale for an ordinal variable
+     * @param range
+     * @param domain
+     * @return {Function}
+     */
     static getOrdinalScale(range, domain) {
         return function (value) {
-            let interpolatedRange = domain.map((d, i) => d3.interpolateLab(range[0], range[1])(i / domain.length));
+            let helper=d3.scaleLinear().range(range.slice()).domain(range.map((d,i)=>i/(range.length-1)));
+            let interpolatedRange = domain.map((d, i) => helper(i / (domain.length-1)));
             const colorScale = d3.scaleOrdinal().range(interpolatedRange).domain(domain.slice());
             if (value === undefined) {
                 return '#f7f7f7';

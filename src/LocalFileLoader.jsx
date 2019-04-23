@@ -27,6 +27,7 @@ class LocalFileLoader {
     constructor() {
         this.patients = []; // all patients contained in the timeline SPECIMEN file
         this.samples = []; // all samples contained in the timeline SPECIMEN file
+        this.samplePatientMap={};
         this.mutations = []; // array of mutation objects
         this.mutationCounts = []; // array of mutation counts
         this.eventFiles = new Map(); // map of event files
@@ -172,6 +173,7 @@ class LocalFileLoader {
                         }
                         if (!samples.includes(row.data[0]["SAMPLE_ID"])) {
                             samples.push(row.data[0]["SAMPLE_ID"]);
+                            this.samplePatientMap[row.data[0]["SAMPLE_ID"]]=row.data[0]["PATIENT_ID"];
                         }
                         let date = parseInt(row.data[0]["START_DATE"], 10);
                         if (isNaN(date)) {
@@ -269,10 +271,14 @@ class LocalFileLoader {
                                     count = counts[sample];
                                 }
                                 return {
+                                    clinicalAttribute:{displayName:"Mutation Count", description:"Mutation Count",datatype:"NUMBER"},
                                     sampleId: sample,
-                                    mutationCount: count
+                                    patientId:this.samplePatientMap[sample],
+                                    clinicalAttributeId:"MUTATION_COUNT",
+                                    value:count,
                                 }
                             });
+                            console.log(this.mutationCounts);
                             this.mutations = mutations;
                             this.mutationsParsed = "finished";
                         }

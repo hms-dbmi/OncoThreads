@@ -25,7 +25,6 @@ class RootStore {
 
         this.initialVariable = {}; // initial variable saved for reset
 
-        this.mutationCountId = uuidv4(); // random id for mutation count
         this.timeDistanceId = uuidv4(); // random id for time distance variable
 
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"]; // possible variable types of mutation data
@@ -43,7 +42,7 @@ class RootStore {
         this.svgExport = new SvgExport(this); // substore for SVG export
 
 
-        this.geneNamesAPI=new GeneNamesLocalAPI();
+        this.geneNamesAPI = new GeneNamesLocalAPI();
         this.localFileLoader = new LocalFileLoader(); // substore for loading local files
         this.uiStore = uiStore;
 
@@ -134,11 +133,11 @@ class RootStore {
             parseTimeline: action((study, callback) => {
                 this.study = study;
                 if (this.isOwnData) {
-                    this.api = new FileAPI(this.localFileLoader,this.geneNamesAPI);
+                    this.api = new FileAPI(this.localFileLoader, this.geneNamesAPI);
                 }
                 else {
                     this.api = new cBioAPI(this.study.studyId);
-                    this.geneNamesAPI.geneList={};
+                    this.geneNamesAPI.geneList = {};
                 }
                 this.staticMappers = {};
                 this.eventTimelineMap.clear();
@@ -162,34 +161,19 @@ class RootStore {
              *  @param {loadFinishedCallback} callback
              */
             parseCBio: action((callback) => {
-                this.api.getClinicalSampleData(data => {
-                    this.createClinicalSampleMapping(data);
-                    if (data.length !== 0) {
-                        this.initialVariable = this.clinicalSampleCategories[0];
-                        this.variablesParsed = true;
-                        this.firstLoad = false;
-                    }
-                    this.api.getClinicalPatientData(data => {
-                        this.createClinicalPatientMappers(data);
+                this.api.getAvailableMolecularProfiles(profiles => {
+                    this.availableProfiles = profiles;
+                    this.api.getClinicalSampleData(data => {
+                        this.createClinicalSampleMapping(data);
                         if (data.length !== 0) {
-                            this.initialVariable = this.clinicalPatientCategories[0];
+                            this.initialVariable = this.clinicalSampleCategories[0];
                             this.variablesParsed = true;
                             this.firstLoad = false;
                         }
-                        this.api.getAvailableMolecularProfiles(profiles => {
-                            this.availableProfiles = profiles;
-                            const mutationIndex = profiles.map(d => d.molecularAlterationType).indexOf("MUTATION_EXTENDED");
-                            if (mutationIndex !== -1) {
-                                this.api.getMutationCounts(profiles[mutationIndex].molecularProfileId, data => {
-                                    this.createMutationCountsMapping(data);
-                                    if (data.length !== 0) {
-                                        this.initialVariable = this.clinicalSampleCategories[0];
-                                        this.variablesParsed = true;
-                                        this.firstLoad = false;
-                                    }
-                                });
-                            }
-                            else if (profiles.length > 0) {
+                        this.api.getClinicalPatientData(data => {
+                            this.createClinicalPatientMappers(data);
+                            if (data.length !== 0) {
+                                this.initialVariable = this.clinicalPatientCategories[0];
                                 this.variablesParsed = true;
                                 this.firstLoad = false;
                             }
@@ -223,23 +207,6 @@ class RootStore {
                             return this.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
                         }
                     }
-                });
-            }),
-
-            /**
-             * creates a dictionary mapping sample IDs onto mutation counts
-             * @param {Object[]} data - raw mutation counts
-             */
-            createMutationCountsMapping: action(data => {
-                this.staticMappers[this.mutationCountId] = {};
-                data.forEach(d => {
-                    this.staticMappers[this.mutationCountId][d.sampleId] = d.mutationCount;
-                });
-                this.clinicalSampleCategories.push({
-                    id: this.mutationCountId,
-                    variable: "Mutation Count",
-                    datatype: "NUMBER",
-                    description: "Number of mutations"
                 });
             }),
             /**
@@ -499,7 +466,7 @@ class RootStore {
         });
         // reset timelineParsed if data input is changed
         reaction(() => this.isOwnData, isOwnData => {
-            if(isOwnData&&!this.geneNamesAPI.geneListLoaded){
+            if (isOwnData && !this.geneNamesAPI.geneListLoaded) {
                 this.geneNamesAPI.getAllGeneSymbols();
             }
             this.timelineParsed = false;
