@@ -47,7 +47,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             return {
                 convertBinary: this.props.derivedVariable.datatype === "BINARY", // current datatype
                 binaryMapping: this.createBinaryMapping(), // mapping of categories to binary values for binary conversion
-                binaryColors: this.props.derivedVariable.modification.type === "convertBinary" ? this.props.derivedVariable.range : ColorScales.defaultBinaryRange, // colors of binary values for binary conversion
+                binaryColors: this.props.derivedVariable.datatype === "BINARY" ? this.props.derivedVariable.range : ColorScales.defaultBinaryRange, // colors of binary values for binary conversion
                 name: this.props.derivedVariable.name, //name of modified variable
                 applyToAll: false, // should modification be applied to entire profile
             }
@@ -109,13 +109,13 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
                 range = this.categoryStore.currentCategories.map(d => d.color);
             }
             domain = this.categoryStore.currentCategories.map(d => d.name);
-            modification = {type: "modifyCategorical", mapping: this.categoryStore.categoryMapping};
+            modification = {type: "categoricalTransform", mapping: this.categoryStore.categoryMapping};
         }
         //case: binary conversion
         else {
             datatype = "BINARY";
             range = this.state.binaryColors;
-            modification = {type: "convertBinary", mapping: this.state.binaryMapping};
+            modification = {type: "categoricalTransform", mapping: this.state.binaryMapping};
         }
         const derivedProfile = uuidv4();
         if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
@@ -145,7 +145,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      */
     createCurrentCategoryData() {
         let currentData = [];
-        if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.type !== "convertBinary") {
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.datatype !== "BINARY") {
             this.props.derivedVariable.domain.forEach((d, i) => {
                 for (let key in this.props.derivedVariable.modification.mapping) {
                     if (this.props.derivedVariable.modification.mapping[key] === d) {
@@ -180,7 +180,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      */
     createBinaryMapping() {
         let binaryMapping = {};
-        if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.type === "convertBinary") {
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.datatype === "BINARY") {
             binaryMapping = this.props.derivedVariable.modification.mapping;
         }
         else {

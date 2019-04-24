@@ -182,6 +182,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
             datatype = "BINARY";
             range = this.state.binaryColors;
             description = "Binary combination of " + this.props.variables.map(d => d.name);
+            modification.mapping=false
         }
         else {
             if (this.state.ordinal) {
@@ -193,6 +194,7 @@ const CombineModal = inject("variableManagerStore")(observer(class CombineModal 
             description = "Binary combination of " + this.props.variables.map(d => d.name);
             mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.categoryStore.categoryMapping);
             modification.mapping = this.categoryStore.categoryMapping;
+            console.log(modification);
             range = this.categoryStore.currentCategories.map(d => d.color);
         }
         let newVariable=new DerivedVariable(uuidv4(), this.state.name, datatype, description, this.props.variables.map(d => d.id), this.state.modification, range, [], mapper, uuidv4(), "combined");
