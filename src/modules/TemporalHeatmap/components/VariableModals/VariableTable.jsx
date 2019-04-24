@@ -33,6 +33,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             modifyContinuousIsOpen: false,
             modifyBinaryIsOpen: false,
             saveVariableIsOpen: false,
+            combineVariablesIsOpen:false,
             currentVariable: '', // non-modified variable selected for modification
             derivedVariable: '', // modified variable selected for modification
             combineVariables: [], // variables selected for combination
