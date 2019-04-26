@@ -38,7 +38,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
                         onChangeComplete={(color) => {
                             let binaryColors = this.props.binaryColors.slice();
                             binaryColors[i] = color.hex;
-                            this.props.setColors(binaryColors);
+                            this.props.setBinaryColors(binaryColors);
                         }}/>
                 </Popover>);
             return <OverlayTrigger rootClose={true} onClick={(e) => BinaryTable.handleOverlayClick(e)}
@@ -50,7 +50,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
                 </svg>
             </OverlayTrigger>;
         });
-               let trueOccurence, falseOccurence;
+        let trueOccurence, falseOccurence;
         if (this.props.invert) {
             trueOccurence = Math.round(this.getPercentOccurence([false]) * 100) / 100;
             falseOccurence = Math.round(this.getPercentOccurence([true]) * 100) / 100
@@ -85,15 +85,15 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
 
     render() {
         return (<Table bordered condensed responsive>
-                <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>% Occurence</th>
-                    <th>Color</th>
-                </tr>
-                </thead>
-                {this.getBinaryContent()}
-            </Table>)
+            <thead>
+            <tr>
+                <th>Category</th>
+                <th>% Occurence</th>
+                <th>Color</th>
+            </tr>
+            </thead>
+            {this.getBinaryContent()}
+        </Table>)
     }
 });
 export default BinaryTable;

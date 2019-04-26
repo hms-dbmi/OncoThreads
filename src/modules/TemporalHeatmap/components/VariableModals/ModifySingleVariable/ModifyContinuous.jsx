@@ -14,9 +14,9 @@ import {
     Radio
 } from "react-bootstrap";
 import FontAwesome from 'react-fontawesome';
+import uuidv4 from "uuid/v4";
 import Histogram from "./Binner/Histogram";
 import DerivedVariable from "../../../stores/DerivedVariable";
-import uuidv4 from "uuid/v4";
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
@@ -45,13 +45,21 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      */
     setInitialState() {
         let bin = true;
-        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
+        let colorRange = this.props.variable.range;
+        if (this.props.derivedVariable === null) {
             bin = false;
+        }
+        else {
+            if (!this.props.derivedVariable.modification.binning) {
+                bin = false;
+                colorRange = this.props.derivedVariable.range;
+            }
+
         }
         return {
             bin: bin, // bin/don't bin variable
-            colorRange: this.props.variable.range, // currently selected color range
-            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.logTransform !== false, // is data log transformed
+            colorRange: colorRange, // currently selected color range
+            isXLog: this.props.derivedVariable !== null && this.props.derivedVariable.modification.transformFunction !== false, // is data log transformed
             name: this.props.derivedVariable !== null ? this.props.derivedVariable.name : this.props.variable.name, // name of variable
             applyToAll: false // apply modification to all variables in the profile
         }
@@ -98,11 +106,11 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      * @returns {number[]}
      */
     getAllInitialValues() {
-        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.logTransform) {
+        if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.transformFunction) {
             return Object.values(this.props.variable.mapper).filter(d => d !== undefined);
         }
         else {
-            return Object.values(this.props.variable.mapper).filter(d => d !== undefined).map(d => this.props.derivedVariable.modification.logTransform(d));
+            return Object.values(this.props.variable.mapper).filter(d => d !== undefined).map(d => this.props.derivedVariable.modification.transformFunction(d));
 
         }
     }
@@ -170,9 +178,6 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             if (this.state.applyToAll) {
                 this.props.variableManagerStore.applyRangeToEntireProfile(oldVariable.profile, returnVariable.range);
             }
-            else {
-                oldVariable.changeRange(returnVariable.range);
-            }
         }
         this.props.closeModal();
     }
@@ -196,18 +201,17 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             if (!this.binningStore.isBinary) {
                 datatype = "ORDINAL";
                 domain = modification.binning.binNames.map(d => d.name);
-                range = this.getBinnedRange(modification, profileDomain);
             }
             //case: values are converted to binary
             else {
                 datatype = "BINARY";
+                range = [];
             }
-            oldVariable.changeRange(this.state.colorRange);
         }
         else {
             modification = {
                 type: "continuousTransform",
-                logTransform: this.state.isXLog ? Math.log10 : false, binning: false
+                transformFunction: this.state.isXLog ? Math.log10 : false, binning: false
             };
         }
         const mapper = DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]);
@@ -218,7 +222,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
 
     /**
      * creates a modification object for binning a variable
-     * @return {{type: string, logTransform: function|false, binning: {bins: number[], binNames: Object[]}}}
+     * @return {{type: string, transformFunction: function|false, binning: {bins: number[], binNames: Object[]}}}
      */
     getBinnedModification(profileDomain) {
         let bins = this.binningStore.bins.slice();
@@ -245,7 +249,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         }
         return {
             type: "continuousTransform",
-            logTransform: this.state.isXLog ? Math.log10 : false, binning: {
+            transformFunction: this.state.isXLog ? Math.log10 : false, binning: {
                 bins: bins,
                 binNames: binNames
             }

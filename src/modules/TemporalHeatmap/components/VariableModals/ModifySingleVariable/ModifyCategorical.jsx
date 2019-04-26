@@ -1,14 +1,14 @@
 import React from 'react';
-import {inject, observer} from 'mobx-react';
+import {inject, observer, Provider} from 'mobx-react';
 import {Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
 import uuidv4 from "uuid/v4"
 import DerivedVariable from "../../../stores/DerivedVariable";
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
-import * as d3 from "d3";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoricalTable from "../VariableTables/CategoricalTable";
 import ConvertBinaryTable from "../VariableTables/ConvertBinaryTable";
 import VariableTable from "../VariableTable";
+import CategoryStore from "../VariableTables/CategoryStore";
 
 /**
  * Modification of a categorical variable
@@ -17,13 +17,14 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
 
     constructor(props) {
         super(props);
+        this.categoryStore = new CategoryStore(this.createCurrentCategoryData(),
+            this.props.derivedVariable === null ? this.props.variable.datatype === "ORDINAL" : this.props.derivedVariable.datatype === "ORDINAL",
+            Object.values(this.props.variable.mapper),
+            this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range);
         this.state = this.getInitialState();
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.toggleConvertBinary = this.toggleConvertBinary.bind(this);
-        this.setCurrentCategories = this.setCurrentCategories.bind(this);
-        this.setColorScale = this.setColorScale.bind(this);
-        this.setOrdinal = this.setOrdinal.bind(this);
         this.setBinaryMapping = this.setBinaryMapping.bind(this);
         this.setBinaryColors = this.setBinaryColors.bind(this)
     }
@@ -35,26 +36,20 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
     getInitialState() {
         if (this.props.derivedVariable === null) {
             return {
-                colorScale: d3.scaleOrdinal().range(this.props.variable.range), // currently used color scale for categories
                 convertBinary: false, // current datatype
-                currentCategories: this.createCurrentCategoryData(), // current categories of the modified variable
                 binaryMapping: this.createBinaryMapping(), // mapping of categories to binary values for binary conversion
                 binaryColors: ColorScales.defaultBinaryRange, // colors of binary values for binary conversion
                 name: this.props.variable.name, //name of modified variable
-                isOrdinal: this.props.variable.datatype === "ORDINAL", // is modified variable isOrdinal
-                applyToAll: false // should modification be applied to entire profile
+                applyToAll: false, // should modification be applied to entire profile
             }
         }
         else {
             return {
-                colorScale: d3.scaleOrdinal().range(this.props.derivedVariable.range), // currently used color scale for categories
                 convertBinary: this.props.derivedVariable.datatype === "BINARY", // current datatype
-                currentCategories: this.createCurrentCategoryData(), // current categories of the modified variable
                 binaryMapping: this.createBinaryMapping(), // mapping of categories to binary values for binary conversion
-                binaryColors: this.props.derivedVariable.modification.type === "convertBinary" ? this.props.derivedVariable.range : ColorScales.defaultBinaryRange, // colors of binary values for binary conversion
+                binaryColors: this.props.derivedVariable.datatype === "BINARY" ? this.props.derivedVariable.range : ColorScales.defaultBinaryRange, // colors of binary values for binary conversion
                 name: this.props.derivedVariable.name, //name of modified variable
-                isOrdinal: this.props.derivedVariable.datatype === "ORDINAL",
-                applyToAll: false // should modification be applied to entire profile
+                applyToAll: false, // should modification be applied to entire profile
             }
         }
     }
@@ -87,10 +82,6 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             if (this.state.applyToAll) {
                 this.props.variableManagerStore.applyRangeToEntireProfile(oldVariable.profile, returnVariable.range);
             }
-            else {
-                oldVariable.changeRange(returnVariable.range);
-            }
-
         }
         this.props.closeModal();
     }
@@ -108,30 +99,23 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
         let modification;
         //case: no binary conversion
         if (!this.state.convertBinary) {
-            let categoryMapping = {};
-            this.props.variable.domain.forEach((d) => {
-                this.state.currentCategories.forEach(f => {
-                    if (f.categories.includes(d.toString())) {
-                        categoryMapping[d] = f.name;
-                    }
-                });
-            });
             //case: isOrdinal color scale
-            if (this.state.isOrdinal) {
+            if (this.categoryStore.isOrdinal) {
                 datatype = "ORDINAL";
+                range = [this.categoryStore.colorScale(0),this.categoryStore.colorScale(1)];
             }
             else {
-                datatype = "STRING"
+                datatype = "STRING";
+                range = this.categoryStore.currentCategories.map(d => d.color);
             }
-            range = this.state.currentCategories.map(d => d.color);
-            domain = this.state.currentCategories.map(d => d.name);
-            modification = {type: "modifyCategorical", mapping: categoryMapping};
+            domain = this.categoryStore.currentCategories.map(d => d.name);
+            modification = {type: "categoricalTransform", mapping: this.categoryStore.categoryMapping};
         }
         //case: binary conversion
         else {
             datatype = "BINARY";
             range = this.state.binaryColors;
-            modification = {type: "convertBinary", mapping: this.state.binaryMapping};
+            modification = {type: "categoricalTransform", mapping: this.state.binaryMapping};
         }
         const derivedProfile = uuidv4();
         if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
@@ -161,7 +145,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      */
     createCurrentCategoryData() {
         let currentData = [];
-        if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.type !== "convertBinary") {
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.datatype !== "BINARY") {
             this.props.derivedVariable.domain.forEach((d, i) => {
                 for (let key in this.props.derivedVariable.modification.mapping) {
                     if (this.props.derivedVariable.modification.mapping[key] === d) {
@@ -170,7 +154,6 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
                                 selected: false,
                                 name: d,
                                 categories: [],
-                                color: this.props.derivedVariable.range[i % this.props.derivedVariable.range.length]
                             })
                         }
                         currentData[currentData.map(d => d.name).indexOf(d)].categories.push(key);
@@ -179,12 +162,11 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             });
         }
         else {
-            this.props.variable.domain.forEach((d, i) => {
+            this.props.variable.domain.forEach(d => {
                 currentData.push({
                     selected: false,
                     name: d.toString(),
                     categories: [d.toString()],
-                    color: this.props.variable.colorScale(d)
                 })
             });
         }
@@ -198,7 +180,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      */
     createBinaryMapping() {
         let binaryMapping = {};
-        if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.type === "convertBinary") {
+        if (this.props.derivedVariable !== null && this.props.derivedVariable.datatype === "BINARY") {
             binaryMapping = this.props.derivedVariable.modification.mapping;
         }
         else {
@@ -214,29 +196,6 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
         this.setState({convertBinary: !this.state.convertBinary});
     }
 
-    /**
-     * sets current categories to a modified set of categories
-     * @param {Object[]} currentCategories
-     */
-    setCurrentCategories(currentCategories) {
-        this.setState({currentCategories: currentCategories})
-    }
-
-    /**
-     * sets colorScale state
-     * @param {d3.scaleOrdinal} colorScale
-     */
-    setColorScale(colorScale) {
-        this.setState({colorScale: colorScale})
-    }
-
-    /**
-     * sets ordinal state
-     * @param {boolean} ordinal
-     */
-    setOrdinal(ordinal) {
-        this.setState({isOrdinal: ordinal});
-    }
 
     /**
      * sets binary mapping
@@ -268,14 +227,9 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
                                        setBinaryColors={this.setBinaryColors}/>
         }
         else {
-            return <CategoricalTable currentCategories={this.state.currentCategories}
-                                     mapper={this.props.variable.mapper}
-                                     isOrdinal={this.state.isOrdinal}
-                                     colorScale={this.state.colorScale}
-                                     setColorScale={this.setColorScale}
-                                     setCurrentCategories={this.setCurrentCategories}
-                                     setOrdinal={this.setOrdinal}
-            />
+            return <Provider categoryStore={this.categoryStore}>
+                <CategoricalTable/>
+            </Provider>
         }
     }
 
@@ -331,7 +285,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
                         Cancel
                     </Button>
                     <Button
-                        disabled={!this.state.convertBinary && new Set(this.state.currentCategories.map(d => d.name)).size !== this.state.currentCategories.length}
+                        disabled={!this.state.convertBinary && !this.categoryStore.uniqueCategories}
                         onClick={this.handleApply}>
                         Apply
                     </Button>

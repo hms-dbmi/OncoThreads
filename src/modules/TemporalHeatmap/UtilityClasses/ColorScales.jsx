@@ -63,17 +63,11 @@ class ColorScales {
     /**
      * gets a color scale for binning using the old scale as a basis. Each bin receives the average color of its minimum and maximum value
      * @param {string[]} range
-     * @param {number[]} domain
-     * @param {boolean} isLog
      * @param {number[]} binValues
      * @return {string[]}
      */
-    static getBinnedRange(range, domain, isLog, binValues) {
-        let oldDomain = domain;
-        if (isLog) {
-            oldDomain = domain.map(d => Math.log10(d));
-        }
-        let oldScale = ColorScales.getContinousColorScale(range, oldDomain);
+    static getBinnedRange(range, binValues) {
+        let oldScale = ColorScales.getContinousColorScale(range, [binValues[0], binValues[binValues.length - 1]]);
         let binnedRange = [];
         for (let i = 0; i < binValues.length - 1; i++) {
             binnedRange.push(oldScale((binValues[i + 1] + binValues[i]) / 2));
@@ -82,18 +76,34 @@ class ColorScales {
     }
 
     /**
-     * creates an isOrdinal color scale based on a range and domain
+     * creates a categorical color scale based on a range and domain
      * @param {string[]} range
      * @param {(string[]|boolean[])} domain
      * @returns {function}
      */
-    static getOrdinalScale(range, domain) {
+    static getCategoricalScale(range, domain) {
         return function (value) {
             const colorScale = d3.scaleOrdinal().range(range.slice()).domain(domain.slice());
             if (value === undefined) {
                 return '#f7f7f7';
-            } else if (value === "wild type") {
-                return 'lightgray'
+            }
+            else return colorScale(value);
+        };
+    }
+
+    /**
+     * creates a color scale for an ordinal variable
+     * @param range
+     * @param domain
+     * @return {Function}
+     */
+    static getOrdinalScale(range, domain) {
+        return function (value) {
+            let helper=d3.scaleLinear().range(range.slice()).domain(range.map((d,i)=>i/(range.length-1)));
+            let interpolatedRange = domain.map((d, i) => helper(i / (domain.length-1)));
+            const colorScale = d3.scaleOrdinal().range(interpolatedRange).domain(domain.slice());
+            if (value === undefined) {
+                return '#f7f7f7';
             }
             else return colorScale(value);
         };
@@ -105,9 +115,9 @@ class ColorScales {
      * @returns {string[]}
      */
     static getDefaultOrdinalRange(domainLength) {
-        let step = 1 / domainLength;
+        let step = 1 / 2;
         let range = [];
-        for (let i = 0; i < domainLength; i++) {
+        for (let i = 0; i < 2; i++) {
             range.push(d3ScaleChromatic.interpolateGreys(i * step));
         }
         return range
@@ -126,12 +136,13 @@ ColorScales.continuousThreeColorRanges = [
     ['#08ff00', '#000000', '#ff0000']
 ];
 ColorScales.continuousTwoColorRanges = [
-    ['rgb(214, 230, 244)', 'rgb(8, 48, 107)'],
-    ['rgb(218, 241, 213)', 'rgb(0, 68, 27)'],
     ['rgb(232, 232, 232)', 'rgb(0, 0, 0)'],
+    ['rgb(218, 241, 213)', 'rgb(0, 68, 27)'],
     ['rgb(254, 222, 191)', 'rgb(127, 39, 4)'],
     ['rgb(232, 230, 242)', 'rgb(63, 0, 125)'],
     ['rgb(253, 211, 193)', 'rgb(103, 0, 13)'],
+    [d3ScaleChromatic.interpolateBlues(0.1), d3ScaleChromatic.interpolateBlues(1)],
+
 ];
 ColorScales.categoricalColors = [
     ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'],
@@ -139,11 +150,5 @@ ColorScales.categoricalColors = [
     ['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec'],
     ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666']
 ];
-ColorScales.ordinalScales = [d3ScaleChromatic.interpolateBlues,
-    d3ScaleChromatic.interpolateGreens,
-    d3ScaleChromatic.interpolateGreys,
-    d3ScaleChromatic.interpolateOranges,
-    d3ScaleChromatic.interpolatePurples,
-    d3ScaleChromatic.interpolateReds];
 
 export default ColorScales;

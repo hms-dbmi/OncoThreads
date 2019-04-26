@@ -2,10 +2,8 @@ import React from 'react';
 import {inject, observer} from 'mobx-react';
 import {
     Button,
-    ControlLabel,
     DropdownButton,
     Form,
-    FormControl,
     FormGroup,
     Glyphicon,
     Label,
@@ -20,6 +18,7 @@ import ModifyContinuous from "./ModifySingleVariable/ModifyContinuous";
 import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 import CombineModal from "./CombineVariables/CombineModal";
+import {extendObservable} from "mobx";
 
 /**
  * Component for displaying and modifying current variables in a table
@@ -28,17 +27,22 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     constructor(props) {
         super(props);
-        this.state = {
-            // controlling visibility of modals
+        extendObservable(this, {
+            // current state of data and data parsing
             modifyCategoricalIsOpen: false,
             modifyContinuousIsOpen: false,
             modifyBinaryIsOpen: false,
             saveVariableIsOpen: false,
+            combineVariablesIsOpen:false,
             currentVariable: '', // non-modified variable selected for modification
             derivedVariable: '', // modified variable selected for modification
             combineVariables: [], // variables selected for combination
             callback: '', // callback for saving a variable
-        };
+            sortVarAsc: true,
+            sortSourceAsc: true,
+            sortTypeAsc: true
+        });
+
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.handleSort = this.handleSort.bind(this);
@@ -50,14 +54,11 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * closes all modals
      */
     closeModal() {
-        this.setState({
-            modifyCategoricalIsOpen: false,
-            modifyContinuousIsOpen: false,
-            modifyBinaryIsOpen: false,
-            saveVariableIsOpen: false,
-            combineVariablesIsOpen: false
-        });
-
+        this.modifyCategoricalIsOpen = false;
+        this.modifyContinuousIsOpen = false;
+        this.modifyBinaryIsOpen = false;
+        this.saveVariableIsOpen = false;
+        this.combineVariablesIsOpen = false;
     }
 
     /**
@@ -67,13 +68,11 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @param {string} datatype
      */
     openModifyModal(originalVariable, derivedVariable, datatype) {
-        this.setState({
-            modifyContinuousIsOpen: datatype === "NUMBER",
-            modifyCategoricalIsOpen: datatype === "STRING" || datatype === "ORDINAL",
-            modifyBinaryIsOpen: datatype === "BINARY",
-            derivedVariable: derivedVariable,
-            currentVariable: originalVariable,
-        });
+        this.modifyContinuousIsOpen = datatype === "NUMBER";
+        this.modifyCategoricalIsOpen = datatype === "STRING" || datatype === "ORDINAL";
+        this.modifyBinaryIsOpen = datatype === "BINARY";
+        this.derivedVariable = derivedVariable;
+        this.currentVariable = originalVariable;
     }
 
     /**
@@ -82,11 +81,9 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @param {DerivedVariable} derivedVariable
      */
     openCombineModal(variables, derivedVariable) {
-        this.setState({
-            combineVariables: variables,
-            derivedVariable: derivedVariable,
-            combineVariablesIsOpen: true,
-        })
+        this.combineVariables = variables;
+        this.derivedVariable = derivedVariable;
+        this.combineVariablesIsOpen = true;
     }
 
     /**
@@ -95,11 +92,9 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @param callback
      */
     openSaveVariableModal(variable, callback) {
-        this.setState({
-            currentVariable: variable,
-            saveVariableIsOpen: true,
-            callback: callback
-        });
+        this.currentVariable = variable;
+        this.saveVariableIsOpen = true;
+        this.callback = callback;
     }
 
 
@@ -176,10 +171,10 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
                         }
                     }}>
                     <td>
-                        {i}
-                        <Button bsSize="xsmall" onClick={(e) => this.moveSingle(true, false, i)}><Glyphicon
+                        {i + 1}
+                        <Button bsSize="xsmall" onClick={() => this.moveSingle(true, false, i)}><Glyphicon
                             glyph="chevron-up"/></Button>
-                        <Button bsSize="xsmall" onClick={(e) => this.moveSingle(false, false, i)}><Glyphicon
+                        <Button bsSize="xsmall" onClick={() => this.moveSingle(false, false, i)}><Glyphicon
                             glyph="chevron-down"/></Button>
                     </td>
                     <OverlayTrigger placement="top" overlay={tooltip}>
@@ -208,10 +203,19 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             <thead>
             <tr>
                 <th>Position</th>
-                <th>Variable</th>
+                <th>Variable {this.sortVarAsc ? <Glyphicon onClick={() => this.handleSort("alphabet")}
+                                                           glyph="chevron-down"/> :
+                    <Glyphicon onClick={() => this.handleSort("alphabet")}
+                               glyph="chevron-up"/>}</th>
                 <th/>
-                <th>Datatype</th>
-                <th>Source</th>
+                <th>Datatype {this.sortTypeAsc ? <Glyphicon onClick={() => this.handleSort("datatype")}
+                                                            glyph="chevron-down"/> :
+                    <Glyphicon onClick={() => this.handleSort("datatype")}
+                               glyph="chevron-up"/>}</th>
+                <th>Source {this.sortSourceAsc ? <Glyphicon onClick={() => this.handleSort("source")}
+                                                            glyph="chevron-down"/> :
+                    <Glyphicon onClick={() => this.handleSort("source")}
+                               glyph="chevron-up"/>}</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -227,35 +231,35 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      */
     getModal() {
         let modal = null;
-        if (this.state.modifyContinuousIsOpen) {
-            modal = <ModifyContinuous modalIsOpen={this.state.modifyContinuousIsOpen}
-                                      variable={this.state.currentVariable}
-                                      derivedVariable={this.state.derivedVariable}
+        if (this.modifyContinuousIsOpen) {
+            modal = <ModifyContinuous modalIsOpen={this.modifyContinuousIsOpen}
+                                      variable={this.currentVariable}
+                                      derivedVariable={this.derivedVariable}
                                       setColorRange={this.setColorRange}
                                       closeModal={this.closeModal}/>
         }
-        else if (this.state.modifyCategoricalIsOpen) {
-            modal = <ModifyCategorical modalIsOpen={this.state.modifyCategoricalIsOpen}
-                                       variable={this.state.currentVariable}
-                                       derivedVariable={this.state.derivedVariable}
+        else if (this.modifyCategoricalIsOpen) {
+            modal = <ModifyCategorical modalIsOpen={this.modifyCategoricalIsOpen}
+                                       variable={this.currentVariable}
+                                       derivedVariable={this.derivedVariable}
                                        closeModal={this.closeModal}/>
         }
-        else if (this.state.modifyBinaryIsOpen) {
-            modal = <ModifyBinary modalIsOpen={this.state.modifyBinaryIsOpen}
-                                  variable={this.state.currentVariable}
-                                  derivedVariable={this.state.derivedVariable}
+        else if (this.modifyBinaryIsOpen) {
+            modal = <ModifyBinary modalIsOpen={this.modifyBinaryIsOpen}
+                                  variable={this.currentVariable}
+                                  derivedVariable={this.derivedVariable}
                                   closeModal={this.closeModal}/>
         }
-        else if (this.state.saveVariableIsOpen) {
-            modal = <SaveVariableDialog modalIsOpen={this.state.saveVariableIsOpen}
-                                        variable={this.state.currentVariable}
-                                        callback={this.state.callback}
+        else if (this.saveVariableIsOpen) {
+            modal = <SaveVariableDialog modalIsOpen={this.saveVariableIsOpen}
+                                        variable={this.currentVariable}
+                                        callback={this.callback}
                                         closeModal={this.closeModal}/>
         }
-        else if (this.state.combineVariablesIsOpen) {
-            modal = <CombineModal modalIsOpen={this.state.combineVariablesIsOpen}
-                                  variables={this.state.combineVariables}
-                                  derivedVariable={this.state.derivedVariable}
+        else if (this.combineVariablesIsOpen) {
+            modal = <CombineModal modalIsOpen={this.combineVariablesIsOpen}
+                                  variables={this.combineVariables}
+                                  derivedVariable={this.derivedVariable}
                                   closeModal={this.closeModal}/>
         }
         return (
@@ -266,20 +270,21 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
     /**
      * sorts current variables
-     * @param {Object} e
+     * @param {string} category
      */
-    handleSort(e) {
-        if (e.target.value === "source") {
-            this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id));
+    handleSort(category) {
+        if (category === "source") {
+            this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id), this.sortSourceAsc);
+            this.sortSourceAsc = !this.sortSourceAsc;
         }
-        else if (e.target.value === "addOrder") {
-            this.props.variableManagerStore.sortByAddOrder();
-        }
-        else if (e.target.value === "alphabet") {
-            this.props.variableManagerStore.sortAlphabetically();
+        else if (category === "alphabet") {
+            this.props.variableManagerStore.sortAlphabetically(this.sortVarAsc);
+            this.sortVarAsc = !this.sortVarAsc;
+
         }
         else {
-            this.props.variableManagerStore.sortByDatatype();
+            this.props.variableManagerStore.sortByDatatype(this.sortTypeAsc);
+            this.sortTypeAsc = !this.sortTypeAsc;
         }
     }
 
@@ -344,6 +349,9 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
                 return true
             }
+            else if (!oldVariable.range.every((d, i) => d === newVariable.range[i])) {
+                return true
+            }
             //case: mapper changed?
             else {
                 for (let sample in oldVariable.mapper) {
@@ -362,30 +370,21 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
                 <h4>Current Variables</h4>
                 <Form inline>
                     <FormGroup>
-                        <ControlLabel>Sort by</ControlLabel>
-                        <FormControl componentClass="select"
-                                     onChange={this.handleSort}
-                                     placeholder="Select Category">
-                            <option value="addOrder">add order</option>
-                            <option value="source">data source</option>
-                            <option value="alphabet">alphabet</option>
-                            <option value="datatype">datatype</option>
-                        </FormControl>
-                        <DropdownButton
-                            title={"Move selected..."}
-                            id={"MoveSelected"}
-                        >
-                            <MenuItem onClick={() => this.moveSelected(true, false)} eventKey="1">Up</MenuItem>
-                            <MenuItem onClick={() => this.moveSelected(false, false)} eventKey="2">Down</MenuItem>
-                            <MenuItem divider/>
-                            <MenuItem onClick={() => this.moveSelected(true, true)} eventKey="3">to top</MenuItem>
-                            <MenuItem onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</MenuItem>
-                        </DropdownButton>
+
                     </FormGroup>
                 </Form>
                 <div style={{maxHeight: 400, overflowY: "scroll"}}>
                     {this.showCurrentVariables()}
                 </div>
+                <DropdownButton
+                    title={"Move selected..."}
+                    id={"MoveSelected"}>
+                    <MenuItem onClick={() => this.moveSelected(true, false)} eventKey="1">Up</MenuItem>
+                    <MenuItem onClick={() => this.moveSelected(false, false)} eventKey="2">Down</MenuItem>
+                    <MenuItem divider/>
+                    <MenuItem onClick={() => this.moveSelected(true, true)} eventKey="3">to top</MenuItem>
+                    <MenuItem onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</MenuItem>
+                </DropdownButton>
                 <Button onClick={this.combineSelected}>Combine Selected</Button>
                 {this.getModal()}
             </div>

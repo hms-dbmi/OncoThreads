@@ -15,16 +15,13 @@ class DerivedMapperFunctions {
             case "binaryCombine":
                 mapper = DerivedMapperFunctions.createBinaryCombinedMapper(mappers, modification);
                 break;
-            case "modifyCategorical":
+            case "categoricalTransform":
                 mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mappers[0], modification.mapping);
-                break;
-            case "convertBinary":
-                mapper=DerivedMapperFunctions.createModifyCategoriesMapper(mappers[0],modification.mapping);
                 break;
             default: // continuous transform
                 let intermedMapper = {};
-                if (modification.logTransform) {
-                    intermedMapper = DerivedMapperFunctions.createContinuousTransformMapper(mappers[0], modification.logTransform);
+                if (modification.transformFunction) {
+                    intermedMapper = DerivedMapperFunctions.createContinuousTransformMapper(mappers[0], modification.transformFunction);
                 } else {
                     intermedMapper = mappers[0];
                 }

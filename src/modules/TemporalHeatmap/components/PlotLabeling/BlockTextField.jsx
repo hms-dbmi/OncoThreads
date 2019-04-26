@@ -41,7 +41,7 @@ const BlockTextField = observer(class BlockTextField extends React.Component {
                 <rect width={this.props.width - 2} height={28} x={1} y={1} fill="white" stroke="darkgrey"/>
                 <text width={this.props.width - 2} height={28} y={20} style={{font: "14px Sans-Serif"}}
                       x={(this.props.width - UtilityFunctions.getTextWidth(croppedText, 14)) / 2 + 1}>{croppedText}</text>
-                <foreignObject style={{width:this.props.width,height:30}}><input
+                <foreignObject className="not_exported" style={{width:this.props.width,height:30}}><input
                     style={{textAlign: 'center', width: this.props.width, height: 30}} value={this.props.timepoint.name}
                     onChange={(e) => this.props.timepoint.setName(e.target.value)} type="text"/>
                 </foreignObject>

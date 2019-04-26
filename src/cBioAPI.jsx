@@ -107,27 +107,6 @@ class cBioAPI {
         });
     }
 
-
-    /**
-     * get mutation counts in a study
-     * @param {string} profileId
-     * @param {returnDataCallback} callback
-     */
-    getMutationCounts(profileId, callback) {
-        axios.get("http://cbiohack.org/api/molecular-profiles/" + profileId + "/mutation-counts?sampleListId=" + this.studyId + "_all")
-            .then(response => {
-                callback(response.data);
-            }).catch((error) => {
-            if (cBioAPI.verbose) {
-                console.log(error);
-            }
-            else {
-                console.log("Could not load mutation counts")
-            }
-        });
-
-    }
-
     /**
      *
      * @param {Object[]} entrezIDs
@@ -164,7 +143,7 @@ class cBioAPI {
                 "sampleListId": this.studyId + "_all"
             }
         ).then(samplePanels => {
-            let differentPanels = new Set(samplePanels.data.filter(d => d.hasOwnProperty("genePanelId").map(d => d.genePanelId)));
+            let differentPanels = [...new Set(samplePanels.data.filter(d => d.hasOwnProperty("genePanelId")).map(d => d.genePanelId))];
             if (differentPanels.length > 0) {
                 axios.all(differentPanels.map(d => axios.get("http://www.cbiohack.org/api/gene-panels/" + d))).then(panelList => {
                     samplePanels.data.forEach(samplePanel => {
@@ -189,7 +168,7 @@ class cBioAPI {
             }
             else {
                 samplePanels.data.forEach(samplePanel => {
-                    if (samplePanels.profiled) {
+                    if (samplePanel.profiled) {
                         profiledDict[samplePanel.sampleId] = genes.map(d => d.entrezGeneId)
                     }
                     else {
