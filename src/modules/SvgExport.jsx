@@ -2,7 +2,7 @@
  * class for handling svg export
  * TODO: tidy up
  */
-
+//import React, { Component }  from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -188,50 +188,6 @@ class SvgExport {
             for (var c = 0; c < svg_copy.children.length; c++) {
                 var temp = svg_copy.children[c];
 
-                //if(!this.rootStore.dataStore.globalTime){
-
-                /*if(i===0 ){
-
-                    if(temp.childElementCount===2){
-                        temp.children[1].remove();
-                    }
-
-                }
-                else if(i===1 && temp.childElementCount===4){
-                    for(var k=0; k<temp.childElementCount; k++){
-
-                        for(var l=0; l< temp.children[k].childElementCount; l++){
-
-                            temp.children[k].children[l].children.sort.remove();
-                            if(temp.children[k].children[l].children.group){
-                                temp.children[k].children[l].children.group.remove();
-                            }
-                            if(temp.children[k].children[l].children.ungroup){
-                                temp.children[k].children[l].children.ungroup.remove();
-                            }
-
-                            temp.children[k].children[l].children.delete.remove();
-
-                        }
-
-                    }
-                } */
-
-                //var a = svg_all[i].getElementsByClassName("not_exported");
-                //[...a].forEach(t => {t.remove();})
-
-                //}
-                /* else{ //global timeline
-
-                     if(i===0){
-                         for(var k2=0; k2<svg_all[0].children[0].childElementCount; k2++){
-                             svg_all[i].children[0].children[k2].children[0].children[1].remove();
-                         }
-                     }
-
-
-                 } */
-
                 t = t + (new XMLSerializer()).serializeToString(temp);
             }
 
@@ -311,6 +267,38 @@ class SvgExport {
         const minTP = Math.min(...Object.keys(this.rootStore.sampleStructure).map(key => this.rootStore.sampleStructure[key].length));
         const maxTP = Math.max(...Object.keys(this.rootStore.sampleStructure).map(key => this.rootStore.sampleStructure[key].length));
 
+        const _self=this;
+
+        var str='';
+
+        this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
+            {if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
+                {
+                    //console.log(el);
+                    str=str + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name 
+                       // ', Modification type: '
+                         //   + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.type;
+
+                        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.type==='binaryCombine'){
+                            //str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification)
+                        
+                            str = str + " From variables: " + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name;
+                            //var allNames=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.name;
+                           // for(var i=0; i<allNames.length; i++){
+                           //     str+= allNames[i];
+                            //}
+
+                        }
+                        else{
+                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                        }                    
+
+                }
+                console.log(str);
+                
+            })
+
         var svg_prefix =
             '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 25)">' +
             '<text style="font-size:18px">Study: ' + name + '</text>' +
@@ -326,24 +314,30 @@ class SvgExport {
             '</g>' +
             '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
             '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
+            '</g>' 
+
+
+        var variableMetadata= 
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 150)">' +
+            '<text style="font-size:18px">Derived variable: ' + str + '</text>' +
             '</g>'
 
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
             svg_prefix +
-            print_svg +
+            variableMetadata  +
+            print_svg + 
+           
 
             '</svg>';
 
 
         // Submit the <FORM> to the server.
         // The result will be an attachment file to download.
-        var form = document.getElementById("svgform");
-        // form['output_format'].value = output_format;
-        //form['data'].value = svg_xml ;
+        //var form = document.getElementById("svgform");
 
-        form[0].value = "svg";
-        form[1].value = svg_xml;
+        //form[0].value = "svg";
+        //form[1].value = svg_xml;
         this.downloadFile(svg_xml);
     }
 
@@ -355,6 +349,10 @@ class SvgExport {
         } else {
             tmp = document.getElementById("block-view");
         }
+
+        //var temp2 = '<div>' + tmp.innerHTML + '<div>'
+
+
         html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
             var element = document.createElement("a");
             element.href = canvas.toDataURL('image/png');
@@ -375,6 +373,20 @@ class SvgExport {
             const imgData = canvas.toDataURL('image/png');
             // Multiplying by 1.33 because canvas.toDataURL increases the size of the image by 33%
             const pdf = new jsPDF('l', 'px', [canvas.width*1.33, canvas.height*1.33]);
+
+            /*pdf.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
+
+            // Optional - set properties on the document
+            pdf.setProperties({
+            title: 'Title',
+            subject: 'This is the subject',
+            author: 'Author Name',
+            keywords: 'generated, javascript, web 2.0, ajax',
+            creator: 'Creator Name'
+            });*/
+
+
+
             pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
             pdf.save("download.pdf"); 
         });
