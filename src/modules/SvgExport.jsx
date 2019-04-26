@@ -13,6 +13,9 @@ class SvgExport {
         this.exportSVGandData = this.exportSVGandData.bind(this);
         this.exportPNG = this.exportPNG.bind(this);
         this.exportPDF = this.exportPDF.bind(this);
+        this.getSampleVarTree = this.getSampleVarTree.bind(this);
+        this.getEventVarTree = this.getEventVarTree.bind(this)
+
     }
 
     /**
@@ -156,6 +159,149 @@ class SvgExport {
         this.downloadFile(svg_xml);
     }
 
+    getSampleVarTree( el ) {
+
+        const _self=this;
+      
+        var str='';
+
+        //this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
+          //  {
+                if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
+                {
+                    //console.log(el);
+                    str=str + ' ' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name   
+                        
+                        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping){
+                        
+                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+
+                        }
+                        else{
+
+                            if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning){
+                                //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
+                                str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins);
+                            }
+                            else{
+                                var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
+                                for(var i=0; i<srcVars.length; i++){
+                                    str = str + _self.getSampleVarTree(srcVars[i]);
+                                }
+                            }
+                            /*var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
+                         
+
+                                for(var i=0; i<srcVars.length; i++){
+                                    //if(srcVars[i].modification.type==='continuousTransform'){
+                                    if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.type==='continuousTransform') {  
+                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name; 
+                                        str = ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.binning.bins);
+        
+                                    }
+                                    else{
+
+                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name;
+                                        str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
+                                        str = str + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
+
+                                    }
+                                    // _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping
+                                   
+                                 }
+
+                            
+                            */
+
+            
+                        }       
+
+                } 
+                else{
+                    console.log(str);
+                    return str;
+                }
+                
+                
+           // })
+
+        
+        return str;
+      }
+
+
+      getEventVarTree( el ) {
+
+        const _self=this;
+      
+        var str='';
+
+        //this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
+          //  {
+                if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].derived)
+                {
+                    //console.log(el);
+                    str=str + ' ' +_self.rootStore.dataStore.variableStores.between.referencedVariables[el].name   
+                        
+                        if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping){
+                        
+                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+
+                        }
+                        else{
+
+                            if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning){
+                                //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
+                                str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins);
+                            }
+                            else{
+                                var srcVars=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].originalIds;
+                                for(var i=0; i<srcVars.length; i++){
+                                    str = str + _self.getEventVarTree(srcVars[i]);
+                                }
+                            }
+                            /*var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
+                         
+
+                                for(var i=0; i<srcVars.length; i++){
+                                    //if(srcVars[i].modification.type==='continuousTransform'){
+                                    if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.type==='continuousTransform') {  
+                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name; 
+                                        str = ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.binning.bins);
+        
+                                    }
+                                    else{
+
+                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name;
+                                        str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
+                                        str = str + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
+
+                                    }
+                                    // _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping
+                                   
+                                 }
+
+                            
+                            */
+
+            
+                        }       
+
+                } 
+                else{
+                    console.log(str);
+                    return str;
+                }
+                
+                
+           // })
+
+        
+        return str;
+      }
+
     /**
      * exports current view + metadata
      */
@@ -269,35 +415,68 @@ class SvgExport {
 
         const _self=this;
 
-        var str='';
+        var str= '';
+
+        this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
+        {
+            str= str+ ' ' + _self.getSampleVarTree(el);
+        })
+
+        this.rootStore.dataStore.variableStores.between.currentVariables.forEach(function(el)
+        {
+            str= str+ ' ' + _self.getEventVarTree(el);
+        })
+
+        
+        /*var str='';
 
         this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
             {if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
                 {
                     //console.log(el);
-                    str=str + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name 
-                       // ', Modification type: '
-                         //   + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.type;
-
-                        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.type==='binaryCombine'){
-                            //str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification)
+                    str=str + ' ' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name   
                         
-                            str = str + " From variables: " + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name;
-                            //var allNames=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.name;
-                           // for(var i=0; i<allNames.length; i++){
-                           //     str+= allNames[i];
-                            //}
+                        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping){
+                        
+                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
 
                         }
                         else{
-                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
-                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
-                        }                    
 
-                }
+                            var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
+                         
+
+                                for(var i=0; i<srcVars.length; i++){
+                                    //if(srcVars[i].modification.type==='continuousTransform'){
+                                    if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.type==='continuousTransform') {  
+                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name; 
+                                        str = ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.binning.bins);
+        
+                                    }
+                                    else{
+
+                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name;
+                                        str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
+                                        str = str + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
+
+                                    }
+                                    // _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping
+                                   
+                                 }
+
+                            
+                            
+
+            
+                        }       
+
+                } 
                 console.log(str);
                 
-            })
+            })*/
+
+        console.log(str);    
 
         var svg_prefix =
             '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 25)">' +
