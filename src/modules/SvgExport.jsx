@@ -164,70 +164,46 @@ class SvgExport {
         const _self=this;
       
         var str='';
+        var num=0;
 
-        //this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
-          //  {
-                if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
-                {
-                    //console.log(el);
-                    str=str + ' ' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name   
-                        
-                        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping){
-                        
-                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
-                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
+        {
+            //console.log(el);
+            str=str + '<tspan x="150" dy="1.2em">' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name
+            num++;
 
-                        }
-                        else{
-
-                            if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning){
-                                //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
-                                str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins);
-                            }
-                            else{
-                                var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
-                                for(var i=0; i<srcVars.length; i++){
-                                    str = str + _self.getSampleVarTree(srcVars[i]);
-                                }
-                            }
-                            /*var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
-                         
-
-                                for(var i=0; i<srcVars.length; i++){
-                                    //if(srcVars[i].modification.type==='continuousTransform'){
-                                    if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.type==='continuousTransform') {  
-                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name; 
-                                        str = ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.binning.bins);
-        
-                                    }
-                                    else{
-
-                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name;
-                                        str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
-                                        str = str + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
-
-                                    }
-                                    // _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping
-                                   
-                                 }
-
-                            
-                            */
-
+            if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping) {
             
-                        }       
+                str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                + '</tspan>';
 
-                } 
-                else{
-                    console.log(str);
-                    return str;
+            }
+            else {
+
+                if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning) {
+                    //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
+                    str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) + '</tspan>';
                 }
-                
-                
-           // })
+                else {
+                    str = str + '</tspan>';
+                    var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
+                    for(var i=0; i<srcVars.length; i++){
+                        let retVal = _self.getSampleVarTree(srcVars[i]);
+                        str = str + retVal.string;
+                        num = num + retVal.count;
+                    }
+                }
+            }
+
+        } 
+        else {
+            console.log(str);
+            return {'string': str, 'count': num};
+        }
 
         
-        return str;
+        return {'string': str, 'count': num};
       }
 
 
@@ -236,70 +212,47 @@ class SvgExport {
         const _self=this;
       
         var str='';
+        var num=0;
 
-        //this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
-          //  {
-                if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].derived)
-                {
-                    //console.log(el);
-                    str=str + ' ' +_self.rootStore.dataStore.variableStores.between.referencedVariables[el].name   
-                        
-                        if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping){
-                        
-                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
-                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+        if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].derived)
+        {
+            //console.log(el);
+            str=str + '<tspan x="150" dy="1.2em">' +_self.rootStore.dataStore.variableStores.between.referencedVariables[el].name
+            num++;
 
-                        }
-                        else{
-
-                            if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning){
-                                //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
-                                str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins);
-                            }
-                            else{
-                                var srcVars=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].originalIds;
-                                for(var i=0; i<srcVars.length; i++){
-                                    str = str + _self.getEventVarTree(srcVars[i]);
-                                }
-                            }
-                            /*var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
-                         
-
-                                for(var i=0; i<srcVars.length; i++){
-                                    //if(srcVars[i].modification.type==='continuousTransform'){
-                                    if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.type==='continuousTransform') {  
-                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name; 
-                                        str = ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.binning.bins);
-        
-                                    }
-                                    else{
-
-                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name;
-                                        str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
-                                        str = str + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
-
-                                    }
-                                    // _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping
-                                   
-                                 }
-
-                            
-                            */
-
+            if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping) {
             
-                        }       
+                str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                + '</tspan>';
+            }
+            else {
 
-                } 
-                else{
-                    console.log(str);
-                    return str;
+                if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning) {
+                    //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
+                    str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins) + '</tspan>';
                 }
-                
-                
-           // })
+                else {
+                    str = str + ': ' + _self.rootStore.dataStore.variableStores.between.referencedVariables[el].description + '</tspan>';
+                    var srcVars=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].originalIds;
+                    for(var i=0; i<srcVars.length; i++){
+                        let retVal = _self.getEventVarTree(srcVars[i]);
+                        str = str + retVal.string;
+                        num = num + retVal.count;
+                    }
+                }
+
+            }       
+
+        } 
+        else{
+            console.log(str);
+            return {'string': str, 'count': num};
+        }
+
 
         
-        return str;
+        return {'string': str, 'count': num};
       }
 
     /**
@@ -416,15 +369,20 @@ class SvgExport {
         const _self=this;
 
         var str= '';
+        var count = 0;
 
         this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
         {
-            str= str+ ' ' + _self.getSampleVarTree(el);
+            let retVal = _self.getSampleVarTree(el);
+            str= str + retVal.string;
+            count = count + retVal.count;
         })
 
         this.rootStore.dataStore.variableStores.between.currentVariables.forEach(function(el)
         {
-            str= str+ ' ' + _self.getEventVarTree(el);
+            let retVal = _self.getEventVarTree(el);
+            str= str + retVal.string;
+            count = count + retVal.count;
         })
 
         
@@ -479,35 +437,33 @@ class SvgExport {
         console.log(str);    
 
         var svg_prefix =
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 25)">' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, 25)">' +
             '<text style="font-size:18px">Study: ' + name + '</text>' +
             '</g>' +
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 50)">' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, 50)">' +
             '<text style="font-size:18px">Description: ' + desc + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 75)">' +
             '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 100)">' +
             '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 125)">' +
             '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
             '</g>' 
 
 
-        var variableMetadata= 
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 150)">' +
-            '<text style="font-size:18px">Derived variable: ' + str + '</text>' +
-            '</g>'
+        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 150)">';
+        if(count>0) {
+            variableMetadata = variableMetadata + '<text style="font-size:18px">Derived variable(s):' + str + '</text>';
+        }
+        variableMetadata = variableMetadata + '</g>';
 
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH).toString() + '">' +
-
             svg_prefix +
             variableMetadata  +
-            print_svg + 
-           
-
+            '<g transform="translate(10, ' + (count*15+15) + ')">' + print_svg + '</g>' + 
             '</svg>';
 
 
