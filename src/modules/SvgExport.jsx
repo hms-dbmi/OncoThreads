@@ -169,12 +169,12 @@ class SvgExport {
         if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
         {
             //console.log(el);
-            str=str + '<tspan x="150" dy="1.2em">' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name
+            str=str + '<tspan x="150" dy="1.2em" font-weight="bold">' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name
             num++;
 
             if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping) {
             
-                str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                str =  str +'</tspan>' + '<tspan>' + ': ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
                 + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
                 + '</tspan>';
 
@@ -183,10 +183,13 @@ class SvgExport {
 
                 if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning) {
                     //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
-                    str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) + '</tspan>';
+                    str = str +'</tspan>' + '<tspan>' + ': ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
+                     ' Bins: ' 
+                     + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) 
+                     + '</tspan>';
                 }
                 else {
-                    str = str + '</tspan>';
+                    str = str +'</tspan>' + '<tspan>' + ': ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
                     var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
                     for(var i=0; i<srcVars.length; i++){
                         let retVal = _self.getSampleVarTree(srcVars[i]);
