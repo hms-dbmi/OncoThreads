@@ -174,7 +174,7 @@ class SvgExport {
 
             if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping) {
             
-                str =  str +'</tspan>' + '<tspan>' + ': ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                str =  str +'</tspan> <tspan>: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
                 + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
                 + '</tspan>';
 
@@ -182,14 +182,28 @@ class SvgExport {
             else {
 
                 if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning) {
-                    //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
-                    str = str +'</tspan>' + '<tspan>' + ': ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
+                    
+                    var binArray=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins;
+
+                    var binStr = '';
+
+                    for(var j=0; j<binArray.length; j++){
+                        if(j< (binArray.length-1)){
+                            binStr = binStr + binArray[j]  + ' to ' + binArray[j+1] ;
+                        }
+                        if(j < (binArray.length-2)){
+                            binStr = binStr + ', ';
+                        }
+
+                    }
+                    str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
                      ' Bins: ' 
-                     + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) 
+                     //+ Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) 
+                     +binStr
                      + '</tspan>';
                 }
                 else {
-                    str = str +'</tspan>' + '<tspan>' + ': ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
+                    str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
                     var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
                     for(var i=0; i<srcVars.length; i++){
                         let retVal = _self.getSampleVarTree(srcVars[i]);
@@ -232,8 +246,25 @@ class SvgExport {
             else {
 
                 if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning) {
-                    //str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name; 
-                    str = str + ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins) + '</tspan>';
+                   
+                    var binArray=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins;
+
+                    var binStr = '';
+
+                    for(var j=0; j<binArray.length; j++){
+                        if(j< (binArray.length-1)){
+                            binStr = binStr + binArray[j]  + ' to ' + binArray[j+1] ;
+                        }
+                        if(j < (binArray.length-2)){
+                            binStr = binStr + ', ';
+                        }
+
+                    }
+
+                    str = str + ' Bins: ' 
+                    //+ Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins) 
+                    + binStr
+                    + '</tspan>';
                 }
                 else {
                     str = str + ': ' + _self.rootStore.dataStore.variableStores.between.referencedVariables[el].description + '</tspan>';
@@ -321,7 +352,7 @@ class SvgExport {
             if (maxW == null || new_right > maxW) {
                 maxW = new_right;
             }
-            if (minH == null || boundingRect.top > minH) {
+            if (minH == null || boundingRect.top < minH) {
                 minH = boundingRect.top;
             }
             if (maxH == null || boundingRect.bottom > maxH) {
@@ -457,18 +488,23 @@ class SvgExport {
             '</g>' 
 
 
-        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 150)">';
+        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (150+maxH).toString() + ')">';
         if(count>0) {
             variableMetadata = variableMetadata + '<text style="font-size:18px">Derived variable(s):' + str + '</text>';
         }
         variableMetadata = variableMetadata + '</g>';
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15+15).toString() + '">' +
             svg_prefix +
             variableMetadata  +
-            '<g transform="translate(10, ' + (count*15+15) + ')">' + print_svg + '</g>' + 
+            //'<g transform="translate(10, ' + (count*15+15) + ')">' + 
+            print_svg +
+            //'</g>' + 
             '</svg>';
+        
 
+    
+       
 
         // Submit the <FORM> to the server.
         // The result will be an attachment file to download.
