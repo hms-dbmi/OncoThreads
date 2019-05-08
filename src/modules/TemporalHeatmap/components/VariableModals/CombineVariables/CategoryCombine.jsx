@@ -1,18 +1,17 @@
 import React from 'react';
 import {inject, observer, Provider} from 'mobx-react';
-import {Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
+import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
 import DerivedVariable from "../../../stores/DerivedVariable";
 import uuidv4 from 'uuid/v4';
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoryStore from "../VariableTables/CategoryStore";
 import CategoricalTable from "../VariableTables/CategoricalTable";
-import BinaryTable from "../VariableTables/BinaryTable";
 
 /**
  * Component for combining variables
  */
-const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombine extends React.Component {
+const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCombine extends React.Component {
 
     constructor(props) {
         super(props);
@@ -31,12 +30,8 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
      */
     createCategoryStore() {
         let currentCategories, isOrdinal, allValues, colorRange;
-        if (this.props.derivedVariable === null || this.props.derivedVariable.modification.datatype !== "STRING") {
-            let mapper = DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), {
-                operator: "or",
-                datatype: "STRING",
-                variableNames: this.props.variables.map(d => d.name)
-            });
+        if (this.props.derivedVariable === null) {
+            let mapper = DerivedMapperFunctions.createCategoryCombinedMapper(this.props.variables.map(d => d.mapper));
             currentCategories = Array.from(new Set(Object.values(mapper))).map((d, i) => {
                 return {
                     selected: false,
@@ -67,30 +62,22 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
      */
     getInitialState() {
         let name; // name of combined variable
-        let modification = {operator: "", datatype: ""}; // way of modification
-        let isOrdinal = false;
         let nameChanged = false; // has the name been changed
-        let binaryColors = ColorScales.defaultBinaryRange;
+        let isOrdinal = false;
         let keep = true; // keep original variables or discard them
         // if the variable is already combined base parameters on this variable
         if (this.props.derivedVariable !== null) {
-            modification = this.props.derivedVariable.modification;
             name = this.props.derivedVariable.name;
             nameChanged = true;
-            if (this.props.derivedVariable.modification.datatype !== "STRING") {
-                binaryColors = this.props.derivedVariable.range;
-            }
             isOrdinal = this.props.derivedVariable.datatype === "ORDINAL";
         }
         else {
-            name = "BINARY COMBINE: " + this.props.variables.map(d => d.name);
+            name = "CATEGORY COMBINE: " + this.props.variables.map(d => d.name);
         }
         return {
             name: name,
-            modification: modification,
-            isOrdinal: isOrdinal,
             nameChanged: nameChanged,
-            binaryColors: binaryColors,
+            isOrdinal:isOrdinal,
             keep: keep,
         };
     }
@@ -150,55 +137,23 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
         this.setState({name: event.target.value, nameChanged: true});
     }
 
-    /**
-     * returns the component corresponding to the modificationType
-     * @return {*[]}
-     */
-    getModificationPanel() {
-        // depending on the datatype of the combined variable display either the table for binary categories or the table showing categorical categories
-        if (this.state.modification.operator !== "") {
-            if (this.state.modification.datatype === "BINARY") {
-                return [<ControlLabel key={"label"}>Result</ControlLabel>
-                    , <BinaryTable key={"table"}
-                                   mapper={DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), this.state.modification)}
-                                   binaryColors={this.state.binaryColors}
-                                   invert={false}
-                                   setColors={this.setBinaryColors}/>]
-            }
-            else {
-                return [<ControlLabel key={"label"}>Result</ControlLabel>
-                    , <Provider categoryStore={this.categoryStore} key={"table"}><CategoricalTable/></Provider>]
-            }
-        }
-    }
 
     /**
      * applies combination of variables
      */
     handleApply() {
         let datatype, range, description;
-        let modification = this.state.modification;
-        modification.variableNames = this.props.variables.map(d => d.name);
-        let mapper = DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), modification);
-        if (this.state.modification.datatype === "BINARY") {
-            datatype = "BINARY";
-            range = this.state.binaryColors;
-            description = "Binary combination of " + this.props.variables.map(d => d.name);
-            modification.mapping = false
-        }
-        else {
+        let mapper = DerivedMapperFunctions.createCategoryCombinedMapper(this.props.variables.map(d => d.mapper));
             if (this.state.isOrdinal) {
                 datatype = "ORDINAL";
             }
             else {
                 datatype = "STRING";
             }
-            description = "Binary combination of " + this.props.variables.map(d => d.name);
+            description = "Category combination of " + this.props.variables.map(d => d.name);
             mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.categoryStore.categoryMapping);
-            modification.mapping = this.categoryStore.categoryMapping;
             range = this.categoryStore.currentCategories.map(d => d.color);
-        }
-        let newVariable = new DerivedVariable(uuidv4(), this.state.name, datatype, description, this.props.variables.map(d => d.id), this.state.modification, range, [], mapper, uuidv4(), "combined");
+        let newVariable = new DerivedVariable(uuidv4(), this.state.name, datatype, description, this.props.variables.map(d => d.id), {type:"categoryCombine",mapping:this.categoryStore.categoryMapping}, range, [], mapper, uuidv4(), "combined");
         if (this.props.derivedVariable === null) {
             this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.state.keep);
         }
@@ -226,28 +181,8 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
                         type="text"
                         value={this.state.name}
                         onChange={this.handleNameChange}/>
-                    <FormGroup>
-                        Select binary operator
-                        <Radio onChange={() => this.setModification({operator: "or", datatype: "BINARY"})}
-                               checked={this.state.modification.operator === "or" && this.state.modification.datatype === "BINARY"}
-                               name="binaryCombine">
-                            OR (binary)
-                        </Radio>
-                        <Radio onChange={() => this.setModification({operator: "and", datatype: "BINARY"})}
-                               checked={this.state.modification.operator === "and" && this.state.modification.datatype === "BINARY"}
-                               name="binaryCombine">
-                            AND (binary)
-                        </Radio>
-                        <Radio onChange={() => this.setModification({
-                            operator: "or",
-                            datatype: "STRING",
-                        })}
-                               checked={this.state.modification.operator === "or" && this.state.modification.datatype === "STRING"}
-                               name="binaryCombine">
-                            Create combined categories
-                        </Radio>
-                    </FormGroup>
-                    {this.getModificationPanel()}
+                    <ControlLabel key={"label"}>Result</ControlLabel>
+                    , <Provider categoryStore={this.categoryStore} key={"table"}><CategoricalTable/></Provider>
                 </Modal.Body>
                 <Modal.Footer>
                     <Checkbox disabled={this.props.derivedVariable !== null}
@@ -264,4 +199,4 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
         )
     }
 }));
-export default BinaryCombine;
+export default CategoryCombine;

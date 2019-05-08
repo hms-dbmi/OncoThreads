@@ -103,7 +103,7 @@ class DerivedMapperFunctions {
                                 }
                             })
                         }
-                        else result ="none";
+                        else result = "none";
                         newMapper[entry] = result;
                     }
                 }
@@ -117,6 +117,31 @@ class DerivedMapperFunctions {
                     }
                 }
                 newMapper[entry] = containedInAll;
+            }
+        }
+        return newMapper;
+    }
+
+    /**
+     * creates mapper for combining binary variables
+     * @param {Object[]} mappers
+     */
+    static createCategoryCombinedMapper(mappers) {
+        let newMapper = {};
+        for (let entry in mappers[0]) {
+            let values = mappers.map(mapper => {
+                if (mapper[entry] !== undefined) {
+                    return mapper[entry]
+                }
+                else {
+                    return "undefined";
+                }
+            });
+            if (values.filter(d => d === undefined).length === values.length) {
+                newMapper[entry] = undefined;
+            }
+            else {
+                newMapper[entry] = values.toString();
             }
         }
         return newMapper;
