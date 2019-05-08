@@ -107,7 +107,6 @@ class DataStore {
                 this.globalTime = false;
                 this.realTime = false;
                 this.selectedPatients = [];
-                this.transitionOn = false;
             }),
             /**
              * combines the two sets of timepoints (samples, events)
