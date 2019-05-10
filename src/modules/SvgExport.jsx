@@ -123,22 +123,7 @@ class SvgExport {
             }
         }
 
-        /*var svg_prefix =
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 25)">' +
-            '<text style="font-size:18px">Study: ' + this.study.name + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 50)">' +
-            '<text style="font-size:18px">Description: ' + this.study.description + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
-            '<text style="font-size:18px">Citation: ' + this.study.citation + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
-            '<text style="font-size:18px">Number of patients: ' + this.patients.length + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
-            '<text style="font-size:18px">Number of timepoints: ' + this.minTP + "-" + this.maxTP + '</text>'+
-        '</g>'*/
+        
 
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
@@ -169,14 +154,26 @@ class SvgExport {
         if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
         {
             //console.log(el);
-            str=str + '<tspan x="150" dy="1.2em" font-weight="bold">' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name
+            str=str + '<tspan x="150" dy="1.2em" font-weight="bold">Name: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name
             num++;
 
             if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping) {
             
-                str =  str +'</tspan> <tspan>: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
-                + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
-                + '</tspan>';
+                str =  str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + 
+                '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Category and Values: </tspan> <tspan>' ;
+                
+                //+ Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+               // + ' ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                //+ '</tspan>';
+
+                var keys1=Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                var values1=Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping);
+
+                for(var i=0; i<keys1.length; i++){
+                    str = str + keys1[i] + " -> " + values1[i] + ", ";
+                }
+
+                str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
 
             }
             else {
@@ -196,14 +193,22 @@ class SvgExport {
                         }
 
                     }
-                    str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
-                     ' Bins: ' 
+                    //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan  x="150" dy="1.2em" font-weight="bold"> Bins: </tspan> <tspan>' + 
                      //+ Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) 
-                     +binStr
-                     + '</tspan>';
+                     +binStr;
+                    // + '</tspan>';
+
+                     str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
                 }
                 else {
-                    str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
+                    //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
+
+
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan>';
+
+
+                    str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
                     var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
                     for(var i=0; i<srcVars.length; i++){
                         let retVal = _self.getSampleVarTree(srcVars[i]);
@@ -234,14 +239,27 @@ class SvgExport {
         if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].derived)
         {
             //console.log(el);
-            str=str + '<tspan x="150" dy="1.2em">' +_self.rootStore.dataStore.variableStores.between.referencedVariables[el].name
+            str=str + '<tspan x="150" dy="1.2em" font-weight="bold"> Name: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.between.referencedVariables[el].name
             num++;
 
             if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping) {
             
-                str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
-                + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
-                + '</tspan>';
+                //str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                //+ ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                //+ '</tspan>';
+
+                str =  str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.between.referencedVariables[el].description + 
+                '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Category and Values: </tspan> <tspan>' ;
+                
+                var keys1=Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                var values1=Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping);
+
+                for(var i=0; i<keys1.length; i++){
+                    str = str + keys1[i] + " -> " + values1[i] + ", ";
+                }
+
+                str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
+
             }
             else {
 
@@ -387,7 +405,7 @@ class SvgExport {
             } else {
                 print_svg = print_svg +
                     '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + (boundingRect.y) + ')" >' +
-
+                    //'<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + 10 + ')" >' +
                     t +
 
                     '</g>';
@@ -420,70 +438,22 @@ class SvgExport {
         })
 
         
-        /*var str='';
-
-        this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
-            {if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
-                {
-                    //console.log(el);
-                    str=str + ' ' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name   
-                        
-                        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping){
-                        
-                            str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
-                            + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
-
-                        }
-                        else{
-
-                            var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
-                         
-
-                                for(var i=0; i<srcVars.length; i++){
-                                    //if(srcVars[i].modification.type==='continuousTransform'){
-                                    if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.type==='continuousTransform') {  
-                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name; 
-                                        str = ' Bins: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.binning.bins);
-        
-                                    }
-                                    else{
-
-                                        str = str + ' Original: ' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].name;
-                                        str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
-                                        str = str + ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping);
-
-                                    }
-                                    // _self.rootStore.dataStore.variableStores.sample.referencedVariables[srcVars[i]].modification.mapping
-                                   
-                                 }
-
-                            
-                            
-
-            
-                        }       
-
-                } 
-                console.log(str);
-                
-            })*/
-
         console.log(str);    
 
-        var svg_prefix =
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, 25)">' +
+        /*var svg_prefix =
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (25+maxH).toString() + ')">' +
             '<text style="font-size:18px">Study: ' + name + '</text>' +
             '</g>' +
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, 50)">' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (50+maxH).toString() + ')">' +
             '<text style="font-size:18px">Description: ' + desc + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 75)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (75+maxH).toString() + ')">' +
             '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 100)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (100+maxH).toString() + ')">' +
             '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, 125)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (125+maxH).toString() + ')">' +
             '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
             '</g>' 
 
@@ -494,16 +464,46 @@ class SvgExport {
         }
         variableMetadata = variableMetadata + '</g>';
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15+15).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+            
+            print_svg +
             svg_prefix +
             variableMetadata  +
-            //'<g transform="translate(10, ' + (count*15+15) + ')">' + 
-            print_svg +
-            //'</g>' + 
             '</svg>';
         
-
+*/
     
+var svg_prefix =
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (maxH).toString() + ')">' +
+            '<text style="font-size:18px">Study: ' + name + '</text>' +
+            '</g>' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (25+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Description: ' + desc + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (50+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (75+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (100+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
+            '</g>' 
+
+
+        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (125+maxH).toString() + ')">';
+        if(count>0) {
+            variableMetadata = variableMetadata + '<text style="font-size:18px">Derived variable(s):' + str + '</text>';
+        }
+        variableMetadata = variableMetadata + '</g>';
+
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+            
+            print_svg +
+            svg_prefix +
+            variableMetadata  +
+            '</svg>';
+        
        
 
         // Submit the <FORM> to the server.
