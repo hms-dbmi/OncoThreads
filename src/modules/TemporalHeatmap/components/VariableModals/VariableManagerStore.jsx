@@ -376,7 +376,7 @@ class VariableManagerStore {
 
 
     /**
-     * checks if the selected variables indices are a block (no not selected variable in between)
+     * checks if the selected variables indices are a block (not selected variable in between)
      * @param {number[]} array
      * @returns {boolean}
      */

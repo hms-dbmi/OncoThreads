@@ -39,10 +39,9 @@ const ContinuousCombine = inject("variableManagerStore")(observer(class Continuo
      * @return {{name: string, modification: {operator: string, datatype: string}, nameChanged: boolean, variableRange: string[], keep: boolean, isOrdinal: boolean, currentVarCategories: Object[]}}
      */
     initializeObservable() {
-        let name, nameChanged, keep, colorRange, operation; // name of combined variable
+        let name, nameChanged, colorRange, operation; // name of combined variable
         if (this.props.derivedVariable === null) {
             nameChanged = false; // has the name been changed
-            keep = true; // keep original variables or discard them
             if (this.props.variables.every(d => d.domain[0] >= 0)) {
                 colorRange = ColorScales.defaultContinuousTwoColors;
             }
@@ -62,7 +61,7 @@ const ContinuousCombine = inject("variableManagerStore")(observer(class Continuo
         return {
             name: name,
             nameChanged: nameChanged,
-            keep: keep,
+            keep: true,
             colorRange: colorRange,
             operation: operation,
             get mapper() {
@@ -195,7 +194,6 @@ const ContinuousCombine = inject("variableManagerStore")(observer(class Continuo
                             </FormControl>
                         </FormGroup>
                     </form>
-                    <ControlLabel key={"label"}>Result</ControlLabel>
                     {this.getHistogram()}
                 </Modal.Body>
                 <Modal.Footer>
