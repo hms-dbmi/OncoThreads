@@ -7,6 +7,7 @@ import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunction
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoryStore from "../VariableTables/CategoryStore";
 import CategoricalTable from "../VariableTables/CategoricalTable";
+import {extendObservable} from "mobx";
 
 /**
  * Component for combining variables
@@ -15,10 +16,8 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
 
     constructor(props) {
         super(props);
-        this.state = this.getInitialState();
+        extendObservable(this, this.initializeObservable());
         this.categoryStore = this.createCategoryStore();
-        this.setModification = this.setModification.bind(this);
-        this.setBinaryColors = this.setBinaryColors.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
 
@@ -32,7 +31,7 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
         let currentCategories, isOrdinal, allValues, colorRange;
         if (this.props.derivedVariable === null) {
             let mapper = DerivedMapperFunctions.createCategoryCombinedMapper(this.props.variables.map(d => d.mapper));
-            currentCategories = Array.from(new Set(Object.values(mapper))).map((d, i) => {
+            currentCategories = Array.from(new Set(Object.values(mapper))).map((d) => {
                 return {
                     selected: false,
                     name: d,
@@ -55,30 +54,21 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
         return new CategoryStore(currentCategories, isOrdinal, allValues, colorRange);
     }
 
-
-    /**
-     * gets the initial state
-     * @return {{name: string, modification: {operator: string, datatype: string}, nameChanged: boolean, variableRange: string[], keep: boolean, isOrdinal: boolean, currentVarCategories: Object[]}}
-     */
-    getInitialState() {
-        let name; // name of combined variable
-        let nameChanged = false; // has the name been changed
-        let isOrdinal = false;
-        let keep = true; // keep original variables or discard them
+    initializeObservable() {
+        let name, nameChanged; // name of combined variable
         // if the variable is already combined base parameters on this variable
         if (this.props.derivedVariable !== null) {
             name = this.props.derivedVariable.name;
             nameChanged = true;
-            isOrdinal = this.props.derivedVariable.datatype === "ORDINAL";
         }
         else {
             name = "CATEGORY COMBINE: " + this.props.variables.map(d => d.name);
+            nameChanged = false; // has the name been changed
         }
         return {
             name: name,
             nameChanged: nameChanged,
-            isOrdinal:isOrdinal,
-            keep: keep,
+            keep: true,
         };
     }
 
@@ -109,32 +99,14 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
         return currentVarCategories;
     }
 
-    /**
-     * sets the current modification type and corresponding currentVarCategories and colors
-     * @param {Object} modification
-     */
-    setModification(modification) {
-        this.setState({
-            modification: modification,
-        });
-    }
-
-
-    /**
-     * sets colors for the combined variable
-     * @param {string[]} colors
-     */
-    setBinaryColors(colors) {
-        this.setState({binaryColors: colors});
-    }
-
 
     /**
      * handles the name change
      * @param {Object} event
      */
     handleNameChange(event) {
-        this.setState({name: event.target.value, nameChanged: true});
+        this.name = event.target.value;
+        this.nameChanged = true;
     }
 
 
@@ -144,23 +116,26 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
     handleApply() {
         let datatype, range, description;
         let mapper = DerivedMapperFunctions.createCategoryCombinedMapper(this.props.variables.map(d => d.mapper));
-            if (this.state.isOrdinal) {
-                datatype = "ORDINAL";
-            }
-            else {
-                datatype = "STRING";
-            }
-            description = "Category combination of " + this.props.variables.map(d => d.name);
-            mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.categoryStore.categoryMapping);
-            range = this.categoryStore.currentCategories.map(d => d.color);
-        let newVariable = new DerivedVariable(uuidv4(), this.state.name, datatype, description, this.props.variables.map(d => d.id), {type:"categoryCombine",mapping:this.categoryStore.categoryMapping}, range, [], mapper, uuidv4(), "combined");
+        if (this.categoryStore.isOrdinal) {
+            datatype = "ORDINAL";
+        }
+        else {
+            datatype = "STRING";
+        }
+        description = "Category combination of " + this.props.variables.map(d => d.name);
+        mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.categoryStore.categoryMapping);
+        range = this.categoryStore.currentCategories.map(d => d.color);
+        let newVariable = new DerivedVariable(uuidv4(), this.name, datatype, description, this.props.variables.map(d => d.id), {
+            type: "categoryCombine",
+            mapping: this.categoryStore.categoryMapping
+        }, range, [], mapper, uuidv4(), "combined");
         if (this.props.derivedVariable === null) {
-            this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.state.keep);
+            this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.keep);
         }
         else {
             this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, newVariable)
         }
-        if (!this.state.keep) {
+        if (!this.keep) {
             this.props.variables.forEach(d => {
                 this.props.variableManagerStore.removeVariable(d.id);
             })
@@ -179,14 +154,14 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
                     <ControlLabel>Variable name</ControlLabel>
                     <FormControl
                         type="text"
-                        value={this.state.name}
+                        value={this.name}
                         onChange={this.handleNameChange}/>
                     <ControlLabel key={"label"}>Result</ControlLabel>
                     , <Provider categoryStore={this.categoryStore} key={"table"}><CategoricalTable/></Provider>
                 </Modal.Body>
                 <Modal.Footer>
                     <Checkbox disabled={this.props.derivedVariable !== null}
-                              onChange={() => this.setState({keep: !this.state.keep})} checked={!this.state.keep}>Discard
+                              onChange={() => this.keep = !this.keep} checked={!this.keep}>Discard
                         original variables</Checkbox>
                     <Button onClick={this.props.closeModal}>
                         Cancel

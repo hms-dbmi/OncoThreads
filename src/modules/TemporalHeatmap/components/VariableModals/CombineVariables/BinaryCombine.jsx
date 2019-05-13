@@ -68,10 +68,8 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
     getInitialState() {
         let name; // name of combined variable
         let modification = {operator: "", datatype: ""}; // way of modification
-        let isOrdinal = false;
         let nameChanged = false; // has the name been changed
         let binaryColors = ColorScales.defaultBinaryRange;
-        let keep = true; // keep original variables or discard them
         // if the variable is already combined base parameters on this variable
         if (this.props.derivedVariable !== null) {
             modification = this.props.derivedVariable.modification;
@@ -80,7 +78,6 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
             if (this.props.derivedVariable.modification.datatype !== "STRING") {
                 binaryColors = this.props.derivedVariable.range;
             }
-            isOrdinal = this.props.derivedVariable.datatype === "ORDINAL";
         }
         else {
             name = "BINARY COMBINE: " + this.props.variables.map(d => d.name);
@@ -88,10 +85,9 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
         return {
             name: name,
             modification: modification,
-            isOrdinal: isOrdinal,
             nameChanged: nameChanged,
             binaryColors: binaryColors,
-            keep: keep,
+            keep: true,
         };
     }
 
@@ -187,7 +183,7 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
             modification.mapping = false
         }
         else {
-            if (this.state.isOrdinal) {
+            if (this.categoryStore.isOrdinal) {
                 datatype = "ORDINAL";
             }
             else {

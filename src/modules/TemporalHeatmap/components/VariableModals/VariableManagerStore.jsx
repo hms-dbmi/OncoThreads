@@ -36,7 +36,7 @@ class VariableManagerStore {
                 if (this.primaryVariables.includes(variableId)) {
                     this.primaryVariables.forEach((d, i) => {
                         if (d === variableId) {
-                            this.primaryVariables[i] = "";
+                            this.primaryVariables[i] = this.currentVariables[0].id;
                         }
                     })
                 }

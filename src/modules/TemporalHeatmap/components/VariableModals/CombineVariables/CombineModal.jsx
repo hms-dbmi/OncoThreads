@@ -2,6 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react';
 import BinaryCombine from "./BinaryCombine";
 import CategoryCombine from "./CategoryCombine";
+import ContinuousCombine from "./ContinuousCombine";
 
 /**
  * Component for combining variables
@@ -20,7 +21,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
             modificationType = "categoryCombine"
         }
         else if (this.props.variables.filter(d => d.datatype === "NUMBER").length === this.props.variables.length) {
-            modificationType = "numberCombine";
+            modificationType = "continuousCombine";
         }
         else {
             alert("Cannot combine variables of these datatypes")
@@ -40,6 +41,12 @@ const CombineModal = observer(class CombineModal extends React.Component {
                 break;
             case "categoryCombine":
                 modal = <CategoryCombine variables={this.props.variables}
+                                         derivedVariable={this.props.derivedVariable}
+                                         modalIsOpen={this.props.modalIsOpen}
+                                         closeModal={this.props.closeModal}/>;
+                break;
+            case "continuousCombine":
+                modal =<ContinuousCombine variables={this.props.variables}
                                          derivedVariable={this.props.derivedVariable}
                                          modalIsOpen={this.props.modalIsOpen}
                                          closeModal={this.props.closeModal}/>;
