@@ -33,7 +33,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             modifyContinuousIsOpen: false,
             modifyBinaryIsOpen: false,
             saveVariableIsOpen: false,
-            combineVariablesIsOpen:false,
+            combineVariablesIsOpen: false,
             currentVariable: '', // non-modified variable selected for modification
             derivedVariable: '', // modified variable selected for modification
             combineVariables: [], // variables selected for combination
@@ -293,20 +293,8 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      */
     combineSelected() {
         let selectedVar = this.props.variableManagerStore.getSelectedVariables();
-        let isBinary = true;
         if (selectedVar.length > 1) {
-            for (let i = 1; i < selectedVar.length; i++) {
-                if (selectedVar[i].datatype !== "BINARY") {
-                    isBinary = false;
-                    break;
-                }
-            }
-            if (!isBinary) {
-                alert("Please select two binary variables");
-            }
-            else {
-                this.openCombineModal(this.props.variableManagerStore.getSelectedVariables(), null);
-            }
+            this.openCombineModal(this.props.variableManagerStore.getSelectedVariables(), null);
         }
         else {
             alert("Please select at least two variables");
