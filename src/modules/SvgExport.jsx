@@ -125,7 +125,7 @@ class SvgExport {
 
         
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
             // svg_prefix +
             print_svg +
@@ -210,8 +210,8 @@ class SvgExport {
 
                     str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
                     var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
-                    for(var i=0; i<srcVars.length; i++){
-                        let retVal = _self.getSampleVarTree(srcVars[i]);
+                    for(var k=0; k<srcVars.length; k++){
+                        let retVal = _self.getSampleVarTree(srcVars[k]);
                         str = str + retVal.string;
                         num = num + retVal.count;
                     }
@@ -497,7 +497,7 @@ var svg_prefix =
         }
         variableMetadata = variableMetadata + '</g>';
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
             
             print_svg +
             svg_prefix +
