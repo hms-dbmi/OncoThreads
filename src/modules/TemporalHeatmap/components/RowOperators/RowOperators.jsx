@@ -6,56 +6,12 @@ import RowOperator from './RowOperator'
  * Component for rowOperators of the timepoints
 = */
 const RowOperators = inject("rootStore")(observer(class RowOperators extends React.Component {
-    constructor() {
-        super();
-        this.state = {highlightedVariable: "", width: 100};
-        this.highlightVariable = this.highlightVariable.bind(this);
-        this.unhighlightVariable = this.unhighlightVariable.bind(this);
-        this.updateDimensions = this.updateDimensions.bind(this);
-    }
-
-    /**
-     * Add event listener
-     */
-    componentDidMount() {
-        this.updateDimensions();
-        window.addEventListener("resize", this.updateDimensions);
-    }
-
-    /**
-     * Remove event listener
-     */
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.updateDimensions);
-    }
-
-    updateDimensions() {
-        this.setState({
-            width: this.refs.rowOperators.parentNode.clientWidth
-        });
-    }
-
-    /**
-     * highlights a variable
-     * @param {string} variableId
-     */
-    highlightVariable(variableId) {
-        this.setState({highlightedVariable: variableId})
-    }
-
-    /**
-     * unhighlights all variables
-     */
-    unhighlightVariable() {
-        this.setState({highlightedVariable: ""})
-    }
-
     render() {
         let rowHeader = [];
         this.props.rootStore.dataStore.timepoints.forEach((d, i)=> {
             let transform = "translate(0," + this.props.rootStore.visStore.timepointPositions.timepoint[i] + ")";
             //Different icons and functions for grouped and ungrouped timepoints
-            rowHeader.push(<RowOperator key={i} transform={transform} timepoint={d} width={this.state.width}
+            rowHeader.push(<RowOperator key={i} transform={transform} timepoint={d} width={this.props.width}
                              {...this.props.tooltipFunctions}
                              showContextMenu={this.props.showContextMenu}
                              openBinningModal={this.props.openBinningModal}
@@ -67,7 +23,7 @@ const RowOperators = inject("rootStore")(observer(class RowOperators extends Rea
         });
         return (
             <div ref='rowOperators'>
-                <svg width={this.state.width} height={this.props.rootStore.visStore.svgHeight}>
+                <svg width={this.props.width} height={this.props.rootStore.visStore.svgHeight}>
                     {rowHeader}
                 </svg>
             </div>
