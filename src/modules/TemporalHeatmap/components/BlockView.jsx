@@ -11,31 +11,6 @@ import GroupTimepoint from "./Timepoints/Group/GroupTimepoint";
  * Component for the Block view
  */
 const BlockView = inject("rootStore")(observer(class BlockView extends React.Component {
-    constructor() {
-        super();
-        this.updateDimensions = this.updateDimensions.bind(this);
-    }
-
-    /**
-     * Add event listener
-     */
-    componentDidMount() {
-        this.updateDimensions();
-        window.addEventListener("resize", this.updateDimensions);
-    }
-
-    /**
-     * Remove event listener
-     */
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.updateDimensions);
-    }
-
-    updateDimensions() {
-        this.props.rootStore.visStore.setPlotWidth(this.refs.blockView.getBoundingClientRect().width);
-        this.props.rootStore.visStore.setPlotHeight(window.innerHeight - this.refs.blockView.getBoundingClientRect().top);
-    }
-
     render() {
         let timepoints = [];
         let transitions = [];

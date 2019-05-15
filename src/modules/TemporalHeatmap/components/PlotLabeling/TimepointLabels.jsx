@@ -8,37 +8,6 @@ import BlockTextField from "./BlockTextField";
  * Sample Timepoints are displayed as numbers
  */
 const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observer(class TimepointLabels extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            width: 100,
-            labels: []
-        };
-        this.updateDimensions = this.updateDimensions.bind(this);
-    }
-
-    /**
-     * Add event listener
-     */
-    componentDidMount() {
-        this.updateDimensions();
-        window.addEventListener("resize", this.updateDimensions);
-    }
-
-    /**
-     * Remove event listener
-     */
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.updateDimensions);
-    }
-
-
-    updateDimensions() {
-        this.setState({
-            width: this.refs.timepointLabels.parentNode.clientWidth
-        });
-    }
-
     /**
      * sets the name of a timepoint
      * @param {number} index
@@ -67,10 +36,10 @@ const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observe
                 pos = this.props.visStore.timepointPositions.timepoint[i] + this.props.visStore.getTPHeight(d) / 2 + 4;
                 return <g key={d.globalIndex} transform={"translate(0," + pos + ")"}>
                     <BlockTextField
-                    width={this.state.width - (iconDimension + gap)}
+                    width={this.props.width - (iconDimension + gap)}
                     timepoint={d}/>
                     <g className="not_exported"
-                       transform={"translate(" + (this.state.width - (iconDimension + gap)) + ",0)"}
+                       transform={"translate(" + (this.props.width - (iconDimension + gap)) + ",0)"}
                        onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
                        onMouseLeave={this.props.hideTooltip}>
                         <g transform={"translate(0,4)"}>
@@ -87,7 +56,7 @@ const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observe
             else {
                 pos = this.props.visStore.timepointPositions.timepoint[i] + this.props.visStore.getTPHeight(d) / 2 + 4;
                 return <g key={d.globalIndex} className="not_exported"
-                          transform={"translate(" + (this.state.width - (iconDimension + gap)) + "," + pos + ")"}
+                          transform={"translate(" + (this.props.width - (iconDimension + gap)) + "," + pos + ")"}
                           onMouseEnter={(e) => this.props.showTooltip(e, "Realign patients")}
                           onMouseLeave={this.props.hideTooltip}>
                     <g transform={"translate(0,4)"}>
@@ -104,18 +73,18 @@ const TimepointLabels = inject("dataStore", "visStore", "undoRedoStore")(observe
         let offset = 15 + this.props.visStore.getTPHeight(this.props.dataStore.timepoints[0]) / 2;
         return (
             <div ref="timepointLabels">
-                <svg width={this.state.width} height={this.props.visStore.svgHeight}>
-                    <line x1={(this.state.width - (iconDimension + gap)) / 2 - 10}
-                          x2={(this.state.width - (iconDimension + gap)) / 2}
+                <svg width={this.props.width} height={this.props.visStore.svgHeight}>
+                    <line x1={(this.props.width - (iconDimension + gap)) / 2 - 10}
+                          x2={(this.props.width - (iconDimension + gap)) / 2}
                           y1={this.props.visStore.timepointPositions.timepoint[0] + offset}
                           y2={this.props.visStore.timepointPositions.timepoint[0] + offset} stroke='lightgray'/>
-                    <line x1={(this.state.width - (iconDimension + gap)) / 2}
-                          x2={(this.state.width - (iconDimension + gap)) / 2}
+                    <line x1={(this.props.width - (iconDimension + gap)) / 2}
+                          x2={(this.props.width - (iconDimension + gap)) / 2}
                           y1={this.props.visStore.timepointPositions.timepoint[0] + offset}
                           y2={this.props.visStore.timepointPositions.timepoint[this.props.visStore.timepointPositions.timepoint.length - 1] + offset}
                           stroke='lightgray'/>
-                    <line x1={(this.state.width - (iconDimension + gap)) / 2 - 10}
-                          x2={(this.state.width - (iconDimension + gap)) / 2}
+                    <line x1={(this.props.width - (iconDimension + gap)) / 2 - 10}
+                          x2={(this.props.width - (iconDimension + gap)) / 2}
                           y1={this.props.visStore.timepointPositions.timepoint[this.props.visStore.timepointPositions.timepoint.length - 1] + offset}
                           y2={this.props.visStore.timepointPositions.timepoint[this.props.visStore.timepointPositions.timepoint.length - 1] + offset}
                           stroke='lightgray'/>

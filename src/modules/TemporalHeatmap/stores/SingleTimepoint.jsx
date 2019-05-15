@@ -24,7 +24,7 @@ class SingleTimepoint {
              */
             get grouped() {
                 let grouped = [];
-                let variableDomain = this.rootStore.dataStore.variableStores[this.type].getById(this.primaryVariableId).domain;
+                let variableDomain = this.rootStore.dataStore.variableStores[this.type].getById(this.primaryVariableId).domain.concat(undefined);
                 if (this.groupOrder === -1) {
                     variableDomain = variableDomain.reverse();
                 }
@@ -34,7 +34,7 @@ class SingleTimepoint {
                         let rows = [];
                         this.heatmap.forEach(row => {
                             let counts = [];
-                            let currVarDomain = this.rootStore.dataStore.variableStores[this.type].getById(row.variable).domain;
+                            let currVarDomain = this.rootStore.dataStore.variableStores[this.type].getById(row.variable).domain.concat(undefined);
                             if (this.groupOrder === -1) {
                                 currVarDomain = currVarDomain.reverse();
                             }

@@ -43,6 +43,7 @@ const GroupPartition = inject("dataStore", "visStore","uiStore")(observer(class 
                                                                                         opacity={opacity}
                                                                                         color={color}
                                                                                         stroke={stroke}
+                                                                                        isEven={i%2===0}
                                                                                         {..._self.props.tooltipFunctions}/>
                     </g>);
                 }
