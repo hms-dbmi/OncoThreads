@@ -159,7 +159,9 @@ class SvgExport {
 
             if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping) {
             
-                str =  str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + 
+                str =  str + '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Original Variable: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds[0]
+                
+                + '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + 
                 '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Category and Values: </tspan> <tspan>' ;
                 
                 //+ Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
@@ -194,12 +196,15 @@ class SvgExport {
 
                     }
                     //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
-                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan  x="150" dy="1.2em" font-weight="bold"> Bins: </tspan> <tspan>' + 
+                    str = str +
+                    
+                    '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Original Variable: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds[0]
+                
+                    +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan  x="150" dy="1.2em" font-weight="bold"> Bins: </tspan>' ;
+                    
+                    str = str +'<tspan>' 
                      //+ Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) 
-                     +binStr;
-                    // + '</tspan>';
-
-                     str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
+                     + binStr + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
                 }
                 else {
                     //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
@@ -287,8 +292,8 @@ class SvgExport {
                 else {
                     str = str + ': ' + _self.rootStore.dataStore.variableStores.between.referencedVariables[el].description + '</tspan>';
                     var srcVars=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].originalIds;
-                    for(var i=0; i<srcVars.length; i++){
-                        let retVal = _self.getEventVarTree(srcVars[i]);
+                    for(var l=0; l<srcVars.length; l++){
+                        let retVal = _self.getEventVarTree(srcVars[l]);
                         str = str + retVal.string;
                         num = num + retVal.count;
                     }
