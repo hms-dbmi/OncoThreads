@@ -2,7 +2,7 @@
  * class for handling svg export
  * TODO: tidy up
  */
-
+//import React, { Component }  from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -13,6 +13,9 @@ class SvgExport {
         this.exportSVGandData = this.exportSVGandData.bind(this);
         this.exportPNG = this.exportPNG.bind(this);
         this.exportPDF = this.exportPDF.bind(this);
+        this.getSampleVarTree = this.getSampleVarTree.bind(this);
+        this.getEventVarTree = this.getEventVarTree.bind(this)
+
     }
 
     /**
@@ -120,24 +123,9 @@ class SvgExport {
             }
         }
 
-        /*var svg_prefix =
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 25)">' +
-            '<text style="font-size:18px">Study: ' + this.study.name + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 50)">' +
-            '<text style="font-size:18px">Description: ' + this.study.description + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
-            '<text style="font-size:18px">Citation: ' + this.study.citation + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
-            '<text style="font-size:18px">Number of patients: ' + this.patients.length + '</text>'+
-        '</g>' +
-        '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
-            '<text style="font-size:18px">Number of timepoints: ' + this.minTP + "-" + this.maxTP + '</text>'+
-        '</g>'*/
+        
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + (minW + maxW).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
             // svg_prefix +
             print_svg +
@@ -155,6 +143,174 @@ class SvgExport {
         form[1].value = svg_xml;
         this.downloadFile(svg_xml);
     }
+
+    getSampleVarTree( el ) {
+
+        const _self=this;
+      
+        var str='';
+        var num=0;
+
+        if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].derived)
+        {
+            //console.log(el);
+            str=str + '<tspan x="150" dy="1.2em" font-weight="bold">Name: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].name
+            num++;
+
+            if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping) {
+            
+                str =  str + '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Original Variable: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds[0]
+                
+                + '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + 
+                '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Category and Values: </tspan> <tspan>' ;
+                
+                //+ Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+               // + ' ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                //+ '</tspan>';
+
+                var keys1=Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
+                var values1=Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping);
+
+                for(var i=0; i<keys1.length; i++){
+                    str = str + keys1[i] + " -> " + values1[i] + ", ";
+                }
+
+                str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
+
+            }
+            else {
+
+                if(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning) {
+                    
+                    var binArray=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins;
+
+                    var binStr = '';
+
+                    for(var j=0; j<binArray.length; j++){
+                        if(j< (binArray.length-1)){
+                            binStr = binStr + binArray[j]  + ' to ' + binArray[j+1] ;
+                        }
+                        if(j < (binArray.length-2)){
+                            binStr = binStr + ', ';
+                        }
+
+                    }
+                    //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
+                    str = str +
+                    
+                    '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Original Variable: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds[0]
+                
+                    +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan  x="150" dy="1.2em" font-weight="bold"> Bins: </tspan>' ;
+                    
+                    str = str +'<tspan>' 
+                     //+ Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) 
+                     + binStr + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
+                }
+                else {
+                    //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
+
+
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan>';
+
+
+                    str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
+                    var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
+                    for(var k=0; k<srcVars.length; k++){
+                        let retVal = _self.getSampleVarTree(srcVars[k]);
+                        str = str + retVal.string;
+                        num = num + retVal.count;
+                    }
+                }
+            }
+
+        } 
+        else {
+            console.log(str);
+            return {'string': str, 'count': num};
+        }
+
+        
+        return {'string': str, 'count': num};
+      }
+
+
+      getEventVarTree( el ) {
+
+        const _self=this;
+      
+        var str='';
+        var num=0;
+
+        if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].derived)
+        {
+            //console.log(el);
+            str=str + '<tspan x="150" dy="1.2em" font-weight="bold"> Name: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.between.referencedVariables[el].name
+            num++;
+
+            if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping) {
+            
+                //str = str + ', Category: ' + Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                //+ ', Values: ' + Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                //+ '</tspan>';
+
+                str =  str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.between.referencedVariables[el].description + 
+                '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Category and Values: </tspan> <tspan>' ;
+                
+                var keys1=Object.keys(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping)
+                var values1=Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.mapping);
+
+                for(var i=0; i<keys1.length; i++){
+                    str = str + keys1[i] + " -> " + values1[i] + ", ";
+                }
+
+                str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
+
+            }
+            else {
+
+                if(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning) {
+                   
+                    var binArray=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins;
+
+                    var binStr = '';
+
+                    for(var j=0; j<binArray.length; j++){
+                        if(j< (binArray.length-1)){
+                            binStr = binStr + binArray[j]  + ' to ' + binArray[j+1] ;
+                        }
+                        if(j < (binArray.length-2)){
+                            binStr = binStr + ', ';
+                        }
+
+                    }
+
+                    str = str + ' Bins: ' 
+                    //+ Object.values(_self.rootStore.dataStore.variableStores.between.referencedVariables[el].modification.binning.bins) 
+                    + binStr
+                    + '</tspan>';
+                }
+                else {
+                    str = str + ': ' + _self.rootStore.dataStore.variableStores.between.referencedVariables[el].description + '</tspan>';
+                    var srcVars=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].originalIds;
+                    for(var l=0; l<srcVars.length; l++){
+                        let retVal = _self.getEventVarTree(srcVars[l]);
+                        str = str + retVal.string;
+                        num = num + retVal.count;
+                    }
+                }
+
+            }       
+
+        } 
+        else{
+            console.log(str);
+            return {'string': str, 'count': num};
+        }
+
+
+        
+        return {'string': str, 'count': num};
+      }
 
     /**
      * exports current view + metadata
@@ -188,50 +344,6 @@ class SvgExport {
             for (var c = 0; c < svg_copy.children.length; c++) {
                 var temp = svg_copy.children[c];
 
-                //if(!this.rootStore.dataStore.globalTime){
-
-                /*if(i===0 ){
-
-                    if(temp.childElementCount===2){
-                        temp.children[1].remove();
-                    }
-
-                }
-                else if(i===1 && temp.childElementCount===4){
-                    for(var k=0; k<temp.childElementCount; k++){
-
-                        for(var l=0; l< temp.children[k].childElementCount; l++){
-
-                            temp.children[k].children[l].children.sort.remove();
-                            if(temp.children[k].children[l].children.group){
-                                temp.children[k].children[l].children.group.remove();
-                            }
-                            if(temp.children[k].children[l].children.ungroup){
-                                temp.children[k].children[l].children.ungroup.remove();
-                            }
-
-                            temp.children[k].children[l].children.delete.remove();
-
-                        }
-
-                    }
-                } */
-
-                //var a = svg_all[i].getElementsByClassName("not_exported");
-                //[...a].forEach(t => {t.remove();})
-
-                //}
-                /* else{ //global timeline
-
-                     if(i===0){
-                         for(var k2=0; k2<svg_all[0].children[0].childElementCount; k2++){
-                             svg_all[i].children[0].children[k2].children[0].children[1].remove();
-                         }
-                     }
-
-
-                 } */
-
                 t = t + (new XMLSerializer()).serializeToString(temp);
             }
 
@@ -263,7 +375,7 @@ class SvgExport {
             if (maxW == null || new_right > maxW) {
                 maxW = new_right;
             }
-            if (minH == null || boundingRect.top > minH) {
+            if (minH == null || boundingRect.top < minH) {
                 minH = boundingRect.top;
             }
             if (maxH == null || boundingRect.bottom > maxH) {
@@ -298,7 +410,7 @@ class SvgExport {
             } else {
                 print_svg = print_svg +
                     '<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + (boundingRect.y) + ')" >' +
-
+                    //'<g width="' + width + '" height= "' + height + '" transform="translate(' + new_x + ',' + 10 + ')" >' +
                     t +
 
                     '</g>';
@@ -311,39 +423,100 @@ class SvgExport {
         const minTP = Math.min(...Object.keys(this.rootStore.sampleStructure).map(key => this.rootStore.sampleStructure[key].length));
         const maxTP = Math.max(...Object.keys(this.rootStore.sampleStructure).map(key => this.rootStore.sampleStructure[key].length));
 
-        var svg_prefix =
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 25)">' +
+        const _self=this;
+
+        var str= '';
+        var count = 0;
+
+        this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
+        {
+            let retVal = _self.getSampleVarTree(el);
+            str= str + retVal.string;
+            count = count + retVal.count;
+        })
+
+        this.rootStore.dataStore.variableStores.between.currentVariables.forEach(function(el)
+        {
+            let retVal = _self.getEventVarTree(el);
+            str= str + retVal.string;
+            count = count + retVal.count;
+        })
+
+        
+        console.log(str);    
+
+        /*var svg_prefix =
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (25+maxH).toString() + ')">' +
             '<text style="font-size:18px">Study: ' + name + '</text>' +
             '</g>' +
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(400, 50)">' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (50+maxH).toString() + ')">' +
             '<text style="font-size:18px">Description: ' + desc + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 75)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (75+maxH).toString() + ')">' +
             '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 100)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (100+maxH).toString() + ')">' +
             '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(400, 125)">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (125+maxH).toString() + ')">' +
             '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
-            '</g>'
+            '</g>' 
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH).toString() + '">' +
 
-            svg_prefix +
+        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (150+maxH).toString() + ')">';
+        if(count>0) {
+            variableMetadata = variableMetadata + '<text style="font-size:18px">Derived variable(s):' + str + '</text>';
+        }
+        variableMetadata = variableMetadata + '</g>';
+
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+            
             print_svg +
-
+            svg_prefix +
+            variableMetadata  +
             '</svg>';
+        
+*/
+    
+var svg_prefix =
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (maxH).toString() + ')">' +
+            '<text style="font-size:18px">Study: ' + name + '</text>' +
+            '</g>' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (25+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Description: ' + desc + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (50+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (75+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
+            '</g>' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (100+maxH).toString() + ')">' +
+            '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
+            '</g>' 
 
+
+        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (125+maxH).toString() + ')">';
+        if(count>0) {
+            variableMetadata = variableMetadata + '<text style="font-size:18px">Derived variable(s):' + str + '</text>';
+        }
+        variableMetadata = variableMetadata + '</g>';
+
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+            
+            print_svg +
+            svg_prefix +
+            variableMetadata  +
+            '</svg>';
+        
+       
 
         // Submit the <FORM> to the server.
         // The result will be an attachment file to download.
-        var form = document.getElementById("svgform");
-        // form['output_format'].value = output_format;
-        //form['data'].value = svg_xml ;
+        //var form = document.getElementById("svgform");
 
-        form[0].value = "svg";
-        form[1].value = svg_xml;
+        //form[0].value = "svg";
+        //form[1].value = svg_xml;
         this.downloadFile(svg_xml);
     }
 
@@ -355,6 +528,10 @@ class SvgExport {
         } else {
             tmp = document.getElementById("block-view");
         }
+
+        //var temp2 = '<div>' + tmp.innerHTML + '<div>'
+
+
         html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
             var element = document.createElement("a");
             element.href = canvas.toDataURL('image/png');
@@ -375,6 +552,20 @@ class SvgExport {
             const imgData = canvas.toDataURL('image/png');
             // Multiplying by 1.33 because canvas.toDataURL increases the size of the image by 33%
             const pdf = new jsPDF('l', 'px', [canvas.width*1.33, canvas.height*1.33]);
+
+            /*pdf.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
+
+            // Optional - set properties on the document
+            pdf.setProperties({
+            title: 'Title',
+            subject: 'This is the subject',
+            author: 'Author Name',
+            keywords: 'generated, javascript, web 2.0, ajax',
+            creator: 'Creator Name'
+            });*/
+
+
+
             pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
             pdf.save("download.pdf"); 
         });
