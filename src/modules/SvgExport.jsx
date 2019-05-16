@@ -55,7 +55,7 @@ class SvgExport {
 
             var boundingRect; // = svg_all[i].parentElement.getBoundingClientRect();
 
-            if (this.rootStore.uiStore.globalTime && this.rootStore.uiStore.transitionOn && (i === 0 || i === 1)) {
+            if (this.rootStore.uiStore.globalTime && this.rootStore.dataStore.transitionOn && (i === 0 || i === 1)) {
                 boundingRect = svg_all[i].getBoundingClientRect();
             }
             else {
