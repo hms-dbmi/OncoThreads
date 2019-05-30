@@ -110,9 +110,9 @@ const CategoricalRow = inject("dataStore", "uiStore", "visStore")(observer(class
                     }
                     fill = "white"
                 }
-                const height = row.patients.length / this.props.patients.length * (this.props.height-1);
-                const y = currCounts / this.props.patients.length * (this.props.height-1);
-                rects.push(<rect key={""+row.key} x="0" y={y} height={height}
+                const height = row.patients.length / this.props.patients.length * (this.props.height - 1);
+                const y = currCounts / this.props.patients.length * (this.props.height - 1);
+                rects.push(<rect key={"" + row.key} x="0" y={y} height={height}
                                  width={this.props.visStore.groupScale(this.props.patients.length)} fill={fill}
                                  stroke={stroke}
                                  onMouseEnter={(e) => this.props.showTooltip(e, CategoricalRow.getTooltipContent(row.key, row.patients.length))}
@@ -123,7 +123,15 @@ const CategoricalRow = inject("dataStore", "uiStore", "visStore")(observer(class
         return rects
     }
 
-
+    /**
+     * creates a parallelogram for a category
+     * @param {number} x
+     * @param {number} width
+     * @param {number} index - current index
+     * @param {number} maxIndex - maximum index in the row
+     * @param {number} offset - offset for the slanted lines
+     * @return {string} polygon points
+     */
     transformToPolygonParallel(x, width, index, maxIndex, offset) {
         let x1, x2, x3, x4, y1, y2, y3, y4;
         y1 = y2 = 0;
@@ -155,6 +163,15 @@ const CategoricalRow = inject("dataStore", "uiStore", "visStore")(observer(class
         return x1 + "," + y1 + " " + x2 + "," + y2 + " " + x3 + "," + y3 + " " + x4 + "," + y4;
     }
 
+    /**
+     * creates a polygon with alternating slanted lines
+     * @param {number} x
+     * @param {number} width
+     * @param {number} index - current index
+     * @param {number} maxIndex - maximum index in the row
+     * @param {number} offset - offset for the slanted lines
+     * @return {string} polygon points
+     */
     transformToPolygonAlternating(x, width, index, maxIndex, offset) {
         let x1, x2, x3, x4, y1, y2, y3, y4;
         y1 = y2 = 0;
@@ -189,6 +206,16 @@ const CategoricalRow = inject("dataStore", "uiStore", "visStore")(observer(class
         return x1 + "," + y1 + " " + x2 + "," + y2 + " " + x3 + "," + y3 + " " + x4 + "," + y4;
     }
 
+    /**
+     * creates a polygon with alternating slanted lines
+     * @param {number} x
+     * @param {number} width
+     * @param {number} index - current index
+     * @param {number} maxIndex - maximum index in the row
+     * @param {number} previousOffset - previous slanted line offset
+     * @param {number} newOffset - new slanted line offset
+     * @return {string} polygon points
+     */
     transformToPolygonRandom(x, width, index, maxIndex, previousOffset, newOffset) {
         let x1, x2, x3, x4, y1, y2, y3, y4;
         y1 = y2 = 0;
