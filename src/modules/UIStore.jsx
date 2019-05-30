@@ -11,7 +11,8 @@ class UIStore {
             globalTime: false, // show global timeline
             advancedSelection: true, // advanced selection enables
             showUndefined: true, // show rows with only undefined values
-            slantedLines:'singleDir', //altWithin, altAcross, none
+            slantedLines:'singleDir', //altWithin, altAcross, none, random
+            horizontalStacking:false,
             setContinuousRepresentation: action(representation => {
                 this.continuousRepresentation = representation;
             }),
@@ -29,6 +30,9 @@ class UIStore {
             }),
             setSlantedLines: action(slantedLines=>{
                 this.slantedLines=slantedLines;
+            }),
+            setHorizontalStacking:action(isHorizontal=>{
+                this.horizontalStacking=isHorizontal;
             })
         })
     }

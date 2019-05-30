@@ -93,10 +93,27 @@ const SettingsModal = inject("uiStore")(observer(class SettingsModal extends Rea
                                    onChange={() => this.props.uiStore.setSlantedLines('altAcross')}>
                                 Alternating direction (across variables )
                             </Radio>
+                             <Radio checked={this.props.uiStore.slantedLines === "random"} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setSlantedLines('random')}>
+                                Random
+                            </Radio>
                             <Radio checked={this.props.uiStore.slantedLines === "none"} name="radioGroup" inline
                                    onChange={() => this.props.uiStore.setSlantedLines('none')}>
                                 None
                             </Radio>
+                        </FormGroup>
+                    </form>
+                    <form>
+                        <FormGroup>
+                            <h5>Experimental: Group Stacking</h5>
+                            <Radio checked={!this.props.uiStore.horizontalStacking} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setHorizontalStacking(false)}>
+                                Vertical
+                            </Radio>{' '}
+                            <Radio checked={this.props.uiStore.horizontalStacking} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setHorizontalStacking(true)}>
+                                Horizontal
+                            </Radio>{' '}
                         </FormGroup>
                     </form>
                 </Modal.Body>
