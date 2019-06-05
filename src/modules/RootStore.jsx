@@ -172,15 +172,19 @@ class RootStore {
 
             var ST=this.sampleStructure;
 
+            let self=this;
+
             //let scoreStructure = {};
             var m=0;
-                for(var i=1; i<Object.keys(SM).length; i++){
-                    var iK= Object.keys(SM)[i],
-                    iV= Object.values(SM)[i];
-                    
+            for(var i=1; i<Object.keys(SM).length; i++){
+                var iK= Object.keys(SM)[i],
+                iV= Object.values(SM)[i];
+                
+                var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id==iK) return d})[0].datatype;
 
+                if(dType==="STRING"){
                     var all_vals=Object.values(iV);
-                        var unique_vals=[...new Set(all_vals)];
+                    var unique_vals=[...new Set(all_vals)];
 
                     var total_val=unique_vals.length;
                     
@@ -204,15 +208,49 @@ class RootStore {
                     }
                     
                     m=m/total_val;
-                    console.log(m);
 
-                    this.scoreStructure[iK]=m;
-
-
-                    m=0
                 }
+                else if(dType==="NUMBER"){
+                    var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
 
-                console.log(this.scoreStructure);
+                    //var total_val=unique_vals.length;
+                    
+                    var range_val= Math.max(...all_vals)-Math.min(...all_vals) + 1;
+
+                    console.log("range: " + range_val);
+
+                    //if(range_val===0) range_val=1;
+
+                    console.log("for " +iK +": score = ");
+                    
+                    for(var j=0; j<Object.keys(ST).length; j++){
+                        //console.log(Object.keys(ST)[j]);
+                        
+                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
+                            //console.log(Object.values(ST)[j][k]);
+                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
+                                
+                                m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
+
+                            }
+                        }
+                        
+                    }
+                    
+                    m=m/range_val;
+
+                }
+                
+                console.log(m);
+
+                this.scoreStructure[iK]=m;
+
+
+                m=0;
+            }
+
+            console.log(this.scoreStructure);
 
         }),
             /**
