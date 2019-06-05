@@ -25,6 +25,7 @@ class RootStore {
 
         this.initialVariable = {}; // initial variable saved for reset
 
+        this.scoreStructure = {};
         this.timeDistanceId = uuidv4(); // random id for time distance variable
 
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"]; // possible variable types of mutation data
@@ -151,11 +152,69 @@ class RootStore {
                         this.events = events;
                         this.buildTimelineStructure();
                         this.createTimeGapMapping();
+                        
                         this.timelineParsed = true;
                         callback();
                     })
                 })
             }),
+
+
+             /*
+            * calculate score for variability 
+            */
+
+
+           calculateVScore: action(() => {
+            
+
+            var SM= this.staticMappers;
+
+            var ST=this.sampleStructure;
+
+            //let scoreStructure = {};
+            var m=0;
+                for(var i=1; i<Object.keys(SM).length; i++){
+                    var iK= Object.keys(SM)[i],
+                    iV= Object.values(SM)[i];
+                    
+
+                    var all_vals=Object.values(iV);
+                        var unique_vals=[...new Set(all_vals)];
+
+                    var total_val=unique_vals.length;
+                    
+                    console.log("num of values: " + total_val);
+
+                    console.log("for " +iK +": score = ");
+                    
+                    for(var j=0; j<Object.keys(ST).length; j++){
+                        //console.log(Object.keys(ST)[j]);
+                        
+                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
+                            //console.log(Object.values(ST)[j][k]);
+                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
+                                //console.log(Object.values(ST)[j][k]);
+                                //console.log(iV[Object.values(ST)[j][k]]);
+                                //console.log(iV[Object.values(ST)[j][k+1]]);
+                                m++;
+                            }
+                        }
+                        
+                    }
+                    
+                    m=m/total_val;
+                    console.log(m);
+
+                    this.scoreStructure[iK]=m;
+
+
+                    m=0
+                }
+
+                console.log(this.scoreStructure);
+
+        }),
             /**
              *  gets variable data and sets parameters
              *  @param {loadFinishedCallback} callback
@@ -184,9 +243,12 @@ class RootStore {
                             }
                             callback();
                         })
+
+                       
                     });
                 });
 
+                
             }),
             /**
              * creates a dictionary mapping sample IDs onto clinical sample data
@@ -213,6 +275,9 @@ class RootStore {
                         }
                     }
                 });
+
+                this.calculateVScore();
+                
             }),
             /**
              * creates dictionaries mapping sample IDs onto clinical patient data
@@ -241,6 +306,7 @@ class RootStore {
                 })
             }),
 
+            
             /**
              * creates timepoint and sample structure
              */
@@ -281,6 +347,7 @@ class RootStore {
                 this.sampleStructure = sampleStructure;
                 this.timepointStructure = timepointStructure;
                 this.createEventAttributes(excludeDates);
+                
             }),
             /**
              * updates the timepoint structure after patients are moved up or down

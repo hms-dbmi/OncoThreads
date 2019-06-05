@@ -180,10 +180,11 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
      */
     createTimepointOptions() {
         let sampleOptions = [];
+        let self = this;
         this.props.rootStore.clinicalSampleCategories.filter((d) => !this.props.rootStore.dataStore.variableStores.sample.fullCurrentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div className="wordBreak" style={{textAlign: "left"}}
-                     key={d.variable}><b>{d.variable}</b>{": " + d.description}
+                     key={d.variable}><b>{d.variable}</b>{": " + d.description + ", variability: " + Number(self.props.rootStore.scoreStructure[d.id]).toPrecision(2)}
                 </div>);
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, profile: "clinSample"})
         });
