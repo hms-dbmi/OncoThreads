@@ -26,6 +26,11 @@ class RootStore {
         this.initialVariable = {}; // initial variable saved for reset
 
         this.scoreStructure = {};
+
+        //this.scoreStructureTimeLine = {};
+
+        this.TimeLineVariability={};
+
         this.timeDistanceId = uuidv4(); // random id for time distance variable
 
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"]; // possible variable types of mutation data
@@ -180,7 +185,7 @@ class RootStore {
                 var iK= Object.keys(SM)[i],
                 iV= Object.values(SM)[i];
                 
-                var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id==iK) return d})[0].datatype;
+                var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
 
                 if(dType==="STRING"){
                     var all_vals=Object.values(iV);
@@ -211,8 +216,8 @@ class RootStore {
 
                 }
                 else if(dType==="NUMBER"){
-                    var all_vals=Object.values(iV);
-                    var unique_vals=[...new Set(all_vals)];
+                    all_vals=Object.values(iV);
+                    unique_vals=[...new Set(all_vals)];
 
                     //var total_val=unique_vals.length;
                     
@@ -224,10 +229,10 @@ class RootStore {
 
                     console.log("for " +iK +": score = ");
                     
-                    for(var j=0; j<Object.keys(ST).length; j++){
+                    for( j=0; j<Object.keys(ST).length; j++){
                         //console.log(Object.keys(ST)[j]);
                         
-                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
+                        for( k=0; k<Object.values(ST)[j].length-1; k++){
                             //console.log(Object.values(ST)[j][k]);
                             if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
                                 
@@ -253,6 +258,140 @@ class RootStore {
             console.log(this.scoreStructure);
 
         }),
+
+
+        calculateVScoreWithinTimeLine: action(() => {
+
+
+            var SM= this.staticMappers;
+
+            var ST=this.sampleStructure;
+
+            let self=this;
+
+            
+
+            //let scoreStructure = {};
+            //var m=0;
+            for(var i=1; i<Object.keys(SM).length; i++){
+            //for(var i=1; i<2; i++){    
+                var iK= Object.keys(SM)[i],
+                iV= Object.values(SM)[i];
+                
+                this.TimeLineVariability[iK]={};
+
+                var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
+
+                if(dType==="STRING"){
+                    /*var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
+
+                    var total_val=unique_vals.length;
+                    
+                    console.log("num of values: " + total_val);
+
+                    console.log("for " +iK +": score = ");
+                    
+                    for(var j=0; j<Object.keys(ST).length; j++){
+                        //console.log(Object.keys(ST)[j]);
+                        
+                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
+                            //console.log(Object.values(ST)[j][k]);
+                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
+                                //console.log(Object.values(ST)[j][k]);
+                                //console.log(iV[Object.values(ST)[j][k]]);
+                                //console.log(iV[Object.values(ST)[j][k+1]]);
+                                m++;
+                            }
+                        }
+                        
+                    }
+                    
+                    m=m/total_val;*/
+
+
+
+                    var samples=Object.values(ST);
+
+                    var sample_length=samples.map(function(d){return d.length});
+                    
+
+                    var max_sample=Math.max(...sample_length);
+
+                    for(i=0; i<max_sample; i++){
+
+                        var r=[];
+
+                        samples.map(function(d){if(d[i]) r.push(d[i])});                 
+
+                        
+
+                        var set1 = new Set();
+
+                        for(var j=0; j<r.length; j++){
+                            set1.add(iV[r[j]]);
+                        }
+                        
+                        //console.log(set1);
+
+
+                        this.TimeLineVariability[iK][i]=set1.size/r.length;
+                        
+
+                    }
+
+                   
+
+
+
+                }
+                /*else if(dType==="NUMBER"){
+                    all_vals=Object.values(iV);
+                    unique_vals=[...new Set(all_vals)];
+
+                    //var total_val=unique_vals.length;
+                    
+                    var range_val= Math.max(...all_vals)-Math.min(...all_vals) + 1;
+
+                    console.log("range: " + range_val);
+
+                    //if(range_val===0) range_val=1;
+
+                    console.log("for " +iK +": score = ");
+                    
+                    for( j=0; j<Object.keys(ST).length; j++){
+                        //console.log(Object.keys(ST)[j]);
+                        
+                        for( k=0; k<Object.values(ST)[j].length-1; k++){
+                            //console.log(Object.values(ST)[j][k]);
+                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
+                                
+                                m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
+
+                            }
+                        }
+                        
+                    }
+                    
+                    m=m/range_val;
+
+                }*/
+                
+                //console.log(m);
+
+                //this.scoreStructureTimeLine[iK]=m;
+
+
+               // m=0;
+            }
+
+            //console.log(this.scoreStructureTimeLine);
+
+            console.log(this.TimeLineVariability);
+
+        }),
+
+
             /**
              *  gets variable data and sets parameters
              *  @param {loadFinishedCallback} callback
@@ -315,6 +454,8 @@ class RootStore {
                 });
 
                 this.calculateVScore();
+
+                this.calculateVScoreWithinTimeLine();
                 
             }),
             /**
