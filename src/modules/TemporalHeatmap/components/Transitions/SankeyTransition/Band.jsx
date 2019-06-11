@@ -1,10 +1,10 @@
 import React from 'react';
 import * as d3 from 'd3';
-import {observer,inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 /*
 implements a Band for Sankey Transition
  */
-const Band = inject("dataStore","visStore")(observer(class Band extends React.Component {
+const Band = inject("dataStore", "visStore")(observer(class Band extends React.Component {
 
     /**
      * creates the partition names for the tooltip: adapts the partition names of the primary variables
@@ -64,16 +64,16 @@ const Band = inject("dataStore","visStore")(observer(class Band extends React.Co
         const source = Band.getTooltipPartitionName(this.props.firstPrimary, this.props.firstPartition);
         const target = Band.getTooltipPartitionName(this.props.secondPrimary, this.props.secondPartition);
         const selectedWidth = this.getSelectedWidth();
-        const y0 = this.props.visStore.gap + this.props.visStore.helperRectHeight,
-            y1 = this.props.visStore.transitionSpace - this.props.visStore.gap * 2 - this.props.visStore.helperRectHeight;
+        const y0 = this.props.visStore.gap + this.props.visStore.colorRectHeight + this.props.visStore.bandRectHeight,
+            y1 = this.props.visStore.transitionSpace - this.props.visStore.gap * 2 - this.props.visStore.colorRectHeight - this.props.visStore.bandRectHeight;
         let selected = null;
         if (selectedWidth !== 0) {
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
-                             stroke={"#cccccc"} fill={"#b7b7b7"} opacity={0.5}/>
+                              fill={"#afafaf"} opacity={0.5}/>
         }
         let notSelected = <path
             d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
-            stroke={"#cccccc"} fill={"#dddddd"} opacity={0.5}/>;
+            fill={"#dddddd"} opacity={0.5}/>;
         return (
             <g onMouseEnter={(e) => this.props.showTooltip(e, source + " -> " + target + ": " + this.props.patients.length)}
                onMouseLeave={this.props.hideTooltip}>

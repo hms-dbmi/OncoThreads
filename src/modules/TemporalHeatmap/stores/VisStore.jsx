@@ -14,7 +14,8 @@ class VisStore {
         this.gap = 1;
         //space for transitions
         //gap between partitions in grouped timepoints
-        this.helperRectHeight = 2;
+        this.colorRectHeight = 2;
+        this.bandRectHeight=10;
         this.partitionGap = 10;
         this.svgWidth = 700;
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
