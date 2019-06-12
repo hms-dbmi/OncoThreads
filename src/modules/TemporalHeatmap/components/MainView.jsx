@@ -2,6 +2,7 @@ import React from 'react';
 import {inject, observer, Provider} from 'mobx-react';
 import {Button, Col, Grid, Row, Tab, Tabs} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
+import {Pane, SortablePane} from 'react-sortable-pane';
 
 
 import RowOperators from "./RowOperators/RowOperators"
@@ -17,6 +18,7 @@ import TimeAssign from "./PlotLabeling/TimeAssign";
 import TimepointLabels from "./PlotLabeling/TimepointLabels";
 import GlobalTimeline from "./GlobalTimeline";
 import BlockView from "./BlockView";
+import {extendObservable, reaction} from "mobx";
 
 /**
  * Component containing the main visualization
@@ -28,9 +30,55 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
         this.handleSwitchView = this.handleSwitchView.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
-        this.state = {
+        this.updateDimensions = this.updateDimensions.bind(this);
+        extendObservable(this, {
             highlightedVariable: '', // variableId of currently highlighted variable
-        }
+            order: ['labels', 'operators', 'view', 'legend'],
+            panes: {
+                'labels': {width: (window.innerWidth - 33) / 10, active: false},
+                'operators': {width: (window.innerWidth - 33) / 10, active: false},
+                'view': {width: ((window.innerWidth - 33) / 10) * 7, active: false},
+                'legend': {width: (window.innerWidth - 33) / 10, active: false}
+            },
+            active: {
+                labels: false,
+                operators: false,
+                view: false,
+                legend: false
+            }
+        });
+        reaction(() => this.panes.view.width, width => {
+            this.props.rootStore.visStore.setPlotWidth(width - 10)
+        })
+    }
+
+    /**
+     * Add event listener
+     */
+    componentDidMount() {
+        this.updateDimensions();
+        this.props.rootStore.visStore.setPlotWidth(this.panes.view.width - 10);
+        window.addEventListener("resize", this.updateDimensions);
+    }
+
+    /**
+     * Remove event listener
+     */
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateDimensions);
+
+    }
+
+    updateDimensions() {
+        const prevWidth = Object.values(this.panes).map(d => d.width).reduce((a, b) =>
+            a + b);
+        this.panes = {
+            'labels': {width: (window.innerWidth - 33) / (prevWidth / this.panes.labels.width)},
+            'operators': {width: (window.innerWidth - 33) / (prevWidth / this.panes.operators.width)},
+            'view': {width: (window.innerWidth - 33) / (prevWidth / this.panes.view.width)},
+            'legend': {width: (window.innerWidth - 33) / (prevWidth / this.panes.legend.width)}
+        };
+
     }
 
     /**
@@ -38,14 +86,14 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
      * @param {string} newHighlighted
      */
     setHighlightedVariable(newHighlighted) {
-        this.setState({highlightedVariable: newHighlighted});
+        this.highlightedVariable = newHighlighted;
     }
 
     /**
      * removes the highlighted variable
      */
     removeHighlightedVariable() {
-        this.setState({highlightedVariable: ''});
+        this.highlightedVariable = '';
     }
 
     /**
@@ -85,31 +133,62 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
                         </Button>
                     </Row>
                     <Row>
-                        <Col lg={1} md={1} xs={1} style={{padding: 0}}>
-                            <Provider dataStore={this.props.rootStore.dataStore}
-                                      visStore={this.props.rootStore.visStore}>
-                                <TimepointLabels{...this.props.tooltipFunctions}/>
-                            </Provider>
-                        </Col>
-                        <Col lg={2} xs={2} md={2} style={{padding: 0, marginTop: 20}}>
-                            <RowOperators highlightedVariable={this.state.highlightedVariable}
-                                          setHighlightedVariable={this.setHighlightedVariable}
-                                          removeHighlightedVariable={this.removeHighlightedVariable}
-                                          tooltipFunctions={this.props.tooltipFunctions}
-                                          showContextMenu={this.props.showContextMenu}
-                                          openBinningModal={this.props.openBinningModal}/>
-
-                        </Col>
-                        <Col lg={8} xs={7} md={7} style={{padding: 0, marginTop: 20}}>
-                            <BlockView showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                       tooltipFunctions={this.props.tooltipFunctions}/>
-                        </Col>
-                        <Col lg={1} xs={2} md={2} style={{padding: 0, marginTop: 20}}>
-                            <Legend highlightedVariable={this.state.highlightedVariable}
-                                    setHighlightedVariable={this.setHighlightedVariable}
-                                    removeHighlightedVariable={this.removeHighlightedVariable}
-                                    {...this.props.tooltipFunctions}/>
-                        </Col>
+                        <SortablePane direction="horizontal"
+                                      margin={10}
+                                      order={this.order}
+                                      disableEffect={true}
+                                      onOrderChange={order => {
+                                          this.order = order;
+                                      }}
+                                      onResizeStop={(e, key, dir, ref, d) => {
+                                          this.panes = {
+                                              ...this.panes,
+                                              [key]: {width: this.panes[key].width + d.width},
+                                              [this.order[this.order.length - 1]]: {width: this.panes[this.order[this.order.length - 1]].width - d.width}
+                                          };
+                                      }}
+                                      onDragStart={(e, key) => {
+                                          if (e.target.tagName === "svg") {
+                                              this.active[key] = true;
+                                          }
+                                      }}
+                                      onDragStop={(e, key) => {
+                                          this.active[key] = false;
+                                      }}>
+                            <Pane className={this.active.labels ? "pane-active" : "pane-inactive"} key={"labels"}
+                                  size={{width: this.panes.labels.width}}>
+                                <Provider dataStore={this.props.rootStore.dataStore}
+                                          visStore={this.props.rootStore.visStore}>
+                                    <TimepointLabels{...this.props.tooltipFunctions}
+                                                    width={this.panes.labels.width - 10}/>
+                                </Provider>
+                            </Pane>
+                            <Pane className={this.active.operators ? "pane-active" : "pane-inactive"}
+                                  key={"operators"}
+                                  size={{width: this.panes.operators.width}} style={{paddingTop: 20}}>
+                                <RowOperators highlightedVariable={this.highlightedVariable}
+                                              width={this.panes.operators.width - 10}
+                                              setHighlightedVariable={this.setHighlightedVariable}
+                                              removeHighlightedVariable={this.removeHighlightedVariable}
+                                              tooltipFunctions={this.props.tooltipFunctions}
+                                              showContextMenu={this.props.showContextMenu}
+                                              openBinningModal={this.props.openBinningModal}/>
+                            </Pane>
+                            <Pane className={this.active.view ? "pane-active" : "pane-inactive"} key={"view"}
+                                  size={{width: this.panes.view.width}}
+                                  style={{paddingTop: 20}}>
+                                <BlockView showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                                           tooltipFunctions={this.props.tooltipFunctions}/>
+                            </Pane>
+                            <Pane className={this.active.legend ? "pane-active" : "pane-inactive"} key={"legend"}
+                                  size={{width: this.panes.legend.width}}
+                                  style={{paddingTop: 20}}>
+                                <Legend highlightedVariable={this.highlightedVariable}
+                                        setHighlightedVariable={this.setHighlightedVariable}
+                                        removeHighlightedVariable={this.removeHighlightedVariable}
+                                        {...this.props.tooltipFunctions}/>
+                            </Pane>
+                        </SortablePane>
                     </Row>
                 </div>
                 <form id="svgform" method="post">

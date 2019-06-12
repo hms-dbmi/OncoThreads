@@ -5,7 +5,7 @@ import Band from './Band'
 /**
  * Component for a transition between grouped timepoints ("Sankey Transition")
  */
-const SankeyTransition = inject("dataStore", "visStore")(observer(class SankeyTransition extends React.Component {
+const SankeyTransition = inject("dataStore", "visStore", "uiStore")(observer(class SankeyTransition extends React.Component {
 
     /**
      * draws a small rectangle to repeat the color of a partition with the primary Variable
@@ -32,10 +32,12 @@ const SankeyTransition = inject("dataStore", "visStore")(observer(class SankeyTr
         let sourcePartitionPos = 0;
         this.props.firstGrouped.forEach((sourcePartition, i) => {
             let currXsource = sourcePartitionPos;
-            rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, this.props.visStore.gap, this.props.visStore.groupScale(sourcePartition.patients.length), this.props.visStore.helperRectHeight, this.props.firstPrimary.colorScale(sourcePartition.partition), sourcePartition.partition + "source"));
+            if (!this.props.uiStore.horizontalStacking) {
+                rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, this.props.visStore.gap, this.props.visStore.groupScale(sourcePartition.patients.length), this.props.visStore.helperRectHeight, this.props.firstPrimary.colorScale(sourcePartition.partition), sourcePartition.partition + "source"));
+            }
             let targetPartitionPos = 0;
             this.props.secondGrouped.forEach(targetPartition => {
-                if (i === 0) {
+                if (i === 0 && !this.props.uiStore.horizontalStacking) {
                     rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visStore.transitionSpace - this.props.visStore.helperRectHeight - this.props.visStore.gap, this.props.visStore.groupScale(targetPartition.patients.length), this.props.visStore.helperRectHeight, this.props.secondPrimary.colorScale(targetPartition.partition), targetPartition.partition + "target"));
                 }
                 let patientIntersection = sourcePartition.patients.filter(patient => targetPartition.patients.includes(patient));

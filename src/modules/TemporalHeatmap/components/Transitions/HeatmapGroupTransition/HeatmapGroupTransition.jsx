@@ -5,7 +5,7 @@ import TriangleCurve from './TriangleCurve'
 /**
  * Component for creating transitions between heatmap and grouped timepoints
  */
-const HeatmapGroupTransition = inject("dataStore","visStore")(observer(class HeatmapGroupTransition extends React.Component {
+const HeatmapGroupTransition = inject("dataStore","visStore","uiStore")(observer(class HeatmapGroupTransition extends React.Component {
     /**
      * draws a small rectangle to repeat the color of a partition with the primary Variable
      * @param {number} x - position
@@ -33,7 +33,9 @@ const HeatmapGroupTransition = inject("dataStore","visStore")(observer(class Hea
         let sourcePartitionPos = 0;
         this.props.partitions.forEach((currentPartition)=> {
             let currXsource = sourcePartitionPos;
-            rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, this.props.visStore.groupScale(currentPartition.patients.length), this.props.visStore.helperRectHeight, this.props.colorScale(currentPartition.partition), currentPartition.partition));
+            if(!this.props.uiStore.horizontalStacking) {
+                rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, recty, this.props.visStore.groupScale(currentPartition.patients.length), this.props.visStore.helperRectHeight, this.props.colorScale(currentPartition.partition), currentPartition.partition));
+            }
             const sharedPatients=currentPartition.patients.filter(patient => this.props.nonGrouped.patients.includes(patient));
             let transitionPatients = this.sortTransitionPatients(sharedPatients, this.props.heatmapScale);
             if (transitionPatients.length !== 0) {

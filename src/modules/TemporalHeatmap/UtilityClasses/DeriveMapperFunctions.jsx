@@ -103,7 +103,7 @@ class DerivedMapperFunctions {
                                 }
                             })
                         }
-                        else result ="none";
+                        else result = "none";
                         newMapper[entry] = result;
                     }
                 }
@@ -118,6 +118,79 @@ class DerivedMapperFunctions {
                 }
                 newMapper[entry] = containedInAll;
             }
+        }
+        return newMapper;
+    }
+
+    /**
+     * creates mapper for combining binary variables
+     * @param {Object[]} mappers
+     */
+    static createCategoryCombinedMapper(mappers) {
+        let newMapper = {};
+        for (let entry in mappers[0]) {
+            let values = mappers.map(mapper => {
+                if (mapper[entry] !== undefined) {
+                    return mapper[entry]
+                }
+                else {
+                    return "undefined";
+                }
+            });
+            if (values.filter(d => d === undefined).length === values.length) {
+                newMapper[entry] = undefined;
+            }
+            else {
+                newMapper[entry] = values.toString();
+            }
+        }
+        return newMapper;
+    }
+
+    static createContinuousCombinedMapper(mappers, operation) {
+        let newMapper = {};
+        switch (operation) {
+            case "average":
+                for (let entry in mappers[0]) {
+                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
+                    newMapper[entry] = filteredValues.reduce((a, b) => a + b) / filteredValues.length
+                }
+                break;
+            case "median":
+                for (let entry in mappers[0]) {
+                    let sortedValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined).sort((a, b) => a - b);
+                    if (sortedValues.length % 2) {
+                        newMapper[entry] = sortedValues[(sortedValues.length - 1) / 2];
+                    }
+                    else {
+                        newMapper[entry] = (sortedValues[sortedValues.length / 2 - 1] + sortedValues[sortedValues.length / 2]) / 2;
+                    }
+                }
+                break;
+            case "sum":
+                for (let entry in mappers[0]) {
+                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
+                    newMapper[entry] = filteredValues.reduce((a, b) => a+ b)
+                }
+                break;
+            case "max":
+                for (let entry in mappers[0]) {
+                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
+                    newMapper[entry] = Math.max(...filteredValues);
+                }
+                break;
+            case "min":
+                for (let entry in mappers[0]) {
+                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
+                    newMapper[entry] = Math.min(...filteredValues);
+                }
+                break;
+            default:
+                for (let entry in mappers[0]) {
+                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
+                    newMapper[entry] = filteredValues.reduce((a, b) => Math.abs(a - b));
+                }
+
         }
         return newMapper;
     }

@@ -20,6 +20,7 @@ class VariableManagerStore {
         this.referencedVariables = UndoRedoStore.deserializeReferencedVariables(referencedVariables);
         this.primaryVariables = primaryVariables;
         this.savedReferences = savedReferences;
+        this.log=[];
         extendObservable(this, {
             //List of ids of currently displayed variables and if they are new and/or selected
             currentVariables: currentVariables.map(d => {
@@ -36,7 +37,7 @@ class VariableManagerStore {
                 if (this.primaryVariables.includes(variableId)) {
                     this.primaryVariables.forEach((d, i) => {
                         if (d === variableId) {
-                            this.primaryVariables[i] = "";
+                            this.primaryVariables[i] = this.currentVariables[0].id;
                         }
                     })
                 }
@@ -250,7 +251,6 @@ class VariableManagerStore {
          * removes a variable from current variables
          * @param {string} variableId
          */
-
         observe(this.currentVariables, () => {
             this.updateReferences();
         });
@@ -376,7 +376,7 @@ class VariableManagerStore {
 
 
     /**
-     * checks if the selected variables indices are a block (no not selected variable in between)
+     * checks if the selected variables indices are a block (not selected variable in between)
      * @param {number[]} array
      * @returns {boolean}
      */

@@ -9,44 +9,45 @@ import ContinuousRow from "./ContinuousRow";
  */
 const GroupPartition = inject("dataStore", "visStore","uiStore")(observer(class GroupPartition extends React.Component {
     createPartition() {
-        const _self = this;
         let previousYposition = 0;
         let rows = [];
-        this.props.partition.rows.forEach(function (d, i) {
-            if (!_self.props.heatmap[i].isUndef || _self.props.uiStore.showUndefined || d.variable === _self.props.primaryVariableId) {
-                const color = _self.props.currentVariables[i].colorScale;
+        this.props.partition.rows.forEach((d, i)=> {
+            if (!this.props.heatmap[i].isUndef || this.props.uiStore.showUndefined || d.variable === this.props.primaryVariableId) {
+                const color = this.props.currentVariables[i].colorScale;
                 let height = 0;
                 let opacity = 1;
                 let stroke = "none";
                 const transform = "translate(0," + previousYposition + ")";
-                if (_self.props.primaryVariableId === d.variable) {
-                    height = _self.props.visStore.primaryHeight;
-                    stroke = _self.props.stroke;
+                if (this.props.primaryVariableId === d.variable) {
+                    height = this.props.visStore.primaryHeight;
+                    stroke = this.props.stroke;
                 }
                 else {
-                    height = _self.props.visStore.secondaryHeight;
+                    height = this.props.visStore.secondaryHeight;
                     opacity = 0.5;
                 }
                 // create different types of rows depending on the variables datatype
-                if (_self.props.currentVariables[i].datatype === "NUMBER") {
+                if (this.props.currentVariables[i].datatype === "NUMBER") {
                     rows.push(<g key={d.variable} transform={transform}><ContinuousRow row={d.counts}
                                                                                        height={height}
                                                                                        opacity={opacity} color={color}
                                                                                        stroke={stroke}
-                                                                                       variableDomain={_self.props.currentVariables[i].domain}
-                                                                                       {..._self.props.tooltipFunctions}/>
+                                                                                       variableDomain={this.props.currentVariables[i].domain}
+                                                                                       {...this.props.tooltipFunctions}/>
                     </g>);
                 }
                 else {
                     rows.push(<g key={d.variable} transform={transform}><CategoricalRow row={d.counts}
+                                                                                        patients={this.props.partition.patients}
                                                                                         height={height}
                                                                                         opacity={opacity}
                                                                                         color={color}
                                                                                         stroke={stroke}
-                                                                                        {..._self.props.tooltipFunctions}/>
+                                                                                        isEven={i%2===0}
+                                                                                        {...this.props.tooltipFunctions}/>
                     </g>);
                 }
-                previousYposition += height + _self.props.visStore.gap;
+                previousYposition += height + this.props.visStore.gap;
             }
 
         });

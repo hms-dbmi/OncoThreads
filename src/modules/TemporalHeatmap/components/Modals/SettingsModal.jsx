@@ -1,6 +1,6 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
-import {Button, Modal,Radio,FormGroup} from 'react-bootstrap';
+import {inject, observer} from 'mobx-react';
+import {Button, FormGroup, Modal, Radio} from 'react-bootstrap';
 
 /**
  * Modal for choosing settings of the visualization
@@ -76,6 +76,44 @@ const SettingsModal = inject("uiStore")(observer(class SettingsModal extends Rea
                                 No
                             </Radio>{' '}
 
+                        </FormGroup>
+                    </form>
+                    <form>
+                        <FormGroup>
+                            <h5>Experimental: Slanted Lines</h5>
+                            <Radio checked={this.props.uiStore.slantedLines === "singleDir"} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setSlantedLines('singleDir')}>
+                                One direction
+                            </Radio>{' '}
+                            <Radio checked={this.props.uiStore.slantedLines === "altWithin"} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setSlantedLines('altWithin')}>
+                                Alternating direction (within variable)
+                            </Radio>{' '}
+                            <Radio checked={this.props.uiStore.slantedLines === "altAcross"} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setSlantedLines('altAcross')}>
+                                Alternating direction (across variables )
+                            </Radio>
+                             <Radio checked={this.props.uiStore.slantedLines === "random"} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setSlantedLines('random')}>
+                                Random
+                            </Radio>
+                            <Radio checked={this.props.uiStore.slantedLines === "none"} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setSlantedLines('none')}>
+                                None
+                            </Radio>
+                        </FormGroup>
+                    </form>
+                    <form>
+                        <FormGroup>
+                            <h5>Experimental: Group Stacking</h5>
+                            <Radio checked={!this.props.uiStore.horizontalStacking} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setHorizontalStacking(false)}>
+                                Vertical
+                            </Radio>{' '}
+                            <Radio checked={this.props.uiStore.horizontalStacking} name="radioGroup" inline
+                                   onChange={() => this.props.uiStore.setHorizontalStacking(true)}>
+                                Horizontal
+                            </Radio>{' '}
                         </FormGroup>
                     </form>
                 </Modal.Body>

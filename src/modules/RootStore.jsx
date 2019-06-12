@@ -167,13 +167,18 @@ class RootStore {
                         this.createClinicalSampleMapping(data);
                         if (data.length !== 0) {
                             this.initialVariable = this.clinicalSampleCategories[0];
+                            this.initialVariable.source="clinSample";
                             this.variablesParsed = true;
                             this.firstLoad = false;
                         }
                         this.api.getClinicalPatientData(data => {
                             this.createClinicalPatientMappers(data);
                             if (data.length !== 0) {
-                                this.initialVariable = this.clinicalPatientCategories[0];
+                                if(!this.variablesParsed) {
+                                    this.initialVariable = this.clinicalPatientCategories[0];
+                                    this.initialVariable.source="clinPatient";
+
+                                }
                                 this.variablesParsed = true;
                                 this.firstLoad = false;
                             }
@@ -485,7 +490,7 @@ class RootStore {
      * adds variable in the beginning or after reset
      */
     addInitialVariable() {
-        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], "clinSample", "clinical"));
+        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, "clinical"));
         this.dataStore.globalPrimary = this.initialVariable.id;
     }
 
