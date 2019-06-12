@@ -8,10 +8,10 @@ import {observer} from 'mobx-react';
 const TriangleCurve = observer(class TriangleCurve extends React.Component {
     render() {
         let color = "#dddddd";
-        //let stroke = "#cccccc";
+        let stroke = "#cccccc";
         if (this.props.selectedPatients.includes(this.props.patient)) {
             color = "#afafaf";
-            //stroke = "#cccccc"
+            stroke = "#cccccc"
         }
         const curvature = .5;
         const yi = d3.interpolateNumber(this.props.y0, this.props.y1),
@@ -25,7 +25,7 @@ const TriangleCurve = observer(class TriangleCurve extends React.Component {
             + "C" + (this.props.x2) + "," + y3
             + " " + (this.props.x1) + "," + y2
             + " " + (this.props.x1) + "," + this.props.y0;
-        return (<path d={path} fill={color} opacity={0.5}/>)
+        return (<path d={path} fill={color} stroke={stroke} opacity={0.5}/>)
     }
 });
 export default TriangleCurve;

@@ -60,6 +60,21 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
             + "L" + x0 + "," + y0)
     }
 
+    static getOutlinePaths(x0, x1, y0, y1, width) {
+        const curvature = .5;
+        const yi = d3.interpolateNumber(y0, y1),
+            y2 = yi(curvature),
+            y3 = yi(1 - curvature);
+        return [("M" + x0 + "," + y0
+        + "C" + x0 + "," + y2
+        + " " + x1 + "," + y3
+        + " " + x1 + "," + y1),
+            ("M" + (x1 + width) + "," + y1
+            + "C" + (x1 + width) + "," + y3
+            + " " + (x0 + width) + "," + y2
+            + " " + (x0 + width) + "," + y0)]
+    }
+
     render() {
         const source = Band.getTooltipPartitionName(this.props.firstPrimary, this.props.firstPartition);
         const target = Band.getTooltipPartitionName(this.props.secondPrimary, this.props.secondPartition);
@@ -69,11 +84,12 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
         let selected = null;
         if (selectedWidth !== 0) {
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
-                              fill={"#afafaf"} opacity={0.5}/>
+                             fill={"#afafaf"} opacity={0.5}/>
         }
-        let notSelected = <path
+        const outlinePaths=Band.getOutlinePaths(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth);
+        let notSelected = [<path key={"band"}
             d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
-            fill={"#dddddd"} opacity={0.5}/>;
+            fill={"#dddddd"} opacity={0.5}/>,...outlinePaths.map((d,i)=><path key={"outline"+i} d={d} stroke={"#cccccc"} fill={"none"} opacity={0.5}/>)];
         return (
             <g onMouseEnter={(e) => this.props.showTooltip(e, source + " -> " + target + ": " + this.props.patients.length)}
                onMouseLeave={this.props.hideTooltip}>

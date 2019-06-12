@@ -1,6 +1,7 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
 import TriangleCurve from './TriangleCurve'
+import * as d3 from "d3";
 
 /**
  * Component for creating transitions between heatmap and grouped timepoints
@@ -8,17 +9,60 @@ import TriangleCurve from './TriangleCurve'
 const HeatmapGroupTransition = inject("dataStore", "visStore", "uiStore")(observer(class HeatmapGroupTransition extends React.Component {
     /**
      * draws a small rectangle to repeat the color of a partition with the primary Variable
-     * @param {number} x - position
-     * @param {number} y - position
-     * @param {number} width - width of rect
+     * @param {number} x - x position
+     * @param {number} y - y position
+     * @param {number} width - widthof rect
      * @param {number} height - height of rect
      * @param {string} color - color of rect
      * @param {string} key - (unique)
-     * @param opacity
+     * @param {number} opacity
+     * @param {boolean} hasStroke
      * @returns {rect}
      */
-    static drawHelperRect(x, y, width, height, color, key, opacity) {
-        return (<rect key={key} x={x} y={y} width={width} height={height} fill={color} opacity={opacity}/>)
+    static drawHelperRect(x, y, width, height, color, key, opacity, hasStroke) {
+        let stroke = "";
+        let strokeArray = "";
+        if (hasStroke) {
+            stroke = "#cccccc";
+            strokeArray = 0 + "," + width + "," + height + "," + width + "," + height;
+        }
+        return <rect key={key} x={x} y={y} width={width} height={height} fill={color} opacity={opacity} stroke={stroke}
+                     style={{strokeDasharray: strokeArray}}/>
+    }
+
+    drawHelperCurve(x, y, sharedWidth, width, height, color, key) {
+        const curvature = 1;
+        let y0, y1, y2, y3;
+        const yi = d3.interpolateNumber(y, y + height);
+        if (!this.props.inverse) {
+            y0 = y;
+            y1 = y + height;
+            y2 = yi(curvature);
+            y3 = yi(1 - curvature);
+        }
+        else {
+            y0 = y + height;
+            y1 = y;
+            y3 = yi(curvature);
+            y2 = yi(1 - curvature);
+        }
+        return <g key={key}>
+            <path d={"M" + x + "," + y0
+            + "L" + (x + width) + "," + y0
+            + "C" + (x + sharedWidth) + "," + y2
+            + " " + (x + sharedWidth) + "," + y3
+            + " " + (x + sharedWidth) + "," + y1
+            + "L" + x + "," + y1
+            + "L" + x + "," + y0} fill={color} opacity={0.5}/>
+            <path d={"M" + x + "," + y0
+            + "L" + (x + width) + "," + y0
+            + "C" + (x + sharedWidth) + "," + y2
+            + " " + (x + sharedWidth) + "," + y3
+            + " " + (x + sharedWidth) + "," + y1}
+                  fill={"none"} stroke={"#cccccc"} opacity={0.5}/>
+            <path d={"M" + x + "," + y1
+            + "L" + x + "," + y0} fill={"none"} stroke={"#cccccc"} opacity={0.5}/>
+        </g>
     }
 
     /**
@@ -35,17 +79,25 @@ const HeatmapGroupTransition = inject("dataStore", "visStore", "uiStore")(observ
         let sourcePartitionPos = 0;
         this.props.partitions.forEach((currentPartition) => {
             let currXsource = sourcePartitionPos;
-            const sharedPatients = currentPartition.patients.filter(patient => this.props.nonGrouped.patients.includes(patient));
-            let transitionPatients = this.sortTransitionPatients(sharedPatients, this.props.heatmapScale);
+            const transitionPatients = this.sortTransitionPatients(currentPartition.patients.filter(patient => this.props.nonGrouped.patients.includes(patient)),
+                this.props.heatmapScale);
             if (!this.props.uiStore.horizontalStacking) {
-                rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, colorRecty, this.props.visStore.groupScale(currentPartition.patients.length), this.props.visStore.colorRectHeight, this.props.colorScale(currentPartition.partition), currentPartition.partition, 1));
+                rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, colorRecty, this.props.visStore.groupScale(currentPartition.patients.length),
+                    this.props.visStore.colorRectHeight, this.props.colorScale(currentPartition.partition), currentPartition.partition, 1, false));
             }
-            if (sharedPatients.length > 0) {
+            if (transitionPatients.length > 0) {
                 let rectColor = "#dddddd";
-                if (sharedPatients.filter(patient => this.props.dataStore.selectedPatients.includes(patient)).length > 0) {
+                if (transitionPatients.filter(patient => this.props.dataStore.selectedPatients.includes(patient)).length > 0) {
                     rectColor = "#afafaf";
                 }
-                rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, bandRectY, this.props.visStore.groupScale(currentPartition.patients.length), this.props.visStore.bandRectHeight, rectColor, currentPartition.partition + "band", 0.5));
+                if (transitionPatients.length < currentPartition.patients.length) {
+                    rects.push(this.drawHelperCurve(sourcePartitionPos, bandRectY, this.props.visStore.groupScale(transitionPatients.length),
+                        this.props.visStore.groupScale(currentPartition.patients.length), this.props.visStore.bandRectHeight, rectColor, currentPartition.partition + "curve"));
+                }
+                else {
+                    rects.push(HeatmapGroupTransition.drawHelperRect(sourcePartitionPos, bandRectY, this.props.visStore.groupScale(currentPartition.patients.length),
+                        this.props.visStore.bandRectHeight, rectColor, currentPartition.partition + "band", 0.5, true));
+                }
             }
             if (transitionPatients.length !== 0) {
                 const transitionWidth = this.props.visStore.groupScale(currentPartition.patients.length) / currentPartition.patients.length;
