@@ -9,78 +9,78 @@ import * as d3 from "d3";
 const SankeyTransition = inject("dataStore", "visStore", "uiStore")(observer(class SankeyTransition extends React.Component {
 
     /**
-     * draws a small rectangle to repeat the color of a partition with the primary Variable
-     * @param {number} x - x position
-     * @param {number} y - y position
-     * @param {number} width - widthof rect
-     * @param {number} height - height of rect
-     * @param {string} color - color of rect
-     * @param {string} key - (unique)
-     * @param {number} opacity
-     * @param {boolean} hasStroke
-     * @returns {rect}
+     * draws a curve or rect for the band proxy
+     * @param {number} x
+     * @param {number} y
+     * @param {number} sharedWidth
+     * @param {number} width
+     * @param {number} height
+     * @param {string} color
+     * @param {boolean} inverse
+     * @param {string} key
+     * @return {path}
      */
-    static drawHelperRect(x, y, width, height, color, key, opacity, hasStroke) {
-        let stroke = "";
-        let strokeArray = "";
-        if (hasStroke) {
-            stroke = "#cccccc";
-            strokeArray = 0 + "," + width + "," + height + "," + width + "," + height;
-        }
-        return (<rect key={key} x={x} y={y} width={width} height={height} fill={color} opacity={opacity} stroke={stroke}
-                      style={{strokeDasharray: strokeArray}}/>)
-    }
-
-    static drawHelperCurve(x, y, sharedWidth, width, height, color,inverse) {
+    static drawBandProxy(x, y, sharedWidth, width, height, color, inverse, key) {
         const curvature = 1;
-       let y0, y1, y2, y3;
+        let y0, y1, y2, y3;
         const yi = d3.interpolateNumber(y, y + height);
-        if (!inverse) {
-            y0 = y;
-            y1 = y + height;
-            y2 = yi(curvature);
-            y3 = yi(1 - curvature);
+        if (sharedWidth < width) {
+            if (!inverse) {
+                y0 = y;
+                y1 = y + height;
+                y2 = yi(curvature);
+                y3 = yi(1 - curvature);
+            }
+            else {
+                y0 = y + height;
+                y1 = y;
+                y3 = yi(curvature);
+                y2 = yi(1 - curvature);
+            }
+            return <g key={key}>
+                <path d={"M" + x + "," + y0
+                + "L" + (x + width) + "," + y0
+                + "C" + (x + sharedWidth) + "," + y2
+                + " " + (x + sharedWidth) + "," + y3
+                + " " + (x + sharedWidth) + "," + y1
+                + "L" + x + "," + y1
+                + "L" + x + "," + y0} fill={color} opacity={0.5}/>
+                <path d={"M" + x + "," + y0
+                + "L" + (x + width) + "," + y0
+                + "C" + (x + sharedWidth) + "," + y2
+                + " " + (x + sharedWidth) + "," + y3
+                + " " + (x + sharedWidth) + "," + y1}
+                      fill={"none"} stroke={"#cccccc"} opacity={0.5}/>
+                <path d={"M" + x + "," + y1
+                + "L" + x + "," + y0} fill={"none"} stroke={"#cccccc"} opacity={0.5}/>
+            </g>
         }
         else {
-            y0 = y + height;
-            y1 = y;
-            y3 = yi(curvature);
-            y2 = yi(1 - curvature);
+            return <rect key={key} x={x} y={y} width={width} height={height} fill={color} opacity={0.5}
+                         stroke={"#cccccc"}
+                         style={{strokeDasharray: 0 + "," + width + "," + height + "," + width + "," + height}}/>
         }
-        return <g>
-            <path d={"M" + x + "," + y0
-            + "L" + (x + width) + "," + y0
-            + "C" + (x + sharedWidth) + "," + y2
-            + " " + (x + sharedWidth) + "," + y3
-            + " " + (x + sharedWidth) + "," + y1
-            + "L" + x + "," + y1
-            + "L" + x + "," + y0} fill={color} opacity={0.5}/>
-            <path d={"M" + x + "," + y0
-            + "L" + (x + width) + "," + y0
-            + "C" + (x + sharedWidth) + "," + y2
-            + " " + (x + sharedWidth) + "," + y3
-            + " " + (x + sharedWidth) + "," + y1}
-                  fill={"none"} stroke={"#cccccc"} opacity={0.5}/>
-            <path d={"M" + x + "," + y1
-            + "L" + x + "," + y0} fill={"none"} stroke={"#cccccc"} opacity={0.5}/>
-        </g>
     }
 
     /**
      * draws transitions between all partitions of the first and the second timepoint
-     * @returns {(rect|Band)[]}
+     * @returns {*[]}
      */
     drawTransitions() {
         let transitions = [];
-        let rects = [];
+        let proxies = [];
         let currXtarget = {};
         let sourcePartitionPos = 0;
         let allSourcePatients = [].concat(...this.props.firstGrouped.map(d => d.patients));
         this.props.firstGrouped.forEach((sourcePartition, i) => {
                 let currXsource = sourcePartitionPos;
                 if (!this.props.uiStore.horizontalStacking) {
-                    rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, this.props.visStore.gap, this.props.visStore.groupScale(sourcePartition.patients.length),
-                        this.props.visStore.colorRectHeight, this.props.firstPrimary.colorScale(sourcePartition.partition), sourcePartition.partition + "source", 1, false));
+                    proxies.push(<rect key={sourcePartition.partition + "source"}
+                                     x={sourcePartitionPos}
+                                     y={this.props.visStore.gap}
+                                     width={this.props.visStore.groupScale(sourcePartition.patients.length)}
+                                     height={this.props.visStore.colorRectHeight}
+                                     fill={this.props.firstPrimary.colorScale(sourcePartition.partition)}/>);
                 }
                 let rectColor = "#dddddd";
                 if (sourcePartition.patients.filter(patient => this.props.dataStore.selectedPatients.includes(patient)).length > 0) {
@@ -91,31 +91,26 @@ const SankeyTransition = inject("dataStore", "visStore", "uiStore")(observer(cla
                 this.props.secondGrouped.forEach(targetPartition => {
                     if (i === 0) {
                         if (!this.props.uiStore.horizontalStacking) {
-                            rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight - this.props.visStore.gap,
-                                this.props.visStore.groupScale(targetPartition.patients.length), this.props.visStore.colorRectHeight, this.props.secondPrimary.colorScale(targetPartition.partition),
-                                targetPartition.partition + "target", 1, false));
+                            proxies.push(<rect key={targetPartition.partition + "target"}
+                                             x={targetPartitionPos}
+                                             y={this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight - this.props.visStore.gap}
+                                             width={this.props.visStore.groupScale(targetPartition.patients.length)}
+                                             height={this.props.visStore.colorRectHeight}
+                                             fill={this.props.secondPrimary.colorScale(targetPartition.partition)}/>)
                         }
                         let rectColor = "#dddddd";
                         if (targetPartition.patients.filter(patient => this.props.dataStore.selectedPatients.includes(patient)).length > 0) {
                             rectColor = "#afafaf";
                         }
                         const shared = targetPartition.patients.filter(patient => allSourcePatients.includes(patient));
-                        if (shared.length < targetPartition.patients.length) {
-                            if (shared.length > 0) {
-                                rects.push(SankeyTransition.drawHelperCurve(targetPartitionPos,
-                                    this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight -
-                                    this.props.visStore.gap * 2 - this.props.visStore.bandRectHeight,
-                                    this.props.visStore.groupScale(shared.length), this.props.visStore.groupScale(targetPartition.patients.length),
-                                    this.props.visStore.bandRectHeight, rectColor,true));
-                            }
-                        }
-                        else{
-                            rects.push(SankeyTransition.drawHelperRect(targetPartitionPos, this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight -
-                                this.props.visStore.gap * 2 - this.props.visStore.bandRectHeight, this.props.visStore.groupScale(shared.length),
-                                this.props.visStore.bandRectHeight, rectColor, targetPartition.partition + "targetBand", 0.5, true));
+                        if (shared.length > 0) {
+                            proxies.push(SankeyTransition.drawBandProxy(targetPartitionPos,
+                                this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight -
+                                this.props.visStore.gap * 2 - this.props.visStore.bandRectHeight,
+                                this.props.visStore.groupScale(shared.length), this.props.visStore.groupScale(targetPartition.patients.length),
+                                this.props.visStore.bandRectHeight, rectColor, true, targetPartition.partition + "targetBand"));
                         }
                     }
-
                     let patientIntersection = sourcePartition.patients.filter(patient => targetPartition.patients.includes(patient));
                     allTargetPatients.push(...patientIntersection);
                     if (!(targetPartition.partition in currXtarget)) {
@@ -140,21 +135,15 @@ const SankeyTransition = inject("dataStore", "visStore", "uiStore")(observer(cla
                     }
                     targetPartitionPos += this.props.visStore.groupScale(targetPartition.patients.length) + this.props.visStore.partitionGap;
                 });
-                if (sourcePartition.patients.length > allTargetPatients.length) {
-                    if (allTargetPatients.length > 0) {
-                        rects.push(SankeyTransition.drawHelperCurve(sourcePartitionPos, this.props.visStore.gap + this.props.visStore.colorRectHeight,
-                            this.props.visStore.groupScale(allTargetPatients.length), this.props.visStore.groupScale(sourcePartition.patients.length), this.props.visStore.bandRectHeight, rectColor,false));
-                    }
-                }
-                else {
-                    rects.push(SankeyTransition.drawHelperRect(sourcePartitionPos, this.props.visStore.gap + this.props.visStore.colorRectHeight,
-                        this.props.visStore.groupScale(sourcePartition.patients.length), this.props.visStore.bandRectHeight, rectColor,
-                        sourcePartition.partition + "sourceBand", 0.5, true));
+                if (allTargetPatients.length > 0) {
+                    proxies.push(SankeyTransition.drawBandProxy(sourcePartitionPos, this.props.visStore.gap + this.props.visStore.colorRectHeight,
+                        this.props.visStore.groupScale(allTargetPatients.length), this.props.visStore.groupScale(sourcePartition.patients.length),
+                        this.props.visStore.bandRectHeight, rectColor, false, sourcePartition.partition + "sourceBand"));
                 }
                 sourcePartitionPos += this.props.visStore.groupScale(sourcePartition.patients.length) + this.props.visStore.partitionGap;
             }
         );
-        return [transitions, rects];
+        return [transitions, proxies];
     }
 
 

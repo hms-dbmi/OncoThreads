@@ -43,6 +43,11 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
 
     /**
      * gets the path for a band
+     * @param {number} x0
+     * @param {number} x1
+     * @param {number} y0
+     * @param {number} y1
+     * @param {number} width
      */
     static getPath(x0, x1, y0, y1, width) {
         const curvature = .5;
@@ -60,19 +65,30 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
             + "L" + x0 + "," + y0)
     }
 
+    /**
+     * gets the paths for the outline of a band
+     * @param {number} x0
+     * @param {number} x1
+     * @param {number} y0
+     * @param {number} y1
+     * @param {number} width
+     * @return {*[]}
+     */
     static getOutlinePaths(x0, x1, y0, y1, width) {
         const curvature = .5;
         const yi = d3.interpolateNumber(y0, y1),
             y2 = yi(curvature),
             y3 = yi(1 - curvature);
-        return [("M" + x0 + "," + y0
-        + "C" + x0 + "," + y2
-        + " " + x1 + "," + y3
-        + " " + x1 + "," + y1),
-            ("M" + (x1 + width) + "," + y1
+        return <g>
+            <path d={"M" + x0 + "," + y0
+            + "C" + x0 + "," + y2
+            + " " + x1 + "," + y3
+            + " " + x1 + "," + y1} stroke={"#cccccc"} fill={"none"} opacity={0.5}/>
+            <path d={"M" + (x1 + width) + "," + y1
             + "C" + (x1 + width) + "," + y3
             + " " + (x0 + width) + "," + y2
-            + " " + (x0 + width) + "," + y0)]
+            + " " + (x0 + width) + "," + y0} stroke={"#cccccc"} fill={"none"} opacity={0.5}/>
+        </g>
     }
 
     render() {
@@ -86,10 +102,11 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
                              fill={"#afafaf"} opacity={0.5}/>
         }
-        const outlinePaths=Band.getOutlinePaths(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth);
-        let notSelected = [<path key={"band"}
-            d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
-            fill={"#dddddd"} opacity={0.5}/>,...outlinePaths.map((d,i)=><path key={"outline"+i} d={d} stroke={"#cccccc"} fill={"none"} opacity={0.5}/>)];
+        let notSelected = <g>
+            <path key={"band"}
+                  d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
+                  fill={"#dddddd"} opacity={0.5}/>
+            {Band.getOutlinePaths(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}</g>;
         return (
             <g onMouseEnter={(e) => this.props.showTooltip(e, source + " -> " + target + ": " + this.props.patients.length)}
                onMouseLeave={this.props.hideTooltip}>
