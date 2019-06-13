@@ -23,14 +23,8 @@ const HeatmapGroupTransition = inject("dataStore", "visStore", "uiStore")(observ
             let currXsource = sourcePartitionPos;
             const transitionPatients = this.sortTransitionPatients(currentPartition.patients.filter(patient => this.props.nonGrouped.patients.includes(patient)), this.props.heatmapScale);
             if (transitionPatients.length > 0) {
-                proxyPositions.push({
-                    key: currentPartition.partition,
-                    x0: sourcePartitionPos,
-                    width: this.props.visStore.groupScale(currentPartition.patients.length),
-                    sharedWidth: this.props.visStore.groupScale(transitionPatients.length),
-                    selected: []
-                });
                 const transitionWidth = this.props.visStore.groupScale(currentPartition.patients.length) / currentPartition.patients.length;
+                let selectedSegments = [];
                 transitionPatients.forEach(f => {
                     transitions.push(<TriangleCurve key={f}
                                                     isSelected={this.props.dataStore.selectedPatients.includes(f)}
@@ -40,16 +34,24 @@ const HeatmapGroupTransition = inject("dataStore", "visStore", "uiStore")(observ
                                                     y0={y0}
                                                     y1={y1}/>);
                     if (this.props.dataStore.selectedPatients.includes(f)) {
-                        proxyPositions[i].selected.push([currXsource, currXsource + this.props.visStore.groupScale(1)]);
+                        selectedSegments.push([currXsource, currXsource + this.props.visStore.groupScale(1)]);
                     }
                     currXsource += transitionWidth;
+                });
+                proxyPositions.push({
+                    key: currentPartition.partition,
+                    x0: sourcePartitionPos,
+                    width: this.props.visStore.groupScale(currentPartition.patients.length),
+                    sharedWidth: this.props.visStore.groupScale(transitionPatients.length),
+                    selected: selectedSegments
                 });
             }
             sourcePartitionPos += this.props.visStore.groupScale(currentPartition.patients.length) + this.props.visStore.partitionGap;
         });
         return (
-            [transitions, <Proxies key={"proxies"} proxyPositions={proxyPositions} bandRectY={bandRectY} colorRectY={colorRecty}
-                                   colorScale={this.props.colorScale} inverse={this.props.inverse}/>]
+            [transitions,
+                <Proxies key={"proxies"} proxyPositions={proxyPositions} bandRectY={bandRectY} colorRectY={colorRecty}
+                         colorScale={this.props.colorScale} inverse={this.props.inverse}/>]
         )
     }
 
