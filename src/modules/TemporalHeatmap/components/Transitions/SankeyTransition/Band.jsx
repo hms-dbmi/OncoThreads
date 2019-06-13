@@ -96,7 +96,7 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
         const target = Band.getTooltipPartitionName(this.props.secondPrimary, this.props.secondPartition);
         const selectedWidth = this.getSelectedWidth();
         const y0 = this.props.visStore.gap + this.props.visStore.colorRectHeight + this.props.visStore.bandRectHeight,
-            y1 = this.props.visStore.transitionSpace - this.props.visStore.gap * 2 - this.props.visStore.colorRectHeight - this.props.visStore.bandRectHeight;
+            y1 = this.props.visStore.transitionSpace - this.props.visStore.gap - this.props.visStore.colorRectHeight - this.props.visStore.bandRectHeight;
         let selected = null;
         if (selectedWidth !== 0) {
             selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
@@ -106,7 +106,7 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
             <path key={"band"}
                   d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
                   fill={"#dddddd"} opacity={0.5}/>
-            {Band.getOutlinePaths(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}</g>;
+            {Band.getOutlinePaths(this.props.x0, this.props.x1, y0, y1, this.props.width)}</g>;
         return (
             <g onMouseEnter={(e) => this.props.showTooltip(e, source + " -> " + target + ": " + this.props.patients.length)}
                onMouseLeave={this.props.hideTooltip}>

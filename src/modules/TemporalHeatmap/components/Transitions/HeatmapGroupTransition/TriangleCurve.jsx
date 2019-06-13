@@ -9,7 +9,7 @@ const TriangleCurve = observer(class TriangleCurve extends React.Component {
     render() {
         let color = "#dddddd";
         let stroke = "#cccccc";
-        if (this.props.selectedPatients.includes(this.props.patient)) {
+        if (this.props.isSelected) {
             color = "#afafaf";
             stroke = "#cccccc"
         }
@@ -25,7 +25,12 @@ const TriangleCurve = observer(class TriangleCurve extends React.Component {
             + "C" + (this.props.x2) + "," + y3
             + " " + (this.props.x1) + "," + y2
             + " " + (this.props.x1) + "," + this.props.y0;
-        return (<path d={path} fill={color} stroke={stroke} opacity={0.5}/>)
+        const curve = <path d={path} fill={color} opacity={0.5}/>;
+        const outline = <path d={path} fill={"none"} stroke={stroke} opacity={0.5}/>;
+        return (<g>
+            {curve}
+            {outline}
+        </g>)
     }
 });
 export default TriangleCurve;

@@ -49,7 +49,7 @@ class VisStore {
                 });
                 let remainingHeight = this.plotHeight - heightWithoutSpace;
                 let transitionSpace = remainingHeight / (this.rootStore.dataStore.timepoints.length - 1);
-                if (transitionSpace > 30) {
+                if (transitionSpace > 70) {
                     this.transitionSpace = transitionSpace
                 }
             }),
