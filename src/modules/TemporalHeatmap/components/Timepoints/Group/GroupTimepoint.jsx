@@ -3,11 +3,6 @@ import {inject, observer} from 'mobx-react';
 import GroupPartition from './GroupPartition'
 
 const GroupTimepoint = inject("dataStore", "uiStore","visStore")(observer(class GroupTimepoint extends React.Component {
-    constructor() {
-        super();
-        this.handleMouseClick = this.handleMouseClick.bind(this);
-    }
-
     /**
      * gets the different partitions in the grouped timepoint
      */
@@ -21,7 +16,6 @@ const GroupTimepoint = inject("dataStore", "uiStore","visStore")(observer(class 
                 stroke = "black";
             }
             partitions.push(<g key={d.partition} style={{backgroundColor: "darkgray"}}
-                               onClick={(e) => this.handleMouseClick(e, d.patients)}
                                transform={transform}><GroupPartition heatmap={this.props.heatmap}
                                                                      currentVariables={this.props.currentVariables}
                                                                      tooltipFunctions={this.props.tooltipFunctions}
@@ -35,12 +29,6 @@ const GroupTimepoint = inject("dataStore", "uiStore","visStore")(observer(class 
 
         });
         return partitions;
-    }
-
-    handleMouseClick(event, patients) {
-        if (event.button === 0) {
-            this.props.dataStore.handlePartitionSelection(patients);
-        }
     }
 
     /**

@@ -66,15 +66,16 @@ const Proxies = inject("visStore", "uiStore")(observer(class Proxies extends Rea
      * creates a variable proxy
      * @param {number} x
      * @param {number} width
-     * @param {string} color
+     * @param {string} key
      * @return {rect}
      */
-    getVariableProxy(x, width, color) {
-        return <rect x={x}
+    getVariableProxy(x, width, key) {
+        return <rect key={key+"_varProxy"}
+            x={x}
                      y={this.props.colorRectY}
                      width={width}
                      height={this.props.visStore.colorRectHeight}
-                     fill={color}/>
+                     fill={this.props.colorScale(key)}/>
     }
 
 
@@ -92,7 +93,7 @@ const Proxies = inject("visStore", "uiStore")(observer(class Proxies extends Rea
         this.props.proxyPositions.forEach(partition => {
             let bandProxy, variableProxy, bandOutlines;
             if (!this.props.uiStore.horizontalStacking) {
-                variableProxy = this.getVariableProxy(partition.x0, partition.width, this.props.colorScale(partition.key));
+                variableProxy = this.getVariableProxy(partition.x0, partition.width, partition.key);
             }
             let lastVal = partition.x0;
             let d = "M" + partition.x0 + "," + y0;

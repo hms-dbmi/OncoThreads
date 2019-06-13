@@ -91,6 +91,12 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
         </g>
     }
 
+    handleMouseClick(event, patients) {
+        if (event.button === 0) {
+            this.props.dataStore.handlePartitionSelection(patients);
+        }
+    }
+
     render() {
         const source = Band.getTooltipPartitionName(this.props.firstPrimary, this.props.firstPartition);
         const target = Band.getTooltipPartitionName(this.props.secondPrimary, this.props.secondPartition);
@@ -99,11 +105,11 @@ const Band = inject("dataStore", "visStore")(observer(class Band extends React.C
             y1 = this.props.visStore.transitionSpace - this.props.visStore.gap - this.props.visStore.colorRectHeight - this.props.visStore.bandRectHeight;
         let selected = null;
         if (selectedWidth !== 0) {
-            selected = <path d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
+            selected = <path onClick={(e) => this.handleMouseClick(e, this.props.patients)} d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
                              fill={"#afafaf"} opacity={0.5}/>
         }
         let notSelected = <g>
-            <path key={"band"}
+            <path onClick={(e) => this.handleMouseClick(e, this.props.patients)} key={"band"}
                   d={Band.getPath(this.props.x0 + selectedWidth, this.props.x1 + selectedWidth, y0, y1, this.props.width - selectedWidth)}
                   fill={"#dddddd"} opacity={0.5}/>
             {Band.getOutlinePaths(this.props.x0, this.props.x1, y0, y1, this.props.width)}</g>;
