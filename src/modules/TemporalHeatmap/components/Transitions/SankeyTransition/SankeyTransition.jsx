@@ -72,12 +72,12 @@ const SankeyTransition = inject("dataStore", "visStore", "uiStore")(observer(cla
                             currXtarget[targetPartition.partition] += transitionWidth;
                         }
                         targetPartitionPos += this.props.visStore.groupScale(targetPartition.patients.length) + this.props.visStore.partitionGap;
+                        targetCounter++;
                     }
-                    targetCounter++;
                 });
                 sourcePartitionPos += this.props.visStore.groupScale(sourcePartition.patients.length) + this.props.visStore.partitionGap;
+                sourceCounter++;
             }
-            sourceCounter++;
         });
         return [transitions, <Proxies key={"source"} proxyPositions={sourceProxyPositions}
                                       bandRectY={this.props.visStore.gap + this.props.visStore.colorRectHeight}

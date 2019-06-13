@@ -90,7 +90,7 @@ const Proxies = inject("visStore", "uiStore")(observer(class Proxies extends Rea
             y1 = this.props.bandRectY;
             y0 = this.props.bandRectY + this.props.visStore.bandRectHeight;
         }
-        this.props.proxyPositions.forEach(partition => {
+        this.props.proxyPositions.forEach((partition,i) => {
             let bandProxy, variableProxy, bandOutlines;
             if (!this.props.uiStore.horizontalStacking) {
                 variableProxy = this.getVariableProxy(partition.x0, partition.width, partition.key);
