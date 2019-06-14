@@ -7,11 +7,11 @@ import ContinuousRow from "./ContinuousRow";
 /**
  * Component for a partition in a grouped timepiint
  */
-const GroupPartition = inject("dataStore", "visStore","uiStore")(observer(class GroupPartition extends React.Component {
+const GroupPartition = inject("dataStore", "visStore", "uiStore")(observer(class GroupPartition extends React.Component {
     createPartition() {
         let previousYposition = 0;
         let rows = [];
-        this.props.partition.rows.forEach((d, i)=> {
+        this.props.partition.rows.forEach((d, i) => {
             if (!this.props.heatmap[i].isUndef || this.props.uiStore.showUndefined || d.variable === this.props.primaryVariableId) {
                 const color = this.props.currentVariables[i].colorScale;
                 let height = 0;
@@ -43,7 +43,7 @@ const GroupPartition = inject("dataStore", "visStore","uiStore")(observer(class 
                                                                                         opacity={opacity}
                                                                                         color={color}
                                                                                         stroke={stroke}
-                                                                                        isEven={i%2===0}
+                                                                                        isEven={i % 2 === 0}
                                                                                         {...this.props.tooltipFunctions}/>
                     </g>);
                 }

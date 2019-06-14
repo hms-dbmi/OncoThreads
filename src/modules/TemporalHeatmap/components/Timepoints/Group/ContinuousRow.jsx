@@ -29,7 +29,7 @@ const ContinuousRow = inject("dataStore","uiStore","visStore")(observer(class Co
         let randomId = uuidv4();
         const _self = this;
         let gradient;
-        const stepwidth = 100 / (values.length - 1);
+        const stepwidth = 100 / (values.length);
         let stops = [];
         let selectedScale = d3.scaleLinear().domain([0, 100]).range([0, this.props.visStore.groupScale(values.length)]);
         let selectedRects = [];

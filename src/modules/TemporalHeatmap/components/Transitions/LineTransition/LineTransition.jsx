@@ -63,14 +63,12 @@ const LineTransition = inject("dataStore", "visStore", "uiStore")(observer(class
     drawRealtimeLines() {
         let lines = [];
         const _self = this;
-
         let max = 0;
         for (let timegap in this.props.timeGapStructure) {
             if (this.props.timeGapStructure[timegap] > max) {
                 max = this.props.timeGapStructure[timegap];
             }
         }
-
         const getColor = _self.props.colorScale;
         const currentRow = _self.props.secondTimepoint.heatmap.filter(function (d, i) {
             return d.variable === _self.props.secondTimepoint.primaryVariableId

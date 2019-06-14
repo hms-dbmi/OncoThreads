@@ -82,6 +82,7 @@ const CategoricalRow = inject("dataStore", "uiStore", "visStore")(observer(class
                     selectedPoints = this.transformToPolygonParallel(this.props.visStore.groupScale(currCounts), this.props.visStore.groupScale(this.getSelected(f.patients)), i, this.props.row.length - 1, offset);
                 }
                 rects.push(<polygon
+                    onClick={(e) => this.handleMouseClick(e, f.patients)}
                     points={partitionPoints}
                     key={"" + f.key}
                     onMouseEnter={(e) => this.props.showTooltip(e, CategoricalRow.getTooltipContent(f.key, f.patients.length))}
@@ -247,6 +248,11 @@ const CategoricalRow = inject("dataStore", "uiStore", "visStore")(observer(class
         return x1 + "," + y1 + " " + x2 + "," + y2 + " " + x3 + "," + y3 + " " + x4 + "," + y4;
     }
 
+        handleMouseClick(event, patients) {
+        if (event.button === 0) {
+            this.props.dataStore.handlePartitionSelection(patients);
+        }
+    }
     /**
      * checks if the patients in the partition are selected
      * @param {string[]} patients
