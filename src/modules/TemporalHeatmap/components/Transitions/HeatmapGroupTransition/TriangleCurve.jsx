@@ -1,15 +1,20 @@
 import React from 'react';
 import * as d3 from 'd3';
-import {observer} from 'mobx-react';
+import {observer,inject} from 'mobx-react';
 
 /**
  * Component for the creation of a "TriangleCurve" for the heatmap group transition
  */
-const TriangleCurve = observer(class TriangleCurve extends React.Component {
+const TriangleCurve = inject("dataStore")(observer(class TriangleCurve extends React.Component {
+      handleMouseClick(event, patient) {
+        if (event.button === 0) {
+            this.props.dataStore.handlePatientSelection(patient);
+        }
+    }
     render() {
         let color = "#dddddd";
         let stroke = "#cccccc";
-        if (this.props.isSelected) {
+        if (this.props.dataStore.selectedPatients.includes(this.props.patient)) {
             color = "#afafaf";
             stroke = "#cccccc"
         }
@@ -25,12 +30,12 @@ const TriangleCurve = observer(class TriangleCurve extends React.Component {
             + "C" + (this.props.x2) + "," + y3
             + " " + (this.props.x1) + "," + y2
             + " " + (this.props.x1) + "," + this.props.y0;
-        const curve = <path d={path} fill={color} opacity={0.5}/>;
+        const curve = <path onClick={(e)=>this.handleMouseClick(e,this.props.patient)} d={path} fill={color} opacity={0.5}/>;
         const outline = <path d={path} fill={"none"} stroke={stroke} opacity={0.5}/>;
         return (<g>
             {curve}
             {outline}
         </g>)
     }
-});
+}));
 export default TriangleCurve;

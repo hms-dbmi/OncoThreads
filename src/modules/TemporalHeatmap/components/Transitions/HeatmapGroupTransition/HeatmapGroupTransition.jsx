@@ -26,13 +26,9 @@ const HeatmapGroupTransition = inject("dataStore", "visStore", "uiStore")(observ
                 const transitionWidth = this.props.visStore.groupScale(currentPartition.patients.length) / currentPartition.patients.length;
                 let selectedSegments = [];
                 transitionPatients.forEach(f => {
-                    transitions.push(<TriangleCurve key={f}
-                                                    isSelected={this.props.dataStore.selectedPatients.includes(f)}
-                                                    x0={currXsource}
-                                                    x1={currXsource + transitionWidth}
-                                                    x2={this.props.heatmapScale(f) + 0.5 * this.props.visStore.sampleRectWidth}
-                                                    y0={y0}
-                                                    y1={y1}/>);
+                    transitions.push(<TriangleCurve key={f} patient={f}
+                                                    x0={currXsource} x1={currXsource + transitionWidth} x2={this.props.heatmapScale(f) + 0.5 * this.props.visStore.sampleRectWidth}
+                                                    y0={y0} y1={y1}/>);
                     if (this.props.dataStore.selectedPatients.includes(f)) {
                         selectedSegments.push([currXsource, currXsource + this.props.visStore.groupScale(1)]);
                     }
