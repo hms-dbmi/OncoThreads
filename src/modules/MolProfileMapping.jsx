@@ -436,7 +436,7 @@ class MolProfileMapping {
         let mapper = {};
         this.rootStore.timepointStructure.forEach(row => {
             row.forEach(element => {
-                if (list.filter(d => d.sampleId === element.sample) === 0) {
+                if (list.filter(d => d.sampleId === element.sample).length === 0) {
                     mapper[element.sample] = undefined;
                 }
                 else {
@@ -448,6 +448,9 @@ class MolProfileMapping {
                         else {
                             value = undefined;
                         }
+                    }
+                    else if(datatype==="ORDINAL"){
+                        value=value.toString();
                     }
                     mapper[element.sample] = value;
                 }
