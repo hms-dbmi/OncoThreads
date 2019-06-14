@@ -186,13 +186,13 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
             let label;
             if (d.categories.length === 1 && d.name !== d.categories[0]) {
                 label =
-                    <Label style={{cursor:'pointer'}} onClick={() => this.props.categoryStore.renameCategory(i, d.categories[0])} bsStyle="info">
-                        Renamed X
+                    <Label  bsStyle="info">
+                        Renamed <FontAwesome style={{cursor:'pointer'}} onClick={() => this.props.categoryStore.renameCategory(i, d.categories[0])} name="times"/>
                     </Label>
             }
             else if (d.categories.length > 1) {
-                label = <Label style={{cursor:'pointer'}} onClick={() => this.props.categoryStore.unMergeIndex(i)} bsStyle="info">
-                    Merged X
+                label = <Label bsStyle="info">
+                    Merged <FontAwesome style={{cursor:'pointer'}} onClick={() => this.props.categoryStore.unMergeIndex(i)} name="times"/>
                 </Label>
             }
             tableContent.push(<tr key={d.categories} bgcolor={bgColor}

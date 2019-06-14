@@ -253,13 +253,10 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
             <div>
                 <Grid fluid={true} style={{paddingLeft: 20}}>
                     <Row>
-                        <Col smOffset={1} xsOffset={1} sm={1} xs={1}>
-                            <h5>Add Variables</h5>
-                        </Col>
-                        <Col md={7} xs={7}>
+                        <Col smOffset={1} xsOffset={1} md={7} xs={7}>
                             <QuickAddVariable/>
                         </Col>
-                        <Col sm={3} xs={3}>
+                        <Col sm={4} xs={4}>
                             <ButtonToolbar>
                                 <ButtonGroup>
                                     <Button color="secondary"
