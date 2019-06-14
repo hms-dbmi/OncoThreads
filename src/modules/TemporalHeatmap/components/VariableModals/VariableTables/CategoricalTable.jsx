@@ -8,6 +8,7 @@ import {
     FormControl,
     FormGroup,
     Glyphicon,
+    Label,
     OverlayTrigger,
     Popover,
     Radio,
@@ -90,22 +91,19 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
     displayTable() {
         return <div>
             <div style={{maxHeight: "400px", overflowY: "scroll"}}>
-            <Table bordered condensed responsive>
-                <thead>
-                {this.getTableHead()}
-                </thead>
-                <tbody>
-                {this.getTableContent()}
-                </tbody>
-            </Table>
+                <Table condensed responsive>
+                    <thead>
+                    {this.getTableHead()}
+                    </thead>
+                    <tbody>
+                    {this.getTableContent()}
+                    </tbody>
+                </Table>
             </div>
             <form>
                 <Button disabled={!(this.props.categoryStore.currentCategories.filter(d => d.selected).length > 1)}
                         onClick={this.merge}>Merge
                     selected</Button>
-                <Button
-                    disabled={!(this.props.categoryStore.currentCategories.filter(d => d.selected && d.categories.length > 1).length > 0)}
-                    onClick={this.unMerge}>Unmerge selected</Button>
             </form>
             {/*this.getRestrictCategories()*/}
             {this.getUniqueCategoryWarning()}
@@ -136,6 +134,7 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
                                 trigger="click"
                                 placement="right" overlay={colorScalePopOver}><FontAwesome
                     name="paint-brush"/></OverlayTrigger></th>
+                        <th/>
         </tr>
 
     }
@@ -184,6 +183,18 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
                         </svg>
                     </OverlayTrigger>
             }
+            let label;
+            if (d.categories.length === 1 && d.name !== d.categories[0]) {
+                label =
+                    <Label  bsStyle="info">
+                        Renamed <FontAwesome style={{cursor:'pointer'}} onClick={() => this.props.categoryStore.renameCategory(i, d.categories[0])} name="times"/>
+                    </Label>
+            }
+            else if (d.categories.length > 1) {
+                label = <Label bsStyle="info">
+                    Merged <FontAwesome style={{cursor:'pointer'}} onClick={() => this.props.categoryStore.unMergeIndex(i)} name="times"/>
+                </Label>
+            }
             tableContent.push(<tr key={d.categories} bgcolor={bgColor}
                                   onMouseDown={(e) => this.handleMouseDown(e, i)}
                                   onMouseUp={this.handleMouseUp} onMouseEnter={(e) => this.handleMouseEnter(e, i)}>
@@ -205,6 +216,9 @@ const CategoricalTable = inject("categoryStore")(observer(class CategoricalTable
                 <td>{Math.round(d.percentOccurence * 100) / 100}</td>
                 <td>
                     {colorRect}
+                </td>
+                 <td>
+                    {label}
                 </td>
             </tr>)
         });
