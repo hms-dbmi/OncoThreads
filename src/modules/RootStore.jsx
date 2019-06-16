@@ -170,8 +170,8 @@ class RootStore {
             */
 
 
-           calculateVScore: action(() => {
-            
+            //calculateVScore: action(() => {
+            calculateVScore(){ 
 
             var SM= this.staticMappers;
 
@@ -182,7 +182,8 @@ class RootStore {
             let self=this;
 
             var dTypeRet=function(q){
-                return self.clinicalSampleCategories.filter(function(d){ if(d.id===q) return d})[0].datatype;
+                return self.clinicalSampleCategories
+                    .filter(function(d){return d.id===q;})[0].datatype;
             };
 
             //let scoreStructure = {};
@@ -268,8 +269,8 @@ class RootStore {
 
             console.log(this.scoreStructure);
 
-        }),
-
+        //}),
+        },
 
 
         getNumWithSetDec: action( (num, numOfDec ) =>{
@@ -322,19 +323,20 @@ class RootStore {
 
             //let scoreStructure = {};
             //var m=0;
+            //for(var j=1; j<Object.keys(SM).length; j++){
             for(var i=1; i<Object.keys(SM).length; i++){
-            //for(var i=1; i<2; i++){    
-                var iK= Object.keys(SM)[i],
-                iV= Object.values(SM)[i];
+                var iK= Object.keys(SM)[i];
+                var iV= Object.values(SM)[i];
                 
                 this.TimeLineVariability[iK]={};
 
                 //console.log(iK);
 
-                if(iK=="MUTATION_COUNT"){
+                if(iK==="MUTATION_COUNT"){
                     //console.log("numerical");
                 }
-                var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
+                //var dType = self.clinicalSampleCategories.filter(function(d){ return d.id===iK})[0].datatype;
+                var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
                 //if(dType==="STRING"){
 
@@ -345,11 +347,14 @@ class RootStore {
 
                     var max_sample=Math.max(...sample_length);
 
-                    for(var a=0; a<max_sample; a++){
+                    [...Array(max_sample).keys()].forEach(a => {
 
-                        var r=[];
+                    //for(var a=0; a<max_sample; a++){
 
-                        samples.map(function(d){if(d[a]) r.push(d[a])});                 
+                        //var r=[];
+
+                        //samples.forEach(function(d){if(d[a]) r.push(d[a])});
+                        var r = samples.filter(d=> d[a]).map((d)=>d[a]);
 
                         
 
@@ -412,7 +417,7 @@ class RootStore {
 
                         this.TimeLineVariability[iK][a]= t_v;
 
-                    }
+                    });
 
                     
 
