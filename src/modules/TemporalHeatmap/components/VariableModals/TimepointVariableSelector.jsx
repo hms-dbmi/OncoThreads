@@ -3,6 +3,8 @@ import {inject, observer} from 'mobx-react';
 import {Alert, Button, Checkbox, Col, Form, FormControl, FormGroup,ControlLabel} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../stores/OriginalVariable";
+import {//Glyphicon, 
+    Table} from 'react-bootstrap';
 
 /**
  * Component for selecting timepoint variables in variable manager
@@ -17,6 +19,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             mutationOptions: [],
             molecularOptions: [],
             showCheckBoxOptions: false,
+            vscore: false,
         };
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
@@ -25,6 +28,9 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         this.updateMutationCheckBoxOptions = this.updateMutationCheckBoxOptions.bind(this);
         this.updateMolecularCheckBoxOptions = this.updateMolecularCheckBoxOptions.bind(this);
         this.addGenes = this.addGenes.bind(this);
+        this.showVariabilityScores=this.showVariabilityScores.bind(this);
+        this.renderVariability=this.renderVariability.bind(this);
+        this.handleSort = this.handleSort.bind(this);
     }
 
     /**
@@ -47,10 +53,11 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             })
         });
         let sampleOptions = [];
+        let self = this;
         this.props.rootStore.clinicalSampleCategories.filter(d => !this.props.variableManagerStore.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div style={{textAlign: "left"}}
-                     key={d.variable}><b>{d.variable}</b>{": " + d.description}
+                     key={d.variable}><b>{d.variable}</b>{": " + d.description + ", variability: " + Number(self.props.rootStore.scoreStructure[d.id]).toPrecision(2)}
                 </div>);
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, type: "clinSample"})
         });
@@ -210,6 +217,143 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     }
 
+    showVariabilityScores(){
+       
+        if(this.state.vscore===false){
+            this.setState({vscore: true});
+        }
+        else{
+            this.setState({vscore: false});
+        }
+    }
+
+     /**
+     * sorts current variables
+     * @param {string} category
+     */
+    handleSort(category) {
+        /*if (category === "source") {
+            this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id), this.sortSourceAsc);
+            this.sortSourceAsc = !this.sortSourceAsc;
+        }
+        else if (category === "alphabet") {
+            this.props.variableManagerStore.sortAlphabetically(this.sortVarAsc);
+            this.sortVarAsc = !this.sortVarAsc;
+
+        }
+        else {
+            this.props.variableManagerStore.sortByDatatype(this.sortTypeAsc);
+            this.sortTypeAsc = !this.sortTypeAsc;
+        }*/
+    }
+
+    renderVariability() {
+        if(this.state.vscore) {
+
+            var across=this.props.rootStore.scoreStructure;
+            var withinAll=this.props.rootStore.TimeLineVariability;
+
+            //let that=this;
+
+            let elements = [];
+
+            Object.keys(across).forEach(function(d){
+                //console.log(d);
+                //console.log(across[d]);
+                //console.log(Object.values(withinAll[d]));
+                var l=Object.keys(Object.values(withinAll[d])).length; //timeline length
+
+                var x=[];
+
+                for(var i=0; i<l; i++){
+                    x.push(<td key={i} > {Object.values(Object.values(withinAll[d]))[i]}</td>);
+                }
+                //console.log(withinAll[d][Number(TimePoints[0])]);
+
+                //{that.props.rootStore.clinicalSampleCategories.filter(k=>k.id===d)[0].variable}
+
+
+                elements.push(
+                    <tr key={d} 
+                        >
+                        <td>
+                            {d}
+                        </td>
+                        
+                        <td>
+                            {across[d]}
+                        </td>
+                            
+                        {x}
+
+                    </tr>);
+            })
+
+            var headerCols = [];
+            [...this.props.rootStore.timepointStructure.keys()].forEach(i => {
+            //for(var i=0; i<this.props.rootStore.timepointStructure.length; i++) {
+                
+            
+            headerCols.push(
+                    <th key={i+10}>Score in T{i} 
+                </th>);
+
+
+            /*headerCols.push(
+                <th>Score in T{i} {this.sortSourceAsc ? <Glyphicon onClick={() => this.handleSort("timepoint"+i)}
+            glyph="chevron-down"/> :<Glyphicon onClick={() => this.handleSort("source")} glyph="chevron-up"/>}
+            </th>);*/
+
+            
+            });
+
+            /*return (
+        <div style={{"margin": "10px", "overflow": "scroll"}}>
+        <Table condensed hover>
+            <thead>
+            <tr>
+                <th>Variable {this.sortVarAsc ? <Glyphicon onClick={() => this.handleSort("alphabet")}
+                                                           glyph="chevron-down"/> :
+                    <Glyphicon onClick={() => this.handleSort("alphabet")}
+                               glyph="chevron-up"/>}
+                               </th>
+                <th>Score Across Timeline {this.sortTypeAsc ? <Glyphicon onClick={() => this.handleSort("datatype")}
+                                                            glyph="chevron-down"/> :
+                    <Glyphicon onClick={() => this.handleSort("datatype")}
+                               glyph="chevron-up"/>}</th>
+                {headerCols}
+
+            </tr>
+            </thead>
+            <tbody>
+            {elements}
+            </tbody>
+        </Table>
+            </div>);*/
+
+            return (
+                <div style={{"margin": "10px", "overflow": "scroll"}}>
+                <Table condensed hover>
+                    <thead>
+                    <tr>
+                        <th>Variable  </th>
+                        <th>Score Across Timeline </th>
+                        {headerCols}
+        
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {elements}
+                    </tbody>
+                </Table>
+                </div>);
+            
+        } else {
+            return null;
+        }
+        
+    }
+
     /**
      * gets the checkboxes for the available genomic data
      * @returns {Form}
@@ -253,11 +397,16 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     render() {
         let formGroups = [];
+
+
+
         if (this.props.rootStore.clinicalSampleCategories.length > 0 || this.props.rootStore.clinicalPatientCategories.length > 0) {
             formGroups.push(<FormGroup key={"clinical"}>
                 <Col componentClass={ControlLabel} sm={2}>
                     Variables
                 </Col>
+
+
                 <Col sm={10}>
                     <Select
                         type="text"
@@ -269,6 +418,10 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
                     />
                 </Col>
+                
+
+                
+
             </FormGroup>);
         }
         if (this.props.rootStore.availableProfiles.length > 0) {
@@ -286,7 +439,15 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             </FormGroup>);
         }
         return (<div>
-            <h4>Select Variable</h4>
+            <h4>Select Variable
+                <Button bsSize="xsmall" onClick={this.showVariabilityScores}
+                        style={{"marginLeft": "25px"}}
+                        //disabled={this.props.uiStore.globalTime || this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0}
+                        key={"vScores"}>
+                    {(this.state.vscore) ? "Hide variability scores" : "Show variability scores"}
+                </Button>
+            </h4>
+            {this.renderVariability()}
             <Form horizontal>
                 {formGroups}
             </Form>

@@ -46,7 +46,9 @@ class VariableStore {
              */
             replaceAllCurrentVariables: action(function (newIds) {
                 this.currentVariables.replace(newIds);
-            }),
+            }),        
+
+
             /**
              * adds a variable to be displayed
              */
@@ -57,6 +59,9 @@ class VariableStore {
                 if (!this.currentVariables.includes(variable.id)) {
                     this.addCurrentVariable(variable.id)
                 }
+
+               
+                
             }),
             /**
              * adds variables to be displayed
