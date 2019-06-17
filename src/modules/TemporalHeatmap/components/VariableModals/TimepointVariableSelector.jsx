@@ -253,7 +253,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             var across=this.props.rootStore.scoreStructure;
             var withinAll=this.props.rootStore.TimeLineVariability;
 
-            let that=this;
+            //let that=this;
 
             let elements = [];
 
@@ -270,11 +270,14 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                 }
                 //console.log(withinAll[d][Number(TimePoints[0])]);
 
+                //{that.props.rootStore.clinicalSampleCategories.filter(k=>k.id===d)[0].variable}
+
+
                 elements.push(
                     <tr key={d} 
                         >
                         <td>
-                            {that.props.rootStore.clinicalSampleCategories.filter(k=>k.id===d)[0].variable}
+                            {d}
                         </td>
                         
                         <td>
