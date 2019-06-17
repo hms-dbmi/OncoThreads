@@ -13,13 +13,13 @@ class ColorScales {
      * @returns {string[]}
      */
     static createRange(domain, range, datatype) {
-        let currRange = range;
-        if (currRange.length === 0) {
+        let currRange = [];
+        if (range.length < domain.length) {
             if (datatype === "ORDINAL") {
                 currRange = ColorScales.getDefaultOrdinalRange(domain.length);
             }
             else if (datatype === "STRING") {
-                currRange = ColorScales.defaultCategoricalRange;
+                currRange = range.concat(...ColorScales.defaultCategoricalRange.filter(d=>!range.includes(d)));
             }
             else if (datatype === "BINARY") {
                 currRange = ColorScales.defaultBinaryRange
@@ -33,6 +33,9 @@ class ColorScales {
                     currRange = ColorScales.defaultContinuousTwoColors;
                 }
             }
+        }
+        else{
+            currRange=range;
         }
         return currRange;
     }

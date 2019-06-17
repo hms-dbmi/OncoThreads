@@ -1,4 +1,5 @@
 import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
+import ColorScales from './TemporalHeatmap/UtilityClasses/ColorScales';
 
 /*
 gets mutation and molecular data on demand and transforms the data to variables
@@ -34,13 +35,19 @@ class MolProfileMapping {
             if (!this.rootStore.dataStore.variableStores.sample.isDisplayed(d.entrezGeneId + mappingType)) {
                 let containedIds = this.currentMutations.filter(mutation => mutation.gene.hugoGeneSymbol === d.hgncSymbol);
                 let domain = [];
+                let range = [];
                 if (mappingType === "Mutation type") {
-                    domain = this.mutationOrder;
+                    domain = ["wild type"].concat(...this.mutationOrder);
+                    range = ['lightgray'].concat(...ColorScales.defaultCategoricalRange);
+                }
+                else if (mappingType === "Protein change") {
+                    domain = ["wild type"];
+                    range = ['lightgray'];
                 }
                 else if (mappingType === "Variant allele frequency") {
                     domain = [0, 1];
                 }
-                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType, "gene"));
+                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, range, domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType, "gene"));
             }
         });
         return variables;
@@ -285,7 +292,7 @@ class MolProfileMapping {
         }
         else if (mappingType === "Protein change") {
             mappingFunction = entry => {
-                if (entry !== undefined) {
+                if (entry !== undefined && entry.hasOwnProperty("proteinChange")) {
                     return entry.proteinChange;
                 }
                 else {
@@ -295,7 +302,7 @@ class MolProfileMapping {
         }
         else if (mappingType === "Mutation type") {
             mappingFunction = entry => {
-                if (entry !== undefined) {
+                if (entry !== undefined && entry.hasOwnProperty("mutationType")) {
                     let mutationType;
                     if ((entry.proteinChange || "").toLowerCase() === "promoter") {
                         mutationType = "promoter"
@@ -309,14 +316,14 @@ class MolProfileMapping {
                     return mutationType;
                 }
                 else {
-                    return undefined;
+                    return "wild type";
                 }
             }
         }
         else {
             mappingFunction = entry => {
                 let vaf;
-                if (entry !== undefined) {
+                if (entry !== undefined && entry.hasOwnProperty("tumorRefCount") && entry.hasOwnProperty("tumorAltCount")) {
                     if (entry.tumorAltCount !== -1 && entry.tumorRefCount !== -1) {
                         vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
                     }
