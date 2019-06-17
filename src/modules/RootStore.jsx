@@ -320,22 +320,17 @@ class RootStore {
             let self=this;
 
             
-
-            //let scoreStructure = {};
-            //var m=0;
-            //for(var j=1; j<Object.keys(SM).length; j++){
-            for(var i=1; i<Object.keys(SM).length; i++){
-                var iK= Object.keys(SM)[i];
-                var iV= Object.values(SM)[i];
+            Object.keys(SM).forEach((iK,i) => {
+                if(!i) {
+                    return;
+                }
+                var iV= SM[iK];
                 
                 this.TimeLineVariability[iK]={};
-
-                //console.log(iK);
 
                 if(iK==="MUTATION_COUNT"){
                     //console.log("numerical");
                 }
-                //var dType = self.clinicalSampleCategories.filter(function(d){ return d.id===iK})[0].datatype;
                 var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
                 //if(dType==="STRING"){
@@ -472,7 +467,7 @@ class RootStore {
 
 
                // m=0;
-            }
+            });
 
 
             console.log(this.TimeLineVariability);
