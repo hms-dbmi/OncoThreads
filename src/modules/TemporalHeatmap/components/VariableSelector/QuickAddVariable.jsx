@@ -338,7 +338,7 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
         else {
             return <FormControl style={{height: 38}} type="textarea"
-                                placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
+                                placeholder={"Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"}
                                 onChange={this.updateSearchValue}
                                 onKeyDown={this.handleEnterPressed}
                                 value={this.state.geneListString}/>
