@@ -502,7 +502,7 @@ var svg_prefix =
         }
         variableMetadata = variableMetadata + '</g>';
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*18*5+15).toString() + '">' +
             
             print_svg +
             svg_prefix +
