@@ -185,12 +185,12 @@ const ContinuousCombine = inject("variableManagerStore")(observer(class Continuo
                             <ControlLabel>Select Operation</ControlLabel>
                             <FormControl onChange={(e) => this.operation = e.target.value} componentClass="select"
                                          defaultValue={this.operation}>
-                                <option value="average">Average</option>
+                                <option value="average">Mean</option>
                                 <option value="median">Median</option>
                                 <option value="sum">Sum</option>
-                                <option value="delta">Delta</option>
-                                <option value="min">Min</option>
-                                <option value="max">Max</option>
+                                <option value="delta">Difference</option>
+                                <option value="min">Minimum</option>
+                                <option value="max">Maximum</option>
                             </FormControl>
                         </FormGroup>
                     </form>

@@ -99,8 +99,8 @@ class ColorScales {
      */
     static getOrdinalScale(range, domain) {
         return function (value) {
-            let helper=d3.scaleLinear().range(range.slice()).domain(range.map((d,i)=>i/(range.length-1)));
-            let interpolatedRange = domain.map((d, i) => helper(i / (domain.length-1)));
+            let helper = d3.scaleLinear().range(range.slice()).domain(range.map((d, i) => i / (range.length - 1)));
+            let interpolatedRange = domain.map((d, i) => helper(i / (domain.length - 1)));
             const colorScale = d3.scaleOrdinal().range(interpolatedRange).domain(domain.slice());
             if (value === undefined) {
                 return '#f7f7f7';
@@ -121,6 +121,22 @@ class ColorScales {
             range.push(d3ScaleChromatic.interpolateGreys(i * step));
         }
         return range
+    }
+
+    /**
+     * gets the ideal color of the text depending on the background color
+     * @param {string} rgbString
+     * @returns {string}
+     */
+    static getHighContrastColor(rgbString) {
+        const rgb = rgbString.replace(/[^\d,]/g, '').split(',');
+        let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+        if (brightness < 255 / 2) {
+            return "white";
+        }
+        else {
+            return "black";
+        }
     }
 }
 

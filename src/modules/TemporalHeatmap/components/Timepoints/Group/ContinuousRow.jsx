@@ -1,12 +1,14 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import uuidv4 from "uuid/v4";
 import * as d3 from 'd3';
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
+import ColorScales from "../../../UtilityClasses/ColorScales";
+
 /**
  * Component representing a row of a categorical variable in a grouped partition of a timepoint
  */
-const ContinuousRow = inject("dataStore","uiStore","visStore")(observer(class ContinuousRow extends React.Component {
+const ContinuousRow = inject("dataStore", "uiStore", "visStore")(observer(class ContinuousRow extends React.Component {
     static getTooltipContent(value, numPatients) {
         let content = "";
         if (numPatients === 1) {
@@ -18,6 +20,12 @@ const ContinuousRow = inject("dataStore","uiStore","visStore")(observer(class Co
         return content;
     }
 
+    handleMouseClick(event, patients) {
+        if (event.button === 0) {
+            this.props.dataStore.handlePartitionSelection(patients);
+        }
+    }
+
     /**
      * creates a gradient representing the distribution of the values of a continuous variable
      * @param {Object[]} values - patients contained in the row and their associated continuous values
@@ -26,69 +34,93 @@ const ContinuousRow = inject("dataStore","uiStore","visStore")(observer(class Co
      * @returns {g}
      */
     createGradientRow(values, boxPlotValues, selectedPatients) {
-        let randomId = uuidv4();
-        const _self = this;
-        let gradient;
-        const stepwidth = 100 / (values.length);
-        let stops = [];
-        let selectedScale = d3.scaleLinear().domain([0, 100]).range([0, this.props.visStore.groupScale(values.length)]);
-        let selectedRects = [];
-        let undefinedValuesCounter = selectedPatients.length;
-        values.forEach(function (d, i) {
-            if (selectedPatients.includes(d.patient)) {
-                undefinedValuesCounter -= 1;
-
-                const rgb = _self.props.color(d.value).replace(/[^\d,]/g, '').split(',');
-                let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
-                let rectColor;
-                if (brightness < 255 / 2) {
-                    rectColor = "white";
-                }
-                else {
-                    rectColor = "black";
-                }
-                if (_self.props.uiStore.advancedSelection) {
-                    let x = selectedScale(stepwidth * i);
-                    if (i === 0) {
-                        x = x + 1;
-                    }
-                    if (i === values.length - 1) {
-                        x = x - 1;
-                    }
-                    selectedRects.push(<line key={d.patient} x1={x} x2={x} y1={_self.props.height / 3}
-                                             y2={2 * (_self.props.height / 3)}
-                                             style={{strokeWidth: 1, stroke: rectColor}}/>);
-                }
-            }
-            stops.push(<stop key={i} offset={(stepwidth * i) + "%"}
-                             style={{stopColor: _self.props.color(d.value)}}/>)
-        });
-        gradient = <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-            {stops}
-        </linearGradient>;
-        let selectUndefinedRect = null;
-        if (undefinedValuesCounter > 0 && this.props.uiStore.advancedSelection) {
-            selectUndefinedRect = <rect x={this.props.visStore.groupScale(values.length) + 1} height={this.props.height}
-                                        width={this.props.visStore.groupScale(undefinedValuesCounter) - 1}
-                                        fill={"none"}
-                                        stroke="black"/>
+        let definedValues = values.filter(d => d.value !== undefined).sort((a, b) => a.value - b.value);
+        let undefinedValues = values.filter(d => d.value === undefined);
+        let selectedUndefined = selectedPatients.filter(patient => undefinedValues.map(d => d.patient).includes(patient));
+        let undefinedSelectedRect = null;
+        if (selectedUndefined.length > 0 && this.props.uiStore.advancedSelection) {
+            undefinedSelectedRect = <g>
+                <rect x={this.props.visStore.groupScale(definedValues.length) + 1}
+                      height={this.props.height}
+                      width={this.props.visStore.groupScale(selectedUndefined.length) - 1}
+                      fill={"none"}
+                      stroke="black"/>
+            </g>
         }
-        return (<g>
-            <defs>
-                {gradient}
-            </defs>
-            <rect x="0" height={this.props.height} width={this.props.visStore.groupScale(values.length)}
-                  fill={"url(#" + randomId + ")"} opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, values.length + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
-                  onMouseLeave={this.props.hideTooltip}/>
-            <rect x={this.props.visStore.groupScale(values.length)} height={this.props.height}
-                  width={this.props.visStore.groupScale(this.props.row.length - values.length)} fill={"white"}
+        let undefinedRects = <g>
+            <rect x={this.props.visStore.groupScale(definedValues.length)}
+                  onClick={(e) => this.handleMouseClick(e, undefinedValues.map(d => d.patient))}
+                  height={this.props.height}
+                  width={this.props.visStore.groupScale(this.props.row.length - definedValues.length)}
+                  fill={"white"}
                   stroke="lightgray"
                   opacity={this.props.opacity}
-                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - values.length))}
+                  onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - definedValues.length))}
                   onMouseLeave={this.props.hideTooltip}/>
-            {selectUndefinedRect}
-            {selectedRects}
+            {undefinedSelectedRect}
+        </g>;
+        let definedRects = null;
+        let randomId = uuidv4();
+        if (definedValues.length > 1) {
+            let stepwidth = 100 / (definedValues.length - 1);
+            let stops = [];
+            let selectedScale = d3.scaleLinear().domain([0, 100]).range([0, this.props.visStore.groupScale(definedValues.length)]);
+            let selectedLines = [];
+            definedValues.forEach((d, i) => {
+                if (selectedPatients.includes(d.patient)) {
+                    let rectColor = ColorScales.getHighContrastColor(this.props.color(d.value));
+                    if (this.props.uiStore.advancedSelection) {
+                        let x = selectedScale(stepwidth * i);
+                        if (i === 0) {
+                            x = x + 1;
+                        }
+                        if (i === definedValues.length - 1) {
+                            x = x - 1;
+                        }
+                        selectedLines.push(<line key={d.patient} x1={x} x2={x} y1={this.props.height / 3}
+                                                 y2={2 * (this.props.height / 3)}
+                                                 style={{strokeWidth: 1, stroke: rectColor}}/>);
+                    }
+                }
+                stops.push(<stop key={i} offset={(stepwidth * i) + "%"}
+                                 style={{stopColor: this.props.color(d.value)}}/>)
+            });
+            definedRects = (<g>
+                <defs>
+                    <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
+                        {stops}
+                    </linearGradient>
+                </defs>
+                <rect x="0" height={this.props.height} width={this.props.visStore.groupScale(definedValues.length)}
+                      fill={"url(#" + randomId + ")"} opacity={this.props.opacity}
+                      onMouseEnter={(e) => this.props.showTooltip(e, definedValues.length + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
+                      onMouseLeave={this.props.hideTooltip}/>
+                {selectedLines}
+            </g>);
+        }
+        else if (definedValues.length === 1) {
+            let selectedLine = null;
+            if (selectedPatients.includes(definedValues[0].patient)) {
+                selectedLine =
+                    <line x1={this.props.visStore.groupScale(1) / 2} x2={this.props.visStore.groupScale(1) / 2}
+                          y1={this.props.height / 3}
+                          y2={2 * (this.props.height / 3)}
+                          style={{
+                              strokeWidth: 1,
+                              stroke: ColorScales.getHighContrastColor(this.props.color(definedValues[0].value))
+                          }}/>;
+            }
+            definedRects = <g>
+                <rect x="0" height={this.props.height} width={this.props.visStore.groupScale(1)}
+                      fill={this.props.color(definedValues[0].value)} opacity={this.props.opacity}
+                      onMouseEnter={(e) => this.props.showTooltip(e, definedValues.length + ' patients: Minimum ' + UtilityFunctions.getScientificNotation(boxPlotValues[0]) + ', Median ' + UtilityFunctions.getScientificNotation(boxPlotValues[2]) + ', Maximum ' + UtilityFunctions.getScientificNotation(boxPlotValues[4]))}
+                      onMouseLeave={this.props.hideTooltip}/>
+                {selectedLine}
+            </g>
+        }
+        return (<g>
+            {undefinedRects}
+            {definedRects}
         </g>);
     }
 
@@ -148,7 +180,8 @@ const ContinuousRow = inject("dataStore","uiStore","visStore")(observer(class Co
             <g>
                 {boxPlot}
                 <rect x={this.props.visStore.groupScale(numValues)}
-                      width={this.props.visStore.groupScale(this.props.row.length - numValues)} height={this.props.height}
+                      width={this.props.visStore.groupScale(this.props.row.length - numValues)}
+                      height={this.props.height}
                       fill={'white'} stroke={'lightgray'}
                       onMouseEnter={(e) => this.props.showTooltip(e, ContinuousRow.getTooltipContent("undefined", this.props.row.length - numValues))}
                       onMouseLeave={this.props.hideTooltip}/>
@@ -202,7 +235,10 @@ const ContinuousRow = inject("dataStore","uiStore","visStore")(observer(class Co
         if (this.props.uiStore.continuousRepresentation === 'gradient') {
             let selectedPartitionPatients = this.props.row.map(d => d.patients[0]).filter(element => -1 !== this.props.dataStore.selectedPatients.indexOf(element));
             return (
-                this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
+                this.createGradientRow(this.props.row.map(element => ({
+                    patient: element.patients[0],
+                    value: element.key
+                })), boxPlotValues, selectedPartitionPatients)
             )
         }
         else if (this.props.uiStore.continuousRepresentation === 'boxplot')
