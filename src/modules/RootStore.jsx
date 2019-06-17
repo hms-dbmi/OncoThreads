@@ -236,7 +236,6 @@ class RootStore {
                                 if(!this.variablesParsed) {
                                     this.initialVariable = this.clinicalPatientCategories[0];
                                     this.initialVariable.source="clinPatient";
-
                                 }
                                 this.variablesParsed = true;
                                 this.firstLoad = false;

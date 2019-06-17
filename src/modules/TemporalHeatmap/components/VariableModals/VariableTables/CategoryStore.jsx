@@ -153,6 +153,19 @@ class CategoryStore {
                 }
             }),
             /**
+             * unmerges at an index
+             */
+            unMergeIndex: action((index) => {
+                const categories=this.currentCategories[index].categories.slice();
+                this.currentCategories.splice(index, 1);
+                categories.forEach((d, j) => this.currentCategories.splice(index + j, 0, {
+                                selected: false,
+                                name: d,
+                                categories: [d],
+                                color: this.colorScale(d),
+                                percentOccurence: this.getPercentOccurence([d])}));
+            }),
+            /**
              * sorts categories by name
              * @param {boolean} asc - sort ascending/descending
              */
