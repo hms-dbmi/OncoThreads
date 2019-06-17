@@ -13,30 +13,30 @@ class ColorScales {
      * @returns {string[]}
      */
     static createRange(domain, range, datatype) {
-        let currRange = [];
+        let currRange = range;
         if (range.length < domain.length) {
-            if (datatype === "ORDINAL") {
-                currRange = ColorScales.getDefaultOrdinalRange(domain.length);
-            }
-            else if (datatype === "STRING") {
-                currRange = range.concat(...ColorScales.defaultCategoricalRange.filter(d=>!range.includes(d)));
-            }
-            else if (datatype === "BINARY") {
-                currRange = ColorScales.defaultBinaryRange
-            }
-            else if (datatype === "NUMBER") {
-                let min = Math.min(...domain);
-                if (min < 0) {
-                    currRange = ColorScales.defaultContinuousThreeColors;
-                }
-                else {
+            if (range.length === 0) {
+                if (datatype === "ORDINAL") {
                     currRange = ColorScales.defaultContinuousTwoColors;
                 }
+                else if (datatype === "BINARY") {
+                    currRange = ColorScales.defaultBinaryRange
+                }
+                else if (datatype === "NUMBER") {
+                    let min = Math.min(...domain);
+                    if (min < 0) {
+                        currRange = ColorScales.defaultContinuousThreeColors;
+                    }
+                    else {
+                        currRange = ColorScales.defaultContinuousTwoColors;
+                    }
+                }
+            }
+            if (datatype === "STRING") {
+                currRange = range.concat(...ColorScales.defaultCategoricalRange.filter(d => !range.includes(d)));
             }
         }
-        else{
-            currRange=range;
-        }
+        console.log(currRange);
         return currRange;
     }
 
@@ -110,20 +110,6 @@ class ColorScales {
             }
             else return colorScale(value);
         };
-    }
-
-    /**
-     * gets default range for isOrdinal variable
-     * @param {number} domainLength
-     * @returns {string[]}
-     */
-    static getDefaultOrdinalRange(domainLength) {
-        let step = 1 / 2;
-        let range = [];
-        for (let i = 0; i < 2; i++) {
-            range.push(d3ScaleChromatic.interpolateGreys(i * step));
-        }
-        return range
     }
 
     /**

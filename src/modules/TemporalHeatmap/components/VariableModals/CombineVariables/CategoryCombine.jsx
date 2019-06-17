@@ -43,14 +43,11 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
             colorRange = ColorScales.defaultCategoricalRange;
         }
         else {
-            if (this.props.derivedVariable !== null && this.props.derivedVariable.modification.datatype === "STRING") {
-                currentCategories = this.getCurrentDataOfDerivedVariable();
-                isOrdinal = this.props.derivedVariable.datatype === "ORDINAL";
-                allValues = Object.values(this.props.derivedVariable.mapper);
-                colorRange = this.props.derivedVariable.range;
+            currentCategories = this.getCurrentDataOfDerivedVariable();
+            isOrdinal = this.props.derivedVariable.datatype === "ORDINAL";
+            allValues = Object.values(this.props.derivedVariable.mapper);
+            colorRange = this.props.derivedVariable.range;
             }
-
-        }
         return new CategoryStore(currentCategories, isOrdinal, allValues, colorRange);
     }
 
@@ -78,6 +75,7 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
      */
     getCurrentDataOfDerivedVariable() {
         let currentVarCategories = [];
+        console.log(this.props.derivedVariable.domain);
         this.props.derivedVariable.domain.forEach(d => {
             let categories = [];
             if (!this.props.derivedVariable.modification.mapping) {
@@ -114,7 +112,7 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
      * applies combination of variables
      */
     handleApply() {
-        let datatype, range, description;
+        let datatype, description;
         let mapper = DerivedMapperFunctions.createCategoryCombinedMapper(this.props.variables.map(d => d.mapper));
         if (this.categoryStore.isOrdinal) {
             datatype = "ORDINAL";
@@ -124,11 +122,10 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
         }
         description = "Category combination of " + this.props.variables.map(d => d.name);
         mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.categoryStore.categoryMapping);
-        range = this.categoryStore.currentCategories.map(d => d.color);
         let newVariable = new DerivedVariable(uuidv4(), this.name, datatype, description, this.props.variables.map(d => d.id), {
             type: "categoryCombine",
             mapping: this.categoryStore.categoryMapping
-        }, range, [], mapper, uuidv4(), "combined");
+        }, this.categoryStore.range, [], mapper, uuidv4(), "combined");
         if (this.props.derivedVariable === null) {
             this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.keep);
         }

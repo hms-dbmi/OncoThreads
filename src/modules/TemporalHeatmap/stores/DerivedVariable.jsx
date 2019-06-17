@@ -78,7 +78,7 @@ class DerivedVariable {
      * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        return domain.concat(...this.getDefaultDomain().filter(d=>!domain.includes(d.domain)));
+        return domain.concat(...this.getDefaultDomain().filter(d=>!domain.includes(d)));
     }
 
     /**
