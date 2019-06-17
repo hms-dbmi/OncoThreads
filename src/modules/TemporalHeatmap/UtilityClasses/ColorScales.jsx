@@ -36,7 +36,6 @@ class ColorScales {
                 currRange = range.concat(...ColorScales.defaultCategoricalRange.filter(d => !range.includes(d)));
             }
         }
-        console.log(currRange);
         return currRange;
     }
 

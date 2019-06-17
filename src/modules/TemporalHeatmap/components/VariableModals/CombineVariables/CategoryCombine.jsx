@@ -75,7 +75,6 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
      */
     getCurrentDataOfDerivedVariable() {
         let currentVarCategories = [];
-        console.log(this.props.derivedVariable.domain);
         this.props.derivedVariable.domain.forEach(d => {
             let categories = [];
             if (!this.props.derivedVariable.modification.mapping) {
