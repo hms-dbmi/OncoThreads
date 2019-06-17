@@ -132,6 +132,8 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
                                 name="clock"/> {(this.props.uiStore.realTime) ? "Hide relative time" : "Show relative time"}
                         </Button>
                     </Row>
+
+
                     <Row>
                         <SortablePane direction="horizontal"
                                       margin={10}

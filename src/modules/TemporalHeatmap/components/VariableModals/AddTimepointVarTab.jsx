@@ -26,4 +26,5 @@ const AddTimepointVarTab = inject("variableManagerStore", "rootStore")(observer(
         )
     }
 }));
+
 export default AddTimepointVarTab;
