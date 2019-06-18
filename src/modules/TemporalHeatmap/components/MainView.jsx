@@ -57,7 +57,6 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
      */
     componentDidMount() {
         this.updateDimensions();
-        this.props.rootStore.visStore.setPlotWidth(this.panes.view.width - 10);
         window.addEventListener("resize", this.updateDimensions);
     }
 
@@ -78,7 +77,6 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
             'view': {width: (window.innerWidth - 33) / (prevWidth / this.panes.view.width)},
             'legend': {width: (window.innerWidth - 33) / (prevWidth / this.panes.legend.width)}
         };
-
     }
 
     /**
@@ -253,7 +251,7 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
         }
         return (
             <Grid fluid={true}>
-                <Tabs mountOnEnter unmountOnExit animation={false}
+                <Tabs ref="views" mountOnEnter unmountOnExit animation={false}
                       activeKey={this.props.uiStore.globalTime}
                       onSelect={this.handleSwitchView} id={"viewTab"}>
                     <Tab eventKey={false} style={{paddingTop: 10}} title="Block view">
