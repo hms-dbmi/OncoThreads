@@ -163,7 +163,7 @@ const GlobalRowOperator = inject("dataStore","visStore","undoRedoStore")(observe
                         fontWeight = "normal";
                     }
                     const transform = "translate(0," + _self.position + ")";
-                    const iconScale = (_self.props.visStore.secondaryHeight - _self.props.visStore.gap) / 20;
+                    const iconScale = (_self.props.visStore.secondaryHeight) / 20;
                     let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);

@@ -10,16 +10,19 @@ class VisStore {
         //height of rects in a row which is primary
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
+        this.horizontalGap = 1;
         //gap between rows in heatmap
-        this.gap = 1;
         //space for transitions
         //gap between partitions in grouped timepoints
         this.colorRectHeight = 2;
-        this.bandRectHeight=15;
+        this.bandRectHeight = 15;
         this.partitionGap = 10;
         this.svgWidth = 700;
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
+            gap: 1,
+            colorRectHeight: 2,
+            bandRectHeight: 15,
             transitionSpace: 100,
             timepointY: [],
             plotHeight: 700,
@@ -72,6 +75,15 @@ class VisStore {
             setTransitionSpace: action(transitionSpace => {
                 this.transitionSpace = transitionSpace;
             }),
+            setGap: action(gapHeight => {
+                this.gap = gapHeight;
+            }),
+            setBandRectHeight:action(bandRectHeight=>{
+                this.bandRectHeight=bandRectHeight;
+            }),
+            setColorRectHeight:action(colorRectHeight=>{
+                this.colorRectHeight=colorRectHeight;
+            }),
             /**
              * height of svg based on zoom level
              * @returns {*}
@@ -84,7 +96,7 @@ class VisStore {
              * @returns {number}
              */
             get sampleRectWidth() {
-                return this.plotWidth / (300 - this.horizontalZoom) - this.gap
+                return this.plotWidth / (300 - this.horizontalZoom) - this.horizontalGap
             },
             /**
              * size of timeline rects based on rect width
@@ -98,7 +110,7 @@ class VisStore {
              * @returns {number}
              */
             get heatmapWidth() {
-                return this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.gap) - this.gap;
+                return this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.horizontalGap) - this.horizontalGap;
             },
             /**
              * width of svg based on content
