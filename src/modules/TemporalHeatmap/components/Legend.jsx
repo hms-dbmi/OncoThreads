@@ -2,6 +2,7 @@ import React from 'react';
 import {observer,inject} from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 import UtilityFunctions from "../UtilityClasses/UtilityFunctions";
+import ColorScales from "../UtilityClasses/ColorScales";
 
 /**
  * Legend Component
@@ -81,29 +82,29 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
             if (color.domain().length === 3) {
                 intermediateStop = <stop offset="50%" style={{stopColor: color(color.domain()[1])}}/>;
                 text.push(<text key={"text min"}
-                                fill={Legend.getTextColor(color(min))}
+                                fill={ColorScales.getHighContrastColor(color(min))}
                                 style={{fontSize: fontSize}}
                                 x={0}
                                 y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(min)}</text>,
                     <text key={"text med"}
-                          fill={Legend.getTextColor(color(0))}
+                          fill={ColorScales.getHighContrastColor(color(0))}
                           style={{fontSize: fontSize}}
                           x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
                           y={lineheight / 2 + fontSize / 2}>{0}</text>,
                     <text key={"text max"}
-                          fill={Legend.getTextColor(color(max))}
+                          fill={ColorScales.getHighContrastColor(color(max))}
                           style={{fontSize: fontSize}}
                           x={100 - Legend.getTextWidth(0, UtilityFunctions.getScientificNotation(max), fontSize)}
                           y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(max)}</text>)
             }
             else {
                 text.push(<text key={"text min"}
-                                fill={Legend.getTextColor(color(min))}
+                                fill={ColorScales.getHighContrastColor(color(min))}
                                 style={{fontSize: fontSize}}
                                 x={0}
                                 y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(min)}</text>,
                     <text key={"text max"}
-                          fill={Legend.getTextColor(color(max))}
+                          fill={ColorScales.getHighContrastColor(color(max))}
                           style={{fontSize: fontSize}}
                           x={100 - Legend.getTextWidth(0, UtilityFunctions.getScientificNotation(max), fontSize)}
                           y={lineheight / 2 + fontSize / 2}>{UtilityFunctions.getScientificNotation(max)}</text>)
@@ -151,29 +152,13 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
                 }
                 const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
                 if (d !== undefined) {
-                    legendEntries.push(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, variable.colorScale(d), Legend.getTextColor(variable.colorScale(d)), tooltipText));
+                    legendEntries.push(_self.getLegendEntry(d, opacity, rectWidth, fontSize, currX, lineheight, variable.colorScale(d), ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
                     currX += (rectWidth + 2);
                 }
             }
         });
         this.updateMaxWidth(currX);
         return legendEntries;
-    }
-
-    /**
-     * gets the ideal color of the text depending on the background color
-     * @param {string} backgroundColor
-     * @returns {string}
-     */
-    static getTextColor(backgroundColor) {
-        let rgb = backgroundColor.replace(/[^\d,]/g, '').split(',');
-        let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
-        if (brightness < 255 / 2) {
-            return "white";
-        }
-        else {
-            return "black";
-        }
     }
 
     /**

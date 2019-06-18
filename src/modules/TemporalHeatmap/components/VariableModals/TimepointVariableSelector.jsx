@@ -431,7 +431,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                 </Col>
                 <Col sm={10}>
                     <FormControl style={{height: 38}} type="textarea"
-                                 placeholder={"Enter HUGO Gene Symbols (e.g. TP53, IDH1)"}
+                                 placeholder={"Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"}
                                  onChange={this.updateSearchValue}
                                  onKeyDown={this.handleEnterPressed}
                                  value={this.state.geneListString}/>

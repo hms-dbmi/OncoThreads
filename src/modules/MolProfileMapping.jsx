@@ -1,4 +1,5 @@
 import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
+import ColorScales from './TemporalHeatmap/UtilityClasses/ColorScales';
 
 /*
 gets mutation and molecular data on demand and transforms the data to variables
@@ -34,13 +35,19 @@ class MolProfileMapping {
             if (!this.rootStore.dataStore.variableStores.sample.isDisplayed(d.entrezGeneId + mappingType)) {
                 let containedIds = this.currentMutations.filter(mutation => mutation.gene.hugoGeneSymbol === d.hgncSymbol);
                 let domain = [];
+                let range = [];
                 if (mappingType === "Mutation type") {
-                    domain = this.mutationOrder;
+                    domain = ["wild type"].concat(...this.mutationOrder);
+                    range = ['lightgray'].concat(...ColorScales.defaultCategoricalRange);
+                }
+                else if (mappingType === "Protein change") {
+                    domain = ["wild type"];
+                    range = ['lightgray'];
                 }
                 else if (mappingType === "Variant allele frequency") {
                     domain = [0, 1];
                 }
-                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, [], domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType, "gene"));
+                variables.push(new OriginalVariable(d.entrezGeneId + mappingType, d.hgncSymbol + "_" + mappingType, datatype, "Mutation in " + d.hgncSymbol, range, domain, this.createMutationMapping(containedIds, mappingType, d.entrezGeneId), mappingType, "gene"));
             }
         });
         return variables;
@@ -279,69 +286,47 @@ class MolProfileMapping {
         let mappingFunction;
         let profileId = this.rootStore.availableProfiles.filter(d => d.molecularAlterationType === "MUTATION_EXTENDED")[0].molecularProfileId;
         if (mappingType === "Binary") {
-            mappingFunction = currentSample => {
-                return (list.filter(d => d.sampleId === currentSample).length > 0)
+            mappingFunction = entry => {
+                return (entry !== undefined)
             };
         }
         else if (mappingType === "Protein change") {
-            mappingFunction = currentSample => {
-                const missense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "missense");
-                const nonsense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "nonsense");
-                let proteinChange = "wild type";
-                if (missense.length > 0) {
-                    proteinChange = missense[0].proteinChange;
+            mappingFunction = entry => {
+                if (entry !== undefined && entry.hasOwnProperty("proteinChange")) {
+                    return entry.proteinChange;
                 }
-                else if (nonsense.length > 0) {
-                    proteinChange = nonsense[0].proteinChange;
+                else {
+                    return "wild type"
                 }
-                return (proteinChange);
             }
         }
         else if (mappingType === "Mutation type") {
-            mappingFunction = currentSample => {
-                const entries = list.filter(d => d.sampleId === currentSample);
-                let mutationType = undefined;
-                if (entries.length > 0) {
-                    let indices = [];
-                    entries.forEach(d => {
-                        if ((d.proteinChange || "").toLowerCase() === "promoter") {
-                            // promoter mutations aren't labeled as such in mutationType, but in proteinChange, so we must detect it there
-                            indices.push(this.mutationOrder.indexOf("promoter"));
-                        }
-                        else {
-                            let simplifiedMutationType = MolProfileMapping.getMutationType(d.mutationType);
-                            if (simplifiedMutationType !== "fusion") {
-                                if (simplifiedMutationType !== "missense" && simplifiedMutationType !== "inframe" && simplifiedMutationType !== "other") {
-                                    simplifiedMutationType = "trunc"
-                                }
-                                indices.push(this.mutationOrder.indexOf(simplifiedMutationType));
-                            }
-                        }
-                    });
-                    if (indices.length > 0) {
-                        mutationType = this.mutationOrder[Math.min(...indices)];
+            mappingFunction = entry => {
+                if (entry !== undefined && entry.hasOwnProperty("mutationType")) {
+                    let mutationType;
+                    if ((entry.proteinChange || "").toLowerCase() === "promoter") {
+                        mutationType = "promoter"
                     }
+                    else {
+                        mutationType = MolProfileMapping.getMutationType(entry.mutationType);
+                        if (mutationType !== "missense" && mutationType !== "inframe" && mutationType !== "other") {
+                            mutationType = "trunc"
+                        }
+                    }
+                    return mutationType;
                 }
-                return mutationType;
+                else {
+                    return "wild type";
+                }
             }
         }
         else {
-            mappingFunction = currentSample => {
-                const missense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "missense");
-                const nonsense = list.filter(d => d.sampleId === currentSample && MolProfileMapping.getMutationType(d.mutationType) === "nonsense");
-                let vaf = undefined;
-                let altCount = -1;
-                let refCount = -1;
-                if (missense.length > 0) {
-                    altCount = missense[0].tumorAltCount;
-                    refCount = missense[0].tumorRefCount;
-                }
-                else if (nonsense.length > 0) {
-                    altCount = nonsense[0].tumorAltCount;
-                    refCount = nonsense[0].tumorRefCount;
-                }
-                if (altCount !== -1 && refCount !== -1) {
-                    vaf = altCount / (altCount + refCount);
+            mappingFunction = entry => {
+                let vaf;
+                if (entry !== undefined && entry.hasOwnProperty("tumorRefCount") && entry.hasOwnProperty("tumorAltCount")) {
+                    if (entry.tumorAltCount !== -1 && entry.tumorRefCount !== -1) {
+                        vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
+                    }
                 }
                 return vaf;
             }
@@ -350,7 +335,35 @@ class MolProfileMapping {
         this.rootStore.timepointStructure.forEach(d => {
             d.forEach(f => {
                 if (this.currentPanels[profileId][f.sample].includes(entrezID)) {
-                    mapper[f.sample] = mappingFunction(f.sample);
+                    const entries = list.filter(d => d.sampleId === f.sample);
+                    let entry = undefined;
+                    let min = this.mutationOrder.length - 1;
+                    if (entries.length > 0) {
+                        let indices = [];
+                        entries.forEach(d => {
+                            if ((d.proteinChange || "").toLowerCase() === "promoter") {
+                                // promoter mutations aren't labeled as such in mutationType, but in proteinChange, so we must detect it there
+                                indices.push(this.mutationOrder.indexOf("promoter"));
+                                if (min > this.mutationOrder.indexOf("promoter")) {
+                                    min = this.mutationOrder.indexOf("promoter");
+                                    entry = d
+                                }
+                            }
+                            else {
+                                let simplifiedMutationType = MolProfileMapping.getMutationType(d.mutationType);
+                                if (simplifiedMutationType !== "fusion") {
+                                    if (simplifiedMutationType !== "missense" && simplifiedMutationType !== "inframe" && simplifiedMutationType !== "other") {
+                                        simplifiedMutationType = "trunc"
+                                    }
+                                    if (min > this.mutationOrder.indexOf(simplifiedMutationType)) {
+                                        min = this.mutationOrder.indexOf(simplifiedMutationType);
+                                        entry = d
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    mapper[f.sample] = mappingFunction(entry);
                 }
                 else mapper[f.sample] = undefined;
             });
@@ -449,8 +462,8 @@ class MolProfileMapping {
                             value = undefined;
                         }
                     }
-                    else if(datatype==="ORDINAL"){
-                        value=value.toString();
+                    else if (datatype === "ORDINAL") {
+                        value = value.toString();
                     }
                     mapper[element.sample] = value;
                 }

@@ -71,11 +71,7 @@ class OriginalVariable {
      * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        let currDomain = domain;
-        if (domain.length === 0) {
-            return this.getDefaultDomain()
-        }
-        return currDomain;
+        return domain.concat(...this.getDefaultDomain().filter(d=>!domain.includes(d)));
     }
 
     /**
