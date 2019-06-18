@@ -180,7 +180,11 @@ class RootStore {
 
             var numOfPatients = Object.keys(ST).length;
 
+            var timeLineLength=this.timepointStructure.length;
+
             let self=this;
+
+           
 
             var dTypeRet=function(q){
                 return self.clinicalSampleCategories
@@ -224,6 +228,8 @@ class RootStore {
                     
                     m=m/total_val;
 
+                    m= m/timeLineLength;
+
                     m= this.getNumWithSetDec(m/numOfPatients,2);
 
                 }
@@ -256,6 +262,8 @@ class RootStore {
                     
                     m=m/range_val;
 
+                    m=m/timeLineLength;
+                    
                     m = this.getNumWithSetDec(m/numOfPatients,2);
 
                 }
