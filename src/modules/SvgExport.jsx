@@ -502,7 +502,7 @@ var svg_prefix =
         }
         variableMetadata = variableMetadata + '</g>';
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*18*5+15).toString() + '">' +
             
             print_svg +
             svg_prefix +
@@ -532,7 +532,7 @@ var svg_prefix =
         //var temp2 = '<div>' + tmp.innerHTML + '<div>'
 
 
-        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30, height: 1000}).then((canvas) => {
             var element = document.createElement("a");
             element.href = canvas.toDataURL('image/png');
             element.download = "download.png";
@@ -548,7 +548,7 @@ var svg_prefix =
         } else {
             tmp = document.getElementById("block-view");
         }
-        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30, height: 1000}).then((canvas) => {
             const imgData = canvas.toDataURL('image/png');
             // Multiplying by 1.33 because canvas.toDataURL increases the size of the image by 33%
             const pdf = new jsPDF('l', 'px', [canvas.width*1.33, canvas.height*1.33]);

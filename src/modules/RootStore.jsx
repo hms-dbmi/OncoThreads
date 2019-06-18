@@ -197,12 +197,16 @@ class RootStore {
 
                     //var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
 
-                    var dType = dTypeRet(iK);
+            var timeLineLength=this.timepointStructure.length;
 
-                    if (dType === "STRING") {
-                        var all_vals = Object.values(iV);
-                        var unique_vals = [...new Set(all_vals)];
+            let self=this;
 
+           
+
+            var dTypeRet=function(q){
+                return self.clinicalSampleCategories
+                    .filter(function(d){return d.id===q;})[0].datatype;
+            };
                         var total_val = unique_vals.length;
 
                         //console.log("num of values: " + total_val);
@@ -233,7 +237,9 @@ class RootStore {
                         all_vals = Object.values(iV);
                         unique_vals = [...new Set(all_vals)];
 
-                        //var total_val=unique_vals.length;
+                    m= m/timeLineLength;
+
+                    m= this.getNumWithSetDec(m/numOfPatients,2);
 
                         var range_val = Math.max(...all_vals) - Math.min(...all_vals) + 1;
 
@@ -262,10 +268,9 @@ class RootStore {
 
                     }
 
-                    //console.log(m);
-
-                    this.scoreStructure[iK] = m;
-
+                    m=m/timeLineLength;
+                    
+                    m = this.getNumWithSetDec(m/numOfPatients,2);
 
                     m = 0;
                 }
