@@ -14,24 +14,26 @@ class ColorScales {
      */
     static createRange(domain, range, datatype) {
         let currRange = range;
-        if (currRange.length === 0) {
-            if (datatype === "ORDINAL") {
-                currRange = ColorScales.getDefaultOrdinalRange(domain.length);
-            }
-            else if (datatype === "STRING") {
-                currRange = ColorScales.defaultCategoricalRange;
-            }
-            else if (datatype === "BINARY") {
-                currRange = ColorScales.defaultBinaryRange
-            }
-            else if (datatype === "NUMBER") {
-                let min = Math.min(...domain);
-                if (min < 0) {
-                    currRange = ColorScales.defaultContinuousThreeColors;
-                }
-                else {
+        if (range.length < domain.length) {
+            if (range.length === 0) {
+                if (datatype === "ORDINAL") {
                     currRange = ColorScales.defaultContinuousTwoColors;
                 }
+                else if (datatype === "BINARY") {
+                    currRange = ColorScales.defaultBinaryRange
+                }
+                else if (datatype === "NUMBER") {
+                    let min = Math.min(...domain);
+                    if (min < 0) {
+                        currRange = ColorScales.defaultContinuousThreeColors;
+                    }
+                    else {
+                        currRange = ColorScales.defaultContinuousTwoColors;
+                    }
+                }
+            }
+            if (datatype === "STRING") {
+                currRange = range.concat(...ColorScales.defaultCategoricalRange.filter(d => !range.includes(d)));
             }
         }
         return currRange;
@@ -99,8 +101,8 @@ class ColorScales {
      */
     static getOrdinalScale(range, domain) {
         return function (value) {
-            let helper=d3.scaleLinear().range(range.slice()).domain(range.map((d,i)=>i/(range.length-1)));
-            let interpolatedRange = domain.map((d, i) => helper(i / (domain.length-1)));
+            let helper = d3.scaleLinear().range(range.slice()).domain(range.map((d, i) => i / (range.length - 1)));
+            let interpolatedRange = domain.map((d, i) => helper(i / (domain.length - 1)));
             const colorScale = d3.scaleOrdinal().range(interpolatedRange).domain(domain.slice());
             if (value === undefined) {
                 return '#f7f7f7';
@@ -110,17 +112,19 @@ class ColorScales {
     }
 
     /**
-     * gets default range for isOrdinal variable
-     * @param {number} domainLength
-     * @returns {string[]}
+     * gets the ideal color of the text depending on the background color
+     * @param {string} rgbString
+     * @returns {string}
      */
-    static getDefaultOrdinalRange(domainLength) {
-        let step = 1 / 2;
-        let range = [];
-        for (let i = 0; i < 2; i++) {
-            range.push(d3ScaleChromatic.interpolateGreys(i * step));
+    static getHighContrastColor(rgbString) {
+        const rgb = rgbString.replace(/[^\d,]/g, '').split(',');
+        let brightness = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+        if (brightness < 255 / 2) {
+            return "white";
         }
-        return range
+        else {
+            return "black";
+        }
     }
 }
 

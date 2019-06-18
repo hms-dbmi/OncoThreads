@@ -72,17 +72,13 @@ class DerivedVariable {
         };
     }
 
-    /**
+   /**
      * creates domain (use provided domain if given, otherwise use default domain)
      * @param {(number[]|string[]|boolean[])} domain
-     * @returns {(number[]|string[]|boolean[])}
+     * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        let currDomain = domain;
-        if (domain.length === 0) {
-            return this.getDefaultDomain();
-        }
-        return currDomain;
+        return domain.concat(...this.getDefaultDomain().filter(d=>!domain.includes(d)));
     }
 
     /**

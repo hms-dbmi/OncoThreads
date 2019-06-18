@@ -225,6 +225,14 @@ class CategoryStore {
                     });
                 });
                 return categoryMapping;
+            },
+            get range(){
+                if(this.isOrdinal){
+                    return this.colorScale.range();
+                }
+                else{
+                    return this.currentCategories.map(d => d.color)
+                }
             }
 
         });
