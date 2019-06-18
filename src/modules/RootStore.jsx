@@ -172,216 +172,217 @@ class RootStore {
 
 
             //calculateVScore: action(() => {
-            calculateVScore() {
+            calculateVScore(){
 
-                var SM = this.staticMappers;
+            var SM= this.staticMappers;
 
-                var ST = this.sampleStructure;
+            var ST=this.sampleStructure;
 
-                var numOfPatients = Object.keys(ST).length;
-
-                let self = this;
-
-                var dTypeRet = function (q) {
-                    return self.clinicalSampleCategories
-                        .filter(function (d) {
-                            return d.id === q;
-                        })[0].datatype;
-                };
-
-                //let scoreStructure = {};
-                var m = 0;
-                for (var i = 1; i < Object.keys(SM).length; i++) {
-                    var iK = Object.keys(SM)[i],
-                        iV = Object.values(SM)[i];
-
-                    //var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
+            var numOfPatients = Object.keys(ST).length;
 
             var timeLineLength=this.timepointStructure.length;
 
             let self=this;
 
-           
+
 
             var dTypeRet=function(q){
                 return self.clinicalSampleCategories
                     .filter(function(d){return d.id===q;})[0].datatype;
             };
-                        var total_val = unique_vals.length;
 
-                        //console.log("num of values: " + total_val);
+            //let scoreStructure = {};
+            var m=0;
+            for(var i=1; i<Object.keys(SM).length; i++){
+                var iK= Object.keys(SM)[i],
+                iV= Object.values(SM)[i];
 
-                        //console.log("for " +iK +": score = ");
+                //var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
 
-                        for (var j = 0; j < Object.keys(ST).length; j++) {
-                            //console.log(Object.keys(ST)[j]);
+                var dType= dTypeRet(iK);
 
-                            for (var k = 0; k < Object.values(ST)[j].length - 1; k++) {
+                if(dType==="STRING"){
+                    var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
+
+                    var total_val=unique_vals.length;
+
+                    //console.log("num of values: " + total_val);
+
+                    //console.log("for " +iK +": score = ");
+
+                    for(var j=0; j<Object.keys(ST).length; j++){
+                        //console.log(Object.keys(ST)[j]);
+
+                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
+                            //console.log(Object.values(ST)[j][k]);
+                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
                                 //console.log(Object.values(ST)[j][k]);
-                                if (iV[Object.values(ST)[j][k]] !== iV[Object.values(ST)[j][k + 1]]) {
-                                    //console.log(Object.values(ST)[j][k]);
-                                    //console.log(iV[Object.values(ST)[j][k]]);
-                                    //console.log(iV[Object.values(ST)[j][k+1]]);
-                                    m++;
-                                }
+                                //console.log(iV[Object.values(ST)[j][k]]);
+                                //console.log(iV[Object.values(ST)[j][k+1]]);
+                                m++;
                             }
-
                         }
 
-                        m = m / total_val;
-
-                        m = this.getNumWithSetDec(m / numOfPatients, 2);
-
                     }
-                    else if (dType === "NUMBER") {
-                        all_vals = Object.values(iV);
-                        unique_vals = [...new Set(all_vals)];
+
+                    m=m/total_val;
 
                     m= m/timeLineLength;
 
                     m= this.getNumWithSetDec(m/numOfPatients,2);
 
-                        var range_val = Math.max(...all_vals) - Math.min(...all_vals) + 1;
+                }
+                else if(dType==="NUMBER"){
+                    all_vals=Object.values(iV);
+                    unique_vals=[...new Set(all_vals)];
 
-                        //console.log("range: " + range_val);
+                    //var total_val=unique_vals.length;
+
+                    var range_val= Math.max(...all_vals)-Math.min(...all_vals) + 1;
+
+                    //console.log("range: " + range_val);
 
 
-                        //console.log("for " +iK +": score = ");
+                    //console.log("for " +iK +": score = ");
 
-                        for (j = 0; j < Object.keys(ST).length; j++) {
-                            //console.log(Object.keys(ST)[j]);
+                    for( j=0; j<Object.keys(ST).length; j++){
+                        //console.log(Object.keys(ST)[j]);
 
-                            for (k = 0; k < Object.values(ST)[j].length - 1; k++) {
-                                //console.log(Object.values(ST)[j][k]);
-                                if (iV[Object.values(ST)[j][k]] !== iV[Object.values(ST)[j][k + 1]]) {
+                        for( k=0; k<Object.values(ST)[j].length-1; k++){
+                            //console.log(Object.values(ST)[j][k]);
+                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
 
-                                    m = m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k + 1]]);
+                                m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
 
-                                }
                             }
-
                         }
 
-                        m = m / range_val;
-
-                        m = this.getNumWithSetDec(m / numOfPatients, 2);
-
                     }
+
+                    m=m/range_val;
 
                     m=m/timeLineLength;
                     
                     m = this.getNumWithSetDec(m/numOfPatients,2);
 
-                    m = 0;
                 }
 
-                console.log(this.scoreStructure);
+                //console.log(m);
 
-                //}),
-            },
+                this.scoreStructure[iK]=m;
 
 
-            getNumWithSetDec: action((num, numOfDec) => {
-                var pow10s = Math.pow(10, numOfDec || 0);
-                return (numOfDec) ? Math.round(pow10s * num) / pow10s : num;
-            }),
+                m=0;
+            }
 
-            getAverageFromNumArr: action((numArr, numOfDec) => {
-                //if( !isArray( numArr ) ){ return false;	}
-                var i = numArr.length,
-                    sum = 0;
-                while (i--) {
-                    sum += numArr[i];
+            console.log(this.scoreStructure);
+
+        //}),
+        },
+
+
+        getNumWithSetDec: action( (num, numOfDec ) =>{
+            var pow10s = Math.pow( 10, numOfDec || 0 );
+            return ( numOfDec ) ? Math.round( pow10s * num ) / pow10s : num;
+        }),
+
+        getAverageFromNumArr: action((numArr, numOfDec ) => {
+            //if( !isArray( numArr ) ){ return false;	}
+            var i = numArr.length,
+                sum = 0;
+            while( i-- ){
+                sum += numArr[ i ];
+            }
+            return this.getNumWithSetDec( (sum / numArr.length ), numOfDec );
+        }),
+
+        getVariance: action((numArr, numOfDec ) => {
+            //if( !isArray(numArr) ){ return false; }
+            var avg = this.getAverageFromNumArr( numArr, numOfDec ),
+                i = numArr.length,
+                v = 0;
+
+            //console.log("avg= "+avg);
+
+
+            while( i-- ){
+                v = v+ Math.pow( (numArr[ i ] - avg), 2 );
+            }
+
+            //console.log(v);
+
+            v = v/numArr.length;
+
+            //console.log(v);
+
+            return this.getNumWithSetDec( v, numOfDec );
+        }),
+
+        calculateVScoreWithinTimeLine: action(() => {
+
+
+            var SM= this.staticMappers;
+
+            var ST=this.sampleStructure;
+
+            let self=this;
+
+
+            Object.keys(SM).forEach((iK,i) => {
+                if(!i) {
+                    return;
                 }
-                return this.getNumWithSetDec((sum / numArr.length), numOfDec);
-            }),
+                var iV= SM[iK];
 
-            getVariance: action((numArr, numOfDec) => {
-                //if( !isArray(numArr) ){ return false; }
-                var avg = this.getAverageFromNumArr(numArr, numOfDec),
-                    i = numArr.length,
-                    v = 0;
+                this.TimeLineVariability[iK]={};
 
-                //console.log("avg= "+avg);
-
-
-                while (i--) {
-                    v = v + Math.pow((numArr[i] - avg), 2);
+                if(iK==="MUTATION_COUNT"){
+                    //console.log("numerical");
                 }
+                var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
-                //console.log(v);
+                //if(dType==="STRING"){
 
-                v = v / numArr.length;
+                    var samples=Object.values(ST);
 
-                //console.log(v);
-
-                return this.getNumWithSetDec(v, numOfDec);
-            }),
-
-            calculateVScoreWithinTimeLine: action(() => {
+                    var sample_length=samples.map(function(d){return d.length});
 
 
-                var SM = this.staticMappers;
-
-                var ST = this.sampleStructure;
-
-                let self = this;
-
-
-                Object.keys(SM).forEach((iK, i) => {
-                    if (!i) {
-                        return;
-                    }
-                    var iV = SM[iK];
-
-                    this.TimeLineVariability[iK] = {};
-
-                    if (iK === "MUTATION_COUNT") {
-                        //console.log("numerical");
-                    }
-                    var dType = self.clinicalSampleCategories.filter((d) => d.id === iK)[0].datatype;
-
-                    //if(dType==="STRING"){
-
-                    var samples = Object.values(ST);
-
-                    var sample_length = samples.map(function (d) {
-                        return d.length
-                    });
-
-
-                    var max_sample = Math.max(...sample_length);
+                    var max_sample=Math.max(...sample_length);
 
                     [...Array(max_sample).keys()].forEach(a => {
 
-                        //for(var a=0; a<max_sample; a++){
+                    //for(var a=0; a<max_sample; a++){
 
                         //var r=[];
 
                         //samples.forEach(function(d){if(d[a]) r.push(d[a])});
-                        var r = samples.filter(d => d[a]).map((d) => d[a]);
+                        var r = samples.filter(d=> d[a]).map((d)=>d[a]);
+
 
 
                         //var set1 = new Set();
 
-                        var temp = [];
-                        for (var j = 0; j < r.length; j++) {
+                        var temp=[];
+                        for(var j=0; j<r.length; j++){
                             //set1.add(iV[r[j]]);
                             temp.push(iV[r[j]]);
                         }
 
                         //console.log(temp);
 
-                        var uniq = [...new Set(temp)];
+                        var uniq=[...new Set(temp)];
 
-                        var u_vals = [];
+                        var u_vals=[];
 
-                        for (var x = 0; x < uniq.length; x++) {
-                            let q = uniq[x];
+                        for(var x=0; x<uniq.length; x++){
+                            let q=uniq[x];
 
-                            let t_num = temp.filter(d => d === q).length;
+                            let t_num=temp.filter(d=>d===q).length;
 
                             u_vals.push(t_num);
+
 
 
                         }
@@ -392,35 +393,36 @@ class RootStore {
 
                         //var m=0;
 
-                        var t_v = 0;
+                        var t_v=0;
 
                         //console.log(iK);
                         //console.log("\n n is " + temp.length);
-                        if (dType === "NUMBER") {
-                            for (x = 0; x < u_vals.length; x++) {
-                                if (temp.length * temp.length - temp.length !== 0) { //avoid divide by zero with this condition
-                                    t_v = t_v + (u_vals[x] * (temp.length - u_vals[x])) / (temp.length * temp.length - temp.length);
+                        if(dType==="NUMBER"){
+                            for(x=0; x<u_vals.length; x++){
+                                if(temp.length * temp.length - temp.length !== 0){ //avoid divide by zero with this condition
+                                    t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length - temp.length);
                                 }
-                                else {
-                                    t_v = t_v + (u_vals[x] * (temp.length - u_vals[x]));
+                                else{
+                                    t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]));
                                 }
 
                             }
                         }
-                        else {
-                            for (x = 0; x < u_vals.length; x++) {
-                                t_v = t_v + (u_vals[x] * (temp.length - u_vals[x])) / (temp.length * temp.length);
+                        else{
+                            for(x=0; x<u_vals.length; x++){
+                                t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
                             }
                         }
 
 
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
 
-                        t_v = this.getNumWithSetDec(t_v, 2);
+                        t_v= this.getNumWithSetDec(t_v,2);
 
-                        this.TimeLineVariability[iK][a] = t_v;
+                        this.TimeLineVariability[iK][a]= t_v;
 
                     });
+
 
 
                     //}
@@ -477,9 +479,9 @@ class RootStore {
                 });
 
 
-                console.log(this.TimeLineVariability);
+            console.log(this.TimeLineVariability);
 
-            }),
+        }),
 
 
             /**
@@ -493,16 +495,16 @@ class RootStore {
                         this.createClinicalSampleMapping(data);
                         if (data.length !== 0) {
                             this.initialVariable = this.clinicalSampleCategories[0];
-                            this.initialVariable.source = "clinSample";
+                            this.initialVariable.source="clinSample";
                             this.variablesParsed = true;
                             this.firstLoad = false;
                         }
                         this.api.getClinicalPatientData(data => {
                             this.createClinicalPatientMappers(data);
                             if (data.length !== 0) {
-                                if (!this.variablesParsed) {
+                                if(!this.variablesParsed) {
                                     this.initialVariable = this.clinicalPatientCategories[0];
-                                    this.initialVariable.source = "clinPatient";
+                                    this.initialVariable.source="clinPatient";
                                 }
                                 this.variablesParsed = true;
                                 this.firstLoad = false;
