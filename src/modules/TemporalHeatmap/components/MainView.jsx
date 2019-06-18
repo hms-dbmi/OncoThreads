@@ -56,7 +56,7 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
      * Add event listener
      */
     componentDidMount() {
-        this.updateDimensions();
+        this.props.rootStore.visStore.setPlotWidth(this.panes.view.width - 10);
         window.addEventListener("resize", this.updateDimensions);
     }
 
