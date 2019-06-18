@@ -10,16 +10,17 @@ class VisStore {
         //height of rects in a row which is primary
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
+        this.horizontalGap=1;
         //gap between rows in heatmap
-        this.gap = 1;
         //space for transitions
         //gap between partitions in grouped timepoints
         this.colorRectHeight = 2;
-        this.bandRectHeight=15;
+        this.bandRectHeight = 15;
         this.partitionGap = 10;
         this.svgWidth = 700;
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
+            gap:1,
             transitionSpace: 100,
             timepointY: [],
             plotHeight: 700,
@@ -71,6 +72,9 @@ class VisStore {
              */
             setTransitionSpace: action(transitionSpace => {
                 this.transitionSpace = transitionSpace;
+            }),
+            setGap: action(gapHeight => {
+                this.gap = gapHeight;
             }),
             /**
              * height of svg based on zoom level
