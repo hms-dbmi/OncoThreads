@@ -146,6 +146,7 @@ class RootStore {
                     this.geneNamesAPI.geneList = {};
                 }
                 this.staticMappers = {};
+                this.scoreStructure = {};
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
