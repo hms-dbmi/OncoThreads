@@ -331,7 +331,7 @@ const RowOperator = inject("rootStore", "uiStore", "undoRedoStore")(observer(cla
                         fontWeight = "bold";
                     }
                     const transform = "translate(0," + pos + ")";
-                    const iconScale = (_self.props.rootStore.visStore.secondaryHeight - _self.props.rootStore.visStore.gap) / 20;
+                    const iconScale = (_self.props.rootStore.visStore.secondaryHeight) / 20;
                     let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
