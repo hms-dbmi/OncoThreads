@@ -83,7 +83,7 @@ class cBioAPI {
                 console.log(error);
             }
             else {
-                console.log("Could not available molecular profiles")
+                console.log("Could not load the available molecular profiles")
 
             }
         });
