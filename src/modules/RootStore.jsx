@@ -29,7 +29,7 @@ class RootStore {
 
         //this.scoreStructureTimeLine = {};
 
-        this.TimeLineVariability={};
+        this.TimeLineVariability = {};
 
         this.timeDistanceId = uuidv4(); // random id for time distance variable
 
@@ -158,7 +158,7 @@ class RootStore {
                         this.events = events;
                         this.buildTimelineStructure();
                         this.createTimeGapMapping();
-                        
+
                         this.timelineParsed = true;
                         callback();
                     })
@@ -166,13 +166,13 @@ class RootStore {
             }),
 
 
-             /*
-            * calculate score for variability 
-            */
+            /*
+           * calculate score for variability
+           */
 
 
             //calculateVScore: action(() => {
-            calculateVScore(){ 
+            calculateVScore(){
 
             var SM= this.staticMappers;
 
@@ -184,7 +184,7 @@ class RootStore {
 
             let self=this;
 
-           
+
 
             var dTypeRet=function(q){
                 return self.clinicalSampleCategories
@@ -196,7 +196,7 @@ class RootStore {
             for(var i=1; i<Object.keys(SM).length; i++){
                 var iK= Object.keys(SM)[i],
                 iV= Object.values(SM)[i];
-                
+
                 //var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
 
                 var dType= dTypeRet(iK);
@@ -206,14 +206,14 @@ class RootStore {
                     var unique_vals=[...new Set(all_vals)];
 
                     var total_val=unique_vals.length;
-                    
+
                     //console.log("num of values: " + total_val);
 
                     //console.log("for " +iK +": score = ");
-                    
+
                     for(var j=0; j<Object.keys(ST).length; j++){
                         //console.log(Object.keys(ST)[j]);
-                        
+
                         for(var k=0; k<Object.values(ST)[j].length-1; k++){
                             //console.log(Object.values(ST)[j][k]);
                             if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
@@ -223,9 +223,9 @@ class RootStore {
                                 m++;
                             }
                         }
-                        
+
                     }
-                    
+
                     m=m/total_val;
 
                     m= m/timeLineLength;
@@ -238,28 +238,28 @@ class RootStore {
                     unique_vals=[...new Set(all_vals)];
 
                     //var total_val=unique_vals.length;
-                    
+
                     var range_val= Math.max(...all_vals)-Math.min(...all_vals) + 1;
 
                     //console.log("range: " + range_val);
 
-                   
+
                     //console.log("for " +iK +": score = ");
-                    
+
                     for( j=0; j<Object.keys(ST).length; j++){
                         //console.log(Object.keys(ST)[j]);
-                        
+
                         for( k=0; k<Object.values(ST)[j].length-1; k++){
                             //console.log(Object.values(ST)[j][k]);
                             if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
-                                
+
                                 m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
 
                             }
                         }
-                        
+
                     }
-                    
+
                     m=m/range_val;
 
                     m=m/timeLineLength;
@@ -267,7 +267,7 @@ class RootStore {
                     m = this.getNumWithSetDec(m/numOfPatients,2);
 
                 }
-                
+
                 //console.log(m);
 
                 this.scoreStructure[iK]=m;
@@ -289,7 +289,7 @@ class RootStore {
 
         getAverageFromNumArr: action((numArr, numOfDec ) => {
             //if( !isArray( numArr ) ){ return false;	}
-            var i = numArr.length, 
+            var i = numArr.length,
                 sum = 0;
             while( i-- ){
                 sum += numArr[ i ];
@@ -299,12 +299,12 @@ class RootStore {
 
         getVariance: action((numArr, numOfDec ) => {
             //if( !isArray(numArr) ){ return false; }
-            var avg = this.getAverageFromNumArr( numArr, numOfDec ), 
+            var avg = this.getAverageFromNumArr( numArr, numOfDec ),
                 i = numArr.length,
                 v = 0;
-         
+
             //console.log("avg= "+avg);
-            
+
 
             while( i-- ){
                 v = v+ Math.pow( (numArr[ i ] - avg), 2 );
@@ -315,7 +315,7 @@ class RootStore {
             v = v/numArr.length;
 
             //console.log(v);
-            
+
             return this.getNumWithSetDec( v, numOfDec );
         }),
 
@@ -328,13 +328,13 @@ class RootStore {
 
             let self=this;
 
-            
+
             Object.keys(SM).forEach((iK,i) => {
                 if(!i) {
                     return;
                 }
                 var iV= SM[iK];
-                
+
                 this.TimeLineVariability[iK]={};
 
                 if(iK==="MUTATION_COUNT"){
@@ -347,7 +347,7 @@ class RootStore {
                     var samples=Object.values(ST);
 
                     var sample_length=samples.map(function(d){return d.length});
-                    
+
 
                     var max_sample=Math.max(...sample_length);
 
@@ -360,7 +360,7 @@ class RootStore {
                         //samples.forEach(function(d){if(d[a]) r.push(d[a])});
                         var r = samples.filter(d=> d[a]).map((d)=>d[a]);
 
-                        
+
 
                         //var set1 = new Set();
 
@@ -369,7 +369,7 @@ class RootStore {
                             //set1.add(iV[r[j]]);
                             temp.push(iV[r[j]]);
                         }
-                        
+
                         //console.log(temp);
 
                         var uniq=[...new Set(temp)];
@@ -405,7 +405,7 @@ class RootStore {
                                 else{
                                     t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]));
                                 }
-                                
+
                             }
                         }
                         else{
@@ -413,70 +413,70 @@ class RootStore {
                                 t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
                             }
                         }
-                        
+
 
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-                        
+
                         t_v= this.getNumWithSetDec(t_v,2);
 
                         this.TimeLineVariability[iK][a]= t_v;
 
                     });
 
-                    
 
-                //}
-                //standard deviation //DO NOT DELETE THIS YET
-                /*else if(dType==="NUMBER"){ 
 
-                    samples=Object.values(ST);
+                    //}
+                    //standard deviation //DO NOT DELETE THIS YET
+                    /*else if(dType==="NUMBER"){
 
-                    sample_length=samples.map(function(d){return d.length});
-                    
+                        samples=Object.values(ST);
 
-                    max_sample=Math.max(...sample_length);
+                        sample_length=samples.map(function(d){return d.length});
 
-                    for(a=0; a<max_sample; a++){
 
-                        r=[];
+                        max_sample=Math.max(...sample_length);
 
-                        samples.map(function(d){if(d[a]) r.push(d[a])});                 
+                        for(a=0; a<max_sample; a++){
 
-                        
+                            r=[];
 
-                        //var set1 = new Set();
+                            samples.map(function(d){if(d[a]) r.push(d[a])});
 
-                        temp=[];
-                        for(j=0; j<r.length; j++){
-                            //set1.add(iV[r[j]]);
-                            temp.push(iV[r[j]]);
+
+
+                            //var set1 = new Set();
+
+                            temp=[];
+                            for(j=0; j<r.length; j++){
+                                //set1.add(iV[r[j]]);
+                                temp.push(iV[r[j]]);
+                            }
+
+                            //console.log(temp);
+
+
+                            //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
+
+                            //var t_v=this.getVariance( temp, 4 ); //variance;
+
+                            //get standard deviation
+
+                            t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
+                            this.TimeLineVariability[iK][a]= t_v;
+
                         }
-                        
-                        //console.log(temp);
-
-                        
-                        //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-                        
-                        //var t_v=this.getVariance( temp, 4 ); //variance;
-
-                        //get standard deviation
-
-                        t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
-                        this.TimeLineVariability[iK][a]= t_v;
-
-                    }
 
 
 
-                } */
-                
-                //console.log(m);
+                    } */
 
-                //this.TimeLineVariability[iK][a]= t_v;
+                    //console.log(m);
+
+                    //this.TimeLineVariability[iK][a]= t_v;
 
 
-               // m=0;
-            });
+                    // m=0;
+                });
 
 
             console.log(this.TimeLineVariability);
@@ -512,11 +512,11 @@ class RootStore {
                             callback();
                         })
 
-                       
+
                     });
                 });
 
-                
+
             }),
             /**
              * creates a dictionary mapping sample IDs onto clinical sample data
@@ -547,7 +547,7 @@ class RootStore {
                 this.calculateVScore();
 
                 this.calculateVScoreWithinTimeLine();
-                
+
             }),
             /**
              * creates dictionaries mapping sample IDs onto clinical patient data
@@ -576,7 +576,7 @@ class RootStore {
                 })
             }),
 
-            
+
             /**
              * creates timepoint and sample structure
              */
@@ -617,7 +617,7 @@ class RootStore {
                 this.sampleStructure = sampleStructure;
                 this.timepointStructure = timepointStructure;
                 this.createEventAttributes(excludeDates);
-                
+
             }),
             /**
              * updates the timepoint structure after patients are moved up or down
@@ -819,6 +819,21 @@ class RootStore {
                 this.timelineParsed = false;
             }
         });
+        // reacts to change in stacking mode
+        reaction(() => this.uiStore.horizontalStacking,
+            horizontalStacking => {
+                if (horizontalStacking) {
+                    this.visStore.setGap(8);
+                    //this.visStore.setBandRectHeight(0);
+                    this.visStore.setColorRectHeight(0);
+
+                }
+                else {
+                    this.visStore.setGap(1);
+                    //this.visStore.setBandRectHeight(15);
+                    this.visStore.setColorRectHeight(2);
+                }
+            });
         this.reset = this.reset.bind(this);
 
     }
