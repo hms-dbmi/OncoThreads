@@ -1,7 +1,20 @@
 import React from "react";
 import {inject, observer} from "mobx-react";
 import Select from 'react-select';
-import {Button, Col, Form, FormControl, FormGroup, Grid, HelpBlock, Panel, Row, Tab, Tabs} from "react-bootstrap";
+import {
+    Button,
+    Checkbox,
+    Col,
+    Form,
+    FormControl,
+    FormGroup,
+    Grid,
+    HelpBlock,
+    Panel,
+    Row,
+    Tab,
+    Tabs
+} from "react-bootstrap";
 import StudySummary from "./StudySummary";
 import FontAwesome from 'react-fontawesome';
 import SelectDatatype from "./Modals/SelectDatatype";
@@ -20,6 +33,7 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
             selectedTab: "cBio",
             callback: null,
             modalIsOpen: false,
+            combinedFile: false,
             fileType: "",
             fileNames: [],
             datatypes: [],
@@ -135,14 +149,25 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
      */
     handleEventsLoad(e) {
         if (e.target.files.length > 0) {
-            this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
-                this.props.rootStore.parseTimeline(null, () => {
+            if (!this.state.combinedFile) {
+                this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
+                    this.props.rootStore.parseTimeline(null, () => {
+                    });
                 });
-            });
+            }
+            else {
+                this.props.rootStore.localFileLoader.setCombinedEventFile(e.target.files[0], () => {
+                    console.log("File set");
+                    this.props.rootStore.parseTimeline(null, () => {
+                        console.log("Timeline parsed");
+                    });
+                });
+            }
         }
         else {
             this.props.rootStore.localFileLoader.setEventsParsed("empty");
         }
+
     }
 
     /**
@@ -341,13 +366,17 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
                                     <FormGroup>
                                         <Col sm={5}>
                                             Timeline {DefaultView.getStateIcon(this.props.rootStore.localFileLoader.eventsParsed)}
+                                            <Checkbox checked={this.state.combinedFile}
+                                                      onChange={() => this.setState({combinedFile: !this.state.combinedFile})}>
+                                                Combined event file
+                                            </Checkbox>
                                         </Col>
                                         <Col sm={6}>
                                             <FormControl
                                                 type="file"
                                                 key={this.timelineKey}
                                                 label="File"
-                                                multiple={true}
+                                                multiple={!this.state.combinedFile}
                                                 onChange={this.handleEventsLoad}/>
                                         </Col>
                                         <Col sm={1}>

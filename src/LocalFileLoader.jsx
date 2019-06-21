@@ -27,13 +27,14 @@ class LocalFileLoader {
     constructor() {
         this.patients = []; // all patients contained in the timeline SPECIMEN file
         this.samples = []; // all samples contained in the timeline SPECIMEN file
-        this.samplePatientMap={};
+        this.samplePatientMap = {};
         this.mutations = []; // array of mutation objects
         this.mutationCounts = []; // array of mutation counts
         this.eventFiles = new Map(); // map of event files
         this.profileData = new Map(); // map of molecular data (one array in map corresponds to one molecular profile)
         this.clinicalSampleFile = null; // file containing clinical sample data
         this.clinicalPatientFile = null; // file containing clinical patient data
+        this.combinedEventFile = null;
         this.molecularProfiles = []; // all available molecular profiles
         this.panelMatrix = {};
         this.genePanels = new Map();
@@ -140,6 +141,7 @@ class LocalFileLoader {
                                 if (eventFiles.has("SPECIMEN")) {
                                     this.setPatientsAndSamples(eventFiles.get("SPECIMEN"), () => {
                                         this.eventFiles = eventFiles;
+                                        this.combinedEventFile = null;
                                         this.eventsParsed = "finished";
                                         callback();
                                     });
@@ -173,7 +175,7 @@ class LocalFileLoader {
                         }
                         if (!samples.includes(row.data[0]["SAMPLE_ID"])) {
                             samples.push(row.data[0]["SAMPLE_ID"]);
-                            this.samplePatientMap[row.data[0]["SAMPLE_ID"]]=row.data[0]["PATIENT_ID"];
+                            this.samplePatientMap[row.data[0]["SAMPLE_ID"]] = row.data[0]["PATIENT_ID"];
                         }
                         let date = parseInt(row.data[0]["START_DATE"], 10);
                         if (isNaN(date)) {
@@ -187,6 +189,48 @@ class LocalFileLoader {
                         if (dateCorrect) {
                             this.patients = patients;
                             this.samples = samples;
+                            callback();
+                        }
+                    }
+                });
+            }),
+            /**
+             * sets patients and samples
+             * @param {File} file
+             * @param {loadFinishedCallback} callback
+             */
+            setPatientsAndSamplesCombined: action((file, callback) => {
+                let dateCorrect = true;
+                let patients = [];
+                let samples = [];
+                Papa.parse(file, {
+                    delimiter: "\t",
+                    header: true,
+                    skipEmptyLines: true,
+                    step: (row, parser) => {
+                        if (row.data[0]["EVENT_TYPE"] === "SPECIMEN") {
+                            if (!patients.includes(row.data[0]["PATIENT_ID"])) {
+                                patients.push(row.data[0]["PATIENT_ID"]);
+                            }
+                            if (!samples.includes(row.data[0]["EVENT_VALUE"])) {
+                                samples.push(row.data[0]["EVENT_VALUE"]);
+                                this.samplePatientMap[row.data[0]["EVENT_VALUE"]] = row.data[0]["PATIENT_ID"];
+                            }
+                        }
+                        let date = parseInt(row.data[0]["START_DATE"], 10);
+                        if (isNaN(date)) {
+                            alert("ERROR: START_DATE is not a number");
+                            this.eventsParsed = "error";
+                            dateCorrect = false;
+                            parser.abort();
+                        }
+                    },
+                    complete: () => {
+                        if (dateCorrect) {
+                            this.patients = patients;
+                            this.samples = samples;
+                            console.log(patients, samples);
+                            console.log(this.samplePatientMap);
                             callback();
                         }
                     }
@@ -271,14 +315,17 @@ class LocalFileLoader {
                                     count = counts[sample];
                                 }
                                 return {
-                                    clinicalAttribute:{displayName:"Mutation Count", description:"Mutation Count",datatype:"NUMBER"},
+                                    clinicalAttribute: {
+                                        displayName: "Mutation Count",
+                                        description: "Mutation Count",
+                                        datatype: "NUMBER"
+                                    },
                                     sampleId: sample,
-                                    patientId:this.samplePatientMap[sample],
-                                    clinicalAttributeId:"MUTATION_COUNT",
-                                    value:count,
+                                    patientId: this.samplePatientMap[sample],
+                                    clinicalAttributeId: "MUTATION_COUNT",
+                                    value: count,
                                 }
                             });
-                            console.log(this.mutationCounts);
                             this.mutations = mutations;
                             this.mutationsParsed = "finished";
                         }
@@ -296,7 +343,106 @@ class LocalFileLoader {
                     }
                 })
             }),
-
+            setCombinedEventFile: action((file, callback) => {
+                this.eventsParsed = "loading";
+                Papa.parse(file, {
+                    delimiter: "\t",
+                    header: true,
+                    skipEmptyLines: true,
+                    step: (row, parser) => {
+                        parser.pause();
+                        // check header
+                        if (!LocalFileLoader.checkCombinedTimelineFileHeader(row.meta.fields, file.name)) {
+                            this.eventsParsed = "error";
+                        }
+                        parser.abort();
+                    },
+                    complete: () => {
+                        this.setPatientsAndSamplesCombined(file, () => {
+                            this.combinedEventFile = file;
+                            this.eventFiles = new Map();
+                            this.eventsParsed = "finished";
+                            callback();
+                        });
+                    }
+                });
+            }),
+            /**
+             * loads a combined event file
+             * @param {File} file
+             * @param {object} rawEvents
+             * @param {loadFinishedCallback} callback
+             */
+            loadCombinedEventFile: action((callback) => {
+                let aborted = false;
+                let inconsistentLinebreak = false;
+                let rawEvents = {};
+                Papa.parse(this.combinedEventFile, {
+                    delimiter: "\t",
+                    header: true,
+                    skipEmptyLines: true,
+                    step: (row, parser) => {
+                        console.log(row);
+                        if (row.errors.length === 0) {
+                            if (row.data[0]["EVENT_TYPE"] !== "SPECIMEN") {
+                                if (!(row.data[0]["PATIENT_ID"] in rawEvents)) {
+                                    rawEvents[row.data[0]["PATIENT_ID"]] = [];
+                                }
+                                const validStartDate = !isNaN(parseInt(row.data[0]["START_DATE"], 10));
+                                const validEndDate = row.data[0]["STOP_DATE"] === "" || !isNaN(parseInt(row.data[0]["STOP_DATE"], 10));
+                                if (validStartDate && validEndDate) {
+                                    let currRow = {
+                                        attributes: [{key: "EVENT_VALUE", value: row.data[0]["EVENT_VALUE"]}],
+                                        eventType: row.data[0]["EVENT_TYPE"],
+                                        patientId: row.data[0]["PATIENT_ID"],
+                                        startNumberOfDaysSinceDiagnosis: parseInt(row.data[0]["START_DATE"], 10),
+                                    };
+                                    if (row.data[0]["STOP_DATE"] !== "") {
+                                        currRow.endNumberOfDaysSinceDiagnosis = parseInt(row.data[0]["STOP_DATE"], 10);
+                                    }
+                                    rawEvents[row.data[0]["PATIENT_ID"]].push(currRow);
+                                }
+                                else {
+                                    aborted = true;
+                                    if (!validStartDate) {
+                                        alert("ERROR: START_DATE is not a number in file " + this.combinedEventFile.name);
+                                    }
+                                    else {
+                                        alert("ERROR: STOP_DATE is not a number in file " + this.combinedEventFile.name);
+                                    }
+                                    parser.abort();
+                                }
+                            }
+                        }
+                        else {
+                            inconsistentLinebreak = this.checkErrors(row.errors, row.data[0], this.combinedEventFile.name);
+                            aborted = true;
+                            parser.abort();
+                        }
+                    },
+                    complete: () => {
+                        if (!aborted) {
+                            for (let patient in rawEvents) {
+                                rawEvents[patient].sort((a, b) => {
+                                    return a.startNumberOfDaysSinceDiagnosis - b.startNumberOfDaysSinceDiagnosis;
+                                })
+                            }
+                            callback(rawEvents)
+                        }
+                        else {
+                            if (inconsistentLinebreak) {
+                                console.log("inconsistent lineBreaks");
+                                this.replaceLinebreaks(this.combinedEventFile, (newFile) => {
+                                    this.loadCombinedEventFile(callback);
+                                });
+                            }
+                            else {
+                                this.eventsParsed = "error";
+                            }
+                        }
+                    }
+                });
+            }),
 
             /**
              * loads an event file
@@ -393,15 +539,22 @@ class LocalFileLoader {
             loadEvents: action(callback => {
                 let rawEvents = [];
                 let filesVisited = 0;
-                this.eventFiles.forEach(d => {
-                    this.loadEventFile(d, rawEvents, () => {
-                        filesVisited++;
-                        if (filesVisited === this.eventFiles.size) {
-                            callback(rawEvents);
-                        }
-                    })
+                if (this.combinedEventFile === null) {
+                    this.eventFiles.forEach(d => {
+                        this.loadEventFile(d, rawEvents, () => {
+                            filesVisited++;
+                            if (filesVisited === this.eventFiles.size) {
+                                callback(rawEvents);
+                            }
+                        })
 
-                });
+                    });
+                }
+                else {
+                    this.loadCombinedEventFile(this.combinedEventFile, rawEvents => {
+                        callback(rawEvents);
+                    })
+                }
             }),
 
             /**
@@ -965,6 +1118,23 @@ class LocalFileLoader {
         }
     }
 
+    /**
+     * checks the header of a timeline file
+     * @param {string[]} fields
+     * @param {string} fileName
+     * @returns {boolean} valid or not valid
+     */
+    static checkCombinedTimelineFileHeader(fields, fileName) {
+        const requiredFields = ["PATIENT_ID", "START_DATE", "STOP_DATE", "EVENT_TYPE", "EVENT_VALUE"];
+        let missingFields = requiredFields.filter(field => !fields.includes(field));
+        if (missingFields.length > 0) {
+            alert("ERROR: Column headers do not match. Columns " + missingFields + " are missing in file " + fileName);
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
 
     /**
      * checks header of mutation file
