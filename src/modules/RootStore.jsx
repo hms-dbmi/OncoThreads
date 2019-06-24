@@ -340,7 +340,7 @@ class RootStore {
                 }
                 var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
-                //if(dType==="STRING"){
+                if(dType==="STRING"){
 
                     var samples=Object.values(ST);
 
@@ -395,7 +395,7 @@ class RootStore {
 
                         //console.log(iK);
                         //console.log("\n n is " + temp.length);
-                        if(dType==="NUMBER"){
+                        /*if(dType==="NUMBER"){
                             for(x=0; x<u_vals.length; x++){
                                 if(temp.length * temp.length - temp.length !== 0){ //avoid divide by zero with this condition
                                     t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length - temp.length);
@@ -405,12 +405,12 @@ class RootStore {
                                 }
                                 
                             }
-                        }
-                        else{
+                        }*/
+                        //else{
                             for(x=0; x<u_vals.length; x++){
                                 t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
                             }
-                        }
+                        //}
                         
 
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
@@ -423,9 +423,9 @@ class RootStore {
 
                     
 
-                //}
+                }
                 //standard deviation //DO NOT DELETE THIS YET
-                /*else if(dType==="NUMBER"){ 
+                else if(dType==="NUMBER"){ 
 
                     samples=Object.values(ST);
 
@@ -434,9 +434,9 @@ class RootStore {
 
                     max_sample=Math.max(...sample_length);
 
-                    for(a=0; a<max_sample; a++){
+                    for(var a=0; a<max_sample; a++){
 
-                        r=[];
+                        var r=[];
 
                         samples.map(function(d){if(d[a]) r.push(d[a])});                 
 
@@ -444,8 +444,8 @@ class RootStore {
 
                         //var set1 = new Set();
 
-                        temp=[];
-                        for(j=0; j<r.length; j++){
+                        var temp=[];
+                        for(var j=0; j<r.length; j++){
                             //set1.add(iV[r[j]]);
                             temp.push(iV[r[j]]);
                         }
@@ -455,18 +455,18 @@ class RootStore {
                         
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
                         
-                        //var t_v=this.getVariance( temp, 4 ); //variance;
+                        var t_v=this.getVariance( temp, 2 ); //variance;
 
                         //get standard deviation
 
-                        t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
+                        //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
                         this.TimeLineVariability[iK][a]= t_v;
 
                     }
 
 
 
-                } */
+                } 
                 
                 //console.log(m);
 

@@ -28,7 +28,11 @@ class SvgExport {
         } else {
             tmp = document.getElementById("block-view");
         }
-        var svg_all = tmp.getElementsByTagName("svg");
+        var svg_all = Array.from(tmp.getElementsByTagName("svg"));
+
+        svg_all.sort((svg1, svg2) => {
+            return svg1.getBoundingClientRect().left-svg2.getBoundingClientRect().left
+        });
 
         var print_svg = '';
 
@@ -69,6 +73,7 @@ class SvgExport {
 
             if (boundingRect.x < prev_right && !this.rootStore.uiStore.globalTime) {
 
+                
                 new_right = prev_right + width;
                 new_x = prev_right;
             }
@@ -322,7 +327,13 @@ class SvgExport {
         } else {
             tmp = document.getElementById("block-view");
         }
-        var svg_all = tmp.getElementsByTagName("svg");
+        //var svg_all = tmp.getElementsByTagName("svg");
+
+        var svg_all = Array.from(tmp.getElementsByTagName("svg"));
+
+        svg_all.sort((svg1, svg2) => {
+            return svg1.getBoundingClientRect().left-svg2.getBoundingClientRect().left
+        });
 
         var print_svg = '';
 
@@ -532,7 +543,7 @@ var svg_prefix =
         //var temp2 = '<div>' + tmp.innerHTML + '<div>'
 
 
-        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30, height: 1000}).then((canvas) => {
             var element = document.createElement("a");
             element.href = canvas.toDataURL('image/png');
             element.download = "download.png";
@@ -548,7 +559,7 @@ var svg_prefix =
         } else {
             tmp = document.getElementById("block-view");
         }
-        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30}).then((canvas) => {
+        html2canvas(tmp, {x:-15, width: tmp.getBoundingClientRect().width+30, height: 1000}).then((canvas) => {
             const imgData = canvas.toDataURL('image/png');
             // Multiplying by 1.33 because canvas.toDataURL increases the size of the image by 33%
             const pdf = new jsPDF('l', 'px', [canvas.width*1.33, canvas.height*1.33]);
