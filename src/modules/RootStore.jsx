@@ -147,6 +147,7 @@ class RootStore {
                 }
                 this.staticMappers = {};
                 this.scoreStructure = {};
+                this.TimeLineVariability={};
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
@@ -438,7 +439,8 @@ class RootStore {
 
                         var r=[];
 
-                        samples.map(function(d){if(d[a]) r.push(d[a])});                 
+                        //samples.map(function(d){if(d[a]) r.push(d[a])});                 
+                        samples.filter(d=> {if(d[a]) r.push(d[a])});                 
 
                         
 
