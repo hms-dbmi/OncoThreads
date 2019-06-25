@@ -229,8 +229,6 @@ class LocalFileLoader {
                         if (dateCorrect) {
                             this.patients = patients;
                             this.samples = samples;
-                            console.log(patients, samples);
-                            console.log(this.samplePatientMap);
                             callback();
                         }
                     }
@@ -343,6 +341,11 @@ class LocalFileLoader {
                     }
                 })
             }),
+            /**
+             * sets a combined event file
+             * @param {File} file
+             * @param {loadFinishedCallback} callback
+             */
             setCombinedEventFile: action((file, callback) => {
                 this.eventsParsed = "loading";
                 Papa.parse(file, {
@@ -382,36 +385,40 @@ class LocalFileLoader {
                     header: true,
                     skipEmptyLines: true,
                     step: (row, parser) => {
-                        console.log(row);
                         if (row.errors.length === 0) {
-                            if (row.data[0]["EVENT_TYPE"] !== "SPECIMEN") {
-                                if (!(row.data[0]["PATIENT_ID"] in rawEvents)) {
-                                    rawEvents[row.data[0]["PATIENT_ID"]] = [];
+                            if (!(row.data[0]["PATIENT_ID"] in rawEvents)) {
+                                rawEvents[row.data[0]["PATIENT_ID"]] = [];
+                            }
+                            const validStartDate = !isNaN(parseInt(row.data[0]["START_DATE"], 10));
+                            const validEndDate = row.data[0]["STOP_DATE"] === "" || !isNaN(parseInt(row.data[0]["STOP_DATE"], 10));
+                            if (validStartDate && validEndDate) {
+                                let attributes=[];
+                                if(row.data[0]["ATTRIBUTE_VALUE"]!==""){
+                                    attributes=[{
+                                        key: row.data[0]["ATTRIBUTE_TYPE"],
+                                        value: row.data[0]["ATTRIBUTE_VALUE"]
+                                    }]
                                 }
-                                const validStartDate = !isNaN(parseInt(row.data[0]["START_DATE"], 10));
-                                const validEndDate = row.data[0]["STOP_DATE"] === "" || !isNaN(parseInt(row.data[0]["STOP_DATE"], 10));
-                                if (validStartDate && validEndDate) {
-                                    let currRow = {
-                                        attributes: [{key: "EVENT_VALUE", value: row.data[0]["EVENT_VALUE"]}],
-                                        eventType: row.data[0]["EVENT_TYPE"],
-                                        patientId: row.data[0]["PATIENT_ID"],
-                                        startNumberOfDaysSinceDiagnosis: parseInt(row.data[0]["START_DATE"], 10),
-                                    };
-                                    if (row.data[0]["STOP_DATE"] !== "") {
-                                        currRow.endNumberOfDaysSinceDiagnosis = parseInt(row.data[0]["STOP_DATE"], 10);
-                                    }
-                                    rawEvents[row.data[0]["PATIENT_ID"]].push(currRow);
+                                let currRow = {
+                                    attributes: attributes,
+                                    eventType: row.data[0]["EVENT_TYPE"],
+                                    patientId: row.data[0]["PATIENT_ID"],
+                                    startNumberOfDaysSinceDiagnosis: parseInt(row.data[0]["START_DATE"], 10),
+                                };
+                                if (row.data[0]["STOP_DATE"] !== "") {
+                                    currRow.endNumberOfDaysSinceDiagnosis = parseInt(row.data[0]["STOP_DATE"], 10);
+                                }
+                                rawEvents[row.data[0]["PATIENT_ID"]].push(currRow);
+                            }
+                            else {
+                                aborted = true;
+                                if (!validStartDate) {
+                                    alert("ERROR: START_DATE is not a number in file " + this.combinedEventFile.name);
                                 }
                                 else {
-                                    aborted = true;
-                                    if (!validStartDate) {
-                                        alert("ERROR: START_DATE is not a number in file " + this.combinedEventFile.name);
-                                    }
-                                    else {
-                                        alert("ERROR: STOP_DATE is not a number in file " + this.combinedEventFile.name);
-                                    }
-                                    parser.abort();
+                                    alert("ERROR: STOP_DATE is not a number in file " + this.combinedEventFile.name);
                                 }
+                                parser.abort();
                             }
                         }
                         else {
@@ -431,8 +438,8 @@ class LocalFileLoader {
                         }
                         else {
                             if (inconsistentLinebreak) {
-                                console.log("inconsistent lineBreaks");
                                 this.replaceLinebreaks(this.combinedEventFile, (newFile) => {
+                                    this.combinedEventFile = newFile;
                                     this.loadCombinedEventFile(callback);
                                 });
                             }
@@ -551,7 +558,7 @@ class LocalFileLoader {
                     });
                 }
                 else {
-                    this.loadCombinedEventFile(this.combinedEventFile, rawEvents => {
+                    this.loadCombinedEventFile(rawEvents => {
                         callback(rawEvents);
                     })
                 }
@@ -1119,13 +1126,13 @@ class LocalFileLoader {
     }
 
     /**
-     * checks the header of a timeline file
+     * checks the header of a combined timeline file
      * @param {string[]} fields
      * @param {string} fileName
      * @returns {boolean} valid or not valid
      */
     static checkCombinedTimelineFileHeader(fields, fileName) {
-        const requiredFields = ["PATIENT_ID", "START_DATE", "STOP_DATE", "EVENT_TYPE", "EVENT_VALUE"];
+        const requiredFields = ["PATIENT_ID", "START_DATE", "STOP_DATE", "EVENT_TYPE","ATTRIBUTE_TYPE","ATTRIBUTE_VALUE"];
         let missingFields = requiredFields.filter(field => !fields.includes(field));
         if (missingFields.length > 0) {
             alert("ERROR: Column headers do not match. Columns " + missingFields + " are missing in file " + fileName);

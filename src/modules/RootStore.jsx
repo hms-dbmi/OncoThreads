@@ -137,7 +137,6 @@ class RootStore {
              * @param {loadFinishedCallback} callback
              */
             parseTimeline: action((study, callback) => {
-                console.log("parsing timeline");
                 this.study = study;
                 if (this.isOwnData) {
                     this.api = new FileAPI(this.localFileLoader, this.geneNamesAPI);
@@ -154,17 +153,13 @@ class RootStore {
                 this.variablesParsed = false;
                 this.timelineParsed = false;
                 this.api.getPatients(patients => {
-                    console.log(patients);
                     this.patients = patients;
                     this.api.getEvents(patients, events => {
-                        console.log(events);
-
                         this.events = events;
                         this.buildTimelineStructure();
                         this.createTimeGapMapping();
 
                         this.timelineParsed = true;
-                        console.log("parsed!");
                         callback();
                     })
                 })
@@ -548,6 +543,19 @@ class RootStore {
                         }
                     }
                 });
+                this.clinicalSampleCategories = this.clinicalSampleCategories.sort((a, b) => {
+                    const nameA = a.variable.toUpperCase(); // ignore upper and lowercase
+                    const nameB = b.variable.toUpperCase(); // ignore upper and lowercase
+                    if (nameA < nameB) {
+                        return -1;
+                    }
+                    if (nameA > nameB) {
+                        return 1;
+                    }
+
+                    // names must be equal
+                    return 0;
+                });
 
                 this.calculateVScore();
 
@@ -578,7 +586,20 @@ class RootStore {
                             return this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
                         }
                     });
-                })
+                });
+                this.clinicalPatientCategories = this.clinicalPatientCategories.sort((a, b) => {
+                    const nameA = a.variable.toUpperCase(); // ignore upper and lowercase
+                    const nameB = b.variable.toUpperCase(); // ignore upper and lowercase
+                    if (nameA < nameB) {
+                        return -1;
+                    }
+                    if (nameA > nameB) {
+                        return 1;
+                    }
+
+                    // names must be equal
+                    return 0;
+                });
             }),
 
 

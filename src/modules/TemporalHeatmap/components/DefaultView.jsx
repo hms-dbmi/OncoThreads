@@ -157,9 +157,7 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
             }
             else {
                 this.props.rootStore.localFileLoader.setCombinedEventFile(e.target.files[0], () => {
-                    console.log("File set");
                     this.props.rootStore.parseTimeline(null, () => {
-                        console.log("Timeline parsed");
                     });
                 });
             }
@@ -358,7 +356,7 @@ const DefaultView = inject("rootStore", "undoRedoStore", "studyapi")(observer(cl
                                 </div>
                             </Tab>
                             <Tab eventKey={"own"} title={"Load own dataset"}>
-                                <a href={"https://cbioportal.readthedocs.io/en/latest/File-Formats.html#formats"}
+                                <a href={"https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md"}
                                    rel="noopener noreferrer"
                                    target="_blank">File format documentation</a>
                                 {this.props.rootStore.geneNamesAPI.geneListLoaded ? <Form horizontal>
