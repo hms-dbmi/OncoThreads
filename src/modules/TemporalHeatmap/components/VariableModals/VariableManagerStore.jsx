@@ -166,14 +166,15 @@ class VariableManagerStore {
              */
             sortByDatatype: action((asc) => {
                  let factor=1;
+                 let that=this;
                 if(!asc){
                     factor=-1
                 }
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                        if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
+                        if (that.referencedVariables[a.id].datatype < that.referencedVariables[b.id].datatype) {
                             return -factor
                         }
-                        if (this.referencedVariables[a.id].datatype > this.referencedVariables[b.id].datatype) {
+                        if (that.referencedVariables[a.id].datatype > that.referencedVariables[b.id].datatype) {
                             return factor;
                         }
                         else return 0;

@@ -147,6 +147,7 @@ class RootStore {
                 }
                 this.staticMappers = {};
                 this.scoreStructure = {};
+                this.TimeLineVariability={};
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
@@ -221,6 +222,12 @@ class RootStore {
                                 //console.log(iV[Object.values(ST)[j][k]]);
                                 //console.log(iV[Object.values(ST)[j][k+1]]);
                                 m++;
+                            }
+                            else{
+                                if(iK==="Timepoint"){
+                                    console.log(iV[Object.values(ST)[j][k]]);
+                                    console.log(iV[Object.values(ST)[j][k+1]]);
+                                }
                             }
                         }
 
