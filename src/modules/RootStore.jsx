@@ -347,9 +347,7 @@ class RootStore {
                 
                 this.TimeLineVariability[iK]={};
 
-                if(iK==="MUTATION_COUNT"){
-                    //console.log("numerical");
-                }
+                
                 var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
                 if(dType==="STRING"){
