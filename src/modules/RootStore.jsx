@@ -440,8 +440,13 @@ class RootStore {
                         var r=[];
 
                         //samples.map(function(d){if(d[a]) r.push(d[a])});                 
-                        samples.filter(d=> {if(d[a]) r.push(d[a])});                 
+                        //samples.filter(d=> {if(d[a]) r.push(d[a])});                 
 
+                        for(let p=0; p<samples.length; p++){
+                            if(samples[p][a]){
+                                   r.push(samples[p][a]);
+                               }
+                           }
                         
 
                         //var set1 = new Set();
@@ -452,7 +457,7 @@ class RootStore {
                             temp.push(iV[r[j]]);
                         }
                         
-                        //console.log(temp);
+                        console.log(temp);
 
                         
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;

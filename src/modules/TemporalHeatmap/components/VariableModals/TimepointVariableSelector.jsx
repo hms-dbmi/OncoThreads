@@ -277,7 +277,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         let factor=1;
         var keysSorted;
         var struct;
-        if(timeline=='across'){
+        if(timeline==='across'){
             if(!this.state.sortNumAcrossAsc){
                 factor=-1
             }
@@ -313,7 +313,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             tpScores[timeline] = !tpScores[timeline];
             this.setState({sortTimePointScores: tpScores});
         }
-        
+
         var i, after = {};
         for (i = 0; i < keysSorted.length; i++) {
             after[keysSorted[i]] = this.props.rootStore.scoreStructure[keysSorted[i]];
