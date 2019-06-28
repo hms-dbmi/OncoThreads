@@ -3,7 +3,7 @@ import {inject, observer} from 'mobx-react';
 import {Alert, Button, Checkbox, Col, Form, FormControl, FormGroup,ControlLabel} from 'react-bootstrap';
 import Select from 'react-select';
 import OriginalVariable from "../../stores/OriginalVariable";
-import {//Glyphicon, 
+import {Glyphicon, 
     Table} from 'react-bootstrap';
 
 /**
@@ -13,6 +13,14 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
     constructor(props) {
         super(props);
+        var tpScores=[];
+        [...this.props.rootStore.timepointStructure.keys()].forEach(i => {
+            //sortTimePointScores[i] = true;
+            //tpScores.push({id:i, sortNumTimePoint: true});
+            tpScores.push(true);
+        });
+ 
+ 
         this.state = {
             geneListString: "",
             selectionType: "clinical",
@@ -20,7 +28,21 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             molecularOptions: [],
             showCheckBoxOptions: false,
             vscore: false,
+            sortVarAsc: true,
+            //sortTypeAsc: true,
+            sortNumAcrossAsc: true,
+            sortTimePointScores: tpScores
         };
+
+
+
+
+        //this.setState({sortTimePointScores : tpScores});
+
+        //this.state.sortTimePointScores=tpScores;
+        
+
+
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
@@ -31,6 +53,8 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         this.showVariabilityScores=this.showVariabilityScores.bind(this);
         this.renderVariability=this.renderVariability.bind(this);
         this.handleSort = this.handleSort.bind(this);
+        this.sortAlphabetically=this.sortAlphabetically.bind(this);
+        this.sortNumbers = this.sortNumbers.bind(this);
     }
 
     /**
@@ -227,24 +251,126 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         }
     }
 
+    
      /**
      * sorts current variables
      * @param {string} category
      */
-    handleSort(category) {
+    handleSort(category, timeline) {
         /*if (category === "source") {
             this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id), this.sortSourceAsc);
             this.sortSourceAsc = !this.sortSourceAsc;
-        }
-        else if (category === "alphabet") {
-            this.props.variableManagerStore.sortAlphabetically(this.sortVarAsc);
-            this.sortVarAsc = !this.sortVarAsc;
+        }*/
+        
+        if (category === "alphabet") {
+            this.sortAlphabetically();
+            //this.sortVarAsc = !this.sortVarAsc;
+            this.setState({sortVarAsc: !this.state.sortVarAsc});
 
         }
+        else { //for numbers         
+            this.sortNumbers(timeline); //across or timepoint            
+        }
+    }
+
+    sortNumbers(timeline){
+        let factor=1;
+        var keysSorted;
+        var struct;
+        if(timeline==='across'){
+            if(!this.state.sortNumAcrossAsc){
+                factor=-1
+            }
+
+            struct=this.props.rootStore.scoreStructure;
+            keysSorted = Object.keys(struct).sort(
+                //function(a,b){return struct[a]-struct[b]}
+                function keyOrder(k1, k2) {
+                    if (struct[k1] < struct[k2]) return -factor;
+                    else if (struct[k1] > struct[k2]) return factor;
+                    else return 0;
+                }
+            );
+
+            this.setState({sortNumAcrossAsc: !this.state.sortNumAcrossAsc});
+        }
         else {
-            this.props.variableManagerStore.sortByDatatype(this.sortTypeAsc);
-            this.sortTypeAsc = !this.sortTypeAsc;
-        }*/
+            if(!this.state.sortTimePointScores[timeline]){
+                factor=-1
+            }
+
+            struct=this.props.rootStore.TimeLineVariability;
+            keysSorted = Object.keys(this.props.rootStore.scoreStructure).sort(
+                //function(a,b){return struct[a]-struct[b]}
+                function keyOrder(k1, k2) {
+                    if (struct[k1][timeline] < struct[k2][timeline]) return -factor;
+                    else if (struct[k1][timeline] > struct[k2][timeline]) return factor;
+                    else return 0;
+                }
+            );
+
+            var tpScores = this.state.sortTimePointScores.slice();
+            tpScores[timeline] = !tpScores[timeline];
+            this.setState({sortTimePointScores: tpScores});
+        }
+
+        var i, after = {};
+        for (i = 0; i < keysSorted.length; i++) {
+            after[keysSorted[i]] = this.props.rootStore.scoreStructure[keysSorted[i]];
+            delete this.props.rootStore.scoreStructure[keysSorted[i]];
+        }
+        
+        for (i = 0; i < keysSorted.length; i++) {
+            this.props.rootStore.scoreStructure[keysSorted[i]] = after[keysSorted[i]];
+        }
+
+        console.log(this.props.rootStore.scoreStructure);
+   
+    }
+
+    /**
+     * sort variables alphabetically
+     * @param {boolean} asc - sort ascending/descending
+     */
+    sortAlphabetically(){
+        let factor=1;
+        if(!this.state.sortVarAsc){
+            factor=-1
+        }
+        /*this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+            if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
+                return -factor
+            }
+            if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
+                return factor;
+            }
+            else return 0;
+        }));*/
+
+        //var obj = this.props.rootStore.scoreStructure;
+
+        var keys=Object.keys(this.props.rootStore.scoreStructure);
+
+        keys.sort(function keyOrder(k1, k2) {
+            if (k1 < k2) return -factor;
+            else if (k1 > k2) return factor;
+            else return 0;
+        });
+        
+        console.log(keys);
+
+        var i, after = {};
+        for (i = 0; i < keys.length; i++) {
+            after[keys[i]] = this.props.rootStore.scoreStructure[keys[i]];
+            delete this.props.rootStore.scoreStructure[keys[i]];
+        }
+        
+        for (i = 0; i < keys.length; i++) {
+            this.props.rootStore.scoreStructure[keys[i]] = after[keys[i]];
+        }
+
+        console.log(this.props.rootStore.scoreStructure);
+
     }
 
     renderVariability() {
@@ -269,10 +395,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                     x.push(<td key={i} > {Object.values(Object.values(withinAll[d]))[i]}</td>);
                 }
                 //console.log(withinAll[d][Number(TimePoints[0])]);
-
-                //{that.props.rootStore.clinicalSampleCategories.filter(k=>k.id===d)[0].variable}
-
-
+//{that.props.rootStore.clinicalSampleCategories.filter(k=>k.id===d)[0].variable}
                 elements.push(
                     <tr key={d} 
                         >
@@ -295,49 +418,30 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                 
             
             headerCols.push(
-                    <th key={i+10}>Score in T{i} 
+                    <th key={i+10}>Score in T{i} {this.state.sortTimePointScores[i] ? <Glyphicon onClick={() => this.handleSort("numbers",i)}
+                    glyph="chevron-down"/> :
+<Glyphicon onClick={() => this.handleSort("numbers", i)}
+glyph="chevron-up"/>}
                 </th>);
-
-
-            /*headerCols.push(
-                <th>Score in T{i} {this.sortSourceAsc ? <Glyphicon onClick={() => this.handleSort("timepoint"+i)}
-            glyph="chevron-down"/> :<Glyphicon onClick={() => this.handleSort("source")} glyph="chevron-up"/>}
-            </th>);*/
 
             
             });
-
-            /*return (
-        <div style={{"margin": "10px", "overflow": "scroll"}}>
-        <Table condensed hover>
-            <thead>
-            <tr>
-                <th>Variable {this.sortVarAsc ? <Glyphicon onClick={() => this.handleSort("alphabet")}
-                                                           glyph="chevron-down"/> :
-                    <Glyphicon onClick={() => this.handleSort("alphabet")}
-                               glyph="chevron-up"/>}
-                               </th>
-                <th>Score Across Timeline {this.sortTypeAsc ? <Glyphicon onClick={() => this.handleSort("datatype")}
-                                                            glyph="chevron-down"/> :
-                    <Glyphicon onClick={() => this.handleSort("datatype")}
-                               glyph="chevron-up"/>}</th>
-                {headerCols}
-
-            </tr>
-            </thead>
-            <tbody>
-            {elements}
-            </tbody>
-        </Table>
-            </div>);*/
 
             return (
                 <div style={{"margin": "10px", "overflow": "scroll"}}>
                 <Table condensed hover>
                     <thead>
                     <tr>
-                        <th>Variable  </th>
-                        <th>Score Across Timeline </th>
+                        <th>Variable  {this.state.sortVarAsc ? <Glyphicon onClick={() => this.handleSort("alphabet", "")}
+                                                           glyph="chevron-down"/> :
+                    <Glyphicon onClick={() => this.handleSort("alphabet","")}
+                               glyph="chevron-up"/>} </th>
+                        <th>Score Across Timeline 
+                        {this.state.sortNumAcrossAsc ? <Glyphicon onClick={() => this.handleSort("numbers", "across")}
+                    glyph="chevron-down"/> :
+<Glyphicon onClick={() => this.handleSort("numbers", "across")}
+glyph="chevron-up"/>} 
+                        </th>
                         {headerCols}
         
                     </tr>
