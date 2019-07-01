@@ -8,6 +8,7 @@ import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoricalTable from "../VariableTables/CategoricalTable";
 import ConvertBinaryTable from "../VariableTables/ConvertBinaryTable";
 import CategoryStore from "../VariableTables/CategoryStore";
+import { extendObservable } from "mobx";
 
 /**
  * Modification of a categorical variable
@@ -20,7 +21,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             this.props.derivedVariable === null ? this.props.variable.datatype === "ORDINAL" : this.props.derivedVariable.datatype === "ORDINAL",
             Object.values(this.props.variable.mapper),
             this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range);
-        this.state = this.getInitialState();
+        extendObservable(this, this.initializeObservable());
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.toggleConvertBinary = this.toggleConvertBinary.bind(this);
@@ -30,9 +31,9 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
 
     /**
      * The initial state depends on if the input variable is already modified (derivedVariable !== null)
-     * @return {Object} - state of modified variable.
+     * @return {Object} - of modified variable.
      */
-    getInitialState() {
+    initializeObservable() {
         if (this.props.derivedVariable === null) {
             return {
                 convertBinary: false, // current datatype
@@ -59,7 +60,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      * @param {event} event
      */
     handleNameChange(event) {
-        this.setState({ name: event.target.value });
+        this.name = event.target.value;
     }
 
 
@@ -76,7 +77,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             }
             else {
                 this.props.variableManagerStore.changeVariableRange(this.props.variable.id, returnVariable.range, false);
-                this.props.variableManagerStore.changeVariableName(this.props.variable.id, this.state.name);
+                this.props.variableManagerStore.changeVariableName(this.props.variable.id, this.name);
             }
         }
         else if (!this.props.variableManagerStore.variableChanged(this.props.variable.id, returnVariable)) {
@@ -84,13 +85,13 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
             this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, this.props.variable);
         } else if (this.props.variableManagerStore.variableChanged(this.props.derivedVariable.id, returnVariable)) {
             this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, returnVariable);
-            if (this.state.applyToAll) {
+            if (this.applyToAll) {
                 this.props.variableManagerStore.applyToEntireProfile(returnVariable, this.props.derivedVariable.profile, this.getNameEnding())
             }
         }
         else {
-            this.props.variableManagerStore.changeVariableRange(this.props.derivedVariable.id, returnVariable.range, this.state.applyToAll);
-            this.props.variableManagerStore.changeVariableName(this.props.derivedVariable.id, this.state.name);
+            this.props.variableManagerStore.changeVariableRange(this.props.derivedVariable.id, returnVariable.range, this.applyToAll);
+            this.props.variableManagerStore.changeVariableName(this.props.derivedVariable.id, this.name);
 
         }
         this.props.closeModal();
@@ -102,13 +103,13 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      */
     getReturnVariable() {
         const newId = uuidv4();
-        let name = this.state.name;
+        let name = this.name;
         let datatype = this.props.variable.datatype;
         let range = [];
         let domain = [];
         let modification;
         //case: no binary conversion
-        if (!this.state.convertBinary) {
+        if (!this.convertBinary) {
             //case: isOrdinal color scale
             if (this.categoryStore.isOrdinal) {
                 datatype = "ORDINAL";
@@ -124,12 +125,12 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
         //case: binary conversion
         else {
             datatype = "BINARY";
-            range = this.state.binaryColors;
-            modification = { type: "categoricalTransform", mapping: this.state.binaryMapping };
+            range = this.binaryColors;
+            modification = { type: "categoricalTransform", mapping: this.binaryMapping };
         }
         const derivedProfile = uuidv4();
-        if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
-            name = this.state.name + this.getNameEnding();
+        if (this.name === this.props.variable.name && this.props.derivedVariable === null) {
+            name = this.name + this.getNameEnding();
         }
         return new DerivedVariable(newId, name, datatype, this.props.variable.description, [this.props.variable.id], modification, range, domain,
             DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]), derivedProfile, this.props.variable.type);
@@ -140,7 +141,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      * @return {string}
      */
     getNameEnding() {
-        if (this.state.convertBinary) {
+        if (this.convertBinary) {
             return "_BINARY"
         }
         else {
@@ -203,7 +204,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      * change between binary conversion and category customization
      */
     toggleConvertBinary() {
-        this.setState({ convertBinary: !this.state.convertBinary });
+        this.convertBinary = !this.convertBinary;
     }
 
 
@@ -212,7 +213,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      * @param {Object} mapping
      */
     setBinaryMapping(mapping) {
-        this.setState({ binaryMapping: mapping })
+        this.binaryMapping = mapping;
     }
 
     /**
@@ -220,7 +221,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      * @param {string[]} colors
      */
     setBinaryColors(colors) {
-        this.setState({ binaryColors: colors })
+        this.binaryColors = colors;
     }
 
     /**
@@ -228,11 +229,11 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
      * @return {ConvertBinaryTable|CategoricalTable} category table
      */
     getTable() {
-        if (this.state.convertBinary) {
+        if (this.convertBinary) {
             return <ConvertBinaryTable variableDomain={this.props.variable.domain}
                                        mapper={this.props.variable.mapper}
-                                       binaryColors={this.state.binaryColors}
-                                       binaryMapping={this.state.binaryMapping}
+                                       binaryColors={this.binaryColors}
+                                       binaryMapping={this.binaryMapping}
                                        setBinaryMapping={this.setBinaryMapping}
                                        setBinaryColors={this.setBinaryColors}/>
         }
@@ -253,8 +254,8 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
         let profileIndex = this.props.rootStore.availableProfiles.map(d => d.molecularProfileId).indexOf(this.props.variable.profile);
         if (this.props.variable.profile === "Mutation type" || profileIndex !== -1) {
             checkbox =
-                <Checkbox checked={this.state.applyToAll} value={this.state.applyToAll}
-                          onChange={() => this.setState({ applyToAll: !this.state.applyToAll })}>{"Apply action to all variables of this type"}</Checkbox>
+                <Checkbox checked={this.applyToAll} value={this.applyToAll}
+                          onChange={() => this.applyToAll = !this.applyToAll}>{"Apply action to all variables of this type"}</Checkbox>
         }
         return checkbox;
 
@@ -273,17 +274,17 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
                         <ControlLabel>Variable name</ControlLabel>
                         <FormControl
                             type="text"
-                            value={this.state.name}
+                            value={this.name}
                             onChange={this.handleNameChange}/>
                     </form>
                     <h5>Description</h5>
                     <p>{this.props.variable.description}</p>
                     <FormGroup>
                         <Radio onChange={this.toggleConvertBinary} name="radioGroup"
-                               checked={!this.state.convertBinary}>
+                               checked={!this.convertBinary}>
                             Customize categories
                         </Radio>{' '}
-                        <Radio onChange={this.toggleConvertBinary} name="radioGroup" checked={this.state.convertBinary}>
+                        <Radio onChange={this.toggleConvertBinary} name="radioGroup" checked={this.convertBinary}>
                             Convert to binary
                         </Radio>{' '}
                     </FormGroup>
@@ -295,7 +296,7 @@ const ModifyCategorical = inject("variableManagerStore", "rootStore")(observer(c
                         Cancel
                     </Button>
                     <Button
-                        disabled={!this.state.convertBinary && !this.categoryStore.uniqueCategories}
+                        disabled={!this.convertBinary && !this.categoryStore.uniqueCategories}
                         onClick={this.handleApply}>
                         Apply
                     </Button>
