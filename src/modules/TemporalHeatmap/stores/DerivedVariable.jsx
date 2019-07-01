@@ -53,7 +53,7 @@ class DerivedVariable {
                 this.range = range
             }),
             changeDomain: action(domain => {
-                this.range = domain
+                this.domain = domain
             }),
             changeName: action(name => {
                 this.name = name;

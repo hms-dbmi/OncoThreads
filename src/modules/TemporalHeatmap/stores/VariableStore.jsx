@@ -215,7 +215,7 @@ class VariableStore {
         });
         profileVariables.forEach(variableId => {
             if (this.referencedVariables[variableId].profile in profileDomains) {
-                this.referencedVariables[variableId].domain = profileDomains[this.referencedVariables[variableId].profile]
+                this.referencedVariables[variableId].changeDomain(profileDomains[this.referencedVariables[variableId].profile]);
             }
         });
     }

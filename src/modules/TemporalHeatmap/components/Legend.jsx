@@ -70,7 +70,7 @@ const Legend = inject("rootStore","uiStore")(observer(class Legend extends React
      * @param {number} opacity
      * @param {number} fontSize
      * @param {number} lineheight
-     * @param {string} color
+     * @param {function} color
      * @returns {(g|null)}
      */
     getContinuousLegend(opacity, fontSize, lineheight, color) {
