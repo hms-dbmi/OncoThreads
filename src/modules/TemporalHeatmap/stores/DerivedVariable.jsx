@@ -1,5 +1,5 @@
 import ColorScales from "../UtilityClasses/ColorScales";
-import {action, extendObservable} from "mobx";
+import { action, extendObservable } from "mobx";
 
 /**
  * a derived variable is derived of one or multiple other variables
@@ -21,7 +21,6 @@ class DerivedVariable {
      */
     constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper, profile, type) {
         this.id = id;
-        this.name = name;
         this.datatype = datatype;
         this.derived = true;
         this.description = description;
@@ -32,24 +31,32 @@ class DerivedVariable {
         this.profile = profile;
         this.referenced = 0; // number of variables that reference this variable
         extendObservable(this,
-            this.initializeObservable(domain, range))
+            this.initializeObservable(name, domain, range))
 
     }
 
     /**
      * initializes observable values
+     * @param {string} name
      * @param {(number[]|string[]|boolean[])} domain
      * @param {string[]} range
      * @returns {Object}
      */
-    initializeObservable(domain, range) {
+    initializeObservable(name, domain, range) {
         let currDomain = this.createDomain(domain);
         let currRange = ColorScales.createRange(currDomain, range, this.datatype);
         return {
             domain: currDomain,
             range: currRange,
+            name: name,
             changeRange: action(range => {
                 this.range = range
+            }),
+            changeDomain: action(domain => {
+                this.range = domain
+            }),
+            changeName: action(name => {
+                this.name = name;
             }),
             get colorScale() {
                 let scale;
@@ -72,13 +79,13 @@ class DerivedVariable {
         };
     }
 
-   /**
+    /**
      * creates domain (use provided domain if given, otherwise use default domain)
      * @param {(number[]|string[]|boolean[])} domain
      * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        return domain.concat(...this.getDefaultDomain().filter(d=>!domain.includes(d)));
+        return domain.concat(...this.getDefaultDomain().filter(d => !domain.includes(d)));
     }
 
     /**
