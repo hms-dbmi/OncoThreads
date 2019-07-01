@@ -1,6 +1,6 @@
 import React from 'react';
-import {inject, observer, Provider} from 'mobx-react';
-import {Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio} from 'react-bootstrap';
+import { inject, observer, Provider } from 'mobx-react';
+import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } from 'react-bootstrap';
 import DerivedVariable from "../../../stores/DerivedVariable";
 import uuidv4 from 'uuid/v4';
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
@@ -8,7 +8,7 @@ import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoryStore from "../VariableTables/CategoryStore";
 import CategoricalTable from "../VariableTables/CategoricalTable";
 import BinaryTable from "../VariableTables/BinaryTable";
-import {extendObservable} from "mobx";
+import { extendObservable } from "mobx";
 
 /**
  * Component for combining variables
@@ -67,7 +67,7 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
      */
     initializeObservable() {
         let name; // name of combined variable
-        let modification = {operator: "or", datatype: "BINARY"}; // way of modification
+        let modification = { operator: "or", datatype: "BINARY" }; // way of modification
         let nameChanged = false; // has the name been changed
         let binaryColors = ColorScales.defaultBinaryRange;
         // if the variable is already combined base parameters on this variable
@@ -151,18 +151,18 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
      */
     getModificationPanel() {
         // depending on the datatype of the combined variable display either the table for binary categories or the table showing categorical categories
-            if (this.modification.datatype === "BINARY") {
-                return [<ControlLabel key={"label"}>Result</ControlLabel>
-                    , <BinaryTable key={"table"}
-                                   mapper={DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), this.modification)}
-                                   binaryColors={this.binaryColors}
-                                   invert={false}
-                                   setColors={this.setBinaryColors}/>]
-            }
-            else {
-                return [<ControlLabel key={"label"}>Result</ControlLabel>
-                    , <Provider categoryStore={this.categoryStore} key={"table"}><CategoricalTable/></Provider>]
-            }
+        if (this.modification.datatype === "BINARY") {
+            return [<ControlLabel key={"label"}>Result</ControlLabel>
+                , <BinaryTable key={"table"}
+                               mapper={DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), this.modification)}
+                               binaryColors={this.binaryColors}
+                               invert={false}
+                               setColors={this.setBinaryColors}/>]
+        }
+        else {
+            return [<ControlLabel key={"label"}>Result</ControlLabel>
+                , <Provider categoryStore={this.categoryStore} key={"table"}><CategoricalTable/></Provider>]
+        }
     }
 
     /**
@@ -171,8 +171,8 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
     handleApply() {
         let datatype, range, description;
         this.modification.variableNames = this.props.variables.map(d => d.name);
-        this.modification.type="binaryCombine";
-        let mapper = DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper),this.modification);
+        this.modification.type = "binaryCombine";
+        let mapper = DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables.map(d => d.mapper), this.modification);
         if (this.modification.datatype === "BINARY") {
             datatype = "BINARY";
             range = this.binaryColors;
@@ -196,7 +196,13 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
             this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.keep);
         }
         else {
-            this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, newVariable)
+            if (this.props.variableManagerStore.variableChanged(this.props.derivedVariable.id, newVariable)) {
+                this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, newVariable)
+            }
+            else {
+                this.props.variableManagerStore.changeVariableRange(this.props.derivedVariable.id, newVariable.range, false);
+                this.props.variableManagerStore.changeVariableName(this.props.derivedVariable.id, this.name);
+            }
         }
         if (!this.keep) {
             this.props.variables.forEach(d => {
@@ -213,7 +219,7 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
                 <Modal.Header closeButton>
                     <Modal.Title>Combine Variables</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{minHeight: "400px"}}>
+                <Modal.Body style={{ minHeight: "400px" }}>
                     <ControlLabel>Variable name</ControlLabel>
                     <FormControl
                         type="text"
@@ -221,12 +227,12 @@ const BinaryCombine = inject("variableManagerStore")(observer(class BinaryCombin
                         onChange={this.handleNameChange}/>
                     <FormGroup>
                         Select binary operator
-                        <Radio onChange={() => this.setModification({operator: "or", datatype: "BINARY"})}
+                        <Radio onChange={() => this.setModification({ operator: "or", datatype: "BINARY" })}
                                checked={this.modification.operator === "or" && this.modification.datatype === "BINARY"}
                                name="binaryCombine">
                             OR (binary)
                         </Radio>
-                        <Radio onChange={() => this.setModification({operator: "and", datatype: "BINARY"})}
+                        <Radio onChange={() => this.setModification({ operator: "and", datatype: "BINARY" })}
                                checked={this.modification.operator === "and" && this.modification.datatype === "BINARY"}
                                name="binaryCombine">
                             AND (binary)

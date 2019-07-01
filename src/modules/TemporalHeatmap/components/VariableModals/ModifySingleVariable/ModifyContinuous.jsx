@@ -1,5 +1,5 @@
 import React from 'react';
-import {inject, observer, Provider} from 'mobx-react';
+import { inject, observer, Provider } from 'mobx-react';
 import Binner from './Binner/Binner';
 import * as d3 from 'd3';
 import {
@@ -21,7 +21,7 @@ import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunction
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import UtilityFunctions from "../../../UtilityClasses/UtilityFunctions";
 import BinningStore from "./Binner/BinningStore";
-import VariableTable from "../VariableTable";
+import { extendObservable } from "mobx";
 
 /**
  * Modification of a continuous variable
@@ -32,7 +32,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         this.width = 350;
         this.height = 200;
         this.allValues = this.getAllInitialValues();
-        this.state = this.setInitialState();
+        extendObservable(this, this.initializeObservable());
         this.binningStore = this.createBinningStore();
         this.changeTransformation = this.changeTransformation.bind(this);
         this.handleApply = this.handleApply.bind(this);
@@ -43,7 +43,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      * sets the initial state depending on the existence of an already derived variable
      * @returns {{bins: Object, binNames: Object, bin: boolean, colorRange: string[], isXLog: boolean, name: string}}
      */
-    setInitialState() {
+    initializeObservable() {
         let bin = true;
         let colorRange = this.props.variable.range;
         if (this.props.derivedVariable === null) {
@@ -91,7 +91,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         else {
             bins = this.props.derivedVariable.modification.binning.bins.slice();
             binNames = this.props.derivedVariable.modification.binning.binNames.map(d => {
-                return {name: d.name, modified: d.modified}
+                return { name: d.name, modified: d.modified }
             });
             isBinary = this.props.derivedVariable.datatype === "BINARY";
         }
@@ -137,9 +137,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         }
         this.binningStore.setBins([min, med, max], d3.scaleLinear().domain([min, max]).range([0, this.width]));
         this.binningStore.resetBinNames();
-        this.setState({
-            isXLog: isLog,
-        });
+        this.isXLog = isLog;
     }
 
     /**
@@ -156,27 +154,37 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      */
     handleApply() {
         let profileDomain = [];
-        const oldVariable = this.props.derivedVariable !== null ? this.props.derivedVariable : this.props.variable;
-        if (this.state.applyToAll) {
+        if (this.applyToAll) {
             profileDomain = this.props.variableManagerStore.getProfileDomain(this.props.variable.profile);
         }
-        const returnVariable = this.getReturnVariable(profileDomain, oldVariable);
+        const returnVariable = this.getReturnVariable(profileDomain);
         // if variable has been modified replace the variable with the new variable
-        if (VariableTable.variableChanged(oldVariable, returnVariable)) {
-            this.props.variableManagerStore.replaceDisplayedVariable(oldVariable.id, returnVariable);
-            if (this.state.applyToAll) {
-                if (this.state.isXLog && profileDomain[0] < 0) {
-                    alert("Modification could not be applied to other variables, since variables with negative values cannot be log transformed");
-                }
-                else {
-                    this.props.variableManagerStore.applyToEntireProfile(returnVariable, oldVariable.profile, this.getNameEnding())
-                }
+        if (this.props.derivedVariable === null) {
+            if (this.props.variableManagerStore.variableChanged(this.props.variable.id, returnVariable)) {
+                this.props.variableManagerStore.replaceDisplayedVariable(this.props.variable.id, returnVariable);
+            }
+            else {
+                this.props.variableManagerStore.changeVariableRange(this.props.variable.id, returnVariable.range, false);
+                this.props.variableManagerStore.changeVariableName(this.props.variable.id, this.name);
             }
         }
-        // if variable has not been modified (except for the colors) only change color range
         else {
-            if (this.state.applyToAll) {
-                this.props.variableManagerStore.applyRangeToEntireProfile(oldVariable.profile, returnVariable.range);
+            if (!this.props.variableManagerStore.variableChanged(this.props.variable.id, returnVariable)) {
+                this.props.variableManagerStore.changeVariableRange(this.props.variable.id, returnVariable.range, false);
+                this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, this.props.variable);
+            }
+            else if (this.props.variableManagerStore.variableChanged(this.props.derivedVariable.id, returnVariable)) {
+                this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, returnVariable);
+                if (this.applyToAll) {
+                    if (this.isXLog && profileDomain[0] < 0) {
+                        alert("Modification could not be applied to other variables, since variables with negative values cannot be log transformed");
+                    } else {
+                        this.props.variableManagerStore.applyToEntireProfile(returnVariable, this.props.derivedVariable.profile, this.getNameEnding())
+                    }
+                }
+            } else {
+                this.props.variableManagerStore.changeVariableRange(this.props.derivedVariable.id, returnVariable.range, this.applyToAll);
+                this.props.variableManagerStore.changeVariableName(this.props.derivedVariable.id, this.name);
             }
         }
         this.props.closeModal();
@@ -185,17 +193,16 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
     /**
      * gets modified variable
      * @param {number[]} profileDomain
-     * @param {(DerivedVariable|OriginalVariable)} oldVariable
      * @return {DerivedVariable}
      */
-    getReturnVariable(profileDomain, oldVariable) {
+    getReturnVariable(profileDomain) {
         const newId = uuidv4();
         let modification = {};
         let datatype = "NUMBER";
-        let range = this.state.colorRange;
+        let range = this.colorRange;
         let domain = [];
         //case:  values have been binned
-        if (this.state.bin) {
+        if (this.bin) {
             modification = this.getBinnedModification(profileDomain);
             //case: values are converted to binary
             if (!this.binningStore.isBinary) {
@@ -211,7 +218,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         else {
             modification = {
                 type: "continuousTransform",
-                transformFunction: this.state.isXLog ? Math.log10 : false, binning: false
+                transformFunction: this.isXLog ? Math.log10 : false, binning: false
             };
         }
         const mapper = DerivedMapperFunctions.getModificationMapper(modification, [this.props.variable.mapper]);
@@ -227,7 +234,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
     getBinnedModification(profileDomain) {
         let bins = this.binningStore.bins.slice();
         let binNames = this.binningStore.binNames.slice();
-        if (this.state.applyToAll) {
+        if (this.applyToAll) {
             let min = profileDomain[0];
             let max = profileDomain[1];
             if (min < 0 && max > 0) {
@@ -249,7 +256,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         }
         return {
             type: "continuousTransform",
-            transformFunction: this.state.isXLog ? Math.log10 : false, binning: {
+            transformFunction: this.isXLog ? Math.log10 : false, binning: {
                 bins: bins,
                 binNames: binNames
             }
@@ -263,11 +270,11 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      * @return {string[]}
      */
     getBinnedRange(modification, profileDomain) {
-        if (this.state.applyToAll) {
-            return ColorScales.getBinnedRange(this.state.colorRange, profileDomain, this.state.isXLog, modification.binning.bins);
+        if (this.applyToAll) {
+            return ColorScales.getBinnedRange(this.colorRange, profileDomain, this.isXLog, modification.binning.bins);
         }
         else {
-            return ColorScales.getBinnedRange(this.state.colorRange, this.props.variable.domain, this.state.isXLog, modification.binning.bins);
+            return ColorScales.getBinnedRange(this.colorRange, this.props.variable.domain, this.isXLog, modification.binning.bins);
         }
     }
 
@@ -276,11 +283,11 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      * @return {string}
      */
     getName() {
-        if (this.state.name === this.props.variable.name && this.props.derivedVariable === null) {
-            return this.state.name + this.getNameEnding();
+        if (this.name === this.props.variable.name && this.props.derivedVariable === null) {
+            return this.name + this.getNameEnding();
         }
         else {
-            return this.state.name;
+            return this.name;
         }
     }
 
@@ -290,10 +297,10 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
      */
     getNameEnding() {
         let nameEnding = '';
-        if (this.state.bin) {
+        if (this.bin) {
             nameEnding = "_BINNED"
         }
-        else if (this.state.isXLog) {
+        else if (this.isXLog) {
             nameEnding = "_LOG"
         }
         return nameEnding;
@@ -310,13 +317,13 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             disabled = true;
         }
         return (<FormGroup>
-            <Radio onChange={this.changeTransformation} checked={!this.state.isXLog} disabled={disabled}
+            <Radio onChange={this.changeTransformation} checked={!this.isXLog} disabled={disabled}
                    value={'linear'}
                    name="XradioGroup"
                    inline>
                 None
             </Radio>{' '}
-            <Radio onChange={this.changeTransformation} value={'log'} checked={this.state.isXLog} disabled={disabled}
+            <Radio onChange={this.changeTransformation} value={'log'} checked={this.isXLog} disabled={disabled}
                    name="XradioGroup" inline>
                 Log
             </Radio>{' '}
@@ -339,25 +346,25 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             .domain([0, d3.max(bins, function (d) {
                 return d.length;
             })]).range([this.height, 0]);
-        if (this.state.bin) {
+        if (this.bin) {
             return <Provider binningStore={this.binningStore}>
                 <Binner data={this.allValues}
                         yScale={yScale}
-                        xLabel={this.state.name}
+                        xLabel={this.name}
                         width={this.width}
                         height={this.height}
                         histBins={bins}/>
             </Provider>
         }
         else {
-            const margin = {top: 20, right: 20, bottom: 90, left: 50},
+            const margin = { top: 20, right: 20, bottom: 90, left: 50 },
                 w = this.width + (margin.left + margin.right),
                 h = this.height + (margin.top + margin.bottom);
             const transform = 'translate(' + margin.left + ',' + margin.top + ')';
             return <svg width={w} height={h}>
                 <g transform={transform}><Histogram bins={bins} xScale={this.binningStore.xScale} yScale={yScale}
                                                     h={this.height}
-                                                    w={this.width} xLabel={this.state.name}
+                                                    w={this.width} xLabel={this.name}
                                                     numValues={this.allValues.length}/></g>
             </svg>
         }
@@ -373,7 +380,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
     static getGradient(range, width, height) {
         let intermediateStop = null;
         if (range.length === 3) {
-            intermediateStop = <stop offset="50%" style={{stopColor: range[1]}}/>;
+            intermediateStop = <stop offset="50%" style={{ stopColor: range[1] }}/>;
         }
         let randomId = uuidv4();
         return <svg width={width}
@@ -381,9 +388,9 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
             <g>
                 <defs>
                     <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style={{stopColor: range[0]}}/>
+                        <stop offset="0%" style={{ stopColor: range[0] }}/>
                         {intermediateStop}
-                        <stop offset="100%" style={{stopColor: range[range.length - 1]}}/>
+                        <stop offset="100%" style={{ stopColor: range[range.length - 1] }}/>
                     </linearGradient>
                 </defs>
                 <rect width={width} height={height} fill={"url(#" + randomId + ")"}/>
@@ -407,7 +414,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         }
         return <form>
             <FormGroup>
-                {linearColorRange.map((d, i) => <Radio key={i} onChange={() => this.setState({colorRange: d})}
+                {linearColorRange.map((d, i) => <Radio key={i} onChange={() => this.colorRange = d}
                                                        name="ColorScaleGroup">
                     {ModifyContinuous.getGradient(d, width, height)}
                 </Radio>)}
@@ -425,8 +432,8 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
         let profileIndex = this.props.rootStore.availableProfiles.map(d => d.molecularProfileId).indexOf(this.props.variable.profile);
         if (profileIndex !== -1 || this.props.variable.profile === "Variant allele frequency") {
             checkbox =
-                <Checkbox checked={this.state.applyToAll} value={this.state.applyToAll}
-                          onChange={() => this.setState({applyToAll: !this.state.applyToAll})}>{"Apply action to all variables of this type"}</Checkbox>
+                <Checkbox checked={this.applyToAll} value={this.applyToAll}
+                          onChange={() => this.applyToAll = !this.applyToAll}>{"Apply action to all variables of this type"}</Checkbox>
         }
         return checkbox;
 
@@ -447,8 +454,8 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
                         <ControlLabel>Variable name</ControlLabel>
                         <FormControl
                             type="text"
-                            value={this.state.name}
-                            onChange={(e) => this.setState({name: e.target.value})}/>
+                            value={this.name}
+                            onChange={(e) => this.name = e.target.value}/>
                         <ControlLabel>Description</ControlLabel>
                         <p>{this.props.variable.description}</p>
                         <ControlLabel>Color Scale <OverlayTrigger rootClose={true}
@@ -456,7 +463,7 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
                                                                   placement="right"
                                                                   overlay={colorScalePopOver}><FontAwesome
                             name="paint-brush"/></OverlayTrigger></ControlLabel>
-                        <p>{ModifyContinuous.getGradient(this.state.colorRange, 100, 20)}</p>
+                        <p>{ModifyContinuous.getGradient(this.colorRange, 100, 20)}</p>
                         <ControlLabel>Transform data</ControlLabel>
                         {this.getRadio()}
                     </form>
@@ -467,8 +474,8 @@ const ModifyContinuous = inject("variableManagerStore", "rootStore")(observer(cl
                     <Button onClick={this.close}>
                         Cancel
                     </Button>
-                    <Button onClick={() => this.setState({bin: !this.state.bin})}
-                            bsStyle="primary">{this.state.bin ? "<< Cancel Binning" : "Bin >>"}</Button>
+                    <Button onClick={() => this.bin = !this.bin}
+                            bsStyle="primary">{this.bin ? "<< Cancel Binning" : "Bin >>"}</Button>
                     <Button onClick={() => this.handleApply()}>
                         Apply
                     </Button>

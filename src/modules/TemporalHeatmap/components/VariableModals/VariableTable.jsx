@@ -1,5 +1,5 @@
 import React from 'react';
-import {inject, observer} from 'mobx-react';
+import { inject, observer } from 'mobx-react';
 import {
     Button,
     DropdownButton,
@@ -18,7 +18,7 @@ import ModifyContinuous from "./ModifySingleVariable/ModifyContinuous";
 import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
 import SaveVariableDialog from "../Modals/SaveVariableDialog";
 import CombineModal from "./CombineVariables/CombineModal";
-import {extendObservable} from "mobx";
+import { extendObservable } from "mobx";
 
 /**
  * Component for displaying and modifying current variables in a table
@@ -164,7 +164,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
                 bgColor = "lightgray"
             }
             elements.push(
-                <tr key={d.id} style={{backgroundColor: bgColor}}
+                <tr key={d.id} style={{ backgroundColor: bgColor }}
                     onClick={(e) => {
                         if (e.target.nodeName === "TD") {
                             this.props.variableManagerStore.toggleSelected(d.id)
@@ -321,37 +321,6 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
         this.props.variableManagerStore.move(isUp, toExtreme, [index]);
     }
 
-    /**
-     * check if variable has changed
-     * @param {(OriginalVariable|DerivedVariable)} oldVariable
-     * @param {DerivedVariable} newVariable
-     * @returns {boolean}
-     */
-    static variableChanged(oldVariable, newVariable) {
-        //case: datatype changed?
-        if (oldVariable.datatype !== newVariable.datatype) {
-            return true;
-        }
-        else {
-            //case: domain changed?
-            if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
-                return true
-            }
-            else if (!oldVariable.range.every((d, i) => d === newVariable.range[i])) {
-                return true
-            }
-            //case: mapper changed?
-            else {
-                for (let sample in oldVariable.mapper) {
-                    if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-
-
     render() {
         return (
             <div>
@@ -361,7 +330,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
 
                     </FormGroup>
                 </Form>
-                <div style={{maxHeight: 400, overflowY: "scroll"}}>
+                <div style={{ maxHeight: 400, overflowY: "scroll" }}>
                     {this.showCurrentVariables()}
                 </div>
                 <DropdownButton

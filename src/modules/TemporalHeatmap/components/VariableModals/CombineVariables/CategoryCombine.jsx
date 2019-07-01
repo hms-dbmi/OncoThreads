@@ -1,13 +1,13 @@
 import React from 'react';
-import {inject, observer, Provider} from 'mobx-react';
-import {Button, Checkbox, ControlLabel, FormControl, Modal} from 'react-bootstrap';
+import { inject, observer, Provider } from 'mobx-react';
+import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootstrap';
 import DerivedVariable from "../../../stores/DerivedVariable";
 import uuidv4 from 'uuid/v4';
 import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunctions";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import CategoryStore from "../VariableTables/CategoryStore";
 import CategoricalTable from "../VariableTables/CategoricalTable";
-import {extendObservable} from "mobx";
+import { extendObservable } from "mobx";
 
 /**
  * Component for combining variables
@@ -47,7 +47,7 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
             isOrdinal = this.props.derivedVariable.datatype === "ORDINAL";
             allValues = Object.values(this.props.derivedVariable.mapper);
             colorRange = this.props.derivedVariable.range;
-            }
+        }
         return new CategoryStore(currentCategories, isOrdinal, allValues, colorRange);
     }
 
@@ -121,15 +121,22 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
         }
         description = "Category combination of " + this.props.variables.map(d => d.name);
         mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mapper, this.categoryStore.categoryMapping);
-        let newVariable = new DerivedVariable(uuidv4(), this.name, datatype, description, this.props.variables.map(d => d.id), {
-            type: "categoryCombine",
-            mapping: this.categoryStore.categoryMapping
-        }, this.categoryStore.range, [], mapper, uuidv4(), "combined");
+        let newVariable = new DerivedVariable(
+            uuidv4(), this.name, datatype, description, this.props.variables.map(d => d.id),
+            { type: "categoryCombine", mapping: this.categoryStore.categoryMapping },
+            this.categoryStore.range, [], mapper, uuidv4(), "combined",
+        );
         if (this.props.derivedVariable === null) {
             this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.keep);
         }
         else {
-            this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, newVariable)
+            if (this.props.variableManagerStore.variableChanged(this.props.derivedVariable.id, newVariable)) {
+                this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, newVariable)
+            }
+            else {
+                this.props.variableManagerStore.changeVariableRange(this.props.derivedVariable.id, newVariable.range, false);
+                this.props.variableManagerStore.changeVariableName(this.props.derivedVariable.id, this.name);
+            }
         }
         if (!this.keep) {
             this.props.variables.forEach(d => {
@@ -146,7 +153,7 @@ const CategoryCombine = inject("variableManagerStore")(observer(class CategoryCo
                 <Modal.Header closeButton>
                     <Modal.Title>Combine Variables</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{minHeight: "400px"}}>
+                <Modal.Body style={{ minHeight: "400px" }}>
                     <ControlLabel>Variable name</ControlLabel>
                     <FormControl
                         type="text"

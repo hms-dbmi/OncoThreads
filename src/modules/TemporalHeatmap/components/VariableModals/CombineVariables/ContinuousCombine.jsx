@@ -1,5 +1,5 @@
 import React from 'react';
-import {inject, observer} from 'mobx-react';
+import { inject, observer } from 'mobx-react';
 import {
     Button,
     Checkbox,
@@ -18,7 +18,7 @@ import DerivedMapperFunctions from "../../../UtilityClasses/DeriveMapperFunction
 import ModifyContinuous from "../ModifySingleVariable/ModifyContinuous";
 import ColorScales from "../../../UtilityClasses/ColorScales";
 import * as d3 from "d3";
-import {extendObservable} from "mobx";
+import { extendObservable } from "mobx";
 import Histogram from "../ModifySingleVariable/Binner/Histogram";
 
 /**
@@ -97,7 +97,13 @@ const ContinuousCombine = inject("variableManagerStore")(observer(class Continuo
             this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.keep);
         }
         else {
-            this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, newVariable)
+            if (this.props.variableManagerStore.variableChanged(this.props.derivedVariable.id, newVariable)) {
+                this.props.variableManagerStore.replaceDisplayedVariable(this.props.derivedVariable.id, newVariable)
+            }
+            else {
+                this.props.variableManagerStore.changeVariableRange(this.props.derivedVariable.id, newVariable.range, false);
+                this.props.variableManagerStore.changeVariableName(this.props.derivedVariable.id, this.name);
+            }
         }
         if (!this.keep) {
             this.props.variables.forEach(d => {
@@ -146,7 +152,7 @@ const ContinuousCombine = inject("variableManagerStore")(observer(class Continuo
             .domain([0, d3.max(bins, function (d) {
                 return d.length;
             })]).range([this.height, 0]);
-        const margin = {top: 20, right: 20, bottom: 90, left: 50},
+        const margin = { top: 20, right: 20, bottom: 90, left: 50 },
             w = this.width + (margin.left + margin.right),
             h = this.height + (margin.top + margin.bottom);
         const transform = 'translate(' + margin.left + ',' + margin.top + ')';
@@ -168,7 +174,7 @@ const ContinuousCombine = inject("variableManagerStore")(observer(class Continuo
                 <Modal.Header closeButton>
                     <Modal.Title>Combine Variables</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{minHeight: "400px"}}>
+                <Modal.Body style={{ minHeight: "400px" }}>
                     <form>
                         <ControlLabel>Variable name</ControlLabel>
                         <FormControl
