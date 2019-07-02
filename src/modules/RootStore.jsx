@@ -355,7 +355,7 @@ class RootStore {
                         
                         for(var k=0; k<Object.values(ST)[j].length-1; k++){
                             //console.log(Object.values(ST)[j][k]);
-                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
+                            if(iV[Object.values(ST)[j][k]] && iV[Object.values(ST)[j][k+1]] && (iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]])){
                                 
                                 m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
 
