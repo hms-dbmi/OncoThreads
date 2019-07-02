@@ -202,7 +202,7 @@ class RootStore {
                 if(dType==="STRING"){
 
                     
-                    var all_vals=Object.values(iV);
+                    /*var all_vals=Object.values(iV);
                     var unique_vals=[...new Set(all_vals)];
 
                     var total_val=unique_vals.length;
@@ -234,12 +234,112 @@ class RootStore {
                     
                     m=m/total_val;
 
-                    m= this.getNumWithSetDec(m/numOfPatients,2);
+                    m= this.getNumWithSetDec(m/numOfPatients,2);*/
+
+
+
+
+
+                    //similar approach as within timeline
+
+                    /*var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
+
+                    //var total_val=unique_vals.length;
+                    
+                    //console.log("num of values: " + total_val);
+
+                    //console.log("for " +iK +": score = ");
+
+                    var K=unique_vals.length; // NumOfCategories
+                        
+                    var Fm=Math.max(...unique_vals); // ModalFrequency
+                    
+                    var TotalElements=all_vals.length;
+
+                    //var t_v= K*Fm - TotalElements;
+                    
+                    var t_v=0;
+
+                    if(K-1>0){
+                        t_v=  (TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                    }
+
+
+
+                    m= this.getNumWithSetDec(t_v,2);*/
+
+
+
+                    var all_patients_vals= Object.values(ST);
+
+                    var total_patients=all_patients_vals.length;
+
+                    var all_scores=0;
+
+                    var t_v=0;
+
+                    all_patients_vals.forEach(function(d){
+
+
+
+
+                        var temp=[];
+                        for(var j=0; j<d.length; j++){
+                            //set1.add(iV[r[j]]);
+
+                            if(iV[d[j]]){
+                                temp.push(iV[d[j]]);
+                            }
+
+                            //temp.push(iV[r[j]]);
+                        }
+                        
+                        console.log(temp);
+
+                        var uniq=[...new Set(temp)]; //unique categories
+
+                        var u_vals=[];
+
+                        for(var x=0; x<uniq.length; x++){
+                            let q=uniq[x];
+
+                            let t_num=temp.filter(d=>d===q).length;
+
+                            u_vals.push(t_num);
+
+
+
+                        }
+
+                        
+                        var K=u_vals.length; // NumOfCategories
+                        
+                        var Fm=Math.max(...u_vals); // ModalFrequency
+                        
+                        var TotalElements=temp.length;
+
+                        //var t_v= K*Fm - TotalElements;
+                        
+                        //var t_v=0;
+
+                        if(K-1>0){
+                            t_v= t_v+ (TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                        }
+
+                        //t_v= this.getNumWithSetDec(t_v,2);
+
+                        
+
+
+                    })
+
+                    m=this.getNumWithSetDec(t_v/total_patients, 2);
 
                 }
                 else if(dType==="NUMBER"){
-                    all_vals=Object.values(iV);
-                    unique_vals=[...new Set(all_vals)];
+                    var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
 
                     //var total_val=unique_vals.length;
                     
@@ -250,10 +350,10 @@ class RootStore {
                    
                     //console.log("for " +iK +": score = ");
                     
-                    for( j=0; j<Object.keys(ST).length; j++){
+                    for(var j=0; j<Object.keys(ST).length; j++){
                         //console.log(Object.keys(ST)[j]);
                         
-                        for( k=0; k<Object.values(ST)[j].length-1; k++){
+                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
                             //console.log(Object.values(ST)[j][k]);
                             if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
                                 
@@ -353,7 +453,7 @@ class RootStore {
                 if(dType==="STRING"){
 
 
-                    //coefficient of unalikeability
+                    //coefficient of unalikeability DO NOT REMOVE
 
                     /*var samples=Object.values(ST);
 
