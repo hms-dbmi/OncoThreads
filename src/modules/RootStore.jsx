@@ -179,7 +179,7 @@ class RootStore {
 
             var ST=this.sampleStructure;
 
-            var numOfPatients = Object.keys(ST).length;
+            //var numOfPatients = Object.keys(ST).length;
 
             let self=this;
 
@@ -275,9 +275,124 @@ class RootStore {
 
                     var total_patients=all_patients_vals.length;
 
-                    var all_scores=0;
+                    //var all_scores=0;
 
                     var t_v=0;
+
+                    var index=0;
+                    all_patients_vals.forEach(function(d, i){
+
+
+
+
+                        var temp=[];
+                        for(var j=0; j<d.length; j++){
+                            //set1.add(iV[r[j]]);
+
+                            if(iV[d[j]]){
+                                temp.push(iV[d[j]]);
+                            }
+
+                            //temp.push(iV[r[j]]);
+                        }
+                        
+                        //console.log(temp);
+
+                        var uniq=[...new Set(temp)]; //unique categories
+
+                        var u_vals=[];
+
+                        for(var x=0; x<uniq.length; x++){
+                            let q=uniq[x];
+
+                            let t_num=temp.filter(d=>d===q).length;
+
+                            u_vals.push(t_num);
+
+
+
+                        }
+
+                        
+                        var K=u_vals.length; // NumOfCategories
+                        
+                        var Fm=Math.max(...u_vals); // ModalFrequency
+                        
+                        var TotalElements=temp.length;
+
+                        //var t_v= K*Fm - TotalElements;
+                        
+                        //var t_v=0;
+
+                        var max_temp_var=0;
+                        
+
+                        if(K-1>0){
+                            var temp_var2=(TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                            if(temp_var2>max_temp_var){
+                                max_temp_var=temp_var2;
+                                index=i;
+                            }
+                            t_v= t_v+ temp_var2;
+                        }
+
+                        //t_v= this.getNumWithSetDec(t_v,2);
+
+                        
+
+
+                    })
+
+                    var patients=Object.keys(ST);
+
+                    console.log("For "+ iK + " Patient "+ patients[index]+" has max variance");
+                    m=this.getNumWithSetDec(t_v/total_patients, 2);
+
+                }
+                else if(dType==="NUMBER"){
+
+                    const self=this;
+
+                    /*var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
+
+                    //var total_val=unique_vals.length;
+                    
+                    var range_val= Math.max(...all_vals)-Math.min(...all_vals) + 1;
+
+                    //console.log("range: " + range_val);
+
+                   
+                    //console.log("for " +iK +": score = ");
+                    
+                    for(var j=0; j<Object.keys(ST).length; j++){
+                        //console.log(Object.keys(ST)[j]);
+                        
+                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
+                            //console.log(Object.values(ST)[j][k]);
+                            if(iV[Object.values(ST)[j][k]] && iV[Object.values(ST)[j][k+1]] && (iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]])){
+                                
+                                m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
+
+                            }
+                        }
+                        
+                    }
+                    
+                    m=m/range_val;
+
+                    m = this.getNumWithSetDec(m/numOfPatients,2); */
+
+
+                //coefficient of variance
+
+                    all_patients_vals= Object.values(ST);
+
+                    total_patients=all_patients_vals.length;
+
+                    //var all_scores=0;
+
+                    t_v=0;
 
                     all_patients_vals.forEach(function(d){
 
@@ -295,9 +410,9 @@ class RootStore {
                             //temp.push(iV[r[j]]);
                         }
                         
-                        console.log(temp);
+                        //console.log(temp);
 
-                        var uniq=[...new Set(temp)]; //unique categories
+                        /*var uniq=[...new Set(temp)]; //unique categories
 
                         var u_vals=[];
 
@@ -327,7 +442,17 @@ class RootStore {
                             t_v= t_v+ (TotalElements*K - K*Fm)/(TotalElements * (K-1));
                         }
 
-                        //t_v= this.getNumWithSetDec(t_v,2);
+                        //t_v= this.getNumWithSetDec(t_v,2); */
+
+
+                        
+                        
+                        if(temp.length>0){
+                            var temp_var=self.getCoefficientOfVariation(temp, 2);
+                            //console.log(temp_var);
+
+                            t_v=t_v + temp_var;
+                        }
 
                         
 
@@ -335,38 +460,6 @@ class RootStore {
                     })
 
                     m=this.getNumWithSetDec(t_v/total_patients, 2);
-
-                }
-                else if(dType==="NUMBER"){
-                    var all_vals=Object.values(iV);
-                    var unique_vals=[...new Set(all_vals)];
-
-                    //var total_val=unique_vals.length;
-                    
-                    var range_val= Math.max(...all_vals)-Math.min(...all_vals) + 1;
-
-                    //console.log("range: " + range_val);
-
-                   
-                    //console.log("for " +iK +": score = ");
-                    
-                    for(var j=0; j<Object.keys(ST).length; j++){
-                        //console.log(Object.keys(ST)[j]);
-                        
-                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
-                            //console.log(Object.values(ST)[j][k]);
-                            if(iV[Object.values(ST)[j][k]] && iV[Object.values(ST)[j][k+1]] && (iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]])){
-                                
-                                m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
-
-                            }
-                        }
-                        
-                    }
-                    
-                    m=m/range_val;
-
-                    m = this.getNumWithSetDec(m/numOfPatients,2);
 
                 }
                 
@@ -378,7 +471,7 @@ class RootStore {
                 m=0;
             }
 
-            console.log(this.scoreStructure);
+            //console.log(this.scoreStructure);
 
         //}),
         },
@@ -560,7 +653,7 @@ class RootStore {
                             //temp.push(iV[r[j]]);
                         }
                         
-                        console.log(temp);
+                        //console.log(temp);
 
                         var uniq=[...new Set(temp)]; //unique categories
 
@@ -638,7 +731,7 @@ class RootStore {
                            
                         }
                         
-                        console.log(temp);
+                        //console.log(temp);
 
                         
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
