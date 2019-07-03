@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { observer } from 'mobx-react';
 import {
     Button, ButtonGroup, OverlayTrigger, Popover, Table,
@@ -155,4 +156,12 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
         return (this.displayTable());
     }
 });
+ConvertBinaryTable.propTypes = {
+    variableDomain: PropTypes.arrayOf(PropTypes.string).isRequired,
+    mapper: PropTypes.shape(PropTypes.object).isRequired,
+    binaryMapping: PropTypes.shape(PropTypes.object).isRequired,
+    binaryColors: PropTypes.arrayOf(PropTypes.string).isRequired,
+    setBinaryMapping: PropTypes.func.isRequired,
+    setBinaryColors: PropTypes.func.isRequired,
+};
 export default ConvertBinaryTable;

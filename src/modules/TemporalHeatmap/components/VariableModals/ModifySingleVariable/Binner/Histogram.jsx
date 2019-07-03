@@ -38,7 +38,7 @@ const Histogram = observer(class Histogram extends React.Component {
 Histogram.propTypes = {
     w: PropTypes.number.isRequired,
     h: PropTypes.number.isRequired,
-    bins: PropTypes.arrayOf(PropTypes.number).isRequired,
+    bins: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
     numValues: PropTypes.number.isRequired,
     xScale: PropTypes.func.isRequired,
     yScale: PropTypes.func.isRequired,

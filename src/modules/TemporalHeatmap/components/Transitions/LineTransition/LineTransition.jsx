@@ -133,7 +133,7 @@ LineTransition.propTypes = {
     to: PropTypes.arrayOf(PropTypes.string).isRequired,
     firstHeatmapScale: PropTypes.func.isRequired,
     secondHeatmapScale: PropTypes.func.isRequired,
-    timeGapMapper: PropTypes.shape(PropTypes.object).isRequired,
+    timeGapMapper: PropTypes.objectOf(PropTypes.number).isRequired,
     colorScale: PropTypes.func.isRequired,
 };
 export default LineTransition;

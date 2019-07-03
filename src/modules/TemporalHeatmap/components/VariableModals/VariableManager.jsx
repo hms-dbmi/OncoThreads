@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import {
     Button, Modal, Tab, Tabs,
@@ -95,4 +96,8 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
         );
     }
 }));
+VariableManager.propTypes = {
+    variableManagerOpen: PropTypes.bool.isRequired,
+    closeVariableManager: PropTypes.func.isRequired,
+};
 export default VariableManager;

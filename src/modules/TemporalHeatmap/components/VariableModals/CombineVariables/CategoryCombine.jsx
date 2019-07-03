@@ -195,7 +195,7 @@ const CategoryCombine = inject('variableManagerStore')(observer(class CategoryCo
 CategoryCombine.propTypes = {
     variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
         PropTypes.instanceOf(DerivedVariable)])),
-    derivedVariable: PropTypes.oneOfType([PropTypes.instanceOf(DerivedVariable), null]),
+    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
 };

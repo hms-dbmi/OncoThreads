@@ -1,5 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
 import {
     Button,
     DropdownButton,
@@ -24,8 +25,8 @@ import CombineModal from './CombineVariables/CombineModal';
  * Component for displaying and modifying current variables in a table
  */
 const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class VariableTable extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         extendObservable(this, {
             // current state of data and data parsing
             modifyCategoricalIsOpen: false,
@@ -410,4 +411,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
         );
     }
 }));
+VariableTable.propTypes = {
+    availableCategories: PropTypes.arrayOf(PropTypes.object),
+};
 export default VariableTable;

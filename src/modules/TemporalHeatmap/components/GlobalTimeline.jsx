@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
 import GlobalTransition from './Transitions/GlobalTransition';
@@ -40,7 +41,6 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                     patients={this.props.rootStore.patients}
                     minMax={this.props.rootStore.minMax}
                     heatmapScale={this.props.rootStore.visStore.heatmapScales[0]}
-                    timeScale={this.props.timeScale}
                     {...this.props.tooltipFunctions}
                 />
             </Provider>
@@ -52,7 +52,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
         this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
             if (d.heatmap.length > 0) {
                 timepoints.push(
-                    <g key={`${i}timepoint${i}`}>
+                    <g key={d.globalIndex}>
                         <TimelineTimepoint
                             timepoint={d}
                             currentVariables={this.props.rootStore.dataStore
@@ -93,4 +93,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
         );
     }
 }));
+GlobalTimeline.propTypes = {
+    tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
+};
 export default GlobalTimeline;

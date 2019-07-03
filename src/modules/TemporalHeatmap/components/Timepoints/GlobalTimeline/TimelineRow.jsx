@@ -1,5 +1,5 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import PropTypes from 'prop-types';
 
 /**
@@ -150,10 +150,7 @@ TimelineRow.propTypes = {
     showTooltip: PropTypes.func.isRequired,
     hideTooltip: PropTypes.func.isRequired,
     events: PropTypes.arrayOf(PropTypes.object),
-    row: PropTypes.shape({
-        variable: PropTypes.string,
-        data: PropTypes.arrayOf(PropTypes.object),
-    }).isRequired,
+    row: MobxPropTypes.observableObject.isRequired,
     color: PropTypes.func.isRequired,
 };
 TimelineRow.defaultProps = {

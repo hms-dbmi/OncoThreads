@@ -6,7 +6,7 @@ import VariableTable from './VariableTable';
 /**
  * Component for management of timepoint variables
  */
-const AddTimepointVarTab = inject('variableManagerStore', 'rootStore')(observer(class AddVarModal extends React.Component {
+const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extends React.Component {
     render() {
         // set available categories (profiles)
         const availableCategories = [{ id: 'clinPatient', name: 'Clinical patient data' },

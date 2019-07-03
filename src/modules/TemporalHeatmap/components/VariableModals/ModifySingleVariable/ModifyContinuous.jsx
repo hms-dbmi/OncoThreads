@@ -562,7 +562,7 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
 }));
 ModifyContinuous.propTypes = {
     variable: PropTypes.instanceOf(OriginalVariable),
-    derivedVariable: PropTypes.oneOfType([PropTypes.instanceOf(DerivedVariable), null]),
+    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
 };

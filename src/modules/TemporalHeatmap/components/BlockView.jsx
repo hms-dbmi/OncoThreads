@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
@@ -47,10 +48,10 @@ const BlockView = inject('rootStore')(observer(class BlockView extends React.Com
             }
             // create timepoints
             const transformTP = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
-            if (d.heatmap.length > 0) {
+            if (d.heatmap) {
                 if (d.isGrouped) {
                     timepoints.push(
-                        <g key={`${i}timepoint`} transform={transformTP}>
+                        <g key={d.globalIndex} transform={transformTP}>
                             <Provider
                                 dataStore={this.props.rootStore.dataStore}
                                 visStore={this.props.rootStore.visStore}
@@ -70,7 +71,7 @@ const BlockView = inject('rootStore')(observer(class BlockView extends React.Com
                     );
                 } else {
                     timepoints.push(
-                        <g key={`${i}timepoint`} transform={transformTP}>
+                        <g key={d.globalIndex} transform={transformTP}>
                             <Provider
                                 dataStore={this.props.rootStore.dataStore}
                                 visStore={this.props.rootStore.visStore}
@@ -196,4 +197,8 @@ const BlockView = inject('rootStore')(observer(class BlockView extends React.Com
         );
     }
 }));
+BlockView.propTypes = {
+    tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
+    showContextMenuHeatmapRow: PropTypes.func.isRequired,
+};
 export default BlockView;

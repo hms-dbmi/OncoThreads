@@ -128,7 +128,7 @@ const Binner = inject('binningStore')(observer(class Binner extends React.Compon
 Binner.propTypes = {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
-    histBins: PropTypes.arrayOf(PropTypes.number).isRequired,
+    histBins: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
     yScale: PropTypes.func.isRequired,
     xLabel: PropTypes.string.isRequired,
     data: PropTypes.arrayOf(PropTypes.number).isRequired,

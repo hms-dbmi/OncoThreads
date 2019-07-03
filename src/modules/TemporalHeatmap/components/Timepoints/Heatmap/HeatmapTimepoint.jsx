@@ -2,6 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import HeatmapRow from './HeatmapRow';
+import SingleTimepoint from '../../../stores/SingleTimepoint';
 
 /**
  * Component for creating a heatmap timepoint
@@ -51,7 +52,7 @@ const HeatmapTimepoint = inject('visStore', 'uiStore')(observer(class HeatmapTim
     }
 }));
 HeatmapTimepoint.propTypes = {
-    timepoint: PropTypes.shape(PropTypes.object).isRequired,
+    timepoint: PropTypes.instanceOf(SingleTimepoint).isRequired,
     showContextMenuHeatmapRow: PropTypes.func.isRequired,
     tooltipFunctions: PropTypes.objectOf(PropTypes.func.isRequired),
     heatmapScale: PropTypes.func.isRequired,

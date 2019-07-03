@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { observer } from 'mobx-react';
 import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { SketchPicker } from 'react-color';
@@ -112,4 +113,10 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
         );
     }
 });
+BinaryTable.propTypes = {
+    binaryColors: PropTypes.arrayOf(PropTypes.string).isRequired,
+    setBinaryColors: PropTypes.func.isRequired,
+    mapper: PropTypes.shape(PropTypes.object).isRequired,
+    invert: PropTypes.bool.isRequired,
+};
 export default BinaryTable;

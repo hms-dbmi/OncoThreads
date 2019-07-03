@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import {
     Col, Form, FormControl, FormGroup,
@@ -139,4 +140,7 @@ const EventVariableSelector = inject('variableManagerStore', 'rootStore')(observ
         );
     }
 }));
+EventVariableSelector.propTypes = {
+    eventCategories: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
 export default EventVariableSelector;

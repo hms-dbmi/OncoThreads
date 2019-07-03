@@ -1,5 +1,5 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
@@ -346,7 +346,7 @@ ContinuousRow.propTypes = {
     height: PropTypes.number.isRequired,
     opacity: PropTypes.number.isRequired,
     color: PropTypes.func.isRequired,
-    variableDomain: PropTypes.arrayOf(PropTypes.string).isRequired,
+    variableDomain: MobxPropTypes.observableArrayOf(PropTypes.number).isRequired,
     showTooltip: PropTypes.func.isRequired,
     hideTooltip: PropTypes.func.isRequired,
 };

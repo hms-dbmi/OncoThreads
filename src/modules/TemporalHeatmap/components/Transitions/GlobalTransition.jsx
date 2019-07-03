@@ -76,7 +76,7 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
 }));
 GlobalTransition.propTypes = {
     patients: PropTypes.arrayOf(PropTypes.string).isRequired,
-    minMax: PropTypes.shape(PropTypes.object).isRequired,
+    minMax: PropTypes.objectOf(PropTypes.object).isRequired,
     heatmapScale: PropTypes.func.isRequired,
     showTooltip: PropTypes.func.isRequired,
     hideTooltip: PropTypes.func.isRequired,

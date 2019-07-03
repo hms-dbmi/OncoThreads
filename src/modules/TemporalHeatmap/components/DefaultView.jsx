@@ -85,7 +85,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
      */
     getStudy(selectedOption) {
         this.setState({ selectedStudy: selectedOption.value });
-        this.props.rootStore.parseTimeline(this.props.studies
+        this.props.rootStore.parseTimeline(this.props.studyapi.studies
             .filter(d => d.studyId === selectedOption.value)[0], () => {
         });
     }
@@ -203,7 +203,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
         this.props.rootStore.setIsOwnData(key !== 'cBio');
         if (key === 'cBio') {
             if (this.state.selectedStudy !== null) {
-                this.props.rootStore.parseTimeline(this.props.studies
+                this.props.rootStore.parseTimeline(this.props.studyapi.studies
                     .filter(d => d.studyId === this.state.selectedStudy)[0], () => {
                 });
             }

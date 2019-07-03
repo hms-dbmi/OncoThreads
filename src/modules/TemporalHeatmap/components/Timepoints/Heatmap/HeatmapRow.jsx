@@ -1,6 +1,6 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
-import PropTypes from 'prop-types';
+import { PropTypes } from 'prop-types';
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import UtilityFunctions from '../../../UtilityClasses/UtilityFunctions';
 
 /**
@@ -150,7 +150,7 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
     }
 }));
 HeatmapRow.propTypes = {
-    row: PropTypes.shape(PropTypes.object).isRequired,
+    row: MobxPropTypes.observableObject.isRequired,
     timepointType: PropTypes.string.isRequired,
     timepointIndex: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
@@ -160,6 +160,6 @@ HeatmapRow.propTypes = {
     xOffset: PropTypes.number.isRequired,
     showTooltip: PropTypes.func.isRequired,
     hideTooltip: PropTypes.func.isRequired,
-    showContextMenuHeatmapRow: PropTypes.func.isRequired
+    showContextMenuHeatmapRow: PropTypes.func.isRequired,
 };
 export default HeatmapRow;

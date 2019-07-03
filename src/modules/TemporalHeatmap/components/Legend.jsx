@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { observer, inject } from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 import UtilityFunctions from '../UtilityClasses/UtilityFunctions';
@@ -347,4 +348,12 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
         );
     }
 }));
+Legend.propTypes = {
+    showTooltip: PropTypes.func.isRequired,
+    hideTooltip: PropTypes.func.isRequired,
+    highlightedVariable: PropTypes.string,
+};
+Legend.defaultProps = {
+    highlightedVariable: '',
+};
 export default Legend;

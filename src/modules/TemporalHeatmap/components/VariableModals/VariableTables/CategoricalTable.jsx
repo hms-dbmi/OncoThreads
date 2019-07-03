@@ -70,8 +70,8 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
         document.body.click();
     }
 
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         extendObservable(this, {
             sortCatAsc: true,
             sortOccAsc: true,

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import {
     Button, Col, Grid, Row, Tab, Tabs,
@@ -322,4 +323,10 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         );
     }
 }));
+MainView.propTypes = {
+    tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
+    showContextMenu: PropTypes.func.isRequired,
+    showContextMenuHeatmapRow: PropTypes.func.isRequired,
+    openBinningModal: PropTypes.func.isRequired,
+}
 export default MainView;

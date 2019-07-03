@@ -1,5 +1,5 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import PropTypes from 'prop-types';
 import CategoricalRow from './CategoricalRow';
 import ContinuousRow from './ContinuousRow';
@@ -73,8 +73,12 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     }
 }));
 GroupPartition.propTypes = {
-    partition: PropTypes.shape(PropTypes.object).isRequired,
-    heatmap: PropTypes.arrayOf(PropTypes.object).isRequired,
+    partition: PropTypes.shape({
+        partition: PropTypes.string,
+        rows: PropTypes.array,
+        patients: PropTypes.array,
+    }),
+    heatmap: MobxPropTypes.observableArrayOf(PropTypes.object).isRequired,
     primaryVariableId: PropTypes.string.isRequired,
     currentVariables: PropTypes.arrayOf(PropTypes.oneOfType([
         PropTypes.instanceOf(DerivedVariable),

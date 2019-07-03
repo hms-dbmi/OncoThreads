@@ -176,7 +176,7 @@ Band.propTypes = {
     secondPrimary: PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
         PropTypes.instanceOf(DerivedVariable)]).isRequired,
     firstPartition: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]).isRequired,
-    secontPartition: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]).isRequired,
+    secondPartition: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]).isRequired,
     showTooltip: PropTypes.func.isRequired,
     hideTooltip: PropTypes.func.isRequired,
 };

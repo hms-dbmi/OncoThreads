@@ -1,8 +1,9 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import TriangleCurve from './TriangleCurve';
 import PropTypes from 'prop-types';
+import TriangleCurve from './TriangleCurve';
 import Proxies from '../Proxies';
+import SingleTimepoint from '../../../stores/SingleTimepoint';
 
 /**
  * Component for creating transitions between heatmap and grouped timepoints
@@ -113,7 +114,7 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
 }));
 HeatmapGroupTransition.propTypes = {
     partitions: PropTypes.arrayOf(PropTypes.object).isRequired,
-    nonGrouped: PropTypes.shape(PropTypes.object).isRequired,
+    nonGrouped: PropTypes.instanceOf(SingleTimepoint).isRequired,
     heatmapScale: PropTypes.func.isRequired,
     colorScale: PropTypes.func.isRequired,
     inverse: PropTypes.bool.isRequired,

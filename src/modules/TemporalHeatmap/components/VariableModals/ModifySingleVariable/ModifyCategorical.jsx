@@ -351,7 +351,7 @@ const ModifyCategorical = inject('variableManagerStore', 'rootStore')(observer(c
 }));
 ModifyCategorical.propTypes = {
     variable: PropTypes.instanceOf(OriginalVariable),
-    derivedVariable: PropTypes.oneOfType([PropTypes.instanceOf(DerivedVariable), null]),
+    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
 };
