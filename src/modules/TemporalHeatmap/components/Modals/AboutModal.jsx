@@ -1,6 +1,8 @@
 import React from 'react';
-import {observer} from 'mobx-react';
-import {Button, Modal} from 'react-bootstrap';
+import { observer } from 'mobx-react';
+import { Button, Modal } from 'react-bootstrap';
+import PropTypes from 'prop-types'; // ES6
+
 
 /**
  * Modal showing information about OncoThreads
@@ -15,7 +17,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
                 <Modal.Header closeButton>
                     <Modal.Title>About</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{'maxHeight': '400px', 'overflowY': 'auto'}}>
+                <Modal.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
                     OncoThreads is a web-based visualization tool for the interactive exploration of tumor evolution
                     designed to aid researchers in visualizing and exploring temporal patterns within a single patient
                     and across an entire patient cohort.
@@ -28,7 +30,11 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     <Button onClick={this.props.close}>Close</Button>
                 </Modal.Footer>
             </Modal>
-        )
+        );
     }
 });
+AboutModal.propTypes = {
+    close: PropTypes.func.isRequired,
+    modalIsOpen: PropTypes.bool.isRequired,
+};
 export default AboutModal;

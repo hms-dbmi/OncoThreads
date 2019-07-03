@@ -1,6 +1,9 @@
 import React from 'react';
-import {observer} from 'mobx-react';
-import {Button, ControlLabel, FormControl, FormGroup, Modal} from 'react-bootstrap';
+import { observer } from 'mobx-react';
+import {
+    Button, ControlLabel, FormControl, FormGroup, Modal,
+} from 'react-bootstrap';
+import PropTypes from 'prop-types';
 
 /**
  * Modal for selecting the datatype of a molecular file during loading of local files
@@ -13,6 +16,26 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
     }
 
     /**
+     * gets the select inputs for each file
+     * @return {FormGroup[]}
+     */
+    getSelect() {
+        return this.props.fileNames.map((fileName, i) => (
+            <FormGroup key={fileName} controlId="formControlsSelect">
+                <ControlLabel>{`${fileName} datatype`}</ControlLabel>
+                <FormControl
+                    onChange={e => this.handleChange(fileName, e.target.value, i)}
+                    componentClass="select"
+                    placeholder="select"
+                >
+                    <option value="UnspecCont">Continuous</option>
+                    <option value="CNVDisc">Discrete CNV data</option>
+                </FormControl>
+            </FormGroup>
+        ));
+    }
+
+    /**
      * handles selecting a different datatype
      * @param {string} fileName
      * @param {string} value - selected option
@@ -20,31 +43,13 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
      */
     handleChange(fileName, value, index) {
         switch (value) {
-            case "UnspecCont":
-                this.props.setDatatype(index, "CONTINUOUS", fileName);
-                break;
-            default:
-                this.props.setDatatype(index, "DISCRETE", "COPY_NUMBER_ALTERATION");
-                break;
-
+        case 'UnspecCont':
+            this.props.setDatatype(index, 'CONTINUOUS', fileName);
+            break;
+        default:
+            this.props.setDatatype(index, 'DISCRETE', 'COPY_NUMBER_ALTERATION');
+            break;
         }
-    }
-
-    /**
-     * gets the select inputs for each file
-     * @return {FormGroup[]}
-     */
-    getSelect() {
-        return this.props.fileNames.map((fileName, i) => {
-            return <FormGroup key={fileName} controlId="formControlsSelect">
-                <ControlLabel>{fileName + " datatype"}</ControlLabel>
-                <FormControl onChange={(e) => this.handleChange(fileName, e.target.value, i)} componentClass="select"
-                             placeholder="select">
-                    <option value="UnspecCont">Continuous</option>
-                    <option value="CNVDisc">Discrete CNV data</option>
-                </FormControl>
-            </FormGroup>
-        })
     }
 
     handleOkay() {
@@ -61,9 +66,10 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
         return (
             <Modal
                 show={this.props.modalIsOpen}
-                onHide={this.props.closeModal}>
+                onHide={this.props.closeModal}
+            >
                 <Modal.Header closeButton>
-                    <Modal.Title>{"Select data types for provided files"}</Modal.Title>
+                    <Modal.Title>Select data types for provided files</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <form>
@@ -71,11 +77,18 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                                        <Button onClick={this.handleCancel}>Cancel</Button>
+                    <Button onClick={this.handleCancel}>Cancel</Button>
                     <Button onClick={this.handleOkay}>Okay</Button>
                 </Modal.Footer>
             </Modal>
-        )
+        );
     }
 });
+SelectDatatype.propTypes = {
+    closeModal: PropTypes.func.isRequired,
+    modalIsOpen: PropTypes.bool.isRequired,
+    callback: PropTypes.func.isRequired,
+    setDatatype: PropTypes.func.isRequired,
+    fileNames: PropTypes.arrayOf(PropTypes.string),
+};
 export default SelectDatatype;

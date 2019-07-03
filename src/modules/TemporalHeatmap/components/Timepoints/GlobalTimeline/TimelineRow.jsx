@@ -1,216 +1,162 @@
 import React from 'react';
-import {observer,inject} from 'mobx-react';
+import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
 
 /**
  * Component for a row in a timepoint in the global timeline
-= */
-const TimelineRow = inject("rootStore")(observer(class TimelineRow extends React.Component {
-        constructor(props) {
-            super(props);
-            this.handleMouseLeave = this.handleMouseLeave.bind(this);
-            this.handleDoubleClick = this.handleDoubleClick.bind(this);
-            this.handleMouseEnter = this.handleMouseEnter.bind(this);
-            this.handleClick = this.handleClick.bind(this);
-        }
+ = */
+const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React.Component {
+    constructor(props) {
+        super(props);
+        this.handleMouseLeave = this.handleMouseLeave.bind(this);
+        this.handleDoubleClick = this.handleDoubleClick.bind(this);
+        this.handleMouseEnter = this.handleMouseEnter.bind(this);
+        this.handleClick = this.handleClick.bind(this);
+    }
 
-        handleClick(patient) {
-            this.props.rootStore.dataStore.handlePatientSelection(patient)
-        }
-
-        getRow() {
-            let rects = [];
-            const _self = this;
-            let j = 0;
-
-
-            //var startDay, duration;
-
-            //console.log(this.props.row.data);
-            if (_self.props.timepointType === "between") {
-
-
-                _self.props.events.forEach(function (ev, j) {
-                        let opc1 = _self.props.opacity;
-                        let height = _self.props.rootStore.visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
-                        let offset = 0;
-                        let val = _self.props.rootStore.dataStore.variableStores.between.getById(_self.props.row.variable).name;
-                        if (height === 0) {
-                            height = _self.props.rectWidth * (2 / 3);
-                            offset = _self.props.rectWidth * (1 / 3);
-                            opc1 = opc1 + 0.3;
-                            /*
-                            rects.push(<circle
-                                onMouseEnter={(e) => _self.handleMouseEnter(e, ev.patientId, val, ev.eventDate, ev.eventEndDate - ev.eventDate)
-                                }
-                                onMouseLeave={_self.handleMouseLeave}
-                                onDoubleClick={() => _self.handleDoubleClick(ev.patientId)}
-                                onClick={() => _self.handleClick(ev.patientId)}
-                                //onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                //onMouseUp={_self.handleMouseUp}
-                                key={ev.patientId + j}
-                                r={_self.props.rectWidth * (1 / 3)}
-                                cx={_self.props.heatmapScale(ev.patientId) + _self.props.rectWidth * (1 / 2)}
-                                cy={_self.props.rootStore.visStore.timeScale(ev.eventDate)}
-                                //fill={_self.props.color(ev.varId)}
-
-                                fill={_self.props.color(_self.props.row.variable)}
-                                opacity={opc1}
-                                //fill={_self.props.color(_self.props.timepoint)}
-                            />);*/
-                        }
-                       // else {
-                            rects.push(<rect
-                                onMouseEnter={(e) => _self.handleMouseEnter(e, ev.patientId, val, ev.eventStartDate, ev.eventEndDate - ev.eventStartDate)
-                                }
-                                onMouseLeave={_self.handleMouseLeave}
-                                onDoubleClick={() => _self.handleDoubleClick(ev.patientId)}
-                                onClick={() => _self.handleClick(ev.patientId)}
-                                //onMouseDown={() => _self.handleMouseDown(d.patient)}
-                                //onMouseUp={_self.handleMouseUp}
-                                key={ev.patientId + j}
-                                height={height}//{_self.props.height}
-                                width={_self.props.rectWidth * (2 / 3)}
-                                x={_self.props.heatmapScale(ev.patientId) + _self.props.rectWidth * (1 / 6)}
-                                y={_self.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
-                                //fill={_self.props.color(ev.varId)}
-
-                                fill={_self.props.color(_self.props.row.variable)}
-                                opacity={opc1}
-                                //fill={_self.props.color(_self.props.timepoint)}
-                            />);
-                      //  }
-
+    getRow() {
+        const rects = [];
+        const j = 0;
+        if (this.props.timepointType === 'between') {
+            this.props.events.forEach((ev, i) => {
+                let opc1 = this.props.opacity;
+                let height = this.props.rootStore
+                    .visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
+                let offset = 0;
+                const val = this.props.rootStore
+                    .dataStore.variableStores.between.getById(this.props.row.variable).name;
+                if (height === 0) {
+                    height = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
+                    offset = this.props.rootStore.visStore.timelineRectSize * (1 / 3);
+                    opc1 += 0.3;
+                }
+                rects.push(<rect
+                    onMouseEnter={e => this.handleMouseEnter(
+                        e, ev.patientId, val, ev.eventStartDate,
+                        ev.eventEndDate - ev.eventStartDate,
+                    )
                     }
-                );
-            }
-            else {
-                this.props.row.data.forEach(function (d, i) {
-
-                    if (_self.props.rootStore.dataStore.timepoints.length !== _self.props.index) {
-                        //if(_self.props.rootStore.dataStore.rootStore.dataStore.timepoints.length!==-1){
-                        let stroke = "none";
-                        let fill = _self.props.color(d.value);
-                        if (d.value === undefined) {
-                            stroke = "lightgray";
-                            fill = "white";
-                        }
-                        if (_self.props.rootStore.dataStore.selectedPatients.includes(d.patient)) {
-                            stroke = "black";
-                        }
-
-
-                        //let duration=Math.round((ht[j]-_self.props.visMap.primaryHeight/4)*_self.props.max/700);
-
-
-                        //let varName=_self.props.primaryVariable.name;
-
-                        const val = d.value;
-
-                        // globalRectHeight =ht[j];
-
-                        //globalRectHeight= ht[j]/2;
-
-
-                        rects.push(<rect stroke={stroke}
-                                         onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.rootStore.sampleTimelineMap[d.sample], 0)
-                                         }
-                                         onMouseLeave={_self.handleMouseLeave}
-                                         onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                         onClick={() => _self.handleClick(d.patient)}
-                                         key={d.patient + i + j}
-                                         height={_self.props.rectWidth}//{_self.props.height}
-                                         width={_self.props.rectWidth}
-                                         x={_self.props.heatmapScale(d.patient)}
-                                         y={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
-                                         fill={fill}
-                                         opacity={_self.props.opacity}
-                        />);
-                        /*rects.push(<circle stroke={stroke}
-                                           onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample], 0)
-                                           }
-                                           onMouseLeave={_self.handleMouseLeave}
-                                           onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                           onClick={() => _self.handleClick(d.patient)}
-                                           key={d.patient + i + j}
-                                           r={_self.props.rectWidth / 2}//{_self.props.height}
-                                           cx={_self.props.heatmapScale(d.patient) + _self.props.rectWidth / 2}
-                                           cy={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])}
-                                           fill={fill}
-                                           opacity={_self.props.opacity}
-                        />);
-
-                        rects.push(<text onMouseEnter={(e) => _self.handleMouseEnter(e, d.patient, val, _self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample], 0)
-                                         }
-                                         onMouseLeave={_self.handleMouseLeave}
-                                         onDoubleClick={() => _self.handleDoubleClick(d.patient)}
-                                         onClick={() => _self.handleClick(d.patient)}
-                                         key={d.patient + i + j +"number"}
-                                         x={_self.props.heatmapScale(d.patient)}
-                                         y={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.dataStore.rootStore.sampleTimelineMap[d.sample])  +_self.props.rectWidth / 2}
-                                         >{_self.props.index}</text>);*/
-
-
-                        if (d.value === undefined) {
-                            rects.push(<line stroke={"lightgrey"}
-                                             key={d.patient + j + "UNDEFINED"} height={_self.props.rectWidth / 2}
-                                             width={_self.props.rectWidth}
-                                             x1={_self.props.heatmapScale(d.patient)}
-                                             x2={_self.props.heatmapScale(d.patient) + _self.props.rectWidth / 2}
-                                             y1={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) - _self.props.rectWidth / 2}
-                                             y2={_self.props.rootStore.visStore.timeScale(_self.props.rootStore.sampleTimelineMap[d.sample]) + _self.props.rectWidth / 2}
-                                             opacity={_self.props.opacity}/>);
-                        }
+                    onMouseLeave={this.handleMouseLeave}
+                    onDoubleClick={() => this.handleDoubleClick(ev.patientId)}
+                    onClick={() => this.handleClick(ev.patientId)}
+                    key={ev.patientId + i}
+                    height={height}
+                    width={this.props.rootStore.visStore.timelineRectSize * (2 / 3)}
+                    x={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
+                    + this.props.rootStore.visStore.timelineRectSize * (1 / 6)}
+                    y={this.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
+                    fill={this.props.color(this.props.row.variable)}
+                    opacity={opc1}
+                />);
+            });
+        } else {
+            this.props.row.data.forEach((d, i) => {
+                let stroke = 'none';
+                let fill = this.props.color(d.value);
+                if (d.value === undefined) {
+                    stroke = 'lightgray';
+                    fill = 'white';
+                }
+                if (this.props.rootStore.dataStore.selectedPatients.includes(d.patient)) {
+                    stroke = 'black';
+                }
+                rects.push(<rect
+                    stroke={stroke}
+                    onMouseEnter={e => this.handleMouseEnter(
+                        e, d.patient, d.value,
+                        this.props.rootStore.sampleTimelineMap[d.sample], 0,
+                    )
                     }
-
-                });
-            }
-            return rects;
+                    onMouseLeave={this.handleMouseLeave}
+                    onDoubleClick={() => this.handleDoubleClick(d.patient)}
+                    onClick={() => this.handleClick(d.patient)}
+                    key={d.patient + i + j}
+                    height={this.props.rootStore.visStore.timelineRectSize}
+                    width={this.props.rootStore.visStore.timelineRectSize}
+                    x={this.props.rootStore.visStore.heatmapScales[0](d.patient)}
+                    y={this.props.rootStore.visStore
+                        .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])
+                    - this.props.rootStore.visStore.timelineRectSize / 2}
+                    fill={fill}
+                    opacity={this.props.opacity}
+                />);
+                if (d.value === undefined) {
+                    rects.push(<line
+                        stroke="lightgrey"
+                        key={`${d.patient + j}UNDEFINED`}
+                        height={this.props.rootStore.visStore.timelineRectSize / 2}
+                        width={this.props.rootStore.visStore.timelineRectSize}
+                        x1={this.props.rootStore.visStore.heatmapScales[0](d.patient)}
+                        x2={this.props.rootStore.visStore.heatmapScales[0](d.patient)
+                        + this.props.rootStore.visStore.timelineRectSize / 2}
+                        y1={this.props.rootStore.visStore
+                            .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])
+                        - this.props.rootStore.visStore.timelineRectSize / 2}
+                        y2={this.props.rootStore.visStore
+                            .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])
+                        + this.props.rootStore.visStore.timelineRectSize / 2}
+                        opacity={this.props.opacity}
+                    />);
+                }
+            });
         }
+        return rects;
+    }
+
+    handleClick(patient) {
+        this.props.rootStore.dataStore.handlePatientSelection(patient);
+    }
 
 
-        handleDoubleClick(patient) {
-            window.open("http://www.cbiohack.org/case.do#/patient?studyId=" + this.props.rootStore.study.studyId + "&caseId=" + patient);
+    handleDoubleClick(patient) {
+        window.open(`http://www.cbiohack.org/case.do#/patient?studyId=${this.props.rootStore.study.studyId}&caseId=${patient}`);
+    }
+
+
+    handleMouseEnter(event, patient, value, startDay, duration) {
+        let timeVariable = 'Day';
+        let start;
+        let dur;
+
+        if (this.props.rootStore.timeVar === '30') {
+            start = Math.round((startDay / 30) * 100) / 100;
+            dur = Math.round((duration / 30) * 100) / 100;
+            timeVariable = 'Month';
+        } else if (this.props.rootStore.timeVar === '365') {
+            start = Math.round((startDay / 365) * 100) / 100;
+            dur = Math.round((duration / 365) * 100) / 100;
+            timeVariable = 'Year';
         }
-
-
-        handleMouseEnter(event, patient, value, startDay, duration) {
-
-            var timeVariable = "Day";
-
-            if (this.props.rootStore.timeVar === "30") {
-                startDay = Math.round((startDay / 30) * 100) / 100;
-                duration = Math.round((duration / 30) * 100) / 100;
-                timeVariable = "Month";
-            }
-            else if (this.props.rootStore.timeVar === "365") {
-                startDay = Math.round((startDay / 365) * 100) / 100;
-                duration = Math.round((duration / 365) * 100) / 100;
-                timeVariable = "Year";
-            }
-
-
-            if (duration === 0) {
-                this.props.showTooltip(event, patient + ": " + value + ", " + timeVariable + ": " + startDay)
-
-            }
-            else {
-                this.props.showTooltip(event, patient + ": " + value + ", Event start " + timeVariable + ": " + startDay + ", Duration: " + duration + " " + timeVariable)
-            }
-
+        if (duration === 0) {
+            this.props.showTooltip(event, `${patient}: ${value}, ${timeVariable}: ${start}`);
+        } else {
+            this.props.showTooltip(event, `${patient}: ${value}, Event start ${timeVariable}: ${start}, Duration: ${dur} ${timeVariable}`);
         }
+    }
 
-        handleMouseLeave() {
-            this.props.hideTooltip();
-        }
-
-
-        render() {
-            return (
-                this.getRow()
-            )
+    handleMouseLeave() {
+        this.props.hideTooltip();
+    }
 
 
-        }
-    }))
-;
+    render() {
+        return (
+            this.getRow()
+        );
+    }
+}));
+TimelineRow.propTypes = {
+    timepointType: PropTypes.string.isRequired,
+    showTooltip: PropTypes.func.isRequired,
+    hideTooltip: PropTypes.func.isRequired,
+    events: PropTypes.arrayOf(PropTypes.object),
+    row: PropTypes.shape({
+        variable: PropTypes.string,
+        data: PropTypes.arrayOf(PropTypes.object),
+    }).isRequired,
+    color: PropTypes.func.isRequired,
+};
+TimelineRow.defaultProps = {
+    events: [],
+};
 export default TimelineRow;

@@ -1,9 +1,9 @@
-import React from "react";
-import {inject, observer} from "mobx-react";
-import {MenuItem, NavDropdown} from 'react-bootstrap';
+import React from 'react';
+import { inject, observer } from 'mobx-react';
+import { MenuItem, NavDropdown } from 'react-bootstrap';
 
 
-const GetStudy = inject("rootStore", "undoRedoStore")(observer(class GetStudy extends React.Component {
+const GetStudy = inject('rootStore', 'undoRedoStore')(observer(class GetStudy extends React.Component {
     constructor() {
         super();
         this.getStudy = this.getStudy.bind(this);
@@ -29,11 +29,17 @@ const GetStudy = inject("rootStore", "undoRedoStore")(observer(class GetStudy ex
      * @returns {MenuItem[]}
      */
     setOptions() {
-        let options = [];
-        const _self = this;
-        this.props.studies.forEach(function (d, i) {
-            options.push(<MenuItem eventKey={i} onClick={(e) => _self.getStudy(e, d)}
-                                   key={d.studyId}>{d.name}</MenuItem>)
+        const options = [];
+        this.props.studies.forEach((d, i) => {
+            options.push(
+                <MenuItem
+                    eventKey={i}
+                    onClick={e => this.getStudy(e, d)}
+                    key={d.studyId}
+                >
+                    {d.name}
+                </MenuItem>,
+            );
         });
         return options;
     }

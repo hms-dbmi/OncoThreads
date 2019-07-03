@@ -747,6 +747,7 @@ class RootStore {
                         }
                     }
                 }
+                console.log(this.eventTimelineMap);
                 return sampleMapper;
             }),
             /**

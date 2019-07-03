@@ -1,39 +1,40 @@
 /**
  * Created by theresa on 30.01.18.
  */
-import React from "react";
-import {inject, observer, Provider} from 'mobx-react';
-import {Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row} from 'react-bootstrap';
+import React from 'react';
+import { inject, observer, Provider } from 'mobx-react';
+import {
+    Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row,
+} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import MainView from "./MainView"
-import GroupBinningModal from "./VariableModals/ModifySingleVariable/Binner/GroupBinningModal"
-import Tooltip from "./Tooltip";
-import QuickAddVariable from "./VariableSelector/QuickAddVariable"
+import MainView from './MainView';
+import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
+import Tooltip from './Tooltip';
+import QuickAddVariable from './VariableSelector/QuickAddVariable';
 
-import ContextMenuHeatmapRow from "./ContextMenuHeatmapRow";
+import ContextMenuHeatmapRow from './ContextMenuHeatmapRow';
 
-import VariableManager from "./VariableModals/VariableManager";
-import ContextMenu from "./RowOperators/ContextMenu";
+import VariableManager from './VariableModals/VariableManager';
+import ContextMenu from './RowOperators/ContextMenu';
 
 /**
  * Component containing the view and controls
  */
-const Content = inject("rootStore", "undoRedoStore")(observer(class Content extends React.Component {
+const Content = inject('rootStore', 'undoRedoStore')(observer(class Content extends React.Component {
     constructor() {
         super();
         this.state = {
             binningModalIsOpen: false,
             callback: null,
-            clickedVariable: "",
+            clickedVariable: '',
             clickedTimepoint: -1,
             x: 0,
             y: 0,
-            showTooltip: "hidden",
-            contextType: "",
+            showTooltip: 'hidden',
+            contextType: '',
             showContextMenuHeatmapRow: false,
-            variableManagerOpen: false
-        }
-        ;
+            variableManagerOpen: false,
+        };
         this.openBinningModal = this.openBinningModal.bind(this);
         this.openVariableManager = this.openVariableManager.bind(this);
 
@@ -56,6 +57,61 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
     }
 
     /**
+     * gets context Menu to move patient(s) up or down
+     * @returns {(ContextMenuHeatmapRow|null)}
+     */
+    getContextMenuHeatmapRow() {
+        if (this.state.showContextMenuHeatmapRow) {
+            return (
+                <ContextMenuHeatmapRow
+                    showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
+                    contextX={this.state.x}
+                    contextY={this.state.y}
+                    patient={this.state.patient}
+                    timepoint={this.state.clickedTimepoint}
+                />
+            );
+        }
+        return null;
+    }
+
+    /**
+     * gets modal for variable manager
+     * @returns {(VariableManager|null)}
+     */
+    getVariableManager() {
+        if (this.state.variableManagerOpen) {
+            return (
+                <VariableManager
+                    variableManagerOpen={this.state.variableManagerOpen}
+                    closeVariableManager={this.closeVariableManager}
+                />
+            );
+        }
+
+        return null;
+    }
+
+    /**
+     * gets binning modal
+     * @returns {(GroupBinningModal|null)}
+     */
+    getBinner() {
+        if (this.state.binningModalIsOpen) {
+            return (
+                <GroupBinningModal
+                    modalIsOpen={this.state.binningModalIsOpen}
+                    variable={this.state.clickedVariable}
+                    callback={this.state.callback}
+                    closeModal={this.closeBinningModal}
+                />
+            );
+        }
+
+        return null;
+    }
+
+    /**
      * Opens the modal window and sets the state parameters which are passed to GroupBinningModal
      * @param {string} variableId - future primary variable
      * @param {returnDataCallback} callback -  returns the newly derived variable
@@ -64,7 +120,7 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
         this.setState({
             binningModalIsOpen: true,
             clickedVariable: variableId,
-            callback: callback,
+            callback,
         });
     }
 
@@ -72,7 +128,9 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
      * closes binning modal
      */
     closeBinningModal() {
-        this.setState({binningModalIsOpen: false, variable: "", timepointIndex: -1, callback: null});
+        this.setState({
+            binningModalIsOpen: false, variable: '', timepointIndex: -1, callback: null,
+        });
     }
 
     /**
@@ -88,7 +146,7 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
      * closes variable manager
      */
     closeVariableManager() {
-        this.setState({variableManagerOpen: false});
+        this.setState({ variableManagerOpen: false });
     }
 
     /**
@@ -99,12 +157,12 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
      */
     showTooltip(e, line1, line2) {
         this.setState({
-            showTooltip: "visible",
+            showTooltip: 'visible',
             x: e.pageX,
             y: e.pageY,
-            line1: line1,
-            line2: line2
-        })
+            line1,
+            line2,
+        });
     }
 
     /**
@@ -112,8 +170,8 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
      */
     hideTooltip() {
         this.setState({
-            showTooltip: "hidden",
-        })
+            showTooltip: 'hidden',
+        });
     }
 
     /**
@@ -145,7 +203,7 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
             x: e.pageX,
             y: e.pageY,
             showContextMenuHeatmapRow: true,
-            patient: patient,
+            patient,
             clickedTimepoint: timepointIndex,
         });
         e.preventDefault();
@@ -156,9 +214,9 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
      */
     hideContextMenu() {
         this.setState({
-            contextType: "",
-            showContextMenuHeatmapRow: false
-        })
+            contextType: '',
+            showContextMenuHeatmapRow: false,
+        });
     }
 
     /**
@@ -183,64 +241,11 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
     }
 
     /**
-     * gets binning modal
-     * @returns {(GroupBinningModal|null)}
-     */
-    getBinner() {
-        if (this.state.binningModalIsOpen) {
-            return (
-                <GroupBinningModal
-                    modalIsOpen={this.state.binningModalIsOpen}
-                    variable={this.state.clickedVariable}
-                    callback={this.state.callback}
-                    closeModal={this.closeBinningModal}/>);
-        }
-        else {
-            return null;
-        }
-    }
-
-    /**
      * updates the currently selected variable
      * @param {string} variableId
      */
     updateVariable(variableId) {
-        this.setState({clickedVariable: variableId});
-    }
-
-    /**
-     * gets modal for variable manager
-     * @returns {(VariableManager|null)}
-     */
-    getVariableManager() {
-        if (this.state.variableManagerOpen) {
-            return (<VariableManager
-                variableManagerOpen={this.state.variableManagerOpen}
-                closeVariableManager={this.closeVariableManager}
-            />);
-        }
-        else {
-            return null;
-        }
-    }
-
-
-    /**
-     * gets context Menu to move patient(s) up or down
-     * @returns {(ContextMenuHeatmapRow|null)}
-     */
-    getContextMenuHeatmapRow() {
-        if (this.state.showContextMenuHeatmapRow) {
-            return (<ContextMenuHeatmapRow showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
-                                           contextX={this.state.x}
-                                           contextY={this.state.y}
-                                           patient={this.state.patient}
-                                           timepoint={this.state.clickedTimepoint}
-
-            />);
-        } else {
-            return null;
-        }
+        this.setState({ clickedVariable: variableId });
     }
 
 
@@ -251,68 +256,109 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
         };
         return (
             <div>
-                <Grid fluid={true} style={{paddingLeft: 20}}>
+                <Grid fluid style={{ paddingLeft: 20 }}>
                     <Row>
                         <Col smOffset={1} xsOffset={1} md={7} xs={7}>
-                            <QuickAddVariable/>
+                            <QuickAddVariable />
                         </Col>
                         <Col sm={4} xs={4}>
                             <ButtonToolbar>
                                 <ButtonGroup>
-                                    <Button color="secondary"
-                                            onClick={this.openVariableManager}>Variable manager
+                                    <Button
+                                        color="secondary"
+                                        onClick={this.openVariableManager}
+                                    >
+                                        Variable manager
                                     </Button>
                                 </ButtonGroup>
                                 <ButtonGroup>
                                     <DropdownButton
-                                        title={"Zoom"}
-                                        key={"zoom"}
-                                        id={"zoom"}
+                                        title="Zoom"
+                                        key="zoom"
+                                        id="zoom"
                                     >
-                                        <div style={{padding: "5px"}}>
-                                            Horizontal: <input type="range"
-                                                               value={this.props.rootStore.visStore.horizontalZoom}
-                                                               onChange={(e) => this.props.rootStore.visStore.setHorizontalZoom(parseInt(e.target.value, 10))}
-                                                               step={1}
-                                                               min={0} max={290}/>
-                                            <Button onClick={this.props.rootStore.visStore.fitToScreenWidth}>Set to
-                                                screen width</Button>
-                                            <br/>
-                                            Vertical: <input type="range"
-                                                             value={this.props.rootStore.visStore.transitionSpace}
-                                                             onChange={(e) => this.props.rootStore.visStore.setTransitionSpace(parseInt(e.target.value, 10))}
-                                                             step={1}
-                                                             min={5} max={700}/>
-                                            <Button onClick={this.props.rootStore.visStore.fitToScreenHeight}>Set to
-                                                screen height</Button>
+                                        <div style={{ padding: '5px' }}>
+                                            Horizontal:
+                                            {' '}
+                                            <input
+                                                type="range"
+                                                value={this.props.rootStore.visStore.horizontalZoom}
+                                                onChange={e => this.props.rootStore.visStore
+                                                    .setHorizontalZoom(parseInt(
+                                                        e.target.value, 10,
+                                                    ))}
+                                                step={1}
+                                                min={0}
+                                                max={290}
+                                            />
+                                            <Button onClick={this.props.rootStore
+                                                .visStore.fitToScreenWidth}
+                                            >
+                                                Set to screen width
+                                            </Button>
+                                            <br />
+                                            Vertical:
+                                            {' '}
+                                            <input
+                                                type="range"
+                                                value={this.props.rootStore
+                                                    .visStore.transitionSpace}
+                                                onChange={e => this.props.rootStore
+                                                    .visStore.setTransitionSpace(parseInt(
+                                                        e.target.value, 10,
+                                                    ))}
+                                                step={1}
+                                                min={5}
+                                                max={700}
+                                            />
+                                            <Button onClick={this.props.rootStore
+                                                .visStore.fitToScreenHeight}
+                                            >
+                                                Set to screen height
+                                            </Button>
                                         </div>
                                     </DropdownButton>
                                 </ButtonGroup>
                                 <ButtonGroup>
                                     <DropdownButton
-                                        title={"Reset"}
-                                        key={"ResetButton"}
-                                        id={"ResetButton"}
+                                        title="Reset"
+                                        key="ResetButton"
+                                        id="ResetButton"
                                     >
-                                        <MenuItem eventKey="1" onClick={this.handleResetAlignment}>...timepoint
-                                            alignment</MenuItem>
-                                        <MenuItem eventKey="2"
-                                                  onClick={this.handleResetSelection}>...selection</MenuItem>
+                                        <MenuItem eventKey="1" onClick={this.handleResetAlignment}>
+                                            ...timepoint
+                                            alignment
+                                        </MenuItem>
+                                        <MenuItem
+                                            eventKey="2"
+                                            onClick={this.handleResetSelection}
+                                        >
+                                            ...selection
+                                        </MenuItem>
                                         <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
                                     </DropdownButton>
-                                    <Button onClick={this.props.undoRedoStore.undo}><FontAwesome
-                                        name="undo"/></Button>
-                                    <Button onClick={this.props.undoRedoStore.redo}><FontAwesome
-                                        name="redo"/></Button>
+                                    <Button onClick={this.props.undoRedoStore.undo}>
+                                        <FontAwesome
+                                            name="undo"
+                                        />
+                                    </Button>
+                                    <Button onClick={this.props.undoRedoStore.redo}>
+                                        <FontAwesome
+                                            name="redo"
+                                        />
+                                    </Button>
 
                                 </ButtonGroup>
                             </ButtonToolbar>
                         </Col>
                     </Row>
                     <Row>
-                        <Col sm={12} md={12}
-                             onMouseEnter={this.hideContextMenu}
-                             style={{paddingTop: 0}}>
+                        <Col
+                            sm={12}
+                            md={12}
+                            onMouseEnter={this.hideContextMenu}
+                            style={{ paddingTop: 0 }}
+                        >
                             <Row>
                                 <MainView
                                     tooltipFunctions={tooltipFunctions}
@@ -328,23 +374,30 @@ const Content = inject("rootStore", "undoRedoStore")(observer(class Content exte
                 {this.getBinner()}
                 {this.getVariableManager()}
                 {this.getContextMenuHeatmapRow()}
-                <Tooltip key="tooltip" visibility={this.state.showTooltip} x={this.state.x}
-                         y={this.state.y} line1={this.state.line1} line2={this.state.line2}/>
-                {this.state.contextType !== "" ?
+                <Tooltip
+                    key="tooltip"
+                    visibility={this.state.showTooltip}
+                    x={this.state.x}
+                    y={this.state.y}
+                    line1={this.state.line1}
+                    line2={this.state.line2}
+                />
+                {this.state.contextType !== '' ? (
                     <Provider dataStore={this.props.rootStore.dataStore}>
-                        <ContextMenu action={this.state.contextType}
-                                     contextX={this.state.x}
-                                     contextY={this.state.y}
-                                     clickedVariable={this.state.clickedVariable}
-                                     clickedTimepoint={this.state.clickedTimepoint}
-                                     hideContextMenu={this.hideContextMenu}
-                                     openBinningModal={this.openBinningModal}/>
+                        <ContextMenu
+                            action={this.state.contextType}
+                            contextX={this.state.x}
+                            contextY={this.state.y}
+                            clickedVariable={this.state.clickedVariable}
+                            clickedTimepoint={this.state.clickedTimepoint}
+                            hideContextMenu={this.hideContextMenu}
+                            openBinningModal={this.openBinningModal}
+                        />
                     </Provider>
-                    : null}
+                ) : null}
             </div>
-        )
+        );
     }
 }));
 
 export default Content;
-
