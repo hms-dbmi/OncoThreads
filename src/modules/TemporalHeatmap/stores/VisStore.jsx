@@ -55,6 +55,9 @@ class VisStore {
                 if (transitionSpace > 70) {
                     this.transitionSpace = transitionSpace
                 }
+                else {
+                    this.transitionSpace=70;
+                }
             }),
             /**
              * fits content to current width
