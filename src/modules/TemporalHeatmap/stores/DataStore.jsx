@@ -2,7 +2,7 @@ import { action, extendObservable, reaction } from 'mobx';
 import VariableStore from './VariableStore';
 
 /*
-stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
+ stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
  */
 class DataStore {
     constructor(rootStore) {
@@ -128,7 +128,9 @@ class DataStore {
                             .heatmapOrder);
                     timepoints.push(betweenTimepoints[betweenTimepoints.length - 1]);
                 }
-                timepoints.forEach((d, i) => { timepoints[i].globalIndex = i; });
+                timepoints.forEach((d, i) => {
+                    timepoints[i].globalIndex = i;
+                });
                 this.timepoints.replace(timepoints);
                 this.rootStore.visStore.fitToScreenHeight();
             }),
@@ -182,6 +184,27 @@ class DataStore {
      */
     setNumberOfPatients(numP) {
         this.numberOfPatients = numP;
+    }
+
+    /**
+     * get number of partitions of a timepoint
+     * @param {number} index - timepoint index
+     * @return {number}
+     */
+    getNumTPPartitions(index) {
+        if (this.timepoints[index].isGrouped) {
+            return this.timepoints[index].grouped.length;
+        }
+        return 0;
+    }
+
+    /**
+     * get the number of patients in a timepoint
+     * @param {number} index -  timepoint index
+     * @return {number}
+     */
+    getNumTPPatients(index) {
+        return this.timepoints[index].patients.length;
     }
 
     /**

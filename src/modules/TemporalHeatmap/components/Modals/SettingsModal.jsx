@@ -114,6 +114,39 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
 
                         </FormGroup>
                     </form>
+                     <form>
+                        <FormGroup>
+                            <h5>Align grouped blocks</h5>
+                            <Radio
+                                checked={this.props.uiStore.blockAlignment==="left"}
+                                name="radioGroup"
+                                inline
+                                onChange={() => this.props.uiStore.setBlockAlignment("left")}
+                            >
+                                Left
+                            </Radio>
+                            {' '}
+                              <Radio
+                                checked={this.props.uiStore.blockAlignment==="middle"}
+                                name="radioGroup"
+                                inline
+                                onChange={() => this.props.uiStore.setBlockAlignment("middle")}
+                            >
+                                Middle
+                            </Radio>
+                            {' '}
+                              <Radio
+                                checked={this.props.uiStore.blockAlignment==="right"}
+                                name="radioGroup"
+                                inline
+                                onChange={() => this.props.uiStore.setBlockAlignment("right")}
+                            >
+                                Right
+                            </Radio>
+                            {' '}
+
+                        </FormGroup>
+                    </form>
                     <form>
                         <FormGroup>
                             <h5>Experimental: Slanted Lines</h5>

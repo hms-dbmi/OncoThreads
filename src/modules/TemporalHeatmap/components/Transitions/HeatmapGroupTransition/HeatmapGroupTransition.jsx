@@ -29,6 +29,24 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
     }
 
     /**
+     * get the offset corresponding to the current UI block align setting
+     * @param {number} offsetPatients
+     * @return {number}
+     */
+    getOffset(offsetPatients) {
+        switch (this.props.uiStore.blockAlignment) {
+        case 'left':
+            return 0;
+        case 'middle':
+            return this.props.visStore
+                .groupScale(offsetPatients) / 2;
+        default:
+            return this.props.visStore
+                .groupScale(offsetPatients);
+        }
+    }
+
+    /**
      * gets all the transitions between a grouped and an ungrouped timepoint
      * @param {number} colorRecty - y position of the helper rectangle
      * @param {number} bandRectY
@@ -38,14 +56,18 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
      */
     getTransitions(colorRecty, bandRectY, y0, y1) {
         const transitions = [];
-        let sourcePartitionPos = 0;
+        let sourcePartitionPos = this.props.visStore.getTpXTransform(this.props.index);
+
+        // proxy positions for grouped timepoint
         const proxyPositions = [];
         this.props.partitions.forEach((currentPartition) => {
-            let currXsource = sourcePartitionPos;
             const transitionPatients = HeatmapGroupTransition.sortTransitionPatients(
                 currentPartition.patients.filter(patient => this.props.nonGrouped.patients
                     .includes(patient)), this.props.heatmapScale,
             );
+            let currXsource = sourcePartitionPos;
+            const offset = this.getOffset(currentPartition.patients.length
+                - transitionPatients.length);
             if (transitionPatients.length > 0) {
                 const transitionWidth = this.props.visStore
                     .groupScale(currentPartition.patients.length)
@@ -55,14 +77,14 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
                     transitions.push(<TriangleCurve
                         key={f}
                         patient={f}
-                        x0={currXsource}
-                        x1={currXsource + transitionWidth}
+                        x0={currXsource + offset}
+                        x1={currXsource + offset + transitionWidth}
                         x2={this.props.heatmapScale(f) + 0.5 * this.props.visStore.sampleRectWidth}
                         y0={y0}
                         y1={y1}
                     />);
                     if (this.props.dataStore.selectedPatients.includes(f)) {
-                        selectedSegments.push([currXsource, currXsource
+                        selectedSegments.push([currXsource + offset, currXsource + offset
                         + this.props.visStore.groupScale(1)]);
                     }
                     currXsource += transitionWidth;
@@ -70,6 +92,7 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
                 proxyPositions.push({
                     key: currentPartition.partition,
                     x0: sourcePartitionPos,
+                    offset,
                     width: this.props.visStore.groupScale(currentPartition.patients.length),
                     sharedWidth: this.props.visStore.groupScale(transitionPatients.length),
                     selected: selectedSegments,

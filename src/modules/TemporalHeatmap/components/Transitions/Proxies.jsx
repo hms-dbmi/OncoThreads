@@ -43,6 +43,23 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                     opacity={0.5}
                 />
             );
+            proxy = (
+                <path
+                    key={`${partition.key}band`}
+                    d={`M${partition.x0},${y0
+                    }C${partition.x0 + partition.offset},${y1
+                    } ${partition.x0 + partition.offset},${y0
+                    } ${partition.x0 + partition.offset},${y1
+                    }L${partition.x0 + partition.offset + partition.sharedWidth},${y1
+                    }C${partition.x0 + partition.offset + partition.sharedWidth},${y0
+                    } ${partition.x0 + partition.offset + partition.sharedWidth},${y1
+                    } ${partition.x0 + partition.width},${y0
+                    }L${partition.x0 + partition.width},${y0
+                    }Z`}
+                    fill="#dddddd"
+                    opacity={0.5}
+                />
+            );
         }
         return proxy;
     }
@@ -80,18 +97,20 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
             outlines = [
                 <path
                     key="line1"
-                    d={`M${partition.x0 + partition.sharedWidth},${y1
-                    }C${partition.x0 + partition.sharedWidth},${y0
-                    } ${partition.x0 + partition.sharedWidth},${y1
-                    } ${partition.x0 + partition.width},${y0}`}
+                    d={`M${partition.x0},${y0
+                    }C${partition.x0 + partition.offset},${y1
+                    } ${partition.x0 + partition.offset},${y0
+                    } ${partition.x0 + partition.offset},${y1}`}
                     stroke="#cccccc"
                     fill="none"
                     opacity={0.5}
                 />,
                 <path
                     key="line2"
-                    d={`M${partition.x0},${y0
-                    }L${partition.x0},${y1}`}
+                    d={`M${partition.x0 + partition.offset + partition.sharedWidth},${y1
+                    }C${partition.x0 + partition.offset + partition.sharedWidth},${y0
+                    } ${partition.x0 + partition.offset + partition.sharedWidth},${y1
+                    } ${partition.x0 + partition.width},${y0}`}
                     stroke="#cccccc"
                     fill="none"
                     opacity={0.5}
