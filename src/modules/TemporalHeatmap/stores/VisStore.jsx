@@ -1,8 +1,8 @@
-import {action, extendObservable, reaction} from "mobx";
+import { action, extendObservable, reaction } from "mobx";
 import * as d3 from 'd3';
 
 /*
-stores information about current visual parameters
+ stores information about current visual parameters
  */
 class VisStore {
     constructor(rootStore) {
@@ -56,7 +56,7 @@ class VisStore {
                     this.transitionSpace = transitionSpace
                 }
                 else {
-                    this.transitionSpace=70;
+                    this.transitionSpace = 70;
                 }
             }),
             /**
@@ -81,11 +81,11 @@ class VisStore {
             setGap: action(gapHeight => {
                 this.gap = gapHeight;
             }),
-            setBandRectHeight:action(bandRectHeight=>{
-                this.bandRectHeight=bandRectHeight;
+            setBandRectHeight: action(bandRectHeight => {
+                this.bandRectHeight = bandRectHeight;
             }),
-            setColorRectHeight:action(colorRectHeight=>{
-                this.colorRectHeight=colorRectHeight;
+            setColorRectHeight: action(colorRectHeight => {
+                this.colorRectHeight = colorRectHeight;
             }),
             /**
              * height of svg based on zoom level
@@ -127,7 +127,7 @@ class VisStore {
              * @returns {{timepoint: Array, connection: Array}}
              */
             get timepointPositions() {
-                let timepointPositions = {"timepoint": [], "connection": []};
+                let timepointPositions = { "timepoint": [], "connection": [] };
                 let prevY = 0;
                 const _self = this;
                 this.rootStore.dataStore.timepoints.forEach(timepoint => {
@@ -154,7 +154,10 @@ class VisStore {
              * @return {d3.scaleLinear}
              */
             get groupScale() {
-                return d3.scaleLinear().domain([0, this.rootStore.dataStore.numberOfPatients]).range([0, this.rootStore.visStore.plotWidth - this.rootStore.visStore.partitionGap * (this.rootStore.dataStore.maxPartitions - 1)]);
+                return d3.scaleLinear()
+                    .domain([0, this.rootStore.dataStore.numberOfPatients])
+                    .range([0, this.plotWidth
+                    - (this.rootStore.dataStore.maxPartitions - 1) * this.partitionGap]);
             },
             /**
              * gets scale for placement of events and samples on time axis in global timeline
@@ -162,7 +165,7 @@ class VisStore {
              */
             get timeScale() {
                 return d3.scaleLinear().domain([0, this.rootStore.maxTimeInDays]).rangeRound([0, this.svgHeight - this.primaryHeight * 2]);
-            }
+            },
         });
         this.fitToScreenWidth = this.fitToScreenWidth.bind(this);
         this.fitToScreenHeight = this.fitToScreenHeight.bind(this);
@@ -191,6 +194,32 @@ class VisStore {
             }
         });
         return height + (varCount - 1) * this.gap;
+    }
+
+    /**
+     * get the width of a timepoint at a specific index
+     * @param {number} index - timepoint index
+     * @return {number}
+     */
+    getTPWidth(index) {
+        return this.groupScale(this.rootStore.dataStore.getNumTPPatients(index))
+            + (this.rootStore.dataStore.getNumTPPartitions(index) - 1) * this.partitionGap;
+    }
+
+    /**
+     * get x transformation of a timepoint depending on the current block alignment
+     * @param {number} index -  timepoint index
+     * @return {number}
+     */
+    getTpXTransform(index) {
+        switch (this.rootStore.uiStore.blockAlignment) {
+        case 'left':
+            return 0;
+        case 'middle':
+            return (this.plotWidth - this.getTPWidth(index)) / 2;
+        default:
+            return this.plotWidth - this.getTPWidth(index);
+        }
     }
 }
 
