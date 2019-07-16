@@ -258,7 +258,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         lineheight, color);
                 }
                 const transform = `translate(0,${currPos})`;
-                currPos += lineheight + this.props.rootStore.visStore.gap;
+                currPos += lineheight + this.props.rootStore.uiStore.horizontalGap;
                 let highlightRect = null;
                 if (d.id === this.props.highlightedVariable) {
                     highlightRect = this.getHighlightRect(lineheight);

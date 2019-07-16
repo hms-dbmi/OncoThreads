@@ -10,7 +10,7 @@ class VisStore {
         //height of rects in a row which is primary
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
-        this.horizontalGap = 1;
+        this.verticalGap = 1;
         //gap between rows in heatmap
         //space for transitions
         //gap between partitions in grouped timepoints
@@ -20,7 +20,7 @@ class VisStore {
         this.svgWidth = 700;
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
-            gap: 1,
+            //horizontalGap: 1,
             colorRectHeight: 2,
             bandRectHeight: 15,
             transitionSpace: 100,
@@ -99,7 +99,7 @@ class VisStore {
              * @returns {number}
              */
             get sampleRectWidth() {
-                return this.plotWidth / (300 - this.horizontalZoom) - this.horizontalGap
+                return this.plotWidth / (300 - this.horizontalZoom) - this.verticalGap;
             },
             /**
              * size of timeline rects based on rect width
@@ -113,7 +113,7 @@ class VisStore {
              * @returns {number}
              */
             get heatmapWidth() {
-                return this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.horizontalGap) - this.horizontalGap;
+                return this.rootStore.dataStore.numberOfPatients * (this.sampleRectWidth + this.verticalGap) - this.verticalGap;
             },
             /**
              * width of svg based on content
@@ -193,7 +193,7 @@ class VisStore {
                 }
             }
         });
-        return height + (varCount - 1) * this.gap;
+        return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }
 
     /**

@@ -7,7 +7,7 @@ import DerivedVariable from '../../../stores/DerivedVariable';
 /*
 implements a Band for Sankey Transition
  */
-const Band = inject('dataStore', 'visStore')(observer(class Band extends React.Component {
+const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band extends React.Component {
     /**
      * creates the partition names for the tooltip:
      * adapts the partition names of the primary variables
@@ -125,9 +125,9 @@ const Band = inject('dataStore', 'visStore')(observer(class Band extends React.C
             this.props.secondPrimary, this.props.secondPartition,
         );
         const selectedWidth = this.getSelectedWidth();
-        const y0 = this.props.visStore.gap + this.props.visStore.colorRectHeight
+        const y0 = this.props.uiStore.horizontalGap + this.props.visStore.colorRectHeight
             + this.props.visStore.bandRectHeight;
-        const y1 = this.props.visStore.transitionSpace - this.props.visStore.gap
+        const y1 = this.props.visStore.transitionSpace - this.props.uiStore.horizontalGap
             - this.props.visStore.colorRectHeight - this.props.visStore.bandRectHeight;
         let selected = null;
         if (selectedWidth !== 0) {

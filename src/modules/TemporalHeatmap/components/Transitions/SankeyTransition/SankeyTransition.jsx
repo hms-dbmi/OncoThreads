@@ -11,7 +11,6 @@ import DerivedVariable from '../../../stores/DerivedVariable';
  * Component for a transition between grouped timepoints ("Sankey Transition")
  */
 const SankeyTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class SankeyTransition extends React.Component {
-
     /**
      * get the offset corresponding to the current UI block align setting
      * @param {number} offsetPatients
@@ -44,6 +43,8 @@ const SankeyTransition = inject('dataStore', 'visStore', 'uiStore')(observer(cla
 
         // proxy positions for target timepoint
         const targetProxyPositions = [];
+        let sourceProxies = null;
+        let targetProxies = null;
         let sourceCounter = 0;
 
         // iterate through source partitions
@@ -144,29 +145,40 @@ const SankeyTransition = inject('dataStore', 'visStore', 'uiStore')(observer(cla
             initialSourcePosition += this.props.visStore
                 .groupScale(sourcePartition.patients.length)
                 + this.props.visStore.partitionGap;
+            // only create proxies for vertical stacking
+            if (!this.props.uiStore.horizontalStacking) {
+                sourceProxies = (
+                    <Proxies
+                        key="source"
+                        proxyPositions={sourceProxyPositions}
+                        bandRectY={this.props.uiStore.horizontalGap
+                            + this.props.visStore.colorRectHeight}
+                        colorRectY={this.props.uiStore.horizontalGap}
+                        colorScale={this.props.firstPrimary.colorScale}
+                        inverse={false}
+                    />
+                );
+                targetProxies = (
+                    <Proxies
+                        key="target"
+                        proxyPositions={targetProxyPositions}
+                        bandRectY={this.props.visStore.transitionSpace
+                            - this.props.visStore.colorRectHeight
+                            - this.props.uiStore.horizontalGap - this.props.visStore.bandRectHeight}
+                        colorRectY={this.props.visStore.transitionSpace
+                            - this.props.visStore.colorRectHeight
+                            - this.props.uiStore.horizontalGap}
+                        colorScale={this.props.secondPrimary.colorScale}
+                        inverse
+                    />
+                );
+            }
         });
         return (
             <g>
                 {transitions}
-                <Proxies
-                    key="source"
-                    proxyPositions={sourceProxyPositions}
-                    bandRectY={this.props.visStore.gap + this.props.visStore.colorRectHeight}
-                    colorRectY={this.props.visStore.gap}
-                    colorScale={this.props.firstPrimary.colorScale}
-                    inverse={false}
-                />
-                <Proxies
-                    key="target"
-                    proxyPositions={targetProxyPositions}
-                    bandRectY={this.props.visStore.transitionSpace
-                    - this.props.visStore.colorRectHeight
-                     - this.props.visStore.gap - this.props.visStore.bandRectHeight}
-                    colorRectY={this.props.visStore.transitionSpace
-                - this.props.visStore.colorRectHeight - this.props.visStore.gap}
-                    colorScale={this.props.secondPrimary.colorScale}
-                    inverse
-                />
+                {sourceProxies}
+                {targetProxies}
             </g>
         );
     }

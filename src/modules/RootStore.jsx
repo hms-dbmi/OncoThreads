@@ -837,14 +837,14 @@ class RootStore {
         reaction(() => this.uiStore.horizontalStacking,
             horizontalStacking => {
                 if (horizontalStacking) {
-                    this.visStore.setGap(8);
-                    //this.visStore.setBandRectHeight(0);
+                    //this.visStore.setGap(8);
+                    this.visStore.setBandRectHeight(0);
                     this.visStore.setColorRectHeight(0);
 
                 }
                 else {
-                    this.visStore.setGap(1);
-                    //this.visStore.setBandRectHeight(15);
+                    //this.visStore.setGap(1);
+                    this.visStore.setBandRectHeight(15);
                     this.visStore.setColorRectHeight(2);
                 }
             });

@@ -247,7 +247,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
-                    pos = pos + lineHeight + this.props.rootStore.visStore.gap;
+                    pos = pos + lineHeight + this.props.rootStore.uiStore.horizontalGap;
                     const yPos = -(iconScale * 24 - lineHeight) / 2;
                     let secondIcon;
                     if (!this.props.timepoint.isGrouped) {

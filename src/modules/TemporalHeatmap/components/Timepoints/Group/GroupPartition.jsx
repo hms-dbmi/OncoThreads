@@ -64,7 +64,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                         </g>,
                     );
                 }
-                previousYposition += height + this.props.visStore.gap;
+                previousYposition += height + this.props.uiStore.horizontalGap;
             }
         });
         return rows;

@@ -288,6 +288,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
                     x="0"
                     y={y}
                     height={height}
+                    opacity={this.props.opacity}
                     width={this.props.visStore.groupScale(this.props.patients.length)}
                     fill={fill}
                     stroke={stroke}
