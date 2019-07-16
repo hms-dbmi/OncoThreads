@@ -157,7 +157,7 @@ class VisStore {
                 return d3.scaleLinear()
                     .domain([0, this.rootStore.dataStore.numberOfPatients])
                     .range([0, this.plotWidth
-                    - (this.rootStore.dataStore.maxPartitions - 1) * this.partitionGap]);
+                    - (this.rootStore.dataStore.maxPartitions - 1) * this.partitionGap - this.rootStore.uiStore.rowOffset * 2]);
             },
             /**
              * gets scale for placement of events and samples on time axis in global timeline
@@ -203,7 +203,8 @@ class VisStore {
      */
     getTPWidth(index) {
         return this.groupScale(this.rootStore.dataStore.getNumTPPatients(index))
-            + (this.rootStore.dataStore.getNumTPPartitions(index) - 1) * this.partitionGap;
+            + (this.rootStore.dataStore.getNumTPPartitions(index) - 1) * this.partitionGap
+            + this.rootStore.uiStore.rowOffset * 2;
     }
 
     /**

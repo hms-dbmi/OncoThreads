@@ -21,7 +21,11 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 let height = 0;
                 let opacity = 1;
                 let stroke = 'none';
-                const transform = `translate(0,${previousYposition})`;
+                let shiftOffset = 0;
+                if (i % 2 !== 0) {
+                    shiftOffset = this.props.uiStore.rowOffset;
+                }
+                const transform = `translate(${shiftOffset},${previousYposition})`;
                 if (this.props.primaryVariableId === d.variable) {
                     height = this.props.visStore.primaryHeight;
                     stroke = this.props.stroke;
