@@ -39,7 +39,7 @@ const HeatmapTimepoint = inject('visStore', 'uiStore')(observer(class HeatmapTim
                         />
                     </g>,
                 );
-                previousYposition += rowHeight + this.props.visStore.gap;
+                previousYposition += rowHeight + this.props.uiStore.horizontalGap;
             }
         });
         return rows;

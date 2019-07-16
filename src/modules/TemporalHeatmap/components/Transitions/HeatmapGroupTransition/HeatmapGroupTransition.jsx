@@ -60,6 +60,7 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
 
         // proxy positions for grouped timepoint
         const proxyPositions = [];
+        let proxies = null;
         this.props.partitions.forEach((currentPartition) => {
             const transitionPatients = HeatmapGroupTransition.sortTransitionPatients(
                 currentPartition.patients.filter(patient => this.props.nonGrouped.patients
@@ -101,8 +102,9 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
             sourcePartitionPos += this.props.visStore.groupScale(currentPartition.patients.length)
                 + this.props.visStore.partitionGap;
         });
-        return (
-            [transitions,
+        // only create proxies for vertical stacking
+        if (!this.props.uiStore.horizontalStacking) {
+            proxies = (
                 <Proxies
                     key="proxies"
                     proxyPositions={proxyPositions}
@@ -110,7 +112,11 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
                     colorRectY={colorRecty}
                     colorScale={this.props.colorScale}
                     inverse={this.props.inverse}
-                />]
+                />
+            );
+        }
+        return (
+            [transitions, proxies]
         );
     }
 
@@ -121,13 +127,13 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
         let bandRectY;
         if (this.props.inverse) {
             y0 = this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight
-                - this.props.visStore.gap - this.props.visStore.bandRectHeight;
-            y1 = this.props.visStore.gap;
+                - this.props.uiStore.horizontalGap - this.props.visStore.bandRectHeight;
+            y1 = this.props.uiStore.horizontalGap;
             recty = this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight
-                - this.props.visStore.gap;
+                - this.props.uiStore.horizontalGap;
             bandRectY = y0;
         } else {
-            recty = this.props.visStore.gap;
+            recty = this.props.uiStore.horizontalGap;
             bandRectY = recty + this.props.visStore.colorRectHeight;
             y0 = bandRectY + this.props.visStore.bandRectHeight;
             y1 = this.props.visStore.transitionSpace;

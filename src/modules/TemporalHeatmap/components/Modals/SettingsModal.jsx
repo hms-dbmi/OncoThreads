@@ -1,7 +1,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
-    Button, FormGroup, Modal, Radio,
+    Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
@@ -17,16 +17,6 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
     }
 
     render() {
-        let gradient = false;
-        let boxplot = false;
-        let median = false;
-        if (this.props.uiStore.continuousRepresentation === 'gradient') {
-            gradient = true;
-        } else if (this.props.uiStore.continuousRepresentation === 'boxplot') {
-            boxplot = true;
-        } else {
-            median = true;
-        }
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -38,89 +28,50 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
                 <Modal.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
                     <form>
                         <FormGroup>
-                            <h5>Show continuous variable distributions in groups as</h5>
+                            <h3>General Settings</h3>
+                            <ControlLabel>Show continuous variable distributions in groups as:</ControlLabel>
                             <Radio
-                                checked={gradient}
-                                name="radioGroup"
-                                inline
+                                checked={this.props.uiStore.continuousRepresentation === 'gradient'}
+                                name="distributions"
                                 onChange={() => this.props.uiStore.setContinuousRepresentation('gradient')}
                             >
                                 Color Gradients
                             </Radio>
                             {' '}
                             <Radio
-                                checked={boxplot}
-                                name="radioGroup"
-                                inline
+                                checked={this.props.uiStore.continuousRepresentation === 'boxplot'}
+                                name="distributions"
                                 onChange={() => this.props.uiStore.setContinuousRepresentation('boxplot')}
                             >
                                 Boxplots
                             </Radio>
                             {' '}
                             <Radio
-                                checked={median}
-                                name="radioGroup"
-                                inline
+                                checked={this.props.uiStore.continuousRepresentation === 'median'}
+                                name="distributions"
                                 onChange={() => this.props.uiStore.setContinuousRepresentation('median')}
                             >
                                 Median Color
                             </Radio>
                         </FormGroup>
-                    </form>
-                    <form>
                         <FormGroup>
-                            <h5>Selection Type</h5>
-                            <Radio
-                                checked={this.props.uiStore.advancedSelection}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setAdvancedSelection(true)}
-                            >
-                                Advanced
-                            </Radio>
+                            <ControlLabel>Undefined Values</ControlLabel>
                             {' '}
-                            <Radio
-                                checked={!this.props.uiStore.advancedSelection}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setAdvancedSelection(false)}
-                            >
-                                Simplified
-                            </Radio>
-                            {' '}
-                        </FormGroup>
-                    </form>
-                    <form>
-                        <FormGroup>
-                            <h5>Show rows with only undefined values</h5>
-                            <Radio
+                            <Checkbox
                                 checked={this.props.uiStore.showUndefined}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setShowUndefined(true)}
+                                name="undefValues"
+                                onChange={() => this.props.uiStore
+                                    .setShowUndefined(!this.props.uiStore.showUndefined)}
                             >
-                                Yes
-                            </Radio>
-                            {' '}
-                            <Radio
-                                checked={!this.props.uiStore.showUndefined}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setShowUndefined(false)}
-                            >
-                                No
-                            </Radio>
-                            {' '}
-
+                                Show rows with only undefined values
+                            </Checkbox>
                         </FormGroup>
-                    </form>
-                    <form>
                         <FormGroup>
-                            <h5>Align grouped blocks</h5>
+                            <ControlLabel>Align grouped blocks:</ControlLabel>
+                            {' '}
                             <Radio
                                 checked={this.props.uiStore.blockAlignment === 'left'}
-                                name="radioGroup"
-                                inline
+                                name="alignment"
                                 onChange={() => this.props.uiStore.setBlockAlignment('left')}
                             >
                                 Left
@@ -128,8 +79,7 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
                             {' '}
                             <Radio
                                 checked={this.props.uiStore.blockAlignment === 'middle'}
-                                name="radioGroup"
-                                inline
+                                name="alignment"
                                 onChange={() => this.props.uiStore.setBlockAlignment('middle')}
                             >
                                 Middle
@@ -137,8 +87,7 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
                             {' '}
                             <Radio
                                 checked={this.props.uiStore.blockAlignment === 'right'}
-                                name="radioGroup"
-                                inline
+                                name="alignment"
                                 onChange={() => this.props.uiStore.setBlockAlignment('right')}
                             >
                                 Right
@@ -147,76 +96,38 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
 
                         </FormGroup>
                     </form>
+                    <h3>Experimental Settings</h3>
                     <form>
                         <FormGroup>
-                            <h5>Experimental: Slanted Lines</h5>
-                            <Radio
-                                checked={this.props.uiStore.slantedLines === 'singleDir'}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setSlantedLines('singleDir')}
-                            >
-                                One direction
-                            </Radio>
-                            {' '}
-                            <Radio
-                                checked={this.props.uiStore.slantedLines === 'altWithin'}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setSlantedLines('altWithin')}
-                            >
-                                Alternating direction (within variable)
-                            </Radio>
-                            {' '}
-                            <Radio
-                                checked={this.props.uiStore.slantedLines === 'altAcross'}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setSlantedLines('altAcross')}
-                            >
-                                Alternating direction (across variables )
-                            </Radio>
-                            <Radio
-                                checked={this.props.uiStore.slantedLines === 'random'}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setSlantedLines('random')}
-                            >
-                                Random
-                            </Radio>
-                            <Radio
-                                checked={this.props.uiStore.slantedLines === 'none'}
-                                name="radioGroup"
-                                inline
-                                onChange={() => this.props.uiStore.setSlantedLines('none')}
-                            >
-                                None
-                            </Radio>
+                            <ControlLabel>Row offset (pixels)</ControlLabel>
+                            <FormControl
+                                onChange={e => this.props.uiStore.setRowOffset(e.target.value)}
+                                type="number"
+                                name="offset"
+                                value={this.props.uiStore.rowOffset}
+                                step="1"
+                                min="0"
+                                max="10"
+                            />
                         </FormGroup>
-                    </form>
-                    <form>
                         <FormGroup>
-                            <h5>Experimental: Row offset</h5>
-                            <label>
-                                Pixels:
-                                <input
-                                    onChange={e => this.props.uiStore.setRowOffset(e.target.value)}
-                                    type="number"
-                                    name="points"
-                                    value={this.props.uiStore.rowOffset}
-                                    step="1"
-                                    min="0"
-                                    max="10"
-                                />
-                            </label>
+                            <ControlLabel>Horizontal gap size (pixels)</ControlLabel>
+                            <FormControl
+                                onChange={e => this.props.uiStore.setHorizontalGap(e.target.value)}
+                                type="number"
+                                name="gapSize"
+                                value={this.props.uiStore.horizontalGap}
+                                step="1"
+                                min="0"
+                                max="10"
+                            />
                         </FormGroup>
-                    </form>
-                    <form>
                         <FormGroup>
-                            <h5>Experimental: Group Stacking</h5>
+                            <ControlLabel>Group stacking:</ControlLabel>
+                            {' '}
                             <Radio
                                 checked={!this.props.uiStore.horizontalStacking}
-                                name="radioGroup"
+                                name="stacking"
                                 inline
                                 onChange={() => this.props.uiStore.setHorizontalStacking(false)}
                             >
@@ -225,13 +136,58 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
                             {' '}
                             <Radio
                                 checked={this.props.uiStore.horizontalStacking}
-                                name="radioGroup"
+                                name="stacking"
                                 inline
                                 onChange={() => this.props.uiStore.setHorizontalStacking(true)}
                             >
                                 Horizontal
                             </Radio>
                             {' '}
+                        </FormGroup>
+                        <FormGroup>
+                            <ControlLabel>Draw slanted lines</ControlLabel>
+                            <Radio
+                                checked={this.props.uiStore.slantedLines === 'singleDir'}
+                                disabled={this.props.uiStore.horizontalStacking}
+                                name="slanted"
+                                onChange={() => this.props.uiStore.setSlantedLines('singleDir')}
+                            >
+                                One direction
+                            </Radio>
+                            {' '}
+                            <Radio
+                                checked={this.props.uiStore.slantedLines === 'altWithin'}
+                                disabled={this.props.uiStore.horizontalStacking}
+                                name="slanted"
+                                onChange={() => this.props.uiStore.setSlantedLines('altWithin')}
+                            >
+                                Alternating direction (within variable)
+                            </Radio>
+                            {' '}
+                            <Radio
+                                checked={this.props.uiStore.slantedLines === 'altAcross'}
+                                disabled={this.props.uiStore.horizontalStacking}
+                                name="slanted"
+                                onChange={() => this.props.uiStore.setSlantedLines('altAcross')}
+                            >
+                                Alternating direction (across variables )
+                            </Radio>
+                            <Radio
+                                checked={this.props.uiStore.slantedLines === 'random'}
+                                disabled={this.props.uiStore.horizontalStacking}
+                                name="slanted"
+                                onChange={() => this.props.uiStore.setSlantedLines('random')}
+                            >
+                                Random
+                            </Radio>
+                            <Radio
+                                disabled={this.props.uiStore.horizontalStacking}
+                                checked={this.props.uiStore.slantedLines === 'none'}
+                                name="slanted"
+                                onChange={() => this.props.uiStore.setSlantedLines('none')}
+                            >
+                                None
+                            </Radio>
                         </FormGroup>
                     </form>
                 </Modal.Body>

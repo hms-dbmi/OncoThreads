@@ -6,7 +6,7 @@ import {action, extendObservable} from "mobx";
 class UIStore {
     constructor() {
         extendObservable(this, {
-            continuousRepresentation: 'gradient', //gradient, boxplot, medium
+            continuousRepresentation: 'gradient', // gradient, boxplot, medium
             realTime: false, // show realtime lines in block view
             globalTime: false, // show global timeline
             advancedSelection: true, // advanced selection enables
@@ -15,6 +15,7 @@ class UIStore {
             blockAlignment: 'left', // left middle, right
             rowOffset: 0,
             horizontalStacking: false,
+            horizontalGap: 1,
             setContinuousRepresentation: action(representation => {
                 this.continuousRepresentation = representation;
             }),
@@ -40,9 +41,12 @@ class UIStore {
                 this.blockAlignment = blockAlignment;
             }),
             setRowOffset: action((offset)=>{
-                this.rowOffset=offset;
-            })
-        })
+                this.rowOffset = Number(offset);
+            }),
+            setHorizontalGap: action((horizontalGap) => {
+                this.horizontalGap = Number(horizontalGap);
+            }),
+        });
     }
 }
 export default UIStore;
