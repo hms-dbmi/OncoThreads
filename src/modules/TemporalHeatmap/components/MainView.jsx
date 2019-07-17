@@ -225,7 +225,6 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                         <Col xs={9} md={9} style={{ padding: 0, overflow: 'hidden' }}>
                             <GlobalBands timeValue={this.props.rootStore.timeValue} />
                             <GlobalTimeline
-                                showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                                 tooltipFunctions={this.props.tooltipFunctions}
                             />
                         </Col>
@@ -328,5 +327,5 @@ MainView.propTypes = {
     showContextMenu: PropTypes.func.isRequired,
     showContextMenuHeatmapRow: PropTypes.func.isRequired,
     openBinningModal: PropTypes.func.isRequired,
-}
+};
 export default MainView;
