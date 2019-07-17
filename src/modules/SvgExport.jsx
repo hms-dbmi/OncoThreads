@@ -28,7 +28,11 @@ class SvgExport {
         } else {
             tmp = document.getElementById("block-view");
         }
-        var svg_all = tmp.getElementsByTagName("svg");
+        var svg_all = Array.from(tmp.getElementsByTagName("svg"));
+
+        svg_all.sort((svg1, svg2) => {
+            return svg1.getBoundingClientRect().left-svg2.getBoundingClientRect().left
+        });
 
         var print_svg = '';
 
@@ -69,6 +73,7 @@ class SvgExport {
 
             if (boundingRect.x < prev_right && !this.rootStore.uiStore.globalTime) {
 
+                
                 new_right = prev_right + width;
                 new_x = prev_right;
             }
@@ -322,7 +327,13 @@ class SvgExport {
         } else {
             tmp = document.getElementById("block-view");
         }
-        var svg_all = tmp.getElementsByTagName("svg");
+        //var svg_all = tmp.getElementsByTagName("svg");
+
+        var svg_all = Array.from(tmp.getElementsByTagName("svg"));
+
+        svg_all.sort((svg1, svg2) => {
+            return svg1.getBoundingClientRect().left-svg2.getBoundingClientRect().left
+        });
 
         var print_svg = '';
 

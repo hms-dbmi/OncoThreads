@@ -9,13 +9,13 @@ class VariableStore {
         this.childStore = new MultipleTimepointsStore(rootStore, type);
         this.rootStore = rootStore;
         this.type = type;
-        //Variables that are referenced (displayed or used to create a derived variable)
-        this.referencedVariables = {};
         //Derived variables that are not displayed but should be saved for later use
         this.savedReferences = [];
         extendObservable(this, {
             //List of ids of currently displayed variables
             currentVariables: [],
+                    //Variables that are referenced (displayed or used to create a derived variable)
+            referencedVariables:{},
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
@@ -46,7 +46,7 @@ class VariableStore {
              */
             replaceAllCurrentVariables: action(function (newIds) {
                 this.currentVariables.replace(newIds);
-            }),        
+            }),
 
 
             /**
@@ -60,8 +60,8 @@ class VariableStore {
                     this.addCurrentVariable(variable.id)
                 }
 
-               
-                
+
+
             }),
             /**
              * adds variables to be displayed
@@ -85,7 +85,12 @@ class VariableStore {
              */
             replaceAll: action(function (referencedVariables, currentVariables, primaryVariables) {
                 this.childStore.timepoints.forEach((d, i) => {
-                    d.setPrimaryVariable(primaryVariables[i])
+                    if(primaryVariables[i]!=='') {
+                      if (referencedVariables[primaryVariables[i]].datatype === "NUMBER") {
+                        d.setIsGrouped(false);
+                      }
+                      d.setPrimaryVariable(primaryVariables[i]);
+                    }
                 });
                 this.replaceVariables(referencedVariables, currentVariables);
             }),
@@ -210,7 +215,7 @@ class VariableStore {
         });
         profileVariables.forEach(variableId => {
             if (this.referencedVariables[variableId].profile in profileDomains) {
-                this.referencedVariables[variableId].domain = profileDomains[this.referencedVariables[variableId].profile]
+                this.referencedVariables[variableId].changeDomain(profileDomains[this.referencedVariables[variableId].profile]);
             }
         });
     }

@@ -1,5 +1,6 @@
 import React from 'react';
-import {inject, observer} from 'mobx-react';
+import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
 import {
     Button,
     DropdownButton,
@@ -10,23 +11,22 @@ import {
     MenuItem,
     OverlayTrigger,
     Table,
-    Tooltip
+    Tooltip,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import ModifyCategorical from "./ModifySingleVariable/ModifyCategorical";
-import ModifyContinuous from "./ModifySingleVariable/ModifyContinuous";
-import ModifyBinary from "./ModifySingleVariable/ModifyBinary";
-import SaveVariableDialog from "../Modals/SaveVariableDialog";
-import CombineModal from "./CombineVariables/CombineModal";
-import {extendObservable} from "mobx";
+import { extendObservable } from 'mobx';
+import ModifyCategorical from './ModifySingleVariable/ModifyCategorical';
+import ModifyContinuous from './ModifySingleVariable/ModifyContinuous';
+import ModifyBinary from './ModifySingleVariable/ModifyBinary';
+import SaveVariableDialog from '../Modals/SaveVariableDialog';
+import CombineModal from './CombineVariables/CombineModal';
 
 /**
  * Component for displaying and modifying current variables in a table
  */
-const VariableTable = inject("variableManagerStore", "rootStore")(observer(class VariableTable extends React.Component {
-
-    constructor(props) {
-        super(props);
+const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class VariableTable extends React.Component {
+    constructor() {
+        super();
         extendObservable(this, {
             // current state of data and data parsing
             modifyCategoricalIsOpen: false,
@@ -40,7 +40,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
             callback: '', // callback for saving a variable
             sortVarAsc: true,
             sortSourceAsc: true,
-            sortTypeAsc: true
+            sortTypeAsc: true,
         });
 
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
@@ -49,6 +49,63 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
         this.combineSelected = this.combineSelected.bind(this);
     }
 
+    /**
+     * creates the modal for modification
+     * @returns {(ModifyBinary|ModifyContinuous|ModifyBinary|SaveVariableDialog|CombineModal)}
+     */
+    getModal() {
+        let modal = null;
+        if (this.modifyContinuousIsOpen) {
+            modal = (
+                <ModifyContinuous
+                    modalIsOpen={this.modifyContinuousIsOpen}
+                    variable={this.currentVariable}
+                    derivedVariable={this.derivedVariable}
+                    setColorRange={this.setColorRange}
+                    closeModal={this.closeModal}
+                />
+            );
+        } else if (this.modifyCategoricalIsOpen) {
+            modal = (
+                <ModifyCategorical
+                    modalIsOpen={this.modifyCategoricalIsOpen}
+                    variable={this.currentVariable}
+                    derivedVariable={this.derivedVariable}
+                    closeModal={this.closeModal}
+                />
+            );
+        } else if (this.modifyBinaryIsOpen) {
+            modal = (
+                <ModifyBinary
+                    modalIsOpen={this.modifyBinaryIsOpen}
+                    variable={this.currentVariable}
+                    derivedVariable={this.derivedVariable}
+                    closeModal={this.closeModal}
+                />
+            );
+        } else if (this.saveVariableIsOpen) {
+            modal = (
+                <SaveVariableDialog
+                    modalIsOpen={this.saveVariableIsOpen}
+                    variable={this.currentVariable}
+                    callback={this.callback}
+                    closeModal={this.closeModal}
+                />
+            );
+        } else if (this.combineVariablesIsOpen) {
+            modal = (
+                <CombineModal
+                    modalIsOpen={this.combineVariablesIsOpen}
+                    variables={this.combineVariables}
+                    derivedVariable={this.derivedVariable}
+                    closeModal={this.closeModal}
+                />
+            );
+        }
+        return (
+            modal
+        );
+    }
 
     /**
      * closes all modals
@@ -68,9 +125,9 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @param {string} datatype
      */
     openModifyModal(originalVariable, derivedVariable, datatype) {
-        this.modifyContinuousIsOpen = datatype === "NUMBER";
-        this.modifyCategoricalIsOpen = datatype === "STRING" || datatype === "ORDINAL";
-        this.modifyBinaryIsOpen = datatype === "BINARY";
+        this.modifyContinuousIsOpen = datatype === 'NUMBER';
+        this.modifyCategoricalIsOpen = datatype === 'STRING' || datatype === 'ORDINAL';
+        this.modifyBinaryIsOpen = datatype === 'BINARY';
         this.derivedVariable = derivedVariable;
         this.currentVariable = originalVariable;
     }
@@ -104,21 +161,20 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @param {string} id
      */
     handleCogWheelClick(event, id) {
-        let variable = this.props.variableManagerStore.getById(id);
+        const variable = this.props.variableManagerStore.getById(id);
         if (variable.originalIds.length === 1) {
             let originalVariable;
             let derivedVariable = null;
             if (variable.derived) {
                 originalVariable = this.props.variableManagerStore.getById(variable.originalIds[0]);
                 derivedVariable = variable;
-            }
-            else {
+            } else {
                 originalVariable = variable;
             }
             this.openModifyModal(originalVariable, derivedVariable, originalVariable.datatype);
-        }
-        else {
-            this.openCombineModal(variable.originalIds.map(d => this.props.variableManagerStore.getById(d)), variable);
+        } else {
+            this.openCombineModal(variable.originalIds
+                .map(d => this.props.variableManagerStore.getById(d)), variable);
         }
     }
 
@@ -128,12 +184,11 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      */
     removeVariable(variable) {
         if (variable.derived) {
-            this.openSaveVariableModal(variable, save => {
+            this.openSaveVariableModal(variable, (save) => {
                 this.props.variableManagerStore.updateSavedVariables(variable.id, save);
                 this.props.variableManagerStore.removeVariable(variable.id);
             });
-        }
-        else {
+        } else {
             this.props.variableManagerStore.removeVariable(variable.id);
         }
     }
@@ -143,39 +198,52 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @returns {Table}
      */
     showCurrentVariables() {
-        let elements = [];
+        const elements = [];
         this.props.variableManagerStore.currentVariables.forEach((d, i) => {
-            let fullVariable = this.props.variableManagerStore.getById(d.id);
-            const tooltip = <Tooltip id="tooltip">
-                {fullVariable.description}
-            </Tooltip>;
+            const fullVariable = this.props.variableManagerStore.getById(d.id);
+            const tooltip = (
+                <Tooltip id="tooltip">
+                    {fullVariable.description}
+                </Tooltip>
+            );
             let label = null;
             if (fullVariable.derived) {
-                label = <Label bsStyle="info">
+                label = (
+                    <Label bsStyle="info">
                     Modified
-                </Label>
+                    </Label>
+                );
             }
             let newLabel = null;
             if (d.isNew) {
-                newLabel = <Label bsStyle="info">New</Label>
+                newLabel = <Label bsStyle="info">New</Label>;
             }
             let bgColor = null;
             if (d.isSelected) {
-                bgColor = "lightgray"
+                bgColor = 'lightgray';
             }
             elements.push(
-                <tr key={d.id} style={{backgroundColor: bgColor}}
+                <tr
+                    key={d.id}
+                    style={{ backgroundColor: bgColor }}
                     onClick={(e) => {
-                        if (e.target.nodeName === "TD") {
-                            this.props.variableManagerStore.toggleSelected(d.id)
+                        if (e.target.nodeName === 'TD') {
+                            this.props.variableManagerStore.toggleSelected(d.id);
                         }
-                    }}>
+                    }}
+                >
                     <td>
                         {i + 1}
-                        <Button bsSize="xsmall" onClick={() => this.moveSingle(true, false, i)}><Glyphicon
-                            glyph="chevron-up"/></Button>
-                        <Button bsSize="xsmall" onClick={() => this.moveSingle(false, false, i)}><Glyphicon
-                            glyph="chevron-down"/></Button>
+                        <Button bsSize="xsmall" onClick={() => this.moveSingle(true, false, i)}>
+                            <Glyphicon
+                                glyph="chevron-up"
+                            />
+                        </Button>
+                        <Button bsSize="xsmall" onClick={() => this.moveSingle(false, false, i)}>
+                            <Glyphicon
+                                glyph="chevron-down"
+                            />
+                        </Button>
                     </td>
                     <OverlayTrigger placement="top" overlay={tooltip}>
                         <td>
@@ -183,88 +251,86 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
                         </td>
                     </OverlayTrigger>
                     <td>
-                        {newLabel} {label}
+                        {newLabel}
+                        {' '}
+                        {label}
                     </td>
                     <td>
                         {fullVariable.datatype}
                     </td>
-                    <td>{!fullVariable.derived ? this.props.availableCategories.filter(d => d.id === fullVariable.profile)[0].name : "Derived"}</td>
+                    <td>{!fullVariable.derived ? this.props.availableCategories.filter(category => category.id === fullVariable.profile)[0].name : 'Derived'}</td>
                     <td>
-                        <FontAwesome onClick={(e) => this.handleCogWheelClick(e, d.id)}
-                                     name="cog"/>
-                        {"\t"}
-                        <FontAwesome onClick={() => {
-                            this.removeVariable(fullVariable);
-                        }} name="times"/>
+                        <FontAwesome
+                            onClick={e => this.handleCogWheelClick(e, d.id)}
+                            name="cog"
+                        />
+                        {'\t'}
+                        <FontAwesome
+                            onClick={() => {
+                                this.removeVariable(fullVariable);
+                            }}
+                            name="times"
+                        />
                     </td>
-                </tr>);
+                </tr>,
+            );
         });
-        return <Table condensed hover>
-            <thead>
-            <tr>
-                <th>Position</th>
-                <th>Variable {this.sortVarAsc ? <Glyphicon onClick={() => this.handleSort("alphabet")}
-                                                           glyph="chevron-down"/> :
-                    <Glyphicon onClick={() => this.handleSort("alphabet")}
-                               glyph="chevron-up"/>}</th>
-                <th/>
-                <th>Datatype {this.sortTypeAsc ? <Glyphicon onClick={() => this.handleSort("datatype")}
-                                                            glyph="chevron-down"/> :
-                    <Glyphicon onClick={() => this.handleSort("datatype")}
-                               glyph="chevron-up"/>}</th>
-                <th>Source {this.sortSourceAsc ? <Glyphicon onClick={() => this.handleSort("source")}
-                                                            glyph="chevron-down"/> :
-                    <Glyphicon onClick={() => this.handleSort("source")}
-                               glyph="chevron-up"/>}</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {elements}</tbody>
-        </Table>;
-    }
-
-
-    /**
-     * creates the modal for modification
-     * @returns {(ModifyBinary|ModifyContinuous|ModifyBinary|SaveVariableDialog|CombineModal)}
-     */
-    getModal() {
-        let modal = null;
-        if (this.modifyContinuousIsOpen) {
-            modal = <ModifyContinuous modalIsOpen={this.modifyContinuousIsOpen}
-                                      variable={this.currentVariable}
-                                      derivedVariable={this.derivedVariable}
-                                      setColorRange={this.setColorRange}
-                                      closeModal={this.closeModal}/>
-        }
-        else if (this.modifyCategoricalIsOpen) {
-            modal = <ModifyCategorical modalIsOpen={this.modifyCategoricalIsOpen}
-                                       variable={this.currentVariable}
-                                       derivedVariable={this.derivedVariable}
-                                       closeModal={this.closeModal}/>
-        }
-        else if (this.modifyBinaryIsOpen) {
-            modal = <ModifyBinary modalIsOpen={this.modifyBinaryIsOpen}
-                                  variable={this.currentVariable}
-                                  derivedVariable={this.derivedVariable}
-                                  closeModal={this.closeModal}/>
-        }
-        else if (this.saveVariableIsOpen) {
-            modal = <SaveVariableDialog modalIsOpen={this.saveVariableIsOpen}
-                                        variable={this.currentVariable}
-                                        callback={this.callback}
-                                        closeModal={this.closeModal}/>
-        }
-        else if (this.combineVariablesIsOpen) {
-            modal = <CombineModal modalIsOpen={this.combineVariablesIsOpen}
-                                  variables={this.combineVariables}
-                                  derivedVariable={this.derivedVariable}
-                                  closeModal={this.closeModal}/>
-        }
         return (
-            modal
-        )
+            <Table condensed hover>
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>
+                        Variable
+                            {this.sortVarAsc ? (
+                                <Glyphicon
+                                    onClick={() => this.handleSort('alphabet')}
+                                    glyph="chevron-down"
+                                />
+                            ) : (
+                                <Glyphicon
+                                    onClick={() => this.handleSort('alphabet')}
+                                    glyph="chevron-up"
+                                />
+                            )}
+                        </th>
+                        <th />
+                        <th>
+                        Datatype
+                            {this.sortTypeAsc ? (
+                                <Glyphicon
+                                    onClick={() => this.handleSort('datatype')}
+                                    glyph="chevron-down"
+                                />
+                            ) : (
+                                <Glyphicon
+                                    onClick={() => this.handleSort('datatype')}
+                                    glyph="chevron-up"
+                                />
+                            )}
+                        </th>
+                        <th>
+                        Source
+                            {this.sortSourceAsc ? (
+                                <Glyphicon
+                                    onClick={() => this.handleSort('source')}
+                                    glyph="chevron-down"
+                                />
+                            ) : (
+                                <Glyphicon
+                                    onClick={() => this.handleSort('source')}
+                                    glyph="chevron-up"
+                                />
+                            )}
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {elements}
+                </tbody>
+            </Table>
+        );
     }
 
 
@@ -273,16 +339,14 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @param {string} category
      */
     handleSort(category) {
-        if (category === "source") {
-            this.props.variableManagerStore.sortBySource(this.props.availableCategories.map(d => d.id), this.sortSourceAsc);
+        if (category === 'source') {
+            this.props.variableManagerStore.sortBySource(this.props.availableCategories
+                .map(d => d.id), this.sortSourceAsc);
             this.sortSourceAsc = !this.sortSourceAsc;
-        }
-        else if (category === "alphabet") {
+        } else if (category === 'alphabet') {
             this.props.variableManagerStore.sortAlphabetically(this.sortVarAsc);
             this.sortVarAsc = !this.sortVarAsc;
-
-        }
-        else {
+        } else {
             this.props.variableManagerStore.sortByDatatype(this.sortTypeAsc);
             this.sortTypeAsc = !this.sortTypeAsc;
         }
@@ -292,12 +356,11 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * Opens modal for combining selected variables
      */
     combineSelected() {
-        let selectedVar = this.props.variableManagerStore.getSelectedVariables();
+        const selectedVar = this.props.variableManagerStore.getSelectedVariables();
         if (selectedVar.length > 1) {
             this.openCombineModal(this.props.variableManagerStore.getSelectedVariables(), null);
-        }
-        else {
-            alert("Please select at least two variables");
+        } else {
+            alert('Please select at least two variables');
         }
     }
 
@@ -307,7 +370,7 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
      * @param {boolean} toExtreme
      */
     moveSelected(isUp, toExtreme) {
-        let indices = this.props.variableManagerStore.getSelectedIndices();
+        const indices = this.props.variableManagerStore.getSelectedIndices();
         this.props.variableManagerStore.move(isUp, toExtreme, indices);
     }
 
@@ -321,55 +384,23 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
         this.props.variableManagerStore.move(isUp, toExtreme, [index]);
     }
 
-    /**
-     * check if variable has changed
-     * @param {(OriginalVariable|DerivedVariable)} oldVariable
-     * @param {DerivedVariable} newVariable
-     * @returns {boolean}
-     */
-    static variableChanged(oldVariable, newVariable) {
-        //case: datatype changed?
-        if (oldVariable.datatype !== newVariable.datatype) {
-            return true;
-        }
-        else {
-            //case: domain changed?
-            if (!oldVariable.domain.every((d, i) => d === newVariable.domain[i])) {
-                return true
-            }
-            else if (!oldVariable.range.every((d, i) => d === newVariable.range[i])) {
-                return true
-            }
-            //case: mapper changed?
-            else {
-                for (let sample in oldVariable.mapper) {
-                    if (oldVariable.mapper[sample] !== newVariable.mapper[sample]) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-
-
     render() {
         return (
             <div>
                 <h4>Current Variables</h4>
                 <Form inline>
-                    <FormGroup>
-
-                    </FormGroup>
+                    <FormGroup />
                 </Form>
-                <div style={{maxHeight: 400, overflowY: "scroll"}}>
+                <div style={{ maxHeight: 400, overflowY: 'scroll' }}>
                     {this.showCurrentVariables()}
                 </div>
                 <DropdownButton
-                    title={"Move selected..."}
-                    id={"MoveSelected"}>
+                    title="Move selected..."
+                    id="MoveSelected"
+                >
                     <MenuItem onClick={() => this.moveSelected(true, false)} eventKey="1">Up</MenuItem>
                     <MenuItem onClick={() => this.moveSelected(false, false)} eventKey="2">Down</MenuItem>
-                    <MenuItem divider/>
+                    <MenuItem divider />
                     <MenuItem onClick={() => this.moveSelected(true, true)} eventKey="3">to top</MenuItem>
                     <MenuItem onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</MenuItem>
                 </DropdownButton>
@@ -377,7 +408,10 @@ const VariableTable = inject("variableManagerStore", "rootStore")(observer(class
                 {this.getModal()}
             </div>
 
-        )
+        );
     }
 }));
+VariableTable.propTypes = {
+    availableCategories: PropTypes.arrayOf(PropTypes.object),
+};
 export default VariableTable;

@@ -147,6 +147,7 @@ class RootStore {
                 }
                 this.staticMappers = {};
                 this.scoreStructure = {};
+                this.TimeLineVariability={};
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
@@ -221,6 +222,12 @@ class RootStore {
                                 //console.log(iV[Object.values(ST)[j][k]]);
                                 //console.log(iV[Object.values(ST)[j][k+1]]);
                                 m++;
+                            }
+                            else{
+                                if(iK==="Timepoint"){
+                                    console.log(iV[Object.values(ST)[j][k]]);
+                                    console.log(iV[Object.values(ST)[j][k+1]]);
+                                }
                             }
                         }
 
@@ -319,6 +326,9 @@ class RootStore {
             return this.getNumWithSetDec( v, numOfDec );
         }),
 
+    
+
+
         calculateVScoreWithinTimeLine: action(() => {
 
 
@@ -328,26 +338,24 @@ class RootStore {
 
             let self=this;
 
-
+            
             Object.keys(SM).forEach((iK,i) => {
                 if(!i) {
                     return;
                 }
                 var iV= SM[iK];
-
+                
                 this.TimeLineVariability[iK]={};
 
-                if(iK==="MUTATION_COUNT"){
-                    //console.log("numerical");
-                }
+                
                 var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
-                //if(dType==="STRING"){
+                if(dType==="STRING"){
 
                     var samples=Object.values(ST);
 
                     var sample_length=samples.map(function(d){return d.length});
-
+                    
 
                     var max_sample=Math.max(...sample_length);
 
@@ -360,7 +368,7 @@ class RootStore {
                         //samples.forEach(function(d){if(d[a]) r.push(d[a])});
                         var r = samples.filter(d=> d[a]).map((d)=>d[a]);
 
-
+                        
 
                         //var set1 = new Set();
 
@@ -369,7 +377,7 @@ class RootStore {
                             //set1.add(iV[r[j]]);
                             temp.push(iV[r[j]]);
                         }
-
+                        
                         //console.log(temp);
 
                         var uniq=[...new Set(temp)];
@@ -397,7 +405,7 @@ class RootStore {
 
                         //console.log(iK);
                         //console.log("\n n is " + temp.length);
-                        if(dType==="NUMBER"){
+                        /*if(dType==="NUMBER"){
                             for(x=0; x<u_vals.length; x++){
                                 if(temp.length * temp.length - temp.length !== 0){ //avoid divide by zero with this condition
                                     t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length - temp.length);
@@ -405,78 +413,84 @@ class RootStore {
                                 else{
                                     t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]));
                                 }
-
+                                
                             }
-                        }
-                        else{
+                        }*/
+                        //else{
                             for(x=0; x<u_vals.length; x++){
                                 t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
                             }
-                        }
-
+                        //}
+                        
 
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-
+                        
                         t_v= this.getNumWithSetDec(t_v,2);
 
                         this.TimeLineVariability[iK][a]= t_v;
 
                     });
 
+                    
 
+                }
+                //standard deviation //DO NOT DELETE THIS YET
+                else if(dType==="NUMBER"){ 
 
-                    //}
-                    //standard deviation //DO NOT DELETE THIS YET
-                    /*else if(dType==="NUMBER"){
+                    samples=Object.values(ST);
 
-                        samples=Object.values(ST);
+                    sample_length=samples.map(function(d){return d.length});
+                    
 
-                        sample_length=samples.map(function(d){return d.length});
+                    max_sample=Math.max(...sample_length);
 
+                    for(var a=0; a<max_sample; a++){
 
-                        max_sample=Math.max(...sample_length);
+                        var r=[];
 
-                        for(a=0; a<max_sample; a++){
+                        //samples.map(function(d){if(d[a]) r.push(d[a])});                 
+                        //samples.filter(d=> {if(d[a]) r.push(d[a])});                 
 
-                            r=[];
+                        for(let p=0; p<samples.length; p++){
+                            if(samples[p][a]){
+                                   r.push(samples[p][a]);
+                               }
+                           }
+                        
 
-                            samples.map(function(d){if(d[a]) r.push(d[a])});
+                        //var set1 = new Set();
 
-
-
-                            //var set1 = new Set();
-
-                            temp=[];
-                            for(j=0; j<r.length; j++){
-                                //set1.add(iV[r[j]]);
-                                temp.push(iV[r[j]]);
-                            }
-
-                            //console.log(temp);
-
-
-                            //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-
-                            //var t_v=this.getVariance( temp, 4 ); //variance;
-
-                            //get standard deviation
-
-                            t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
-                            this.TimeLineVariability[iK][a]= t_v;
-
+                        var temp=[];
+                        for(var j=0; j<r.length; j++){
+                            //set1.add(iV[r[j]]);
+                            temp.push(iV[r[j]]);
                         }
+                        
+                        console.log(temp);
+
+                        
+                        //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
+                        
+                        var t_v=this.getVariance( temp, 2 ); //variance;
+
+                        //get standard deviation
+
+                        //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
+                        this.TimeLineVariability[iK][a]= t_v;
+
+                    }
 
 
 
-                    } */
+                } 
+                
+                //console.log(m);
 
-                    //console.log(m);
-
-                    //this.TimeLineVariability[iK][a]= t_v;
+                //this.TimeLineVariability[iK][a]= t_v;
 
 
-                    // m=0;
-                });
+               // m=0;
+            });
 
 
             console.log(this.TimeLineVariability);
@@ -823,14 +837,14 @@ class RootStore {
         reaction(() => this.uiStore.horizontalStacking,
             horizontalStacking => {
                 if (horizontalStacking) {
-                    this.visStore.setGap(8);
-                    //this.visStore.setBandRectHeight(0);
+                    //this.visStore.setGap(8);
+                    this.visStore.setBandRectHeight(0);
                     this.visStore.setColorRectHeight(0);
 
                 }
                 else {
-                    this.visStore.setGap(1);
-                    //this.visStore.setBandRectHeight(15);
+                    //this.visStore.setGap(1);
+                    this.visStore.setBandRectHeight(15);
                     this.visStore.setColorRectHeight(2);
                 }
             });

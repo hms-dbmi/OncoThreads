@@ -1,4 +1,4 @@
-import {action, extendObservable, observe} from "mobx";
+import { action, extendObservable, observe } from "mobx";
 import UndoRedoStore from "../../../UndoRedoStore";
 import DerivedVariable from "../../stores/DerivedVariable";
 import DerivedMapperFunctions from "../../UtilityClasses/DeriveMapperFunctions";
@@ -20,11 +20,11 @@ class VariableManagerStore {
         this.referencedVariables = UndoRedoStore.deserializeReferencedVariables(referencedVariables);
         this.primaryVariables = primaryVariables;
         this.savedReferences = savedReferences;
-        this.log=[];
+        this.log = [];
         extendObservable(this, {
             //List of ids of currently displayed variables and if they are new and/or selected
             currentVariables: currentVariables.map(d => {
-                return {id: d, isNew: false, isSelected: false}
+                return { id: d, isNew: false, isSelected: false }
             }),
             addOrder: [],
             /**
@@ -49,7 +49,7 @@ class VariableManagerStore {
             addVariableToBeDisplayed: action(variable => {
                 this.addVariableToBeReferenced(variable);
                 if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
-                    this.currentVariables.push({id: variable.id, isNew: true, isSelected: false});
+                    this.currentVariables.push({ id: variable.id, isNew: true, isSelected: false });
                     this.addOrder.push(variable.id);
                 }
             }),
@@ -59,21 +59,20 @@ class VariableManagerStore {
              * @param {(OriginalVariable|DerivedVariable)} new variable
              */
             replaceDisplayedVariable: action((oldId, newVariable) => {
-                if (oldId !== newVariable.id) {
-                    this.referencedVariables[newVariable.id] = newVariable;
-                    const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
-                    this.currentVariables[replaceIndex] = {
-                        id: newVariable.id,
-                        isNew: this.currentVariables[replaceIndex].isNew,
-                        isSelected: this.currentVariables[replaceIndex].isSelected
-                    };
-                }
+                this.referencedVariables[newVariable.id] = newVariable;
+                const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
+                this.currentVariables[replaceIndex] = {
+                    id: newVariable.id,
+                    isNew: this.currentVariables[replaceIndex].isNew,
+                    isSelected: this.currentVariables[replaceIndex].isSelected
+                };
                 this.addOrder[this.addOrder.indexOf(oldId)] = newVariable.id;
                 if (this.primaryVariables.includes(oldId)) {
-                    for (let i = 0; i < this.primaryVariables.length; i++)
-                        if (this.primaryVariables[i] === oldId) {
+                    for (let i = 0; i < this.primaryVariables.length; i++) {
+                        if (this.primaryVariables[this.primaryVariables.indexOf(oldId)] === oldId) {
                             this.primaryVariables[i] = newVariable.id;
                         }
+                    }
                 }
             }),
             /**
@@ -111,10 +110,10 @@ class VariableManagerStore {
              * @param {string[]} sourceOrder
              * @param {boolean} asc - sort ascending/descending
              */
-            sortBySource: action((sourceOrder,asc) => {
-                 let factor=1;
-                if(!asc){
-                    factor=-1
+            sortBySource: action((sourceOrder, asc) => {
+                let factor = 1;
+                if (!asc) {
+                    factor = -1
                 }
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                         if (sourceOrder.indexOf(this.referencedVariables[a.id].profile) < sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
@@ -147,9 +146,9 @@ class VariableManagerStore {
              * @param {boolean} asc - sort ascending/descending
              */
             sortAlphabetically: action((asc) => {
-                let factor=1;
-                if(!asc){
-                    factor=-1
+                let factor = 1;
+                if (!asc) {
+                    factor = -1
                 }
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                     if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
@@ -165,9 +164,9 @@ class VariableManagerStore {
              * sort variables by datatype (alphabetically)
              */
             sortByDatatype: action((asc) => {
-                 let factor=1;
-                if(!asc){
-                    factor=-1
+                let factor = 1;
+                if (!asc) {
+                    factor = -1
                 }
                 this.currentVariables.replace(this.currentVariables.sort((a, b) => {
                         if (this.referencedVariables[a.id].datatype < this.referencedVariables[b.id].datatype) {
@@ -291,6 +290,35 @@ class VariableManagerStore {
     }
 
     /**
+     * changes the color range of a variable
+     * @param {string} variableId
+     * @param {string[]} range
+     * @param {boolean} applyToAll
+     */
+    changeVariableRange(variableId, range, applyToAll) {
+        if (!range.every((d, i) => d === this.referencedVariables[variableId].range[i])) {
+            if (applyToAll) {
+                this.applyRangeToEntireProfile(this.referencedVariables[variableId].profile, range);
+            }
+            else {
+                this.referencedVariables[variableId].changeRange(range);
+            }
+        }
+    }
+
+    /**
+     * change the name of a variable
+     * @param {string} variableId
+     * @param {string} name
+     */
+    changeVariableName(variableId, name) {
+        if (this.referencedVariables[variableId].name !== name) {
+            this.referencedVariables[variableId].changeName(name);
+        }
+    }
+
+
+    /**
      * applies a color range to all variables in a profile
      * @param {string} profileId
      * @param {string} range
@@ -393,6 +421,30 @@ class VariableManagerStore {
         return isBlock
     }
 
+    /**
+     * check if variable has changed
+     * @param {string} oldId
+     * @param {DerivedVariable} newVariable
+     * @returns {boolean}
+     */
+    variableChanged(oldId, newVariable) {
+        if (this.referencedVariables[oldId].datatype !== newVariable.datatype) {
+            return true;
+        }
+        else {
+            //case: domain changed?
+            if (!this.referencedVariables[oldId].domain.every((d, i) => d === newVariable.domain[i])) {
+                return true
+                //case: mapper changed?
+            } else {
+                for (let sample in this.referencedVariables[oldId].mapper) {
+                    if (this.referencedVariables[oldId].mapper[sample] !== newVariable.mapper[sample]) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * gets a variable by id
@@ -416,7 +468,7 @@ class VariableManagerStore {
      */
     getSelectedIndices() {
         return this.currentVariables.map((d, i) => {
-            return {isSelected: d.isSelected, index: i}
+            return { isSelected: d.isSelected, index: i }
         }).filter(d => d.isSelected).map(d => d.index);
     }
 }

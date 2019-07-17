@@ -1,5 +1,5 @@
 import ColorScales from '../UtilityClasses/ColorScales';
-import {action, extendObservable} from "mobx";
+import { action, extendObservable } from "mobx";
 
 /**
  * original variable that is based on the input data
@@ -20,7 +20,6 @@ class OriginalVariable {
     constructor(id, name, datatype, description, range, domain, mapper, profile, type) {
         this.id = id;
         this.originalIds = [id];
-        this.name = name;
         this.datatype = datatype;
         this.description = description;
         this.range = range;
@@ -30,28 +29,36 @@ class OriginalVariable {
         this.referenced = 0;
         this.derived = false;
         extendObservable(this,
-            this.initializeObservable(domain, range)
+            this.initializeObservable(name, domain, range)
         );
     }
 
     /**
      * initializes observable values
+     * @param {string} name
      * @param {(number[]|string[]|boolean[])} domain
      * @param {string[]} range
      * @returns {Object} observable values
      */
-    initializeObservable(domain, range) {
+    initializeObservable(name, domain, range) {
         let currDomain = this.createDomain(domain);
         let currRange = ColorScales.createRange(currDomain, range, this.datatype);
         return {
             domain: currDomain,
             range: currRange,
+            name: name,
             changeRange: action(range => {
                 this.range = range
             }),
+            changeDomain: action(domain => {
+                this.domain = domain
+            }),
+            changeName: action(name => {
+                this.name = name;
+            }),
             get colorScale() {
                 let scale;
-               if (this.datatype === "STRING" || this.datatype === "BINARY") {
+                if (this.datatype === "STRING" || this.datatype === "BINARY") {
                     scale = ColorScales.getCategoricalScale(this.range, this.domain);
                 }
                 else if (this.datatype === "ORDINAL") {
@@ -71,7 +78,7 @@ class OriginalVariable {
      * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        return domain.concat(...this.getDefaultDomain().filter(d=>!domain.includes(d)));
+        return domain.concat(...this.getDefaultDomain().filter(d => !domain.includes(d)));
     }
 
     /**
@@ -80,13 +87,13 @@ class OriginalVariable {
      */
     getDefaultDomain() {
         if (this.datatype === 'NUMBER') {
-            return [Math.min(...Object.values(this.mapper).filter(d=>d!==undefined)), Math.max(...Object.values(this.mapper).filter(d=>d!==undefined))];
+            return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)), Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
         }
         else if (this.datatype === "BINARY") {
             return [true, false];
         }
         else {
-            return [...new Set(Object.values(this.mapper))].filter(d=>d!==undefined).sort();
+            return [...new Set(Object.values(this.mapper))].filter(d => d !== undefined).sort();
         }
     }
 }

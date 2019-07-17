@@ -6,13 +6,16 @@ import {action, extendObservable} from "mobx";
 class UIStore {
     constructor() {
         extendObservable(this, {
-            continuousRepresentation: 'gradient', //gradient, boxplot, medium
+            continuousRepresentation: 'gradient', // gradient, boxplot, medium
             realTime: false, // show realtime lines in block view
             globalTime: false, // show global timeline
             advancedSelection: true, // advanced selection enables
             showUndefined: true, // show rows with only undefined values
-            slantedLines:'none', //altWithin, altAcross, none, random
-            horizontalStacking:false,
+            slantedLines: 'none', // altWithin, altAcross, none, random
+            blockAlignment: 'left', // left middle, right
+            rowOffset: 0,
+            horizontalStacking: false,
+            horizontalGap: 1,
             setContinuousRepresentation: action(representation => {
                 this.continuousRepresentation = representation;
             }),
@@ -33,8 +36,17 @@ class UIStore {
             }),
             setHorizontalStacking:action(isHorizontal=>{
                 this.horizontalStacking=isHorizontal;
-            })
-        })
+            }),
+            setBlockAlignment: action((blockAlignment)=>{
+                this.blockAlignment = blockAlignment;
+            }),
+            setRowOffset: action((offset)=>{
+                this.rowOffset = Number(offset);
+            }),
+            setHorizontalGap: action((horizontalGap) => {
+                this.horizontalGap = Number(horizontalGap);
+            }),
+        });
     }
 }
 export default UIStore;
