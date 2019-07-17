@@ -97,6 +97,8 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
      */
     handleMouseDown(event, patient) {
         if (event.button === 0) {
+            // stop event propagation to prevent dragging the entire panel
+            event.stopPropagation();
             if (!this.state.dragging) {
                 this.props.dataStore.handlePatientSelection(patient);
             }

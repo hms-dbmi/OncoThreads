@@ -32,6 +32,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
             y: 0,
             showTooltip: 'hidden',
             contextType: '',
+            patient: '',
             showContextMenuHeatmapRow: false,
             variableManagerOpen: false,
         };
@@ -61,18 +62,15 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      * @returns {(ContextMenuHeatmapRow|null)}
      */
     getContextMenuHeatmapRow() {
-        if (this.state.showContextMenuHeatmapRow) {
-            return (
-                <ContextMenuHeatmapRow
-                    showContextMenuHeatmapRow={this.state.showContextMenuHeatmapRow}
-                    contextX={this.state.x}
-                    contextY={this.state.y}
-                    patient={this.state.patient}
-                    timepoint={this.state.clickedTimepoint}
-                />
-            );
-        }
-        return null;
+        return (
+            <ContextMenuHeatmapRow
+                showContextMenu={this.state.showContextMenuHeatmapRow}
+                contextX={this.state.x}
+                contextY={this.state.y}
+                patient={this.state.patient}
+                timepoint={this.state.clickedTimepoint}
+            />
+        );
     }
 
     /**

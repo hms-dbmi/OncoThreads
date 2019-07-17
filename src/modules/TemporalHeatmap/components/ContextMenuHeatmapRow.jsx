@@ -32,7 +32,7 @@ const ContextMenuHeatmapRow = inject('rootStore', 'undoRedoStore')(observer(clas
             <ButtonGroup
                 vertical
                 style={{
-                    visibility: this.props.showContextMenu,
+                    visibility: this.props.showContextMenu ? 'visible' : 'hidden',
                     position: 'absolute',
                     top: this.props.contextY,
                     left: this.props.contextX,
@@ -54,9 +54,9 @@ const ContextMenuHeatmapRow = inject('rootStore', 'undoRedoStore')(observer(clas
 }));
 ContextMenuHeatmapRow.propTypes = {
     contextX: PropTypes.number.isRequired,
-    cintextY: PropTypes.number.isRequired,
-    patient: PropTypes.string.isRequired,
+    contextY: PropTypes.number.isRequired,
+    patient: PropTypes.string,
     timepoint: PropTypes.number.isRequired,
-    showContextMenu: PropTypes.string.isRequired,
+    showContextMenu: PropTypes.bool.isRequired,
 };
 export default ContextMenuHeatmapRow;
