@@ -269,7 +269,7 @@ class RootStore {
 
                     m= this.getNumWithSetDec(t_v,2);*/
 
-
+                    //ModVR
 
                     var all_patients_vals= Object.values(ST);
 
@@ -279,7 +279,11 @@ class RootStore {
 
                     var t_v=0;
 
-                    var index=0;
+                    //var index=[];
+
+                    var maxIndices = [];
+                    var temp_var_arr=[];
+                    var max_temp_var=Number.NEGATIVE_INFINITY//-100;
                     all_patients_vals.forEach(function(d, i){
 
 
@@ -324,28 +328,53 @@ class RootStore {
                         
                         //var t_v=0;
 
-                        var max_temp_var=0;
                         
+                       
+
 
                         if(K-1>0){
                             var temp_var2=(TotalElements*K - K*Fm)/(TotalElements * (K-1));
                             if(temp_var2>max_temp_var){
                                 max_temp_var=temp_var2;
-                                index=i;
+                                //index=i;
                             }
+
+                            temp_var_arr.push(temp_var2);
                             t_v= t_v+ temp_var2;
+                        }
+                        else{
+                            temp_var_arr.push(Number.NEGATIVE_INFINITY);
                         }
 
                         //t_v= this.getNumWithSetDec(t_v,2);
 
                         
+                        
+                       
 
 
                     })
 
+                    for (var q = 0; q < temp_var_arr.length; q++) {
+                        if (temp_var_arr[q] === max_temp_var) {
+                            maxIndices.push(q);
+                        } 
+                    }
+
                     var patients=Object.keys(ST);
 
-                    console.log("For "+ iK + " Patient "+ patients[index]+" has max variance");
+                    console.log("For "+ iK + " the following patients have max variance");
+
+                    var str_1="";
+                    for( q = 0; q < maxIndices.length; q++){
+                        str_1= str_1+ " " + patients[maxIndices[q]] ;
+                    }
+                    console.log(str_1);
+
+                    maxIndices=[];
+                    temp_var_arr=[];
+                    max_temp_var=Number.NEGATIVE_INFINITY//-100;
+
                     m=this.getNumWithSetDec(t_v/total_patients, 2);
 
                 }
@@ -471,7 +500,8 @@ class RootStore {
                 m=0;
             }
 
-            //console.log(this.scoreStructure);
+            console.log("Score structure: ");
+            console.log(this.scoreStructure);
 
         //}),
         },
@@ -769,7 +799,9 @@ class RootStore {
             });
 
 
+            console.log("Scores within timeline: ");
             console.log(this.TimeLineVariability);
+
 
         }),
 
