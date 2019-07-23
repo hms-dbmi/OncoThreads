@@ -132,7 +132,6 @@ class DataStore {
                     timepoints[i].globalIndex = i;
                 });
                 this.timepoints.replace(timepoints);
-                this.rootStore.visStore.fitToScreenHeight();
             }),
 
             /**
@@ -141,12 +140,13 @@ class DataStore {
             initialize: action(() => {
                 this.numberOfPatients = this.rootStore.patients.length;
                 this.variableStores.sample.resetVariables();
-                this.variableStores.sample.resetVariables();
                 this.variableStores.sample.update(this.rootStore.timepointStructure,
                     this.rootStore.patients);
+                this.variableStores.between.resetVariables();
                 this.variableStores.between.update(this.rootStore.eventBlockStructure,
                     this.rootStore.patients);
                 this.combineTimepoints(false);
+                this.rootStore.visStore.resetTransitionSpaces();
             }),
 
             /**
@@ -175,15 +175,10 @@ class DataStore {
         // combines/uncombines timepoints if variables of type "between" are displayed/removed
         reaction(() => this.transitionOn, (isOn) => {
             this.combineTimepoints(isOn);
+            if (isOn) {
+                this.rootStore.visStore.resetTransitionSpaces();
+            }
         });
-    }
-
-    /**
-     * sets number of patients
-     * @param {number} numP
-     */
-    setNumberOfPatients(numP) {
-        this.numberOfPatients = numP;
     }
 
     /**

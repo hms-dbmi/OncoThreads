@@ -126,17 +126,19 @@ const HeatmapGroupTransition = inject('dataStore', 'visStore', 'uiStore')(observ
         let recty;
         let bandRectY;
         if (this.props.inverse) {
-            y0 = this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight
+            y0 = this.props.visStore.transitionSpaces[this.props.index - 1]
+                - this.props.visStore.colorRectHeight
                 - this.props.uiStore.horizontalGap - this.props.visStore.bandRectHeight;
             y1 = this.props.uiStore.horizontalGap;
-            recty = this.props.visStore.transitionSpace - this.props.visStore.colorRectHeight
+            recty = this.props.visStore.transitionSpaces[this.props.index - 1]
+                - this.props.visStore.colorRectHeight
                 - this.props.uiStore.horizontalGap;
             bandRectY = y0;
         } else {
             recty = this.props.uiStore.horizontalGap;
             bandRectY = recty + this.props.visStore.colorRectHeight;
             y0 = bandRectY + this.props.visStore.bandRectHeight;
-            y1 = this.props.visStore.transitionSpace;
+            y1 = this.props.visStore.transitionSpaces[this.props.index];
         }
         return (this.getTransitions(recty, bandRectY, y0, y1));
     }

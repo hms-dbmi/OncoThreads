@@ -128,9 +128,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
             timeVariable = 'Year';
         }
         if (duration === 0) {
-            this.props.showTooltip(event, `${patient}: ${value}, ${timeVariable}: ${start}`);
+            this.props.tooltipVisibility(event, `${patient}: ${value}, ${timeVariable}: ${start}`);
         } else {
-            this.props.showTooltip(event, `${patient}: ${value}, Event start ${timeVariable}: ${start}, Duration: ${dur} ${timeVariable}`);
+            this.props.tooltipVisibility(event, `${patient}: ${value}, Event start ${timeVariable}: ${start}, Duration: ${dur} ${timeVariable}`);
         }
     }
 
@@ -147,7 +147,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 }));
 TimelineRow.propTypes = {
     timepointType: PropTypes.string.isRequired,
-    showTooltip: PropTypes.func.isRequired,
+    tooltipVisibility: PropTypes.func.isRequired,
     hideTooltip: PropTypes.func.isRequired,
     events: PropTypes.arrayOf(PropTypes.object),
     row: MobxPropTypes.observableObject.isRequired,
