@@ -127,7 +127,7 @@ const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band exte
         const selectedWidth = this.getSelectedWidth();
         const y0 = this.props.uiStore.horizontalGap + this.props.visStore.colorRectHeight
             + this.props.visStore.bandRectHeight;
-        const y1 = this.props.visStore.transitionSpace - this.props.uiStore.horizontalGap
+        const y1 = this.props.height - this.props.uiStore.horizontalGap
             - this.props.visStore.colorRectHeight - this.props.visStore.bandRectHeight;
         let selected = null;
         if (selectedWidth !== 0) {

@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { observer, inject } from 'mobx-react';
+import { inject, observer } from 'mobx-react';
 import uuidv4 from 'uuid/v4';
+import { extendObservable } from 'mobx';
 import UtilityFunctions from '../UtilityClasses/UtilityFunctions';
 import ColorScales from '../UtilityClasses/ColorScales';
 
@@ -11,8 +12,19 @@ import ColorScales from '../UtilityClasses/ColorScales';
 const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends React.Component {
     constructor() {
         super();
-        this.maxWidth = 0;
-        this.borderLeft = 10;
+        extendObservable(this, {
+            // is mouse currently dragged for selection
+            dragging: false,
+            // patients selected during dragging
+            activeIndex: -1,
+            prevPos: 0,
+            dragVisibility: 'hidden',
+        });
+        this.maxWidth = 100;
+        this.defaultWidth = 100;
+        this.minCatWidth = 30;
+        this.dragLine = this.dragLine.bind(this);
+        this.stopLineDrag = this.stopLineDrag.bind(this);
     }
 
     /**
@@ -59,7 +71,8 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
     }
 
     /**
-     * computes the width of a text. Returns 30 if the text width would be shorter than 30
+     * computes the width of a text. Returns minimum width
+     * if the text width would be shorter than minimum width
      * @param {number} min
      * @param {string} text
      * @param {number} fontSize
@@ -103,7 +116,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         key="text med"
                         fill={ColorScales.getHighContrastColor(color(0))}
                         style={{ fontSize }}
-                        x={50 - Legend.getTextWidth(0, 0, fontSize) / 2}
+                        x={this.defaultWidth / 2 - Legend.getTextWidth(0, 0, fontSize) / 2}
                         y={lineheight / 2 + fontSize / 2}
                     >
                         {0}
@@ -112,7 +125,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         key="text max"
                         fill={ColorScales.getHighContrastColor(color(max))}
                         style={{ fontSize }}
-                        x={100 - Legend.getTextWidth(0,
+                        x={this.defaultWidth - Legend.getTextWidth(0,
                             UtilityFunctions.getScientificNotation(max), fontSize)}
                         y={lineheight / 2 + fontSize / 2}
                     >
@@ -134,7 +147,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         key="text max"
                         fill={ColorScales.getHighContrastColor(color(max))}
                         style={{ fontSize }}
-                        x={100 - Legend.getTextWidth(0,
+                        x={this.defaultWidth - Legend.getTextWidth(0,
                             UtilityFunctions.getScientificNotation(max), fontSize)}
                         y={lineheight / 2 + fontSize / 2}
                     >
@@ -143,9 +156,9 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 );
             }
             const randomId = uuidv4();
-            this.updateMaxWidth(100 + this.borderLeft);
+            this.updateMaxWidth(this.defaultWidth);
             return (
-                <g transform={`translate(${this.borderLeft},0)`}>
+                <g>
                     <defs>
                         <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style={{ stopColor: color(min) }} />
@@ -153,7 +166,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                             <stop offset="100%" style={{ stopColor: color(max) }} />
                         </linearGradient>
                     </defs>
-                    <rect opacity={opacity} x="0" y="0" width={100} height={lineheight} fill={`url(#${randomId})`} />
+                    <rect opacity={opacity} x="0" y="0" width={this.defaultWidth} height={lineheight} fill={`url(#${randomId})`} />
                     {text}
                 </g>
             );
@@ -172,7 +185,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
      * @returns {g[]}
      */
     getCategoricalLegend(variable, row, opacity, fontSize, lineheight) {
-        let currX = this.borderLeft;
+        let currX = 0;
         const legendEntries = [];
         variable.domain.forEach((d, i) => {
             if (variable.datatype === 'ORDINAL' || row.includes(d)) {
@@ -182,7 +195,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 } else {
                     tooltipText = d;
                 }
-                const rectWidth = Legend.getTextWidth(30, d, fontSize) + 4;
+                const rectWidth = Legend.getTextWidth(this.minCatWidth, d, fontSize) + 4;
                 if (d !== undefined) {
                     legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
                         fontSize, currX, lineheight, variable.colorScale(d),
@@ -200,13 +213,13 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
      * @param {number} opacity
      * @param {number} fontSize
      * @param {number} lineheight
-     * @param {string} color
+     * @param {function} color
      * @returns {Array}
      */
     getBinaryLegend(opacity, fontSize, lineheight, color) {
         let legendEntries = [];
-        legendEntries = legendEntries.concat(this.getLegendEntry('true', opacity, Legend.getTextWidth(30, 'true', fontSize) + 4, fontSize, this.borderLeft, lineheight, color(true), 'black', 'true'));
-        legendEntries = legendEntries.concat(this.getLegendEntry('false', opacity, Legend.getTextWidth(30, 'false', fontSize) + 4, fontSize, this.borderLeft + Legend.getTextWidth(30, 'true', fontSize) + 6, lineheight, color(false), 'black', 'true'));
+        legendEntries = legendEntries.concat(this.getLegendEntry('true', opacity, Legend.getTextWidth(this.minCatWidth, 'true', fontSize) + 4, fontSize, 0, lineheight, color(true), 'black', 'true'));
+        legendEntries = legendEntries.concat(this.getLegendEntry('false', opacity, Legend.getTextWidth(this.minCatWidth, 'false', fontSize) + 4, fontSize, Legend.getTextWidth(this.minCatWidth, 'true', fontSize) + 6, lineheight, color(false), 'black', 'true'));
         this.updateMaxWidth(74);
         return (legendEntries);
     }
@@ -313,15 +326,68 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
         }
     }
 
+    /**
+     * start dragging a resize line
+     * @param {event} event
+     * @param {number} index
+     */
+    startLineDrag(event, index) {
+        event.stopPropagation();
+        this.dragging = true;
+        this.prevPos = event.clientY;
+        this.activeIndex = index;
+    }
+
+    /**
+     * compute new transition space while dragging a line
+     * @param {event} event
+     */
+    dragLine(event) {
+        if (this.dragging && this.activeIndex !== -1) {
+            this.props.rootStore.visStore.setTransitionSpace(this.activeIndex,
+                this.props.rootStore.visStore.transitionSpaces[this.activeIndex]
+                - (this.prevPos - event.clientY));
+            this.prevPos = event.clientY;
+        }
+    }
+
+    /**
+     * stop dragging resize lines
+     */
+    stopLineDrag() {
+        this.dragging = false;
+    }
+
 
     render() {
         const textHeight = 10;
         let legends = [];
 
+        // draggable line for resizing
+        const lines = [];
         if (!this.props.uiStore.globalTime) {
             this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
+                if (i < this.props.rootStore.dataStore.timepoints.length - 1) {
+                    lines.push(
+                        <g
+                            key={d.globalIndex}
+                            transform={`translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`}
+                        >
+                            <line
+                                className="dragLine"
+                                onMouseDown={e => this.startLineDrag(e, i)}
+                                x1={0}
+                                x2={this.maxWidth}
+                                y1={0}
+                                y2={0}
+                                style={{
+                                    visibility: this.dragVisibility,
+                                }}
+                            />
+                        </g>,
+                    );
+                }
                 const transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
-
                 const lg = this.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight,
                     this.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables);
                 legends.push(
@@ -340,9 +406,20 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             legends = this.getGlobalLegend(textHeight, primaryVariable);
         }
         return (
-            <div className="scrollableX">
-                <svg width={this.maxWidth} height={this.props.rootStore.visStore.svgHeight}>
+            <div
+                className="scrollableX"
+                style={{ cursor: this.dragging ? 'row-resize' : 'auto' }}
+            >
+                <svg
+                    width={this.maxWidth}
+                    height={this.props.rootStore.visStore.svgHeight}
+                    onMouseMove={this.dragLine}
+                    onMouseUp={this.stopLineDrag}
+                    onMouseEnter={() => { this.dragVisibility = 'visible'; }}
+                    onMouseLeave={() => { this.dragVisibility = 'hidden'; }}
+                >
                     {legends}
+                    {lines}
                 </svg>
             </div>
         );

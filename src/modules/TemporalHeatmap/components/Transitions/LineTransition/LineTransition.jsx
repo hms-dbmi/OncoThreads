@@ -53,7 +53,7 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 lines.push(LineTransition.drawLine(this.props.firstHeatmapScale(d)
                     + this.props.visStore.sampleRectWidth / 2,
                 this.props.secondHeatmapScale(d) + this.props.visStore.sampleRectWidth / 2,
-                0, this.props.visStore.transitionSpace,
+                0, this.props.visStore.transitionSpaces[this.props.index],
                 d + i, true, strokeColor));
             }
         });
@@ -85,7 +85,8 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     + this.props.secondHeatmapScale(d.patient) * (frac)
                     + this.props.visStore.sampleRectWidth / 2,
                     0,
-                    this.props.visStore.transitionSpace * frac, d.patient, true, strokeColor,
+                    this.props.visStore.transitionSpaces[this.props.index] * frac, d.patient,
+                    true, strokeColor,
                 ));
                 if (frac !== 1) {
                     lines.push(LineTransition.drawLine(
@@ -94,8 +95,9 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                         + this.props.visStore.sampleRectWidth / 2,
                         this.props.secondHeatmapScale(d.patient)
                         + this.props.visStore.sampleRectWidth / 2,
-                        this.props.visStore.transitionSpace * frac,
-                        this.props.visStore.transitionSpace, d.patient, false, strokeColor,
+                        this.props.visStore.transitionSpaces[this.props.index] * frac,
+                        this.props.visStore.transitionSpaces[this.props.index],
+                        d.patient, false, strokeColor,
                     ));
                     const color = this.props.colorScale(d.value);
                     lines.push(
@@ -104,7 +106,7 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                             x={this.props.firstHeatmapScale(d.patient) * (1 - frac)
                             + this.props.secondHeatmapScale(d.patient) * (frac)
                             + this.props.visStore.sampleRectWidth / 4}
-                            y={this.props.visStore.transitionSpace * frac}
+                            y={this.props.visStore.transitionSpaces[this.props.index] * frac}
                             width={this.props.visStore.sampleRectWidth / 2}
                             height={this.props.visStore.sampleRectWidth / 6}
                             fill={color}

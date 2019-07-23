@@ -29,6 +29,9 @@ import BlockView from './BlockView';
 const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class MainView extends React.Component {
     constructor(props) {
         super(props);
+
+        this.padding = 20;
+
         this.handleTimeClick = this.handleTimeClick.bind(this);
         this.handleSwitchView = this.handleSwitchView.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
@@ -136,6 +139,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                     <TimepointLabels
                                         {...this.props.tooltipFunctions}
                                         width={this.panes.labels.width - 10}
+                                        padding={this.padding}
                                     />
                                 </Provider>
                             </Pane>
@@ -143,7 +147,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                 className={this.active.operators ? 'pane-active' : 'pane-inactive'}
                                 key="operators"
                                 size={{ width: this.panes.operators.width }}
-                                style={{ paddingTop: 20 }}
+                                style={{ paddingTop: this.padding }}
                             >
                                 <RowOperators
                                     highlightedVariable={this.highlightedVariable}
@@ -159,7 +163,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                 className={this.active.view ? 'pane-active' : 'pane-inactive'}
                                 key="view"
                                 size={{ width: this.panes.view.width }}
-                                style={{ paddingTop: 20 }}
+                                style={{ paddingTop: this.padding }}
                             >
                                 <BlockView
                                     showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
@@ -170,7 +174,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                 className={this.active.legend ? 'pane-active' : 'pane-inactive'}
                                 key="legend"
                                 size={{ width: this.panes.legend.width }}
-                                style={{ paddingTop: 20 }}
+                                style={{ paddingTop: this.padding }}
                             >
                                 <Legend
                                     highlightedVariable={this.highlightedVariable}

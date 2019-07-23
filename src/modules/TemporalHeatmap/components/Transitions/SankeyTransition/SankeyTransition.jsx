@@ -103,6 +103,7 @@ const SankeyTransition = inject('dataStore', 'visStore', 'uiStore')(observer(cla
                                     key={`${sourcePartition.partition}->${targetPartition.partition}`}
                                     x0={currXsource + firstOffset}
                                     x1={currXtarget[targetPartition.partition]}
+                                    height={this.props.visStore.transitionSpaces[this.props.index]}
                                     width={transitionWidth}
                                     firstPartition={sourcePartition.partition}
                                     secondPartition={targetPartition.partition}
@@ -162,10 +163,10 @@ const SankeyTransition = inject('dataStore', 'visStore', 'uiStore')(observer(cla
                     <Proxies
                         key="target"
                         proxyPositions={targetProxyPositions}
-                        bandRectY={this.props.visStore.transitionSpace
+                        bandRectY={this.props.visStore.transitionSpaces[this.props.index]
                             - this.props.visStore.colorRectHeight
                             - this.props.uiStore.horizontalGap - this.props.visStore.bandRectHeight}
-                        colorRectY={this.props.visStore.transitionSpace
+                        colorRectY={this.props.visStore.transitionSpaces[this.props.index]
                             - this.props.visStore.colorRectHeight
                             - this.props.uiStore.horizontalGap}
                         colorScale={this.props.secondPrimary.colorScale}
@@ -191,6 +192,7 @@ const SankeyTransition = inject('dataStore', 'visStore', 'uiStore')(observer(cla
     }
 }));
 SankeyTransition.propTypes = {
+    index: PropTypes.number.isRequired,
     firstGrouped: PropTypes.arrayOf(PropTypes.object).isRequired,
     secondGrouped: PropTypes.arrayOf(PropTypes.object).isRequired,
     firstPrimary: PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
