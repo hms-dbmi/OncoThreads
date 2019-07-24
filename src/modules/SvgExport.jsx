@@ -168,6 +168,26 @@ class SvgExport {
                // + ' ' + Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
                 //+ '</tspan>';
 
+
+                var v=  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el];
+
+                var mtype="";
+
+                
+                if(v.modification.type){
+
+                    mtype=mtype+ v.modification.type ;
+                }
+                
+                var mtrans="";
+
+                if(v.modification.transformFunction){
+
+                    mtrans=mtrans+  ", " + v.modification.transformFunction.name;
+                }
+
+
+
                 var keys1=Object.keys(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping)
                 var values1=Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.mapping);
 
@@ -175,6 +195,23 @@ class SvgExport {
                     str = str + keys1[i] + " -> " + values1[i] + ", ";
                 }
 
+                if(mtype!==""){
+
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Data Type: </tspan> <tspan>' + v.datatype + '</tspan> <tspan>';
+
+
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Modification Type: </tspan> <tspan>' + mtype + '</tspan> <tspan>';
+
+                }
+
+
+                if(mtrans!==""){
+
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Transform Function: </tspan> <tspan>' + mtrans + '</tspan> <tspan>';
+
+                }
+
+              
                 str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
 
             }
@@ -195,12 +232,58 @@ class SvgExport {
                         }
 
                     }
+
+
+                    v=  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el];
+
+
+                    mtype="";
+
+            
+                    if(v.modification.type){
+    
+                        mtype=mtype+ v.modification.type ;
+                    }
+                    
+                    mtrans="";
+    
+                    if(v.modification.transformFunction){
+    
+                        mtrans=mtrans+   v.modification.transformFunction.name;
+                    }    
+
+                    
+                    
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + v.description+ '</tspan> <tspan>';
+
+                    
+
+
+                    if(mtype!==""){
+
+                        str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Data Type: </tspan> <tspan>' + v.datatype + '</tspan> <tspan>';
+    
+    
+                        str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Modification Type: </tspan> <tspan>' + mtype + '</tspan> <tspan>';
+    
+                    }
+    
+    
+                    if(mtrans!==""){
+    
+                        str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Transform Function: </tspan> <tspan>' + mtrans + '</tspan> <tspan>';
+    
+                    }
+
+
                     //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + ', ' +
                     str = str +
                     
                     '</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Original Variable: </tspan> <tspan>' +_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds[0]
                 
-                    +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan  x="150" dy="1.2em" font-weight="bold"> Bins: </tspan>' ;
+                    //+'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description 
+                    
+                    + '</tspan> <tspan  x="150" dy="1.2em" font-weight="bold"> Bins: </tspan>' ;
                     
                     str = str +'<tspan>' 
                      //+ Object.values(_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].modification.binning.bins) 
@@ -210,7 +293,70 @@ class SvgExport {
                     //str = str +'</tspan> <tspan>: ' +  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description +'</tspan>';
 
 
-                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + _self.rootStore.dataStore.variableStores.sample.referencedVariables[el].description + '</tspan> <tspan>';
+                    v=  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el];
+
+                    /*v2="";
+
+                    if(v.datatype==="NUMBER"){
+                        
+                        if(v.modification.type){
+
+                            v2=v2+ v.modification.type + ", ";
+                        }
+                        if(v.modification.transformFunction){
+
+                            v2=v2+ v.modification.transformFunction.name;
+                        }
+
+                    }*/
+                    
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + v.description+ '</tspan> <tspan>';
+
+                    /*if(v2!==""){
+
+                        str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Transform Function: </tspan> <tspan>' + v2 + '</tspan> <tspan>';
+
+                    }*/
+
+
+
+                    mtype="";
+
+            
+                    if(v.modification.type){
+    
+                        mtype=mtype+ v.modification.type ;
+                    }
+                    
+                    mtrans="";
+    
+                    if(v.modification.transformFunction){
+    
+                        mtrans=mtrans+ v.modification.transformFunction.name;
+                    }    
+
+                    
+                    
+                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + v.description+ '</tspan> <tspan>';
+
+                    
+
+
+                    if(mtype!==""){
+
+                        str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Data Type: </tspan> <tspan>' + v.datatype + '</tspan> <tspan>';
+    
+    
+                        str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Modification Type: </tspan> <tspan>' + mtype + '</tspan> <tspan>';
+    
+                    }
+    
+    
+                    if(mtrans!==""){
+    
+                        str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Transform Function: </tspan> <tspan>' + mtrans + '</tspan> <tspan>';
+    
+                    }
 
 
                     str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
@@ -502,7 +648,7 @@ var svg_prefix =
         }
         variableMetadata = variableMetadata + '</g>';
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*18*5+18).toString() + '">' +
             
             print_svg +
             svg_prefix +
