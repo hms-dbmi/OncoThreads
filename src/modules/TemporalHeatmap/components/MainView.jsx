@@ -118,11 +118,15 @@ const MainView = inject("rootStore", "uiStore", "undoRedoStore")(observer(class 
      * Gets block view
      * @return {div}
      */
+    /*
+
+    
+    */
     getBlockView() {
         return (
             <div>
                 <div className="view" id="block-view">
-                    <Row>
+                <Row>
                         <Button bsSize="xsmall" onClick={this.handleTimeClick}
                                 disabled={this.props.uiStore.globalTime || this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0}
                                 key={"actualTimeline"}>
