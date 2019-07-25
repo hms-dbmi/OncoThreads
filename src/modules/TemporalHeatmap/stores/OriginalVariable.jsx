@@ -75,18 +75,26 @@ class OriginalVariable {
      * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        if (this.datatype === 'NUMBER' && domain.length < 2) {
+        if ((this.datatype === 'NUMBER' && domain.length < 2)
+            || (this.datatype === 'BINARY' && domain.length === 0)) {
+            return this.getDefaultDomain(domain);
+        }
+        return Array.from(new Set(domain.concat(...this.getDefaultDomain(domain)).sort()));
+    }
+
+    /**
+     * creates default domain
+     * @returns {(number[]|string[]|boolean[])} default domain
+     */
+    getDefaultDomain() {
+        if (this.datatype === 'NUMBER') {
             return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)),
                 Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
-        }
-        if (this.datatype === 'BINARY' && domain.length === 0) {
+        } if (this.datatype === 'BINARY') {
             return [true, false];
         }
-        if (this.datatype === 'STRING' || this.datatype === 'ORDINAL') {
-            return [...new Set(domain.concat(...Object.values(this.mapper)))]
-                .filter(d => d !== undefined).sort();
-        }
-        return domain;
+        return [...new Set(Object.values(this.mapper))]
+            .filter(d => d !== undefined).sort();
     }
 }
 

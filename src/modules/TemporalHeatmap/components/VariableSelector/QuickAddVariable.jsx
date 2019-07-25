@@ -40,22 +40,6 @@ const QuickAddVariable = inject("rootStore", "undoRedoStore")(observer(class Qui
         }
     }
 
-    /**
-     * Creates a name using the combined values
-     * @param {Object[]} selectedValues
-     * @returns {string}
-     */
-    createCompositeName(selectedValues) {
-        let name = "";
-        let operatorSymbol = "-or-";
-        selectedValues.forEach(function (d, i) {
-            if (i !== 0) {
-                name += operatorSymbol;
-            }
-            name += d.label;
-        });
-        return (name);
-    }
 
     /**
      * adds an event variable

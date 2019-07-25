@@ -92,3 +92,25 @@ small spinning study loader
     }
 }
 
+.fullSizeModal{
+    min-width: 100VW;
+    height: 100VH;
+}
+.my-modal-lg {
+    width: auto;
+}
+
+.my-modal-dialog {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+ }
+
+.my-modal-content {
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    height: auto;
+    min-height: 100%;
+    border-radius: 0;
+}
+

@@ -509,7 +509,6 @@ class RootStore {
                         this.createClinicalSampleMapping(data);
                         if (data.length !== 0) {
                             this.initialVariable = this.clinicalSampleCategories[0];
-                            this.initialVariable.source="clinSample";
                             this.variablesParsed = true;
                             this.firstLoad = false;
                         }
@@ -544,7 +543,8 @@ class RootStore {
                                 id: d.clinicalAttributeId,
                                 variable: d.clinicalAttribute.displayName,
                                 datatype: d.clinicalAttribute.datatype,
-                                description: d.clinicalAttribute.description
+                                description: d.clinicalAttribute.description,
+                                source: 'clinSample'
                             });
                             this.staticMappers[d.clinicalAttributeId] = {}
                         }
@@ -575,7 +575,8 @@ class RootStore {
                                 id: d.clinicalAttributeId,
                                 variable: d.clinicalAttribute.displayName,
                                 datatype: d.clinicalAttribute.datatype,
-                                description: d.clinicalAttribute.description
+                                description: d.clinicalAttribute.description,
+                                source: 'clinPatient'
                             });
                             this.staticMappers[d.clinicalAttributeId] = {}
                         }
