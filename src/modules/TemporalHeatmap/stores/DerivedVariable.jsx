@@ -1,5 +1,5 @@
-import ColorScales from "../UtilityClasses/ColorScales";
-import { action, extendObservable } from "mobx";
+import { action, extendObservable } from 'mobx';
+import ColorScales from '../UtilityClasses/ColorScales';
 
 /**
  * a derived variable is derived of one or multiple other variables
@@ -11,7 +11,7 @@ class DerivedVariable {
      * @param {string} name
      * @param {string} datatype - ORDINAL, STRING, NUMBER, BINARY
      * @param {string} description
-     * @param {string[]} originalIds - ids of variables that were used to derive the derived variable
+     * @param {string[]} originalIds - ids of variables that were used to derive the variable
      * @param {Object} modification - exact way of how variable has been modified
      * @param {string[]} range
      * @param {(number[]|string[]|boolean[])} domain
@@ -19,7 +19,8 @@ class DerivedVariable {
      * @param {string} profile - profile (group of variables) that this variable belongs to
      * @param {string} type  - gene, clinical, computed, event, derived
      */
-    constructor(id, name, datatype, description, originalIds, modification, range, domain, mapper, profile, type) {
+    constructor(id, name, datatype, description, originalIds,
+        modification, range, domain, mapper, profile, type) {
         this.id = id;
         this.datatype = datatype;
         this.derived = true;
@@ -31,8 +32,7 @@ class DerivedVariable {
         this.profile = profile;
         this.referenced = 0; // number of variables that reference this variable
         extendObservable(this,
-            this.initializeObservable(name, domain, range))
-
+            this.initializeObservable(name, domain, range));
     }
 
     /**
@@ -43,39 +43,38 @@ class DerivedVariable {
      * @returns {Object}
      */
     initializeObservable(name, domain, range) {
-        let currDomain = this.createDomain(domain);
-        let currRange = ColorScales.createRange(currDomain, range, this.datatype);
+        const currDomain = this.createDomain(domain);
+        const currRange = ColorScales.createRange(currDomain, range, this.datatype);
         return {
             domain: currDomain,
             range: currRange,
-            name: name,
-            changeRange: action(range => {
-                this.range = range
+            name,
+            changeRange: action((newRange) => {
+                this.range = newRange;
             }),
-            changeDomain: action(domain => {
-                this.domain = domain
+            changeDomain: action((newDomain) => {
+                this.domain = newDomain;
             }),
-            changeName: action(name => {
-                this.name = name;
+            changeName: action((newName) => {
+                this.name = newName;
             }),
             get colorScale() {
                 let scale;
-                if (this.datatype === "STRING" || this.datatype === "BINARY") {
+                if (this.datatype === 'STRING' || this.datatype === 'BINARY') {
                     scale = ColorScales.getCategoricalScale(this.range, this.domain);
-                }
-                else if (this.datatype === "ORDINAL") {
-                    if (this.modification.type === "continuousTransform") {
-                        scale = ColorScales.getCategoricalScale(ColorScales.getBinnedRange(this.range, this.modification.binning.bins), this.domain)
-                    }
-                    else {
+                } else if (this.datatype === 'ORDINAL') {
+                    if (this.modification.type === 'continuousTransform') {
+                        scale = ColorScales.getCategoricalScale(ColorScales
+                            .getBinnedRange(this.range, this.modification.binning.bins),
+                        this.domain);
+                    } else {
                         scale = ColorScales.getOrdinalScale(this.range, this.domain);
                     }
-                }
-                else if (this.datatype === "NUMBER") {
+                } else if (this.datatype === 'NUMBER') {
                     scale = ColorScales.getContinousColorScale(this.range, this.domain);
                 }
                 return scale;
-            }
+            },
         };
     }
 
@@ -85,25 +84,19 @@ class DerivedVariable {
      * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        return domain.concat(...this.getDefaultDomain().filter(d => !domain.includes(d)));
-    }
-
-    /**
-     * gets default domain for a variable based on its datatype and its values
-     * @return {(number[]|string[]|boolean[])} domain array
-     */
-    getDefaultDomain() {
-        if (this.datatype === 'NUMBER') {
-            return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)), Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
+        if (this.datatype === 'NUMBER' && domain.length < 2) {
+            return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)),
+                Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
         }
-        else if (this.datatype === "BINARY") {
+        if (this.datatype === 'BINARY' && domain.length === 0) {
             return [true, false];
         }
-        else {
-            return [...new Set(Object.values(this.mapper))].filter(d => d !== undefined);
+        if (this.datatype === 'STRING' || this.datatype === 'ORDINAL') {
+            return [...new Set(domain.concat(...Object.values(this.mapper)))]
+                .filter(d => d !== undefined).sort();
         }
+        return domain;
     }
-
 }
 
 export default DerivedVariable;

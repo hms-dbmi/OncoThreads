@@ -225,8 +225,8 @@ class RootStore {
                             }
                             else{
                                 if(iK==="Timepoint"){
-                                    console.log(iV[Object.values(ST)[j][k]]);
-                                    console.log(iV[Object.values(ST)[j][k+1]]);
+                                    //console.log(iV[Object.values(ST)[j][k]]);
+                                    //console.log(iV[Object.values(ST)[j][k+1]]);
                                 }
                             }
                         }
@@ -283,7 +283,7 @@ class RootStore {
                 m=0;
             }
 
-            console.log(this.scoreStructure);
+            //console.log(this.scoreStructure);
 
         //}),
         },
@@ -466,7 +466,7 @@ class RootStore {
                             temp.push(iV[r[j]]);
                         }
                         
-                        console.log(temp);
+                        //console.log(temp);
 
                         
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
@@ -493,7 +493,7 @@ class RootStore {
             });
 
 
-            console.log(this.TimeLineVariability);
+            //console.log(this.TimeLineVariability);
 
         }),
 
@@ -817,6 +817,7 @@ class RootStore {
             if (parsed) {
                 this.dataStore.initialize();
                 this.addInitialVariable();
+                this.visStore.fitToScreenHeight();
                 this.visStore.fitToScreenWidth();
             }
         });
@@ -837,14 +838,14 @@ class RootStore {
         reaction(() => this.uiStore.horizontalStacking,
             horizontalStacking => {
                 if (horizontalStacking) {
-                    this.visStore.setGap(8);
-                    //this.visStore.setBandRectHeight(0);
+                    //this.visStore.setGap(8);
+                    this.visStore.setBandRectHeight(0);
                     this.visStore.setColorRectHeight(0);
 
                 }
                 else {
-                    this.visStore.setGap(1);
-                    //this.visStore.setBandRectHeight(15);
+                    //this.visStore.setGap(1);
+                    this.visStore.setBandRectHeight(15);
                     this.visStore.setColorRectHeight(2);
                 }
             });

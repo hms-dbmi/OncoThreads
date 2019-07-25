@@ -1,5 +1,5 @@
+import { action, extendObservable } from 'mobx';
 import ColorScales from '../UtilityClasses/ColorScales';
-import { action, extendObservable } from "mobx";
 
 /**
  * original variable that is based on the input data
@@ -29,8 +29,7 @@ class OriginalVariable {
         this.referenced = 0;
         this.derived = false;
         extendObservable(this,
-            this.initializeObservable(name, domain, range)
-        );
+            this.initializeObservable(name, domain, range));
     }
 
     /**
@@ -41,34 +40,32 @@ class OriginalVariable {
      * @returns {Object} observable values
      */
     initializeObservable(name, domain, range) {
-        let currDomain = this.createDomain(domain);
-        let currRange = ColorScales.createRange(currDomain, range, this.datatype);
+        const currDomain = this.createDomain(domain);
+        const currRange = ColorScales.createRange(currDomain, range, this.datatype);
         return {
             domain: currDomain,
             range: currRange,
-            name: name,
-            changeRange: action(range => {
-                this.range = range
+            name,
+            changeRange: action((newRange) => {
+                this.range = newRange;
             }),
-            changeDomain: action(domain => {
-                this.domain = domain
+            changeDomain: action((newDomain) => {
+                this.domain = newDomain;
             }),
-            changeName: action(name => {
-                this.name = name;
+            changeName: action((newName) => {
+                this.name = newName;
             }),
             get colorScale() {
                 let scale;
-                if (this.datatype === "STRING" || this.datatype === "BINARY") {
+                if (this.datatype === 'STRING' || this.datatype === 'BINARY') {
                     scale = ColorScales.getCategoricalScale(this.range, this.domain);
-                }
-                else if (this.datatype === "ORDINAL") {
+                } else if (this.datatype === 'ORDINAL') {
                     scale = ColorScales.getOrdinalScale(this.range, this.domain);
-                }
-                else if (this.datatype === "NUMBER") {
+                } else if (this.datatype === 'NUMBER') {
                     scale = ColorScales.getContinousColorScale(this.range, this.domain);
                 }
                 return scale;
-            }
+            },
         };
     }
 
@@ -78,23 +75,18 @@ class OriginalVariable {
      * @returns {(number[]|string[]|boolean[])} default domain or provided domain
      */
     createDomain(domain) {
-        return domain.concat(...this.getDefaultDomain().filter(d => !domain.includes(d)));
-    }
-
-    /**
-     * gets default domain for a variable based on its datatype and its values
-     * @return {(number[]|string[]|boolean[])} domain array
-     */
-    getDefaultDomain() {
-        if (this.datatype === 'NUMBER') {
-            return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)), Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
+        if (this.datatype === 'NUMBER' && domain.length < 2) {
+            return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)),
+                Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
         }
-        else if (this.datatype === "BINARY") {
+        if (this.datatype === 'BINARY' && domain.length === 0) {
             return [true, false];
         }
-        else {
-            return [...new Set(Object.values(this.mapper))].filter(d => d !== undefined).sort();
+        if (this.datatype === 'STRING' || this.datatype === 'ORDINAL') {
+            return [...new Set(domain.concat(...Object.values(this.mapper)))]
+                .filter(d => d !== undefined).sort();
         }
+        return domain;
     }
 }
 

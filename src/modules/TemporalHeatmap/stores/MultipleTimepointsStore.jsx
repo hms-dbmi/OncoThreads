@@ -1,4 +1,4 @@
-import SingleTimepoint from "./SingleTimepoint"
+import SingleTimepoint from './SingleTimepoint';
 
 /*
 stores information about sample timepoints
@@ -8,7 +8,7 @@ class MultipleTimepointsStore {
         this.rootStore = rootStore;
         this.structure = [];
         this.type = type;
-        this.timepoints = []
+        this.timepoints = [];
     }
 
     /**
@@ -19,18 +19,11 @@ class MultipleTimepointsStore {
     updateTimepointStructure(structure, order) {
         this.structure = structure;
         this.timepoints = [];
-        const _self = this;
-        this.structure.forEach(function (d, i) {
-            let tp = new SingleTimepoint(_self.rootStore, d.map(d => d.patient), _self.type, i, order);
-            _self.timepoints.push(tp);
+        this.structure.forEach((tpStructure, i) => {
+            const tp = new SingleTimepoint(this.rootStore, tpStructure.map(d => d.patient),
+                this.type, i, order);
+            this.timepoints.push(tp);
         });
-    }
-
-    /**
-     * resets timepoints
-     */
-    reset() {
-        this.timepoints.forEach(d => d.reset())
     }
 
     /**
@@ -48,15 +41,15 @@ class MultipleTimepointsStore {
      * @param mapper
      */
     addHeatmapRows(variableId, mapper) {
-         this.structure.forEach((d, i) => {
-            let variableData = [];
-            d.forEach(function (f) {
+        this.structure.forEach((d, i) => {
+            const variableData = [];
+            d.forEach((f) => {
                 if (f) {
-                    let value = mapper[f.sample];
+                    const value = mapper[f.sample];
                     variableData.push({
                         patient: f.patient,
-                        value: value,
-                        sample: f.sample
+                        value,
+                        sample: f.sample,
                     });
                 }
             });
@@ -79,20 +72,21 @@ class MultipleTimepointsStore {
     removeHeatmapRows(variableId) {
         this.timepoints.forEach(d => d.removeRow(variableId));
     }
-    updateHeatmapRows(index,newId,mapper){
-         this.structure.forEach((d, i) => {
-            let variableData = [];
-            d.forEach(function (f) {
+
+    updateHeatmapRows(index, newId, mapper) {
+        this.structure.forEach((d, i) => {
+            const variableData = [];
+            d.forEach((f) => {
                 if (f) {
-                    let value = mapper[f.sample];
+                    const value = mapper[f.sample];
                     variableData.push({
                         patient: f.patient,
-                        value: value,
-                        sample: f.sample
+                        value,
+                        sample: f.sample,
                     });
                 }
             });
-            this.timepoints[i].updateRow(index,newId, variableData);
+            this.timepoints[i].updateRow(index, newId, variableData);
         });
     }
 
@@ -102,13 +96,13 @@ class MultipleTimepointsStore {
      */
     atLeastOneGrouped(startIndex, endIndex) {
         let oneIsGrouped = false;
-        for (let i = startIndex; i <= endIndex; i++) {
+        for (let i = startIndex; i <= endIndex; i += 1) {
             if (this.timepoints[i].isGrouped) {
                 oneIsGrouped = true;
                 break;
             }
         }
-        return oneIsGrouped
+        return oneIsGrouped;
     }
 
 
@@ -121,29 +115,28 @@ class MultipleTimepointsStore {
      */
     static actionFunction(action, variable, timepoint, originalTimepoint) {
         switch (action) {
-            case "PROMOTE":
+        case 'PROMOTE':
+            timepoint.promote(variable);
+            break;
+        case 'GROUP':
+            timepoint.group(variable);
+            break;
+        case 'SORT':
+            if (timepoint.localIndex === originalTimepoint.localIndex) {
+                timepoint.sort(variable);
+            }
+            if (variable !== timepoint.primaryVariableId) {
                 timepoint.promote(variable);
-                break;
-            case "GROUP":
-                timepoint.group(variable);
-                break;
-            case "SORT":
-                if (timepoint.localIndex === originalTimepoint.localIndex) {
-                    timepoint.sort(variable);
-                }
-                if (variable !== timepoint.primaryVariableId) {
-                    timepoint.promote(variable)
-                }
-                if (timepoint.isGrouped) {
-                    timepoint.sortGroup(variable, originalTimepoint.groupOrder)
-                }
-                else {
-                    timepoint.sortHeatmap(variable, originalTimepoint.heatmapSorting.order)
-                }
-                break;
-            default:
-                timepoint.unGroup(variable);
-                break;
+            }
+            if (timepoint.isGrouped) {
+                timepoint.sortGroup(variable, originalTimepoint.groupOrder);
+            } else {
+                timepoint.sortHeatmap(variable, originalTimepoint.heatmapSorting.order);
+            }
+            break;
+        default:
+            timepoint.unGroup(variable);
+            break;
         }
     }
 
@@ -154,9 +147,11 @@ class MultipleTimepointsStore {
      * @param action
      */
     applyActionToPrevious(timepointIndex, variable, action) {
-        MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex], this.timepoints[timepointIndex]);
+        MultipleTimepointsStore.actionFunction(action, variable,
+            this.timepoints[timepointIndex], this.timepoints[timepointIndex]);
         if (timepointIndex - 1 >= 0) {
-            MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex - 1], this.timepoints[timepointIndex]);
+            MultipleTimepointsStore.actionFunction(action, variable,
+                this.timepoints[timepointIndex - 1], this.timepoints[timepointIndex]);
         }
     }
 
@@ -167,9 +162,11 @@ class MultipleTimepointsStore {
      * @param action
      */
     applyActionToNext(timepointIndex, variable, action) {
-        MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex], this.timepoints[timepointIndex]);
+        MultipleTimepointsStore.actionFunction(action, variable,
+            this.timepoints[timepointIndex], this.timepoints[timepointIndex]);
         if (timepointIndex + 1 < this.timepoints.length) {
-            MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex + 1], this.timepoints[timepointIndex]);
+            MultipleTimepointsStore.actionFunction(action, variable,
+                this.timepoints[timepointIndex + 1], this.timepoints[timepointIndex]);
         }
     }
 
@@ -180,15 +177,15 @@ class MultipleTimepointsStore {
      * @param action
      */
     applyActionToAll(timepointIndex, variable, action) {
-        const _self = this;
-        MultipleTimepointsStore.actionFunction(action, variable, this.timepoints[timepointIndex], this.timepoints[timepointIndex]);
-        this.timepoints.forEach(function (d, i) {
+        MultipleTimepointsStore.actionFunction(action, variable,
+            this.timepoints[timepointIndex], this.timepoints[timepointIndex]);
+        this.timepoints.forEach((d) => {
             if (d.localIndex !== timepointIndex) {
-                MultipleTimepointsStore.actionFunction(action, variable, d, _self.timepoints[timepointIndex]);
+                MultipleTimepointsStore.actionFunction(action, variable,
+                    d, this.timepoints[timepointIndex]);
             }
         });
     }
-
 }
 
 
