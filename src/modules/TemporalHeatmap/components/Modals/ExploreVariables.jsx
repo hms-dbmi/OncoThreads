@@ -12,7 +12,7 @@ import { extendObservable } from 'mobx';
  * Settings: Visual representation of grouped continuous variables,
  * mode of selection (advanced/simplified), show rows of undefined values
  */
-const ExploreVariables = inject('uiStore', 'rootStore', 'variableManagerStore')(observer(class ExploreVariables extends React.Component {
+const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(class ExploreVariables extends React.Component {
     constructor(props) {
         super(props);
         extendObservable(this, {
@@ -30,6 +30,7 @@ const ExploreVariables = inject('uiStore', 'rootStore', 'variableManagerStore')(
                 this.props.variableManagerStore.addVariableToBeDisplayed(variable);
             }
         });
+        this.props.reset();
         this.props.close();
     }
 
@@ -39,22 +40,24 @@ const ExploreVariables = inject('uiStore', 'rootStore', 'variableManagerStore')(
             const newEntry = {};
             const values = Object.values(variable.mapper).filter(d => d !== undefined);
             newEntry.Name = variable.name;
-            newEntry.Id = variable.id;
+            newEntry.Score = NaN;
             newEntry.Description = variable.description;
+            newEntry.Datatype = variable.datatype;
             newEntry.Source = this.props.availableCategories
                 .filter(category => category.id === variable.profile)[0].name;
             if (variable.datatype === 'NUMBER') {
                 newEntry.Range = Math.max(...values) - Math.min(...values);
                 newEntry.Categories = [];
+                newEntry.NumCat = NaN;
             } else {
-                newEntry.Range = 0;
-                newEntry.NumCat = variable.domain.length;
+                newEntry.Range = NaN;
+                newEntry['#Categories'] = variable.domain.length;
                 newEntry.Categories = variable.domain;
             }
             if (variable.profile === 'clinSample') {
                 newEntry.Score = this.props.rootStore.scoreStructure[variable.id];
             }
-            newEntry.Undefined = [].concat(...Object.values(this.props.rootStore.sampleStructure))
+            newEntry['Missing Values'] = [].concat(...Object.values(this.props.rootStore.sampleStructure))
                 .map(d => variable.mapper[d])
                 .filter(d => d === undefined).length;
             return newEntry;
@@ -78,8 +81,8 @@ const ExploreVariables = inject('uiStore', 'rootStore', 'variableManagerStore')(
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleAdd}>Add Selected</Button>
                     <Button onClick={this.props.close}>Close</Button>
+                    <Button onClick={this.handleAdd}>Add Selected</Button>
                 </Modal.Footer>
             </Modal>
         );

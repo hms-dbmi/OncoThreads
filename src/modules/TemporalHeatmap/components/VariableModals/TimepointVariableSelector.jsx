@@ -59,6 +59,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
         this.updateMutationCheckBoxOptions = this.updateMutationCheckBoxOptions.bind(this);
         this.updateMolecularCheckBoxOptions = this.updateMolecularCheckBoxOptions.bind(this);
+        this.resetSelected=this.resetSelected.bind(this);
         this.addGenes = this.addGenes.bind(this);
         this.addVariables = this.addVariables.bind(this);
         this.addClinicalVariables = this.addClinicalVariables.bind(this);
@@ -537,6 +538,13 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         return this.props.rootStore.molProfileMapping.getMultipleProfiles(profiles, mappingTypes);
     }
 
+    resetSelected() {
+        this.setState({ clinicalOptions: [] });
+        this.setState({ geneListString: "", showCheckBoxOptions: false });
+
+
+    }
+
     render() {
         let formGroups = [];
         if (this.props.rootStore.clinicalSampleCategories.length > 0 || this.props.rootStore.clinicalPatientCategories.length > 0) {
@@ -601,6 +609,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                 </ButtonToolbar>
             </Form>
             <ExploreVariables close={() => this.setState({ modalIsOpen: false })}
+                              reset={this.resetSelected}
                               availableCategories={this.props.availableCategories}
                               variables={this.getOnDemandVariables().concat(...this.getClinicalVariables())}
                               modalIsOpen={this.state.modalIsOpen}/>
