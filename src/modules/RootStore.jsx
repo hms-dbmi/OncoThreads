@@ -190,7 +190,8 @@ class RootStore {
 
             //let scoreStructure = {};
             var m=0;
-            for(var i=1; i<Object.keys(SM).length; i++){
+            [...Array(Object.keys(SM).length-1).keys()].map(i => i+1).forEach(i => {
+            //for(var i=1; i<Object.keys(SM).length; i++){
                 var iK= Object.keys(SM)[i],
                 iV= Object.values(SM)[i];
                 
@@ -498,7 +499,7 @@ class RootStore {
 
 
                 m=0;
-            }
+            });
 
             console.log("Score structure: ");
             console.log(this.scoreStructure);
