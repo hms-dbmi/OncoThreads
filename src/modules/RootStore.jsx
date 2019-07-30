@@ -27,6 +27,8 @@ class RootStore {
 
         this.scoreStructure = {};
 
+        this.str_patient_variability="";
+
         //this.scoreStructureTimeLine = {};
 
         this.TimeLineVariability = {};
@@ -179,9 +181,9 @@ class RootStore {
 
             var ST=this.sampleStructure;
 
-            var numOfPatients = Object.keys(ST).length;
+            //var numOfPatients = Object.keys(ST).length;
 
-            var timeLineLength=this.timepointStructure.length;
+            //var timeLineLength=this.timepointStructure.length;
 
             let self=this;
 
@@ -194,7 +196,8 @@ class RootStore {
 
             //let scoreStructure = {};
             var m=0;
-            for(var i=1; i<Object.keys(SM).length; i++){
+            [...Array(Object.keys(SM).length-1).keys()].map(i => i+1).forEach(i => {
+            //for(var i=1; i<Object.keys(SM).length; i++){
                 var iK= Object.keys(SM)[i],
                 iV= Object.values(SM)[i];
 
@@ -202,8 +205,11 @@ class RootStore {
 
                 var dType= dTypeRet(iK);
 
+                
                 if(dType==="STRING"){
-                    var all_vals=Object.values(iV);
+
+                    
+                    /*var all_vals=Object.values(iV);
                     var unique_vals=[...new Set(all_vals)];
 
                     var total_val=unique_vals.length;
@@ -235,14 +241,160 @@ class RootStore {
 
                     m=m/total_val;
 
-                    m= m/timeLineLength;
+                    m= this.getNumWithSetDec(m/numOfPatients,2);*/
 
-                    m= this.getNumWithSetDec(m/numOfPatients,2);
+
+
+
+
+                    //similar approach as within timeline
+
+                    /*var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
+
+                    //var total_val=unique_vals.length;
+                    
+                    //console.log("num of values: " + total_val);
+
+                    //console.log("for " +iK +": score = ");
+
+                    var K=unique_vals.length; // NumOfCategories
+                        
+                    var Fm=Math.max(...unique_vals); // ModalFrequency
+                    
+                    var TotalElements=all_vals.length;
+
+                    //var t_v= K*Fm - TotalElements;
+                    
+                    var t_v=0;
+
+                    if(K-1>0){
+                        t_v=  (TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                    }
+
+
+
+                    m= this.getNumWithSetDec(t_v,2);*/
+
+                    //ModVR
+
+                    var all_patients_vals= Object.values(ST);
+
+                    var total_patients=all_patients_vals.length;
+
+                    //var all_scores=0;
+
+                    var t_v=0;
+
+                    //var index=[];
+
+                    var maxIndices = [];
+                    var temp_var_arr=[];
+                    var max_temp_var=Number.NEGATIVE_INFINITY//-100;
+                    all_patients_vals.forEach(function(d, i){
+
+
+
+
+                        var temp=[];
+                        for(var j=0; j<d.length; j++){
+                            //set1.add(iV[r[j]]);
+
+                            if(iV[d[j]]){
+                                temp.push(iV[d[j]]);
+                            }
+
+                            //temp.push(iV[r[j]]);
+                        }
+                        
+                        //console.log(temp);
+
+                        var uniq=[...new Set(temp)]; //unique categories
+
+                        var u_vals=[];
+
+                        for(var x=0; x<uniq.length; x++){
+                            let q=uniq[x];
+
+                            let t_num=temp.filter(d=>d===q).length;
+
+                            u_vals.push(t_num);
+
+
+
+                        }
+
+                        
+                        var K=u_vals.length; // NumOfCategories
+                        
+                        var Fm=Math.max(...u_vals); // ModalFrequency
+                        
+                        var TotalElements=temp.length;
+
+                        //var t_v= K*Fm - TotalElements;
+                        
+                        //var t_v=0;
+
+                        
+                       
+
+
+                        if(K-1>0){
+                            var temp_var2=(TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                            if(temp_var2>max_temp_var){
+                                max_temp_var=temp_var2;
+                                //index=i;
+                            }
+
+                            temp_var_arr.push(temp_var2);
+                            t_v= t_v+ temp_var2;
+                        }
+                        else{
+                            temp_var_arr.push(Number.NEGATIVE_INFINITY);
+                        }
+
+                        //t_v= this.getNumWithSetDec(t_v,2);
+
+                        
+                        
+                       
+
+
+                    })
+
+                    for (var q = 0; q < temp_var_arr.length; q++) {
+                        if (temp_var_arr[q] === max_temp_var) {
+                            maxIndices.push(q);
+                        } 
+                    }
+
+                    var patients=Object.keys(ST);
+
+                    //console.log("For "+ iK + " the following patients have max variance");
+
+                    //this.str_patient_variability= this.str_patient_variability +  "For "+ iK + " the following patients have max variance";
+                    var str_1="";
+                    for( q = 0; q < maxIndices.length; q++){
+                        str_1= str_1+ " " + patients[maxIndices[q]] ;
+                    }
+                    //console.log(str_1);
+                    
+                    //this.str_patient_variability =  this.str_patient_variability + str_1 ;
+
+                    
+                    maxIndices=[];
+                    temp_var_arr=[];
+                    max_temp_var=Number.NEGATIVE_INFINITY//-100;
+
+                    m=this.getNumWithSetDec(t_v/total_patients, 2);
 
                 }
                 else if(dType==="NUMBER"){
-                    all_vals=Object.values(iV);
-                    unique_vals=[...new Set(all_vals)];
+
+                    const self=this;
+
+                    /*var all_vals=Object.values(iV);
+                    var unique_vals=[...new Set(all_vals)];
 
                     //var total_val=unique_vals.length;
 
@@ -252,14 +404,14 @@ class RootStore {
 
 
                     //console.log("for " +iK +": score = ");
-
-                    for( j=0; j<Object.keys(ST).length; j++){
+                    
+                    for(var j=0; j<Object.keys(ST).length; j++){
                         //console.log(Object.keys(ST)[j]);
-
-                        for( k=0; k<Object.values(ST)[j].length-1; k++){
+                        
+                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
                             //console.log(Object.values(ST)[j][k]);
-                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
-
+                            if(iV[Object.values(ST)[j][k]] && iV[Object.values(ST)[j][k+1]] && (iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]])){
+                                
                                 m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
 
                             }
@@ -269,9 +421,85 @@ class RootStore {
 
                     m=m/range_val;
 
-                    m=m/timeLineLength;
-                    
-                    m = this.getNumWithSetDec(m/numOfPatients,2);
+                    m = this.getNumWithSetDec(m/numOfPatients,2); */
+
+
+                //coefficient of variance
+
+                    all_patients_vals= Object.values(ST);
+
+                    total_patients=all_patients_vals.length;
+
+                    //var all_scores=0;
+
+                    t_v=0;
+
+                    all_patients_vals.forEach(function(d){
+
+
+
+
+                        var temp=[];
+                        for(var j=0; j<d.length; j++){
+                            //set1.add(iV[r[j]]);
+
+                            if(iV[d[j]]){
+                                temp.push(iV[d[j]]);
+                            }
+
+                            //temp.push(iV[r[j]]);
+                        }
+                        
+                        //console.log(temp);
+
+                        /*var uniq=[...new Set(temp)]; //unique categories
+
+                        var u_vals=[];
+
+                        for(var x=0; x<uniq.length; x++){
+                            let q=uniq[x];
+
+                            let t_num=temp.filter(d=>d===q).length;
+
+                            u_vals.push(t_num);
+
+
+
+                        }
+
+                        
+                        var K=u_vals.length; // NumOfCategories
+                        
+                        var Fm=Math.max(...u_vals); // ModalFrequency
+                        
+                        var TotalElements=temp.length;
+
+                        //var t_v= K*Fm - TotalElements;
+                        
+                        //var t_v=0;
+
+                        if(K-1>0){
+                            t_v= t_v+ (TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                        }
+
+                        //t_v= this.getNumWithSetDec(t_v,2); */
+
+
+                        
+                        
+                        if(temp.length>0){
+                            var temp_var=self.getCoefficientOfVariation(temp, 2);
+                            //console.log(temp_var);
+
+                            t_v=t_v + temp_var;
+                        }
+
+                        
+
+
+                    })
+
+                    m=this.getNumWithSetDec(t_v/total_patients, 2);
 
                 }
 
@@ -281,9 +509,10 @@ class RootStore {
 
 
                 m=0;
-            }
+            });
 
-            //console.log(this.scoreStructure);
+            console.log("Score structure: ");
+            console.log(this.scoreStructure);
 
         //}),
         },
@@ -293,6 +522,14 @@ class RootStore {
             var pow10s = Math.pow( 10, numOfDec || 0 );
             return ( numOfDec ) ? Math.round( pow10s * num ) / pow10s : num;
         }),
+
+         
+        getCoefficientOfVariation: action((numArr, numOfDec ) => {
+            var avg=this.getAverageFromNumArr(numArr, numOfDec);
+            var standard_dev= Math.sqrt(this.getVariance(numArr, numOfDec));
+            return this.getNumWithSetDec( (standard_dev / avg ), numOfDec );
+        }),
+
 
         getAverageFromNumArr: action((numArr, numOfDec ) => {
             //if( !isArray( numArr ) ){ return false;	}
@@ -347,12 +584,15 @@ class RootStore {
                 
                 this.TimeLineVariability[iK]={};
 
-                
+               
                 var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
                 if(dType==="STRING"){
 
-                    var samples=Object.values(ST);
+
+                    //coefficient of unalikeability DO NOT REMOVE
+
+                    /*var samples=Object.values(ST);
 
                     var sample_length=samples.map(function(d){return d.length});
                     
@@ -405,17 +645,7 @@ class RootStore {
 
                         //console.log(iK);
                         //console.log("\n n is " + temp.length);
-                        /*if(dType==="NUMBER"){
-                            for(x=0; x<u_vals.length; x++){
-                                if(temp.length * temp.length - temp.length !== 0){ //avoid divide by zero with this condition
-                                    t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length - temp.length);
-                                }
-                                else{
-                                    t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]));
-                                }
-                                
-                            }
-                        }*/
+                        
                         //else{
                             for(x=0; x<u_vals.length; x++){
                                 t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
@@ -429,7 +659,83 @@ class RootStore {
 
                         this.TimeLineVariability[iK][a]= t_v;
 
-                    });
+                    }); */
+
+
+                //ModVR: https://en.wikipedia.org/wiki/Qualitative_variation
+
+
+
+                    var samples=Object.values(ST);
+
+                    var sample_length=samples.map(function(d){return d.length});
+                    
+
+                    var max_sample=Math.max(...sample_length);
+
+                    [...Array(max_sample).keys()].forEach(a => {
+
+                    //for(var a=0; a<max_sample; a++){
+
+                        //var r=[];
+
+                        //samples.forEach(function(d){if(d[a]) r.push(d[a])});
+                        var r = samples.filter(d=> d[a]).map((d)=>d[a]);
+
+                        
+
+                        //var set1 = new Set();
+
+                        var temp=[];
+                        for(var j=0; j<r.length; j++){
+                            //set1.add(iV[r[j]]);
+
+                            if(iV[r[j]]){
+                                temp.push(iV[r[j]]);
+                            }
+
+                            //temp.push(iV[r[j]]);
+                        }
+                        
+                        //console.log(temp);
+
+                        var uniq=[...new Set(temp)]; //unique categories
+
+                        var u_vals=[];
+
+                        for(var x=0; x<uniq.length; x++){
+                            let q=uniq[x];
+
+                            let t_num=temp.filter(d=>d===q).length;
+
+                            u_vals.push(t_num);
+
+
+
+                        }
+
+                        
+                        var K=u_vals.length; // NumOfCategories
+                        
+                        var Fm=Math.max(...u_vals); // ModalFrequency
+                        
+                        var TotalElements=temp.length;
+
+                        //var t_v= K*Fm - TotalElements;
+                        
+                        var t_v=0;
+
+                        if(K-1>0){
+                            t_v=  (TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                        }
+
+                        t_v= this.getNumWithSetDec(t_v,2);
+
+                        this.TimeLineVariability[iK][a]= t_v;
+
+                    }); 
+
+
 
                     
 
@@ -463,19 +769,33 @@ class RootStore {
                         var temp=[];
                         for(var j=0; j<r.length; j++){
                             //set1.add(iV[r[j]]);
-                            temp.push(iV[r[j]]);
+                            if(iV[r[j]]){
+                                temp.push(iV[r[j]]);
+                            }
+                           
                         }
                         
                         //console.log(temp);
 
                         
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-                        
-                        var t_v=this.getVariance( temp, 2 ); //variance;
+
+                        //get variance
+
+                        //var t_v=this.getVariance( temp, 2 ); //variance;
 
                         //get standard deviation
 
                         //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
+
+                        //get coefficient of variation
+
+                        var t_v= 0;
+                        
+                        if(temp.length>0){
+                            t_v=this.getCoefficientOfVariation(temp, 2);
+                        }
+
                         this.TimeLineVariability[iK][a]= t_v;
 
                     }
@@ -493,7 +813,9 @@ class RootStore {
             });
 
 
-            //console.log(this.TimeLineVariability);
+            console.log("Scores within timeline: ");
+            console.log(this.TimeLineVariability);
+
 
         }),
 

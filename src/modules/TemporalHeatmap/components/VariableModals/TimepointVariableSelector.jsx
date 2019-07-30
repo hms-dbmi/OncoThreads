@@ -450,6 +450,8 @@ glyph="chevron-up"/>}
                     {elements}
                     </tbody>
                 </Table>
+
+                {this.props.rootStore.str_patient_variability}
                 </div>);
             
         } else {
