@@ -299,8 +299,9 @@ class SvgExport {
                     v=  _self.rootStore.dataStore.variableStores.sample.referencedVariables[el];
 
                                     
-                    str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + v.description+ '</tspan> <tspan>';
+                    //str = str +'</tspan> <tspan x="150" dy="1.2em" font-weight="bold"> Description: </tspan> <tspan>' + v.description+ '</tspan> <tspan>';
 
+                    str = str + '</tspan> <tspan>';
 
                     mtype="";
 
@@ -636,7 +637,7 @@ var svg_prefix =
         }
         variableMetadata = variableMetadata + '</g>';
 
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*18*5+18).toString() + '">' +
+        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*20*10+20).toString() + '">' +
             
             print_svg +
             svg_prefix +
