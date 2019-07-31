@@ -109,14 +109,14 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
 
     handleDoubleClick(patient) {
-        window.open(`http://www.cbiohack.org/case.do#/patient?studyId=${this.props.rootStore.study.studyId}&caseId=${patient}`);
+        window.open(`${this.props.rootStore.cBioLink}/patient?studyId=${this.props.rootStore.study.studyId}&caseId=${patient}`);
     }
 
 
     handleMouseEnter(event, patient, value, startDay, duration) {
         let timeVariable = 'Day';
-        let start;
-        let dur;
+        let start = startDay;
+        let dur = duration;
 
         if (this.props.rootStore.timeVar === '30') {
             start = Math.round((startDay / 30) * 100) / 100;
@@ -128,9 +128,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
             timeVariable = 'Year';
         }
         if (duration === 0) {
-            this.props.tooltipVisibility(event, `${patient}: ${value}, ${timeVariable}: ${start}`);
+            this.props.showTooltip(event, `${patient}: ${value}, ${timeVariable}: ${start}`);
         } else {
-            this.props.tooltipVisibility(event, `${patient}: ${value}, Event start ${timeVariable}: ${start}, Duration: ${dur} ${timeVariable}`);
+            this.props.showTooltip(event, `${patient}: ${value}, Event start ${timeVariable}: ${start}, Duration: ${dur} ${timeVariable}`);
         }
     }
 
@@ -147,7 +147,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 }));
 TimelineRow.propTypes = {
     timepointType: PropTypes.string.isRequired,
-    tooltipVisibility: PropTypes.func.isRequired,
+    showTooltip: PropTypes.func.isRequired,
     hideTooltip: PropTypes.func.isRequired,
     events: PropTypes.arrayOf(PropTypes.object),
     row: MobxPropTypes.observableObject.isRequired,

@@ -2,7 +2,18 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import Select from 'react-select';
 import {
-    Button, Col, Form, FormControl, FormGroup, Grid, HelpBlock, Panel, Row, Tab, Tabs,
+    Button,
+    Col,
+    Form,
+    FormControl,
+    FormGroup,
+    Grid,
+    HelpBlock,
+    Panel,
+    Radio,
+    Row,
+    Tab,
+    Tabs,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import uuidv4 from 'uuid/v4';
@@ -14,7 +25,7 @@ import SelectDatatype from './Modals/SelectDatatype';
  * Component for view if no study has been loaded
  * used for selection of studies from cBio or own data sets
  */
-const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(class DefaultView extends React.Component {
+const DefaultView = inject('rootStore', 'undoRedoStore')(observer(class DefaultView extends React.Component {
     /**
      * gets the icon corresponding to the current laoding state
      * @param {string} value - loading, error, finished or empty
@@ -23,11 +34,11 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
     static getStateIcon(value) {
         let icon = null;
         if (value === 'finished') {
-            icon = <FontAwesome name="check" style={{ color: 'green' }} />;
+            icon = <FontAwesome name="check" style={{ color: 'green' }}/>;
         } else if (value === 'loading') {
-            icon = <FontAwesome name="spinner" spin style={{ color: 'gray' }} />;
+            icon = <FontAwesome name="spinner" spin style={{ color: 'gray' }}/>;
         } else if (value === 'error') {
-            icon = <FontAwesome name="times" style={{ color: 'red' }} />;
+            icon = <FontAwesome name="times" style={{ color: 'red' }}/>;
         }
         return icon;
     }
@@ -85,7 +96,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
      */
     getStudy(selectedOption) {
         this.setState({ selectedStudy: selectedOption.value });
-        this.props.rootStore.parseTimeline(this.props.studyapi.studies
+        this.props.rootStore.parseTimeline(this.props.rootStore.studyAPI.studies
             .filter(d => d.studyId === selectedOption.value)[0], () => {
         });
     }
@@ -96,7 +107,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
      */
     setOptions() {
         const options = [];
-        this.props.studyapi.studies.forEach((d) => {
+        this.props.rootStore.studyAPI.studies.forEach((d) => {
             options.push({ value: d.studyId, label: d.name });
         });
         return options;
@@ -115,18 +126,18 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                     <Panel>
                         <Panel.Heading>
                             <Panel.Title>
-                        Study information
+                                Study information
                             </Panel.Title>
                         </Panel.Heading>
                         <Panel.Body>
-                            <StudySummary />
+                            <StudySummary/>
                         </Panel.Body>
                     </Panel>
                 </div>
             );
         } else if ((this.state.selectedStudy !== null && !this.props.rootStore.isOwnData)
             || (this.props.rootStore.isOwnData && this.props.rootStore.localFileLoader.eventsParsed === 'loading')) {
-            info = <div className="smallLoader" />;
+            info = <div className="smallLoader"/>;
         }
         return info;
     }
@@ -203,7 +214,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
         this.props.rootStore.setIsOwnData(key !== 'cBio');
         if (key === 'cBio') {
             if (this.state.selectedStudy !== null) {
-                this.props.rootStore.parseTimeline(this.props.studyapi.studies
+                this.props.rootStore.parseTimeline(this.props.rootStore.studyAPI.studies
                     .filter(d => d.studyId === this.state.selectedStudy)[0], () => {
                 });
             }
@@ -262,10 +273,18 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
         }
     }
 
+    /**
+     * handles loading gene matrix
+     * @param {event} e
+     */
     handleGeneMatrixLoad(e) {
         this.props.rootStore.localFileLoader.setGenePanelMatrix(e.target.files[0]);
     }
 
+    /**
+     * handles loading gene panels
+     * @param {event} e
+     */
     handleGenePanelsLoad(e) {
         this.props.rootStore.localFileLoader.setGenePanels(e.target.files);
     }
@@ -319,6 +338,30 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                             onSelect={this.handleSelectTab}
                         >
                             <Tab eventKey="cBio" title="Load cBio dataset">
+                                <form>
+                                    <FormGroup>
+                                        <Radio
+                                            name="linkSelect"
+                                            value="http://www.cbiohack.org"
+                                            checked={this.props.rootStore.cBioLink === 'http://www.cbiohack.org'}
+                                            onChange={(e) => this.props.rootStore.cBioLink = e.target.value}
+                                            inline
+                                        >
+                                            cBioHack
+                                        </Radio>
+                                        {' '}
+                                        <Radio
+                                            name="linkSelect"
+                                            value="https://www.cbioportal.org"
+                                            checked={this.props.rootStore.cBioLink === 'https://www.cbioportal.org'}
+                                            onChange={(e) => this.props.rootStore.cBioLink = e.target.value}
+                                            inline
+                                        >
+                                            cBioPortal
+                                        </Radio>
+                                        {' '}
+                                    </FormGroup>
+                                </form>
                                 <div style={{ marginTop: '10px', marginBottom: '10px' }}>
                                     <Select
                                         type="text"
@@ -336,14 +379,14 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                     rel="noopener noreferrer"
                                     target="_blank"
                                 >
-                                File format documentation
+                                    File format documentation
                                 </a>
                                 {this.props.rootStore.geneNamesAPI.geneListLoaded ? (
                                     <Form horizontal>
                                         <h4>Required files</h4>
                                         <FormGroup>
                                             <Col sm={5}>
-                                            Timeline
+                                                Timeline
                                                 {' '}
                                                 {DefaultView.getStateIcon(this.props.rootStore
                                                     .localFileLoader.eventsParsed)}
@@ -371,7 +414,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                         <h4>At least one required</h4>
                                         <FormGroup>
                                             <Col sm={5}>
-                                            Clinical Sample Data
+                                                Clinical Sample Data
                                                 {' '}
                                                 {DefaultView.getStateIcon(this.props.rootStore
                                                     .localFileLoader.clinicalSampleParsed)}
@@ -397,8 +440,8 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                         </FormGroup>
                                         <FormGroup>
                                             <Col sm={5}>
-                                            Clinical Patient
-                                            Data
+                                                Clinical Patient
+                                                Data
                                                 {' '}
                                                 {DefaultView.getStateIcon(this.props.rootStore
                                                     .localFileLoader.clinicalPatientParsed)}
@@ -424,7 +467,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                         </FormGroup>
                                         <FormGroup>
                                             <Col sm={5}>
-                                            Mutations
+                                                Mutations
                                                 {' '}
                                                 {DefaultView.getStateIcon(this.props.rootStore
                                                     .localFileLoader.mutationsParsed)}
@@ -451,7 +494,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                         <h4>Optional files</h4>
                                         <FormGroup>
                                             <Col sm={5}>
-                                            Other files
+                                                Other files
                                                 {' '}
                                                 {DefaultView.getStateIcon(this.props.rootStore
                                                     .localFileLoader.molecularParsed)}
@@ -482,8 +525,8 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                         </FormGroup>
                                         <FormGroup>
                                             <Col sm={5}>
-                                            Gene Panel
-                                            Matrix
+                                                Gene Panel
+                                                Matrix
                                                 {' '}
                                                 {DefaultView.getStateIcon(this.props.rootStore
                                                     .localFileLoader.panelMatrixParsed)}
@@ -509,8 +552,8 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                         </FormGroup>
                                         <FormGroup>
                                             <Col sm={5}>
-                                            Gene
-                                            panels
+                                                Gene
+                                                panels
                                                 {' '}
                                                 {DefaultView.getStateIcon(this.props.rootStore
                                                     .localFileLoader.genePanelsParsed)}
@@ -536,7 +579,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                                             </Col>
                                         </FormGroup>
                                     </Form>
-                                ) : <div><FontAwesome name="spinner" spin style={{ color: 'gray' }} /></div>}
+                                ) : <div><FontAwesome name="spinner" spin style={{ color: 'gray' }}/></div>}
                             </Tab>
                         </Tabs>
                         {this.getStudyInfo()}
@@ -544,7 +587,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                             disabled={launchDisabled}
                             onClick={this.displayStudy}
                         >
-                        Launch
+                            Launch
                         </Button>
                     </Col>
                 </Row>

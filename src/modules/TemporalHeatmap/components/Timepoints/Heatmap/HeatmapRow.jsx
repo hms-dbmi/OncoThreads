@@ -86,7 +86,7 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
      */
     handleDoubleClick(patient) {
         if (!this.props.dataStore.rootStore.isOwnData) {
-            window.open(`http://www.cbiohack.org/patient?studyId=${this.props.dataStore.rootStore.study.studyId}&caseId=${patient}`);
+            window.open(`${this.props.dataStore.rootStore.cBioLink}/patient?studyId=${this.props.dataStore.rootStore.study.studyId}&caseId=${patient}`);
         }
     }
 
@@ -134,14 +134,13 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
      * @param {event} e
      * @param {string} patient
      * @param {number} timepointIndex
-     * @param {number} xposition
      */
-    handleRightClick(e, patient, timepointIndex, xposition) {
+    handleRightClick(e, patient, timepointIndex) {
         e.preventDefault();
         this.setState({
             dragging: false,
         });
-        this.props.showContextMenuHeatmapRow(e, patient, timepointIndex, xposition);
+        this.props.showContextMenuHeatmapRow(e, patient, timepointIndex);
     }
 
 
