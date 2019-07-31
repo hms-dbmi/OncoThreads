@@ -37,6 +37,7 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
     render() {
         // transform data for LineUp
         const data = this.props.variables.map((variable) => {
+            console.log(variable.mapper);
             const newEntry = {};
             const values = Object.values(variable.mapper).filter(d => d !== undefined);
             newEntry.Name = variable.name;

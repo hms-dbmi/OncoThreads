@@ -16,6 +16,7 @@ import {
 import Select from 'react-select';
 import OriginalVariable from "../../stores/OriginalVariable";
 import ExploreVariables from '../Modals/ExploreVariables';
+import SelectAll from '../../../SelectAllSelector/react-select-all';
 
 /**
  * Component for selecting timepoint variables in variable manager
@@ -553,12 +554,14 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                     Variables
                 </Col>
                 <Col sm={10}>
-                    <Select
+                    <SelectAll
+                        allowSelectAll
                         value={this.state.clinicalOptions}
                         type="text"
-                        searchable={true}
+                        searchable
                         isMulti
-                        componentClass="select" placeholder="Select..."
+                        componentClass="select"
+                        placeholder="Select..."
                         searchPlaceholder="Search variable"
                         options={this.createOptions()}
                         onChange={this.handleOptionSelect}
@@ -611,7 +614,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             <ExploreVariables close={() => this.setState({ modalIsOpen: false })}
                               reset={this.resetSelected}
                               availableCategories={this.props.availableCategories}
-                              variables={this.getOnDemandVariables().concat(...this.getClinicalVariables())}
+                              variables={this.getClinicalVariables().concat(...this.getOnDemandVariables())}
                               modalIsOpen={this.state.modalIsOpen}/>
         </div>)
     }
