@@ -3,14 +3,22 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Modal } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import { LineUp } from 'lineupjsx';
+import {
+    LineUp,
+    LineUpCategoricalColumnDesc,
+    LineUpColumn,
+    LineUpNumberColumnDesc,
+    LineUpRanking,
+    LineUpStringColumnDesc,
+    LineUpSupportColumn,
+} from 'lineupjsx';
 import { extendObservable } from 'mobx';
+import OriginalVariable from '../../stores/OriginalVariable';
+import DerivedVariable from '../../stores/DerivedVariable';
 
 
 /**
- * Modal for choosing settings of the visualization
- * Settings: Visual representation of grouped continuous variables,
- * mode of selection (advanced/simplified), show rows of undefined values
+ * Modal for exploring variables with lineUp
  */
 const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(class ExploreVariables extends React.Component {
     constructor(props) {
@@ -18,7 +26,52 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
         extendObservable(this, {
             selected: [],
         });
+
         this.handleAdd = this.handleAdd.bind(this);
+    }
+
+    /**
+     * transforms data to the format required by lineUp
+     * @return {Object[]}
+     */
+    transformData() {
+        return this.props.variables.map((variable) => {
+            const newEntry = {};
+            const values = Object.values(variable.mapper).filter(d => d !== undefined);
+            newEntry.name = variable.name;
+            newEntry.score = NaN;
+            newEntry.description = variable.description;
+            newEntry.datatype = variable.datatype;
+            newEntry.source = !variable.derived ? this.props.availableCategories.filter(category => category.id === variable.profile)[0].name : 'Derived';
+            if (variable.datatype === 'NUMBER') {
+                newEntry.range = Math.max(...values) - Math.min(...values);
+                newEntry.categories = [];
+                newEntry.numcat = NaN;
+            } else {
+                newEntry.range = NaN;
+                newEntry.numcat = variable.domain.length;
+                newEntry.categories = variable.domain;
+            }
+            if (variable.profile === 'clinSample') {
+                newEntry.score = this.props.rootStore.scoreStructure[variable.id];
+            }
+            newEntry.na = [].concat(...Object.values(this.props.rootStore.sampleStructure))
+                .map(d => variable.mapper[d])
+                .filter(d => d === undefined).length;
+            /*
+             * Example function calls for getting a score:
+             *
+             * across:
+             * newEntry.modVRacross = this.props.rootStore.getModVRAcross(this.variable.mapper);
+             *
+             * within: (returns array of scores, one for each TP)
+             * this.props.rootStore.gerModVRWithin(this.variable.mapper).forEach((d,i) => {
+             *      newEntry['ModVRtp' + i]=d;
+             * }
+             *
+             */
+            return newEntry;
+        })
     }
 
     /**
@@ -34,35 +87,8 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
         this.props.close();
     }
 
+
     render() {
-        // transform data for LineUp
-        const data = this.props.variables.map((variable) => {
-            console.log(variable.mapper);
-            const newEntry = {};
-            const values = Object.values(variable.mapper).filter(d => d !== undefined);
-            newEntry.Name = variable.name;
-            newEntry.Score = NaN;
-            newEntry.Description = variable.description;
-            newEntry.Datatype = variable.datatype;
-            newEntry.Source = this.props.availableCategories
-                .filter(category => category.id === variable.profile)[0].name;
-            if (variable.datatype === 'NUMBER') {
-                newEntry.Range = Math.max(...values) - Math.min(...values);
-                newEntry.Categories = [];
-                newEntry.NumCat = NaN;
-            } else {
-                newEntry.Range = NaN;
-                newEntry['#Categories'] = variable.domain.length;
-                newEntry.Categories = variable.domain;
-            }
-            if (variable.profile === 'clinSample') {
-                newEntry.Score = this.props.rootStore.scoreStructure[variable.id];
-            }
-            newEntry['Missing Values'] = [].concat(...Object.values(this.props.rootStore.sampleStructure))
-                .map(d => variable.mapper[d])
-                .filter(d => d === undefined).length;
-            return newEntry;
-        });
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -70,16 +96,45 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                 dialogClassName="fullSizeModal"
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Variable Explorer</Modal.Title>
+                    <Modal.Title>Variable Explorer: LineUp</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <LineUp
-                        data={data}
+                        data={this.transformData()}
+                        sidePanelCollapsed
                         onSelectionChanged={(s) => {
                             this.selected = s;
                         }}
-                        style={{ height: '800px' }}
-                    />
+                        style={{ height: '800px' }}>
+                        {/*
+                         Define column types
+                         */}
+                        <LineUpStringColumnDesc column="name" label="Name"/>
+                        <LineUpStringColumnDesc column="description" label="Description"/>
+                        <LineUpStringColumnDesc column="categories" label="Categories"/>
+                        <LineUpCategoricalColumnDesc column="source"/>
+                        <LineUpNumberColumnDesc column="score" label="Score"/>
+
+                        <LineUpCategoricalColumnDesc column="datatype"
+                                                     categories={['STRING', 'NUMBER', 'ORDINAL', 'BINARY']}/>
+
+                        <LineUpNumberColumnDesc column="numcat" label="NumCat"/>
+                        <LineUpNumberColumnDesc column="range" label="Range"/>
+                        <LineUpNumberColumnDesc column="na" label="Missing Values"/>
+                        {/*
+                         Sets default columns, grouping, and ranking
+                         */}
+                        <LineUpRanking groupBy="Source" sortBy="Score:desc">
+                            <LineUpSupportColumn type="*"/>
+                            <LineUpColumn column="name"/>
+                            <LineUpColumn column="source"/>
+                            <LineUpColumn column="score"/>
+                            <LineUpColumn column="datatype"/>
+                            <LineUpColumn column="numcat"/>
+                            <LineUpColumn column="range"/>
+                            <LineUpColumn column="na"/>
+                        </LineUpRanking>
+                    </LineUp>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.close}>Close</Button>
@@ -91,6 +146,9 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
 }));
 ExploreVariables.propTypes = {
     close: PropTypes.func.isRequired,
+    reset: PropTypes.func.isRequired,
     modalIsOpen: PropTypes.bool.isRequired,
+    variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable), PropTypes.instanceOf(DerivedVariable)])).isRequired,
+    availableCategories: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 export default ExploreVariables;

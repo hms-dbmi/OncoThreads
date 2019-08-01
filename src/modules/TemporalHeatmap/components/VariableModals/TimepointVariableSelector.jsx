@@ -13,7 +13,6 @@ import {
     Glyphicon,
     Table,
 } from 'react-bootstrap';
-import Select from 'react-select';
 import OriginalVariable from "../../stores/OriginalVariable";
 import ExploreVariables from '../Modals/ExploreVariables';
 import SelectAll from '../../../SelectAllSelector/react-select-all';
@@ -533,10 +532,32 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         return variables;
     }
 
+    /**
+     * gets all on-demand variables
+     * @return {OriginalVariable[]}
+     */
     getOnDemandVariables() {
         const mappingTypes = this.state.mutationOptions.filter(d => d.selected).map(d => d.id);
         const profiles = this.state.molecularOptions.filter(d => d.selected).map(d => d.profile);
         return this.props.rootStore.molProfileMapping.getMultipleProfiles(profiles, mappingTypes);
+    }
+
+    /**
+     * gets all existing derived variables
+     * @return {any[]}
+     */
+    getDerivedVariables(){
+        return Object.keys(this.props.variableManagerStore.referencedVariables).map(id => this.props.variableManagerStore.referencedVariables[id])
+            .filter(d=> d.derived)
+    }
+
+    /**
+     * gets all variables that can be explored
+     * @return {any[]}
+     */
+    getAllVariables(){
+        return this.getDerivedVariables().concat(...this.getClinicalVariables()).concat(...this.getOnDemandVariables());
+
     }
 
     resetSelected() {
@@ -614,7 +635,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             <ExploreVariables close={() => this.setState({ modalIsOpen: false })}
                               reset={this.resetSelected}
                               availableCategories={this.props.availableCategories}
-                              variables={this.getClinicalVariables().concat(...this.getOnDemandVariables())}
+                              variables={this.getAllVariables()}
                               modalIsOpen={this.state.modalIsOpen}/>
         </div>)
     }
