@@ -1034,6 +1034,7 @@ class RootStore {
      * @return {number} change rate
      */
     getChangeRate(mapper, datatype) {
+        // for non-numerical variables compute #changes/#transitions
         if (datatype !== 'NUMBER') {
             let allTransitions = 0;
             let changes = 0;
@@ -1048,6 +1049,7 @@ class RootStore {
                 });
             });
             return changes / allTransitions;
+            // for numerical variables compute averageChange/observedRange
         } else {
             let sumOfChange = 0;
             let allTransitions = 0;
@@ -1068,7 +1070,8 @@ class RootStore {
                     }
                 });
             });
-            if (minChange === maxChange) {
+            if (minChange === maxChange || minChange === Number.POSITIVE_INFINITY
+                || maxChange === Number.NEGATIVE_INFINITY) {
                 return 0;
             }
             return (sumOfChange / allTransitions) / (maxChange - minChange);
