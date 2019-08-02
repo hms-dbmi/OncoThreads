@@ -50,7 +50,7 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
             } else {
                 newEntry.range = NaN;
                 newEntry.numcat = variable.domain.length;
-                newEntry.categories = variable.domain;
+                newEntry.categories = variable.domain.toString();
             }
             if (variable.profile === 'clinSample') {
                 newEntry.score = this.props.rootStore.scoreStructure[variable.id];
@@ -71,7 +71,7 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
              *
              */
             return newEntry;
-        })
+        });
     }
 
     /**
@@ -105,34 +105,37 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                         onSelectionChanged={(s) => {
                             this.selected = s;
                         }}
-                        style={{ height: '800px' }}>
+                        style={{ height: '800px' }}
+                    >
                         {/*
                          Define column types
                          */}
-                        <LineUpStringColumnDesc column="name" label="Name"/>
-                        <LineUpStringColumnDesc column="description" label="Description"/>
-                        <LineUpStringColumnDesc column="categories" label="Categories"/>
-                        <LineUpCategoricalColumnDesc column="source"/>
-                        <LineUpNumberColumnDesc column="score" label="Score"/>
+                        <LineUpStringColumnDesc column="name" label="Name" />
+                        <LineUpStringColumnDesc column="description" label="Description" />
+                        <LineUpStringColumnDesc column="categories" label="Categories" />
+                        <LineUpCategoricalColumnDesc column="source" />
+                        <LineUpNumberColumnDesc column="score" label="Score" />
 
-                        <LineUpCategoricalColumnDesc column="datatype"
-                                                     categories={['STRING', 'NUMBER', 'ORDINAL', 'BINARY']}/>
+                        <LineUpCategoricalColumnDesc
+                            column="datatype"
+                            categories={['STRING', 'NUMBER', 'ORDINAL', 'BINARY']}
+                        />
 
-                        <LineUpNumberColumnDesc column="numcat" label="NumCat"/>
-                        <LineUpNumberColumnDesc column="range" label="Range"/>
-                        <LineUpNumberColumnDesc column="na" label="Missing Values"/>
+                        <LineUpNumberColumnDesc column="numcat" label="NumCat" />
+                        <LineUpNumberColumnDesc column="range" label="Range" />
+                        <LineUpNumberColumnDesc column="na" label="Missing Values" />
                         {/*
                          Sets default columns, grouping, and ranking
                          */}
                         <LineUpRanking groupBy="Source" sortBy="Score:desc">
-                            <LineUpSupportColumn type="*"/>
-                            <LineUpColumn column="name"/>
-                            <LineUpColumn column="source"/>
-                            <LineUpColumn column="score"/>
-                            <LineUpColumn column="datatype"/>
-                            <LineUpColumn column="numcat"/>
-                            <LineUpColumn column="range"/>
-                            <LineUpColumn column="na"/>
+                            <LineUpSupportColumn type="*" />
+                            <LineUpColumn column="name" />
+                            <LineUpColumn column="source" />
+                            <LineUpColumn column="score" />
+                            <LineUpColumn column="datatype" />
+                            <LineUpColumn column="numcat" />
+                            <LineUpColumn column="range" />
+                            <LineUpColumn column="na" />
                         </LineUpRanking>
                     </LineUp>
                 </Modal.Body>
@@ -148,7 +151,8 @@ ExploreVariables.propTypes = {
     close: PropTypes.func.isRequired,
     reset: PropTypes.func.isRequired,
     modalIsOpen: PropTypes.bool.isRequired,
-    variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable), PropTypes.instanceOf(DerivedVariable)])).isRequired,
+    variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
+        PropTypes.instanceOf(DerivedVariable)])).isRequired,
     availableCategories: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 export default ExploreVariables;
