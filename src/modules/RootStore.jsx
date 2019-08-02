@@ -270,7 +270,7 @@ class RootStore {
                     m=m/range_val;
 
                     m=m/timeLineLength;
-                    
+
                     m = this.getNumWithSetDec(m/numOfPatients,2);
 
                 }
@@ -326,7 +326,7 @@ class RootStore {
             return this.getNumWithSetDec( v, numOfDec );
         }),
 
-    
+
 
 
         calculateVScoreWithinTimeLine: action(() => {
@@ -338,16 +338,16 @@ class RootStore {
 
             let self=this;
 
-            
+
             Object.keys(SM).forEach((iK,i) => {
                 if(!i) {
                     return;
                 }
                 var iV= SM[iK];
-                
+
                 this.TimeLineVariability[iK]={};
 
-                
+
                 var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
 
                 if(dType==="STRING"){
@@ -355,7 +355,7 @@ class RootStore {
                     var samples=Object.values(ST);
 
                     var sample_length=samples.map(function(d){return d.length});
-                    
+
 
                     var max_sample=Math.max(...sample_length);
 
@@ -368,7 +368,7 @@ class RootStore {
                         //samples.forEach(function(d){if(d[a]) r.push(d[a])});
                         var r = samples.filter(d=> d[a]).map((d)=>d[a]);
 
-                        
+
 
                         //var set1 = new Set();
 
@@ -377,7 +377,7 @@ class RootStore {
                             //set1.add(iV[r[j]]);
                             temp.push(iV[r[j]]);
                         }
-                        
+
                         //console.log(temp);
 
                         var uniq=[...new Set(temp)];
@@ -413,7 +413,7 @@ class RootStore {
                                 else{
                                     t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]));
                                 }
-                                
+
                             }
                         }*/
                         //else{
@@ -421,26 +421,26 @@ class RootStore {
                                 t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
                             }
                         //}
-                        
+
 
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-                        
+
                         t_v= this.getNumWithSetDec(t_v,2);
 
                         this.TimeLineVariability[iK][a]= t_v;
 
                     });
 
-                    
+
 
                 }
                 //standard deviation //DO NOT DELETE THIS YET
-                else if(dType==="NUMBER"){ 
+                else if(dType==="NUMBER"){
 
                     samples=Object.values(ST);
 
                     sample_length=samples.map(function(d){return d.length});
-                    
+
 
                     max_sample=Math.max(...sample_length);
 
@@ -448,15 +448,15 @@ class RootStore {
 
                         var r=[];
 
-                        //samples.map(function(d){if(d[a]) r.push(d[a])});                 
-                        //samples.filter(d=> {if(d[a]) r.push(d[a])});                 
+                        //samples.map(function(d){if(d[a]) r.push(d[a])});
+                        //samples.filter(d=> {if(d[a]) r.push(d[a])});
 
                         for(let p=0; p<samples.length; p++){
                             if(samples[p][a]){
                                    r.push(samples[p][a]);
                                }
                            }
-                        
+
 
                         //var set1 = new Set();
 
@@ -465,12 +465,12 @@ class RootStore {
                             //set1.add(iV[r[j]]);
                             temp.push(iV[r[j]]);
                         }
-                        
+
                         //console.log(temp);
 
-                        
+
                         //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-                        
+
                         var t_v=this.getVariance( temp, 2 ); //variance;
 
                         //get standard deviation
@@ -482,8 +482,8 @@ class RootStore {
 
 
 
-                } 
-                
+                }
+
                 //console.log(m);
 
                 //this.TimeLineVariability[iK][a]= t_v;
@@ -969,6 +969,7 @@ class RootStore {
         return matchingId;
     }
 
+
     /**
      * checks if an event has happened in a specific timespan
      * @param {Object} event
@@ -1023,6 +1024,54 @@ class RootStore {
                 })
                 //}
             })
+        }
+    }
+
+    /**
+     * computes the change rate for a mapper
+     * @param {Object} mapper - mapping of sampleId to values
+     * @param {string} datatype - type of variable
+     * @return {number} change rate
+     */
+    getChangeRate(mapper, datatype) {
+        if (datatype !== 'NUMBER') {
+            let allTransitions = 0;
+            let changes = 0;
+            Object.keys(this.sampleStructure).forEach((patient) => {
+                this.sampleStructure[patient].forEach((sample, i) => {
+                    if (i !== this.sampleStructure[patient].length - 1) {
+                        allTransitions += 1;
+                        if (mapper[sample] !== mapper[this.sampleStructure[patient][i + 1]]) {
+                            changes += 1;
+                        }
+                    }
+                });
+            });
+            return changes / allTransitions;
+        } else {
+            let sumOfChange = 0;
+            let allTransitions = 0;
+            let minChange = Number.POSITIVE_INFINITY;
+            let maxChange = Number.NEGATIVE_INFINITY;
+            Object.keys(this.sampleStructure).forEach((patient) => {
+                this.sampleStructure[patient].forEach((sample, i) => {
+                    if (i !== this.sampleStructure[patient].length - 1) {
+                        if (mapper[sample] !== undefined
+                            && mapper[this.sampleStructure[patient][i + 1]] !== undefined) {
+                            allTransitions += 1;
+                            const change = Math.abs(mapper[sample]
+                                - mapper[this.sampleStructure[patient][i + 1]]);
+                            sumOfChange += change;
+                            minChange = Math.min(minChange, change);
+                            maxChange = Math.max(maxChange, change);
+                        }
+                    }
+                });
+            });
+            if (minChange === maxChange) {
+                return 0;
+            }
+            return (sumOfChange / allTransitions) / (maxChange - minChange);
         }
     }
 }

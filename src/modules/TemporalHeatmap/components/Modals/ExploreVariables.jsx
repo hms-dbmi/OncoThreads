@@ -58,14 +58,16 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
             newEntry.na = [].concat(...Object.values(this.props.rootStore.sampleStructure))
                 .map(d => variable.mapper[d])
                 .filter(d => d === undefined).length;
+            newEntry.changeRate = this.props.rootStore
+                .getChangeRate(variable.mapper, variable.datatype);
             /*
              * Example function calls for getting a score:
              *
              * across:
-             * newEntry.modVRacross = this.props.rootStore.getModVRAcross(this.variable.mapper);
+             * newEntry.modVRacross = this.props.rootStore.getModVRAcross(variable.mapper);
              *
              * within: (returns array of scores, one for each TP)
-             * this.props.rootStore.gerModVRWithin(this.variable.mapper).forEach((d,i) => {
+             * this.props.rootStore.gerModVRWithin(variable.mapper).forEach((d,i) => {
              *      newEntry['ModVRtp' + i]=d;
              * }
              *
@@ -115,6 +117,8 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                         <LineUpStringColumnDesc column="categories" label="Categories" />
                         <LineUpCategoricalColumnDesc column="source" />
                         <LineUpNumberColumnDesc column="score" label="Score" />
+                        <LineUpNumberColumnDesc column="changeEntropy" label="Entropy" />
+                        <LineUpNumberColumnDesc column="changeRate" label="Change Rate" />
 
                         <LineUpCategoricalColumnDesc
                             column="datatype"
@@ -127,11 +131,11 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                         {/*
                          Sets default columns, grouping, and ranking
                          */}
-                        <LineUpRanking groupBy="Source" sortBy="Score:desc">
+                        <LineUpRanking sortBy="changeRate:desc">
                             <LineUpSupportColumn type="*" />
                             <LineUpColumn column="name" />
                             <LineUpColumn column="source" />
-                            <LineUpColumn column="score" />
+                            <LineUpColumn column="changeRate" />
                             <LineUpColumn column="datatype" />
                             <LineUpColumn column="numcat" />
                             <LineUpColumn column="range" />
