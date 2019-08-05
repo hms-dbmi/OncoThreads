@@ -74,6 +74,15 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
              */
 
             newEntry.modVRacross = this.props.rootStore.getModVRAcross(variable.id, variable.datatype, variable.mapper);
+
+            let wt=this.props.rootStore.gerModVRWithin(variable.id, variable.datatype, variable.mapper);
+
+            console.log(wt);
+            
+            wt.forEach((d,i) => {
+                 newEntry['ModVRtp' + i]=d;
+            })
+
             return newEntry;
         });
     }
