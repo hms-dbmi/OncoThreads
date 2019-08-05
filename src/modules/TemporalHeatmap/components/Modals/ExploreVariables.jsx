@@ -73,15 +73,55 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
              *
              */
 
-            newEntry.modVRacross = this.props.rootStore.getModVRAcross(variable.id, variable.datatype, variable.mapper);
+            newEntry.modVRacross = NaN;
 
-            let wt=this.props.rootStore.gerModVRWithin(variable.id, variable.datatype, variable.mapper);
+            newEntry.ModVRtpAvg = NaN;
 
-            console.log(wt);
-            
-            wt.forEach((d,i) => {
-                 newEntry['ModVRtp' + i]=d;
-            })
+            newEntry.ModVRtpMax = NaN;
+
+            newEntry.ModVRtpMin = NaN;
+
+            newEntry.CoVAvgTimeLine = NaN;
+
+            if(variable.datatype==="STRING"){
+                newEntry.modVRacross = this.props.rootStore.getModVRAcross(variable.id, variable.datatype, variable.mapper);
+
+
+                let wt=this.props.rootStore.gerModVRWithin(variable.id, variable.datatype, variable.mapper);
+
+                //console.log(wt);
+                
+                let sum=0;
+
+                let tp_length=this.props.rootStore.timepointStructure.length;
+
+                wt.forEach((d,i) => {
+                    //newEntry['ModVRtp' + i]=d;
+                    sum=sum+d;
+                })
+
+                newEntry.ModVRtpAvg = sum/tp_length;
+
+                newEntry.ModVRtpMax = Math.max(...wt);
+
+                newEntry.ModVRtpMin = Math.min(...wt);
+
+            }
+            else if(variable.datatype==="NUMBER"){
+                let covt= this.props.rootStore.getCoeffientOfVariation(variable.id, variable.datatype, variable.mapper);
+
+                let sum=0;
+
+                let tp_length=this.props.rootStore.timepointStructure.length;
+
+                covt.forEach((d,i) => {
+                    //newEntry['ModVRtp' + i]=d;
+                    sum=sum+d;
+                })
+
+                
+                newEntry.CoVAvgTimeLine =  sum/tp_length;
+            }
 
             return newEntry;
         });
@@ -102,6 +142,7 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
 
 
     render() {
+        
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -137,6 +178,15 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                         />
 
                         <LineUpNumberColumnDesc column="modVRacross" label="modVRacross" />
+                        
+                        <LineUpNumberColumnDesc column="ModVRtpAvg" label="ModVRtpAvg" />
+
+                        <LineUpNumberColumnDesc column="ModVRtpMax" label="ModVRtpMax" />
+
+                        <LineUpNumberColumnDesc column="ModVRtpMin" label="ModVRtpMin" />
+
+                        <LineUpNumberColumnDesc column="CoVAvgTimeLine" label="CoVAvgTimeLine" />
+
                         <LineUpNumberColumnDesc column="numcat" label="NumCat" />
                         <LineUpNumberColumnDesc column="range" label="Range" />
                         <LineUpNumberColumnDesc column="na" label="Missing Values" />
@@ -150,6 +200,10 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                             <LineUpColumn column="changeRate" />
                             <LineUpColumn column="datatype" />
                             <LineUpColumn column="modVRacross" />
+                            <LineUpColumn column="ModVRtpAvg" />
+                            <LineUpColumn column="ModVRtpMax" />
+                            <LineUpColumn column="ModVRtpMin" />
+                            <LineUpColumn column="CoVAvgTimeLine" />
                             <LineUpColumn column="numcat" />
                             <LineUpColumn column="range" />
                             <LineUpColumn column="na" />
