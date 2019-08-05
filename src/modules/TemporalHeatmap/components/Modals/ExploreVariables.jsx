@@ -26,7 +26,6 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
         extendObservable(this, {
             selected: [],
         });
-
         this.handleAdd = this.handleAdd.bind(this);
     }
 
@@ -116,7 +115,6 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                         <LineUpStringColumnDesc column="description" label="Description" />
                         <LineUpStringColumnDesc column="categories" label="Categories" />
                         <LineUpCategoricalColumnDesc column="source" />
-                        <LineUpNumberColumnDesc column="score" label="Score" />
                         <LineUpNumberColumnDesc column="changeEntropy" label="Entropy" />
                         <LineUpNumberColumnDesc column="changeRate" label="Change Rate" />
 

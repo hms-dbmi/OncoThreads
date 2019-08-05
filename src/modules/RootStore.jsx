@@ -1052,35 +1052,31 @@ class RootStore {
             });
             return changes / allTransitions;
             // for numerical variables compute averageChange/observedRange
-        } else {
-            let sumOfChange = 0;
-            let allTransitions = 0;
-            let minChange = Number.POSITIVE_INFINITY;
-            let maxChange = Number.NEGATIVE_INFINITY;
-            Object.keys(this.sampleStructure).forEach((patient) => {
-                this.sampleStructure[patient].map(sample => mapper[sample])
-                    .filter(value => value !== undefined)
-                    .forEach((value, i, array) => {
-                        if (i !== array.length - 1) {
-                            if (value !== undefined
-                            && array[i + 1] !== undefined) {
-                                allTransitions += 1;
-                                const change = Math.abs(value
-                                    - array[i + 1]);
-                                sumOfChange += change;
-                                minChange = Math.min(minChange, change);
-                                maxChange = Math.max(maxChange, change);
-                            }
-                        }
-                    });
-            });
-            if (minChange === maxChange || minChange === Number.POSITIVE_INFINITY
-                || maxChange === Number.NEGATIVE_INFINITY) {
-                return 0;
-            }
-            return (sumOfChange / allTransitions) / (maxChange - minChange);
         }
+        let sumOfChange = 0;
+        let allTransitions = 0;
+        let minChange = Number.POSITIVE_INFINITY;
+        let maxChange = Number.NEGATIVE_INFINITY;
+        Object.keys(this.sampleStructure).forEach((patient) => {
+            this.sampleStructure[patient].map(sample => mapper[sample])
+                .filter(value => value !== undefined)
+                .forEach((value, i, array) => {
+                    if (i !== array.length - 1) {
+                        allTransitions += 1;
+                        const change = Math.abs(value - array[i + 1]);
+                        sumOfChange += change;
+                        minChange = Math.min(minChange, change);
+                        maxChange = Math.max(maxChange, change);
+                    }
+                });
+        });
+        if (minChange === maxChange || minChange === Number.POSITIVE_INFINITY
+            || maxChange === Number.NEGATIVE_INFINITY) {
+            return 0;
+        }
+        return (sumOfChange / allTransitions) / (maxChange - minChange);
     }
+
 }
 
 export default RootStore
