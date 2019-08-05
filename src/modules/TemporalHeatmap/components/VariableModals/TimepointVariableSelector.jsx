@@ -81,7 +81,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
         this.props.rootStore.clinicalSampleCategories.filter(d => !this.props.variableManagerStore.currentVariables.map(d => d.id).includes(d.id)).forEach(d => {
             let lb = (
                 <div style={{textAlign: "left"}}
-                     key={d.variable}><b>{d.variable}</b>{": " + d.description + ", variability: " + Number(self.props.rootStore.scoreStructure[d.id]).toPrecision(2)}
+                     key={d.variable}><b>{d.variable}</b>{": " + d.description + ", variability: " + Number(self.props.rootStore.scoreStore.scoreStructure[d.id]).toPrecision(2)}
                 </div>);
             sampleOptions.push({value: d.variable + d.description, label: lb, object: d, type: "clinSample"})
         });
@@ -282,7 +282,7 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                 factor=-1
             }
 
-            struct=this.props.rootStore.scoreStructure;
+            struct=this.props.rootStore.scoreStore.scoreStructure;
             keysSorted = Object.keys(struct).sort(
                 //function(a,b){return struct[a]-struct[b]}
                 function keyOrder(k1, k2) {
@@ -299,8 +299,8 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
                 factor=-1
             }
 
-            struct=this.props.rootStore.TimeLineVariability;
-            keysSorted = Object.keys(this.props.rootStore.scoreStructure).sort(
+            struct=this.props.rootStore.scoreStore.TimeLineVariability;
+            keysSorted = Object.keys(this.props.rootStore.scoreStore.scoreStructure).sort(
                 //function(a,b){return struct[a]-struct[b]}
                 function keyOrder(k1, k2) {
                     if (struct[k1][timeline] < struct[k2][timeline]) return -factor;
@@ -316,15 +316,15 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
         var i, after = {};
         for (i = 0; i < keysSorted.length; i++) {
-            after[keysSorted[i]] = this.props.rootStore.scoreStructure[keysSorted[i]];
-            delete this.props.rootStore.scoreStructure[keysSorted[i]];
+            after[keysSorted[i]] = this.props.rootStore.scoreStore.scoreStructure[keysSorted[i]];
+            delete this.props.rootStore.scoreStore.scoreStructure[keysSorted[i]];
         }
         
         for (i = 0; i < keysSorted.length; i++) {
-            this.props.rootStore.scoreStructure[keysSorted[i]] = after[keysSorted[i]];
+            this.props.rootStore.scoreStore.scoreStructure[keysSorted[i]] = after[keysSorted[i]];
         }
 
-        console.log(this.props.rootStore.scoreStructure);
+        console.log(this.props.rootStore.scoreStore.scoreStructure);
    
     }
 
@@ -347,9 +347,9 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
             else return 0;
         }));*/
 
-        //var obj = this.props.rootStore.scoreStructure;
+        //var obj = this.props.rootStore.scoreStore.scoreStructure;
 
-        var keys=Object.keys(this.props.rootStore.scoreStructure);
+        var keys=Object.keys(this.props.rootStore.scoreStore.scoreStructure);
 
         keys.sort(function keyOrder(k1, k2) {
             if (k1 < k2) return -factor;
@@ -361,23 +361,23 @@ const TimepointVariableSelector = inject("variableManagerStore", "rootStore")(ob
 
         var i, after = {};
         for (i = 0; i < keys.length; i++) {
-            after[keys[i]] = this.props.rootStore.scoreStructure[keys[i]];
-            delete this.props.rootStore.scoreStructure[keys[i]];
+            after[keys[i]] = this.props.rootStore.scoreStore.scoreStructure[keys[i]];
+            delete this.props.rootStore.scoreStore.scoreStructure[keys[i]];
         }
         
         for (i = 0; i < keys.length; i++) {
-            this.props.rootStore.scoreStructure[keys[i]] = after[keys[i]];
+            this.props.rootStore.scoreStore.scoreStructure[keys[i]] = after[keys[i]];
         }
 
-        console.log(this.props.rootStore.scoreStructure);
+        console.log(this.props.rootStore.scoreStore.scoreStructure);
 
     }
 
     renderVariability() {
         if(this.state.vscore) {
 
-            var across=this.props.rootStore.scoreStructure;
-            var withinAll=this.props.rootStore.TimeLineVariability;
+            var across=this.props.rootStore.scoreStore.scoreStructure;
+            var withinAll=this.props.rootStore.scoreStore.TimeLineVariability;
 
             //let that=this;
 
