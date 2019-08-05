@@ -172,6 +172,65 @@ class RootStore {
            */
 
 
+          getModVRAcross(id, dtype, input){ //input is the same as iV in calculateVScore()
+
+            //console.log("parameter" );
+
+            console.log(dtype);
+
+
+            var ST=this.sampleStructure;
+
+            var numOfPatients = Object.keys(ST).length;
+
+            var timeLineLength=this.timepointStructure.length;
+
+            //let self=this;
+
+
+            var all_vals=Object.values(input);
+            var unique_vals=[...new Set(all_vals)];
+
+            var total_val=unique_vals.length;
+
+            var m=0;
+
+            //console.log("num of values: " + total_val);
+
+            //console.log("for " +iK +": score = ");
+
+            for(var j=0; j<Object.keys(ST).length; j++){
+                //console.log(Object.keys(ST)[j]);
+
+                for(var k=0; k<Object.values(ST)[j].length-1; k++){
+                    //console.log(Object.values(ST)[j][k]);
+                    if(input[Object.values(ST)[j][k]]!== input[Object.values(ST)[j][k+1]]){
+                        //console.log(Object.values(ST)[j][k]);
+                        //console.log(iV[Object.values(ST)[j][k]]);
+                        //console.log(iV[Object.values(ST)[j][k+1]]);
+                        m++;
+                    }
+                    else{
+                        if(id==="Timepoint"){
+                            //console.log(iV[Object.values(ST)[j][k]]);
+                            //console.log(iV[Object.values(ST)[j][k+1]]);
+                        }
+                    }
+                }
+
+            }
+
+            m=m/total_val;
+
+            m= m/timeLineLength;
+
+            m= this.getNumWithSetDec(m/numOfPatients,2);
+
+
+            return m;
+
+
+          },
             //calculateVScore: action(() => {
             calculateVScore(){
 

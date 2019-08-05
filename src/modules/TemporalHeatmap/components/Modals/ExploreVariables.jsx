@@ -72,6 +72,8 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
              * }
              *
              */
+
+            newEntry.modVRacross = this.props.rootStore.getModVRAcross(variable.id, variable.datatype, variable.mapper);
             return newEntry;
         });
     }
@@ -125,6 +127,7 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                             categories={['STRING', 'NUMBER', 'ORDINAL', 'BINARY']}
                         />
 
+                        <LineUpNumberColumnDesc column="modVRacross" label="modVRacross" />
                         <LineUpNumberColumnDesc column="numcat" label="NumCat" />
                         <LineUpNumberColumnDesc column="range" label="Range" />
                         <LineUpNumberColumnDesc column="na" label="Missing Values" />
@@ -137,9 +140,11 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                             <LineUpColumn column="source" />
                             <LineUpColumn column="changeRate" />
                             <LineUpColumn column="datatype" />
+                            <LineUpColumn column="modVRacross" />
                             <LineUpColumn column="numcat" />
                             <LineUpColumn column="range" />
                             <LineUpColumn column="na" />
+                            
                         </LineUpRanking>
                     </LineUp>
                 </Modal.Body>
