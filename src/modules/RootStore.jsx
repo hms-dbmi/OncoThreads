@@ -34,6 +34,8 @@ class RootStore {
         this.TimeLineModVR=[];
         this.TimeLineCoV=[];
 
+        this.TimeLineVariance=[];
+
         this.timeDistanceId = uuidv4(); // random id for time distance variable
 
         this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"]; // possible variable types of mutation data
@@ -153,6 +155,7 @@ class RootStore {
                 this.TimeLineVariability={};
                 this.TimeLineModVR=[];
                 this.TimeLineCoV=[];
+                this.TimeLineVariance=[];
 
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
@@ -575,9 +578,11 @@ class RootStore {
 
 
         getCoefficientOfVariation: action((numArr, numOfDec ) => {
-
-            return 1;
+            var avg=this.getAverageFromNumArr(numArr, numOfDec);
+            var standard_dev= Math.sqrt(this.getVariance(numArr, numOfDec));
+            return this.getNumWithSetDec( (standard_dev / avg ), numOfDec );
         }),
+
         calculateVScoreWithinTimeLine: action(() => {
 
 
@@ -805,7 +810,7 @@ class RootStore {
                         var t_v= 0;
                         
                         if(temp.length>0){
-                            //t_v=this.getCoefficientOfVariation(temp, 2);
+                            t_v=this.getCoefficientOfVariation(temp, 2);
                         }
 
                         this.TimeLineVariability[iK][a]= t_v;
@@ -1520,7 +1525,74 @@ class RootStore {
         }
     }
 
-    getCoeffientOfVariation(id, dtype, input){
+    getVarianceTimeLine(id, dtype, input){
+
+        this.TimeLineVariance=[];
+
+        var ST=this.sampleStructure;
+
+        var samples=Object.values(ST);
+
+        var sample_length=samples.map(function(d){return d.length});
+        
+
+        var max_sample=Math.max(...sample_length);
+
+        for(var a=0; a<max_sample; a++){
+
+            var r=[];
+
+            //samples.map(function(d){if(d[a]) r.push(d[a])});                 
+            //samples.filter(d=> {if(d[a]) r.push(d[a])});                 
+
+            for(let p=0; p<samples.length; p++){
+                if(samples[p][a]){
+                       r.push(samples[p][a]);
+                   }
+               }
+            
+
+            //var set1 = new Set();
+
+            var temp=[];
+            for(var j=0; j<r.length; j++){
+                //set1.add(iV[r[j]]);
+                if(input[r[j]]){
+                    temp.push(input[r[j]]);
+                }
+               
+            }
+            
+            //console.log(temp);
+
+            
+            //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
+
+            //get variance
+
+            //var t_v=this.getVariance( temp, 2 ); //variance;
+
+            //get standard deviation
+
+            //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
+
+            //get coefficient of variation
+
+            var vr=this.getVariance( temp, 2 ); //variance;
+
+
+            this.TimeLineVariance.push(vr);
+
+            
+
+        }
+
+        return this.TimeLineVariance;
+
+
+    }
+
+    getCoeffientOfVarTimeLine(id, dtype, input){
 
         this.TimeLineCoV=[];
 
@@ -1573,6 +1645,8 @@ class RootStore {
 
             //get coefficient of variation
 
+           
+
             var t_v= 0;
             
             if(temp.length>0){
@@ -1580,6 +1654,7 @@ class RootStore {
             }
 
             //this.TimeLineVariability[iK][a]= t_v;
+
 
 
             this.TimeLineCoV.push(t_v);

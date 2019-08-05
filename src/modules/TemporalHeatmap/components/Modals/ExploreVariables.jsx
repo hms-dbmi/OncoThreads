@@ -108,7 +108,10 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
 
             }
             else if(variable.datatype==="NUMBER"){
-                let covt= this.props.rootStore.getCoeffientOfVariation(variable.id, variable.datatype, variable.mapper);
+
+                //coeff
+
+                let covt= this.props.rootStore.getCoeffientOfVarTimeLine(variable.id, variable.datatype, variable.mapper);
 
                 let sum=0;
 
@@ -121,6 +124,27 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
 
                 
                 newEntry.CoVAvgTimeLine =  sum/tp_length;
+
+                //variance
+
+                
+
+                let variance= this.props.rootStore.getVarianceTimeLine(variable.id, variable.datatype, variable.mapper);
+
+                sum=0;
+
+                //let tp_length=this.props.rootStore.timepointStructure.length;
+
+                variance.forEach((d,i) => {
+                    //newEntry['ModVRtp' + i]=d;
+                    sum=sum+d;
+                })
+
+                
+                newEntry.VarianceTimeLine =  sum/tp_length;
+
+
+
             }
 
             return newEntry;
@@ -187,6 +211,10 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
 
                         <LineUpNumberColumnDesc column="CoVAvgTimeLine" label="CoVAvgTimeLine" />
 
+                    
+                        <LineUpNumberColumnDesc column="VarianceTimeLine" label="VarianceTimeLine" />
+
+
                         <LineUpNumberColumnDesc column="numcat" label="NumCat" />
                         <LineUpNumberColumnDesc column="range" label="Range" />
                         <LineUpNumberColumnDesc column="na" label="Missing Values" />
@@ -204,6 +232,7 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                             <LineUpColumn column="ModVRtpMax" />
                             <LineUpColumn column="ModVRtpMin" />
                             <LineUpColumn column="CoVAvgTimeLine" />
+                            <LineUpColumn column="VarianceTimeLine" />
                             <LineUpColumn column="numcat" />
                             <LineUpColumn column="range" />
                             <LineUpColumn column="na" />
