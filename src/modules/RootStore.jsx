@@ -174,57 +174,123 @@ class RootStore {
 
           getModVRAcross(id, dtype, input){ //input is the same as iV in calculateVScore()
 
-            //console.log("parameter" );
-
-            console.log(dtype);
-
-
             var ST=this.sampleStructure;
 
-            var numOfPatients = Object.keys(ST).length;
+            //var numOfPatients = Object.keys(ST).length;
 
-            var timeLineLength=this.timepointStructure.length;
+            //var timeLineLength=this.timepointStructure.length;
 
             //let self=this;
 
 
-            var all_vals=Object.values(input);
-            var unique_vals=[...new Set(all_vals)];
+            //var all_vals=Object.values(input);
+            //var unique_vals=[...new Set(all_vals)];
 
-            var total_val=unique_vals.length;
+            //var total_val=unique_vals.length;
 
             var m=0;
 
-            //console.log("num of values: " + total_val);
 
-            //console.log("for " +iK +": score = ");
+            var all_patients_vals= Object.values(ST);
 
-            for(var j=0; j<Object.keys(ST).length; j++){
-                //console.log(Object.keys(ST)[j]);
+            var total_patients=all_patients_vals.length;
 
-                for(var k=0; k<Object.values(ST)[j].length-1; k++){
-                    //console.log(Object.values(ST)[j][k]);
-                    if(input[Object.values(ST)[j][k]]!== input[Object.values(ST)[j][k+1]]){
-                        //console.log(Object.values(ST)[j][k]);
-                        //console.log(iV[Object.values(ST)[j][k]]);
-                        //console.log(iV[Object.values(ST)[j][k+1]]);
-                        m++;
+            //var all_scores=0;
+
+            var t_v=0;
+
+            //var index=[];
+
+            var maxIndices = [];
+            var temp_var_arr=[];
+            var max_temp_var=Number.NEGATIVE_INFINITY//-100;
+            all_patients_vals.forEach(function(d, i){
+
+                var temp=[];
+                for(var j=0; j<d.length; j++){
+                    //set1.add(iV[r[j]]);
+
+                    if(input[d[j]]){
+                        temp.push(input[d[j]]);
                     }
-                    else{
-                        if(id==="Timepoint"){
-                            //console.log(iV[Object.values(ST)[j][k]]);
-                            //console.log(iV[Object.values(ST)[j][k+1]]);
-                        }
-                    }
+
+                    //temp.push(iV[r[j]]);
+                }
+                
+                //console.log(temp);
+
+                var uniq=[...new Set(temp)]; //unique categories
+
+                var u_vals=[];
+
+                for(var x=0; x<uniq.length; x++){
+                    let q=uniq[x];
+
+                    let t_num=temp.filter(d=>d===q).length;
+
+                    u_vals.push(t_num);
+
+
+
                 }
 
+                
+                var K=u_vals.length; // NumOfCategories
+                
+                var Fm=Math.max(...u_vals); // ModalFrequency
+                
+                var TotalElements=temp.length;
+
+                //var t_v= K*Fm - TotalElements;
+                
+                //var t_v=0;     
+
+
+                if(K-1>0){
+                    var temp_var2=(TotalElements*K - K*Fm)/(TotalElements * (K-1));
+                    if(temp_var2>max_temp_var){
+                        max_temp_var=temp_var2;
+                        //index=i;
+                    }
+
+                    temp_var_arr.push(temp_var2);
+                    t_v= t_v+ temp_var2;
+                }
+                else{
+                    temp_var_arr.push(Number.NEGATIVE_INFINITY);
+                }
+
+                //t_v= this.getNumWithSetDec(t_v,2);
+
+                
+
+            })
+
+            for (var q = 0; q < temp_var_arr.length; q++) {
+                if (temp_var_arr[q] === max_temp_var) {
+                    maxIndices.push(q);
+                } 
             }
 
-            m=m/total_val;
+            var patients=Object.keys(ST);
 
-            m= m/timeLineLength;
+            //console.log("For "+ iK + " the following patients have max variance");
 
-            m= this.getNumWithSetDec(m/numOfPatients,2);
+            //this.str_patient_variability= this.str_patient_variability +  "For "+ iK + " the following patients have max variance";
+            var str_1="";
+            for( q = 0; q < maxIndices.length; q++){
+                str_1= str_1+ " " + patients[maxIndices[q]] ;
+            }
+            //console.log(str_1);
+            
+            //this.str_patient_variability =  this.str_patient_variability + str_1 ;
+
+            
+            maxIndices=[];
+            temp_var_arr=[];
+            max_temp_var=Number.NEGATIVE_INFINITY//-100;
+
+            m=this.getNumWithSetDec(t_v/total_patients, 2);
 
 
             return m;
