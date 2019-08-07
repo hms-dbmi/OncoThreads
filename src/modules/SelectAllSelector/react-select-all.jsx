@@ -17,12 +17,16 @@ const SelectAll = class SelectAll extends React.Component {
     flattenOptions(options) {
         let flattened = [];
         options.forEach((element) => {
-            if (Object.prototype.hasOwnProperty.call(element, 'options')) {
-                this.flattenOptions(element.options);
-            }
-            flattened = flattened.concat(element.options);
+            flattened = flattened.concat(this.flattenOption(element));
         });
         return flattened;
+    }
+
+    flattenOption(option) {
+        if (Object.prototype.hasOwnProperty.call(option, 'options')) {
+            return this.flattenOptions(option.options);
+        }
+        return option;
     }
 
     render() {
@@ -59,7 +63,7 @@ SelectAll.propTypes = {
     options: PropTypes.arrayOf(PropTypes.object).isRequired,
     value: PropTypes.any.isRequired,
     onChange: PropTypes.func.isRequired,
-    allowSelectAll: PropTypes.bool.isRequired,
+    allowSelectAll: PropTypes.bool,
     allOption: PropTypes.shape({
         label: PropTypes.string,
         value: PropTypes.string,
@@ -71,6 +75,7 @@ SelectAll.defaultProps = {
         label: 'Select all',
         value: '*',
     },
+    allowSelectAll: false,
 };
 
 export default SelectAll;

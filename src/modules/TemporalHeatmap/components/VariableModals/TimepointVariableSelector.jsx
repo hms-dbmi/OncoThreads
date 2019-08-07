@@ -1,20 +1,10 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import {
-    Alert,
-    Button,
-    ButtonToolbar,
-    Checkbox,
-    Col,
-    ControlLabel,
-    Form,
-    FormControl,
-    FormGroup,
-} from 'react-bootstrap';
+import { Alert, Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup } from 'react-bootstrap';
 import { extendObservable } from 'mobx';
 import OriginalVariable from '../../stores/OriginalVariable';
-import ExploreVariables from '../Modals/ExploreVariablesWithOnDemand';
-import SelectAll from '../../../SelectAllSelector/react-select-all';
+import ExploreVariables from '../Modals/DynamicVariableExplorer';
+import Select from 'react-select';
 
 /**
  * Component for selecting timepoint variables in variable manager
@@ -41,7 +31,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
             mutationOptions: [],
             molecularOptions: [],
             clinicalOptions: [],
-            showCheckBoxOptions: false,
+            showAvailableData: false,
             modalIsOpen: false,
         });
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
@@ -359,8 +349,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                         Variables
                     </Col>
                     <Col sm={10}>
-                        <SelectAll
-                            allowSelectAll
+                        <Select
                             value={this.clinicalOptions.slice()}
                             type="text"
                             searchable
@@ -402,27 +391,28 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                     Select Variable
                 </h4>
                 <Form horizontal>
+                    <Button
+                        onClick={() => {
+                            this.modalIsOpen = true;
+                        }}
+                        key="explore"
+                    >
+                        Explore Variables
+                    </Button>
                     {formGroups}
-                    {this.showCheckBoxOptions ? this.getAvailableCheckBoxes() : null}
-                    <ButtonToolbar>
-                        <Button
-                            className="pull-right"
-                            onClick={() => { this.modalIsOpen = true; }}
-                            key="explore"
-                        >
-                            Explore
-                        </Button>
-                        <Button
-                            className="pull-right"
-                            onClick={this.addVariables}
-                            key="add"
-                        >
-                            Add
-                        </Button>
-                    </ButtonToolbar>
+                    {this.showAvailableData ? this.getAvailableCheckBoxes() : null}
+                    <Button
+                        className="pull-right"
+                        onClick={this.addVariables}
+                        key="add"
+                    >
+                        Add
+                    </Button>
                 </Form>
                 <ExploreVariables
-                    close={() => { this.modalIsOpen = false; }}
+                    close={() => {
+                        this.modalIsOpen = false;
+                    }}
                     reset={this.resetSelected}
                     availableCategories={this.props.availableCategories}
                     variables={this.getAllVariables()}
