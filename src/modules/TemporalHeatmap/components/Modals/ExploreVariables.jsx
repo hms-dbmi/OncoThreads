@@ -71,6 +71,81 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
              * }
              *
              */
+
+            newEntry.modVRacross = NaN;
+
+            newEntry.ModVRtpAvg = NaN;
+
+            newEntry.ModVRtpMax = NaN;
+
+            newEntry.ModVRtpMin = NaN;
+
+            newEntry.CoVAvgTimeLine = NaN;
+
+            if(variable.datatype==="STRING"){
+                newEntry.modVRacross = this.props.rootStore.getModVRAcross(variable.id, variable.datatype, variable.mapper);
+
+
+                let wt=this.props.rootStore.gerModVRWithin(variable.id, variable.datatype, variable.mapper);
+
+                //console.log(wt);
+                
+                let sum=0;
+
+                let tp_length=this.props.rootStore.timepointStructure.length;
+
+                wt.forEach((d,i) => {
+                    //newEntry['ModVRtp' + i]=d;
+                    sum=sum+d;
+                })
+
+                newEntry.ModVRtpAvg = sum/tp_length;
+
+                newEntry.ModVRtpMax = Math.max(...wt);
+
+                newEntry.ModVRtpMin = Math.min(...wt);
+
+            }
+            else if(variable.datatype==="NUMBER"){
+
+                //coeff
+
+                let covt= this.props.rootStore.getCoeffientOfVarTimeLine(variable.id, variable.datatype, variable.mapper);
+
+                let sum=0;
+
+                let tp_length=this.props.rootStore.timepointStructure.length;
+
+                covt.forEach((d,i) => {
+                    //newEntry['ModVRtp' + i]=d;
+                    sum=sum+d;
+                })
+
+                
+                newEntry.CoVAvgTimeLine =  sum/tp_length;
+
+                //variance
+
+                
+
+                let variance= this.props.rootStore.getVarianceTimeLine(variable.id, variable.datatype, variable.mapper);
+
+                sum=0;
+
+                //let tp_length=this.props.rootStore.timepointStructure.length;
+
+                variance.forEach((d,i) => {
+                    //newEntry['ModVRtp' + i]=d;
+                    sum=sum+d;
+                })
+
+                
+                newEntry.VarianceTimeLine =  sum/tp_length;
+
+
+
+            }
+
             return newEntry;
         });
     }
@@ -90,6 +165,7 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
 
 
     render() {
+        
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -123,6 +199,20 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                             categories={['STRING', 'NUMBER', 'ORDINAL', 'BINARY']}
                         />
 
+                        <LineUpNumberColumnDesc column="modVRacross" label="modVRacross" />
+                        
+                        <LineUpNumberColumnDesc column="ModVRtpAvg" label="ModVRtpAvg" />
+
+                        <LineUpNumberColumnDesc column="ModVRtpMax" label="ModVRtpMax" />
+
+                        <LineUpNumberColumnDesc column="ModVRtpMin" label="ModVRtpMin" />
+
+                        <LineUpNumberColumnDesc column="CoVAvgTimeLine" label="CoVAvgTimeLine" />
+
+                    
+                        <LineUpNumberColumnDesc column="VarianceTimeLine" label="VarianceTimeLine" />
+
+
                         <LineUpNumberColumnDesc column="numcat" label="NumCat" />
                         <LineUpNumberColumnDesc column="range" label="Range" />
                         <LineUpNumberColumnDesc column="na" label="Missing Values" />
@@ -135,9 +225,16 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
                             <LineUpColumn column="source" />
                             <LineUpColumn column="changeRate" />
                             <LineUpColumn column="datatype" />
+                            <LineUpColumn column="modVRacross" />
+                            <LineUpColumn column="ModVRtpAvg" />
+                            <LineUpColumn column="ModVRtpMax" />
+                            <LineUpColumn column="ModVRtpMin" />
+                            <LineUpColumn column="CoVAvgTimeLine" />
+                            <LineUpColumn column="VarianceTimeLine" />
                             <LineUpColumn column="numcat" />
                             <LineUpColumn column="range" />
                             <LineUpColumn column="na" />
+                            
                         </LineUpRanking>
                     </LineUp>
                 </Modal.Body>
