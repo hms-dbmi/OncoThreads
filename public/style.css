@@ -92,3 +92,9 @@ small spinning study loader
     }
 }
 
+.fullSizeModal{
+    min-width: 95VW;
+    height: 90VH;
+}
+
+

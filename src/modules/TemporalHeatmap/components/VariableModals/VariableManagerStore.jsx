@@ -64,7 +64,7 @@ class VariableManagerStore {
                 this.currentVariables[replaceIndex] = {
                     id: newVariable.id,
                     isNew: this.currentVariables[replaceIndex].isNew,
-                    isSelected: this.currentVariables[replaceIndex].isSelected
+                    isSelected: this.currentVariables[replaceIndex].isSelected,
                 };
                 this.addOrder[this.addOrder.indexOf(oldId)] = newVariable.id;
                 if (this.primaryVariables.includes(oldId)) {
@@ -123,7 +123,7 @@ class VariableManagerStore {
                             return factor;
                         }
                         else return 0;
-                    }
+                    },
                 ))
             }),
             /**
@@ -138,7 +138,7 @@ class VariableManagerStore {
                             return 1;
                         }
                         else return 0;
-                    }
+                    },
                 ))
             }),
             /**
@@ -176,7 +176,7 @@ class VariableManagerStore {
                             return factor;
                         }
                         else return 0;
-                    }
+                    },
                 ))
             }),
 
@@ -244,7 +244,7 @@ class VariableManagerStore {
                     }
                 });
                 this.currentVariables.replace(currentVariables);
-            })
+            }),
         });
         /**
          * removes a variable from current variables
@@ -444,6 +444,10 @@ class VariableManagerStore {
                 }
             }
         }
+    }
+
+    isInTable(id){
+        return this.currentVariables.map(d=>d.id).includes(id);
     }
 
     /**

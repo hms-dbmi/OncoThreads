@@ -16,7 +16,7 @@ const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extend
                 .map(d => ({ id: d.molecularProfileId, name: d.name }))];
         return (
             <div>
-                <TimepointVariableSelector />
+                <TimepointVariableSelector availableCategories={availableCategories}/>
                 <VariableTable availableCategories={availableCategories} />
             </div>
 
