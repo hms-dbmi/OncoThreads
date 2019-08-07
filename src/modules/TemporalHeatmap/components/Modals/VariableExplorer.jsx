@@ -30,16 +30,28 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
         this.handleSelect = this.handleSelect.bind(this);
     }
 
+    /**
+     * gets all the variables that should displayed by default
+     * in LineUp
+     * @return {Buffer | * | T[] | string}
+     */
     getInitialVariables() {
         return this.getCurrentVariables().concat(this.getClinicalVariables());
     }
 
-
+    /**
+     * gets all the variables that are currently displayed in the table
+     * @return { (DerivedVariable|OriginalVariable)[]}
+     */
     getCurrentVariables() {
         return this.props.variableManagerStore.currentVariables
             .map(variable => this.props.variableManagerStore.referencedVariables[variable.id]);
     }
 
+    /**
+     * gets all clinical variables that are not yet displayed in the table
+     * @return {OriginalVariable[]}
+     */
     getClinicalVariables() {
         return this.props.rootStore.clinicalSampleCategories
             .concat(this.props.rootStore.clinicalPatientCategories)
@@ -79,14 +91,47 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
             newEntry.categories = variable.domain.toString();
         }
         if (variable.profile === 'clinSample') {
-            newEntry.score = this.props.rootStore.scoreStructure[variable.id];
+            newEntry.score = this.props.rootStore.scoreStore.scoreStructure[variable.id];
         }
         newEntry.na = [].concat(...Object.values(this.props.rootStore.sampleStructure))
             .map(d => variable.mapper[d])
             .filter(d => d === undefined).length;
-        newEntry.changeRate = this.props.rootStore
+        newEntry.changeRate = this.props.rootStore.scoreStore
             .getChangeRate(variable.mapper, variable.datatype);
         newEntry.inTable = this.props.variableManagerStore.isInTable(variable.id) ? 'Yes' : 'No';
+        newEntry.modVRacross = NaN;
+        newEntry.ModVRtpAvg = NaN;
+        newEntry.ModVRtpMax = NaN;
+        newEntry.ModVRtpMin = NaN;
+        newEntry.CoVAvgTimeLine = NaN;
+        if (variable.datatype === 'STRING') {
+            newEntry.modVRacross = this.props.rootStore.scoreStore
+                .getModVRAcross(variable.datatype, variable.mapper);
+            const wt = this.props.rootStore.scoreStore
+                .gerModVRWithin(variable.datatype, variable.mapper);
+            let sum = 0;
+            const tp_length = this.props.rootStore.timepointStructure.length;
+            wt.forEach((d, i) => {
+                // newEntry['ModVRtp' + i]=d;
+                sum += d;
+            });
+            newEntry.ModVRtpAvg = sum / tp_length;
+            newEntry.ModVRtpMax = Math.max(...wt);
+            newEntry.ModVRtpMin = Math.min(...wt);
+        } else if (variable.datatype === 'NUMBER') {
+            const covt = this.props.rootStore.scoreStore
+                .getCoeffientOfVarTimeLine(variable.datatype, variable.mapper);
+            let sum = 0;
+            const tp_length = this.props.rootStore.timepointStructure.length;
+            covt.forEach((d) => { sum += d; });
+            newEntry.CoVAvgTimeLine = sum / tp_length;
+            // variance
+            const variance = this.props.rootStore.scoreStore
+                .getVarianceTimeLine(variable.datatype, variable.mapper);
+            sum = 0;
+            variance.forEach((d) => { sum += d; });
+            newEntry.VarianceTimeLine = sum / tp_length;
+        }
         return newEntry;
     }
 
@@ -103,10 +148,18 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
         this.props.close();
     }
 
+    /**
+     * selects rows in the data
+     * @param {number[]} selected
+     */
     handleSelect(selected) {
-        this.selected = selected;
+        this.selected.replace(selected);
     }
 
+    /**
+     * adds gene variables to data
+     * @param {object[]} selectedOptions
+     */
     addGeneVariables(selectedOptions) {
         const mappingTypes = selectedOptions.filter(d => d.type === 'mutation').map(d => d.value);
         const profiles = selectedOptions.filter(d => d.type === 'molecular').map(d => d.value);

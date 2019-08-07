@@ -1,56 +1,49 @@
-import DataStore from "./TemporalHeatmap/stores/DataStore"
-
-import VisStore from "./TemporalHeatmap/stores/VisStore.jsx"
-import {action, extendObservable, observable, reaction, toJS} from "mobx";
+import {
+    action, extendObservable, observable, reaction, toJS,
+} from 'mobx';
 import uuidv4 from 'uuid/v4';
-import UndoRedoStore from "./UndoRedoStore";
-import OriginalVariable from "./TemporalHeatmap/stores/OriginalVariable";
-import MolProfileMapping from "./MolProfileMapping";
-import SvgExport from "./SvgExport";
-import cBioAPI from "../cBioAPI";
-import FileAPI from "../FileAPI";
-import LocalFileLoader from "../LocalFileLoader";
-import GeneNamesLocalAPI from "../GeneNamesLocalAPI";
+import DataStore from './TemporalHeatmap/stores/DataStore';
+
+import VisStore from './TemporalHeatmap/stores/VisStore';
+import UndoRedoStore from './UndoRedoStore';
+import OriginalVariable from './TemporalHeatmap/stores/OriginalVariable';
+import MolProfileMapping from './MolProfileMapping';
+import SvgExport from './SvgExport';
+import cBioAPI from '../cBioAPI';
+import FileAPI from '../FileAPI';
+import LocalFileLoader from '../LocalFileLoader';
+import GeneNamesLocalAPI from '../GeneNamesLocalAPI';
+import ScoreStore from './ScoreStore';
 
 /*
-Store containing all the other stores
-gets the data with either the cBioAPI or from local files, transforms it and gives it to the other stores
+Store containing all the other stores gets the data with either the cBioAPI
+or from local files, transforms it and gives it to the other stores
  */
 class RootStore {
     constructor(uiStore) {
-        this.study = null; //current study
+        this.study = null; // current study
         this.patients = []; // patients ids in the current study
 
         this.events = []; // array of all events
 
         this.initialVariable = {}; // initial variable saved for reset
 
-        this.scoreStructure = {};
-
-        //this.scoreStructureTimeLine = {};
-
-        this.TimeLineVariability = {};
-
-        this.TimeLineModVR=[];
-        this.TimeLineCoV=[];
-
-        this.TimeLineVariance=[];
-
         this.timeDistanceId = uuidv4(); // random id for time distance variable
 
-        this.mutationMappingTypes = ["Binary", "Mutation type", "Protein change", "Variant allele frequency"]; // possible variable types of mutation data
+        this.mutationMappingTypes = ['Binary', 'Mutation type', 'Protein change', 'Variant allele frequency']; // possible variable types of mutation data
         this.eventCategories = []; // available event types
         this.eventAttributes = []; // available event attributes
         this.sampleTimelineMap = {}; // map of sample ids to dates of sample collection
-        this.staticMappers = {}; // mappers of sample id to pre-loaded variables (clinical sample data, clinical patient data)
+        this.staticMappers = {}; // mappers of sample id to pre-loaded variables
 
         this.sampleStructure = {}; // structure of samples per patient
 
         this.api = null; // current api in use: cBioAPI or FileAPI
-        this.molProfileMapping = new MolProfileMapping(this); // substore for loading mutation data and molecular data on demand
+        this.molProfileMapping = new MolProfileMapping(this); // store for loading data on demand
         this.dataStore = new DataStore(this); // substore containing the main data
         this.visStore = new VisStore(this); // substore for visual parameters of the visualiztion
         this.svgExport = new SvgExport(this); // substore for SVG export
+        this.scoreStore = new ScoreStore(this);
 
 
         this.geneNamesAPI = new GeneNamesLocalAPI();
@@ -69,7 +62,7 @@ class RootStore {
 
             // Global timeline: current axis scale
             timeVar: 1,
-            timeValue: "days",
+            timeValue: 'days',
 
             // available clinical sample variables
             clinicalSampleCategories: [],
@@ -86,7 +79,7 @@ class RootStore {
              * removes an event
              * @param {string} variableId - id of event to be removed
              */
-            removeEvent: action(variableId => {
+            removeEvent: action((variableId) => {
                 this.eventTimelineMap.delete(variableId);
             }),
             /**
@@ -112,27 +105,26 @@ class RootStore {
              * sets if own data or cBio data is displayed
              * @param {boolean} isOwn
              */
-            setIsOwnData: action(isOwn => {
-                this.isOwnData = isOwn
+            setIsOwnData: action((isOwn) => {
+                this.isOwnData = isOwn;
             }),
             /**
              * resets the timepoint structure to the default alignment
              * @param {boolean} update - keep variables (true) or completely reset view (false)
              */
-            resetTimepointStructure: action(update => {
+            resetTimepointStructure: action((update) => {
                 this.timepointStructure = [];
-                for (let patient in this.sampleStructure) {
+                Object.keys(this.sampleStructure).forEach((patient) => {
                     this.sampleStructure[patient].forEach((d, i) => {
                         if (this.timepointStructure.length === i) {
                             this.timepointStructure.push([]);
                         }
-                        this.timepointStructure[i].push({patient: patient, sample: d})
-                    })
-                }
+                        this.timepointStructure[i].push({ patient, sample: d });
+                    });
+                });
                 if (update) {
                     this.dataStore.update(this.patients);
-                }
-                else {
+                } else {
                     this.dataStore.initialize();
                 }
             }),
@@ -145,948 +137,116 @@ class RootStore {
                 this.study = study;
                 if (this.isOwnData) {
                     this.api = new FileAPI(this.localFileLoader, this.geneNamesAPI);
-                }
-                else {
+                } else {
                     this.api = new cBioAPI(this.study.studyId);
                     this.geneNamesAPI.geneList = {};
                 }
                 this.staticMappers = {};
                 this.scoreStructure = {};
-                this.TimeLineVariability={};
-                this.TimeLineModVR=[];
-                this.TimeLineCoV=[];
-                this.TimeLineVariance=[];
+                this.TimeLineVariability = {};
 
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
                 this.variablesParsed = false;
                 this.timelineParsed = false;
-                this.api.getPatients(patients => {
+                this.api.getPatients((patients) => {
                     this.patients = patients;
-                    this.api.getEvents(patients, events => {
+                    this.api.getEvents(patients, (events) => {
                         this.events = events;
                         this.buildTimelineStructure();
                         this.createTimeGapMapping();
 
                         this.timelineParsed = true;
                         callback();
-                    })
-                })
-            }),
-
-
-            /*
-           * calculate score for variability
-           */
-
-
-          getModVRAcross(id, dtype, input){ //input is the same as iV in calculateVScore()
-
-            var ST=this.sampleStructure;
-
-            var m=0;
-
-
-            var all_patients_vals= Object.values(ST);
-
-            var total_patients=all_patients_vals.length;
-
-            //var all_scores=0;
-
-            var t_v=0;
-
-            //var index=[];
-
-            var maxIndices = [];
-            var temp_var_arr=[];
-            var max_temp_var=Number.NEGATIVE_INFINITY//-100;
-            all_patients_vals.forEach(function(d, i){
-
-                var temp=[];
-                for(var j=0; j<d.length; j++){
-                    //set1.add(iV[r[j]]);
-
-                    if(input[d[j]]){
-                        temp.push(input[d[j]]);
-                    }
-
-                    //temp.push(iV[r[j]]);
-                }
-                
-                //console.log(temp);
-
-                var uniq=[...new Set(temp)]; //unique categories
-
-                var u_vals=[];
-
-                for(var x=0; x<uniq.length; x++){
-                    let q=uniq[x];
-
-                    let t_num=temp.filter(d=>d===q).length;
-
-                    u_vals.push(t_num);
-
-
-
-                }
-
-                
-                var K=u_vals.length; // NumOfCategories
-                
-                var Fm=Math.max(...u_vals); // ModalFrequency
-                
-                var TotalElements=temp.length;
-
-                //var t_v= K*Fm - TotalElements;
-                
-                //var t_v=0;     
-
-
-                if(K-1>0){
-                    var temp_var2=(TotalElements*K - K*Fm)/(TotalElements * (K-1));
-                    if(temp_var2>max_temp_var){
-                        max_temp_var=temp_var2;
-                        //index=i;
-                    }
-
-                    temp_var_arr.push(temp_var2);
-                    t_v= t_v+ temp_var2;
-                }
-                else{
-                    temp_var_arr.push(Number.NEGATIVE_INFINITY);
-                }
-
-                //t_v= this.getNumWithSetDec(t_v,2);
-
-                
-
-            })
-
-            for (var q = 0; q < temp_var_arr.length; q++) {
-                if (temp_var_arr[q] === max_temp_var) {
-                    maxIndices.push(q);
-                } 
-            }
-
-            var patients=Object.keys(ST);
-
-            //console.log("For "+ iK + " the following patients have max variance");
-
-            //this.str_patient_variability= this.str_patient_variability +  "For "+ iK + " the following patients have max variance";
-            var str_1="";
-            for( q = 0; q < maxIndices.length; q++){
-                str_1= str_1+ " " + patients[maxIndices[q]] ;
-            }
-            //console.log(str_1);
-            
-            //this.str_patient_variability =  this.str_patient_variability + str_1 ;
-
-            
-            maxIndices=[];
-            temp_var_arr=[];
-            max_temp_var=Number.NEGATIVE_INFINITY//-100;
-
-            m=this.getNumWithSetDec(t_v/total_patients, 2);
-
-
-            return m;
-
-
-          },
-
-
-        gerModVRWithin(id, dtype, input){
-
-            //var SM= this.staticMappers;
-
-            this.TimeLineModVR=[];
-
-            var ST=this.sampleStructure;
-
-            //let self=this;
-
-            
-            //Object.keys(SM).forEach((iK,i) => {
-                
-            //if(!i) {
-              //      return;
-               // }
-                var iV= input; //SM[iK];
-                
-                //this.TimeLineVariability[iK]={};
-
-                //this.TimeLineVariability;
-               
-                //var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
-
-
-                //ModVR: https://en.wikipedia.org/wiki/Qualitative_variation
-
-
-
-                    var samples=Object.values(ST);
-
-                    var sample_length=samples.map(function(d){return d.length});
-                    
-
-                    var max_sample=Math.max(...sample_length);
-
-                    [...Array(max_sample).keys()].forEach(a => {
-
-                    //for(var a=0; a<max_sample; a++){
-
-                        //var r=[];
-
-                        //samples.forEach(function(d){if(d[a]) r.push(d[a])});
-                        var r = samples.filter(d=> d[a]).map((d)=>d[a]);
-
-                        
-
-                        //var set1 = new Set();
-
-                        var temp=[];
-                        for(var j=0; j<r.length; j++){
-                            //set1.add(iV[r[j]]);
-
-                            if(iV[r[j]]){
-                                temp.push(iV[r[j]]);
-                            }
-
-                            //temp.push(iV[r[j]]);
-                        }
-                        
-                        //console.log(temp);
-
-                        var uniq=[...new Set(temp)]; //unique categories
-
-                        var u_vals=[];
-
-                        for(var x=0; x<uniq.length; x++){
-                            let q=uniq[x];
-
-                            let t_num=temp.filter(d=>d===q).length;
-
-                            u_vals.push(t_num);
-
-
-
-                        }
-
-                        
-                        var K=u_vals.length; // NumOfCategories
-                        
-                        var Fm=Math.max(...u_vals); // ModalFrequency
-                        
-                        var TotalElements=temp.length;
-
-                        //var t_v= K*Fm - TotalElements;
-                        
-                        var t_v=0;
-
-                        if(K-1>0){
-                            t_v=  (TotalElements*K - K*Fm)/(TotalElements * (K-1));
-                        }
-
-                        t_v= this.getNumWithSetDec(t_v,2);
-
-                        //this.TimeLineVariability[a]= t_v;
-
-                        this.TimeLineModVR.push(t_v);
-
-                    }); 
-
-
-
-                    
-
-                
-              
-                
-                //console.log(m);
-
-                //this.TimeLineVariability[iK][a]= t_v;
-
-
-               // m=0;
-            //});
-
-
-            //console.log("Scores within timeline: ");
-            //console.log(this.TimeLineModVR);
-
-
-            return this.TimeLineModVR;
-
-
-
-        }, //end of TimeLineModVR
-
-            //calculateVScore: action(() => {
-        calculateVScore(){
-
-            var SM= this.staticMappers;
-
-            var ST=this.sampleStructure;
-
-            var numOfPatients = Object.keys(ST).length;
-
-            var timeLineLength=this.timepointStructure.length;
-
-            let self=this;
-
-
-
-            var dTypeRet=function(q){
-                return self.clinicalSampleCategories
-                    .filter(function(d){return d.id===q;})[0].datatype;
-            };
-
-            //let scoreStructure = {};
-            var m=0;
-            for(var i=1; i<Object.keys(SM).length; i++){
-                var iK= Object.keys(SM)[i],
-                iV= Object.values(SM)[i];
-
-                //var dType = self.clinicalSampleCategories.filter(function(d){ if(d.id===iK) return d})[0].datatype;
-
-                var dType= dTypeRet(iK);
-
-                if(dType==="STRING"){
-                    var all_vals=Object.values(iV);
-                    var unique_vals=[...new Set(all_vals)];
-
-                    var total_val=unique_vals.length;
-
-                    //console.log("num of values: " + total_val);
-
-                    //console.log("for " +iK +": score = ");
-
-                    for(var j=0; j<Object.keys(ST).length; j++){
-                        //console.log(Object.keys(ST)[j]);
-
-                        for(var k=0; k<Object.values(ST)[j].length-1; k++){
-                            //console.log(Object.values(ST)[j][k]);
-                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
-                                //console.log(Object.values(ST)[j][k]);
-                                //console.log(iV[Object.values(ST)[j][k]]);
-                                //console.log(iV[Object.values(ST)[j][k+1]]);
-                                m++;
-                            }
-                            else{
-                                if(iK==="Timepoint"){
-                                    //console.log(iV[Object.values(ST)[j][k]]);
-                                    //console.log(iV[Object.values(ST)[j][k+1]]);
-                                }
-                            }
-                        }
-
-                    }
-
-                    m=m/total_val;
-
-                    m= m/timeLineLength;
-
-                    m= this.getNumWithSetDec(m/numOfPatients,2);
-
-                }
-                else if(dType==="NUMBER"){
-                    all_vals=Object.values(iV);
-                    unique_vals=[...new Set(all_vals)];
-
-                    //var total_val=unique_vals.length;
-
-                    var range_val= Math.max(...all_vals)-Math.min(...all_vals) + 1;
-
-                    //console.log("range: " + range_val);
-
-
-                    //console.log("for " +iK +": score = ");
-
-                    for( j=0; j<Object.keys(ST).length; j++){
-                        //console.log(Object.keys(ST)[j]);
-
-                        for( k=0; k<Object.values(ST)[j].length-1; k++){
-                            //console.log(Object.values(ST)[j][k]);
-                            if(iV[Object.values(ST)[j][k]]!== iV[Object.values(ST)[j][k+1]]){
-
-                                m=m + Math.abs(iV[Object.values(ST)[j][k]] - iV[Object.values(ST)[j][k+1]]);
-
-                            }
-                        }
-
-                    }
-
-                    m=m/range_val;
-
-                    m=m/timeLineLength;
-
-                    m = this.getNumWithSetDec(m/numOfPatients,2);
-
-                }
-
-                //console.log(m);
-
-                this.scoreStructure[iK]=m;
-
-
-                m=0;
-            }
-
-            //console.log(this.scoreStructure);
-
-        //}),
-        },
-
-
-        getNumWithSetDec: action( (num, numOfDec ) =>{
-            var pow10s = Math.pow( 10, numOfDec || 0 );
-            return ( numOfDec ) ? Math.round( pow10s * num ) / pow10s : num;
-        }),
-
-        getAverageFromNumArr: action((numArr, numOfDec ) => {
-            //if( !isArray( numArr ) ){ return false;	}
-            var i = numArr.length,
-                sum = 0;
-            while( i-- ){
-                sum += numArr[ i ];
-            }
-            return this.getNumWithSetDec( (sum / numArr.length ), numOfDec );
-        }),
-
-        getVariance: action((numArr, numOfDec ) => {
-            //if( !isArray(numArr) ){ return false; }
-            var avg = this.getAverageFromNumArr( numArr, numOfDec ),
-                i = numArr.length,
-                v = 0;
-
-            //console.log("avg= "+avg);
-
-
-            while( i-- ){
-                v = v+ Math.pow( (numArr[ i ] - avg), 2 );
-            }
-
-            //console.log(v);
-
-            v = v/numArr.length;
-
-            //console.log(v);
-
-            return this.getNumWithSetDec( v, numOfDec );
-        }),
-
-
-        getCoefficientOfVariation: action((numArr, numOfDec ) => {
-            var avg=this.getAverageFromNumArr(numArr, numOfDec);
-            var standard_dev= Math.sqrt(this.getVariance(numArr, numOfDec));
-            return this.getNumWithSetDec( (standard_dev / avg ), numOfDec );
-        }),
-
-        calculateVScoreWithinTimeLine: action(() => {
-
-
-            var SM= this.staticMappers;
-
-            var ST=this.sampleStructure;
-
-            let self=this;
-
-            
-            Object.keys(SM).forEach((iK,i) => {
-                if(!i) {
-                    return;
-                }
-                var iV= SM[iK];
-                
-                this.TimeLineVariability[iK]={};
-
-               
-                var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
-
-                if(dType==="STRING"){
-
-
-                    //coefficient of unalikeability DO NOT REMOVE
-
-                    /*var samples=Object.values(ST);
-
-                    var sample_length=samples.map(function(d){return d.length});
-                    
-
-                    var max_sample=Math.max(...sample_length);
-
-                    [...Array(max_sample).keys()].forEach(a => {
-
-                    //for(var a=0; a<max_sample; a++){
-
-                        //var r=[];
-
-                        //samples.forEach(function(d){if(d[a]) r.push(d[a])});
-                        var r = samples.filter(d=> d[a]).map((d)=>d[a]);
-
-                        
-
-                        //var set1 = new Set();
-
-                        var temp=[];
-                        for(var j=0; j<r.length; j++){
-                            //set1.add(iV[r[j]]);
-                            temp.push(iV[r[j]]);
-                        }
-                        
-                        //console.log(temp);
-
-                        var uniq=[...new Set(temp)];
-
-                        var u_vals=[];
-
-                        for(var x=0; x<uniq.length; x++){
-                            let q=uniq[x];
-
-                            let t_num=temp.filter(d=>d===q).length;
-
-                            u_vals.push(t_num);
-
-
-
-                        }
-
-                        //console.log(u_vals);
-
-                        //u_vals contains number of variables in each category. Now calculate the variability
-
-                        //var m=0;
-
-                        var t_v=0;
-
-                        //console.log(iK);
-                        //console.log("\n n is " + temp.length);
-                        
-                        //else{
-                            for(x=0; x<u_vals.length; x++){
-                                t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
-                            }
-                        //}
-                        
-
-                        //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-                        
-                        t_v= this.getNumWithSetDec(t_v,2);
-
-                        this.TimeLineVariability[iK][a]= t_v;
-
-                    }); */
-
-
-                //ModVR: https://en.wikipedia.org/wiki/Qualitative_variation
-
-
-
-                    var samples=Object.values(ST);
-
-                    var sample_length=samples.map(function(d){return d.length});
-                    
-
-                    var max_sample=Math.max(...sample_length);
-
-                    [...Array(max_sample).keys()].forEach(a => {
-
-                    //for(var a=0; a<max_sample; a++){
-
-                        //var r=[];
-
-                        //samples.forEach(function(d){if(d[a]) r.push(d[a])});
-                        var r = samples.filter(d=> d[a]).map((d)=>d[a]);
-
-                        
-
-                        //var set1 = new Set();
-
-                        var temp=[];
-                        for(var j=0; j<r.length; j++){
-                            //set1.add(iV[r[j]]);
-
-                            if(iV[r[j]]){
-                                temp.push(iV[r[j]]);
-                            }
-
-                            //temp.push(iV[r[j]]);
-                        }
-                        
-                        //console.log(temp);
-
-                        var uniq=[...new Set(temp)]; //unique categories
-
-                        var u_vals=[];
-
-                        for(var x=0; x<uniq.length; x++){
-                            let q=uniq[x];
-
-                            let t_num=temp.filter(d=>d===q).length;
-
-                            u_vals.push(t_num);
-
-
-
-                        }
-
-                        
-                        var K=u_vals.length; // NumOfCategories
-                        
-                        var Fm=Math.max(...u_vals); // ModalFrequency
-                        
-                        var TotalElements=temp.length;
-
-                        //var t_v= K*Fm - TotalElements;
-                        
-                        var t_v=0;
-
-                        if(K-1>0){
-                            t_v=  (TotalElements*K - K*Fm)/(TotalElements * (K-1));
-                        }
-
-                        t_v= this.getNumWithSetDec(t_v,2);
-
-                        this.TimeLineVariability[iK][a]= t_v;
-
-                    }); 
-
-
-
-                    
-
-                }
-                //standard deviation //DO NOT DELETE THIS YET
-                else if(dType==="NUMBER"){ 
-
-                    samples=Object.values(ST);
-
-                    sample_length=samples.map(function(d){return d.length});
-                    
-
-                    max_sample=Math.max(...sample_length);
-
-                    for(var a=0; a<max_sample; a++){
-
-                        var r=[];
-
-                        //samples.map(function(d){if(d[a]) r.push(d[a])});                 
-                        //samples.filter(d=> {if(d[a]) r.push(d[a])});                 
-
-                        for(let p=0; p<samples.length; p++){
-                            if(samples[p][a]){
-                                   r.push(samples[p][a]);
-                               }
-                           }
-                        
-
-                        //var set1 = new Set();
-
-                        var temp=[];
-                        for(var j=0; j<r.length; j++){
-                            //set1.add(iV[r[j]]);
-                            if(iV[r[j]]){
-                                temp.push(iV[r[j]]);
-                            }
-                           
-                        }
-                        
-                        //console.log(temp);
-
-                        
-                        //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-
-                        //get variance
-
-                        //var t_v=this.getVariance( temp, 2 ); //variance;
-
-                        //get standard deviation
-
-                        //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
-
-                        //get coefficient of variation
-
-                        var t_v= 0;
-                        
-                        if(temp.length>0){
-                            t_v=this.getCoefficientOfVariation(temp, 2);
-                        }
-
-                        this.TimeLineVariability[iK][a]= t_v;
-
-                    }
-
-
-
-                } 
-                
-                //console.log(m);
-
-                //this.TimeLineVariability[iK][a]= t_v;
-
-
-               // m=0;
-            });
-
-
-            console.log("Scores within timeline: ");
-            console.log(this.TimeLineVariability);
-
-
-        }),
-
-
-
-        /*calculateVScoreWithinTimeLineOld: action(() => {
-
-
-            var SM= this.staticMappers;
-
-            var ST=this.sampleStructure;
-
-            let self=this;
-
-
-            Object.keys(SM).forEach((iK,i) => {
-                if(!i) {
-                    return;
-                }
-                var iV= SM[iK];
-
-                this.TimeLineVariability[iK]={};
-
-
-                var dType = self.clinicalSampleCategories.filter((d) => d.id===iK)[0].datatype;
-
-                if(dType==="STRING"){
-
-                    var samples=Object.values(ST);
-
-                    var sample_length=samples.map(function(d){return d.length});
-
-
-                    var max_sample=Math.max(...sample_length);
-
-                    [...Array(max_sample).keys()].forEach(a => {
-
-                    //for(var a=0; a<max_sample; a++){
-
-                        //var r=[];
-
-                        //samples.forEach(function(d){if(d[a]) r.push(d[a])});
-                        var r = samples.filter(d=> d[a]).map((d)=>d[a]);
-
-
-
-                        //var set1 = new Set();
-
-                        var temp=[];
-                        for(var j=0; j<r.length; j++){
-                            //set1.add(iV[r[j]]);
-                            temp.push(iV[r[j]]);
-                        }
-
-                        //console.log(temp);
-
-                        var uniq=[...new Set(temp)];
-
-                        var u_vals=[];
-
-                        for(var x=0; x<uniq.length; x++){
-                            let q=uniq[x];
-
-                            let t_num=temp.filter(d=>d===q).length;
-
-                            u_vals.push(t_num);
-
-
-
-                        }
-
-                        //console.log(u_vals);
-
-                        //u_vals contains number of variables in each category. Now calculate the variability
-
-                        //var m=0;
-
-                        var t_v=0;
-
-                        //console.log(iK);
-                        //console.log("\n n is " + temp.length);
-                        
-                       
-                            for(x=0; x<u_vals.length; x++){
-                                t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
-                            }
-                        
-
-                        //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-
-                        t_v= this.getNumWithSetDec(t_v,2);
-
-                        this.TimeLineVariability[iK][a]= t_v;
-
                     });
-
-
-
-                }
-                //standard deviation //DO NOT DELETE THIS YET
-                else if(dType==="NUMBER"){
-
-                    samples=Object.values(ST);
-
-                    sample_length=samples.map(function(d){return d.length});
-
-
-                    max_sample=Math.max(...sample_length);
-
-                    for(var a=0; a<max_sample; a++){
-
-                        var r=[];
-
-                        //samples.map(function(d){if(d[a]) r.push(d[a])});
-                        //samples.filter(d=> {if(d[a]) r.push(d[a])});
-
-                        for(let p=0; p<samples.length; p++){
-                            if(samples[p][a]){
-                                   r.push(samples[p][a]);
-                               }
-                           }
-
-
-                        //var set1 = new Set();
-
-                        var temp=[];
-                        for(var j=0; j<r.length; j++){
-                            //set1.add(iV[r[j]]);
-                            temp.push(iV[r[j]]);
-                        }
-
-                        //console.log(temp);
-
-
-                        //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-
-                        var t_v=this.getVariance( temp, 2 ); //variance;
-
-                        //get standard deviation
-
-                        //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
-                        this.TimeLineVariability[iK][a]= t_v;
-
-                    }
-
-
-
-                }
-
-                //console.log(m);
-
-                //this.TimeLineVariability[iK][a]= t_v;
-
-
-               // m=0;
-            });
-
-
-            //console.log(this.TimeLineVariability);
-
-        }), */
-
-
+                });
+            }),
             /**
              *  gets variable data and sets parameters
              *  @param {loadFinishedCallback} callback
              */
             parseCBio: action((callback) => {
-                this.api.getAvailableMolecularProfiles(profiles => {
+                this.api.getAvailableMolecularProfiles((profiles) => {
                     this.availableProfiles = profiles;
-                    this.api.getClinicalSampleData(data => {
-                        this.createClinicalSampleMapping(data);
-                        if (data.length !== 0) {
+                    this.api.getClinicalSampleData((sampleData) => {
+                        this.createClinicalSampleMapping(sampleData);
+                        if (sampleData.length !== 0) {
                             this.initialVariable = this.clinicalSampleCategories[0];
                             this.variablesParsed = true;
                             this.firstLoad = false;
                         }
-                        this.api.getClinicalPatientData(data => {
-                            this.createClinicalPatientMappers(data);
-                            if (data.length !== 0) {
-                                if(!this.variablesParsed) {
+                        this.api.getClinicalPatientData((patientData) => {
+                            this.createClinicalPatientMappers(patientData);
+                            if (patientData.length !== 0) {
+                                if (!this.variablesParsed) {
                                     this.initialVariable = this.clinicalPatientCategories[0];
-                                    this.initialVariable.source="clinPatient";
+                                    this.initialVariable.source = 'clinPatient';
                                 }
                                 this.variablesParsed = true;
                                 this.firstLoad = false;
                             }
                             callback();
-                        })
-
-
+                        });
                     });
                 });
-
-
             }),
             /**
              * creates a dictionary mapping sample IDs onto clinical sample data
              * @param {Object[]} data - raw clinical sample data
              */
-            createClinicalSampleMapping: action(data => {
-                data.forEach(d => {
-                    if (d)
+            createClinicalSampleMapping: action((data) => {
+                data.forEach((d) => {
+                    if (d) {
                         if (!(d.clinicalAttributeId in this.staticMappers)) {
                             this.clinicalSampleCategories.push({
                                 id: d.clinicalAttributeId,
                                 variable: d.clinicalAttribute.displayName,
                                 datatype: d.clinicalAttribute.datatype,
                                 description: d.clinicalAttribute.description,
-                                source: 'clinSample'
+                                source: 'clinSample',
                             });
-                            this.staticMappers[d.clinicalAttributeId] = {}
+                            this.staticMappers[d.clinicalAttributeId] = {};
                         }
+                    }
                     if (this.sampleStructure[d.patientId].includes(d.sampleId)) {
-                        if (d.clinicalAttribute.datatype !== "NUMBER") {
-                            return this.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
-                        }
-                        else {
-                            return this.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
+                        if (d.clinicalAttribute.datatype !== 'NUMBER') {
+                            this.staticMappers[d.clinicalAttributeId][d.sampleId] = d.value;
+                        } else {
+                            this.staticMappers[d.clinicalAttributeId][d.sampleId] = parseFloat(d.value);
                         }
                     }
                 });
 
-                this.calculateVScore();
-
-                this.calculateVScoreWithinTimeLine();
-
+                this.scoreStore.calculateVScore();
+                this.scoreStore.calculateVScoreWithinTimeLine();
             }),
             /**
              * creates dictionaries mapping sample IDs onto clinical patient data
              * @param {Object[]} data - raw clinical patient data
              */
-            createClinicalPatientMappers: action(data => {
-                data.forEach(d => {
-                    if (d)
+            createClinicalPatientMappers: action((data) => {
+                data.forEach((d) => {
+                    if (d) {
                         if (!(d.clinicalAttributeId in this.staticMappers)) {
                             this.clinicalPatientCategories.push({
                                 id: d.clinicalAttributeId,
                                 variable: d.clinicalAttribute.displayName,
                                 datatype: d.clinicalAttribute.datatype,
                                 description: d.clinicalAttribute.description,
-                                source: 'clinPatient'
+                                source: 'clinPatient',
                             });
-                            this.staticMappers[d.clinicalAttributeId] = {}
+                            this.staticMappers[d.clinicalAttributeId] = {};
                         }
-                    this.sampleStructure[d.patientId].forEach(f => {
-                        if (d.clinicalAttribute.datatype !== "NUMBER") {
-                            return this.staticMappers[d.clinicalAttributeId][f] = d.value;
-                        }
-                        else {
-                            return this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
+                    }
+                    this.sampleStructure[d.patientId].forEach((f) => {
+                        if (d.clinicalAttribute.datatype !== 'NUMBER') {
+                            this.staticMappers[d.clinicalAttributeId][f] = d.value;
+                        } else {
+                            this.staticMappers[d.clinicalAttributeId][f] = parseFloat(d.value);
                         }
                     });
-                })
+                });
             }),
 
 
@@ -1094,23 +254,23 @@ class RootStore {
              * creates timepoint and sample structure
              */
             buildTimelineStructure: action(() => {
-                let sampleStructure = {};
-                let sampleTimelineMap = {};
-                let eventCategories = [];
-                let timepointStructure = [];
-                let excludeDates = {};
+                const sampleStructure = {};
+                const sampleTimelineMap = {};
+                const eventCategories = [];
+                const timepointStructure = [];
+                const excludeDates = {};
 
-                this.patients.forEach(patient => {
+                this.patients.forEach((patient) => {
                     sampleStructure[patient] = [];
                     excludeDates[patient] = [];
                     let previousDate = -1;
                     let currTP = 0;
-                    this.events[patient].forEach(e => {
+                    this.events[patient].forEach((e) => {
                         if (!eventCategories.includes(e.eventType)) {
                             eventCategories.push(e.eventType);
                         }
-                        if (e.eventType === "SPECIMEN") {
-                            let sampleId = e.attributes.filter(d => d.key === "SAMPLE_ID")[0].value;
+                        if (e.eventType === 'SPECIMEN') {
+                            const sampleId = e.attributes.filter(d => d.key === 'SAMPLE_ID')[0].value;
                             excludeDates[patient].push(e.startNumberOfDaysSinceDiagnosis);
                             sampleTimelineMap[sampleId] = e.startNumberOfDaysSinceDiagnosis;
                             if (e.startNumberOfDaysSinceDiagnosis !== previousDate) {
@@ -1118,7 +278,7 @@ class RootStore {
                                 if (timepointStructure.length <= currTP) {
                                     timepointStructure.push([]);
                                 }
-                                timepointStructure[currTP].push({patient: patient, sample: sampleId});
+                                timepointStructure[currTP].push({ patient, sample: sampleId });
                                 currTP += 1;
                             }
                             previousDate = e.startNumberOfDaysSinceDiagnosis;
@@ -1130,7 +290,6 @@ class RootStore {
                 this.sampleStructure = sampleStructure;
                 this.timepointStructure = timepointStructure;
                 this.createEventAttributes(excludeDates);
-
             }),
             /**
              * updates the timepoint structure after patients are moved up or down
@@ -1139,30 +298,30 @@ class RootStore {
              * @param {boolean} up - up movement (true) or down movement (false)
              */
             updateTimepointStructure: action((patients, timepoint, up) => {
-                const oldSampleTimepointNames = this.dataStore.variableStores.sample.childStore.timepoints.map(d => d.name);
+                const oldSampleTimepointNames = this.dataStore.variableStores
+                    .sample.childStore.timepoints.map(d => d.name);
                 let timepointStructure = toJS(this.timepointStructure);
-                if (!up) { //down movement
+                if (!up) { // down movement
                     timepointStructure = timepointStructure.reverse();
                 }
-                for (let i = 0; i < timepointStructure.length; i++) {
-                    patients.forEach(patient => {
-                        let currIndex = timepointStructure[i].map(d => d.patient).indexOf(patient);
+                for (let i = 0; i < timepointStructure.length; i += 1) {
+                    patients.forEach((patient) => {
+                        const currIndex = timepointStructure[i]
+                            .map(d => d.patient).indexOf(patient);
                         if (i !== 0) {
                             if (currIndex !== -1) {
-                                let prevIndex = timepointStructure[i - 1].map(d => d.patient).indexOf(patient);
+                                const prevIndex = timepointStructure[i - 1]
+                                    .map(d => d.patient).indexOf(patient);
                                 if (prevIndex === -1) {
-                                    timepointStructure[i - 1].push(timepointStructure[i][currIndex]);
-                                }
-                                else {
+                                    timepointStructure[i - 1]
+                                        .push(timepointStructure[i][currIndex]);
+                                } else {
                                     timepointStructure[i - 1][prevIndex] = timepointStructure[i][currIndex];
                                 }
                                 timepointStructure[i].splice(currIndex, 1);
                             }
-                        }
-                        else {
-                            if (currIndex !== -1) {
-                                timepointStructure.unshift([timepointStructure[i][currIndex]]);
-                            }
+                        } else if (currIndex !== -1) {
+                            timepointStructure.unshift([timepointStructure[i][currIndex]]);
                         }
                     });
                 }
@@ -1171,29 +330,34 @@ class RootStore {
                 }
                 if (!timepointStructure.map(d => d.length).includes(0)) {
                     if (!up) {
-                        this.timepointStructure.replace(UndoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure.reverse()));
-                    }
-                    else {
-                        this.timepointStructure.replace(UndoRedoStore.deserializeTPStructure(this.timepointStructure, timepointStructure));
+                        this.timepointStructure.replace(UndoRedoStore
+                            .deserializeTPStructure(this.timepointStructure,
+                                timepointStructure.reverse()));
+                    } else {
+                        this.timepointStructure.replace(UndoRedoStore
+                            .deserializeTPStructure(this.timepointStructure,
+                                timepointStructure));
                     }
                 }
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
-                this.dataStore.variableStores.sample.childStore.updateNames(this.createNameList(up, oldSampleTimepointNames, patients));
+                this.dataStore.variableStores.sample.childStore
+                    .updateNames(this.createNameList(up, oldSampleTimepointNames, patients));
             }),
             /**
-             * creates a mapping of an event to sampleIDs (events are mapped to the subsequent event)
+             * creates a mapping of an event to sampleIDs
+             * (events are mapped to the subsequent event)
              * @param {string} eventType - event Type of event variable
              * @param {Object} selectedVariable - event variable object with id and name
              * @returns {Object}
              */
             getSampleEventMapping: action((eventType, selectedVariable) => {
-                let sampleMapper = {};
+                const sampleMapper = {};
                 this.eventTimelineMap.set(selectedVariable.id, []);
-                for (let patient in this.events) {
-                    let samples = [];
-                    //extract samples for current patient
-                    this.eventBlockStructure.forEach(g => {
-                        g.forEach(l => {
+                Object.keys(this.events).forEach((patient) => {
+                    const samples = [];
+                    // extract samples for current patient
+                    this.eventBlockStructure.forEach((g) => {
+                        g.forEach((l) => {
                             if (l.patient === patient) {
                                 if (!(l.sample in sampleMapper)) {
                                     sampleMapper[l.sample] = false;
@@ -1208,16 +372,18 @@ class RootStore {
                         let currentEnd = this.sampleTimelineMap[samples[counter]];
                         let i = 0;
                         while (i < this.events[patient].length) {
-                            let start = this.events[patient][i].startNumberOfDaysSinceDiagnosis;
+                            const start = this.events[patient][i].startNumberOfDaysSinceDiagnosis;
                             let end = this.events[patient][i].startNumberOfDaysSinceDiagnosis;
-                            if (this.events[patient][i].hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+                            if (Object.prototype.hasOwnProperty.call(this.events[patient][i], 'endNumberOfDaysSinceDiagnosis')) {
                                 end = this.events[patient][i].endNumberOfDaysSinceDiagnosis;
                             }
-                            if (RootStore.isInCurrentRange(this.events[patient][i], currentStart, currentEnd)) {
-                                let matchingId = this.doesEventMatch(eventType, selectedVariable, this.events[patient][i]);
+                            if (RootStore.isInCurrentRange(this.events[patient][i],
+                                currentStart, currentEnd)) {
+                                const matchingId = this.doesEventMatch(eventType,
+                                    selectedVariable, this.events[patient][i]);
                                 if (matchingId !== null) {
                                     sampleMapper[samples[counter]] = true;
-                                    let events = this.eventTimelineMap.get(matchingId).concat({
+                                    const events = this.eventTimelineMap.get(matchingId).concat({
                                         time: counter,
                                         patientId: patient,
                                         sampleId: samples[counter],
@@ -1226,26 +392,21 @@ class RootStore {
                                     });
                                     this.eventTimelineMap.set(matchingId, events);
                                 }
-                                i++;
-                            }
-                            else {
-                                if (start >= currentEnd) {
-                                    currentStart = this.sampleTimelineMap[samples[counter]];
-                                    if (counter + 1 < samples.length - 1) {
-                                        currentEnd = this.sampleTimelineMap[samples[counter + 1]];
-                                    }
-                                    else {
-                                        currentEnd = Number.POSITIVE_INFINITY;
-                                    }
-                                    counter++;
+                                i += 1;
+                            } else if (start >= currentEnd) {
+                                currentStart = this.sampleTimelineMap[samples[counter]];
+                                if (counter + 1 < samples.length - 1) {
+                                    currentEnd = this.sampleTimelineMap[samples[counter + 1]];
+                                } else {
+                                    currentEnd = Number.POSITIVE_INFINITY;
                                 }
-                                else {
-                                    i++;
-                                }
+                                counter += 1;
+                            } else {
+                                i += 1;
                             }
                         }
                     }
-                }
+                });
                 return sampleMapper;
             }),
             /**
@@ -1253,47 +414,53 @@ class RootStore {
              * @returns {Object[][]}
              */
             get eventBlockStructure() {
-                let eventBlockStructure = [];
+                const eventBlockStructure = [];
                 eventBlockStructure.push(this.timepointStructure[0].slice());
-                for (let i = 1; i < this.timepointStructure.length; i++) {
-                    let newEntry = this.timepointStructure[i].slice();
-                    this.timepointStructure[i - 1].forEach(d => {
-                        if (!(this.timepointStructure[i].map(d => d.patient).includes(d.patient))) {
-                            newEntry.push({patient: d.patient, sample: d.sample + "_post"})
+                for (let i = 1; i < this.timepointStructure.length; i += 1) {
+                    const newEntry = this.timepointStructure[i].slice();
+                    this.timepointStructure[i - 1].forEach((d) => {
+                        if (!(this.timepointStructure[i].map(f => f.patient).includes(d.patient))) {
+                            newEntry.push({ patient: d.patient, sample: `${d.sample}_post` });
                         }
                     });
                     eventBlockStructure.push(newEntry);
                 }
-                eventBlockStructure.push(this.timepointStructure[this.timepointStructure.length - 1].map(d => ({
-                    sample: d.sample + "_post",
-                    patient: d.patient
-                })));
+                eventBlockStructure.push(this.timepointStructure[this.timepointStructure.length - 1]
+                    .map(d => ({
+                        sample: `${d.sample}_post`,
+                        patient: d.patient,
+                    })));
                 return eventBlockStructure;
             },
             /**
-             * gets first and last day for each patient plus the very last state (DECEASED,LIVING,undefined) and maps it to patientIds
+             * gets first and last day for each patient plus the very last state
+             * (DECEASED,LIVING,undefined) and maps it to patientIds
              * @return {Object}
              */
             get minMax() {
-                let minMax = {};
-                let survivalEvents = this.computeSurvival();
-                for (let patient in this.sampleStructure) {
-                    let value = undefined;
-                    let max = Math.max(...this.sampleStructure[patient].map(d => this.sampleTimelineMap[d]));
-                    let min = Math.min(...this.sampleStructure[patient].map(d => this.sampleTimelineMap[d]));
+                const minMax = {};
+                const survivalEvents = this.computeSurvival();
+                Object.keys(this.sampleStructure).forEach((patient) => {
+                    let status;
+                    let max = Math.max(...this.sampleStructure[patient]
+                        .map(d => this.sampleTimelineMap[d]));
+                    let min = Math.min(...this.sampleStructure[patient]
+                        .map(d => this.sampleTimelineMap[d]));
                     this.eventTimelineMap.forEach((value) => {
-                        max = Math.max(max, Math.max(...value.filter(d => d.patientId === patient).map(d => d.eventEndDate)));
-                        min = Math.min(min, Math.min(...value.filter(d => d.patientId === patient).map(d => d.eventStartDate)));
+                        max = Math.max(max, Math.max(...value.filter(d => d.patientId === patient)
+                            .map(d => d.eventEndDate)));
+                        min = Math.min(min, Math.min(...value.filter(d => d.patientId === patient)
+                            .map(d => d.eventStartDate)));
                     });
                     if (survivalEvents.map(d => d.patient).includes(patient)) {
-                        let survivalEvent = survivalEvents.filter(d => d.patient === patient)[0];
+                        const survivalEvent = survivalEvents.filter(d => d.patient === patient)[0];
                         if (survivalEvent.date > max) {
                             max = survivalEvent.date;
-                            value = survivalEvent.status;
+                            status = survivalEvent.status;
                         }
                     }
-                    minMax[patient] = {start: min, end: max, value: value}
-                }
+                    minMax[patient] = { start: min, end: max, status };
+                });
                 return minMax;
             },
             /**
@@ -1302,17 +469,17 @@ class RootStore {
              */
             get maxTimeInDays() {
                 let max = 0;
-                for (let patient in this.minMax) {
+                Object.keys(this.minMax).forEach((patient) => {
                     if (this.minMax[patient].end > max) {
                         max = this.minMax[patient].end;
                     }
-                }
+                });
                 return max;
             },
 
         });
         // initialize dataStore and add initial variable if variables are parsed
-        reaction(() => this.variablesParsed, parsed => {
+        reaction(() => this.variablesParsed, (parsed) => {
             if (parsed) {
                 this.dataStore.initialize();
                 this.addInitialVariable();
@@ -1321,42 +488,39 @@ class RootStore {
             }
         });
         // reset timelineParsed if data input is changed
-        reaction(() => this.isOwnData, isOwnData => {
+        reaction(() => this.isOwnData, (isOwnData) => {
             if (isOwnData && !this.geneNamesAPI.geneListLoaded) {
                 this.geneNamesAPI.getAllGeneSymbols();
             }
             this.timelineParsed = false;
         });
         // reset timelineParsed if eventsParsed in localFileLoader is reset
-        reaction(() => this.localFileLoader.eventsParsed, parsed => {
+        reaction(() => this.localFileLoader.eventsParsed, (parsed) => {
             if (!parsed) {
                 this.timelineParsed = false;
             }
         });
         // reacts to change in stacking mode
         reaction(() => this.uiStore.horizontalStacking,
-            horizontalStacking => {
+            (horizontalStacking) => {
                 if (horizontalStacking) {
-                    //this.visStore.setGap(8);
+                    // this.visStore.setGap(8);
                     this.visStore.setBandRectHeight(0);
                     this.visStore.setColorRectHeight(0);
-
-                }
-                else {
-                    //this.visStore.setGap(1);
+                } else {
+                    // this.visStore.setGap(1);
                     this.visStore.setBandRectHeight(15);
                     this.visStore.setColorRectHeight(2);
                 }
             });
         this.reset = this.reset.bind(this);
-
     }
 
     /**
      * adds variable in the beginning or after reset
      */
     addInitialVariable() {
-        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, "clinical"));
+        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
         this.dataStore.globalPrimary = this.initialVariable.id;
     }
 
@@ -1368,33 +532,29 @@ class RootStore {
      * @returns {string[]}
      */
     createNameList(up, oldNames, patients) {
-        let newNames = oldNames;
+        const newNames = oldNames;
         if (this.timepointStructure.length > oldNames.length) {
             if (up) {
-                newNames.unshift("new");
+                newNames.unshift('new');
+            } else {
+                newNames.push('new');
             }
-            else {
-                newNames.push("new");
-            }
-        }
-        else if (this.timepointStructure.length < oldNames.length) {
+        } else if (this.timepointStructure.length < oldNames.length) {
             if (up) {
                 newNames.pop();
-            }
-            else {
+            } else {
                 newNames.shift();
             }
-        }
-        else {
-            let longestPatientTimeline = patients.every(patient => this.timepointStructure
-                .filter(row => row.map(d => d.patient).includes(patient)).length === this.timepointStructure.length);
+        } else {
+            const longestPatientTimeline = patients.every(patient => this.timepointStructure
+                .filter(row => row.map(d => d.patient)
+                    .includes(patient)).length === this.timepointStructure.length);
             if (longestPatientTimeline) {
                 if (up) {
-                    newNames.unshift("new");
+                    newNames.unshift('new');
                     newNames.pop();
-                }
-                else {
-                    newNames.push("new");
+                } else {
+                    newNames.push('new');
                     newNames.shift();
                 }
             }
@@ -1407,16 +567,17 @@ class RootStore {
      * creates a dictionary mapping sample IDs onto time between timepoints
      */
     createTimeGapMapping() {
-        let timeGapMapping = {};
-        this.patients.forEach(d => {
-            let curr = this.sampleStructure[d];
-            for (let i = 1; i < curr.length; i++) {
+        const timeGapMapping = {};
+        this.patients.forEach((d) => {
+            const curr = this.sampleStructure[d];
+            for (let i = 1; i < curr.length; i += 1) {
                 if (i === 1) {
-                    timeGapMapping[curr[i - 1]] = undefined
+                    timeGapMapping[curr[i - 1]] = undefined;
                 }
-                timeGapMapping[curr[i]] = this.sampleTimelineMap[curr[i]] - this.sampleTimelineMap[curr[i - 1]]
+                timeGapMapping[curr[i]] = this.sampleTimelineMap[curr[i]]
+                    - this.sampleTimelineMap[curr[i - 1]];
             }
-            timeGapMapping[curr[curr.length - 1] + "_post"] = undefined;
+            timeGapMapping[`${curr[curr.length - 1]}_post`] = undefined;
         });
         this.staticMappers[this.timeDistanceId] = timeGapMapping;
     }
@@ -1424,25 +585,26 @@ class RootStore {
 
     /**
      * computes survival events if OS_MONTHS and OS_STATUS exist
-     * @return {Object[]} - array of objects specifying patient, date and state of the survival event
+     * @return {Object[]} - array of objects specifying patient,
+     * date and state of the survival event
      */
     computeSurvival() {
-        const survivalMonths = "OS_MONTHS";
-        const survivalStatus = "OS_STATUS";
-        let survivalEvents = [];
-        let hasStatus = this.clinicalPatientCategories.map(d => d.id).includes(survivalStatus);
+        const survivalMonths = 'OS_MONTHS';
+        const survivalStatus = 'OS_STATUS';
+        const survivalEvents = [];
+        const hasStatus = this.clinicalPatientCategories.map(d => d.id).includes(survivalStatus);
         if (this.clinicalPatientCategories.map(d => d.id).includes(survivalMonths)) {
-            for (let patient in this.sampleStructure) {
-                let status = undefined;
+            Object.keys(this.sampleStructure).forEach((patient) => {
+                let status;
                 if (hasStatus) {
                     status = this.staticMappers[survivalStatus][this.sampleStructure[patient][0]];
                 }
                 survivalEvents.push({
-                    patient: patient,
+                    patient,
                     date: this.staticMappers[survivalMonths][this.sampleStructure[patient][0]] * 30,
-                    status: status
-                })
-            }
+                    status,
+                });
+            });
         }
         return survivalEvents;
     }
@@ -1455,14 +617,14 @@ class RootStore {
      * @param {Object} event
      * @returns {string} - matching id or null
      */
-    doesEventMatch(type, value, event) {
+    static doesEventMatch(type, value, event) {
         let matchingId = null;
         if (type === event.eventType) {
-            event.attributes.forEach(f => {
+            event.attributes.forEach((f) => {
                 if (f.key === value.eventType && f.value === value.name) {
                     matchingId = value.id;
                 }
-            })
+            });
         }
         return matchingId;
     }
@@ -1477,11 +639,14 @@ class RootStore {
      */
     static isInCurrentRange(event, currMinDate, currMaxDate) {
         let isInRange = false;
-        if (event.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
-            isInRange = (event.endNumberOfDaysSinceDiagnosis <= currMaxDate && event.endNumberOfDaysSinceDiagnosis > currMinDate) || (event.startNumberOfDaysSinceDiagnosis < currMaxDate && event.startNumberOfDaysSinceDiagnosis >= currMinDate);
-        }
-        else {
-            isInRange = event.startNumberOfDaysSinceDiagnosis < currMaxDate && event.startNumberOfDaysSinceDiagnosis >= currMinDate;
+        if (Object.prototype.hasOwnProperty.call(event, 'endNumberOfDaysSinceDiagnosis')) {
+            isInRange = (event.endNumberOfDaysSinceDiagnosis <= currMaxDate
+                && event.endNumberOfDaysSinceDiagnosis > currMinDate)
+                || (event.startNumberOfDaysSinceDiagnosis < currMaxDate
+                    && event.startNumberOfDaysSinceDiagnosis >= currMinDate);
+        } else {
+            isInRange = event.startNumberOfDaysSinceDiagnosis < currMaxDate
+                && event.startNumberOfDaysSinceDiagnosis >= currMinDate;
         }
         return isInRange;
     }
@@ -1489,232 +654,34 @@ class RootStore {
 
     /**
      * gets all the different attributes an event can have
-     * @param {number[]} excludeDates - dates to exclude
      */
-    createEventAttributes(excludeDates) {
+    createEventAttributes() {
         this.eventAttributes = {};
-        for (let patient in this.events) {
-            this.events[patient].forEach(d => {
-                //if (!excludeDates[patient].includes(d.startNumberOfDaysSinceDiagnosis) || d.hasOwnProperty("endNumberOfDaysSinceDiagnosis")) {
+        Object.keys(this.events).forEach((patient) => {
+            this.events[patient].forEach((d) => {
                 if (!(d.eventType in this.eventAttributes)) {
-                    this.eventAttributes[d.eventType] = {}
+                    this.eventAttributes[d.eventType] = {};
                 }
-                d.attributes.forEach(f => {
+                d.attributes.forEach((f) => {
                     if (!(f.key in this.eventAttributes[d.eventType])) {
                         this.eventAttributes[d.eventType][f.key] = [];
                         this.eventAttributes[d.eventType][f.key].push({
                             name: f.value,
                             id: uuidv4(),
-                            eventType: f.key
+                            eventType: f.key,
+                        });
+                    } else if (!this.eventAttributes[d.eventType][f.key]
+                        .map(g => g.name).includes(f.value)) {
+                        this.eventAttributes[d.eventType][f.key].push({
+                            name: f.value,
+                            id: uuidv4(),
+                            eventType: f.key,
                         });
                     }
-                    else {
-                        if (!this.eventAttributes[d.eventType][f.key].map(g => {
-                            return g.name
-                        }).includes(f.value)) {
-                            this.eventAttributes[d.eventType][f.key].push({
-                                name: f.value,
-                                id: uuidv4(),
-                                eventType: f.key
-                            });
-                        }
-                    }
-                })
-                //}
-            })
-        }
-    }
-
-    getVarianceTimeLine(id, dtype, input){
-
-        this.TimeLineVariance=[];
-
-        var ST=this.sampleStructure;
-
-        var samples=Object.values(ST);
-
-        var sample_length=samples.map(function(d){return d.length});
-        
-
-        var max_sample=Math.max(...sample_length);
-
-        for(var a=0; a<max_sample; a++){
-
-            var r=[];
-
-            //samples.map(function(d){if(d[a]) r.push(d[a])});                 
-            //samples.filter(d=> {if(d[a]) r.push(d[a])});                 
-
-            for(let p=0; p<samples.length; p++){
-                if(samples[p][a]){
-                       r.push(samples[p][a]);
-                   }
-               }
-            
-
-            //var set1 = new Set();
-
-            var temp=[];
-            for(var j=0; j<r.length; j++){
-                //set1.add(iV[r[j]]);
-                if(input[r[j]]){
-                    temp.push(input[r[j]]);
-                }
-               
-            }
-            
-            //console.log(temp);
-
-            
-            //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-
-            //get variance
-
-            //var t_v=this.getVariance( temp, 2 ); //variance;
-
-            //get standard deviation
-
-            //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
-
-            //get coefficient of variation
-
-            var vr=this.getVariance( temp, 2 ); //variance;
-
-
-            this.TimeLineVariance.push(vr);
-
-            
-
-        }
-
-        return this.TimeLineVariance;
-
-
-    }
-
-    getCoeffientOfVarTimeLine(id, dtype, input){
-
-        this.TimeLineCoV=[];
-
-        var ST=this.sampleStructure;
-
-        var samples=Object.values(ST);
-
-        var sample_length=samples.map(function(d){return d.length});
-        
-
-        var max_sample=Math.max(...sample_length);
-
-        for(var a=0; a<max_sample; a++){
-
-            var r=[];
-
-            //samples.map(function(d){if(d[a]) r.push(d[a])});                 
-            //samples.filter(d=> {if(d[a]) r.push(d[a])});                 
-
-            for(let p=0; p<samples.length; p++){
-                if(samples[p][a]){
-                       r.push(samples[p][a]);
-                   }
-               }
-            
-
-            //var set1 = new Set();
-
-            var temp=[];
-            for(var j=0; j<r.length; j++){
-                //set1.add(iV[r[j]]);
-                if(input[r[j]]){
-                    temp.push(input[r[j]]);
-                }
-               
-            }
-            
-            //console.log(temp);
-
-            
-            //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
-
-            //get variance
-
-            //var t_v=this.getVariance( temp, 2 ); //variance;
-
-            //get standard deviation
-
-            //t_v=this.getNumWithSetDec(Math.sqrt(this.getVariance( temp, 4 )), 2);
-
-            //get coefficient of variation
-
-           
-
-            var t_v= 0;
-            
-            if(temp.length>0){
-                t_v=this.getCoefficientOfVariation(temp, 2);
-            }
-
-            //this.TimeLineVariability[iK][a]= t_v;
-
-
-
-            this.TimeLineCoV.push(t_v);
-
-        }
-
-        return this.TimeLineCoV;
-
-
-    }
-    /**
-     * computes the change rate for a mapper
-     * @param {Object} mapper - mapping of sampleId to values
-     * @param {string} datatype - type of variable
-     * @return {number} change rate
-     */
-    getChangeRate(mapper, datatype) {
-        // for non-numerical variables compute #changes/#transitions
-        if (datatype !== 'NUMBER') {
-            let allTransitions = 0;
-            let changes = 0;
-            Object.keys(this.sampleStructure).forEach((patient) => {
-                this.sampleStructure[patient].map(sample => mapper[sample])
-                    .filter(value => value !== undefined)
-                    .forEach((value, i, array) => {
-                        if (i !== array.length - 1) {
-                            allTransitions += 1;
-                            if (value !== array[i + 1]) {
-                                changes += 1;
-                            }
-                        }
-                    });
-            });
-            return changes / allTransitions;
-            // for numerical variables compute averageChange/observedRange
-        }
-        let sumOfChange = 0;
-        let allTransitions = 0;
-        let minChange = Number.POSITIVE_INFINITY;
-        let maxChange = Number.NEGATIVE_INFINITY;
-        Object.keys(this.sampleStructure).forEach((patient) => {
-            this.sampleStructure[patient].map(sample => mapper[sample])
-                .filter(value => value !== undefined)
-                .forEach((value, i, array) => {
-                    if (i !== array.length - 1) {
-                        allTransitions += 1;
-                        const change = Math.abs(value - array[i + 1]);
-                        sumOfChange += change;
-                        minChange = Math.min(minChange, change);
-                        maxChange = Math.max(maxChange, change);
-                    }
                 });
+            });
         });
-        if (minChange === maxChange || minChange === Number.POSITIVE_INFINITY
-            || maxChange === Number.NEGATIVE_INFINITY) {
-            return 0;
-        }
-        return (sumOfChange / allTransitions) / (maxChange - minChange);
     }
-
 }
 
-export default RootStore
+export default RootStore;
