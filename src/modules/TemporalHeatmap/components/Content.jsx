@@ -235,7 +235,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
-        console.log('rendered');
         const tooltipFunctions = {
             showTooltip: this.showTooltip,
             hideTooltip: this.hideTooltip,

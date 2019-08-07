@@ -379,7 +379,7 @@ class RootStore {
                             }
                             if (RootStore.isInCurrentRange(this.events[patient][i],
                                 currentStart, currentEnd)) {
-                                const matchingId = this.doesEventMatch(eventType,
+                                const matchingId = RootStore.doesEventMatch(eventType,
                                     selectedVariable, this.events[patient][i]);
                                 if (matchingId !== null) {
                                     sampleMapper[samples[counter]] = true;

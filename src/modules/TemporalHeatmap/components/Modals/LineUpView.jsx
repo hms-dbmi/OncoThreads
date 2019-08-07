@@ -2,7 +2,7 @@ import React from 'react';
 
 import { inject, observer } from 'mobx-react';
 import {
-    Alert, Button, Col, ControlLabel, Form, FormControl, FormGroup, Grid, Row,
+    Button, Col, ControlLabel, Form, FormControl, FormGroup, Grid, Row,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import {
@@ -50,7 +50,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         this.handleEnterExplore = this.handleEnterExplore.bind(this);
         this.updateMutationOptions = this.updateMutationOptions.bind(this);
         this.updateMolecularOptions = this.updateMolecularOptions.bind(this);
-        this.resetSelected = this.resetSelected.bind(this);
+        this.resetGeneSelection = this.resetGeneSelection.bind(this);
     }
 
     componentDidMount() {
@@ -58,11 +58,16 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
     }
 
     componentDidUpdate(prevProps) {
+        // check if the length of the data set has changed
         if (prevProps.data.length !== this.props.data.length) {
             this.updateLineUp();
         }
     }
 
+    /**
+     * gets the textfield for adding genes
+     * @return {*[]}
+     */
     getGeneTextField() {
         return [
             <Col sm={5} key="textField">
@@ -128,6 +133,10 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         return <Col sm={5}>No data available for gene(s)</Col>;
     }
 
+    /**
+     * gets the gene search form
+     * @return {*}
+     */
     getGeneSearch() {
         if (this.props.rootStore.availableProfiles.length > 0) {
             return (
@@ -244,16 +253,26 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         }
     }
 
+    /**
+     * handles selectiing an option in the Select component
+     * @param {object[]} selectedOptions
+     */
     handleOptionSelect(selectedOptions) {
         this.selectedOptions = selectedOptions;
     }
 
+    /**
+     * adds gene variables to LineUp
+     */
     addGeneVariables() {
         this.props.addGeneVariables(this.selectedOptions);
-        this.resetSelected();
+        this.resetGeneSelection();
     }
 
-    resetSelected() {
+    /**
+     * resets the gene selection
+     */
+    resetGeneSelection() {
         this.geneListString = '';
         this.showAvailableData = false;
         this.selectedOptions.clear();
@@ -272,20 +291,24 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         this.props.close();
     }
 
+    /**
+     * Updates LineUp data and columns
+     */
     updateLineUp() {
-        const numCatColumn = this.lineUpRef.current.adapter.data.find(d => d.desc.type === 'number' && d.desc.column === 'numcat');
-        const numCatValues = this.props.data.map(d => d.numcat).filter(d => !Number.isNaN(d));
-        numCatColumn.setMapping(new ScaleMappingFunction([Math.min(...numCatValues), Math.max(...numCatValues)], 'linear'));
-
-        const naColumn = this.lineUpRef.current.adapter.data.find(d => d.desc.type === 'number' && d.desc.column === 'na');
-        const naValues = this.props.data.map(d => d.na).filter(d => !Number.isNaN(d));
-        naColumn.setMapping(new ScaleMappingFunction([Math.min(...naValues), Math.max(...naValues)], 'linear'));
-
-        const rangeColumn = this.lineUpRef.current.adapter.data.find(d => d.desc.type === 'number' && d.desc.column === 'range');
-        const rangeValues = this.props.data.map(d => d.range).filter(d => !Number.isNaN(d));
-        rangeColumn.setMapping(new ScaleMappingFunction([Math.min(...rangeValues), Math.max(...rangeValues)], 'linear'));
-
+        this.updateNumericalColumn('numcat');
+        this.updateNumericalColumn('na');
+        this.updateNumericalColumn('range');
+        this.updateNumericalColumn('CoVAvgTimeLine');
         this.lineUpRef.current.adapter.data.setData(this.props.data);
+    }
+
+    /**
+     * Updates a numeical column in LineUp
+     */
+    updateNumericalColumn(colDesc) {
+        const column = this.lineUpRef.current.adapter.data.find(d => d.desc.type === 'number' && d.desc.column === colDesc);
+        const values = this.props.data.map(d => d[colDesc]).filter(d => !Number.isNaN(d));
+        column.setMapping(new ScaleMappingFunction([Math.min(...values), Math.max(...values)], 'linear'));
     }
 
 
@@ -316,7 +339,6 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                             column="source"
                             categories={this.props.availableCategories.map(d => d.name).concat('Derived')}
                         />
-                        <LineUpNumberColumnDesc column="changeRate" domain={[0, 1]} label="Change Rate" />
 
                         <LineUpCategoricalColumnDesc
                             column="datatype"
@@ -330,6 +352,13 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                             column="inTable"
                             categories={['Yes', 'No']}
                         />
+                        <LineUpNumberColumnDesc column="changeRate" domain={[0, 1]} label="Change Rate" />
+                        <LineUpNumberColumnDesc column="modVRacross" domain={[0, 1]} label="modVRacross" />
+                        <LineUpNumberColumnDesc column="ModVRtpAvg" domain={[0, 1]} label="ModVRtpAvg" />
+                        <LineUpNumberColumnDesc column="ModVRtpMax" domain={[0, 1]} label="ModVRtpMax" />
+                        <LineUpNumberColumnDesc column="ModVRtpMin" domain={[0, 1]} label="ModVRtpMin" />
+                        <LineUpNumberColumnDesc column="CoVAvgTimeLine" label="CoVAvgTimeLine" />
+                        <LineUpNumberColumnDesc column="VarianceTimeLine" label="VarianceTimeLine" />
                         {/*
                          Sets default columns, grouping, and ranking
                          */}
@@ -338,6 +367,11 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                             <LineUpColumn column="name" />
                             <LineUpColumn column="source" />
                             <LineUpColumn column="changeRate" />
+                            <LineUpColumn column="modVRacross" />
+                            <LineUpColumn column="ModVRtpAvg" />
+                            <LineUpColumn column="ModVRtpMax" />
+                            <LineUpColumn column="ModVRtpMin" />
+                            <LineUpColumn column="CoVAvgTimeLine" />
                             <LineUpColumn column="datatype" />
                             <LineUpColumn column="numcat" />
                             <LineUpColumn column="range" />

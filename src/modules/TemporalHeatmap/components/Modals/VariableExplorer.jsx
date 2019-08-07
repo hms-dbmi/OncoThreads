@@ -11,7 +11,7 @@ import OriginalVariable from '../../stores/OriginalVariable';
 /**
  * Modal for exploring variables with lineUp
  */
-const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(class ExploreVariables extends React.Component {
+const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(class VariableExplorer extends React.Component {
     constructor(props) {
         super(props);
         extendObservable(this, {
@@ -195,10 +195,10 @@ const ExploreVariables = inject('rootStore', 'variableManagerStore')(observer(cl
         );
     }
 }));
-ExploreVariables.propTypes = {
+VariableExplorer.propTypes = {
     close: PropTypes.func.isRequired,
     reset: PropTypes.func.isRequired,
     modalIsOpen: PropTypes.bool.isRequired,
     availableCategories: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
-export default ExploreVariables;
+export default VariableExplorer;

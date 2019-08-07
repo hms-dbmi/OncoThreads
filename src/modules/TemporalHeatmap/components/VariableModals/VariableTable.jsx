@@ -2,16 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import {
-    Button,
-    DropdownButton,
-    Form,
-    FormGroup,
-    Glyphicon,
-    Label,
-    MenuItem,
-    OverlayTrigger,
-    Table,
-    Tooltip,
+    Button, DropdownButton, Glyphicon, Label, MenuItem, OverlayTrigger, Table, Tooltip,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { extendObservable } from 'mobx';
@@ -210,7 +201,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
             if (fullVariable.derived) {
                 label = (
                     <Label bsStyle="info">
-                    Modified
+                        Modified
                     </Label>
                 );
             }
@@ -388,9 +379,6 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
         return (
             <div>
                 <h4>Current Variables</h4>
-                <Form inline>
-                    <FormGroup />
-                </Form>
                 <div style={{ maxHeight: 400, overflowY: 'scroll' }}>
                     {this.showCurrentVariables()}
                 </div>
