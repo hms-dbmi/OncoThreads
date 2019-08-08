@@ -100,24 +100,47 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             .getChangeRate(variable.mapper, variable.datatype);
         newEntry.inTable = this.props.variableManagerStore.isInTable(variable.id) ? 'Yes' : 'No';
         newEntry.modVRacross = NaN;
-        newEntry.ModVRtpAvg = NaN;
-        newEntry.ModVRtpMax = NaN;
-        newEntry.ModVRtpMin = NaN;
-        newEntry.CoVAvgTimeLine = NaN;
-        if (variable.datatype === 'STRING') {
+        newEntry.AvgModVRtp = NaN; //average modVR from modVR of all timepoints
+        newEntry.MaxModVRtp = NaN; //max of all timepoints
+        newEntry.MinModVRtp = NaN; //min of all timepoints
+        newEntry.AvgCoeffUnalikeability = NaN;
+
+        newEntry.AvgCoVTimeLine = NaN;
+
+        if (variable.datatype !== 'NUMBER') { //treat string, binary the same way for now
             newEntry.modVRacross = this.props.rootStore.scoreStore
                 .getModVRAcross(variable.datatype, variable.mapper);
             const wt = this.props.rootStore.scoreStore
                 .gerModVRWithin(variable.datatype, variable.mapper);
-            let sum = 0;
+
+            let sum = 0; //sum of modVr of all timepoints
+
             const tp_length = this.props.rootStore.timepointStructure.length;
             wt.forEach((d, i) => {
                 // newEntry['ModVRtp' + i]=d;
                 sum += d;
             });
-            newEntry.ModVRtpAvg = sum / tp_length;
-            newEntry.ModVRtpMax = Math.max(...wt);
-            newEntry.ModVRtpMin = Math.min(...wt);
+            newEntry.AvgModVRtp = sum / tp_length;
+            newEntry.MaxModVRtp = Math.max(...wt);
+            newEntry.MinModVRtp = Math.min(...wt);
+
+
+            sum=0;
+
+            const wtu = this.props.rootStore.scoreStore
+            .getCoeffUnalikeability(variable.datatype, variable.mapper);
+
+            //console.log(wtu);
+
+            wtu.forEach((d, i) => {
+                // newEntry['ModVRtp' + i]=d;
+                sum += d;
+            });
+
+            newEntry.AvgCoeffUnalikeability = sum / tp_length;
+
+            //console.log(newEntry.AvgCoeffUnalikeability);
+
         } else if (variable.datatype === 'NUMBER') {
             const covt = this.props.rootStore.scoreStore
                 .getCoeffientOfVarTimeLine(variable.datatype, variable.mapper);
@@ -130,7 +153,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 .getVarianceTimeLine(variable.datatype, variable.mapper);
             sum = 0;
             variance.forEach((d) => { sum += d; });
-            newEntry.VarianceTimeLine = sum / tp_length;
+            newEntry.AvgVarianceTimeLine = sum / tp_length;
         }
         return newEntry;
     }

@@ -298,7 +298,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         this.updateNumericalColumn('numcat');
         this.updateNumericalColumn('na');
         this.updateNumericalColumn('range');
-        this.updateNumericalColumn('CoVAvgTimeLine');
+        this.updateNumericalColumn('AvgCoVTimeLine');
         this.lineUpRef.current.adapter.data.setData(this.props.data);
     }
 
@@ -354,11 +354,13 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                         />
                         <LineUpNumberColumnDesc column="changeRate" domain={[0, 1]} label="Change Rate" />
                         <LineUpNumberColumnDesc column="modVRacross" domain={[0, 1]} label="modVRacross" />
-                        <LineUpNumberColumnDesc column="ModVRtpAvg" domain={[0, 1]} label="ModVRtpAvg" />
-                        <LineUpNumberColumnDesc column="ModVRtpMax" domain={[0, 1]} label="ModVRtpMax" />
-                        <LineUpNumberColumnDesc column="ModVRtpMin" domain={[0, 1]} label="ModVRtpMin" />
-                        <LineUpNumberColumnDesc column="CoVAvgTimeLine" label="CoVAvgTimeLine" />
-                        <LineUpNumberColumnDesc column="VarianceTimeLine" label="VarianceTimeLine" />
+                        <LineUpNumberColumnDesc column="AvgModVRtp" domain={[0, 1]} label="AvgModVRtp" />
+                        <LineUpNumberColumnDesc column="MaxModVRtp" domain={[0, 1]} label="MaxModVRtp" />
+                        <LineUpNumberColumnDesc column="MinModVRtp" domain={[0, 1]} label="MinModVRtp" />
+                        <LineUpNumberColumnDesc column="AvgCoeffUnalikeability" domain={[0, 1]} label="AvgCoeffUnalikeability" />
+
+                        <LineUpNumberColumnDesc column="AvgCoVTimeLine" label="AvgCoVTimeLine" />
+                        <LineUpNumberColumnDesc column="AvgVarianceTimeLine" label="AvgVarianceTimeLine" />
                         {/*
                          Sets default columns, grouping, and ranking
                          */}
@@ -368,10 +370,13 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                             <LineUpColumn column="source" />
                             <LineUpColumn column="changeRate" />
                             <LineUpColumn column="modVRacross" />
-                            <LineUpColumn column="ModVRtpAvg" />
-                            <LineUpColumn column="ModVRtpMax" />
-                            <LineUpColumn column="ModVRtpMin" />
-                            <LineUpColumn column="CoVAvgTimeLine" />
+                            <LineUpColumn column="AvgModVRtp" />
+                            <LineUpColumn column="MaxModVRtp" />
+                            <LineUpColumn column="MinModVRtp" />
+                            <LineUpColumn column="AvgCoeffUnalikeability" />
+
+                            <LineUpColumn column="AvgCoVTimeLine" />
+                            <LineUpColumn column="AvgVarianceTimeLine" />
                             <LineUpColumn column="datatype" />
                             <LineUpColumn column="numcat" />
                             <LineUpColumn column="range" />

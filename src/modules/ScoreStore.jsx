@@ -551,6 +551,160 @@ class ScoreStore {
         });
     }
 
+    getCoeffUnalikeability(dType, input){
+
+        if (dType === 'STRING') {
+            // coefficient of unalikeability DO NOT REMOVE
+
+            const TimeLineUnalikeability = [];
+
+             const ST = this.rootStore.sampleStructure;
+
+             var samples=Object.values(ST);
+
+             var sample_length=samples.map(function(d){return d.length});
+
+
+             var max_sample=Math.max(...sample_length);
+
+             [...Array(max_sample).keys()].forEach(a => {
+
+             //for(var a=0; a<max_sample; a++){
+
+             //var r=[];
+
+             //samples.forEach(function(d){if(d[a]) r.push(d[a])});
+             var r = samples.filter(d=> d[a]).map((d)=>d[a]);
+
+
+             //var set1 = new Set();
+
+             var temp=[];
+             for(var j=0; j<r.length; j++){
+             //set1.add(iV[r[j]]);
+                temp.push(input[r[j]]);
+             }
+
+             //console.log(temp);
+
+             var uniq=[...new Set(temp)];
+
+             var u_vals=[];
+
+             for(var x=0; x<uniq.length; x++){
+             let q=uniq[x];
+
+             let t_num=temp.filter(d=>d===q).length;
+
+             u_vals.push(t_num);
+
+
+             }
+
+             //console.log(u_vals);
+
+             //u_vals contains number of variables in each category. Now calculate the variability
+
+             //var m=0;
+
+             var t_v=0;
+
+             //console.log(iK);
+             //console.log("\n n is " + temp.length);
+
+             //else{
+             for(x=0; x<u_vals.length; x++){
+             //t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * temp.length);
+
+             if(temp.length>1){
+                t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]))/(temp.length * (temp.length-1) );
+             }
+             else{
+                t_v=t_v + (u_vals[x]*(temp.length-u_vals[x]));
+             }
+               
+             }
+             //}
+
+
+             //this.TimeLineVariability[iK][a]=set1.size; ///r.length;
+
+             t_v= this.getNumWithSetDec(t_v,2);
+
+             //this.TimeLineVariability[iK][a]= t_v;
+
+             TimeLineUnalikeability.push(t_v);
+
+             
+             }); 
+
+
+            // ModVR: https://en.wikipedia.org/wiki/Qualitative_variation
+
+
+          /*  var samples = Object.values(ST);
+
+            var sample_length = samples.map(d => d.length);
+
+
+            var max_sample = Math.max(...sample_length);
+
+            [...Array(max_sample).keys()].forEach((a) => {
+               
+                const r = samples.filter(d => d[a]).map(d => d[a]);
+
+
+                const temp = [];
+                for (let j = 0; j < r.length; j++) {
+                    // set1.add(iV[r[j]]);
+
+                    if (iV[r[j]]) {
+                        temp.push(iV[r[j]]);
+                    }
+
+                   
+                }
+
+                // console.log(temp);
+
+                const uniq = [...new Set(temp)]; // unique categories
+
+                const u_vals = [];
+
+                for (let x = 0; x < uniq.length; x++) {
+                    const q = uniq[x];
+
+                    const t_num = temp.filter(d => d === q).length;
+
+                    u_vals.push(t_num);
+                }
+
+
+                const K = u_vals.length; // NumOfCategories
+
+                const Fm = Math.max(...u_vals); // ModalFrequency
+
+                const TotalElements = temp.length;
+
+                // var t_v= K*Fm - TotalElements;
+
+                let t_v = 0;
+
+                if (K - 1 > 0) {
+                    t_v = (TotalElements * K - K * Fm) / (TotalElements * (K - 1));
+                }
+
+                t_v = this.getNumWithSetDec(t_v, 2);
+
+                this.TimeLineVariability[iK][a] = t_v;
+            });*/
+
+
+            return TimeLineUnalikeability;
+        }
+
+        
+    }
     getVarianceTimeLine(dtype, input) {
         const TimeLineVariance = [];
 
