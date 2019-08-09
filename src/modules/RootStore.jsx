@@ -143,7 +143,6 @@ class RootStore {
                 }
                 this.staticMappers = {};
                 this.scoreStructure = {};
-                this.TimeLineVariability = {};
 
                 this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();

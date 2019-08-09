@@ -41,7 +41,6 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
             showAvailableData: false,
         });
         this.lineUpRef = React.createRef();
-        this.handleAdd = this.handleAdd.bind(this);
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
@@ -278,18 +277,6 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         this.selectedOptions.clear();
     }
 
-    /**
-     * handles adding the selected variables
-     */
-    handleAdd() {
-        this.props.variables.forEach((variable, i) => {
-            if (this.selected.includes(i)) {
-                this.props.variableManagerStore.addVariableToBeDisplayed(variable);
-            }
-        });
-        this.props.reset();
-        this.props.close();
-    }
 
     /**
      * Updates LineUp data and columns
@@ -311,6 +298,10 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         column.setMapping(new ScaleMappingFunction([Math.min(...values), Math.max(...values)], 'linear'));
     }
 
+    handleVariableSelect(s) {
+        this.props.handleSelect(s);
+    }
+
 
     render() {
         return (
@@ -324,7 +315,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                         ref={this.lineUpRef}
                         sidePanelCollapsed
                         onSelectionChanged={(s) => {
-                            this.props.handleSelect(s);
+                            this.handleVariableSelect(s);
                         }}
                         selection={this.props.selected}
                         style={{ height: '600px' }}
@@ -339,7 +330,6 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                             column="source"
                             categories={this.props.availableCategories.map(d => d.name).concat('Derived')}
                         />
-
                         <LineUpCategoricalColumnDesc
                             column="datatype"
                             categories={['STRING', 'NUMBER', 'ORDINAL', 'BINARY']}

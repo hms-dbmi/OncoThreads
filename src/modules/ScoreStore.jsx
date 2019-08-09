@@ -893,35 +893,39 @@ class ScoreStore {
     } // end of TimeLineModVR
 
     /**
-     * computes the change rate for a mapper
+     * computes the change rate for a mapper of a non-numerical variable
      * @param {Object} mapper - mapping of sampleId to values
-     * @param {string} datatype - type of variable
      * @return {number} change rate
      */
-    getChangeRate(mapper, datatype) {
+    getCategoricalChangeRate(mapper) {
         // for non-numerical variables compute #changes/#transitions
-        if (datatype !== 'NUMBER') {
-            let allTransitions = 0;
-            let changes = 0;
-            Object.keys(this.rootStore.sampleStructure).forEach((patient) => {
-                this.rootStore.sampleStructure[patient].map(sample => mapper[sample])
-                    .filter(value => value !== undefined)
-                    .forEach((value, i, array) => {
-                        if (i !== array.length - 1) {
-                            allTransitions += 1;
-                            if (value !== array[i + 1]) {
-                                changes += 1;
-                            }
+        let allTransitions = 0;
+        let changes = 0;
+        Object.keys(this.rootStore.sampleStructure).forEach((patient) => {
+            this.rootStore.sampleStructure[patient].map(sample => mapper[sample])
+                .filter(value => value !== undefined)
+                .forEach((value, i, array) => {
+                    if (i !== array.length - 1) {
+                        allTransitions += 1;
+                        if (value !== array[i + 1]) {
+                            changes += 1;
                         }
-                    });
-            });
-            return changes / allTransitions;
-            // for numerical variables compute averageChange/observedRange
-        }
+                    }
+                });
+        });
+        return changes / allTransitions;
+    }
+
+    /**
+     * computes the change rate for a mapper of a numerical variable
+     * @param {Object} mapper - mapping of sampleId to values
+     * @param {number} range - numerical range of variable
+     * @return {number} change rate
+     */
+    getNumericalChangeRate(mapper, range) {
+        // for numerical variables compute averageChange/observedRange
         let sumOfChange = 0;
         let allTransitions = 0;
-        let minChange = Number.POSITIVE_INFINITY;
-        let maxChange = Number.NEGATIVE_INFINITY;
         Object.keys(this.rootStore.sampleStructure).forEach((patient) => {
             this.rootStore.sampleStructure[patient].map(sample => mapper[sample])
                 .filter(value => value !== undefined)
@@ -930,20 +934,16 @@ class ScoreStore {
                         if (value !== undefined
                             && array[i + 1] !== undefined) {
                             allTransitions += 1;
-                            const change = Math.abs(value
+                            sumOfChange += Math.abs(value
                                 - array[i + 1]);
-                            sumOfChange += change;
-                            minChange = Math.min(minChange, change);
-                            maxChange = Math.max(maxChange, change);
                         }
                     }
                 });
         });
-        if (minChange === maxChange || minChange === Number.POSITIVE_INFINITY
-            || maxChange === Number.NEGATIVE_INFINITY) {
+        if (range === 0) {
             return 0;
         }
-        return (sumOfChange / allTransitions) / (maxChange - minChange);
+        return (sumOfChange / allTransitions) / (range);
     }
 }
 

@@ -21,6 +21,9 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             get variables() {
                 return this.getInitialVariables().concat(...this.onDemandVariables);
             },
+            get profileDomains() {
+                return this.updateVariableRanges();
+            },
             get data() {
                 return this.createData();
             },
@@ -61,6 +64,29 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
     }
 
     /**
+     * updates shared range of variables of the same profile (e.g. expression data)
+     */
+    updateVariableRanges() {
+        const profileDomains = {};
+        // only variables that are associated with a molecular profile and have a numerical range
+        const profileVariables = this.variables.filter(variable => variable.type === 'molecular' && variable.datatype === 'NUMBER');
+        profileVariables.forEach((variable) => {
+            const domain = variable.getDefaultDomain();
+            if (!(variable.profile in profileDomains)) {
+                profileDomains[variable.profile] = domain;
+            } else {
+                if (profileDomains[variable.profile][0] > domain[0]) {
+                    profileDomains[variable.profile][0] = domain[0];
+                }
+                if (profileDomains[variable.profile][1] < domain[1]) {
+                    profileDomains[variable.profile][1] = domain[1];
+                }
+            }
+        });
+        return profileDomains;
+    }
+
+    /**
      * creates all selectable options
      * @return {Object[]}
      */
@@ -85,10 +111,21 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             newEntry.range = Math.max(...values) - Math.min(...values);
             newEntry.categories = [];
             newEntry.numcat = NaN;
+            let range = variable.domain[1] - variable.domain[0];
+            if (variable.type === 'molecular') {
+                range = this.profileDomains[variable.profile][1]
+                    - this.profileDomains[variable.profile][0];
+            } else if (variable.profile === 'Variant allele frequency') {
+                range = 1;
+            }
+            newEntry.changeRate = this.props.rootStore.scoreStore
+                .getNumericalChangeRate(variable.mapper, range);
         } else {
             newEntry.range = NaN;
             newEntry.numcat = variable.domain.length;
             newEntry.categories = variable.domain.toString();
+            newEntry.changeRate = this.props.rootStore.scoreStore
+                .getCategoricalChangeRate(variable.mapper);
         }
         if (variable.profile === 'clinSample') {
             newEntry.score = this.props.rootStore.scoreStore.scoreStructure[variable.id];
@@ -96,8 +133,6 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         newEntry.na = [].concat(...Object.values(this.props.rootStore.sampleStructure))
             .map(d => variable.mapper[d])
             .filter(d => d === undefined).length;
-        newEntry.changeRate = this.props.rootStore.scoreStore
-            .getChangeRate(variable.mapper, variable.datatype);
         newEntry.inTable = this.props.variableManagerStore.isInTable(variable.id) ? 'Yes' : 'No';
         newEntry.modVRacross = NaN;
         newEntry.ModVRtpAvg = NaN;
@@ -123,13 +158,17 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 .getCoeffientOfVarTimeLine(variable.datatype, variable.mapper);
             let sum = 0;
             const tp_length = this.props.rootStore.timepointStructure.length;
-            covt.forEach((d) => { sum += d; });
+            covt.forEach((d) => {
+                sum += d;
+            });
             newEntry.CoVAvgTimeLine = sum / tp_length;
             // variance
             const variance = this.props.rootStore.scoreStore
                 .getVarianceTimeLine(variable.datatype, variable.mapper);
             sum = 0;
-            variance.forEach((d) => { sum += d; });
+            variance.forEach((d) => {
+                sum += d;
+            });
             newEntry.VarianceTimeLine = sum / tp_length;
         }
         return newEntry;
@@ -139,11 +178,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * handles adding the selected variables
      */
     handleAdd() {
-        this.variables.forEach((variable, i) => {
-            if (this.selected.includes(i)) {
-                this.props.variableManagerStore.addVariableToBeDisplayed(variable);
-            }
-        });
+        this.props.variableManagerStore.addVariablesToBeDisplayed(this.selected
+            .map(index => this.variables[index]));
         this.props.reset();
         this.props.close();
     }
@@ -163,8 +199,12 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
     addGeneVariables(selectedOptions) {
         const mappingTypes = selectedOptions.filter(d => d.type === 'mutation').map(d => d.value);
         const profiles = selectedOptions.filter(d => d.type === 'molecular').map(d => d.value);
-        this.onDemandVariables.push(...this.props.rootStore.molProfileMapping
-            .getMultipleProfiles(profiles, mappingTypes));
+        let newVariables = this.props.rootStore.molProfileMapping
+            .getMultipleProfiles(profiles, mappingTypes);
+        newVariables = newVariables
+            .filter(variable => !this.onDemandVariables.map(d => d.id).includes(variable.id));
+        this.onDemandVariables.push(...newVariables);
+        console.log(this.profileDomains);
     }
 
 
