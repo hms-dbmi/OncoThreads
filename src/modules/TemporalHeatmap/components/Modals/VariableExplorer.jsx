@@ -73,8 +73,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * @return {Object[]}
      */
     transformData(variable) {
-        const newEntry = {};
-        const values = Object.values(variable.mapper).filter(d => d !== undefined);
+        let newEntry = {};
+        let values = Object.values(variable.mapper).filter(d => d !== undefined);
         newEntry.name = variable.name;
         newEntry.score = NaN;
         newEntry.description = variable.description;
@@ -99,23 +99,25 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         newEntry.changeRate = this.props.rootStore.scoreStore
             .getChangeRate(variable.mapper, variable.datatype);
         newEntry.inTable = this.props.variableManagerStore.isInTable(variable.id) ? 'Yes' : 'No';
-        newEntry.modVRacross = NaN;
-        newEntry.AvgModVRtp = NaN; //average modVR from modVR of all timepoints
-        newEntry.MaxModVRtp = NaN; //max of all timepoints
-        newEntry.MinModVRtp = NaN; //min of all timepoints
-        newEntry.AvgCoeffUnalikeability = NaN;
+        newEntry.modVRacross = 0;
+        newEntry.AvgModVRtp = 0; //average modVR from modVR of all timepoints
+        newEntry.MaxModVRtp = 0; //max of all timepoints
+        newEntry.MinModVRtp = 0; //min of all timepoints
+        newEntry.AvgCoeffUnalikeability = 0;
 
-        newEntry.AvgCoVTimeLine = NaN;
+        newEntry.AvgCoVTimeLine = 0;
+
+        newEntry.AvgVarianceTimeLine = 0;
 
         if (variable.datatype !== 'NUMBER') { //treat string, binary the same way for now
             newEntry.modVRacross = this.props.rootStore.scoreStore
-                .getModVRAcross(variable.datatype, variable.mapper);
-            const wt = this.props.rootStore.scoreStore
+                .getModVRAcross(variable.datatype, variable.id, variable.mapper);
+            var wt = this.props.rootStore.scoreStore
                 .gerModVRWithin(variable.datatype, variable.mapper);
 
-            let sum = 0; //sum of modVr of all timepoints
+            var sum = 0; //sum of modVr of all timepoints
 
-            const tp_length = this.props.rootStore.timepointStructure.length;
+            var tp_length = this.props.rootStore.timepointStructure.length;
             wt.forEach((d, i) => {
                 // newEntry['ModVRtp' + i]=d;
                 sum += d;
@@ -127,7 +129,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
 
             sum=0;
 
-            const wtu = this.props.rootStore.scoreStore
+            var wtu = this.props.rootStore.scoreStore
             .getCoeffUnalikeability(variable.datatype, variable.mapper);
 
             //console.log(wtu);
@@ -142,18 +144,26 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             //console.log(newEntry.AvgCoeffUnalikeability);
 
         } else if (variable.datatype === 'NUMBER') {
-            const covt = this.props.rootStore.scoreStore
+            var covt = this.props.rootStore.scoreStore
                 .getCoeffientOfVarTimeLine(variable.datatype, variable.mapper);
-            let sum = 0;
-            const tp_length = this.props.rootStore.timepointStructure.length;
+            sum = 0;
+            tp_length = this.props.rootStore.timepointStructure.length;
             covt.forEach((d) => { sum += d; });
-            newEntry.CoVAvgTimeLine = sum / tp_length;
+            newEntry.AvgCoVTimeLine = sum / tp_length;
             // variance
-            const variance = this.props.rootStore.scoreStore
+            var variance = this.props.rootStore.scoreStore
                 .getVarianceTimeLine(variable.datatype, variable.mapper);
             sum = 0;
+            //console.log(variable);
+            //console.log(variance);
             variance.forEach((d) => { sum += d; });
             newEntry.AvgVarianceTimeLine = sum / tp_length;
+
+            //console.log(newEntry.AvgVarianceTimeLine);
+
+            if(newEntry.AvgVarianceTimeLine===undefined){
+                console.log(variable);
+            }
         }
         return newEntry;
     }

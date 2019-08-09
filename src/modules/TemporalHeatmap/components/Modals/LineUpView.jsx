@@ -299,6 +299,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         this.updateNumericalColumn('na');
         this.updateNumericalColumn('range');
         this.updateNumericalColumn('AvgCoVTimeLine');
+        this.updateNumericalColumn('AvgVarianceTimeLine');
         this.lineUpRef.current.adapter.data.setData(this.props.data);
     }
 
