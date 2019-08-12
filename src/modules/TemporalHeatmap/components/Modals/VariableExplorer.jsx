@@ -258,22 +258,19 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 datatype: 'number', column: 'modVRacross', label: 'ModVRacross', domain: [0, 1],
             },
             {
-                datatype: 'number', column: 'ModVRtpAvg', label: 'ModVRtpAvg', domain: [0, 1],
+                datatype: 'number', column: 'AvgModVRtp', label: 'AvgModVRtp', domain: [0, 1],
             },
             {
-                datatype: 'number', column: 'ModVRtpMax', label: 'ModVRtpMax', domain: [0, 1],
+                datatype: 'number', column: 'MaxModVRtp', label: 'MaxModVRtp', domain: [0, 1],
             },
             {
-                datatype: 'number', column: 'ModVRtpMin', label: 'ModVRtpMin', domain: [0, 1],
-            },
-            {
-                datatype: 'number', column: 'CoVAvgTimeLine', label: 'CoVAvgTimeLine', domain: [],
-            },
-            {
-                datatype: 'number', column: 'AvgCoeffUnalikeability', label: 'AvgCoeffUnalikeability', domain: [0, 1],
+                datatype: 'number', column: 'MinModVRtp', label: 'MinModVRtp', domain: [0, 1],
             },
             {
                 datatype: 'number', column: 'AvgCoVTimeLine', label: 'AvgCoVTimeLine', domain: [],
+            },
+            {
+                datatype: 'number', column: 'AvgCoeffUnalikeability', label: 'AvgCoeffUnalikeability', domain: [0, 1],
             },
             {
                 datatype: 'number', column: 'AvgVarianceTimeLine', label: 'AvgVarianceTimeLine', domain: [],
@@ -292,8 +289,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             },
         ];
         // visible columns and column order for lineUp
-        const visibleColumns = ['name', 'source', 'datatype', 'changeRate', 'modVRacross', 'ModVRtpAvg',
-            'ModVRtpMax', 'ModVRtpMin', 'CoVAvgTimeLine', 'AvgCoeffUnalikeability', 'AvgCoVTimeLine',
+        const visibleColumns = ['name', 'source', 'datatype', 'changeRate', 'modVRacross', 'AvgModVRtp',
+            'MaxModVRtp', 'MinModVRtp', 'AvgCoVTimeLine', 'AvgCoeffUnalikeability',
             'AvgVarianceTimeLine', 'range', 'numcat', 'na', 'inTable'];
         return (
             <Modal
