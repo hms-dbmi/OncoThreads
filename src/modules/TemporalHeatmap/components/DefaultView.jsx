@@ -332,7 +332,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'studyapi')(observer(cl
                             </Tab>
                             <Tab eventKey="own" title="Load own dataset">
                                 <a
-                                    href="https://cbioportal.readthedocs.io/en/latest/File-Formats.html#formats"
+                                    href="https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md"
                                     rel="noopener noreferrer"
                                     target="_blank"
                                 >
