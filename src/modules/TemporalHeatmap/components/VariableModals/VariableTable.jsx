@@ -378,7 +378,6 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
     render() {
         return (
             <div>
-                <h4>Current Variables</h4>
                 <div style={{ maxHeight: 400, overflowY: 'scroll' }}>
                     {this.showCurrentVariables()}
                 </div>

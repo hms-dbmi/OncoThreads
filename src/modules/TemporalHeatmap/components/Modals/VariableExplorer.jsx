@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { inject, observer } from 'mobx-react';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Grid, Modal, Row } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { extendObservable } from 'mobx';
 import LineUpView from './LineUpView';
 import OriginalVariable from '../../stores/OriginalVariable';
+import MutationSelector from './MutationSelector';
 
 
 /**
@@ -20,6 +21,9 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             onDemandVariables: [],
             get variables() {
                 return this.getInitialVariables().concat(...this.onDemandVariables);
+            },
+            get profileDomains() {
+                return this.updateVariableRanges();
             },
             get data() {
                 return this.createData();
@@ -61,6 +65,27 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
     }
 
     /**
+     * updates shared range of variables of the same profile (e.g. expression data)
+     */
+    updateVariableRanges() {
+        const profileDomains = {};
+        // only variables that are associated with a molecular profile and have a numerical range
+        const profileVariables = this.variables.filter(variable => variable.type === 'molecular' && variable.datatype === 'NUMBER');
+        profileVariables.forEach((variable) => {
+            const domain = variable.getDefaultDomain();
+            if (!(variable.profile in profileDomains)) {
+                profileDomains[variable.profile] = domain;
+            } else {
+                profileDomains[variable.profile][0] = Math.min(domain[0],
+                    profileDomains[variable.profile][0]);
+                profileDomains[variable.profile][1] = Math.max(domain[1],
+                    profileDomains[variable.profile][1]);
+            }
+        });
+        return profileDomains;
+    }
+
+    /**
      * creates all selectable options
      * @return {Object[]}
      */
@@ -73,8 +98,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * @return {Object[]}
      */
     transformData(variable) {
-        let newEntry = {};
-        let values = Object.values(variable.mapper).filter(d => d !== undefined);
+        const newEntry = {};
+        const values = Object.values(variable.mapper).filter(d => d !== undefined);
         newEntry.name = variable.name;
         newEntry.score = NaN;
         newEntry.description = variable.description;
@@ -85,10 +110,21 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             newEntry.range = Math.max(...values) - Math.min(...values);
             newEntry.categories = [];
             newEntry.numcat = NaN;
+            let range = variable.domain[1] - variable.domain[0];
+            if (variable.type === 'molecular') {
+                range = this.profileDomains[variable.profile][1]
+                    - this.profileDomains[variable.profile][0];
+            } else if (variable.profile === 'Variant allele frequency') {
+                range = 1;
+            }
+            newEntry.changeRate = this.props.rootStore.scoreStore
+                .getNumericalChangeRate(variable.mapper, range);
         } else {
             newEntry.range = NaN;
             newEntry.numcat = variable.domain.length;
             newEntry.categories = variable.domain.toString();
+            newEntry.changeRate = this.props.rootStore.scoreStore
+                .getCategoricalChangeRate(variable.mapper);
         }
         if (variable.profile === 'clinSample') {
             newEntry.score = this.props.rootStore.scoreStore.scoreStructure[variable.id];
@@ -96,26 +132,24 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         newEntry.na = [].concat(...Object.values(this.props.rootStore.sampleStructure))
             .map(d => variable.mapper[d])
             .filter(d => d === undefined).length;
-        newEntry.changeRate = this.props.rootStore.scoreStore
-            .getChangeRate(variable.mapper, variable.datatype);
         newEntry.inTable = this.props.variableManagerStore.isInTable(variable.id) ? 'Yes' : 'No';
         newEntry.modVRacross = 0;
-        newEntry.AvgModVRtp = 0; //average modVR from modVR of all timepoints
-        newEntry.MaxModVRtp = 0; //max of all timepoints
-        newEntry.MinModVRtp = 0; //min of all timepoints
+        newEntry.AvgModVRtp = 0; // average modVR from modVR of all timepoints
+        newEntry.MaxModVRtp = 0; // max of all timepoints
+        newEntry.MinModVRtp = 0; // min of all timepoints
         newEntry.AvgCoeffUnalikeability = 0;
 
         newEntry.AvgCoVTimeLine = 0;
 
         newEntry.AvgVarianceTimeLine = 0;
 
-        if (variable.datatype !== 'NUMBER') { //treat string, binary the same way for now
+        if (variable.datatype !== 'NUMBER') { // treat string, binary the same way for now
             newEntry.modVRacross = this.props.rootStore.scoreStore
                 .getModVRAcross(variable.datatype, variable.id, variable.mapper);
-            var wt = this.props.rootStore.scoreStore
+            const wt = this.props.rootStore.scoreStore
                 .gerModVRWithin(variable.datatype, variable.mapper);
 
-            var sum = 0; //sum of modVr of all timepoints
+            var sum = 0; // sum of modVr of all timepoints
 
             var tp_length = this.props.rootStore.timepointStructure.length;
             wt.forEach((d, i) => {
@@ -127,12 +161,12 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             newEntry.MinModVRtp = Math.min(...wt);
 
 
-            sum=0;
+            sum = 0;
 
-            var wtu = this.props.rootStore.scoreStore
-            .getCoeffUnalikeability(variable.datatype, variable.mapper);
+            const wtu = this.props.rootStore.scoreStore
+                .getCoeffUnalikeability(variable.datatype, variable.mapper);
 
-            //console.log(wtu);
+            // console.log(wtu);
 
             wtu.forEach((d, i) => {
                 // newEntry['ModVRtp' + i]=d;
@@ -141,27 +175,30 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
 
             newEntry.AvgCoeffUnalikeability = sum / tp_length;
 
-            //console.log(newEntry.AvgCoeffUnalikeability);
-
+            // console.log(newEntry.AvgCoeffUnalikeability);
         } else if (variable.datatype === 'NUMBER') {
-            var covt = this.props.rootStore.scoreStore
+            const covt = this.props.rootStore.scoreStore
                 .getCoeffientOfVarTimeLine(variable.datatype, variable.mapper);
             sum = 0;
             tp_length = this.props.rootStore.timepointStructure.length;
-            covt.forEach((d) => { sum += d; });
+            covt.forEach((d) => {
+                sum += d;
+            });
             newEntry.AvgCoVTimeLine = sum / tp_length;
             // variance
-            var variance = this.props.rootStore.scoreStore
+            const variance = this.props.rootStore.scoreStore
                 .getVarianceTimeLine(variable.datatype, variable.mapper);
             sum = 0;
-            //console.log(variable);
-            //console.log(variance);
-            variance.forEach((d) => { sum += d; });
+            // console.log(variable);
+            // console.log(variance);
+            variance.forEach((d) => {
+                sum += d;
+            });
             newEntry.AvgVarianceTimeLine = sum / tp_length;
 
-            //console.log(newEntry.AvgVarianceTimeLine);
+            // console.log(newEntry.AvgVarianceTimeLine);
 
-            if(newEntry.AvgVarianceTimeLine===undefined){
+            if (newEntry.AvgVarianceTimeLine === undefined) {
                 console.log(variable);
             }
         }
@@ -172,12 +209,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * handles adding the selected variables
      */
     handleAdd() {
-        this.variables.forEach((variable, i) => {
-            if (this.selected.includes(i)) {
-                this.props.variableManagerStore.addVariableToBeDisplayed(variable);
-            }
-        });
-        this.props.reset();
+        this.props.variableManagerStore.addVariablesToBeDisplayed(this.selected
+            .map(index => this.variables[index]));
         this.props.close();
     }
 
@@ -202,6 +235,63 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
 
 
     render() {
+        // column definitions for LineUp
+        const columnDefs = [
+            { datatype: 'string', column: 'name', label: 'Name' },
+            { datatype: 'string', column: 'description', label: 'Description' },
+            {
+                datatype: 'categorical',
+                column: 'source',
+                label: 'Source',
+                categories: this.props.availableCategories.map(d => d.name).concat('Derived'),
+            },
+            {
+                datatype: 'categorical',
+                column: 'datatype',
+                label: 'Datatype',
+                categories: ['STRING', 'NUMBER', 'ORDINAL', 'BINARY'],
+            },
+            {
+                datatype: 'number', column: 'changeRate', label: 'ChangeRate', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'modVRacross', label: 'ModVRacross', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'AvgModVRtp', label: 'AvgModVRtp', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'MaxModVRtp', label: 'MaxModVRtp', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'MinModVRtp', label: 'MinModVRtp', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'AvgCoVTimeLine', label: 'AvgCoVTimeLine', domain: [],
+            },
+            {
+                datatype: 'number', column: 'AvgCoeffUnalikeability', label: 'AvgCoeffUnalikeability', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'AvgVarianceTimeLine', label: 'AvgVarianceTimeLine', domain: [],
+            },
+            {
+                datatype: 'number', column: 'range', label: 'range', domain: [],
+            },
+            {
+                datatype: 'number', column: 'numcat', label: 'numcat', domain: [],
+            },
+            {
+                datatype: 'number', column: 'na', label: 'na', domain: [],
+            },
+            {
+                datatype: 'categorical', column: 'inTable', label: 'inTable', categories: ['Yes', 'No'],
+            },
+        ];
+        // visible columns and column order for lineUp
+        const visibleColumns = ['name', 'source', 'datatype', 'changeRate', 'modVRacross', 'AvgModVRtp',
+            'MaxModVRtp', 'MinModVRtp', 'AvgCoVTimeLine', 'AvgCoeffUnalikeability',
+            'AvgVarianceTimeLine', 'range', 'numcat', 'na', 'inTable'];
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -212,13 +302,21 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                     <Modal.Title>Variable Explorer: LineUp</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <LineUpView
-                        data={this.data.slice()}
-                        selected={this.selected.slice()}
-                        handleSelect={this.handleSelect}
-                        addGeneVariables={this.addGeneVariables}
-                        availableCategories={this.props.availableCategories}
-                    />
+                    <Grid fluid>
+                        <Row>
+                            <MutationSelector addGeneVariables={this.addGeneVariables}/>
+                        </Row>
+                        <Row>
+                            <LineUpView
+                                data={this.data.slice()}
+                                selected={this.selected.slice()}
+                                handleSelect={this.handleSelect}
+                                availableCategories={this.props.availableCategories}
+                                columnDefs={columnDefs}
+                                visibleColumns={visibleColumns}
+                            />
+                        </Row>
+                    </Grid>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.close}>Close</Button>
@@ -230,7 +328,6 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
 }));
 VariableExplorer.propTypes = {
     close: PropTypes.func.isRequired,
-    reset: PropTypes.func.isRequired,
     modalIsOpen: PropTypes.bool.isRequired,
     availableCategories: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
