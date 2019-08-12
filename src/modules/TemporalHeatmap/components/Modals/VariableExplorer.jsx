@@ -98,8 +98,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * @return {Object[]}
      */
     transformData(variable) {
-        const newEntry = {};
-        const values = Object.values(variable.mapper).filter(d => d !== undefined);
+        let newEntry = {};
+        let values = Object.values(variable.mapper).filter(d => d !== undefined);
         newEntry.name = variable.name;
         newEntry.score = NaN;
         newEntry.description = variable.description;
@@ -133,42 +133,71 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             .map(d => variable.mapper[d])
             .filter(d => d === undefined).length;
         newEntry.inTable = this.props.variableManagerStore.isInTable(variable.id) ? 'Yes' : 'No';
-        newEntry.modVRacross = NaN;
-        newEntry.ModVRtpAvg = NaN;
-        newEntry.ModVRtpMax = NaN;
-        newEntry.ModVRtpMin = NaN;
-        newEntry.CoVAvgTimeLine = NaN;
-        if (variable.datatype === 'STRING') {
+        newEntry.modVRacross = 0;
+        newEntry.AvgModVRtp = 0; //average modVR from modVR of all timepoints
+        newEntry.MaxModVRtp = 0; //max of all timepoints
+        newEntry.MinModVRtp = 0; //min of all timepoints
+        newEntry.AvgCoeffUnalikeability = 0;
+
+        newEntry.AvgCoVTimeLine = 0;
+
+        newEntry.AvgVarianceTimeLine = 0;
+
+        if (variable.datatype !== 'NUMBER') { //treat string, binary the same way for now
             newEntry.modVRacross = this.props.rootStore.scoreStore
-                .getModVRAcross(variable.datatype, variable.mapper);
-            const wt = this.props.rootStore.scoreStore
+                .getModVRAcross(variable.datatype, variable.id, variable.mapper);
+            var wt = this.props.rootStore.scoreStore
                 .gerModVRWithin(variable.datatype, variable.mapper);
-            let sum = 0;
-            const tp_length = this.props.rootStore.timepointStructure.length;
+
+            var sum = 0; //sum of modVr of all timepoints
+
+            var tp_length = this.props.rootStore.timepointStructure.length;
             wt.forEach((d, i) => {
                 // newEntry['ModVRtp' + i]=d;
                 sum += d;
             });
-            newEntry.ModVRtpAvg = sum / tp_length;
-            newEntry.ModVRtpMax = Math.max(...wt);
-            newEntry.ModVRtpMin = Math.min(...wt);
-        } else if (variable.datatype === 'NUMBER') {
-            const covt = this.props.rootStore.scoreStore
-                .getCoeffientOfVarTimeLine(variable.datatype, variable.mapper);
-            let sum = 0;
-            const tp_length = this.props.rootStore.timepointStructure.length;
-            covt.forEach((d) => {
+            newEntry.AvgModVRtp = sum / tp_length;
+            newEntry.MaxModVRtp = Math.max(...wt);
+            newEntry.MinModVRtp = Math.min(...wt);
+
+
+            sum=0;
+
+            var wtu = this.props.rootStore.scoreStore
+            .getCoeffUnalikeability(variable.datatype, variable.mapper);
+
+            //console.log(wtu);
+
+            wtu.forEach((d, i) => {
+                // newEntry['ModVRtp' + i]=d;
                 sum += d;
             });
-            newEntry.CoVAvgTimeLine = sum / tp_length;
+
+            newEntry.AvgCoeffUnalikeability = sum / tp_length;
+
+            //console.log(newEntry.AvgCoeffUnalikeability);
+
+        } else if (variable.datatype === 'NUMBER') {
+            var covt = this.props.rootStore.scoreStore
+                .getCoeffientOfVarTimeLine(variable.datatype, variable.mapper);
+            sum = 0;
+            tp_length = this.props.rootStore.timepointStructure.length;
+            covt.forEach((d) => { sum += d; });
+            newEntry.AvgCoVTimeLine = sum / tp_length;
             // variance
-            const variance = this.props.rootStore.scoreStore
+            var variance = this.props.rootStore.scoreStore
                 .getVarianceTimeLine(variable.datatype, variable.mapper);
             sum = 0;
-            variance.forEach((d) => {
-                sum += d;
-            });
-            newEntry.VarianceTimeLine = sum / tp_length;
+            //console.log(variable);
+            //console.log(variance);
+            variance.forEach((d) => { sum += d; });
+            newEntry.AvgVarianceTimeLine = sum / tp_length;
+
+            //console.log(newEntry.AvgVarianceTimeLine);
+
+            if(newEntry.AvgVarianceTimeLine===undefined){
+                console.log(variable);
+            }
         }
         return newEntry;
     }
