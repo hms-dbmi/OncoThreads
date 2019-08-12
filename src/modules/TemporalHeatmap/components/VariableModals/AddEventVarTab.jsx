@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, inject } from 'mobx-react';
+import { inject, observer } from 'mobx-react';
 import EventVariableSelector from './EventVariableSelector';
 import VariableTable from './VariableTable';
 import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
@@ -10,10 +10,14 @@ import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
 const AddEventVarTab = inject('rootStore')(observer(class AddEventVarTab extends React.Component {
     render() {
         // set available categories (event eventType)
-        const categories = [...this.props.rootStore.eventCategories.filter(d => d !== 'SPECIMEN').map(d => ({ id: d, name: UtilityFunctions.toTitleCase(d) })), { id: 'Computed', name: 'Computed' }];
+        const categories = [...this.props.rootStore.eventCategories.filter(d => d !== 'SPECIMEN').map(d => ({
+            id: d,
+            name: UtilityFunctions.toTitleCase(d),
+        })), { id: 'Computed', name: 'Computed' }];
         return (
             <div>
                 <EventVariableSelector eventCategories={categories} />
+                <h4>Current Variables</h4>
                 <VariableTable availableCategories={categories} />
             </div>
 

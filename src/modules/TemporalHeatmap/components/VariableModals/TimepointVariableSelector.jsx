@@ -4,7 +4,6 @@ import { Alert, Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGrou
 import { extendObservable } from 'mobx';
 import Select from 'react-select';
 import OriginalVariable from '../../stores/OriginalVariable';
-import VariableExplorer from '../Modals/VariableExplorer';
 
 /**
  * Component for selecting timepoint variables in variable manager
@@ -40,7 +39,6 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         this.geneSearchEnter = this.geneSearchEnter.bind(this);
         this.updateMutationCheckBoxOptions = this.updateMutationCheckBoxOptions.bind(this);
         this.updateMolecularCheckBoxOptions = this.updateMolecularCheckBoxOptions.bind(this);
-        this.resetSelected = this.resetSelected.bind(this);
         this.addGenes = this.addGenes.bind(this);
         this.addVariables = this.addVariables.bind(this);
         this.addEnter = this.addEnter.bind(this);
@@ -287,11 +285,17 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         );
     }
 
+    /**
+     * adds selected Variables
+     */
     addVariables() {
         this.addClinicalVariables();
         this.addGenes();
     }
 
+    /**
+     * adds clinical Variables
+     */
     addClinicalVariables() {
         this.getClinicalVariables().forEach((variable) => {
             this.props.variableManagerStore.addVariableToBeDisplayed(variable);
@@ -299,6 +303,10 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         this.clinicalOptions = [];
     }
 
+    /**
+     * gets selected clinical/saved Variables
+     * @return {(OriginalVariable|DerivedVariable)[]}
+     */
     getClinicalVariables() {
         const variables = [];
         this.clinicalOptions.map(d => d.object).forEach((selectedOption) => {
@@ -319,31 +327,6 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         const mappingTypes = this.mutationOptions.filter(d => d.selected).map(d => d.id);
         const profiles = this.molecularOptions.filter(d => d.selected).map(d => d.profile);
         return this.props.rootStore.molProfileMapping.getMultipleProfiles(profiles, mappingTypes);
-    }
-
-    /**
-     * gets all existing derived variables
-     * @return {any[]}
-     */
-    getDerivedVariables() {
-        return Object.keys(this.props.variableManagerStore.referencedVariables)
-            .map(id => this.props.variableManagerStore.referencedVariables[id])
-            .filter(d => d.derived === true);
-    }
-
-    /**
-     * gets all variables that can be explored
-     * @return {any[]}
-     */
-    getAllVariables() {
-        return this.getDerivedVariables()
-            .concat(...this.getClinicalVariables()).concat(...this.getOnDemandVariables());
-    }
-
-    resetSelected() {
-        this.clinicalOptions = [];
-        this.geneListString = '';
-        this.showAvailableData = false;
     }
 
     render() {
@@ -428,15 +411,6 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                         </Col>
                     </FormGroup>
                 </Form>
-                <VariableExplorer
-                    close={() => {
-                        this.modalIsOpen = false;
-                    }}
-                    reset={this.resetSelected}
-                    availableCategories={this.props.availableCategories}
-                    variables={this.getAllVariables()}
-                    modalIsOpen={this.modalIsOpen}
-                />
             </div>
         );
     }

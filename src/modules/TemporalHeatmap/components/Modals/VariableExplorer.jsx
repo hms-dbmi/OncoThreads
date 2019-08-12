@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { inject, observer } from 'mobx-react';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Grid, Modal, Row } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { extendObservable } from 'mobx';
 import LineUpView from './LineUpView';
 import OriginalVariable from '../../stores/OriginalVariable';
+import MutationSelector from './MutationSelector';
 
 
 /**
@@ -75,12 +76,10 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             if (!(variable.profile in profileDomains)) {
                 profileDomains[variable.profile] = domain;
             } else {
-                if (profileDomains[variable.profile][0] > domain[0]) {
-                    profileDomains[variable.profile][0] = domain[0];
-                }
-                if (profileDomains[variable.profile][1] < domain[1]) {
-                    profileDomains[variable.profile][1] = domain[1];
-                }
+                profileDomains[variable.profile][0] = Math.min(domain[0],
+                    profileDomains[variable.profile][0]);
+                profileDomains[variable.profile][1] = Math.max(domain[1],
+                    profileDomains[variable.profile][1]);
             }
         });
         return profileDomains;
@@ -180,7 +179,6 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
     handleAdd() {
         this.props.variableManagerStore.addVariablesToBeDisplayed(this.selected
             .map(index => this.variables[index]));
-        this.props.reset();
         this.props.close();
     }
 
@@ -199,16 +197,59 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
     addGeneVariables(selectedOptions) {
         const mappingTypes = selectedOptions.filter(d => d.type === 'mutation').map(d => d.value);
         const profiles = selectedOptions.filter(d => d.type === 'molecular').map(d => d.value);
-        let newVariables = this.props.rootStore.molProfileMapping
-            .getMultipleProfiles(profiles, mappingTypes);
-        newVariables = newVariables
-            .filter(variable => !this.onDemandVariables.map(d => d.id).includes(variable.id));
-        this.onDemandVariables.push(...newVariables);
-        console.log(this.profileDomains);
+        this.onDemandVariables.push(...this.props.rootStore.molProfileMapping
+            .getMultipleProfiles(profiles, mappingTypes));
     }
 
 
     render() {
+        const columnDefs = [
+            { datatype: 'string', column: 'name', label: 'Name' },
+            { datatype: 'string', column: 'description', label: 'Description' },
+            {
+                datatype: 'categorical',
+                column: 'source',
+                label: 'Source',
+                categories: this.props.availableCategories.map(d => d.name).concat('Derived'),
+            },
+            {
+                datatype: 'categorical',
+                column: 'datatype',
+                label: 'Datatype',
+                categories: ['STRING', 'NUMBER', 'ORDINAL', 'BINARY'],
+            },
+            {
+                datatype: 'number', column: 'changeRate', label: 'ChangeRate', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'modVRacross', label: 'ModVRacross', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'ModVRtpAvg', label: 'ModVRtpAvg', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'ModVRtpMax', label: 'ModVRtpMax', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'ModVRtpMin', label: 'ModVRtpMin', domain: [0, 1],
+            },
+            {
+                datatype: 'number', column: 'CoVAvgTimeLine', label: 'CoVAvgTimeLine', domain: [],
+            },
+            {
+                datatype: 'number', column: 'range', label: 'range', domain: [],
+            },
+            {
+                datatype: 'number', column: 'numcat', label: 'numcat', domain: [],
+            },
+            {
+                datatype: 'number', column: 'na', label: 'na', domain: [],
+            },
+            {
+                datatype: 'categorical', column: 'inTable', label: 'inTable', categories: ['Yes', 'No'],
+            },
+        ];
+        const visibleColumns = ['name', 'source', 'datatype', 'changeRate', 'modVRacross', 'ModVRtpAvg', 'ModVRtpMax', 'ModVRtpMin', 'CoVAvgTimeLine', 'range', 'numcat', 'na', 'inTable'];
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -219,13 +260,21 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                     <Modal.Title>Variable Explorer: LineUp</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <LineUpView
-                        data={this.data.slice()}
-                        selected={this.selected.slice()}
-                        handleSelect={this.handleSelect}
-                        addGeneVariables={this.addGeneVariables}
-                        availableCategories={this.props.availableCategories}
-                    />
+                    <Grid fluid>
+                        <Row>
+                            <MutationSelector addGeneVariables={this.addGeneVariables}/>
+                        </Row>
+                        <Row>
+                            <LineUpView
+                                data={this.data.slice()}
+                                selected={this.selected.slice()}
+                                handleSelect={this.handleSelect}
+                                availableCategories={this.props.availableCategories}
+                                columnDefs={columnDefs}
+                                visibleColumns={visibleColumns}
+                            />
+                        </Row>
+                    </Grid>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.close}>Close</Button>
@@ -237,7 +286,6 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
 }));
 VariableExplorer.propTypes = {
     close: PropTypes.func.isRequired,
-    reset: PropTypes.func.isRequired,
     modalIsOpen: PropTypes.bool.isRequired,
     availableCategories: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
