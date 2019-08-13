@@ -362,8 +362,8 @@ class MolProfileMapping {
                                 }
                             }
                         });
-                        mapper[element.sample] = mappingFunction(entry);
-                    } else mapper[element.sample] = undefined;
+                    }
+                    mapper[element.sample] = mappingFunction(entry);
                 } else mapper[element.sample] = undefined;
             });
         });
