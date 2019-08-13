@@ -28,7 +28,8 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
     constructor(props) {
         super(props);
         extendObservable(this,
-            QuickAddVariable.getInitialState(props));
+            QuickAddVariable.getObservableFields());
+        this.geneOptions = this.createGeneOptions();
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
         this.handleEnterPressed = this.handleEnterPressed.bind(this);
@@ -44,51 +45,90 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @return {{category: string, profile: string, geneListString: string,
      * selectedValues: Object[]}}
      */
-    static getInitialState(props) {
-        let profile = '';
-        if (props.rootStore.availableProfiles.length > 0) {
-            profile = props.rootStore.availableProfiles[0].molecularProfileId;
-        }
+    static getObservableFields() {
         return {
             category: 'clinical', // either clinical, computed, gene or any of the event categories
-            profile, // selected molecular profile
-            geneListString: '', // text entered in gene search fiels
+            selectedGeneOption: undefined, // selected molecular profile
+            geneListString: '', // text entered in gene search fields
             selectedValues: [], // selected values
         };
     }
 
     /**
      * gets either a Select component or a text field depending on the currently selected category
-     * @return {(Select|FormControl)}
+     * @return {(Col|Col[])}
      */
     getSearchField() {
-        if (this.category === 'clinical' || this.category === 'computed' || this.props.rootStore.eventCategories.includes(this.category)) {
+        if (this.category === 'clinical' || this.category === 'computed'
+            || Object.keys(this.props.rootStore.eventAttributes).includes(this.category)) {
             return (
-                <Select
-                    value={this.selectedValues.slice()}
-                    type="text"
-                    isMulti
-                    searchable
-                    componentClass="select"
-                    placeholder="Select..."
-                    searchPlaceholder="Search variable"
-                    options={this.createOptions()}
-                    onChange={this.handleOptionSelect}
-                    onKeyDown={this.addVariablesEnter}
-                />
+                <Col sm={9} style={{ padding: 0 }}>
+                    <Select
+                        value={this.selectedValues.slice()}
+                        type="text"
+                        isMulti
+                        searchable
+                        componentClass="select"
+                        placeholder="Select..."
+                        searchPlaceholder="Search variable"
+                        options={this.createOptions()}
+                        onChange={this.handleOptionSelect}
+                        onKeyDown={this.addVariablesEnter}
+                    />
+                </Col>
             );
         }
-
-        return (
-            <FormControl
-                style={{ height: 38 }}
-                type="textarea"
-                placeholder="Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"
-                onChange={this.updateSearchValue}
-                onKeyDown={this.handleEnterPressed}
-                value={this.geneListString}
-            />
+        return ([
+            <Col sm={7} style={{ padding: 0 }} key="searchfield">
+                <FormControl
+                    style={{ height: 38 }}
+                    type="textarea"
+                    placeholder="Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"
+                    onChange={this.updateSearchValue}
+                    onKeyDown={this.handleEnterPressed}
+                    value={this.geneListString}
+                />
+            </Col>,
+            <Col sm={2} style={{ padding: 0 }} key="geneoptions">
+                <FormControl
+                    style={{ height: 38 }}
+                    componentClass="select"
+                    onChange={this.handleProfileSelect}
+                    placeholder="Select Category"
+                >
+                    {this.geneOptions.map(d => (
+                        <option
+                            value={d.value}
+                            key={d.value}
+                        >
+                            {d.label}
+                        </option>
+                    ))}
+                </FormControl>
+            </Col>,
+        ]
         );
+    }
+
+    /**
+     * creates selectable options for genes
+     * @return {object[]}
+     */
+    createGeneOptions() {
+        const options = [];
+        if (this.props.rootStore.availableProfiles.map(d => d.molecularAlterationType).includes('MUTATION_EXTENDED')) {
+            this.props.rootStore.mutationMappingTypes.forEach((d) => {
+                options.push({ label: d, value: d, type: 'mutation' });
+            });
+        }
+        if (this.props.rootStore.availableProfiles.length > 0) {
+            this.props.rootStore.availableProfiles.forEach((d) => {
+                if (d.molecularAlterationType !== 'MUTATION_EXTENDED') {
+                    options.push({ label: d.name, value: d.molecularProfileId, type: 'molecular' });
+                }
+            });
+        }
+        return options;
     }
 
     /**
@@ -97,12 +137,18 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
     addEventVariable() {
         if (this.category !== 'computed') {
             if (this.selectedValues.length > 0) {
-                this.addVariablesSeperate();
+                this.selectedValues.forEach((d) => {
+                    const variable = new OriginalVariable(d.value, d.label, 'BINARY', `Indicates if event: "${d.label}" has happened between two timepoints`,
+                        [], [], this.props.rootStore.eventMappers[d.value], this.category, 'event');
+                    this.props.rootStore.dataStore.variableStores
+                        .between.addVariableToBeDisplayed(variable);
+                });
                 this.props.undoRedoStore.saveVariableHistory('ADD', this.selectedValues.map(d => d.label), true);
             }
         } else {
             this.selectedValues.forEach((d) => {
-                const variable = new OriginalVariable(d.object.id, d.object.name, d.object.datatype, d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], 'Computed', 'computed');
+                const variable = new OriginalVariable(d.object.id, d.object.name, d.object.datatype,
+                    d.object.description, [], [], this.props.rootStore.staticMappers[d.object.id], 'Computed', 'computed');
                 this.props.rootStore.dataStore.variableStores.between
                     .addVariableToBeDisplayed(variable);
             });
@@ -111,12 +157,6 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
         this.selectedValues = [];
     }
 
-    /**
-     * adds variables as separate rows
-     */
-    addVariablesSeperate() {
-        this.selectedValues.forEach(d => this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.value, d.label, 'BINARY', `Indicates if event: "${d.label}" has happened between two timepoints`, [], [], this.props.rootStore.getSampleEventMapping(this.category, d.object), this.category, 'event')));
-    }
 
     /**
      * creates oprtions for event variables
@@ -127,16 +167,14 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
         if (this.category !== 'computed') {
             Object.keys(this.props.rootStore.eventAttributes[this.category])
                 .forEach((key) => {
-                    const subOptions = [];
-                    this.props.rootStore.eventAttributes[this.category][key].forEach((d) => {
-                        const option = {
+                    const subOptions = this.props.rootStore.eventAttributes[this.category][key]
+                        .map(d => ({
                             label: d.name,
                             value: d.id,
                             object: d,
-                        };
-                        subOptions.push(option);
-                    });
-                    options.push({ label: key, options: subOptions });
+                        }));
+
+                    options.push({ label: UtilityFunctions.toTitleCase(key), options: subOptions });
                 });
         } else {
             options.push({
@@ -273,12 +311,24 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                 geneList[i] = d.replace('ORF', 'orf');
             }
         });
-        this.props.rootStore.molProfileMapping.getProfileData(this.profile,
-            geneList, 'Binary', (newVariables) => {
-                this.props.rootStore.dataStore.variableStores.sample
-                    .addVariablesToBeDisplayed(newVariables);
-                this.props.undoRedoStore.saveVariableHistory('ADD', geneList, true);
-            });
+        if (this.selectedGeneOption === undefined) {
+            this.selectedGeneOption = this.geneOptions[0].value;
+        }
+        if (this.geneOptions.filter(d => this.selectedGeneOption === d.value)[0].type === 'mutation') {
+            this.props.rootStore.molProfileMapping.getMutationProfiles(geneList,
+                this.selectedGeneOption, (newVariables) => {
+                    this.props.rootStore.dataStore.variableStores.sample
+                        .addVariablesToBeDisplayed(newVariables);
+                    this.props.undoRedoStore.saveVariableHistory('ADD', geneList, true);
+                });
+        } else {
+            this.props.rootStore.molProfileMapping.getMolecularProfiles(geneList,
+                this.selectedGeneOption, (newVariables) => {
+                    this.props.rootStore.dataStore.variableStores.sample
+                        .addVariablesToBeDisplayed(newVariables);
+                    this.props.undoRedoStore.saveVariableHistory('ADD', geneList, true);
+                });
+        }
         this.geneListString = '';
     }
 
@@ -295,13 +345,14 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @param {Object} e
      */
     handleSelect(e) {
-        let profile = '';
-        if (this.props.rootStore.availableProfiles.length > 0) {
-            profile = this.props.rootStore.availableProfiles[0].molecularProfileId;
+        let selectedOption = '';
+        if (this.geneOptions.length > 0) {
+            selectedOption = this.geneOptions[0].value;
         }
         this.category = e.target.value;
+        this.selectedValues = [];
         this.geneListString = '';
-        this.profile = profile;
+        this.selectedGeneOption = selectedOption;
     }
 
     /**
@@ -309,33 +360,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @param {event} e
      */
     handleProfileSelect(e) {
-        const profile = this.props.rootStore.availableProfiles
-            .filter(d => d.molecularProfileId === e.target.value)[0];
-        this.profile = profile.molecularProfileId;
-    }
-
-    /**
-     * handles selecting a sample variable option
-     * @param {Object[]} selectedOptions
-     */
-    handleTimepointOptionSelect(selectedOptions) {
-        if (selectedOptions.length > 0) {
-            this.selectedValues = selectedOptions;
-        } else {
-            this.selectedValues = [];
-        }
-    }
-
-    /**
-     * handles selecting an event variable option
-     * @param {Object[]} selectedOptions
-     */
-    handleEventOptionSelect(selectedOptions) {
-        if (selectedOptions.length > 0) {
-            this.selectedValues = selectedOptions;
-        } else {
-            this.selectedValues = [];
-        }
+        this.selectedGeneOption = e.target.value;
     }
 
     /**
@@ -343,39 +368,15 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @param {Object[]} selectedOptions
      */
     handleOptionSelect(selectedOptions) {
-        if (this.category !== 'clinical') {
-            this.handleEventOptionSelect(selectedOptions);
+        if (selectedOptions.length > 0) {
+            this.selectedValues = selectedOptions;
         } else {
-            this.handleTimepointOptionSelect(selectedOptions);
+            this.selectedValues = [];
         }
     }
 
 
     render() {
-        let selectMappingType = null;
-        let colSize = 0;
-        if (this.category === 'genes') {
-            colSize = 2;
-            selectMappingType = (
-                <Col sm={colSize} style={{ padding: 0 }}>
-                    <FormControl
-                        style={{ height: 38 }}
-                        componentClass="select"
-                        onChange={this.handleProfileSelect}
-                        placeholder="Select Category"
-                    >
-                        {this.props.rootStore.availableProfiles.map(d => (
-                            <option
-                                value={d.molecularProfileId}
-                                key={d.molecularProfileId}
-                            >
-                                {d.name}
-                            </option>
-                        ))}
-                    </FormControl>
-                </Col>
-            );
-        }
         const options = [];
         if (this.props.rootStore.clinicalSampleCategories.length > 0
             || this.props.rootStore.clinicalPatientCategories.length > 0) {
@@ -399,7 +400,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                                 {options}
                             </optgroup>
                             <optgroup label="Event Variables">
-                                {this.props.rootStore.eventCategories.filter(d => d !== 'SPECIMEN').map(d => (
+                                {Object.keys(this.props.rootStore.eventAttributes).filter(d => d !== 'SPECIMEN').map(d => (
                                     <option
                                         value={d}
                                         key={d}
@@ -411,10 +412,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                             </optgroup>
                         </FormControl>
                     </Col>
-                    <Col sm={9 - colSize} style={{ padding: 0 }}>
-                        {this.getSearchField()}
-                    </Col>
-                    {selectMappingType}
+                    {this.getSearchField()}
                     <Col sm={1} style={{ paddingLeft: 0 }}>
                         <Button style={{ height: 38 }} onClick={this.handleAdd}>
                             Add

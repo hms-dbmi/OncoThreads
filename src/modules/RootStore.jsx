@@ -1,5 +1,5 @@
 import {
-    action, extendObservable, observable, reaction, toJS,
+    action, extendObservable, reaction, toJS,
 } from 'mobx';
 import uuidv4 from 'uuid/v4';
 import DataStore from './TemporalHeatmap/stores/DataStore';
@@ -16,25 +16,25 @@ import GeneNamesLocalAPI from '../GeneNamesLocalAPI';
 import ScoreStore from './ScoreStore';
 
 /*
-Store containing all the other stores gets the data with either the cBioAPI
-or from local files, transforms it and gives it to the other stores
+ Store containing all the other stores gets the data with either the cBioAPI
+ or from local files, transforms it and gives it to the other stores
  */
 class RootStore {
     constructor(uiStore) {
         this.study = null; // current study
         this.patients = []; // patients ids in the current study
 
-        this.events = []; // array of all events
-
         this.initialVariable = {}; // initial variable saved for reset
 
         this.timeDistanceId = uuidv4(); // random id for time distance variable
 
         this.mutationMappingTypes = ['Binary', 'Mutation type', 'Protein change', 'Variant allele frequency']; // possible variable types of mutation data
-        this.eventCategories = []; // available event types
         this.eventAttributes = []; // available event attributes
+
         this.sampleTimelineMap = {}; // map of sample ids to dates of sample collection
+        this.eventTimelineMap = {}; // map of sample ids to dates of events
         this.staticMappers = {}; // mappers of sample id to pre-loaded variables
+        this.eventMappers = {}; // maps event ids to event dates
 
         this.sampleStructure = {}; // structure of samples per patient
 
@@ -43,10 +43,8 @@ class RootStore {
         this.dataStore = new DataStore(this); // substore containing the main data
         this.visStore = new VisStore(this); // substore for visual parameters of the visualiztion
         this.svgExport = new SvgExport(this); // substore for SVG export
-        this.scoreStore = new ScoreStore(this);
-
-
-        this.geneNamesAPI = new GeneNamesLocalAPI();
+        this.scoreStore = new ScoreStore(this); // substore for scores
+        this.geneNamesAPI = new GeneNamesLocalAPI(); // substore for gene name API
         this.localFileLoader = new LocalFileLoader(); // substore for loading local files
         this.uiStore = uiStore;
 
@@ -57,8 +55,6 @@ class RootStore {
             variablesParsed: false,
             firstLoad: true,
 
-            // maps event ids to event dates
-            eventTimelineMap: observable.map(),
 
             // Global timeline: current axis scale
             timeVar: 1,
@@ -75,13 +71,6 @@ class RootStore {
             // current structure of sample timepoints
             timepointStructure: [],
 
-            /**
-             * removes an event
-             * @param {string} variableId - id of event to be removed
-             */
-            removeEvent: action((variableId) => {
-                this.eventTimelineMap.delete(variableId);
-            }),
             /**
              * resets everything
              */
@@ -142,9 +131,8 @@ class RootStore {
                     this.geneNamesAPI.geneList = {};
                 }
                 this.staticMappers = {};
-                this.scoreStructure = {};
+                this.eventMappers = {};
 
-                this.eventTimelineMap.clear();
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
                 this.variablesParsed = false;
@@ -152,8 +140,7 @@ class RootStore {
                 this.api.getPatients((patients) => {
                     this.patients = patients;
                     this.api.getEvents(patients, (events) => {
-                        this.events = events;
-                        this.buildTimelineStructure();
+                        this.buildTimelineStructure(events);
                         this.createTimeGapMapping();
 
                         this.timelineParsed = true;
@@ -216,7 +203,6 @@ class RootStore {
                         }
                     }
                 });
-
                 this.scoreStore.calculateVScore();
                 this.scoreStore.calculateVScoreWithinTimeLine();
             }),
@@ -252,10 +238,9 @@ class RootStore {
             /**
              * creates timepoint and sample structure
              */
-            buildTimelineStructure: action(() => {
+            buildTimelineStructure: action((events) => {
                 const sampleStructure = {};
                 const sampleTimelineMap = {};
-                const eventCategories = [];
                 const timepointStructure = [];
                 const excludeDates = {};
 
@@ -264,10 +249,7 @@ class RootStore {
                     excludeDates[patient] = [];
                     let previousDate = -1;
                     let currTP = 0;
-                    this.events[patient].forEach((e) => {
-                        if (!eventCategories.includes(e.eventType)) {
-                            eventCategories.push(e.eventType);
-                        }
+                    events[patient].forEach((e) => {
                         if (e.eventType === 'SPECIMEN') {
                             const sampleId = e.attributes.filter(d => d.key === 'SAMPLE_ID')[0].value;
                             excludeDates[patient].push(e.startNumberOfDaysSinceDiagnosis);
@@ -285,10 +267,9 @@ class RootStore {
                     });
                 });
                 this.sampleTimelineMap = sampleTimelineMap;
-                this.eventCategories = eventCategories;
                 this.sampleStructure = sampleStructure;
                 this.timepointStructure = timepointStructure;
-                this.createEventAttributes(excludeDates);
+                this.createEventVariables(events);
             }),
             /**
              * updates the timepoint structure after patients are moved up or down
@@ -343,72 +324,6 @@ class RootStore {
                     .updateNames(this.createNameList(up, oldSampleTimepointNames, patients));
             }),
             /**
-             * creates a mapping of an event to sampleIDs
-             * (events are mapped to the subsequent event)
-             * @param {string} eventType - event Type of event variable
-             * @param {Object} selectedVariable - event variable object with id and name
-             * @returns {Object}
-             */
-            getSampleEventMapping: action((eventType, selectedVariable) => {
-                const sampleMapper = {};
-                this.eventTimelineMap.set(selectedVariable.id, []);
-                Object.keys(this.events).forEach((patient) => {
-                    const samples = [];
-                    // extract samples for current patient
-                    this.eventBlockStructure.forEach((g) => {
-                        g.forEach((l) => {
-                            if (l.patient === patient) {
-                                if (!(l.sample in sampleMapper)) {
-                                    sampleMapper[l.sample] = false;
-                                }
-                                samples.push(l.sample);
-                            }
-                        });
-                    });
-                    if (samples.length > 0) {
-                        let counter = 0;
-                        let currentStart = Number.NEGATIVE_INFINITY;
-                        let currentEnd = this.sampleTimelineMap[samples[counter]];
-                        let i = 0;
-                        while (i < this.events[patient].length) {
-                            const start = this.events[patient][i].startNumberOfDaysSinceDiagnosis;
-                            let end = this.events[patient][i].startNumberOfDaysSinceDiagnosis;
-                            if (Object.prototype.hasOwnProperty.call(this.events[patient][i], 'endNumberOfDaysSinceDiagnosis')) {
-                                end = this.events[patient][i].endNumberOfDaysSinceDiagnosis;
-                            }
-                            if (RootStore.isInCurrentRange(this.events[patient][i],
-                                currentStart, currentEnd)) {
-                                const matchingId = RootStore.doesEventMatch(eventType,
-                                    selectedVariable, this.events[patient][i]);
-                                if (matchingId !== null) {
-                                    sampleMapper[samples[counter]] = true;
-                                    const events = this.eventTimelineMap.get(matchingId).concat({
-                                        time: counter,
-                                        patientId: patient,
-                                        sampleId: samples[counter],
-                                        eventStartDate: start,
-                                        eventEndDate: end,
-                                    });
-                                    this.eventTimelineMap.set(matchingId, events);
-                                }
-                                i += 1;
-                            } else if (start >= currentEnd) {
-                                currentStart = this.sampleTimelineMap[samples[counter]];
-                                if (counter + 1 < samples.length - 1) {
-                                    currentEnd = this.sampleTimelineMap[samples[counter + 1]];
-                                } else {
-                                    currentEnd = Number.POSITIVE_INFINITY;
-                                }
-                                counter += 1;
-                            } else {
-                                i += 1;
-                            }
-                        }
-                    }
-                });
-                return sampleMapper;
-            }),
-            /**
              * gets block structure for events
              * @returns {Object[][]}
              */
@@ -431,11 +346,6 @@ class RootStore {
                     })));
                 return eventBlockStructure;
             },
-            /**
-             * gets first and last day for each patient plus the very last state
-             * (DECEASED,LIVING,undefined) and maps it to patientIds
-             * @return {Object}
-             */
             get minMax() {
                 const minMax = {};
                 const survivalEvents = this.computeSurvival();
@@ -445,7 +355,7 @@ class RootStore {
                         .map(d => this.sampleTimelineMap[d]));
                     let min = Math.min(...this.sampleStructure[patient]
                         .map(d => this.sampleTimelineMap[d]));
-                    this.eventTimelineMap.forEach((value) => {
+                    Object.values(this.eventTimelineMap).forEach((value) => {
                         max = Math.max(max, Math.max(...value.filter(d => d.patientId === patient)
                             .map(d => d.eventEndDate)));
                         min = Math.min(min, Math.min(...value.filter(d => d.patientId === patient)
@@ -462,10 +372,6 @@ class RootStore {
                 });
                 return minMax;
             },
-            /**
-             * very last event of all patients
-             * @returns {number}
-             */
             get maxTimeInDays() {
                 let max = 0;
                 Object.keys(this.minMax).forEach((patient) => {
@@ -475,7 +381,6 @@ class RootStore {
                 });
                 return max;
             },
-
         });
         // initialize dataStore and add initial variable if variables are parsed
         reaction(() => this.variablesParsed, (parsed) => {
@@ -608,26 +513,75 @@ class RootStore {
         return survivalEvents;
     }
 
-
     /**
-     * checks of the selected event matches the current event
-     * @param {string} type
-     * @param {Object} value
-     * @param {Object} event
-     * @returns {string} - matching id or null
+     * creates all event variables
+     * @param {object[]} events
      */
-    static doesEventMatch(type, value, event) {
-        let matchingId = null;
-        if (type === event.eventType) {
-            event.attributes.forEach((f) => {
-                if (f.key === value.eventType && f.value === value.name) {
-                    matchingId = value.id;
-                }
+    createEventVariables(events) {
+        this.eventTimelineMap = {};
+        Object.keys(events).forEach((patient) => {
+            const samples = [];
+            // extract samples for current patient
+            this.eventBlockStructure.forEach((g) => {
+                g.forEach((l) => {
+                    if (l.patient === patient) {
+                        samples.push(l.sample);
+                    }
+                });
             });
-        }
-        return matchingId;
+            events[patient].forEach((event) => {
+                if (!(event.eventType in this.eventAttributes)) {
+                    this.eventAttributes[event.eventType] = {};
+                }
+                event.attributes.forEach((attribute) => {
+                    if (!(attribute.key in this.eventAttributes[event.eventType])) {
+                        this.eventAttributes[event.eventType][attribute.key] = [];
+                    }
+                    const valueId = `${event.eventType}_${attribute.key}_${attribute.value}`;
+                    if (!(valueId in this.eventMappers)) {
+                        this.eventTimelineMap[valueId] = [];
+                        this.eventAttributes[event.eventType][attribute.key].push({
+                            name: attribute.value,
+                            id: valueId,
+                        });
+                        this.eventMappers[valueId] = {};
+                        this.eventBlockStructure.forEach((g) => {
+                            g.forEach((l) => {
+                                this.eventMappers[valueId][l.sample] = false;
+                            });
+                        });
+                    }
+                    samples.forEach((sampleId, i) => {
+                        let currentStart = Number.NEGATIVE_INFINITY;
+                        let currentEnd = Number.POSITIVE_INFINITY;
+                        if (i > 0) {
+                            currentStart = this.sampleTimelineMap[samples[i - 1]];
+                            if (i < samples.length - 2) {
+                                currentEnd = this.sampleTimelineMap[sampleId];
+                            }
+                        } else {
+                            currentEnd = this.sampleTimelineMap[sampleId];
+                        }
+                        if (RootStore.isInCurrentRange(event, currentStart, currentEnd)) {
+                            this.eventMappers[valueId][sampleId] = true;
+                            const start = event.startNumberOfDaysSinceDiagnosis;
+                            let end = start;
+                            if ('endNumberOfDaysSinceDiagnosis' in event) {
+                                end = event.endNumberOfDaysSinceDiagnosis;
+                            }
+                            this.eventTimelineMap[valueId].push({
+                                time: i,
+                                patientId: patient,
+                                sampleId,
+                                eventStartDate: start,
+                                eventEndDate: end,
+                            });
+                        }
+                    });
+                });
+            });
+        });
     }
-
 
     /**
      * checks if an event has happened in a specific timespan
@@ -638,7 +592,7 @@ class RootStore {
      */
     static isInCurrentRange(event, currMinDate, currMaxDate) {
         let isInRange = false;
-        if (Object.prototype.hasOwnProperty.call(event, 'endNumberOfDaysSinceDiagnosis')) {
+        if ('endNumberOfDaysSinceDiagnosis' in event) {
             isInRange = (event.endNumberOfDaysSinceDiagnosis <= currMaxDate
                 && event.endNumberOfDaysSinceDiagnosis > currMinDate)
                 || (event.startNumberOfDaysSinceDiagnosis < currMaxDate
@@ -648,38 +602,6 @@ class RootStore {
                 && event.startNumberOfDaysSinceDiagnosis >= currMinDate;
         }
         return isInRange;
-    }
-
-
-    /**
-     * gets all the different attributes an event can have
-     */
-    createEventAttributes() {
-        this.eventAttributes = {};
-        Object.keys(this.events).forEach((patient) => {
-            this.events[patient].forEach((d) => {
-                if (!(d.eventType in this.eventAttributes)) {
-                    this.eventAttributes[d.eventType] = {};
-                }
-                d.attributes.forEach((f) => {
-                    if (!(f.key in this.eventAttributes[d.eventType])) {
-                        this.eventAttributes[d.eventType][f.key] = [];
-                        this.eventAttributes[d.eventType][f.key].push({
-                            name: f.value,
-                            id: uuidv4(),
-                            eventType: f.key,
-                        });
-                    } else if (!this.eventAttributes[d.eventType][f.key]
-                        .map(g => g.name).includes(f.value)) {
-                        this.eventAttributes[d.eventType][f.key].push({
-                            name: f.value,
-                            id: uuidv4(),
-                            eventType: f.key,
-                        });
-                    }
-                });
-            });
-        });
     }
 }
 

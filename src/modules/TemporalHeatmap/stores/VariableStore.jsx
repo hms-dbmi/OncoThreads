@@ -240,9 +240,6 @@ class VariableStore {
         this.savedReferences.forEach(d => this.setReferences(d));
         Object.keys(this.referencedVariables).forEach((id) => {
             if (this.referencedVariables[id].referenced === 0) {
-                if (this.referencedVariables[id].type === 'event') {
-                    this.rootStore.removeEvent(id);
-                }
                 delete this.referencedVariables[id];
             }
         });

@@ -88,7 +88,7 @@ class DerivedVariable {
             || (this.datatype === 'BINARY' && domain.length === 0)) {
             return this.getDefaultDomain(domain);
         } if (this.datatype === 'STRING' || this.datatype === 'ORDINAL') {
-            return Array.from(new Set(domain.concat(...this.getDefaultDomain(domain)).sort()));
+            return Array.from(new Set(domain.concat(...this.getDefaultDomain())));
         }
         return domain;
     }
