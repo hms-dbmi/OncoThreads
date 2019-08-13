@@ -5,7 +5,7 @@ import { inject, observer } from 'mobx-react';
 import OriginalVariable from '../../../stores/OriginalVariable';
 import DerivedVariable from '../../../stores/DerivedVariable';
 /*
-implements a Band for Sankey Transition
+ implements a Band for Sankey Transition
  */
 const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band extends React.Component {
     /**
@@ -25,6 +25,14 @@ const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band exte
         }
 
         return partitionValue;
+    }
+
+    getTooltipLine(source, target) {
+        let patientString = 'patients';
+        if (this.props.patients.length === 1) {
+            patientString = 'patient';
+        }
+        return `${source} -> ${target}: ${Math.round(this.props.patients.length / this.props.dataStore.numberOfPatients * 100)}% (${this.props.patients.length} ${patientString}) of total`;
     }
 
     /**
@@ -157,7 +165,7 @@ const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band exte
         );
         return (
             <g
-                onMouseEnter={e => this.props.showTooltip(e, `${source} -> ${target}: ${this.props.patients.length}`)}
+                onMouseEnter={e => this.props.showTooltip(e, this.getTooltipLine(source, target))}
                 onMouseLeave={this.props.hideTooltip}
             >
                 {selected}
