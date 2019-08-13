@@ -103,7 +103,7 @@ const EventVariableSelector = inject('variableManagerStore', 'rootStore')(observ
                     .addVariableToBeDisplayed(this.props.variableManagerStore
                         .getById(selectedOption.object));
             } else if (this.state.category !== 'Computed') {
-                this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, 'BINARY', `Indicates if event: "${selectedOption.object.name}" has happened between two timepoints`, [], [], this.props.rootStore.getSampleEventMapping(this.state.category, selectedOption.object), this.state.category, 'event'));
+                this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, "BINARY", `Indicates if event: "${selectedOption.object.name}" has happened between two timepoints`, [], [], this.props.rootStore.eventMappers[selectedOption.value], this.state.category, 'event'));
             } else {
                 this.props.variableManagerStore.addVariableToBeDisplayed(new OriginalVariable(selectedOption.object.id, selectedOption.object.name, selectedOption.object.datatype, selectedOption.object.description, [], [], this.props.rootStore.staticMappers[selectedOption.object.id], 'Computed', 'computed'));
             }

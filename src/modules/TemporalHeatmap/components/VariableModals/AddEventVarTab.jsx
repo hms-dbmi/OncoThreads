@@ -10,7 +10,7 @@ import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
 const AddEventVarTab = inject('rootStore')(observer(class AddEventVarTab extends React.Component {
     render() {
         // set available categories (event eventType)
-        const categories = [...this.props.rootStore.eventCategories.filter(d => d !== 'SPECIMEN').map(d => ({
+        const categories = [...Object.keys(this.props.rootStore.eventAttributes).filter(d => d !== 'SPECIMEN').map(d => ({
             id: d,
             name: UtilityFunctions.toTitleCase(d),
         })), { id: 'Computed', name: 'Computed' }];

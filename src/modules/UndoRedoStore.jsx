@@ -170,7 +170,6 @@ class UndoRedoStore {
             this.stateStack[index].state.currentSampleVar);
         this.rootStore.dataStore.variableStores.between.replaceVariables(UndoRedoStore.deserializeReferencedVariables(this.stateStack[index].state.allBetweenVar),
             this.stateStack[index].state.currentBetweenVar);
-        this.rootStore.eventTimelineMap.replace(this.stateStack[index].state.eventTimelineMap);
         this.rootStore.dataStore.globalPrimary = this.stateStack[index].state.globalPrimary;
     }
 
@@ -262,7 +261,6 @@ class UndoRedoStore {
             realTime: store.uiStore.realTime,
             globalPrimary: store.rootStore.dataStore.globalPrimary,
             timepointStructure: toJS(store.rootStore.timepointStructure),
-            eventTimelineMap: toJS(store.rootStore.eventTimelineMap)
         }));
         //delete the top of the stack if we switch from undoRedoMode to the normal saving of the state
         const serializeTimepoints = createTransformer(timepoint => ({

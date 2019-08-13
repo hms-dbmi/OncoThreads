@@ -79,7 +79,7 @@ class OriginalVariable {
             || (this.datatype === 'BINARY' && domain.length === 0)) {
             return this.getDefaultDomain(domain);
         }
-        return Array.from(new Set(domain.concat(...this.getDefaultDomain(domain)).sort()));
+        return Array.from(new Set(domain.concat(...this.getDefaultDomain())));
     }
 
     /**

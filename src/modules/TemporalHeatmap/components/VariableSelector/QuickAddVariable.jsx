@@ -62,7 +62,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @return {(Select|FormControl)}
      */
     getSearchField() {
-        if (this.category === 'clinical' || this.category === 'computed' || this.props.rootStore.eventCategories.includes(this.category)) {
+        if (this.category === 'clinical' || this.category === 'computed' || Object.keys(this.props.rootStore.eventAttributes).includes(this.category)) {
             return (
                 <Select
                     value={this.selectedValues.slice()}
@@ -115,7 +115,12 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * adds variables as separate rows
      */
     addVariablesSeperate() {
-        this.selectedValues.forEach(d => this.props.rootStore.dataStore.variableStores.between.addVariableToBeDisplayed(new OriginalVariable(d.value, d.label, 'BINARY', `Indicates if event: "${d.label}" has happened between two timepoints`, [], [], this.props.rootStore.getSampleEventMapping(this.category, d.object), this.category, 'event')));
+        this.selectedValues.forEach((d) => {
+            const variable = new OriginalVariable(d.value, d.label, 'BINARY', `Indicates if event: "${d.label}" has happened between two timepoints`,
+                [], [], this.props.rootStore.eventMappers[d.value], this.category, 'event');
+            this.props.rootStore.dataStore.variableStores
+                .between.addVariableToBeDisplayed(variable);
+        });
     }
 
     /**
@@ -399,7 +404,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                                 {options}
                             </optgroup>
                             <optgroup label="Event Variables">
-                                {this.props.rootStore.eventCategories.filter(d => d !== 'SPECIMEN').map(d => (
+                                {Object.keys(this.props.rootStore.eventAttributes).filter(d => d !== 'SPECIMEN').map(d => (
                                     <option
                                         value={d}
                                         key={d}
