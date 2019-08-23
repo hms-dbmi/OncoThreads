@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { inject, observer, Provider } from 'mobx-react';
+import {
+    inject, observer, Provider, PropTypes as MobxPropTypes,
+} from 'mobx-react';
 import {
     Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio,
 } from 'react-bootstrap';
@@ -12,7 +14,6 @@ import ColorScales from '../../../UtilityClasses/ColorScales';
 import CategoryStore from '../VariableTables/CategoryStore';
 import CategoricalTable from '../VariableTables/CategoricalTable';
 import BinaryTable from '../VariableTables/BinaryTable';
-import OriginalVariable from '../../../stores/OriginalVariable';
 
 /**
  * Component for combining variables
@@ -43,7 +44,7 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
                         .map(d => d.mapper), this.modification)}
                     binaryColors={this.binaryColors}
                     invert={false}
-                    setColors={this.setBinaryColors}
+                    setBinaryColors={this.setBinaryColors}
                 />];
         }
 
@@ -273,8 +274,7 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
                         onChange={() => { this.keep = !this.keep; }}
                         checked={!this.keep}
                     >
-                        Discard
-                        original variables
+                        Discard original variables
                     </Checkbox>
                     <Button onClick={this.props.closeModal}>
                         Cancel
@@ -288,8 +288,7 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
     }
 }));
 BinaryCombine.propTypes = {
-    variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
-        PropTypes.instanceOf(DerivedVariable)])),
+    variables: MobxPropTypes.observableArray.isRequired,
     derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,

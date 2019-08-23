@@ -1,6 +1,4 @@
-import {
-    action, extendObservable, reaction, toJS,
-} from 'mobx';
+import { action, extendObservable, reaction, toJS } from 'mobx';
 import uuidv4 from 'uuid/v4';
 import DataStore from './TemporalHeatmap/stores/DataStore';
 
@@ -41,7 +39,7 @@ class RootStore {
         this.api = null; // current api in use: cBioAPI or FileAPI
         this.molProfileMapping = new MolProfileMapping(this); // store for loading data on demand
         this.dataStore = new DataStore(this); // substore containing the main data
-        this.visStore = new VisStore(this); // substore for visual parameters of the visualiztion
+        this.visStore = new VisStore(this); // substore for visual parameters of the visualization
         this.svgExport = new SvgExport(this); // substore for SVG export
         this.scoreStore = new ScoreStore(this); // substore for scores
         this.geneNamesAPI = new GeneNamesLocalAPI(); // substore for gene name API
@@ -141,6 +139,7 @@ class RootStore {
                     this.patients = patients;
                     this.api.getEvents(patients, (events) => {
                         this.buildTimelineStructure(events);
+                        this.createEventVariables(events);
                         this.createTimeGapMapping();
 
                         this.timelineParsed = true;
@@ -269,7 +268,6 @@ class RootStore {
                 this.sampleTimelineMap = sampleTimelineMap;
                 this.sampleStructure = sampleStructure;
                 this.timepointStructure = timepointStructure;
-                this.createEventVariables(events);
             }),
             /**
              * updates the timepoint structure after patients are moved up or down
@@ -346,6 +344,10 @@ class RootStore {
                     })));
                 return eventBlockStructure;
             },
+            /**
+             * get first and last date for every patient and the state of survival if available
+             * @return {object}
+             */
             get minMax() {
                 const minMax = {};
                 const survivalEvents = this.computeSurvival();
@@ -372,6 +374,10 @@ class RootStore {
                 });
                 return minMax;
             },
+            /**
+             * get maximum date of all patients
+             * @return {number}
+             */
             get maxTimeInDays() {
                 let max = 0;
                 Object.keys(this.minMax).forEach((patient) => {

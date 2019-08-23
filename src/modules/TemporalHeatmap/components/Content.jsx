@@ -126,7 +126,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
     closeBinningModal() {
         this.binningModalIsOpen = false;
         this.variable = '';
-        this.timepointIndex = -1;
         this.callback = null;
     }
 

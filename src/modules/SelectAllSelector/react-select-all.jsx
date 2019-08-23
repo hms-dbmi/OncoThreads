@@ -32,7 +32,13 @@ const SelectAll = class SelectAll extends React.Component {
     render() {
         const flattenedOptions = this.flattenOptions(this.props.options);
         if (this.props.allowSelectAll) {
-            if (this.props.value.length === flattenedOptions.length) {
+            if (flattenedOptions.length === 0) {
+                return (
+                    <Select
+                        {...this.props}
+                    />
+                );
+            } if (this.props.value.length === flattenedOptions.length) {
                 return (
                     <Select
                         {...this.props}
