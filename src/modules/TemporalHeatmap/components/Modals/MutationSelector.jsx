@@ -1,9 +1,7 @@
 import React from 'react';
 
 import { inject, observer } from 'mobx-react';
-import {
-    Button, Col, ControlLabel, Form, FormControl, FormGroup,
-} from 'react-bootstrap';
+import { Button, Col, FormControl } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { extendObservable } from 'mobx';
 import SelectAll from '../../../SelectAllSelector/react-select-all';
@@ -28,17 +26,26 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
             mutationOptions: [],
             molecularOptions: [],
             selectedOptions: [],
-            showAvailableData: false,
+            get geneList() {
+                if (this.geneListString.length > 0) {
+                    const geneList = this.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, '').toUpperCase().split(' ');
+                    geneList.forEach((d, i) => {
+                        if (d.includes('ORF')) {
+                            geneList[i] = d.replace('ORF', 'orf');
+                        }
+                    });
+                    return geneList;
+                }
+                return [];
+            },
         });
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
         this.updateSearchValue = this.updateSearchValue.bind(this);
-        this.handleEnterSearch = this.handleEnterSearch.bind(this);
         this.handleEnterExplore = this.handleEnterExplore.bind(this);
         this.updateMutationOptions = this.updateMutationOptions.bind(this);
         this.updateMolecularOptions = this.updateMolecularOptions.bind(this);
-        this.resetGeneSelection = this.resetGeneSelection.bind(this);
     }
 
     /**
@@ -46,30 +53,19 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
      * @return {*[]}
      */
     getGeneTextField() {
-        return [
-            <Col sm={5} key="textField">
-                <FormControl
-                    style={{ height: 38 }}
-                    type="textarea"
-                    placeholder="Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"
-                    onChange={this.updateSearchValue}
-                    onKeyDown={this.handleEnterSearch}
-                    value={this.geneListString}
-                />
-            </Col>,
-            <Col sm={1} key="search">
-                <Button
-                    style={{ height: 38 }}
-                    onClick={this.searchGenes}
-                >
-                    Search
-                </Button>
-            </Col>,
-        ];
+        return (
+            <FormControl
+                style={{ height: 38 }}
+                type="textarea"
+                placeholder="Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"
+                onChange={this.updateSearchValue}
+                value={this.geneListString}
+            />
+        );
     }
 
     /**
-     * gets the checkboxes for the available genomic data
+     * gets the dropdown for the available genomic data
      * @returns {Form}
      */
     getDataSelect() {
@@ -84,90 +80,63 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
                 options.push({ label: d.name, value: d.id, type: 'molecular' });
             });
         }
-        if (this.mutationOptions.length > 0 || this.molecularOptions.length > 0) {
-            return ([
-                <Col sm={5} key="select">
-                    <SelectAll
-                        isMulti
-                        searchable
-                        options={options}
-                        value={this.selectedOptions.slice()}
-                        onChange={this.handleOptionSelect}
-                        onKeyDown={this.handleEnterExplore}
-                        allowSelectAll
-                    />
-                </Col>,
-                <Col sm={1} key="explore">
-                    <Button
-                        style={{ height: 38 }}
-                        onClick={this.addGeneVariables}
-                    >
-                        Explore
-                    </Button>
-                </Col>,
-            ]);
-        }
-        return <Col sm={5}>No data available for gene(s)</Col>;
+        return (
+            <SelectAll
+                isMulti
+                searchable
+                options={options}
+                value={this.selectedOptions.slice()}
+                onChange={this.handleOptionSelect}
+                onKeyDown={this.handleEnterExplore}
+                allowSelectAll
+            />
+        );
+    }
+
+
+    /**
+     * updates molecular options for select dropdown
+     * @param {string[]} containedProfiles
+     * @return {{id: string, name: string}[]}
+     */
+    updateMolecularOptions(containedProfiles) {
+        return this.props.rootStore.availableProfiles.filter(profile => profile.molecularAlterationType !== 'MUTATION_EXTENDED'
+            && containedProfiles.includes(profile.molecularProfileId)).map(profile => ({
+            id: profile.molecularProfileId,
+            name: profile.name,
+        }));
     }
 
     /**
-     * updates the checkboxes showing the different mutation data types
-     * @param {boolean} hasData
+     * updates mutation options for select dropdown
+     * @param {boolean} hasMutations
+     * @return {{id: string}[]}
      */
-    updateMutationOptions(hasData) {
-        if (hasData) {
-            this.props.rootStore.mutationMappingTypes.forEach((d) => {
-                this.mutationOptions.push({ id: d });
-            });
+    updateMutationOptions(hasMutations) {
+        if (hasMutations) {
+            return this.props.rootStore.mutationMappingTypes.map(mappingType => ({
+                id: mappingType,
+            }));
         }
-        this.showAvailableData = true;
+        return [];
     }
 
-    /**
-     * updates the checkboxes showing the different molecular profiles
-     * @param {string} profile
-     * @param {boolean} hasData
-     */
-    updateMolecularOptions(profile, hasData) {
-        if (hasData) {
-            if (!this.molecularOptions.map(d => d.id).includes(profile)) {
-                this.molecularOptions.push({
-                    id: profile,
-                    name: this.props.rootStore.availableProfiles
-                        .filter(d => d.molecularProfileId === profile)[0].name,
-                });
-            }
-        } else if (this.molecularOptions.map(d => d.id).includes(profile)) {
-            this.molecularOptions.splice(this.molecularOptions.map(d => d.id).indexOf(profile), 1);
-        }
-        this.showAvailableData = true;
-    }
 
     /**
      * searches for the genes entered in the search field
      */
     searchGenes() {
-        this.molecularOptions = [];
-        this.mutationOptions = [];
-        const geneList = this.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, '').toUpperCase().split(' ');
-        geneList.forEach((d, i) => {
-            if (d.includes('ORF')) {
-                geneList[i] = d.replace('ORF', 'orf');
-            }
-        });
         // check for which profiles data is available for the entered HUGOSymbols
-        this.props.rootStore.molProfileMapping
-            .getDataContainingProfiles(geneList, (dataProfiles) => {
-                this.props.rootStore.availableProfiles.forEach((d) => {
-                    if (d.molecularAlterationType === 'MUTATION_EXTENDED') {
-                        this.updateMutationOptions(dataProfiles
-                            .includes(d.molecularProfileId));
-                    } else {
-                        this.updateMolecularOptions(d.molecularProfileId, dataProfiles
-                            .includes(d.molecularProfileId));
-                    }
+        if (this.geneList.length > 0) {
+            this.props.rootStore.molProfileMapping
+                .getDataContainingProfiles(this.geneList, (dataProfiles) => {
+                    const hasMutations = this.props.rootStore
+                        .availableProfiles.filter(d => dataProfiles.includes(d.molecularProfileId))
+                        .map(d => d.molecularAlterationType).includes('MUTATION_EXTENDED');
+                    this.mutationOptions = this.updateMutationOptions(hasMutations);
+                    this.molecularOptions = this.updateMolecularOptions(dataProfiles);
                 });
-            });
+        }
     }
 
 
@@ -177,17 +146,8 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
      */
     updateSearchValue(event) {
         this.geneListString = event.target.value;
-        this.showAvailableData = false;
-    }
-
-    /**
-     * handles pressing enter after entering genes into the search field
-     * @param {event} event
-     */
-    handleEnterSearch(event) {
-        if (MutationSelector.checkEnterPressed(event)) {
-            this.searchGenes();
-        }
+        this.mutationOptions = [];
+        this.molecularOptions = [];
     }
 
     /**
@@ -213,39 +173,34 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
      */
     addGeneVariables() {
         this.props.addGeneVariables(this.selectedOptions);
-        this.resetGeneSelection();
-    }
-
-    /**
-     * resets the gene selection
-     */
-    resetGeneSelection() {
         this.geneListString = '';
-        this.showAvailableData = false;
-        this.selectedOptions.clear();
+        this.selectedOptions = [];
     }
 
 
     render() {
+        const style = {};
+        if (this.props.noPadding) {
+            style.padding = 0;
+        }
         if (this.props.rootStore.availableProfiles.length > 0) {
             return (
-                <Form horizontal>
-                    <FormGroup>
-                        <Col sm={6}>
-                            <ControlLabel>Search for Genes</ControlLabel>
-                        </Col>
-                        {this.showAvailableData
-                            ? (
-                                <Col sm={6}>
-                                    <ControlLabel>Available Data</ControlLabel>
-                                </Col>
-                            ) : null}
-                    </FormGroup>
-                    <FormGroup>
+                [
+                    <Col sm={6} style={style} key="textfield">
                         {this.getGeneTextField()}
-                        {this.showAvailableData ? this.getDataSelect() : null}
-                    </FormGroup>
-                </Form>
+                    </Col>,
+                    <Col sm={5} onClick={this.searchGenes} style={style} key="geneSearch">
+                        {this.getDataSelect()}
+                    </Col>,
+                    <Col sm={1} style={style} key="addButton">
+                        <Button
+                            style={{ height: 38 }}
+                            onClick={this.addGeneVariables}
+                        >
+                            Add
+                        </Button>
+                    </Col>,
+                ]
             );
         }
         return null;
@@ -253,5 +208,9 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
 }));
 MutationSelector.propTypes = {
     addGeneVariables: PropTypes.func.isRequired,
+    noPadding: PropTypes.bool,
+};
+MutationSelector.defaultProps = {
+    noPadding: false,
 };
 export default MutationSelector;

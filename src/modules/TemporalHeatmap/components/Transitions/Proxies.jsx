@@ -33,19 +33,6 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
             proxy = (
                 <path
                     key={`${partition.key}band`}
-                    d={`M${partition.x0},${y1
-                    }L${partition.x0 + partition.sharedWidth},${y1
-                    }C${partition.x0 + partition.sharedWidth},${y0
-                    } ${partition.x0 + partition.sharedWidth},${y1
-                    } ${partition.x0 + partition.width},${y0
-                    }L${partition.x0},${y0}Z`}
-                    fill="#dddddd"
-                    opacity={0.5}
-                />
-            );
-            proxy = (
-                <path
-                    key={`${partition.key}band`}
                     d={`M${partition.x0},${y0
                     }C${partition.x0 + partition.offset},${y1
                     } ${partition.x0 + partition.offset},${y0

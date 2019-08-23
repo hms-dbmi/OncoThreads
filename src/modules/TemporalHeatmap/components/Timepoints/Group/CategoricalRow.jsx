@@ -11,15 +11,6 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
         this.previousOffset = 0;
     }
 
-    /**
-     * Creates a tooltip showing information about the row
-     * @param {number} numPatients - number of patients in that category
-     * @return {string}
-     */
-    getSecondTooltipLine(numPatients) {
-        return `${Math.round(numPatients / this.props.dataStore.numberOfPatients * 100)}% of total`;
-    }
-
     static getFirstTooltipLine(value, numPatients, rowPatients) {
         if (numPatients === 1) {
             return `${value}: ${Math.round(numPatients / rowPatients * 100)}% (${numPatients} patient) of group`;

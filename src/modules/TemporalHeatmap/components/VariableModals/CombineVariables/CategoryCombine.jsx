@@ -1,5 +1,5 @@
 import React from 'react';
-import { inject, observer, Provider } from 'mobx-react';
+import { inject, observer, Provider, PropTypes as MobxPropTypes } from 'mobx-react';
 import {
     Button, Checkbox, ControlLabel, FormControl, Modal,
 } from 'react-bootstrap';
@@ -11,7 +11,6 @@ import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunction
 import ColorScales from '../../../UtilityClasses/ColorScales';
 import CategoryStore from '../VariableTables/CategoryStore';
 import CategoricalTable from '../VariableTables/CategoricalTable';
-import OriginalVariable from '../../../stores/OriginalVariable';
 
 /**
  * Component for combining variables
@@ -193,8 +192,7 @@ const CategoryCombine = inject('variableManagerStore')(observer(class CategoryCo
     }
 }));
 CategoryCombine.propTypes = {
-    variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
-        PropTypes.instanceOf(DerivedVariable)])),
+    variables: MobxPropTypes.observableArray.isRequired,
     derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,

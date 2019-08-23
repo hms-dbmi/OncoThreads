@@ -52,7 +52,6 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
             || !this.props.derivedVariable.modification.transformFunction) {
             return Object.values(this.props.variable.mapper).filter(d => d !== undefined);
         }
-
         return Object.values(this.props.variable.mapper).filter(d => d !== undefined)
             .map(d => this.props.derivedVariable.modification.transformFunction(d));
     }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import {
     Button,
     Checkbox,
@@ -21,7 +21,6 @@ import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunction
 import ModifyContinuous from '../ModifySingleVariable/ModifyContinuous';
 import ColorScales from '../../../UtilityClasses/ColorScales';
 import Histogram from '../ModifySingleVariable/Binner/Histogram';
-import OriginalVariable from '../../../stores/OriginalVariable';
 
 /**
  * Component for combining variables
@@ -142,7 +141,6 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
      */
     handleNameChange(event) {
         this.name = event.target.value;
-        this.nameChanged = true;
     }
 
 
@@ -150,18 +148,15 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
      * gets the initial state
      * @return {{name: string, modification:
      * {operator: string, datatype: string},
-     * nameChanged: boolean, variableRange: string[],
+     * variableRange: string[],
      * keep: boolean, isOrdinal: boolean,
      * currentVarCategories: Object[]}}
      */
     initializeObservable() {
         let name;
-        let nameChanged;
         let colorRange;
-        let
-            operation; // name of combined variable
+        let operation; // name of combined variable
         if (this.props.derivedVariable === null) {
-            nameChanged = false; // has the name been changed
             if (this.props.variables.every(d => d.domain[0] >= 0)) {
                 colorRange = ColorScales.defaultContinuousTwoColors;
             } else {
@@ -172,13 +167,11 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
             // if the variable is already combined base parameters on this variable
         } else {
             name = this.props.derivedVariable.name;
-            nameChanged = true;
             colorRange = this.props.derivedVariable.range;
             operation = this.props.derivedVariable.modification.operation;
         }
         return {
             name,
-            nameChanged,
             keep: true,
             colorRange,
             operation,
@@ -268,8 +261,7 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
     }
 }));
 ContinuousCombine.propTypes = {
-    variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
-        PropTypes.instanceOf(DerivedVariable)])),
+    variables: MobxPropTypes.observableArray.isRequired,
     derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,

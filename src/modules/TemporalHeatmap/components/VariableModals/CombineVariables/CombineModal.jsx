@@ -1,10 +1,9 @@
 import React from 'react';
-import { observer } from 'mobx-react';
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import PropTypes from 'prop-types';
 import BinaryCombine from './BinaryCombine';
 import CategoryCombine from './CategoryCombine';
 import ContinuousCombine from './ContinuousCombine';
-import OriginalVariable from '../../../stores/OriginalVariable';
 import DerivedVariable from '../../../stores/DerivedVariable';
 
 /**
@@ -72,8 +71,7 @@ const CombineModal = observer(class CombineModal extends React.Component {
     }
 });
 CombineModal.propTypes = {
-    variables: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.instanceOf(OriginalVariable),
-        PropTypes.instanceOf(DerivedVariable)])),
+    variables: MobxPropTypes.observableArray.isRequired,
     derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,

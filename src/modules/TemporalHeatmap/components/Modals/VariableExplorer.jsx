@@ -1,9 +1,22 @@
 import React from 'react';
 
 import { inject, observer } from 'mobx-react';
-import { Button, Grid, Modal, Row } from 'react-bootstrap';
+import {
+    Button,
+    Col,
+    ControlLabel,
+    Form,
+    FormGroup,
+    Grid,
+    Label,
+    Modal,
+    OverlayTrigger,
+    Popover,
+    Row,
+} from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { extendObservable } from 'mobx';
+import Select from 'react-select';
 import LineUpView from './LineUpView';
 import OriginalVariable from '../../stores/OriginalVariable';
 import MutationSelector from './MutationSelector';
@@ -19,6 +32,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             selected: [],
             modalIsOpen: false,
             onDemandVariables: [],
+            selectedScores: [],
+            addedScores: [],
             get variables() {
                 return this.getInitialVariables().concat(...this.onDemandVariables);
             },
@@ -29,6 +44,12 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 return this.createData();
             },
         });
+        this.scores = ['changeRate', 'modVRacross', 'AvgModVRtp',
+            'MaxModVRtp', 'MinModVRtp', 'AvgCoVTimeLine', 'AvgCoeffUnalikeability',
+            'AvgVarianceTimeLine'];
+        this.addScore = this.addScore.bind(this);
+        this.handleEnterAdd = this.handleEnterAdd.bind(this);
+        this.removeScore = this.removeScore.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
@@ -62,6 +83,34 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             .filter(variable => !this.props.variableManagerStore.isInTable(variable.id))
             .map(variable => new OriginalVariable(variable.id, variable.variable,
                 variable.datatype, variable.description, [], [], this.props.rootStore.staticMappers[variable.id], variable.source, 'clinical'));
+    }
+
+    getScoreSelector() {
+        return (
+            <Select
+                searchable
+                isMulti
+                value={this.selectedScores.slice()}
+                options={this.scores.map(score => ({
+                    label: (
+                        <div
+                            style={{ textAlign: 'left' }}
+                        >
+                            <b>{score}</b>
+                            <br />
+                            [ Description of score ]
+                            <br />
+                            Range: [ ]
+                        </div>
+                    ),
+                    value: score,
+                }))}
+                onChange={(s) => {
+                    this.selectedScores = s.map(d => ({ label: d.value, value: d.value }));
+                }}
+                onKeyDown={this.handleEnterAdd}
+            />
+        );
     }
 
     /**
@@ -211,6 +260,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
     handleAdd() {
         this.props.variableManagerStore.addVariablesToBeDisplayed(this.selected
             .map(index => this.variables[index]));
+        this.selected = [];
+        this.onDemandVariables = [];
         this.props.close();
     }
 
@@ -234,6 +285,35 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
     }
 
 
+    /**
+     * removes a score from added scores
+     * @param desc
+     */
+    removeScore(desc) {
+        if (this.scores.includes(desc)) {
+            this.addedScores.splice(this.addedScores.indexOf(desc), 1);
+        }
+    }
+
+    /**
+     * sets added scores to selected scores
+     */
+    addScore() {
+        this.addedScores.replace(this.selectedScores.map(d => d.value));
+        this.selectedScores.clear();
+    }
+
+    /**
+     * add selected scores using enter key
+     * @param {event} event
+     */
+    handleEnterAdd(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.addScore();
+        }
+    }
+
     render() {
         // column definitions for LineUp
         const columnDefs = [
@@ -241,15 +321,15 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             { datatype: 'string', column: 'description', label: 'Description' },
             {
                 datatype: 'categorical',
-                column: 'source',
-                label: 'Source',
-                categories: this.props.availableCategories.map(d => d.name).concat('Derived'),
-            },
-            {
-                datatype: 'categorical',
                 column: 'datatype',
                 label: 'Datatype',
                 categories: ['STRING', 'NUMBER', 'ORDINAL', 'BINARY'],
+            },
+            {
+                datatype: 'categorical',
+                column: 'source',
+                label: 'Source',
+                categories: this.props.availableCategories.map(d => d.name).concat('Derived'),
             },
             {
                 datatype: 'number', column: 'changeRate', label: 'ChangeRate', domain: [0, 1],
@@ -289,9 +369,12 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             },
         ];
         // visible columns and column order for lineUp
-        const visibleColumns = ['name', 'source', 'datatype', 'changeRate', 'modVRacross', 'AvgModVRtp',
-            'MaxModVRtp', 'MinModVRtp', 'AvgCoVTimeLine', 'AvgCoeffUnalikeability',
-            'AvgVarianceTimeLine', 'range', 'numcat', 'na', 'inTable'];
+        const visibleColumns = ['name', 'datatype', 'source', 'range', 'numcat', 'na', 'inTable'];
+        const popoverRight = (
+            <Popover id="popover-positioned-right" title="Variable Explorer">
+                {'With the Variable explorer all variables of a data set can be explored and ranked. Gene variables can be added on demand. Add score columns to rank the variables by different measures of variability. Select variables in the exploration and click \'Add Selected\' to add them to the current set of displayed variables.'}
+            </Popover>
+        );
         return (
             <Modal
                 show={this.props.modalIsOpen}
@@ -299,18 +382,57 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 dialogClassName="fullSizeModal"
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Variable Explorer: LineUp</Modal.Title>
+                    <Modal.Title>
+                        {'Variable Explorer '}
+                        <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={popoverRight}>
+                            <Label bsStyle="info">i</Label>
+                        </OverlayTrigger>
+                    </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Grid fluid>
                         <Row>
-                            <MutationSelector addGeneVariables={this.addGeneVariables}/>
+                            <Form horizontal>
+                                <FormGroup>
+                                    <Col sm={3}>
+                                        <ControlLabel>Add Gene Variable</ControlLabel>
+                                    </Col>
+                                    <Col sm={3} style={{ paddingLeft: 0 }}>
+                                        <ControlLabel>Select Data Type</ControlLabel>
+                                    </Col>
+                                    <Col sm={6}>
+                                        <ControlLabel>Add Score</ControlLabel>
+
+                                    </Col>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Col sm={6}>
+                                        <MutationSelector
+                                            addGeneVariables={this.addGeneVariables}
+                                            noPadding
+                                        />
+                                    </Col>
+                                    <Col sm={5} style={{ paddingRight: 0 }}>
+                                        {this.getScoreSelector()}
+                                    </Col>
+                                    <Col sm={1} style={{ paddingLeft: 0 }}>
+                                        <Button
+                                            style={{ height: 38 }}
+                                            onClick={this.addScore}
+                                        >
+                                            Add
+                                        </Button>
+                                    </Col>
+                                </FormGroup>
+                            </Form>
                         </Row>
                         <Row>
                             <LineUpView
                                 data={this.data.slice()}
                                 selected={this.selected.slice()}
                                 handleSelect={this.handleSelect}
+                                addedScores={this.addedScores.slice()}
+                                removeScore={this.removeScore}
                                 availableCategories={this.props.availableCategories}
                                 columnDefs={columnDefs}
                                 visibleColumns={visibleColumns}
@@ -319,7 +441,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                     </Grid>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.props.close}>Close</Button>
+                    <Button onClick={this.props.close}>Cancel</Button>
                     <Button onClick={this.handleAdd}>Add Selected</Button>
                 </Modal.Footer>
             </Modal>
