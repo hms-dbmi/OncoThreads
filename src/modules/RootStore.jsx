@@ -3,7 +3,6 @@ import uuidv4 from 'uuid/v4';
 import DataStore from './TemporalHeatmap/stores/DataStore';
 
 import VisStore from './TemporalHeatmap/stores/VisStore';
-import UndoRedoStore from './UndoRedoStore';
 import OriginalVariable from './TemporalHeatmap/stores/OriginalVariable';
 import MolProfileMapping from './MolProfileMapping';
 import SvgExport from './SvgExport';
@@ -308,14 +307,15 @@ class RootStore {
                 }
                 if (!timepointStructure.map(d => d.length).includes(0)) {
                     if (!up) {
-                        this.timepointStructure.replace(UndoRedoStore
-                            .deserializeTPStructure(this.timepointStructure,
-                                timepointStructure.reverse()));
-                    } else {
-                        this.timepointStructure.replace(UndoRedoStore
-                            .deserializeTPStructure(this.timepointStructure,
-                                timepointStructure));
+                        timepointStructure.reverse();
                     }
+                    this.timepointStructure.clear();
+                    timepointStructure.forEach((d, i) => {
+                        this.timepointStructure.push(d);
+                        Object.keys(d).forEach((property) => {
+                            this.timepointStructure[i][property] = d[property];
+                        });
+                    });
                 }
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
                 this.dataStore.variableStores.sample.childStore
