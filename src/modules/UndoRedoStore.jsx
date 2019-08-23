@@ -1,6 +1,4 @@
-import {
-    action, createTransformer, extendObservable, toJS,
-} from 'mobx';
+import { action, createTransformer, extendObservable, toJS } from 'mobx';
 import OriginalVariable from './TemporalHeatmap/stores/OriginalVariable';
 import DerivedVariable from './TemporalHeatmap/stores/DerivedVariable';
 
@@ -269,10 +267,8 @@ class UndoRedoStore {
      */
     deserializeTPStructure(saved) {
         this.rootStore.timepointStructure.clear();
-        saved.forEach((d) => {
-            this.rootStore.timepointStructure.push(d);
-        });
         saved.forEach((d, i) => {
+            this.rootStore.timepointStructure.push(d);
             Object.keys(d).forEach((property) => {
                 this.rootStore.timepointStructure[i][property] = d[property];
             });
