@@ -253,6 +253,7 @@ class VisStore {
                     }
                 }
             });
+
         return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }
 

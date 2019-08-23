@@ -320,6 +320,8 @@ class RootStore {
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
                 this.dataStore.variableStores.sample.childStore
                     .updateNames(this.createNameList(up, oldSampleTimepointNames, patients));
+                this.visStore.resetTransitionSpaces();
+                this.visStore.fitToScreenHeight();
             }),
             /**
              * gets block structure for events
