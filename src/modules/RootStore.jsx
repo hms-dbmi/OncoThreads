@@ -270,7 +270,7 @@ class RootStore {
             }),
             /**
              * updates the timepoint structure after patients are moved up or down
-             * @param {string[]} patients - patients to be moves
+             * @param {string[]} patients - patients to be moved
              * @param {number} timepoint - index of timepoint that is moved
              * @param {boolean} up - up movement (true) or down movement (false)
              */
@@ -309,13 +309,7 @@ class RootStore {
                     if (!up) {
                         timepointStructure.reverse();
                     }
-                    this.timepointStructure.clear();
-                    timepointStructure.forEach((d, i) => {
-                        this.timepointStructure.push(d);
-                        Object.keys(d).forEach((property) => {
-                            this.timepointStructure[i][property] = d[property];
-                        });
-                    });
+                    this.timepointStructure.replace(timepointStructure);
                 }
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
                 this.dataStore.variableStores.sample.childStore

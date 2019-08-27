@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
-import {
-    Button, Col, Grid, Row, Tab, Tabs,
-} from 'react-bootstrap';
+import { Button, Col, Grid, Row, Tab, Tabs } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { Pane, SortablePane } from 'react-sortable-pane';
 
@@ -42,8 +40,8 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
             order: ['labels', 'operators', 'view', 'legend'],
             panes: {
                 labels: { width: (window.innerWidth - 33) / 10, active: false },
-                operators: { width: (window.innerWidth - 33) / 10, active: false },
-                view: { width: ((window.innerWidth - 33) / 10) * 7, active: false },
+                operators: { width: ((window.innerWidth - 33) / 10) * 1.5, active: false },
+                view: { width: ((window.innerWidth - 33) / 10) * 6.5, active: false },
                 legend: { width: (window.innerWidth - 33) / 10, active: false },
             },
             active: {
@@ -77,10 +75,11 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
      * Gets block view
      * @return {div}
      */
+
     /*
 
-    
-    */
+
+     */
     getBlockView() {
         return (
             <div>
@@ -92,7 +91,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                             disabled={this.props.uiStore.globalTime
                             || this.props.rootStore.dataStore.variableStores
                                 .between.currentVariables.length > 0}
-                            key={"actualTimeline"}
+                            key="actualTimeline"
                         >
                             <FontAwesome
                                 name="clock"
@@ -141,7 +140,6 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                     visStore={this.props.rootStore.visStore}
                                 >
                                     <TimepointLabels
-                                        {...this.props.tooltipFunctions}
                                         width={this.panes.labels.width - 10}
                                         padding={this.padding}
                                     />
@@ -191,8 +189,8 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                     </Row>
                 </div>
                 <form id="svgform" method="post">
-                    <input type="hidden" id="output_format" name="output_format" value="" />
-                    <input type="hidden" id="data" name="data" value="" />
+                    <input type="hidden" id="output_format" name="output_format" value=""/>
+                    <input type="hidden" id="data" name="data" value=""/>
                 </form>
             </div>
         );
@@ -211,7 +209,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 <div className="view" id="timeline-view">
                     <Row>
                         <Col xs={2} md={2} style={{ padding: 0 }}>
-                            <TimeAssign />
+                            <TimeAssign/>
                             <Provider
                                 dataStore={this.props.rootStore.dataStore}
                                 visStore={this.props.rootStore.visStore}
@@ -231,7 +229,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                             />
                         </Col>
                         <Col xs={9} md={9} style={{ padding: 0, overflow: 'hidden' }}>
-                            <GlobalBands timeValue={this.props.rootStore.timeValue} />
+                            <GlobalBands timeValue={this.props.rootStore.timeValue}/>
                             <GlobalTimeline
                                 tooltipFunctions={this.props.tooltipFunctions}
                             />
@@ -239,8 +237,8 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                     </Row>
                 </div>
                 <form id="svgform" method="post">
-                    <input type="hidden" id="output_format" name="output_format" value="" />
-                    <input type="hidden" id="data" name="data" value="" />
+                    <input type="hidden" id="output_format" name="output_format" value=""/>
+                    <input type="hidden" id="data" name="data" value=""/>
                 </form>
             </div>
         );

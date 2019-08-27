@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { observer } from 'mobx-react';
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { SketchPicker } from 'react-color';
 
@@ -86,7 +86,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
 
     /**
      * gets percent occurences for categories
-     * @param {String[]} categories
+     * @param {boolean[]} categories
      * @return {number}
      */
     getPercentOccurence(categories) {
@@ -114,9 +114,9 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
     }
 });
 BinaryTable.propTypes = {
-    binaryColors: PropTypes.arrayOf(PropTypes.string).isRequired,
+    binaryColors: MobxPropTypes.observableArrayOf(PropTypes.string).isRequired,
     setBinaryColors: PropTypes.func.isRequired,
-    mapper: PropTypes.shape(PropTypes.object).isRequired,
+    mapper: PropTypes.objectOf(PropTypes.any).isRequired,
     invert: PropTypes.bool.isRequired,
 };
 export default BinaryTable;
