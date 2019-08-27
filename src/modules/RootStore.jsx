@@ -64,7 +64,6 @@ class RootStore {
             // array of available molecular profiles
             availableProfiles: [],
 
-
             // current structure of sample timepoints
             timepointStructure: [],
 
@@ -266,7 +265,7 @@ class RootStore {
                 });
                 this.sampleTimelineMap = sampleTimelineMap;
                 this.sampleStructure = sampleStructure;
-                this.timepointStructure = timepointStructure;
+                this.timepointStructure.replace(timepointStructure);
             }),
             /**
              * updates the timepoint structure after patients are moved up or down
@@ -314,8 +313,6 @@ class RootStore {
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
                 this.dataStore.variableStores.sample.childStore
                     .updateNames(this.createNameList(up, oldSampleTimepointNames, patients));
-                this.visStore.resetTransitionSpaces();
-                this.visStore.fitToScreenHeight();
             }),
             /**
              * gets block structure for events
@@ -405,6 +402,10 @@ class RootStore {
             if (!parsed) {
                 this.timelineParsed = false;
             }
+        });
+        reaction(() => this.timepointStructure, () => {
+            this.visStore.resetTransitionSpaces();
+            this.visStore.fitToScreenHeight();
         });
         // reacts to change in stacking mode
         reaction(() => this.uiStore.horizontalStacking,

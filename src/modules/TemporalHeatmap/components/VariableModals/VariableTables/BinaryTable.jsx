@@ -50,8 +50,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
             );
         });
         let trueOccurence;
-        let
-            falseOccurence;
+        let falseOccurence;
         if (this.props.invert) {
             trueOccurence = Math.round(this.getPercentOccurence([false]) * 100) / 100;
             falseOccurence = Math.round(this.getPercentOccurence([true]) * 100) / 100;
