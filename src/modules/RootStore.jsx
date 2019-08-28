@@ -380,6 +380,25 @@ class RootStore {
                 });
                 return max;
             },
+            /**
+             * returns the mutations profile of a study if available, returns null if there is none
+             * @return {object|null}
+             */
+            get mutationProfile() {
+                const filteredProfiles = this.availableProfiles.filter(d => d.molecularAlterationType === 'MUTATION_EXTENDED');
+                let muationProfile = null;
+                if (filteredProfiles.length > 0) {
+                    muationProfile = filteredProfiles[0];
+                }
+                return muationProfile;
+            },
+            /**
+             * checks if a study includes profile data
+             * @return {boolean}
+             */
+            get hasProfileData() {
+                return this.availableProfiles.length > 0;
+            },
         });
         // initialize dataStore and add initial variable if variables are parsed
         reaction(() => this.variablesParsed, (parsed) => {

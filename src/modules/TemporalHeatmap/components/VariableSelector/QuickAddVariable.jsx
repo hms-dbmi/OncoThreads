@@ -295,7 +295,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
             || this.props.rootStore.clinicalPatientCategories.length > 0) {
             options.push(<option key="clinical" value="clinical">Predefined</option>);
         }
-        if (this.props.rootStore.availableProfiles.length > 0) {
+        if (this.props.rootStore.hasProfileData) {
             options.push(<option key="genes" value="genes">Genomic</option>);
         }
 
