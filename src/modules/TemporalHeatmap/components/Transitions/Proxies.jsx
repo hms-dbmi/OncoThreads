@@ -187,7 +187,7 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                 bandProxy = [rawProxy, bandOutlines];
             }
             proxies.push(
-                <g key={partition.key}>
+                <g key={String(partition.key)}>
                     {bandProxy}
                     {variableProxy}
                 </g>,

@@ -78,7 +78,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 }));
 GroupPartition.propTypes = {
     partition: PropTypes.shape({
-        partition: PropTypes.string,
+        partition: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
         rows: PropTypes.array,
         patients: PropTypes.array,
     }),
