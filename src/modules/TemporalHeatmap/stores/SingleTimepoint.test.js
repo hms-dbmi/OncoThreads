@@ -34,7 +34,7 @@ describe('SingleTimepoint', () => {
             }
         });
         sortOrder.sort((a, b) => a.value - b.value);
-        rootStore.timepointStructure = timepointStructure;
+        rootStore.timepointStructure.replace(timepointStructure);
         rootStore.dataStore.initialize();
         timepoint = rootStore.dataStore.timepoints[0];
         variableStore = rootStore.dataStore.variableStores.sample;

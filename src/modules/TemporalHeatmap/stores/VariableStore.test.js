@@ -18,7 +18,7 @@ describe('VariableStore', () => {
                 timepointStructure[i].push({ patient, sample: patient + i });
             }
         });
-        rootStore.timepointStructure = timepointStructure;
+        rootStore.timepointStructure.replace(timepointStructure);
         rootStore.dataStore.initialize();
     });
     // check if new variable is created in the right way
