@@ -41,10 +41,10 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
             panes: {
-                labels: { width: (window.innerWidth - 33) / 10, active: false },
-                operators: { width: (window.innerWidth - 33) / 10, active: false },
-                view: { width: ((window.innerWidth - 33) / 10) * 7, active: false },
-                legend: { width: (window.innerWidth - 33) / 10, active: false },
+                labels: { width: (window.innerWidth - 40) / 10, active: false },
+                operators: { width: ((window.innerWidth - 40) / 10) * 1.5, active: false },
+                view: { width: ((window.innerWidth - 40) / 10) * 6.5, active: false },
+                legend: { width: (window.innerWidth - 40) / 10, active: false },
             },
             active: {
                 labels: false,
@@ -77,10 +77,11 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
      * Gets block view
      * @return {div}
      */
+
     /*
 
-    
-    */
+
+     */
     getBlockView() {
         return (
             <div>
@@ -92,7 +93,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                             disabled={this.props.uiStore.globalTime
                             || this.props.rootStore.dataStore.variableStores
                                 .between.currentVariables.length > 0}
-                            key={"actualTimeline"}
+                            key="actualTimeline"
                         >
                             <FontAwesome
                                 name="clock"
@@ -141,7 +142,6 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                     visStore={this.props.rootStore.visStore}
                                 >
                                     <TimepointLabels
-                                        {...this.props.tooltipFunctions}
                                         width={this.panes.labels.width - 10}
                                         padding={this.padding}
                                     />
@@ -277,6 +277,9 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
     handleSwitchView(key) {
         if (key !== this.props.uiStore.globalTime) {
             this.props.uiStore.setGlobalTime(key);
+            if (!key) {
+                this.props.rootStore.visStore.setPlotWidth(this.panes.view.width - 10);
+            }
             this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.globalTime);
         }
     }
@@ -285,16 +288,16 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         const prevWidth = Object.values(this.panes).map(d => d.width).reduce((a, b) => a + b);
         this.panes = {
             labels: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.labels.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.labels.width),
             },
             operators: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.operators.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.operators.width),
             },
             view: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.view.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.view.width),
             },
             legend: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.legend.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.legend.width),
             },
         };
     }

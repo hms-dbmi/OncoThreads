@@ -51,6 +51,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
             case 'string':
                 return (
                     <LineUpStringColumnDesc
+                        width={150}
                         key={def.column}
                         column={def.column}
                         label={def.label}
@@ -59,6 +60,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
             case 'categorical':
                 return (
                     <LineUpCategoricalColumnDesc
+                        width={150}
                         key={def.column}
                         column={def.column}
                         label={def.label}
@@ -68,6 +70,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
             default:
                 return (
                     <LineUpNumberColumnDesc
+                        width={150}
                         key={def.column}
                         column={def.column}
                         label={def.label}

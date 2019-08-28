@@ -8,11 +8,10 @@ import BlockTextField from './BlockTextField';
  * BlockView: Timepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers
  */
-const TimepointLabels = inject('dataStore', 'visStore', 'undoRedoStore')(observer(class TimepointLabels extends React.Component {
+const TimepointLabels = inject('dataStore', 'visStore')(observer(class TimepointLabels extends React.Component {
     constructor() {
         super();
         this.textFieldHeight = 30;
-        this.iconDimension = 20;
     }
 
     /**
@@ -22,15 +21,6 @@ const TimepointLabels = inject('dataStore', 'visStore', 'undoRedoStore')(observe
      */
     setName(index, event) {
         this.props.dataStore.timepoints[index].setName(event.target.value);
-    }
-
-    /**
-     * realigns patiens so column order of patients is restored
-     * @param {number} index - timepoint index
-     */
-    realignPatients(index) {
-        this.props.dataStore.applyPatientOrderToAll(index);
-        this.props.undoRedoStore.saveRealignToHistory(index);
     }
 
 
@@ -43,7 +33,7 @@ const TimepointLabels = inject('dataStore', 'visStore', 'undoRedoStore')(observe
             if (d.type === 'sample') {
                 textfield = (
                     <BlockTextField
-                        width={this.props.width - this.iconDimension}
+                        width={this.props.width > 0 ? this.props.width : 2}
                         height={this.textFieldHeight}
                         timepoint={d}
                     />
@@ -52,24 +42,6 @@ const TimepointLabels = inject('dataStore', 'visStore', 'undoRedoStore')(observe
             return (
                 <g key={d.globalIndex} transform={`translate(0,${pos})`}>
                     {textfield}
-                    <g
-                        transform={`translate(${this.props.width - (this.iconDimension)},${(this.textFieldHeight - this.iconDimension) / 2 - 1})`}
-                        className="not_exported"
-                        onMouseEnter={e => this.props.showTooltip(e, 'Realign patients')}
-                        onMouseLeave={this.props.hideTooltip}
-                    >
-                        <path
-                            fill="gray"
-                            d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"
-                        />
-                        <rect
-                            onClick={() => this.realignPatients(d.globalIndex)}
-                            width={this.iconDimension}
-                            height={this.iconDimension}
-                            fill="none"
-                            pointerEvents="visible"
-                        />
-                    </g>
                 </g>
             );
         });
@@ -82,24 +54,27 @@ const TimepointLabels = inject('dataStore', 'visStore', 'undoRedoStore')(observe
                 .timepoints[this.props.dataStore.timepoints.length - 1]) / 2;
         return (
             <div>
-                <svg width={this.props.width} height={this.props.visStore.svgHeight}>
+                <svg
+                    width={this.props.width > 0 ? this.props.width : 0}
+                    height={this.props.visStore.svgHeight}
+                >
                     <line
-                        x1={this.props.width / 2 - this.iconDimension}
-                        x2={(this.props.width - this.iconDimension) / 2}
+                        x1={this.props.width / 2 - 10}
+                        x2={this.props.width / 2}
                         y1={firstPos}
                         y2={firstPos}
                         stroke="lightgray"
                     />
                     <line
-                        x1={(this.props.width - this.iconDimension) / 2}
-                        x2={(this.props.width - this.iconDimension) / 2}
+                        x1={this.props.width / 2}
+                        x2={this.props.width / 2}
                         y1={firstPos}
                         y2={lastPos}
                         stroke="lightgray"
                     />
                     <line
-                        x1={(this.props.width) / 2 - this.iconDimension}
-                        x2={(this.props.width - this.iconDimension) / 2}
+                        x1={this.props.width / 2 - 10}
+                        x2={this.props.width / 2}
                         y1={lastPos}
                         y2={lastPos}
                         stroke="lightgray"
@@ -119,7 +94,5 @@ const TimepointLabels = inject('dataStore', 'visStore', 'undoRedoStore')(observe
 TimepointLabels.propTypes = {
     width: PropTypes.number.isRequired,
     padding: PropTypes.number.isRequired,
-    showTooltip: PropTypes.func.isRequired,
-    hideTooltip: PropTypes.func.isRequired,
 };
 export default TimepointLabels;

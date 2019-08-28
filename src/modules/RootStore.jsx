@@ -64,7 +64,6 @@ class RootStore {
             // array of available molecular profiles
             availableProfiles: [],
 
-
             // current structure of sample timepoints
             timepointStructure: [],
 
@@ -266,11 +265,11 @@ class RootStore {
                 });
                 this.sampleTimelineMap = sampleTimelineMap;
                 this.sampleStructure = sampleStructure;
-                this.timepointStructure = timepointStructure;
+                this.timepointStructure.replace(timepointStructure);
             }),
             /**
              * updates the timepoint structure after patients are moved up or down
-             * @param {string[]} patients - patients to be moves
+             * @param {string[]} patients - patients to be moved
              * @param {number} timepoint - index of timepoint that is moved
              * @param {boolean} up - up movement (true) or down movement (false)
              */
@@ -309,19 +308,11 @@ class RootStore {
                     if (!up) {
                         timepointStructure.reverse();
                     }
-                    this.timepointStructure.clear();
-                    timepointStructure.forEach((d, i) => {
-                        this.timepointStructure.push(d);
-                        Object.keys(d).forEach((property) => {
-                            this.timepointStructure[i][property] = d[property];
-                        });
-                    });
+                    this.timepointStructure.replace(timepointStructure);
                 }
                 this.dataStore.update(this.dataStore.timepoints[timepoint].heatmapOrder.slice());
                 this.dataStore.variableStores.sample.childStore
                     .updateNames(this.createNameList(up, oldSampleTimepointNames, patients));
-                this.visStore.resetTransitionSpaces();
-                this.visStore.fitToScreenHeight();
             }),
             /**
              * gets block structure for events
@@ -389,6 +380,25 @@ class RootStore {
                 });
                 return max;
             },
+            /**
+             * returns the mutations profile of a study if available, returns null if there is none
+             * @return {object|null}
+             */
+            get mutationProfile() {
+                const filteredProfiles = this.availableProfiles.filter(d => d.molecularAlterationType === 'MUTATION_EXTENDED');
+                let muationProfile = null;
+                if (filteredProfiles.length > 0) {
+                    muationProfile = filteredProfiles[0];
+                }
+                return muationProfile;
+            },
+            /**
+             * checks if a study includes profile data
+             * @return {boolean}
+             */
+            get hasProfileData() {
+                return this.availableProfiles.length > 0;
+            },
         });
         // initialize dataStore and add initial variable if variables are parsed
         reaction(() => this.variablesParsed, (parsed) => {
@@ -411,6 +421,10 @@ class RootStore {
             if (!parsed) {
                 this.timelineParsed = false;
             }
+        });
+        reaction(() => this.timepointStructure, () => {
+            this.visStore.resetTransitionSpaces();
+            this.visStore.fitToScreenHeight();
         });
         // reacts to change in stacking mode
         reaction(() => this.uiStore.horizontalStacking,

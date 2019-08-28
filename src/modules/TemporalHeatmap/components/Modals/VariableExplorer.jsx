@@ -97,9 +97,9 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                             style={{ textAlign: 'left' }}
                         >
                             <b>{score}</b>
-                            <br />
+                            <br/>
                             [ Description of score ]
-                            <br />
+                            <br/>
                             Range: [ ]
                         </div>
                     ),
@@ -394,24 +394,32 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                         <Row>
                             <Form horizontal>
                                 <FormGroup>
-                                    <Col sm={3}>
-                                        <ControlLabel>Add Gene Variable</ControlLabel>
-                                    </Col>
-                                    <Col sm={3} style={{ paddingLeft: 0 }}>
-                                        <ControlLabel>Select Data Type</ControlLabel>
-                                    </Col>
+                                    {this.props.rootStore.hasProfileData
+                                        ? ([
+                                            <Col sm={3} key="geneAdd">
+                                                <ControlLabel>Add Gene Variable</ControlLabel>
+                                            </Col>,
+                                            <Col sm={3} style={{ paddingLeft: 0 }} key="datatypeAdd">
+                                                <ControlLabel>Select Data Type</ControlLabel>
+                                            </Col>,
+                                        ])
+                                        : null}
                                     <Col sm={6}>
                                         <ControlLabel>Add Score</ControlLabel>
 
                                     </Col>
                                 </FormGroup>
                                 <FormGroup>
-                                    <Col sm={6}>
-                                        <MutationSelector
-                                            addGeneVariables={this.addGeneVariables}
-                                            noPadding
-                                        />
-                                    </Col>
+                                    {this.props.rootStore.hasProfileData
+                                        ? (
+                                            <Col sm={6}>
+                                                <MutationSelector
+                                                    addGeneVariables={this.addGeneVariables}
+                                                    noPadding
+                                                />
+                                            </Col>
+                                        ) : null}
+
                                     <Col sm={5} style={{ paddingRight: 0 }}>
                                         {this.getScoreSelector()}
                                     </Col>

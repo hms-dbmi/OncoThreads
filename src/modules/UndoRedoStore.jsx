@@ -156,11 +156,9 @@ class UndoRedoStore {
      */
     deserialize(index) {
         this.deserializeVariables(index);
-        this.deserializeTPStructure(this.stateStack[index].state.timepointStructure);
-
-        this.rootStore.dataStore
-            .update(this.rootStore.dataStore.variableStores
-                .sample.childStore.timepoints[0].heatmapOrder);
+        this.rootStore.timepointStructure.replace(this.stateStack[index].state.timepointStructure);
+        this.rootStore.dataStore.update(this.rootStore.dataStore.variableStores
+            .sample.childStore.timepoints[0].heatmapOrder);
 
         this.deserializeTimepoints(index);
 
@@ -256,21 +254,6 @@ class UndoRedoStore {
             Object.keys(savedTimepoint).forEach((property) => {
                 this.rootStore.dataStore.variableStores
                     .between.childStore.timepoints[i][property] = savedTimepoint[property];
-            });
-        });
-    }
-
-    /**
-     *
-     * @param {Object[]} saved
-     * @return {Array}
-     */
-    deserializeTPStructure(saved) {
-        this.rootStore.timepointStructure.clear();
-        saved.forEach((d, i) => {
-            this.rootStore.timepointStructure.push(d);
-            Object.keys(d).forEach((property) => {
-                this.rootStore.timepointStructure[i][property] = d[property];
             });
         });
     }

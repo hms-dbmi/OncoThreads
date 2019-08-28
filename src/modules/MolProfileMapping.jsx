@@ -181,7 +181,7 @@ class MolProfileMapping {
      */
     filterGeneIDs() {
         // Is gene panel sequenced?
-        const profileId = this.rootStore.availableProfiles.filter(d => d.molecularAlterationType === 'MUTATION_EXTENDED')[0].molecularProfileId;
+        const profileId = this.rootStore.mutationProfile.molecularProfileId;
         const notInPanel = this.currentIds
             .filter(entry => !(Object.values(this.currentPanels[profileId])
                 .join().includes(entry.entrezGeneId)));
@@ -251,7 +251,7 @@ class MolProfileMapping {
     }
 
     getMutationProfiles(HUGOsymbols, mappingType, callback) {
-        const geneProfileId = this.rootStore.availableProfiles.filter(d => d.molecularAlterationType === 'MUTATION_EXTENDED')[0].molecularProfileId;
+        const geneProfileId = this.rootStore.mutationProfile.molecularProfileId;
         this.loadIds(HUGOsymbols, () => {
             this.rootStore.api.areProfiled(this.currentIds, geneProfileId, (profileDict) => {
                 this.currentPanels[geneProfileId] = profileDict;
@@ -293,7 +293,7 @@ class MolProfileMapping {
      */
     createMutationMapping(list, mappingType, entrezID) {
         let mappingFunction;
-        const profileId = this.rootStore.availableProfiles.filter(d => d.molecularAlterationType === 'MUTATION_EXTENDED')[0].molecularProfileId;
+        const profileId = this.rootStore.mutationProfile.molecularProfileId;
         if (mappingType === 'Binary') {
             mappingFunction = entry => (entry !== undefined);
         } else if (mappingType === 'Protein change') {

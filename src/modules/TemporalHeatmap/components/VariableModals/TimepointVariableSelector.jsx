@@ -357,7 +357,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                 </FormGroup>,
             );
         }
-        if (this.props.rootStore.availableProfiles.length > 0) {
+        if (this.props.rootStore.hasProfileData) {
             formGroups.push(
                 <FormGroup key="genetic">
                     <Col componentClass={ControlLabel} sm={2}>

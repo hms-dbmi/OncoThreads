@@ -12,25 +12,29 @@ class DerivedMapperFunctions {
     static getModificationMapper(modification, mappers) {
         let mapper;
         switch (modification.type) {
-            case "binaryCombine":
-                mapper = DerivedMapperFunctions.createBinaryCombinedMapper(mappers, modification);
-                break;
-            case "categoricalTransform":
-                mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mappers[0], modification.mapping);
-                break;
-            default: // continuous transform
-                let intermedMapper = {};
-                if (modification.transformFunction) {
-                    intermedMapper = DerivedMapperFunctions.createContinuousTransformMapper(mappers[0], modification.transformFunction);
-                } else {
-                    intermedMapper = mappers[0];
-                }
-                if (modification.binning) {
-                    mapper = DerivedMapperFunctions.createBinnedMapper(intermedMapper, modification.binning.bins, modification.binning.binNames);
-                }
-                else {
-                    mapper = intermedMapper;
-                }
+        case 'binaryCombine':
+            mapper = DerivedMapperFunctions.createBinaryCombinedMapper(mappers, modification);
+            break;
+        case 'categoricalTransform':
+            mapper = DerivedMapperFunctions.createModifyCategoriesMapper(mappers[0],
+                modification.mapping);
+            break;
+        default: // continuous transform
+        {
+            let intermedMapper = {};
+            if (modification.transformFunction) {
+                intermedMapper = DerivedMapperFunctions.createContinuousTransformMapper(mappers[0],
+                    modification.transformFunction);
+            } else {
+                intermedMapper = mappers[0];
+            }
+            if (modification.binning) {
+                mapper = DerivedMapperFunctions.createBinnedMapper(intermedMapper,
+                    modification.binning.bins, modification.binning.binNames);
+            } else {
+                mapper = intermedMapper;
+            }
+        }
         }
         return mapper;
     }
@@ -42,27 +46,23 @@ class DerivedMapperFunctions {
      * @param {Object[]} binNames
      */
     static createBinnedMapper(mapper, bins, binNames) {
-        let newMapper = {};
-        for (let entry in mapper) {
+        const newMapper = {};
+        Object.keys(mapper).forEach((entry) => {
             if (mapper[entry] === undefined) {
                 newMapper[entry] = undefined;
-            }
-            else {
-                for (let i = 1; i < bins.length; i++) {
+            } else {
+                for (let i = 1; i < bins.length; i += 1) {
                     if (i === 1 && mapper[entry] >= bins[0] && mapper[entry] <= bins[1]) {
                         newMapper[entry] = binNames[0].name;
                         break;
-                    }
-                    else {
-                        if (mapper[entry] > bins[i - 1] && mapper[entry] <= bins[i]) {
-                            newMapper[entry] = binNames[i - 1].name;
-                            break;
-                        }
+                    } else if (mapper[entry] > bins[i - 1] && mapper[entry] <= bins[i]) {
+                        newMapper[entry] = binNames[i - 1].name;
+                        break;
                     }
                 }
             }
-        }
-        return newMapper
+        });
+        return newMapper;
     }
 
     /**
@@ -71,46 +71,42 @@ class DerivedMapperFunctions {
      * @param {Object} modification
      */
     static createBinaryCombinedMapper(mappers, modification) {
-        let newMapper = {};
-        for (let entry in mappers[0]) {
-            if (modification.operator === "or") {
-                if (modification.datatype === "BINARY") {
+        const newMapper = {};
+        Object.keys(mappers[0]).forEach((entry) => {
+            if (modification.operator === 'or') {
+                if (modification.datatype === 'BINARY') {
                     let containedInOne = false;
-                    for (let i = 0; i < mappers.length; i++) {
+                    for (let i = 0; i < mappers.length; i += 1) {
                         if (mappers[i][entry]) {
                             containedInOne = true;
                             break;
                         }
                     }
                     newMapper[entry] = containedInOne;
-                }
-                else {
-                    for (let entry in mappers[0]) {
-                        let categories = [];
-                        for (let i = 0; i < mappers.length; i++) {
-                            if (mappers[i][entry]) {
+                } else {
+                    Object.keys(mappers[0]).forEach((currEntry) => {
+                        const categories = [];
+                        for (let i = 0; i < mappers.length; i += 1) {
+                            if (mappers[i][currEntry]) {
                                 categories.push(modification.variableNames[i]);
                             }
                         }
-                        let result = "";
+                        let result = '';
                         if (categories.length > 0) {
                             categories.forEach((d, i) => {
                                 if (i === categories.length - 1) {
                                     result += d;
+                                } else {
+                                    result += (`${d},`);
                                 }
-                                else {
-                                    result += (d + ",");
-                                }
-                            })
-                        }
-                        else result = "none";
-                        newMapper[entry] = result;
-                    }
+                            });
+                        } else result = 'none';
+                        newMapper[currEntry] = result;
+                    });
                 }
-            }
-            else if (modification.operator === "and") {
+            } else if (modification.operator === 'and') {
                 let containedInAll = true;
-                for (let i = 0; i < mappers.length; i++) {
+                for (let i = 0; i < mappers.length; i += 1) {
                     if (!mappers[i][entry]) {
                         containedInAll = false;
                         break;
@@ -118,7 +114,7 @@ class DerivedMapperFunctions {
                 }
                 newMapper[entry] = containedInAll;
             }
-        }
+        });
         return newMapper;
     }
 
@@ -127,70 +123,72 @@ class DerivedMapperFunctions {
      * @param {Object[]} mappers
      */
     static createCategoryCombinedMapper(mappers) {
-        let newMapper = {};
-        for (let entry in mappers[0]) {
-            let values = mappers.map(mapper => {
+        const newMapper = {};
+        Object.keys(mappers[0]).forEach((entry) => {
+            const values = mappers.map((mapper) => {
                 if (mapper[entry] !== undefined) {
-                    return mapper[entry]
+                    return mapper[entry];
                 }
-                else {
-                    return "undefined";
-                }
+                return 'undefined';
             });
             if (values.filter(d => d === undefined).length === values.length) {
                 newMapper[entry] = undefined;
-            }
-            else {
+            } else {
                 newMapper[entry] = values.toString();
             }
-        }
+        });
         return newMapper;
     }
 
     static createContinuousCombinedMapper(mappers, operation) {
-        let newMapper = {};
+        const newMapper = {};
         switch (operation) {
-            case "average":
-                for (let entry in mappers[0]) {
-                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
-                    newMapper[entry] = filteredValues.reduce((a, b) => a + b) / filteredValues.length
+        case 'average':
+            Object.keys(mappers[0]).forEach((entry) => {
+                const filteredValues = mappers.map(mapper => mapper[entry])
+                    .filter(currEntry => currEntry !== undefined);
+                newMapper[entry] = filteredValues.reduce((a, b) => a + b) / filteredValues.length;
+            });
+            break;
+        case 'median':
+            Object.keys(mappers[0]).forEach((entry) => {
+                const sortedValues = mappers.map(mapper => mapper[entry])
+                    .filter(currEntry => currEntry !== undefined).sort((a, b) => a - b);
+                if (sortedValues.length % 2) {
+                    newMapper[entry] = sortedValues[(sortedValues.length - 1) / 2];
+                } else {
+                    newMapper[entry] = (sortedValues[sortedValues.length / 2 - 1]
+                        + sortedValues[sortedValues.length / 2]) / 2;
                 }
-                break;
-            case "median":
-                for (let entry in mappers[0]) {
-                    let sortedValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined).sort((a, b) => a - b);
-                    if (sortedValues.length % 2) {
-                        newMapper[entry] = sortedValues[(sortedValues.length - 1) / 2];
-                    }
-                    else {
-                        newMapper[entry] = (sortedValues[sortedValues.length / 2 - 1] + sortedValues[sortedValues.length / 2]) / 2;
-                    }
-                }
-                break;
-            case "sum":
-                for (let entry in mappers[0]) {
-                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
-                    newMapper[entry] = filteredValues.reduce((a, b) => a+ b)
-                }
-                break;
-            case "max":
-                for (let entry in mappers[0]) {
-                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
-                    newMapper[entry] = Math.max(...filteredValues);
-                }
-                break;
-            case "min":
-                for (let entry in mappers[0]) {
-                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
-                    newMapper[entry] = Math.min(...filteredValues);
-                }
-                break;
-            default:
-                for (let entry in mappers[0]) {
-                    let filteredValues = mappers.map(mapper=>mapper[entry]).filter(entry => entry !== undefined);
-                    newMapper[entry] = filteredValues.reduce((a, b) => Math.abs(a - b));
-                }
-
+            });
+            break;
+        case 'sum':
+            Object.keys(mappers[0]).forEach((entry) => {
+                const filteredValues = mappers.map(mapper => mapper[entry])
+                    .filter(currEntry => currEntry !== undefined);
+                newMapper[entry] = filteredValues.reduce((a, b) => a + b);
+            });
+            break;
+        case 'max':
+            Object.keys(mappers[0]).forEach((entry) => {
+                const filteredValues = mappers.map(mapper => mapper[entry])
+                    .filter(currEntry => currEntry !== undefined);
+                newMapper[entry] = Math.max(...filteredValues);
+            });
+            break;
+        case 'min':
+            Object.keys(mappers[0]).forEach((entry) => {
+                const filteredValues = mappers.map(mapper => mapper[entry])
+                    .filter(currEntry => currEntry !== undefined);
+                newMapper[entry] = Math.min(...filteredValues);
+            });
+            break;
+        default:
+            Object.keys(mappers[0]).forEach((entry) => {
+                const filteredValues = mappers.map(mapper => mapper[entry])
+                    .filter(currEntry => currEntry !== undefined);
+                newMapper[entry] = filteredValues.reduce((a, b) => Math.abs(a - b));
+            });
         }
         return newMapper;
     }
@@ -201,26 +199,29 @@ class DerivedMapperFunctions {
      * @param {Object} categoryMapping
      */
     static createModifyCategoriesMapper(mapper, categoryMapping) {
-        let newMapper = {};
-        for (let entry in mapper) {
+        const newMapper = {};
+        Object.keys(mapper).forEach((entry) => {
             newMapper[entry] = categoryMapping[mapper[entry]];
-        }
+        });
         return newMapper;
     }
 
     /**
      * creates mapper for transforming a continuous variable (e.g. log transform)
      * @param {Object} mapper
-     * @param {function} transformFunction
+     * @param {function|boolean} transformFunction
      */
     static createContinuousTransformMapper(mapper, transformFunction) {
-        let newMapper = {};
-        for (let entry in mapper) {
-            mapper[entry] === undefined ? newMapper[entry] = undefined : newMapper[entry] = transformFunction(mapper[entry]);
-        }
+        const newMapper = {};
+        Object.keys(mapper).forEach((entry) => {
+            if (mapper[entry] === undefined) {
+                newMapper[entry] = undefined;
+            } else {
+                newMapper[entry] = transformFunction(mapper[entry]);
+            }
+        });
         return newMapper;
     }
-
 }
 
 export default DerivedMapperFunctions;

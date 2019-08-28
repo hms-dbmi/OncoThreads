@@ -33,7 +33,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
             x: 0,
             y: 0,
             tooltipVisibility: 'hidden',
-            contextType: '',
+            contextMenuType: '',
             moveMenuVisibility: false,
             variableManagerOpen: false,
         });
@@ -176,7 +176,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         this.y = e.pageY;
         this.clickedTimepoint = timepointIndex;
         this.clickedVariable = variableId;
-        this.contextType = type;
+        this.contextMenuType = type;
         e.preventDefault();
     }
 
@@ -199,7 +199,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      * hide context menu for moving patients up/down
      */
     hideContextMenu() {
-        this.contextType = '';
+        this.contextMenuType = '';
         this.moveMenuVisibility = false;
     }
 
@@ -366,10 +366,10 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                     line1={this.line1}
                     line2={this.line2}
                 />
-                {this.contextType !== '' ? (
+                {this.contextMenuType !== '' ? (
                     <Provider dataStore={this.props.rootStore.dataStore}>
                         <ContextMenu
-                            action={this.contextType}
+                            action={this.contextMenuType}
                             contextX={this.x}
                             contextY={this.y}
                             clickedVariable={this.clickedVariable}

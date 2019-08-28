@@ -183,7 +183,7 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
         if (this.props.noPadding) {
             style.padding = 0;
         }
-        if (this.props.rootStore.availableProfiles.length > 0) {
+        if (this.props.rootStore.hasProfileData) {
             return (
                 [
                     <Col sm={6} style={style} key="textfield">
