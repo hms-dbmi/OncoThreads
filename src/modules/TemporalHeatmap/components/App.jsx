@@ -38,7 +38,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
     getMainContent() {
         if (this.props.rootStore.firstLoad) {
             return (
-                <DefaultView studies={this.props.studyapi.studies} />
+                <DefaultView studies={this.props.rootStore.studyAPI.studies} />
             );
         }
         // if everything is variablesParsed show the main view
@@ -58,7 +58,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
     getNavbarContent() {
         if (this.props.rootStore.variablesParsed) {
             return ([
-                <GetStudy key="getStudy" studies={this.props.studyapi.studies} />,
+                <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
                 <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
                     <NavItem onClick={this.props.rootStore.svgExport.exportSVG}>
                             ...as SVG
