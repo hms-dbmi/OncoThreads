@@ -86,7 +86,7 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
      */
     handleDoubleClick(patient) {
         if (!this.props.dataStore.rootStore.isOwnData) {
-            window.open(`http://www.cbiohack.org/patient?studyId=${this.props.dataStore.rootStore.study.studyId}&caseId=${patient}`);
+            window.open(`${this.props.dataStore.rootStore.cBioLink}/patient?studyId=${this.props.dataStore.rootStore.study.studyId}&caseId=${patient}`);
         }
     }
 

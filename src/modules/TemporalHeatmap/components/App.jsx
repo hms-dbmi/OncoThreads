@@ -9,7 +9,7 @@ import {
 
 import GetStudy from './GetStudy';
 import Content from './Content';
-import DefaultView from './DefaultView';
+import DefaultView from './StudySelection/DefaultView';
 import LogModal from './Modals/LogModal';
 import SettingsModal from './Modals/SettingsModal';
 import AboutModal from './Modals/AboutModal';

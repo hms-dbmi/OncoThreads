@@ -1,7 +1,7 @@
 import { extendObservable } from 'mobx';
 
 /*
- Store containing all the other stores gets the data with either the cBioAPI
+ Store containing all the other stores gets the data with either the CBioAPI
  or from local files, transforms it and gives it to the other stores
  */
 class ScoreStore {

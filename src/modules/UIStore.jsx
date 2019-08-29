@@ -1,4 +1,4 @@
-import {action, extendObservable} from "mobx";
+import { action, extendObservable } from 'mobx';
 
 /**
  * store for storing the UI state
@@ -6,6 +6,7 @@ import {action, extendObservable} from "mobx";
 class UIStore {
     constructor() {
         extendObservable(this, {
+            cBioInstance: 'hack', // hack, portal, own
             continuousRepresentation: 'gradient', // gradient, boxplot, medium
             realTime: false, // show realtime lines in block view
             globalTime: false, // show global timeline
@@ -16,31 +17,34 @@ class UIStore {
             rowOffset: 0,
             horizontalStacking: false,
             horizontalGap: 1,
-            setContinuousRepresentation: action(representation => {
+            setCBioInstance: action((instance) => {
+                this.cBioInstance = instance;
+            }),
+            setContinuousRepresentation: action((representation) => {
                 this.continuousRepresentation = representation;
             }),
-            setRealTime: action(boolean => {
+            setRealTime: action((boolean) => {
                 this.realTime = boolean;
             }),
-            setGlobalTime: action(boolean => {
+            setGlobalTime: action((boolean) => {
                 this.globalTime = boolean;
             }),
-            setAdvancedSelection: action(boolean => {
+            setAdvancedSelection: action((boolean) => {
                 this.advancedSelection = boolean;
             }),
-            setShowUndefined: action(boolean => {
-                this.showUndefined = boolean
+            setShowUndefined: action((boolean) => {
+                this.showUndefined = boolean;
             }),
-            setSlantedLines: action(slantedLines=>{
-                this.slantedLines=slantedLines;
+            setSlantedLines: action((slantedLines) => {
+                this.slantedLines = slantedLines;
             }),
-            setHorizontalStacking:action(isHorizontal=>{
-                this.horizontalStacking=isHorizontal;
+            setHorizontalStacking: action((isHorizontal) => {
+                this.horizontalStacking = isHorizontal;
             }),
-            setBlockAlignment: action((blockAlignment)=>{
+            setBlockAlignment: action((blockAlignment) => {
                 this.blockAlignment = blockAlignment;
             }),
-            setRowOffset: action((offset)=>{
+            setRowOffset: action((offset) => {
                 this.rowOffset = Number(offset);
             }),
             setHorizontalGap: action((horizontalGap) => {
@@ -49,4 +53,5 @@ class UIStore {
         });
     }
 }
+
 export default UIStore;

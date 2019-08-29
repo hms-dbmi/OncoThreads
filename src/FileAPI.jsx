@@ -1,5 +1,5 @@
 /**
- * class that gets data from LocalFileLoader. Imitates cBioAPI
+ * class that gets data from LocalFileLoader. Imitates CBioAPI
  */
 class FileAPI {
     constructor(localFileLoader, geneNamesAPI) {
