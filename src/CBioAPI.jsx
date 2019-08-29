@@ -1,10 +1,11 @@
+/* eslint-disable no-console */
 import axios from 'axios';
 import GenomeNexusAPI from './GenomeNexusAPI';
 
 /**
  * retrieves data using the cBio API
  */
-class cBioAPI {
+class CBioAPI {
     constructor(studyId, cBioLink) {
         this.cBioLink = cBioLink;
         this.studyId = studyId;
@@ -20,7 +21,7 @@ class cBioAPI {
             .then((response) => {
                 callback(response.data.map(patient => patient.patientId));
             }).catch((error) => {
-                if (cBioAPI.verbose) {
+                if (CBioAPI.verbose) {
                     console.log(error);
                 } else {
                     console.log('Could not load patients');
@@ -43,7 +44,7 @@ class cBioAPI {
                 });
                 callback(events);
             }).catch((error) => {
-                if (cBioAPI.verbose) {
+                if (CBioAPI.verbose) {
                     console.log(error);
                 } else {
                     console.log('Could not load events');
@@ -60,7 +61,7 @@ class cBioAPI {
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
-                if (cBioAPI.verbose) {
+                if (CBioAPI.verbose) {
                     console.log(error);
                 } else {
                     console.log('Could not load sample data');
@@ -77,7 +78,7 @@ class cBioAPI {
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
-                if (cBioAPI.verbose) {
+                if (CBioAPI.verbose) {
                     console.log(error);
                 } else {
                     console.log('Could not available molecular profiles');
@@ -94,7 +95,7 @@ class cBioAPI {
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
-                if (cBioAPI.verbose) {
+                if (CBioAPI.verbose) {
                     console.log(error);
                 } else {
                     console.log('Could not load sample data');
@@ -116,7 +117,7 @@ class cBioAPI {
         }).then((response) => {
             callback(response.data);
         }).catch((error) => {
-            if (cBioAPI.verbose) {
+            if (CBioAPI.verbose) {
                 console.log(error);
             } else {
                 console.log("Can't get mutations");
@@ -135,7 +136,7 @@ class cBioAPI {
         axios.post(`${this.cBioLink}/api/molecular-profiles/${profileId}/gene-panel-data/fetch`, {
             sampleListId: `${this.studyId}_all`,
         }).then((samplePanels) => {
-            const differentPanels = [...new Set(samplePanels.data.filter(d => d.hasOwnProperty('genePanelId')).map(d => d.genePanelId))];
+            const differentPanels = [...new Set(samplePanels.data.filter(d => 'genePanelId' in d).map(d => d.genePanelId))];
             if (differentPanels.length > 0) {
                 axios.all(differentPanels.map(d => axios.get(`http://www.cbiohack.org/api/gene-panels/${d}`))).then((panelList) => {
                     samplePanels.data.forEach((samplePanel) => {
@@ -144,7 +145,7 @@ class cBioAPI {
                             if (samplePanel.genePanelId !== undefined) {
                                 if (panelList[panelList.map(panel => panel.data.genePanelId)
                                     .indexOf(samplePanel.genePanelId)].data.genes
-                                    .map(gene => gene.entrezGeneId).includes(gene.entrezGeneId)) {
+                                    .map(id => id.entrezGeneId).includes(gene.entrezGeneId)) {
                                     profiledDict[samplePanel.sampleId].push(gene.entrezGeneId);
                                 }
                             } else {
@@ -154,7 +155,7 @@ class cBioAPI {
                     });
                     callback(profiledDict);
                 }).catch((error) => {
-                    if (cBioAPI.verbose) {
+                    if (CBioAPI.verbose) {
                         console.log(error);
                     }
                 });
@@ -169,7 +170,7 @@ class cBioAPI {
                 callback(profiledDict);
             }
         }).catch((error) => {
-            if (cBioAPI.verbose) {
+            if (CBioAPI.verbose) {
                 console.log(error);
             }
         });
@@ -198,6 +199,6 @@ class cBioAPI {
     }
 }
 
-cBioAPI.verbose = true;
+CBioAPI.verbose = true;
 
-export default cBioAPI;
+export default CBioAPI;
