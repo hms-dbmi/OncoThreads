@@ -9,10 +9,8 @@ import CBioAPI from './CBioAPI';
 class StudyAPI {
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.hackLink = 'http://www.cbiohack.org';
-        this.portalLink = 'https://www.cbioportal.org';
         extendObservable(this, {
-            allLinks: { hack: this.hackLink, portal: this.portalLink },
+            allLinks: { hack: 'http://www.cbiohack.org', portal: 'https://www.cbioportal.org' },
             allStudies: { hack: [], portal: [], own: [] },
             get studies() {
                 return this.allStudies[this.rootStore.uiStore.cBioInstance];
@@ -20,44 +18,40 @@ class StudyAPI {
             /**
              * gets available studies
              */
-            getStudies: action(() => {
-                Object.keys(this.allLinks).forEach((key) => {
-                    if (this.allStudies[key].length === 0) {
-                        axios.get(`${this.allLinks[key]}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
-                            .then((response) => {
-                                response.data.forEach(study => this.includeStudy(key, study));
-                            }).catch((thrown) => {
-                                if (CBioAPI.verbose) {
-                                    console.log(thrown);
-                                } else {
-                                    console.log('could not load studies');
-                                }
-                            });
-                    }
-                });
+            loadStudies: action((link, callback) => {
+                axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
+                    .then((response) => {
+                        response.data.forEach((study) => {
+                            this.includeStudy(link, study, callback);
+                        });
+                    }).catch((thrown) => {
+                        if (CBioAPI.verbose) {
+                            console.log(thrown);
+                        } else {
+                            console.log('could not load studies');
+                        }
+                    });
             }),
             /**
              * adds a study to the corresponding array if it contains temporal data
              */
-            includeStudy: action((key, study) => {
-                StudyAPI.getEvents(study.studyId, this.allLinks[key], (events) => {
+            includeStudy: action((link, study, callback) => {
+                StudyAPI.getEvents(study.studyId, link, (events) => {
                     const specimenEvents = events.filter(event => event.eventType === 'SPECIMEN');
                     if (specimenEvents.length > 0 && specimenEvents.some(event => event.attributes.map(d => d.key).includes('SAMPLE_ID'))) {
-                        this.allStudies[key].push(study);
-                        this.allStudies[key] = this.allStudies[key].sort((a, b) => {
-                            if (a.name < b.name) {
-                                return -1;
-                            }
-                            if (a.name > b.name) {
-                                return 1;
-                            }
-                            return 0;
-                        });
+                        callback(study);
                     }
                 });
             }),
+            /**
+             * loads default studies from cbiohack and cbioportal
+             */
+            loadDefaultStudies: action(() => {
+                this.loadStudies(this.allLinks.hack, study => this.allStudies.hack.push(study));
+                this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
+            }),
         });
-        this.getStudies();
+        this.loadDefaultStudies();
     }
 
 

@@ -38,7 +38,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
     getMainContent() {
         if (this.props.rootStore.firstLoad) {
             return (
-                <DefaultView studies={this.props.rootStore.studyAPI.studies} />
+                <DefaultView />
             );
         }
         // if everything is variablesParsed show the main view

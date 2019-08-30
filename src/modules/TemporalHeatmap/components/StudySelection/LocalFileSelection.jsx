@@ -52,7 +52,6 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
         this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
         this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
         this.handleMutationsLoad = this.handleMutationsLoad.bind(this);
-        this.handleExpressionsLoad = this.handleExpressionsLoad.bind(this);
         this.handleMolecularLoad = this.handleMolecularLoad.bind(this);
         this.setDatatype = this.setDatatype.bind(this);
         this.handleGeneMatrixLoad = this.handleGeneMatrixLoad.bind(this);
@@ -124,8 +123,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                     </FormGroup>
                     <FormGroup>
                         <Col sm={5}>
-                            Clinical Patient
-                            Data
+                            Clinical Patient Data
                             {' '}
                             {LocalFileSelection.getStateIcon(this.props.rootStore
                                 .localFileLoader.clinicalPatientParsed)}
@@ -209,8 +207,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                     </FormGroup>
                     <FormGroup>
                         <Col sm={5}>
-                            Gene Panel
-                            Matrix
+                            Gene Panel Matrix
                             {' '}
                             {LocalFileSelection.getStateIcon(this.props.rootStore
                                 .localFileLoader.panelMatrixParsed)}
@@ -236,8 +233,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                     </FormGroup>
                     <FormGroup>
                         <Col sm={5}>
-                            Gene
-                            panels
+                            Gene panels
                             {' '}
                             {LocalFileSelection.getStateIcon(this.props.rootStore
                                 .localFileLoader.genePanelsParsed)}
@@ -350,18 +346,6 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
             this.props.rootStore.localFileLoader.setMutations(e.target.files[0]);
         } else {
             this.props.rootStore.localFileLoader.setMutationsParsed('empty');
-        }
-    }
-
-    /**
-     * handles selection of expression data files
-     * @param {event} e
-     */
-    handleExpressionsLoad(e) {
-        if (e.target.files.length > 0) {
-            this.props.rootStore.localFileLoader.setExpressions(e.target.files);
-        } else {
-            this.props.rootStore.localFileLoader.setExpressionsParsed('empty');
         }
     }
 

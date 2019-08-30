@@ -1,7 +1,9 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import Select from 'react-select';
-import { Button, Col, FormGroup, Grid, Panel, Radio, Row, Tab, Tabs } from 'react-bootstrap';
+import {
+    Button, Col, FormGroup, Grid, Panel, Radio, Row, Tab, Tabs,
+} from 'react-bootstrap';
 import { extendObservable } from 'mobx';
 import StudySummary from '../StudySummary';
 import LocalFileSelection from './LocalFileSelection';
@@ -54,7 +56,8 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
      */
     getStudyInfo() {
         let info = null;
-        if (this.selectedStudy !== null && this.props.rootStore.timelineParsed && (!this.props.rootStore.isOwnData || this.props.rootStore.localFileLoader.eventsParsed === 'finished')) {
+        if (this.selectedStudy !== null && this.props.rootStore.timelineParsed
+            && (!this.props.rootStore.isOwnData || this.props.rootStore.localFileLoader.eventsParsed === 'finished')) {
             info = (
                 <div>
                     <Panel>
@@ -64,14 +67,14 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                             </Panel.Title>
                         </Panel.Heading>
                         <Panel.Body>
-                            <StudySummary/>
+                            <StudySummary />
                         </Panel.Body>
                     </Panel>
                 </div>
             );
         } else if ((this.selectedStudy !== null && !this.props.rootStore.isOwnData)
             || (this.props.rootStore.isOwnData && this.props.rootStore.localFileLoader.eventsParsed === 'loading')) {
-            info = <div className="smallLoader"/>;
+            info = <div className="smallLoader" />;
         }
         return info;
     }
@@ -158,6 +161,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                         <Radio
                                             name="linkSelect"
                                             value="own"
+                                            disabled
                                             checked={this.props.uiStore.cBioInstance === 'own'}
                                             onChange={this.handleInstanceChange}
                                             inline
@@ -184,7 +188,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                     : null}
                             </Tab>
                             <Tab eventKey="own" title="Load own dataset">
-                                <LocalFileSelection/>
+                                <LocalFileSelection />
                             </Tab>
                         </Tabs>
                         {this.getStudyInfo()}

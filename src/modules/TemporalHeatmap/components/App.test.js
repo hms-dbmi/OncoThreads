@@ -11,7 +11,6 @@ it('renders without crashing', () => {
     const uiStore = new UIStore();
     const rootStore = new RootStore(uiStore);
     const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
-    const studyapi = new studyAPI();
     const div = document.createElement('div');
     ReactDOM.render(
         <Provider
