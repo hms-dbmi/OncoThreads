@@ -161,7 +161,8 @@ class UndoRedoStore {
             .sample.childStore.timepoints[0].heatmapOrder);
 
         this.deserializeTimepoints(index);
-
+        this.rootStore.visStore.transitionSpaces
+            .replace(this.stateStack[index].state.transitionSpaces);
         this.uiStore.globalTime = this.stateStack[index].state.globalTime;
         this.uiStore.realTime = this.stateStack[index].state.realTime;
     }
@@ -293,6 +294,7 @@ class UndoRedoStore {
                 realTime: store.uiStore.realTime,
                 globalPrimary: store.rootStore.dataStore.globalPrimary,
                 timepointStructure: toJS(store.rootStore.timepointStructure),
+                transitionSpaces: toJS(store.rootStore.visStore.transitionSpaces),
             }
         ));
         // delete the top of the stack if we switch
