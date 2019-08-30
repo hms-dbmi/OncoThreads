@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'mobx-react';
 import App from './App';
-import studyAPI from '../../../studyAPI';
 import RootStore from '../../RootStore';
 import UndoRedoStore from '../../UndoRedoStore';
 import UIStore from '../../UIStore';
@@ -17,10 +16,8 @@ it('renders without crashing', () => {
             rootStore={rootStore}
             uiStore={uiStore}
             undoRedoStore={undoRedoStore}
-            studyapi={studyapi}
         >
             <App
-                studyapi={studyapi}
                 parsed="false"
                 firstload="false"
             />
