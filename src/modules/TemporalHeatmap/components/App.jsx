@@ -9,7 +9,7 @@ import {
 
 import GetStudy from './GetStudy';
 import Content from './Content';
-import DefaultView from './DefaultView';
+import DefaultView from './StudySelection/DefaultView';
 import LogModal from './Modals/LogModal';
 import SettingsModal from './Modals/SettingsModal';
 import AboutModal from './Modals/AboutModal';
@@ -38,7 +38,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
     getMainContent() {
         if (this.props.rootStore.firstLoad) {
             return (
-                <DefaultView studies={this.props.studyapi.studies} />
+                <DefaultView />
             );
         }
         // if everything is variablesParsed show the main view
@@ -58,7 +58,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
     getNavbarContent() {
         if (this.props.rootStore.variablesParsed) {
             return ([
-                <GetStudy key="getStudy" studies={this.props.studyapi.studies} />,
+                <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
                 <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
                     <NavItem onClick={this.props.rootStore.svgExport.exportSVG}>
                             ...as SVG

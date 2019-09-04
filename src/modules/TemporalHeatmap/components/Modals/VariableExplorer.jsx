@@ -23,7 +23,7 @@ import MutationSelector from './MutationSelector';
 
 
 /**
- * Modal for exploring variables with lineUp
+ * Modal for exploring timepoint variables with lineUp
  */
 const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(class VariableExplorer extends React.Component {
     constructor(props) {
@@ -44,9 +44,63 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 return this.createData();
             },
         });
-        this.scores = ['changeRate', 'modVRacross', 'AvgModVRtp',
-            'MaxModVRtp', 'MinModVRtp', 'AvgCoVTimeLine', 'AvgCoeffUnalikeability',
-            'AvgVarianceTimeLine'];
+        /**
+         * Definition of score columns.
+         * column has to be identical to the keys used in the data.
+         * label should be a descriptive name for score selection and column labeling
+         * description should be short and concise
+         * domain should be the actual numerical range of the score as a numerical array
+         * leave empty if not defined.
+         * @type {{column: string, label: string, description: string, domain: number[]}[]}
+         */
+        this.scores = [{
+            column: 'changeRate',
+            label: 'Rate of change',
+            description: 'Percentage of values that change over time. For continuous variables big changes lead to higher scores.',
+            domain: [0, 1],
+        },
+        {
+            column: 'modVRacross',
+            label: 'modVRacross',
+            description: '[ description ]',
+            domain: [0, 1],
+        },
+        {
+            column: 'AvgModVRtp',
+            label: 'AvgModVRtp',
+            description: '[ description ]',
+            domain: [0, 1],
+        },
+        {
+            column: 'MaxModVRtp',
+            label: 'MaxModVRtp',
+            description: '[ description ]',
+            domain: [0, 1],
+        },
+        {
+            column: 'MinModVRtp',
+            label: 'MinModVRtp',
+            description: '[ description ]',
+            domain: [0, 1],
+        },
+        {
+            column: 'AvgCoVTimeLine',
+            label: 'AvgCoVTimeLine',
+            description: '[ description ]',
+            domain: [],
+        },
+        {
+            column: 'AvgCoeffUnalikeability',
+            label: 'AvgCoeffUnalikeability',
+            description: '[ description ]',
+            domain: [0, 1],
+        },
+        {
+            column: 'AvgVarianceTimeLine',
+            label: 'AvgVarianceTimeLine',
+            description: '[ description ]',
+            domain: [],
+        }];
         this.addScore = this.addScore.bind(this);
         this.handleEnterAdd = this.handleEnterAdd.bind(this);
         this.removeScore = this.removeScore.bind(this);
@@ -85,6 +139,10 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 variable.datatype, variable.description, [], [], this.props.rootStore.staticMappers[variable.id], variable.source, 'clinical'));
     }
 
+    /**
+     * gets selector for scores
+     * @return {Select}
+     */
     getScoreSelector() {
         return (
             <Select
@@ -96,17 +154,18 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                         <div
                             style={{ textAlign: 'left' }}
                         >
-                            <b>{score}</b>
-                            <br/>
-                            [ Description of score ]
-                            <br/>
-                            Range: [ ]
+                            <b>{score.label}</b>
+                            <br />
+                            {`Description: ${score.description}`}
+                            <br />
+                            {`Range: ${score.domain.length === 2 ? `[${score.domain}]` : 'any'}`}
                         </div>
                     ),
-                    value: score,
+                    value: score.column,
+                    name: score.label,
                 }))}
                 onChange={(s) => {
-                    this.selectedScores = s.map(d => ({ label: d.value, value: d.value }));
+                    this.selectedScores = s.map(d => ({ label: d.name, value: d.value }));
                 }}
                 onKeyDown={this.handleEnterAdd}
             />
@@ -290,7 +349,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * @param desc
      */
     removeScore(desc) {
-        if (this.scores.includes(desc)) {
+        if (this.scores.map(d => d.name).includes(desc)) {
             this.addedScores.splice(this.addedScores.indexOf(desc), 1);
         }
     }
@@ -332,30 +391,6 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 categories: this.props.availableCategories.map(d => d.name).concat('Derived'),
             },
             {
-                datatype: 'number', column: 'changeRate', label: 'ChangeRate', domain: [0, 1],
-            },
-            {
-                datatype: 'number', column: 'modVRacross', label: 'ModVRacross', domain: [0, 1],
-            },
-            {
-                datatype: 'number', column: 'AvgModVRtp', label: 'AvgModVRtp', domain: [0, 1],
-            },
-            {
-                datatype: 'number', column: 'MaxModVRtp', label: 'MaxModVRtp', domain: [0, 1],
-            },
-            {
-                datatype: 'number', column: 'MinModVRtp', label: 'MinModVRtp', domain: [0, 1],
-            },
-            {
-                datatype: 'number', column: 'AvgCoVTimeLine', label: 'AvgCoVTimeLine', domain: [],
-            },
-            {
-                datatype: 'number', column: 'AvgCoeffUnalikeability', label: 'AvgCoeffUnalikeability', domain: [0, 1],
-            },
-            {
-                datatype: 'number', column: 'AvgVarianceTimeLine', label: 'AvgVarianceTimeLine', domain: [],
-            },
-            {
                 datatype: 'number', column: 'range', label: 'range', domain: [],
             },
             {
@@ -367,7 +402,9 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             {
                 datatype: 'categorical', column: 'inTable', label: 'inTable', categories: ['Yes', 'No'],
             },
-        ];
+        ].concat(this.scores.map(d => ({
+            datatype: 'number', column: d.column, label: d.label, domain: d.domain,
+        })));
         // visible columns and column order for lineUp
         const visibleColumns = ['name', 'datatype', 'source', 'range', 'numcat', 'na', 'inTable'];
         const popoverRight = (
