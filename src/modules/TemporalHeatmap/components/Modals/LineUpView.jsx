@@ -15,7 +15,8 @@ import { ScaleMappingFunction } from 'lineupjs';
 
 
 /**
- * Modal for exploring variables with lineUp
+ * lineup view
+ * TODO: fix lineup bug showing in console when adding scores w/o domain
  */
 const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class LineUpView extends React.Component {
     constructor(props) {
@@ -128,6 +129,9 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                             .insertAfter(column, insertColumn);
                     } else {
                         this.lineUpRef.current.adapter.data.getFirstRanking().push(column);
+                    }
+                    if (columnDesc.domain.length === 0) {
+                        this.updateNumericalColumn(columnName);
                     }
                 }
             }
