@@ -62,25 +62,25 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         {
             column: 'modVRacross',
             label: 'modVRacross',
-            description: '[ description ]',
+            description: 'ModVR implies Variation around the mode for categorical data. Low values of ModVR correspond to small amount of variation in data, and high values to larger amounts of variation. ModVRacross is calculated taking into account the ModVR of every patient (column scores), and taking their average.',
             domain: [0, 1],
         },
         {
             column: 'AvgModVRtp',
             label: 'AvgModVRtp',
-            description: '[ description ]',
+            description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their average.',
             domain: [0, 1],
         },
         {
             column: 'MaxModVRtp',
             label: 'MaxModVRtp',
-            description: '[ description ]',
+            description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their maximum.',
             domain: [0, 1],
         },
         {
             column: 'MinModVRtp',
             label: 'MinModVRtp',
-            description: '[ description ]',
+            description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their minimum.',
             domain: [0, 1],
         },
         {
@@ -92,7 +92,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         {
             column: 'AvgCoeffUnalikeability',
             label: 'AvgCoeffUnalikeability',
-            description: '[ description ]',
+            description: 'Focuses on how often observations differ - the higher the value, the more unalike the data are. ',
             domain: [0, 1],
         },
         {
