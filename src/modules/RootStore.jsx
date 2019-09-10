@@ -128,7 +128,7 @@ class RootStore {
                     this.api = new FileAPI(this.localFileLoader, this.geneNamesAPI);
                 } else {
                     this.api = new CBioAPI(this.study.studyId,
-                        this.studyAPI.allLinks[this.uiStore.cBioInstance]);
+                        this.cBioLink);
                     this.geneNamesAPI.geneList = {};
                 }
                 this.staticMappers = {};
@@ -335,7 +335,6 @@ class RootStore {
                 this.dataStore.variableStores.sample.childStore
                     .updateNames(this.createNameList(up, oldSampleTimepointNames, patients));
                 this.visStore.resetTransitionSpaces();
-                this.visStore.fitToScreenHeight();
             }),
             /**
              * gets block structure for events
@@ -417,6 +416,9 @@ class RootStore {
              */
             get hasProfileData() {
                 return this.availableProfiles.length > 0;
+            },
+            get cBioLink() {
+                return this.studyAPI.allLinks[this.uiStore.cBioInstance];
             },
         });
         // initialize dataStore and add initial variable if variables are parsed

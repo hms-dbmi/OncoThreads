@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import OriginalVariable from '../../../stores/OriginalVariable';
 import DerivedVariable from '../../../stores/DerivedVariable';
+import ColorScales from '../../../UtilityClasses/ColorScales';
 /*
  implements a Band for Sankey Transition
  */
@@ -102,7 +103,7 @@ const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band exte
                     }C${x0},${y2
                     } ${x1},${y3
                     } ${x1},${y1}`}
-                    stroke="#cccccc"
+                    stroke={ColorScales.bandOutline}
                     fill="none"
                     opacity={0.5}
                 />
@@ -111,7 +112,7 @@ const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band exte
                     }C${x1 + width},${y3
                     } ${x0 + width},${y2
                     } ${x0 + width},${y0}`}
-                    stroke="#cccccc"
+                    stroke={ColorScales.bandOutline}
                     fill="none"
                     opacity={0.5}
                 />
@@ -143,7 +144,7 @@ const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band exte
                 <path
                     onClick={e => this.handleMouseClick(e, this.props.patients)}
                     d={Band.getPath(this.props.x0, this.props.x1, y0, y1, selectedWidth)}
-                    fill="#afafaf"
+                    fill={ColorScales.bandOutline}
                     opacity={0.5}
                 />
             );
@@ -157,7 +158,7 @@ const Band = inject('dataStore', 'visStore', 'uiStore')(observer(class Band exte
                         this.props.x0 + selectedWidth, this.props.x1 + selectedWidth,
                         y0, y1, this.props.width - selectedWidth,
                     )}
-                    fill="#dddddd"
+                    fill={ColorScales.bandColor}
                     opacity={0.5}
                 />
                 {Band.getOutlinePaths(this.props.x0, this.props.x1, y0, y1, this.props.width)}

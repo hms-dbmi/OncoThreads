@@ -2,6 +2,7 @@ import React from 'react';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 import { observer, inject } from 'mobx-react';
+import ColorScales from '../../../UtilityClasses/ColorScales';
 
 /**
  * Component for the creation of a "TriangleCurve" for the heatmap group transition
@@ -14,11 +15,10 @@ const TriangleCurve = inject('dataStore')(observer(class TriangleCurve extends R
     }
 
     render() {
-        let color = '#dddddd';
-        let stroke = '#cccccc';
+        let color = ColorScales.bandColor;
+        const stroke = ColorScales.bandOutline;
         if (this.props.dataStore.selectedPatients.includes(this.props.patient)) {
-            color = '#afafaf';
-            stroke = '#cccccc';
+            color = ColorScales.bandOutline;
         }
         const curvature = 0.5;
         const yi = d3.interpolateNumber(this.props.y0, this.props.y1);

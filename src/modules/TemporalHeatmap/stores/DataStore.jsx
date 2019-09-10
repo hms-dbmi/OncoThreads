@@ -175,8 +175,10 @@ class DataStore {
         // combines/uncombines timepoints if variables of type "between" are displayed/removed
         reaction(() => this.transitionOn, (isOn) => {
             this.combineTimepoints(isOn);
+            if (isOn) {
+                this.rootStore.uiStore.setRealTime(false);
+            }
             this.rootStore.visStore.resetTransitionSpaces();
-            this.rootStore.visStore.fitToScreenHeight();
         });
     }
 
