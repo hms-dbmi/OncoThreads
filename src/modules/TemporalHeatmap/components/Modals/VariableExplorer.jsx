@@ -86,7 +86,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         {
             column: 'AvgCoVTimeLine',
             label: 'AvgCoVTimeLine',
-            description: '[ description ]',
+            description: 'Average Coefficient of Variation over all timepoints',
             domain: [],
         },
         {
@@ -98,7 +98,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         {
             column: 'AvgVarianceTimeLine',
             label: 'AvgVarianceTimeLine',
-            description: '[ description ]',
+            description: 'Average of Variance over timepoints',
             domain: [],
         }];
         this.addScore = this.addScore.bind(this);
