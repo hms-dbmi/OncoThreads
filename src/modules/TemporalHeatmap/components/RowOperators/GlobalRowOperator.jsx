@@ -1,60 +1,31 @@
 import React from 'react';
-import { observer, inject } from 'mobx-react';
+import { inject, observer } from 'mobx-react';
+import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
 
 /**
  * Component for a a row operators of a timepont type in the Global timeline
  */
 const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(observer(class GlobalRowOperator extends React.Component {
-    /**
-         * computes the width of a text. Returns 30 if the text width would be shorter than 30
-         * @param {string} text
-         * @param {number} fontSize
-         * @param {*} fontweight
-         * @param {number} maxWidth
-         * @returns {string}
-         */
-    static cropText(text, fontSize, fontweight, maxWidth) {
-        let returnText = text;
-        const context = document.createElement('canvas').getContext('2d');
-        context.font = `${fontweight} ${fontSize}px Arial`;
-        const width = context.measureText(text).width;
-        if (width > maxWidth) {
-            for (let i = 1; i < text.length; i += 1) {
-                const prevText = text.substr(0, i - 1).concat('...');
-                const currText = text.substr(0, i).concat('...');
-                const prevWidth = context.measureText(prevText).width;
-                const currWidth = context.measureText(currText).width;
-                if (currWidth > maxWidth && prevWidth < maxWidth) {
-                    returnText = prevText;
-                    break;
-                }
-            }
-        }
-        return returnText;
-    }
-
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.promote = this.promote.bind(this);
-        this.position = 0;
+        this.iconScale = (props.visStore.secondaryHeight) / 24;
+        this.iconDimensions = 24;
     }
 
 
     /**
-         * creates a delete icon and associates it with the delete function
-         * @param {Object} timepoint
-         * @param {string} variableId
-         * @param {number} iconScale
-         * @param {number} xPos
-         * @param {number} yPos
-         * @return {g} icon
-         */
-    getDeleteIcon(timepoint, variableId, iconScale, xPos, yPos) {
+     * creates an icon for deleting and associates it with the corresponding functions
+     * @param {(DerivedVariable|OriginalVariable)} variable
+     * @param {number} xPos
+     * @return {g}
+     */
+    getDeleteIcon(variable, xPos) {
         return (
             <g
+                id="delete"
                 className="not_exported"
-                key={`delete${variableId}`}
-                transform={`translate(${xPos},${yPos})scale(${iconScale})`}
+                transform={`translate(${xPos},0)scale(${this.iconScale})`}
                 onMouseEnter={e => this.props.showTooltip(e, 'Delete variable from all blocks ')}
                 onMouseLeave={this.props.hideTooltip}
             >
@@ -63,9 +34,9 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                     d="M12.12,10,20,17.87,17.87,20,10,12.12,2.13,20,0,17.87,7.88,10,0,2.13,2.13,0,10,7.88,17.87,0,20,2.13Z"
                 />
                 <rect
-                    onClick={() => this.handleDelete(variableId, timepoint)}
-                    width={iconScale * 24}
-                    height={24}
+                    onClick={() => this.handleDelete(variable)}
+                    width={this.iconDimensions}
+                    height={this.iconDimensions}
                     fill="none"
                     pointerEvents="visible"
                 />
@@ -73,118 +44,92 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
         );
     }
 
-    /**
-         * creates the label for a row
-         * @param {Object} timepoint
-         * @param {string} variableId
-         * @param {number} yPos
-         * @param {number} iconScale
-         * @param {number} width
-         * @param {*} fontWeight
-         * @param {number} fontSize
-         * @return {*}
-         */
-    getRowLabel(timepoint, variableId, yPos, iconScale, width, fontWeight, fontSize) {
-        const currVar = this.props.dataStore.variableStores[timepoint.type].getById(variableId);
-        let label;
-        if (timepoint.type === 'between') {
-            if (this.props.dataStore.variableStores[timepoint.type].isEventDerived(variableId)) {
-                // let labels = [];
-                // let oIds = currVar.originalIds;
-                label = (
-                    <g
-                        key={currVar.id}
-                        onMouseEnter={e => this.props.showTooltip(e, currVar.name,
-                            currVar.description)}
-                        onMouseLeave={this.props.hideTooltip}
-                    >
 
-                        <text style={{ fontWeight, fontSize }}>
-                            {GlobalRowOperator.cropText(currVar.name, fontSize,
-                                fontWeight, width - iconScale * 24 - fontSize)}
-                        </text>
-                        {this.getDeleteIcon(timepoint, variableId, iconScale,
-                            this.props.width - iconScale * 24, -fontSize)}
-                        <rect
-                            key="rect"
-                            width={fontSize}
-                            height={fontSize}
-                            x={this.props.width - iconScale * 24 - fontSize}
-                            y={-fontSize + 2}
-                            fill={this.props.visStore.globalTimelineColors(currVar.id)}
-                            opacity={0.5}
-                        />
-                    </g>
-                );
-                this.position += this.props.visStore.secondaryHeight;
-            }
+    /**
+     * creates the label for a row
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     * @param {*} fontWeight
+     * @param {number} fontSize
+     * @return {*}
+     */
+    getRowLabel(variable, fontWeight, fontSize) {
+        let promoteFunction = null;
+        let colorRect = null;
+        if (this.props.type === 'sample') {
+            promoteFunction = () => this.promote(variable.id);
         } else {
-            label = (
-                <g
-                    onMouseEnter={e => this.props.showTooltip(e, `Promote variable ${currVar.name}`, currVar.description)}
-                    onMouseLeave={this.props.hideTooltip}
-                >
-                    <text
-                        style={{ fontWeight, fontSize }}
-                        onClick={() => this.promote(variableId)}
-                    >
-                        {GlobalRowOperator.cropText(this.props.dataStore
-                            .variableStores[timepoint.type]
-                            .getById(variableId, timepoint.type).name,
-                        fontSize, fontWeight, width - iconScale * 24)}
-                    </text>
-                    {this.getDeleteIcon(timepoint, variableId, iconScale,
-                        this.props.width - iconScale * 24, -fontSize)}
-                </g>
+            colorRect = (
+                <rect
+                    key="rect"
+                    width={fontSize}
+                    height={fontSize}
+                    x={this.props.width - this.iconScale * this.iconDimensions - fontSize}
+                    fill={this.props.visStore.globalTimelineColors(variable.id)}
+                    opacity={0.5}
+                />
             );
-            this.position += this.props.visStore.secondaryHeight;
         }
-        return label;
+        return (
+            <g
+                key={variable.id}
+                onMouseEnter={e => this.props.showTooltip(e, variable.name,
+                    variable.description)}
+                onMouseLeave={this.props.hideTooltip}
+            >
+
+                <text
+                    style={{ fontWeight, fontSize }}
+                    y={fontSize}
+                    onClick={promoteFunction}
+                >
+                    {UtilityFunctions.cropText(variable.name, fontSize,
+                        fontWeight, this.props.width - this.iconScale
+                        * this.iconDimensions - fontSize)}
+                </text>
+                {this.getDeleteIcon(variable, this.props.width
+                    - this.iconScale * this.iconDimensions)}
+                {colorRect}
+            </g>
+        );
     }
 
     /**
-         * Creates the Row operator for a timepoint
-         */
+     * Creates the Row operator for a timepoint
+     */
     getRowOperator() {
-        this.position = this.props.visStore.secondaryHeight;
-        if (this.props.timepoint) {
-            return this.props.timepoint.heatmap.map((d) => {
+        return this.props.dataStore.variableStores[this.props.type]
+            .currentVariables.map((variableId, i) => {
                 let lineHeight;
                 let fontWeight;
-                if (d.variable === this.props.dataStore.globalPrimary) {
+                if (variableId === this.props.dataStore.globalPrimary) {
                     lineHeight = this.props.visStore.secondaryHeight;
                     fontWeight = 'bold';
                 } else {
                     lineHeight = this.props.visStore.secondaryHeight;
                     fontWeight = 'normal';
                 }
-                const transform = `translate(0,${this.position})`;
-                const iconScale = (this.props.visStore.secondaryHeight) / 24;
+                const transform = `translate(0,${i * lineHeight})`;
                 let fontSize = 10;
                 if (lineHeight < fontSize) {
                     fontSize = Math.round(lineHeight);
                 }
                 return (
-                    <g key={d.variable} className="clickable" transform={transform}>
-                        {this.getRowLabel(this.props.timepoint, d.variable,
-                            (lineHeight + fontSize / 2) / 2,
-                            iconScale, this.props.width, fontWeight, fontSize)}
+                    <g key={variableId} className="clickable" transform={transform}>
+                        {this.getRowLabel(this.props.dataStore.variableStores[this.props.type]
+                            .getById(variableId), fontWeight, fontSize)}
                     </g>
                 );
             });
-        }
-        return null;
     }
 
     /**
      * handles deleting a timepoint
-     * @param {string} variableId
-     * @param {Object} timepoint
+     * @param {(OriginalVariable|DerivedVariable)} variable
      */
-    handleDelete(variableId, timepoint) {
-        if (timepoint.type === 'between' || this.props.dataStore.variableStores[timepoint.type].currentVariables.length > 1) {
-            this.props.dataStore.variableStores[timepoint.type].removeVariable(variableId);
-            if (timepoint.type === 'sample') {
+    handleDelete(variable) {
+        if (this.props.type === 'between' || this.props.dataStore.variableStores[this.props.type].currentVariables.length > 1) {
+            this.props.dataStore.variableStores[this.props.type].removeVariable(variable.id);
+            if (this.props.type.type === 'sample') {
                 this.promote(this.props.dataStore.variableStores.sample.currentVariables[0]);
             }
         } else {
