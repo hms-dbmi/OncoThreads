@@ -9,15 +9,14 @@ class UtilityFunctions {
      */
     static getScientificNotation(value) {
         if (value !== undefined) {
-            let roundedValue = Math.round(value * 100) / 100;
+            const roundedValue = Math.round(value * 100) / 100;
             if (roundedValue.toString().length < 8) {
                 return roundedValue;
             }
-            else {
-                return value.toExponential(2);
-            }
+
+            return value.toExponential(2);
         }
-        else return value;
+        return value;
     }
 
     /**
@@ -36,18 +35,16 @@ class UtilityFunctions {
      */
     static isValidValue(value) {
         let isValid = false;
-        if (!isNaN(value) || value === "." || value === "-") {
+        if (!Number.isNaN(value) || value === '.' || value === '-') {
             isValid = true;
-        }
-        else {
+        } else {
             const lowerCase = value.toLowerCase();
-            if (lowerCase.endsWith("e+")) {
-                let substring = lowerCase.substring(0, lowerCase.length - 2);
-                isValid = !isNaN(parseFloat(substring)) && !substring.includes("e+")
-            }
-            else if (lowerCase.endsWith("e")) {
-                let substring = lowerCase.substring(0, lowerCase.length - 1);
-                isValid = !isNaN(parseFloat(substring)) && !substring.includes("e")
+            if (lowerCase.endsWith('e+')) {
+                const substring = lowerCase.substring(0, lowerCase.length - 2);
+                isValid = !Number.isNaN(parseFloat(substring)) && !substring.includes('e+');
+            } else if (lowerCase.endsWith('e')) {
+                const substring = lowerCase.substring(0, lowerCase.length - 1);
+                isValid = !Number.isNaN(parseFloat(substring)) && !substring.includes('e');
             }
         }
         return isValid;
@@ -60,9 +57,37 @@ class UtilityFunctions {
      * @returns {number}
      */
     static getTextWidth(text, fontSize) {
-        const context = document.createElement("canvas").getContext("2d");
-        context.font = fontSize + "px Arial";
+        const context = document.createElement('canvas').getContext('2d');
+        context.font = `${fontSize}px Arial`;
         return context.measureText(text).width;
+    }
+
+    /**
+     * crops the text to a certain with and adds "..." in the end
+     * @param {string} text
+     * @param {number} fontSize
+     * @param {*} fontweight
+     * @param {number} maxWidth
+     * @returns {string}
+     */
+    static cropText(text, fontSize, fontweight, maxWidth) {
+        let returnText = text;
+        const context = document.createElement('canvas').getContext('2d');
+        context.font = `${fontweight} ${fontSize}px Arial`;
+        const width = context.measureText(text).width;
+        if (width > maxWidth) {
+            for (let i = 1; i < text.length; i += 1) {
+                const prevText = text.substr(0, i - 1).concat('...');
+                const currText = text.substr(0, i).concat('...');
+                const prevWidth = context.measureText(prevText).width;
+                const currWidth = context.measureText(currText).width;
+                if (currWidth > maxWidth && prevWidth < maxWidth) {
+                    returnText = prevText;
+                    break;
+                }
+            }
+        }
+        return returnText;
     }
 }
 

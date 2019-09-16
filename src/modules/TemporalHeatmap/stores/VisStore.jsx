@@ -99,6 +99,7 @@ class VisStore {
             resetTransitionSpaces: action(() => {
                 this.transitionSpaces.replace(Array(this.rootStore.dataStore.timepoints.length - 1)
                     .fill(this.minTransHeight));
+                this.fitToScreenHeight();
             }),
             /**
              * sets all transition spaces to the same value

@@ -48,7 +48,7 @@ class StudyAPI {
              */
             loadDefaultStudies: action(() => {
                 this.loadStudies(this.allLinks.hack, study => this.allStudies.hack.push(study));
-                this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
+                //this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
             }),
         });
         this.loadDefaultStudies();

@@ -126,8 +126,12 @@ class ColorScales {
     }
 }
 
+// band color
+ColorScales.bandColor = '#e5e5e5';
+ColorScales.bandOutline = '#b4b4b4';
+
 // default color ranges
-ColorScales.defaultBinaryRange = ['#ffd92f', 'lightgray'];
+ColorScales.defaultBinaryRange = ['#ffd92f', '#bbbbbb'];
 ColorScales.defaultCategoricalRange = ['#1f78b4', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#b15928', '#a6cee3', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a'];
 ColorScales.defaultContinuousTwoColors = ['#e6e6e6', '#000000'];
 ColorScales.defaultContinuousThreeColors = ['#0571b0', '#f7f7f7', '#ca0020'];
