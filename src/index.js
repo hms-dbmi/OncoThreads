@@ -20,9 +20,6 @@ ReactDOM.render(
         uiStore={uiStore}
         undoRedoStore={undoRedoStore}
     >
-        <App
-            parsed="false"
-            firstload="false"
-        />
+        <App />
     </Provider>, document.getElementById('app'),
 );

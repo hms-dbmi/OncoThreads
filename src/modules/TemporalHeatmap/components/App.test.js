@@ -17,11 +17,8 @@ it('renders without crashing', () => {
             uiStore={uiStore}
             undoRedoStore={undoRedoStore}
         >
-            <App
-                parsed="false"
-                firstload="false"
-            />
-        </Provider>, div,
+            <App />
+        </Provider>, document.getElementById('app'),
     );
     ReactDOM.unmountComponentAtNode(div);
 });
