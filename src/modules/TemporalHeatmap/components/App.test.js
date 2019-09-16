@@ -18,7 +18,7 @@ it('renders without crashing', () => {
             undoRedoStore={undoRedoStore}
         >
             <App />
-        </Provider>, document.getElementById('app'),
+        </Provider>, div,
     );
     ReactDOM.unmountComponentAtNode(div);
 });
