@@ -50,6 +50,7 @@
       "build/**/*",
       "node_modules/**/*"
     ],
+    "npmRebuild": false,
     "publish": [
       {
         "provider": "github",
