@@ -2,8 +2,7 @@ language: node_js
 install:
 - nvm ls-remote
 - nvm install "$(jq -r '.engines.node' package.json)"
-- npm install --dev
-
+- npm install --only=dev
 cache:
   directories:
     - node_modules
