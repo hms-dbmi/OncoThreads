@@ -3,6 +3,7 @@ install:
 - nvm ls-remote
 - nvm install "$(jq -r '.engines.node' package.json)"
 - npm install --dev
+
 cache:
   directories:
     - node_modules
