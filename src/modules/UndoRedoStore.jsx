@@ -1,4 +1,5 @@
-import { action, createTransformer, extendObservable, toJS } from 'mobx';
+import { action, extendObservable, toJS } from 'mobx';
+import createTransformer from 'mobx-utils';
 import OriginalVariable from './TemporalHeatmap/stores/OriginalVariable';
 import DerivedVariable from './TemporalHeatmap/stores/DerivedVariable';
 
