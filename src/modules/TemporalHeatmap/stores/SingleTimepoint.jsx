@@ -159,7 +159,7 @@ class SingleTimepoint {
              * changes the order of the rows
              */
             resortRows: action((newOrder) => {
-                this.heatmap = this.heatmap.sort((a, b) => {
+                this.heatmap.replace(this.heatmap.slice().sort((a, b) => {
                     if (newOrder.indexOf(a.variable) < newOrder.indexOf(b.variable)) {
                         return -1;
                     }
@@ -167,7 +167,7 @@ class SingleTimepoint {
                         return 1;
                     }
                     return 0;
-                });
+                }));
             }),
             sortHeatmapLikeGroup: action(() => {
                 this.sortHeatmap(this.primaryVariableId, this.groupOrder);
