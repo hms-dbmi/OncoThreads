@@ -1,7 +1,5 @@
 language: node_js
 node_js:
-  - 9.5.0
-node_js:
 - 10.16.3
 before_script:
   export NODE_OPTIONS=--max_old_space_size=4096
