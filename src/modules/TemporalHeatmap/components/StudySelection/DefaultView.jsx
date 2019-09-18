@@ -14,8 +14,8 @@ import LocalFileSelection from './LocalFileSelection';
  * used for selection of studies from cBio or own data sets
  */
 const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(class DefaultView extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.getStudy = this.getStudy.bind(this);
         extendObservable(this, {
             selectedStudy: null,
@@ -24,6 +24,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
         this.handleInstanceChange = this.handleInstanceChange.bind(this);
+        props.rootStore.studyAPI.loadDefaultStudies();
     }
 
     /**

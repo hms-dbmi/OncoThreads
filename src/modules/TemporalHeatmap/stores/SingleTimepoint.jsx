@@ -194,7 +194,7 @@ class SingleTimepoint {
                     });
                 });
                 // first sort after primary variable values
-                this.heatmapOrder = helper.sort((a, b) => {
+                this.heatmapOrder.replace(helper.sort((a, b) => {
                     if (varToSort.datatype === 'NUMBER') {
                         if (a.value < b.value) return -newOrder;
                         if (a.value > b.value) return newOrder;
@@ -224,7 +224,7 @@ class SingleTimepoint {
                     }
 
                     return 0;
-                }).map(d => d.patient);
+                }).map(d => d.patient));
             }),
             /**
              * hierachical sorting of all rows plus realigning afterwards

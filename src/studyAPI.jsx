@@ -51,7 +51,6 @@ class StudyAPI {
                 this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
             }),
         });
-        this.loadDefaultStudies();
     }
 
 
