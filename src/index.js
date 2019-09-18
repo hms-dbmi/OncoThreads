@@ -10,10 +10,13 @@ import App from './modules/TemporalHeatmap/components/App.jsx';
 import RootStore from './modules/RootStore';
 import UIStore from './modules/UIStore';
 import UndoRedoStore from './modules/UndoRedoStore';
+import StudyAPI from './studyAPI';
 
 const uiStore = new UIStore();
-const rootStore = new RootStore(uiStore);
+const studyAPI = new StudyAPI(uiStore);
+const rootStore = new RootStore(uiStore, studyAPI);
 const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
+studyAPI.loadDefaultStudies();
 ReactDOM.render(
     <Provider
         rootStore={rootStore}

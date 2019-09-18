@@ -24,7 +24,6 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
         this.handleInstanceChange = this.handleInstanceChange.bind(this);
-        props.rootStore.studyAPI.loadDefaultStudies();
     }
 
     /**

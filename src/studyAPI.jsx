@@ -7,13 +7,14 @@ import CBioAPI from './CBioAPI';
  */
 
 class StudyAPI {
-    constructor(rootStore) {
-        this.rootStore = rootStore;
+    constructor(uiStore) {
+        this.uiStore = uiStore;
         extendObservable(this, {
             allLinks: { hack: 'http://www.cbiohack.org', portal: 'https://www.cbioportal.org' },
             allStudies: { hack: [], portal: [], own: [] },
+            loadComplete: false,
             get studies() {
-                return this.allStudies[this.rootStore.uiStore.cBioInstance];
+                return this.allStudies[this.uiStore.cBioInstance];
             },
             /**
              * gets available studies
@@ -25,12 +26,12 @@ class StudyAPI {
                             this.includeStudy(link, study, callback);
                         });
                     }).catch((thrown) => {
-                        if (CBioAPI.verbose) {
-                            console.log(thrown);
-                        } else {
-                            console.log('could not load studies');
-                        }
-                    });
+                    if (CBioAPI.verbose) {
+                        console.log(thrown);
+                    } else {
+                        console.log('could not load studies');
+                    }
+                });
             }),
             /**
              * adds a study to the corresponding array if it contains temporal data
@@ -65,12 +66,12 @@ class StudyAPI {
             .then((response) => {
                 callback(response.data.map(patient => patient.patientId));
             }).catch((error) => {
-                if (CBioAPI.verbose) {
-                    console.log(error);
-                } else {
-                    console.log('Could not load patients');
-                }
-            });
+            if (CBioAPI.verbose) {
+                console.log(error);
+            } else {
+                console.log('Could not load patients');
+            }
+        });
     }
 
 
@@ -86,12 +87,12 @@ class StudyAPI {
                 .then((response) => {
                     callback(response.data);
                 }).catch((error) => {
-                    if (CBioAPI.verbose) {
-                        console.log(error);
-                    } else {
-                        console.log('Could not load events');
-                    }
-                });
+                if (CBioAPI.verbose) {
+                    console.log(error);
+                } else {
+                    console.log('Could not load events');
+                }
+            });
         });
     }
 }
