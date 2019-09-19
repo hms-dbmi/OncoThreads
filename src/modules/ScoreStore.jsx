@@ -172,8 +172,8 @@ class ScoreStore {
         });
 
 
-        console.log('Scores within timeline: ');
-        console.log(this.TimeLineVariability);
+        // console.log('Scores within timeline: ');
+        // console.log(this.TimeLineVariability);
     }
 
     calculateVScore() {
@@ -303,7 +303,7 @@ class ScoreStore {
             m = 0;
         }
 
-         console.log(this.scoreStructure);
+         // console.log(this.scoreStructure);
 
         // }),
     }
