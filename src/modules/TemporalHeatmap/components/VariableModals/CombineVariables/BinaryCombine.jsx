@@ -1,11 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import {
-    inject, observer, Provider, PropTypes as MobxPropTypes,
-} from 'mobx-react';
-import {
-    Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio,
-} from 'react-bootstrap';
+import { PropTypes } from 'prop-types';
+import { inject, observer, PropTypes as MobxPropTypes, Provider } from 'mobx-react';
+import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } from 'react-bootstrap';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
@@ -49,7 +45,7 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
         }
 
         return [<ControlLabel key="label">Result</ControlLabel>,
-            <Provider categoryStore={this.categoryStore} key="table"><CategoricalTable /></Provider>];
+            <Provider categoryStore={this.categoryStore} key="table"><CategoricalTable/></Provider>];
     }
 
     /**
@@ -271,7 +267,9 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
                 <Modal.Footer>
                     <Checkbox
                         disabled={this.props.derivedVariable !== null}
-                        onChange={() => { this.keep = !this.keep; }}
+                        onChange={() => {
+                            this.keep = !this.keep;
+                        }}
                         checked={!this.keep}
                     >
                         Discard original variables
@@ -289,8 +287,11 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
 }));
 BinaryCombine.propTypes = {
     variables: MobxPropTypes.observableArray.isRequired,
-    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
+    derivedVariable: PropTypes.instanceOf(DerivedVariable),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
+};
+BinaryCombine.defaultProps = {
+    derivedVariable: null,
 };
 export default BinaryCombine;

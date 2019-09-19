@@ -1,4 +1,4 @@
-import {action, extendObservable, reaction} from "mobx";
+import { action, extendObservable, reaction } from "mobx";
 import * as d3 from 'd3';
 
 
@@ -100,7 +100,7 @@ class CategoryStore {
              * merges the selected categories
              */
             merge: action(() => {
-                let mergedEntry = {selected: false, name: '', categories: [], color: ''};
+                let mergedEntry = { selected: false, name: '', categories: [], color: '' };
                 let indicesToDelete = [];
                 this.currentCategories.forEach((d, i) => {
                     if (d.selected) {
@@ -140,7 +140,7 @@ class CategoryStore {
                                 name: d,
                                 categories: [d],
                                 color: this.colorScale(d),
-                                percentOccurence: this.getPercentOccurence([d])
+                                percentOccurence: this.getPercentOccurence([d]),
                             })
                         });
                         mergedIndeces.push(i);
@@ -156,14 +156,15 @@ class CategoryStore {
              * unmerges at an index
              */
             unMergeIndex: action((index) => {
-                const categories=this.currentCategories[index].categories.slice();
+                const categories = this.currentCategories[index].categories.slice();
                 this.currentCategories.splice(index, 1);
                 categories.forEach((d, j) => this.currentCategories.splice(index + j, 0, {
-                                selected: false,
-                                name: d,
-                                categories: [d],
-                                color: this.colorScale(d),
-                                percentOccurence: this.getPercentOccurence([d])}));
+                    selected: false,
+                    name: d,
+                    categories: [d],
+                    color: this.colorScale(d),
+                    percentOccurence: this.getPercentOccurence([d]),
+                }));
             }),
             /**
              * sorts categories by name
@@ -182,7 +183,7 @@ class CategoryStore {
                             return factor;
                         }
                         else return 0;
-                    }
+                    },
                 ))
             }),
             /**
@@ -202,7 +203,7 @@ class CategoryStore {
                             return factor;
                         }
                         else return 0;
-                    }
+                    },
                 ))
             }),
             /**
@@ -226,14 +227,14 @@ class CategoryStore {
                 });
                 return categoryMapping;
             },
-            get range(){
-                if(this.isOrdinal){
+            get range() {
+                if (this.isOrdinal) {
                     return this.colorScale.range();
                 }
-                else{
+                else {
                     return this.currentCategories.map(d => d.color)
                 }
-            }
+            },
 
         });
         // reaction to restricting categories

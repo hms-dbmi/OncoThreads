@@ -15,7 +15,7 @@ import FontAwesome from 'react-fontawesome';
 import uuidv4 from 'uuid/v4';
 import * as d3 from 'd3';
 import { extendObservable } from 'mobx';
-import PropTypes from 'prop-types';
+import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import ModifyContinuous from '../ModifySingleVariable/ModifyContinuous';
@@ -95,7 +95,9 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
                     {linearColorRange.map((d, i) => (
                         <Radio
                             key={i}
-                            onChange={() => { this.colorRange = d; }}
+                            onChange={() => {
+                                this.colorRange = d;
+                            }}
                             name="ColorScaleGroup"
                         >
                             {ModifyContinuous.getGradient(d, width, height)}
@@ -225,7 +227,9 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
                         <FormGroup controlId="formControlsSelect">
                             <ControlLabel>Select Operation</ControlLabel>
                             <FormControl
-                                onChange={(e) => { this.operation = e.target.value; }}
+                                onChange={(e) => {
+                                    this.operation = e.target.value;
+                                }}
                                 componentClass="select"
                                 defaultValue={this.operation}
                             >
@@ -243,7 +247,9 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
                 <Modal.Footer>
                     <Checkbox
                         disabled={this.props.derivedVariable !== null}
-                        onChange={() => { this.keep = !this.keep; }}
+                        onChange={() => {
+                            this.keep = !this.keep;
+                        }}
                         checked={!this.keep}
                     >
                         Discard
@@ -262,8 +268,11 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
 }));
 ContinuousCombine.propTypes = {
     variables: MobxPropTypes.observableArray.isRequired,
-    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
+    derivedVariable: PropTypes.instanceOf(DerivedVariable),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
+};
+ContinuousCombine.defaultProps = {
+    derivedVariable: null,
 };
 export default ContinuousCombine;

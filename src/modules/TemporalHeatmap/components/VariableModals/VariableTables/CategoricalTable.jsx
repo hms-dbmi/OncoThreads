@@ -137,7 +137,7 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                         />
                     </OverlayTrigger>
                 </th>
-                <th />
+                <th/>
             </tr>
         );
     }
@@ -382,10 +382,10 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                 <div style={{ maxHeight: '400px', overflowY: 'scroll' }}>
                     <Table condensed responsive>
                         <thead>
-                            {this.getTableHead()}
+                        {this.getTableHead()}
                         </thead>
                         <tbody>
-                            {this.getTableContent()}
+                        {this.getTableContent()}
                         </tbody>
                     </Table>
                 </div>
