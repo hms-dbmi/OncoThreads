@@ -3,6 +3,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
     Button,
+    Checkbox,
     Col,
     ControlLabel,
     Form,
@@ -15,7 +16,7 @@ import {
     Row,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import { extendObservable } from 'mobx';
+import { extendObservable, toJS } from 'mobx';
 import Select from 'react-select';
 import LineUpView from './LineUpView';
 import OriginalVariable from '../../stores/OriginalVariable';
@@ -34,6 +35,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             onDemandVariables: [],
             selectedScores: [],
             addedScores: [],
+            addedColumns: [],
             get variables() {
                 return this.getInitialVariables().concat(...this.onDemandVariables);
             },
@@ -59,54 +61,55 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             description: 'Percentage of values that change over time. For continuous variables big changes lead to higher scores.',
             domain: [0, 1],
         },
-        {
-            column: 'modVRacross',
-            label: 'modVRacross',
-            description: 'ModVR implies Variation around the mode for categorical data. Low values of ModVR correspond to small amount of variation in data, and high values to larger amounts of variation. ModVRacross is calculated taking into account the ModVR of every patient (column scores), and taking their average.',
-            domain: [0, 1],
-        },
-        {
-            column: 'AvgModVRtp',
-            label: 'AvgModVRtp',
-            description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their average.',
-            domain: [0, 1],
-        },
-        {
-            column: 'MaxModVRtp',
-            label: 'MaxModVRtp',
-            description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their maximum.',
-            domain: [0, 1],
-        },
-        {
-            column: 'MinModVRtp',
-            label: 'MinModVRtp',
-            description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their minimum.',
-            domain: [0, 1],
-        },
-        {
-            column: 'AvgCoVTimeLine',
-            label: 'AvgCoVTimeLine',
-            description: 'Average Coefficient of Variation over all timepoints',
-            domain: [],
-        },
-        {
-            column: 'AvgCoeffUnalikeability',
-            label: 'AvgCoeffUnalikeability',
-            description: 'Focuses on how often observations differ - the higher the value, the more unalike the data are. ',
-            domain: [0, 1],
-        },
-        {
-            column: 'AvgVarianceTimeLine',
-            label: 'AvgVarianceTimeLine',
-            description: 'Average of Variance over timepoints',
-            domain: [],
-        }];
+            {
+                column: 'modVRacross',
+                label: 'modVRacross',
+                description: 'ModVR implies Variation around the mode for categorical data. Low values of ModVR correspond to small amount of variation in data, and high values to larger amounts of variation. ModVRacross is calculated taking into account the ModVR of every patient (column scores), and taking their average.',
+                domain: [0, 1],
+            },
+            {
+                column: 'AvgModVRtp',
+                label: 'AvgModVRtp',
+                description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their average.',
+                domain: [0, 1],
+            },
+            {
+                column: 'MaxModVRtp',
+                label: 'MaxModVRtp',
+                description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their maximum.',
+                domain: [0, 1],
+            },
+            {
+                column: 'MinModVRtp',
+                label: 'MinModVRtp',
+                description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their minimum.',
+                domain: [0, 1],
+            },
+            {
+                column: 'AvgCoVTimeLine',
+                label: 'AvgCoVTimeLine',
+                description: 'Average Coefficient of Variation over all timepoints',
+                domain: [],
+            },
+            {
+                column: 'AvgCoeffUnalikeability',
+                label: 'AvgCoeffUnalikeability',
+                description: 'Focuses on how often observations differ - the higher the value, the more unalike the data are. ',
+                domain: [0, 1],
+            },
+            {
+                column: 'AvgVarianceTimeLine',
+                label: 'AvgVarianceTimeLine',
+                description: 'Average of Variance over timepoints',
+                domain: [],
+            }];
         this.addScore = this.addScore.bind(this);
         this.handleEnterAdd = this.handleEnterAdd.bind(this);
-        this.removeScore = this.removeScore.bind(this);
+        this.removeColumn = this.removeColumn.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
+        this.toggleDesciptionColumn=this.toggleDesciptionColumn.bind(this);
     }
 
     /**
@@ -144,20 +147,27 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * @return {Select}
      */
     getScoreSelector() {
+        let values = toJS(this.selectedScores);
+            values = values.map((value) => {
+                const copy = value;
+                copy.label = value.name;
+                return copy;
+            });
+            console.log(values);
         return (
             <Select
                 searchable
                 isMulti
-                value={this.selectedScores.slice()}
+                value={values}
                 options={this.scores.map(score => ({
                     label: (
                         <div
                             style={{ textAlign: 'left' }}
                         >
                             <b>{score.label}</b>
-                            <br />
+                            <br/>
                             {`Description: ${score.description}`}
-                            <br />
+                            <br/>
                             {`Range: ${score.domain.length === 2 ? `[${score.domain}]` : 'any'}`}
                         </div>
                     ),
@@ -165,7 +175,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                     name: score.label,
                 }))}
                 onChange={(s) => {
-                    this.selectedScores = s.map(d => ({ label: d.name, value: d.value }));
+                    this.selectedScores.replace(s);
                 }}
                 onKeyDown={this.handleEnterAdd}
             />
@@ -348,9 +358,10 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * removes a score from added scores
      * @param desc
      */
-    removeScore(desc) {
-        if (this.scores.map(d => d.name).includes(desc)) {
-            this.addedScores.splice(this.addedScores.indexOf(desc), 1);
+    removeColumn(desc) {
+        console.log(desc);
+        if (this.addedColumns.includes(desc)) {
+            this.addedColumns.splice(this.addedColumns.indexOf(desc), 1);
         }
     }
 
@@ -358,8 +369,19 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * sets added scores to selected scores
      */
     addScore() {
-        this.addedScores.replace(this.selectedScores.map(d => d.value));
+        this.selectedScores.map(d => d.value).forEach((score) => {
+            if(!this.addedColumns.includes(score)){
+                this.addedColumns.push(score);
+            }
+        });
         this.selectedScores.clear();
+    }
+    toggleDesciptionColumn(){
+        if(this.addedColumns.includes('description')){
+            this.removeColumn('description');
+        } else{
+            this.addedColumns.push('description');
+        }
     }
 
     /**
@@ -460,13 +482,20 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                     <Col sm={5} style={{ paddingRight: 0 }}>
                                         {this.getScoreSelector()}
                                     </Col>
-                                    <Col sm={1} style={{ paddingLeft: 0 }}>
+                                    <Col sm={1} style={{ padding: 0 }}>
                                         <Button
                                             style={{ height: 38 }}
                                             onClick={this.addScore}
                                         >
                                             Add
                                         </Button>
+                                    </Col>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Col sm={6} smOffset={this.props.rootStore.hasProfileData ? 6 : 0}>
+                                        <Checkbox onChange={this.toggleDesciptionColumn} checked={this.addedColumns.includes('description')}>
+                                            Show variable description column
+                                        </Checkbox>
                                     </Col>
                                 </FormGroup>
                             </Form>
@@ -476,9 +505,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                 data={this.data.slice()}
                                 selected={this.selected.slice()}
                                 handleSelect={this.handleSelect}
-                                addedScores={this.addedScores.slice()}
-                                removeScore={this.removeScore}
-                                availableCategories={this.props.availableCategories}
+                                addedColumns={this.addedColumns.slice()}
+                                removeColumn={this.removeColumn}
                                 columnDefs={columnDefs}
                                 visibleColumns={visibleColumns}
                             />

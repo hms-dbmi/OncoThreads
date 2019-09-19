@@ -282,7 +282,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      */
     handleOptionSelect(selectedOptions) {
         if (selectedOptions.length > 0) {
-            this.selectedValues = selectedOptions;
+            this.selectedValues.replace(selectedOptions);
         } else {
             this.selectedValues = [];
         }
