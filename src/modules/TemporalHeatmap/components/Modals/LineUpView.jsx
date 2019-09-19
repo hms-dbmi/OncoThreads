@@ -134,7 +134,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
                 } else {
                     this.lineUpRef.current.adapter.data.getFirstRanking().push(column);
                 }
-                if (columnDesc.datatype === 'number' && columnDesc.domain.length === 0) {
+                if (columnDesc.type === 'number' && columnDesc.domain.length === 0) {
                     this.updateNumericalColumn(columnName);
                 }
             }

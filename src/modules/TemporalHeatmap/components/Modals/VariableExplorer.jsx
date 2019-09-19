@@ -55,53 +55,62 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
          * leave empty if not defined.
          * @type {{column: string, label: string, description: string, domain: number[]}[]}
          */
-        this.scores = [{
-            column: 'changeRate',
-            label: 'Rate of change',
-            description: 'Percentage of values that change over time. For continuous variables big changes lead to higher scores.',
-            domain: [0, 1],
-        },
+        this.scores = [
+            {
+                column: 'changeRate',
+                label: 'Rate of change',
+                description: 'Percentage of values that change over time. For continuous variables big changes lead to higher scores.',
+                domain: [0, 1],
+                type: "across",
+            },
             {
                 column: 'modVRacross',
                 label: 'modVRacross',
                 description: 'ModVR implies Variation around the mode for categorical data. Low values of ModVR correspond to small amount of variation in data, and high values to larger amounts of variation. ModVRacross is calculated taking into account the ModVR of every patient (column scores), and taking their average.',
                 domain: [0, 1],
+                type: "across",
             },
             {
                 column: 'AvgModVRtp',
                 label: 'AvgModVRtp',
                 description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their average.',
                 domain: [0, 1],
+                type: 'within',
             },
             {
                 column: 'MaxModVRtp',
                 label: 'MaxModVRtp',
                 description: 'ModVR implies Variation around the mode for categorical data. MaxModVRtp is calculated by computing ModVR for every timepoint, and taking their maximum.',
                 domain: [0, 1],
+                type: 'within',
             },
             {
                 column: 'MinModVRtp',
                 label: 'MinModVRtp',
                 description: 'ModVR implies Variation around the mode for categorical data. MinModVRtp is calculated by computing ModVR for every timepoint, and taking their minimum.',
                 domain: [0, 1],
+                type: 'within',
             },
             {
                 column: 'AvgCoVTimeLine',
                 label: 'AvgCoVTimeLine',
                 description: 'Average Coefficient of Variation over all timepoints',
                 domain: [],
+                type: 'within',
             },
             {
                 column: 'AvgCoeffUnalikeability',
                 label: 'AvgCoeffUnalikeability',
                 description: 'Focuses on how often observations differ - the higher the value, the more unalike the data are. ',
                 domain: [0, 1],
+                type: 'within',
             },
             {
                 column: 'AvgVarianceTimeLine',
                 label: 'AvgVarianceTimeLine',
                 description: 'Average of Variance over timepoints',
                 domain: [],
+                type: 'within',
             }];
         this.addScore = this.addScore.bind(this);
         this.handleEnterAdd = this.handleEnterAdd.bind(this);
@@ -109,7 +118,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         this.handleAdd = this.handleAdd.bind(this);
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
-        this.toggleDesciptionColumn=this.toggleDesciptionColumn.bind(this);
+        this.toggleDesciptionColumn = this.toggleDesciptionColumn.bind(this);
     }
 
     /**
@@ -148,32 +157,41 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      */
     getScoreSelector() {
         let values = toJS(this.selectedScores);
-            values = values.map((value) => {
-                const copy = value;
-                copy.label = value.name;
-                return copy;
-            });
-            console.log(values);
+        values = values.map((value) => {
+            const copy = value;
+            copy.label = value.name;
+            return copy;
+        });
+        const transformToOption = scores => scores.map(score => ({
+            label: (
+                <div
+                    style={{ textAlign: 'left' }}
+                >
+                    <b>{score.label}</b>
+                    <br/>
+                    {`Description: ${score.description}`}
+                    <br/>
+                    {`Range: ${score.domain.length === 2 ? `[${score.domain}]` : 'any'}`}
+                </div>
+            ),
+            value: score.column,
+            name: score.label,
+        }));
+        let options = [
+            {
+                label: "Across Time",
+                options: transformToOption(this.scores.filter(score => score.type === 'across')),
+            },
+            {
+                label: "Within Timepoints",
+                options: transformToOption(this.scores.filter(score => score.type === 'within')),
+            }];
         return (
             <Select
                 searchable
                 isMulti
                 value={values}
-                options={this.scores.map(score => ({
-                    label: (
-                        <div
-                            style={{ textAlign: 'left' }}
-                        >
-                            <b>{score.label}</b>
-                            <br/>
-                            {`Description: ${score.description}`}
-                            <br/>
-                            {`Range: ${score.domain.length === 2 ? `[${score.domain}]` : 'any'}`}
-                        </div>
-                    ),
-                    value: score.column,
-                    name: score.label,
-                }))}
+                options={options}
                 onChange={(s) => {
                     this.selectedScores.replace(s);
                 }}
@@ -359,7 +377,6 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * @param desc
      */
     removeColumn(desc) {
-        console.log(desc);
         if (this.addedColumns.includes(desc)) {
             this.addedColumns.splice(this.addedColumns.indexOf(desc), 1);
         }
@@ -370,16 +387,17 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      */
     addScore() {
         this.selectedScores.map(d => d.value).forEach((score) => {
-            if(!this.addedColumns.includes(score)){
+            if (!this.addedColumns.includes(score)) {
                 this.addedColumns.push(score);
             }
         });
         this.selectedScores.clear();
     }
-    toggleDesciptionColumn(){
-        if(this.addedColumns.includes('description')){
+
+    toggleDesciptionColumn() {
+        if (this.addedColumns.includes('description')) {
             this.removeColumn('description');
-        } else{
+        } else {
             this.addedColumns.push('description');
         }
     }
@@ -493,7 +511,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                 </FormGroup>
                                 <FormGroup>
                                     <Col sm={6} smOffset={this.props.rootStore.hasProfileData ? 6 : 0}>
-                                        <Checkbox onChange={this.toggleDesciptionColumn} checked={this.addedColumns.includes('description')}>
+                                        <Checkbox onChange={this.toggleDesciptionColumn}
+                                                  checked={this.addedColumns.includes('description')}>
                                             Show variable description column
                                         </Checkbox>
                                     </Col>
