@@ -76,13 +76,13 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             {
                 column: 'MaxModVRtp',
                 label: 'MaxModVRtp',
-                description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their maximum.',
+                description: 'ModVR implies Variation around the mode for categorical data. MaxModVRtp is calculated by computing ModVR for every timepoint, and taking their maximum.',
                 domain: [0, 1],
             },
             {
                 column: 'MinModVRtp',
                 label: 'MinModVRtp',
-                description: 'ModVR implies Variation around the mode for categorical data. AvgModVRtp is calculated by computing ModVR for every timepoint, and taking their minimum.',
+                description: 'ModVR implies Variation around the mode for categorical data. MinModVRtp is calculated by computing ModVR for every timepoint, and taking their minimum.',
                 domain: [0, 1],
             },
             {

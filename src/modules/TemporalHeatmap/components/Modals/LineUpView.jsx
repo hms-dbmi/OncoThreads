@@ -40,7 +40,6 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         const removedColumns = prevProps.addedColumns.filter(column => !this.props.addedColumns.includes(column));
         addedColumns.forEach(column => this.addColumn(column, 'source'));
         removedColumns.forEach(column => this.removeColumn(column));
-        console.log(addedColumns,removedColumns);
     }
 
     /**
