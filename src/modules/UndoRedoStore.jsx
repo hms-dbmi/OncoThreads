@@ -269,7 +269,7 @@ class UndoRedoStore {
         const serializeTimepoints = createTransformer(timepoint => ({
             name: timepoint.name,
             heatmapOrder: timepoint.heatmapOrder.slice(),
-            groupOrder: timepoint.groupOrder,
+            groupSortDir: timepoint.groupSortDir,
             isGrouped: timepoint.isGrouped,
             heatmapSorting: toJS(timepoint.heatmapSorting),
             primaryVariableId: timepoint.primaryVariableId,

@@ -10,7 +10,6 @@ import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
  * Component for row operators of one timepoint in BlockView
  */
 const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class RowOperator extends React.Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -301,13 +300,13 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
 
     /**
      * opens the modal for saving a variable
-     * @param {string} variableId
+     * @param {(DerivedVariable|OriginalVariable)} variable
      * @param callback
      */
-    openSaveModal(variableId, callback) {
+    openSaveModal(variable, callback) {
         this.setState({
             modalIsOpen: true,
-            currentVariable: variableId,
+            currentVariable: variable,
             callback,
         });
     }

@@ -10,7 +10,6 @@ class DerivedMapperFunctions {
      * @returns {Object}
      */
     static getModificationMapper(modification, mappers) {
-        console.log(modification,mappers);
         let mapper;
         switch (modification.type) {
         case 'binaryCombine':
