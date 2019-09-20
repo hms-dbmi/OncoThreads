@@ -115,7 +115,6 @@ const ModifyBinary = inject('variableManagerStore', 'rootStore')(observer(class 
                         [this.props.variable.mapper]),
                     derivedProfile, this.props.variable.type,
                 );
-                console.log(returnVariable);
                 this.props.variableManagerStore
                     .replaceDisplayedVariable(this.props.variable.id, returnVariable);
                 if (this.applyToAll) {

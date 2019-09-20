@@ -3,7 +3,6 @@ import { inject, observer } from 'mobx-react';
 import {
     Alert,
     Button,
-    Checkbox,
     ControlLabel,
     FormControl,
     FormGroup,
@@ -78,7 +77,6 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
             dragging: false,
         });
         this.merge = this.merge.bind(this);
-        this.unMerge = this.unMerge.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
     }
 
@@ -137,7 +135,7 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                         />
                     </OverlayTrigger>
                 </th>
-                <th/>
+                <th />
             </tr>
         );
     }
@@ -312,35 +310,6 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
     }
 
     /**
-     * gets restrict categories inputs
-     * @return {*}
-     */
-    getRestrictCategories() {
-        return (
-            <div>
-                <Checkbox
-                    checked={this.props.categoryStore.restrictCategories}
-                    value={this.props.categoryStore.restrictCategories}
-                    onChange={() => this.props.categoryStore.toggleRestrictCategories()}
-                >
-                    Restrict number of
-                    categories
-                </Checkbox>
-                <input
-                    style={{ visibility: this.props.categoryStore.restrictCategories ? 'visible' : 'hidden' }}
-                    onChange={e => this.props.categoryStore.setNumberOfCategories(e.target.value)}
-                    type="number"
-                    name="points"
-                    value={this.props.categoryStore.numberOfCategories}
-                    step="1"
-                    min="2"
-                    max={this.props.categoryStore.domain.length}
-                />
-            </div>
-        );
-    }
-
-    /**
      * creates a warning if category names are not unique
      * @return {*}
      */
@@ -382,10 +351,10 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                 <div style={{ maxHeight: '400px', overflowY: 'scroll' }}>
                     <Table condensed responsive>
                         <thead>
-                        {this.getTableHead()}
+                            {this.getTableHead()}
                         </thead>
                         <tbody>
-                        {this.getTableContent()}
+                            {this.getTableContent()}
                         </tbody>
                     </Table>
                 </div>
@@ -399,7 +368,6 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                         selected
                     </Button>
                 </form>
-                {/* this.getRestrictCategories() */}
                 {this.getUniqueCategoryWarning()}
             </div>
         );
@@ -412,12 +380,6 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
         this.props.categoryStore.merge();
     }
 
-    /**
-     * unmerges all the currently selected merged categories
-     */
-    unMerge() {
-        this.props.categoryStore.unMerge();
-    }
 
     /**
      * toggles selecting categories

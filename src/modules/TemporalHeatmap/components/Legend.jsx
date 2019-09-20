@@ -15,7 +15,6 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
         extendObservable(this, {
             // is mouse currently dragged for selection
             dragging: false,
-            // patients selected during dragging
             activeIndex: -1,
             prevPos: 0,
             dragVisibility: 'hidden',

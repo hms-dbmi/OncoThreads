@@ -56,8 +56,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         this.handleResetAlignment = this.handleResetAlignment.bind(this);
         this.handleResetSelection = this.handleResetSelection.bind(this);
 
-        this.updateVariable = this.updateVariable.bind(this);
-
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
     }
 
@@ -135,12 +133,12 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
     /**
      * Opens the modal window and sets the state parameters which are passed to GroupBinningModal
-     * @param {string} variableId - future primary variable
+     * @param {OriginalVariable} variable - future primary variable
      * @param {returnDataCallback} callback -  returns the newly derived variable
      */
-    openBinningModal(variableId, callback) {
+    openBinningModal(variable, callback) {
         this.binningModalIsOpen = true;
-        this.clickedVariable = variableId;
+        this.clickedVariable = variable;
         this.callback = callback;
     }
 
@@ -155,12 +153,12 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
     /**
      * Opens the modal window and sets the state parameters which are passed to SaveVariableDialog
-     * @param {string} variableId - future primary variable
-     * @param {returnDataCallback} callback -  returns the newly derived variable
+     * @param {DerivedVariable} variable - variable to be saved
+     * @param {returnDataCallback} callback -  called after saving
      */
-    openSaveVarModal(variableId, callback) {
+    openSaveVarModal(variable, callback) {
         this.saveModalIsOpen = true;
-        this.clickedVariable = variableId;
+        this.clickedVariable = variable;
         this.callback = callback;
     }
 
@@ -189,7 +187,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
     /**
      * shows tooltip
-     * @param {event}e
+     * @param {event} e
      * @param {string} line1
      * @param {string} line2
      */
@@ -266,14 +264,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      */
     handleResetSelection() {
         this.props.rootStore.dataStore.resetSelection();
-    }
-
-    /**
-     * updates the currently selected variable
-     * @param {string} variableId
-     */
-    updateVariable(variableId) {
-        this.clickedVariable = variableId;
     }
 
 
