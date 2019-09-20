@@ -17,6 +17,7 @@ import ContextMenuHeatmapRow from './ContextMenuHeatmapRow';
 
 import VariableManager from './VariableModals/VariableManager';
 import ContextMenu from './RowOperators/ContextMenu';
+import SaveVariableDialog from './Modals/SaveVariableDialog';
 
 /**
  * Component containing the view and controls
@@ -26,6 +27,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         super();
         extendObservable(this, {
             binningModalIsOpen: false,
+            saveModalIsOpen: false,
             callback: null,
             clickedVariable: '',
             clickedTimepoint: -1,
@@ -38,9 +40,11 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
             variableManagerOpen: false,
         });
         this.openBinningModal = this.openBinningModal.bind(this);
+        this.openSaveVarModal = this.openSaveVarModal.bind(this);
         this.openVariableManager = this.openVariableManager.bind(this);
 
         this.closeBinningModal = this.closeBinningModal.bind(this);
+        this.closeSaveModal = this.closeSaveModal.bind(this);
         this.closeVariableManager = this.closeVariableManager.bind(this);
 
         this.showTooltip = this.showTooltip.bind(this);
@@ -83,6 +87,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                 <VariableManager
                     variableManagerOpen={this.variableManagerOpen}
                     closeVariableManager={this.closeVariableManager}
+                    openSaveVarModal={this.openSaveVarModal}
                 />
             );
         }
@@ -110,6 +115,25 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
     }
 
     /**
+     * gets the modal for saving variables
+     * @return {(SaveVariableDialog|null)}
+     */
+    getSaveModal() {
+        if (this.saveModalIsOpen) {
+            return (
+                <SaveVariableDialog
+                    modalIsOpen={this.saveModalIsOpen}
+                    variable={this.clickedVariable}
+                    callback={this.callback}
+                    closeModal={this.closeSaveModal}
+                />
+            );
+        }
+
+        return null;
+    }
+
+    /**
      * Opens the modal window and sets the state parameters which are passed to GroupBinningModal
      * @param {string} variableId - future primary variable
      * @param {returnDataCallback} callback -  returns the newly derived variable
@@ -125,6 +149,26 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      */
     closeBinningModal() {
         this.binningModalIsOpen = false;
+        this.variable = '';
+        this.callback = null;
+    }
+
+    /**
+     * Opens the modal window and sets the state parameters which are passed to SaveVariableDialog
+     * @param {string} variableId - future primary variable
+     * @param {returnDataCallback} callback -  returns the newly derived variable
+     */
+    openSaveVarModal(variableId, callback) {
+        this.saveModalIsOpen = true;
+        this.clickedVariable = variableId;
+        this.callback = callback;
+    }
+
+    /**
+     * closes save modal
+     */
+    closeSaveModal() {
+        this.saveModalIsOpen = false;
         this.variable = '';
         this.callback = null;
     }
@@ -347,6 +391,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                 <MainView
                                     tooltipFunctions={tooltipFunctions}
                                     openBinningModal={this.openBinningModal}
+                                    openSaveVarModal={this.openSaveVarModal}
                                     showContextMenu={this.showContextMenu}
                                     hideContextMenu={this.hideContextMenu}
                                     showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
@@ -356,6 +401,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                     </Row>
                 </Grid>
                 {this.getBinner()}
+                {this.getSaveModal()}
                 {this.getVariableManager()}
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip
