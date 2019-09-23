@@ -326,8 +326,8 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                                         e.target.value, 10,
                                                     ))}
                                                 step={1}
-                                                min={5}
-                                                max={700}
+                                                min={this.props.rootStore.visStore.minTransHeight}
+                                                max={this.props.rootStore.visStore.plotHeight}
                                             />
                                             <Button onClick={this.props.rootStore
                                                 .visStore.fitToScreenHeight}
