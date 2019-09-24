@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import uuidv4 from 'uuid/v4';
+import ColorScales from '../../UtilityClasses/ColorScales';
 
 
 /**
@@ -13,9 +14,12 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
      * @param {Object} partition
      * @param {number} y0
      * @param {number} y1
+     * @param {string} fill
+     * @param {number} opacity
+     * @param {string} mask
      * @return {rect|path}
      */
-    getBandProxy(partition, y0, y1) {
+    getBandProxy(partition, y0, y1, fill, opacity, mask) {
         let proxy;
         if (partition.width === partition.sharedWidth) {
             proxy = (
@@ -25,24 +29,12 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                     y={this.props.bandRectY}
                     width={partition.width}
                     height={this.props.visStore.bandRectHeight}
-                    fill="#dddddd"
-                    opacity={0.5}
+                    fill={fill}
+                    opacity={opacity}
+                    mask={mask}
                 />
             );
         } else {
-            proxy = (
-                <path
-                    key={`${partition.key}band`}
-                    d={`M${partition.x0},${y1
-                    }L${partition.x0 + partition.sharedWidth},${y1
-                    }C${partition.x0 + partition.sharedWidth},${y0
-                    } ${partition.x0 + partition.sharedWidth},${y1
-                    } ${partition.x0 + partition.width},${y0
-                    }L${partition.x0},${y0}Z`}
-                    fill="#dddddd"
-                    opacity={0.5}
-                />
-            );
             proxy = (
                 <path
                     key={`${partition.key}band`}
@@ -56,8 +48,9 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                     } ${partition.x0 + partition.width},${y0
                     }L${partition.x0 + partition.width},${y0
                     }Z`}
-                    fill="#dddddd"
-                    opacity={0.5}
+                    fill={fill}
+                    opacity={opacity}
+                    mask={mask}
                 />
             );
         }
@@ -81,7 +74,7 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                     x2={partition.x0}
                     y1={this.props.bandRectY}
                     y2={this.props.bandRectY + this.props.visStore.bandRectHeight}
-                    stroke="#cccccc"
+                    stroke={ColorScales.bandOutline}
                     opacity={0.5}
                 />,
                 <line
@@ -90,7 +83,7 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                     x2={partition.x0 + partition.width}
                     y1={this.props.bandRectY}
                     y2={this.props.bandRectY + this.props.visStore.bandRectHeight}
-                    stroke="#cccccc"
+                    stroke={ColorScales.bandOutline}
                     opacity={0.5}
                 />];
         } else {
@@ -101,7 +94,7 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                     }C${partition.x0 + partition.offset},${y1
                     } ${partition.x0 + partition.offset},${y0
                     } ${partition.x0 + partition.offset},${y1}`}
-                    stroke="#cccccc"
+                    stroke={ColorScales.bandOutline}
                     fill="none"
                     opacity={0.5}
                 />,
@@ -111,7 +104,7 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                     }C${partition.x0 + partition.offset + partition.sharedWidth},${y0
                     } ${partition.x0 + partition.offset + partition.sharedWidth},${y1
                     } ${partition.x0 + partition.width},${y0}`}
-                    stroke="#cccccc"
+                    stroke={ColorScales.bandOutline}
                     fill="none"
                     opacity={0.5}
                 />];
@@ -159,7 +152,7 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
             }
             let lastVal = partition.x0;
             let d = `M${partition.x0},${y0}`;
-            const rawProxy = this.getBandProxy(partition, y0, y1);
+            const rawProxy = this.getBandProxy(partition, y0, y1, ColorScales.bandColor, 0.5, null);
             const bandOutlines = this.getBandOutlines(partition, y0, y1);
             if (partition.selected.length > 0) {
                 partition.selected.forEach((selected, i) => {
@@ -180,27 +173,25 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
                 const id = uuidv4();
                 bandProxy = [
                     <defs key={`${partition.key}defs`}>
-                        <mask id={id}>
-                            {rawProxy}
-                            <path d={d} fill="white" />
+                        <mask
+                            x="0"
+                            y="0"
+                            width={partition.width}
+                            height={this.props.visStore.bandRectHeight}
+                            id={id}
+                        >
+                            {this.getBandProxy(partition, y0, y1, 'white', 1, null)}
+                            <path d={d} fill="black" />
                         </mask>
                     </defs>,
-                    <rect
-                        key={`${partition.key}element`}
-                        x={partition.x0}
-                        y={this.props.bandRectY}
-                        width={partition.width}
-                        height={this.props.visStore.bandRectHeight}
-                        fill="#afafaf"
-                        opacity={0.5}
-                        mask={`url(#${id})`}
-                    />,
+                    <path d={d} fill={ColorScales.bandOutline} opacity={0.5} key="selected" />,
+                    this.getBandProxy(partition, y0, y1, ColorScales.bandColor, 0.5, `url(#${id})`),
                     bandOutlines];
             } else {
                 bandProxy = [rawProxy, bandOutlines];
             }
             proxies.push(
-                <g key={partition.key}>
+                <g key={String(partition.key)}>
                     {bandProxy}
                     {variableProxy}
                 </g>,

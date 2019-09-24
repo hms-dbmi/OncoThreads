@@ -88,7 +88,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         width={this.props.rootStore.visStore.timelineRectSize}
                         x1={this.props.rootStore.visStore.heatmapScales[0](d.patient)}
                         x2={this.props.rootStore.visStore.heatmapScales[0](d.patient)
-                        + this.props.rootStore.visStore.timelineRectSize / 2}
+                        + this.props.rootStore.visStore.timelineRectSize}
                         y1={this.props.rootStore.visStore
                             .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])
                         - this.props.rootStore.visStore.timelineRectSize / 2}
@@ -109,14 +109,16 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
 
     handleDoubleClick(patient) {
-        window.open(`http://www.cbiohack.org/case.do#/patient?studyId=${this.props.rootStore.study.studyId}&caseId=${patient}`);
+        if (!this.props.rootStore.isOwnData) {
+            window.open(`${this.props.rootStore.cBioLink}/patient?studyId=${this.props.rootStore.study.studyId}&caseId=${patient}`);
+        }
     }
 
 
     handleMouseEnter(event, patient, value, startDay, duration) {
         let timeVariable = 'Day';
-        let start;
-        let dur;
+        let start = startDay;
+        let dur = duration;
 
         if (this.props.rootStore.timeVar === '30') {
             start = Math.round((startDay / 30) * 100) / 100;

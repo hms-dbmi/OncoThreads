@@ -1,7 +1,7 @@
-import {action, extendObservable} from "mobx";
+import { action, extendObservable } from 'mobx';
 
 /*
-stores information about a single timepoint
+ stores information about a single timepoint
  */
 class SingleTimepoint {
     constructor(rootStore, patients, type, localIndex, order) {
@@ -10,81 +10,94 @@ class SingleTimepoint {
         this.patients = patients;
         this.globalIndex = localIndex;
         this.localIndex = localIndex;
-        this.heatmapSorting = {variable: "", order: 0};
+        this.heatmapSorting = { variable: '', sortDir: 0 };
         extendObservable(this, {
             heatmapOrder: order,
-            groupOrder: 1,
+            groupSortDir: 1,
             heatmap: [],
             isGrouped: false,
-            primaryVariableId: "",
+            primaryVariableId: '',
             name: localIndex,
             /**
              * computes grouped layout based on current heatmap and order.
-             * @returns {Array}
+             * @returns {object[]}
              */
             get grouped() {
-                let grouped = [];
-                let variableDomain = this.rootStore.dataStore.variableStores[this.type].getById(this.primaryVariableId).domain.concat(undefined);
-                if (this.groupOrder === -1) {
+                const grouped = [];
+                let variableDomain = this.rootStore.dataStore.variableStores[this.type]
+                    .getById(this.primaryVariableId).domain.concat(undefined);
+                if (this.groupSortDir === -1) {
                     variableDomain = variableDomain.reverse();
                 }
-                variableDomain.forEach(partition => {
-                    let patients = this.heatmap.filter(d => d.variable === this.primaryVariableId)[0].data.filter(d => d.value === partition).map(d => d.patient);
-                    if (patients.length > 0) {
-                        let rows = [];
-                        this.heatmap.forEach(row => {
+                variableDomain.forEach((partition) => {
+                    const currPatients = this.heatmap.filter(d => d.variable
+                        === this.primaryVariableId)[0].data
+                        .filter(d => d.value === partition).map(d => d.patient);
+                    if (currPatients.length > 0) {
+                        const rows = [];
+                        this.heatmap.forEach((row) => {
                             let counts = [];
-                            let currVarDomain = this.rootStore.dataStore.variableStores[this.type].getById(row.variable).domain.concat(undefined);
-                            if (this.groupOrder === -1) {
+                            let currVarDomain = this.rootStore.dataStore.variableStores[this.type]
+                                .getById(row.variable).domain.concat(undefined);
+                            if (this.groupSortDir === -1) {
                                 currVarDomain = currVarDomain.reverse();
                             }
-                            let isNumerical = this.rootStore.dataStore.variableStores[this.type].getById(row.variable).datatype === "NUMBER";
+                            const isNumerical = this.rootStore.dataStore.variableStores[this.type]
+                                .getById(row.variable).datatype === 'NUMBER';
                             if (!isNumerical) {
-                                currVarDomain.forEach(value => {
-                                    let valuePatients = row.data.filter(d => patients.includes(d.patient) && d.value === value).map(d => d.patient);
+                                currVarDomain.forEach((value) => {
+                                    const valuePatients = row.data.filter(d => currPatients
+                                        .includes(d.patient) && d.value === value)
+                                        .map(d => d.patient);
                                     if (valuePatients.length > 0) {
-                                        counts.push({key: value, patients: valuePatients});
+                                        counts.push({ key: value, patients: valuePatients });
                                     }
                                 });
+                            } else {
+                                counts = row.data.filter(d => currPatients.includes(d.patient))
+                                    .map(d => ({ key: d.value, patients: [d.patient] }));
                             }
-                            else {
-                                counts = row.data.filter(d => patients.includes(d.patient)).map(d => {
-                                    return {key: d.value, patients: [d.patient]}
-                                });
-                            }
-                            rows.push({variable: row.variable, counts: counts});
+                            rows.push({ variable: row.variable, counts });
                         });
-                        grouped.push({partition: partition, rows: rows, patients: patients})
+                        grouped.push({ partition, rows, patients: currPatients });
                     }
                 });
                 return grouped;
             },
             /**
              * sets timepoint name
+             * @param {string} name
              */
-            setName: action(name => {
-                this.name = name
+            setName: action((name) => {
+                this.name = name;
             }),
             /**
              * sets isGrouped
+             * @param {boolean} isGrouped
              */
-            setIsGrouped: action(isGrouped => {
+            setIsGrouped: action((isGrouped) => {
                 this.isGrouped = isGrouped;
             }),
             /**
              * sets order in groups
+             * @param {number} newSortDir
              */
-            setGroupOrder: action(order => {
-                this.groupOrder = order;
+            setGroupSortDir: action((newSortDir) => {
+                this.groupSortDir = newSortDir;
             }),
             /**
              * sets primary variable
+             * @param {string} id
              */
-            setPrimaryVariable: action(id => {
+            setPrimaryVariable: action((id) => {
                 this.primaryVariableId = id;
             }),
-            setHeatmapOrder: action(order => {
-                this.heatmapOrder.replace(order);
+            /**
+             * sets a new patient order for the heatmap
+             * @param {string[]} newOrder
+             */
+            setHeatmapOrder: action((newOrder) => {
+                this.heatmapOrder.replace(newOrder);
             }),
             /**
              * resets the heatmap
@@ -95,27 +108,27 @@ class SingleTimepoint {
 
             /**
              * adds a row
-             * @param variableId
-             * @param variableData
+             * @param {string} variableId
+             * @param {object[]} variableData
              */
             addRow: action((variableId, variableData) => {
                 this.heatmap.push({
                     variable: variableId,
                     data: variableData,
-                    isUndef: variableData.every(d => d.value === undefined)
+                    isUndef: variableData.every(d => d.value === undefined),
                 });
-                if (this.primaryVariableId === "") {
+                if (this.primaryVariableId === '') {
                     this.setPrimaryVariable(variableId);
                 }
             }),
 
             /**
              * removes a row
-             * @param variableId
+             * @param {string} variableId
              */
-            removeRow: action(variableId => {
+            removeRow: action((variableId) => {
                 let deleteIndex = -1;
-                for (let i = 0; i < this.heatmap.length; i++) {
+                for (let i = 0; i < this.heatmap.length; i += 1) {
                     if (this.heatmap[i].variable === variableId) {
                         deleteIndex = i;
                         break;
@@ -123,14 +136,12 @@ class SingleTimepoint {
                 }
                 this.heatmap.splice(deleteIndex, 1);
                 if (this.heatmap.length < 1) {
-                    this.primaryVariableId = "";
-                }
-                else if (variableId === this.primaryVariableId) {
-                    let primaryIndex = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables.map(d => d.datatype === "NUMBER").indexOf(false);
+                    this.primaryVariableId = '';
+                } else if (variableId === this.primaryVariableId) {
+                    const primaryIndex = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables.map(d => d.datatype === 'NUMBER').indexOf(false);
                     if (this.isGrouped && primaryIndex !== -1) {
                         this.setPrimaryVariable(this.heatmap[primaryIndex].variable);
-                    }
-                    else {
+                    } else {
                         this.setIsGrouped(false);
                         this.setPrimaryVariable(this.heatmap[0].variable);
                     }
@@ -139,9 +150,9 @@ class SingleTimepoint {
 
             /**
              * updates a row
-             * @param index
-             * @param variableId
-             * @param variableData
+             * @param {number} index
+             * @param {string} variableId
+             * @param {object[]} variableData
              */
             updateRow: action((index, variableId, variableData) => {
                 const isPrimary = this.heatmap[index].variable === this.primaryVariableId;
@@ -154,141 +165,147 @@ class SingleTimepoint {
             }),
             /**
              * changes the order of the rows
+             * @param {string[]} newOrder
              */
-            resortRows: action(order => {
+            resortRows: action((newOrder) => {
                 this.heatmap = this.heatmap.sort((a, b) => {
-                    if (order.indexOf(a.variable) < order.indexOf(b.variable)) {
+                    if (newOrder.indexOf(a.variable) < newOrder.indexOf(b.variable)) {
                         return -1;
                     }
-                    if (order.indexOf(a.variable) > order.indexOf(b.variable)) {
+                    if (newOrder.indexOf(a.variable) > newOrder.indexOf(b.variable)) {
                         return 1;
                     }
-                    else return 0;
+                    return 0;
                 });
             }),
-            sortHeatmapLikeGroup() {
-                this.sortHeatmap(this.primaryVariableId, this.groupOrder);
-            },
+            /**
+             * sorts the heatmap in the same way that the groups are sorted
+             */
+            sortHeatmapLikeGroup: action(() => {
+                this.sortHeatmap(this.primaryVariableId, this.groupSortDir);
+            }),
             /**
              * sorts heatmap (sets new heatmap order)
+             * @param {string} variable
+             * @param {number} newSortDir
              */
-            sortHeatmap: action((variable, order) => {
-                const _self = this;
-                let varToSort = this.rootStore.dataStore.variableStores[this.type].getById(variable);
-                this.heatmapSorting = {variable: variable, order: order};
+            sortHeatmap: action((variableId, newSortDir) => {
+                const varToSort = this.rootStore.dataStore.variableStores[this.type]
+                    .getById(variableId);
+                this.heatmapSorting = { variable: variableId, sortDir: newSortDir };
                 const previousOrder = this.heatmapOrder.slice();
-                const variableIndex = this.rootStore.dataStore.variableStores[this.type].currentVariables.indexOf(variable);
-                let helper = this.heatmapOrder.map(d => {
-                    let patientIndex = _self.heatmap[variableIndex].data.map(d => d.patient).indexOf(d);
+                const variableIndex = this.rootStore.dataStore.variableStores[this.type]
+                    .currentVariables.indexOf(variableId);
+                const helper = this.heatmapOrder.map((patient) => {
+                    const patientIndex = this.heatmap[variableIndex].data
+                        .map(d => d.patient).indexOf(patient);
                     if (patientIndex === -1) {
-                        return ({patient: d, value: undefined})
+                        return ({ patient, value: undefined });
                     }
-                    else {
-                        return ({patient: d, value: _self.heatmap[variableIndex].data[patientIndex].value})
-                    }
+                    return ({
+                        patient,
+                        value: this.heatmap[variableIndex].data[patientIndex].value,
+                    });
                 });
-                //first sort after primary variable values
+                // first sort after primary variable values
                 this.heatmapOrder = helper.sort((a, b) => {
-                    if (varToSort.datatype === "NUMBER") {
-                        if (a.value < b.value)
-                            return -order;
-                        if (a.value > b.value)
-                            return order;
-                    }
-                    else {
+                    if (varToSort.datatype === 'NUMBER') {
+                        if (a.value < b.value) return -newSortDir;
+                        if (a.value > b.value) return newSortDir;
+                    } else {
                         if (varToSort.domain.indexOf(a.value) < varToSort.domain.indexOf(b.value)) {
-                            return -order;
+                            return -newSortDir;
                         }
                         if (varToSort.domain.indexOf(a.value) > varToSort.domain.indexOf(b.value)) {
-                            return order;
+                            return newSortDir;
                         }
                     }
-                    //undefined values accumulate on the right
+                    // undefined values accumulate on the right
                     if (a.value === undefined && b.value !== undefined) {
                         return 1;
                     }
                     if (a.value !== undefined && b.value === undefined) {
                         return -1;
                     }
-                    //if sorting is ambiguous do additional sorting
-                    else {
-                        //if the timepoint is sorted for the first time (no previous order)
-                        if (previousOrder.indexOf(a.patient) < previousOrder.indexOf(b.patient)) {
-                            return -1;
-                        }
-                        if (previousOrder.indexOf(a.patient) > previousOrder.indexOf(b.patient)) {
-                            return 1;
-                        }
-                        else {
-                            return 0
-                        }
+                    // if the timepoint is sorted for the first time (no previous order)
+                    if (previousOrder.indexOf(a.patient) < previousOrder.indexOf(b.patient)) {
+                        return -1;
                     }
-                }).map(d => {
-                    return d.patient;
-                });
+                    if (previousOrder.indexOf(a.patient) > previousOrder.indexOf(b.patient)) {
+                        return 1;
+                    }
+
+                    return 0;
+                }).map(d => d.patient);
+            }),
+            /**
+             * sorts the groups of a timepoint
+             * @param {number} newSortDir
+             */
+            sortGroup: action((newSortDir) => {
+                this.setGroupSortDir(newSortDir);
             }),
             /**
              * hierachical sorting of all rows plus realigning afterwards
+             * @param {string} variableId
              */
-            magicSort: action(variable => {
-                for (let i = 0; i < this.heatmap.length; i++) {
+            magicSort: action((variableId) => {
+                for (let i = 0; i < this.heatmap.length; i += 1) {
                     this.sort(this.heatmap[i].variable);
-                    if (this.heatmap[i].variable === variable) {
+                    if (this.heatmap[i].variable === variableId) {
                         break;
                     }
                 }
                 this.rootStore.dataStore.applyPatientOrderToAll(this.globalIndex);
             }),
             /**
-             * sorts the timepoint by a variable (handled differently for grouped and ungrouped timepoints)
-             * @param variableId
+             * sorts the timepoint by a variable
+             * (handled differently for grouped and ungrouped timepoints)
+             * @param {string} variableId
              */
-            sort: action(variableId => {
-                //case: the timepoint is grouped
+            sort: action((variableId) => {
+                // case: the timepoint is grouped
                 this.setPrimaryVariable(variableId);
                 if (this.isGrouped) {
-                    this.setGroupOrder(-this.groupOrder);
-                }
-                //case: the timepoint is not grouped
-                else {
-                    //this.rootStore.uiStore.setRealTime(false);
-                    let order = 1;
+                    this.sortGroup(-this.groupSortDir);
+                    // case: the timepoint is not grouped
+                } else {
+                    // this.rootStore.uiStore.setRealTime(false);
+                    let currentSortDir = 1;
                     if (this.heatmapSorting.variable === variableId) {
-                        order = -this.heatmapSorting.order;
+                        currentSortDir = -this.heatmapSorting.sortDir;
                     }
-                    this.sortHeatmap(variableId, order);
+                    this.sortHeatmap(variableId, currentSortDir);
                 }
             }),
 
             /**
              * groups a timepoint
-             * @param variable
+             * @param {string} variableId
              */
-            group: action(variable => {
-                this.setPrimaryVariable(variable);
+            group: action((variableId) => {
+                this.setPrimaryVariable(variableId);
                 this.setIsGrouped(true);
             }),
 
             /**
              * promotes a timepoint
-             * @param variableId
+             * @param {string} variableId
              */
-            promote: action(variableId => {
+            promote: action((variableId) => {
                 this.setPrimaryVariable(variableId);
             }),
 
             /**
              * ungroupes a timepoint by swapping to the heatmap representation
-             * @param variable
+             * @param {string} variableId
              */
-            unGroup: action(variable => {
-                this.setPrimaryVariable(variable);
+            unGroup: action((variableId) => {
+                this.setPrimaryVariable(variableId);
                 this.setIsGrouped(false);
-            })
+            }),
         });
     }
-
-
 }
 
 export default SingleTimepoint;

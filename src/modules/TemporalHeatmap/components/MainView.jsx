@@ -29,6 +29,7 @@ import BlockView from './BlockView';
 const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class MainView extends React.Component {
     constructor(props) {
         super(props);
+        this.padding = 20;
         this.handleTimeClick = this.handleTimeClick.bind(this);
         this.handleSwitchView = this.handleSwitchView.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
@@ -38,10 +39,10 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
             panes: {
-                labels: { width: (window.innerWidth - 33) / 10, active: false },
-                operators: { width: (window.innerWidth - 33) / 10, active: false },
-                view: { width: ((window.innerWidth - 33) / 10) * 7, active: false },
-                legend: { width: (window.innerWidth - 33) / 10, active: false },
+                labels: { width: (window.innerWidth - 40) / 10, active: false },
+                operators: { width: ((window.innerWidth - 40) / 10) * 1.5, active: false },
+                view: { width: ((window.innerWidth - 40) / 10) * 6.5, active: false },
+                legend: { width: (window.innerWidth - 40) / 10, active: false },
             },
             active: {
                 labels: false,
@@ -69,6 +70,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
     componentWillUnmount() {
         window.removeEventListener('resize', this.updateDimensions);
     }
+
 
     /**
      * Gets block view
@@ -134,8 +136,8 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                     visStore={this.props.rootStore.visStore}
                                 >
                                     <TimepointLabels
-                                        {...this.props.tooltipFunctions}
                                         width={this.panes.labels.width - 10}
+                                        padding={this.padding}
                                     />
                                 </Provider>
                             </Pane>
@@ -143,7 +145,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                 className={this.active.operators ? 'pane-active' : 'pane-inactive'}
                                 key="operators"
                                 size={{ width: this.panes.operators.width }}
-                                style={{ paddingTop: 20 }}
+                                style={{ paddingTop: this.padding }}
                             >
                                 <RowOperators
                                     highlightedVariable={this.highlightedVariable}
@@ -153,13 +155,14 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                     tooltipFunctions={this.props.tooltipFunctions}
                                     showContextMenu={this.props.showContextMenu}
                                     openBinningModal={this.props.openBinningModal}
+                                    openSaveVarModal={this.props.openSaveVarModal}
                                 />
                             </Pane>
                             <Pane
                                 className={this.active.view ? 'pane-active' : 'pane-inactive'}
                                 key="view"
                                 size={{ width: this.panes.view.width }}
-                                style={{ paddingTop: 20 }}
+                                style={{ paddingTop: this.padding }}
                             >
                                 <BlockView
                                     showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
@@ -170,7 +173,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                 className={this.active.legend ? 'pane-active' : 'pane-inactive'}
                                 key="legend"
                                 size={{ width: this.panes.legend.width }}
-                                style={{ paddingTop: 20 }}
+                                style={{ paddingTop: this.padding }}
                             >
                                 <Legend
                                     highlightedVariable={this.highlightedVariable}
@@ -209,6 +212,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                 visStore={this.props.rootStore.visStore}
                             >
                                 <GlobalRowOperators
+                                    openSaveVarModal={this.props.openSaveVarModal}
                                     tooltipFunctions={this.props.tooltipFunctions}
                                 />
                             </Provider>
@@ -253,6 +257,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         this.highlightedVariable = '';
     }
 
+
     /**
      * handle visualizing real time
      */
@@ -269,24 +274,30 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
     handleSwitchView(key) {
         if (key !== this.props.uiStore.globalTime) {
             this.props.uiStore.setGlobalTime(key);
+            if (!key) {
+                this.props.rootStore.visStore.setPlotWidth(this.panes.view.width - 10);
+            }
             this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.globalTime);
         }
     }
 
+    /**
+     * updates view dimensions
+     */
     updateDimensions() {
         const prevWidth = Object.values(this.panes).map(d => d.width).reduce((a, b) => a + b);
         this.panes = {
             labels: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.labels.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.labels.width),
             },
             operators: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.operators.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.operators.width),
             },
             view: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.view.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.view.width),
             },
             legend: {
-                width: (window.innerWidth - 33) / (prevWidth / this.panes.legend.width),
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.legend.width),
             },
         };
     }
@@ -327,5 +338,6 @@ MainView.propTypes = {
     showContextMenu: PropTypes.func.isRequired,
     showContextMenuHeatmapRow: PropTypes.func.isRequired,
     openBinningModal: PropTypes.func.isRequired,
+    openSaveVarModal: PropTypes.func.isRequired,
 };
 export default MainView;

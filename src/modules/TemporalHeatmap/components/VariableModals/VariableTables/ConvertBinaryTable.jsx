@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { observer } from 'mobx-react';
-import {
-    Button, ButtonGroup, OverlayTrigger, Popover, Table,
-} from 'react-bootstrap';
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react';
+import { Button, ButtonGroup, OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { SketchPicker } from 'react-color';
 
 /**
@@ -126,14 +124,14 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
                 <div style={{ maxHeight: '400px', overflowY: 'scroll' }}>
                     <Table bordered condensed responsive>
                         <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>% Occurence</th>
-                                <th>Binary value</th>
-                            </tr>
+                        <tr>
+                            <th>Category</th>
+                            <th>% Occurence</th>
+                            <th>Binary value</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {this.getTableContent()}
+                        {this.getTableContent()}
                         </tbody>
                     </Table>
                 </div>
@@ -142,7 +140,7 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
                     true:
                     {' '}
                     {colorRects[0]}
-                    <br />
+                    <br/>
                     false:
                     {' '}
                     {colorRects[1]}
@@ -157,10 +155,10 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
     }
 });
 ConvertBinaryTable.propTypes = {
-    variableDomain: PropTypes.arrayOf(PropTypes.string).isRequired,
-    mapper: PropTypes.shape(PropTypes.object).isRequired,
-    binaryMapping: PropTypes.shape(PropTypes.object).isRequired,
-    binaryColors: PropTypes.arrayOf(PropTypes.string).isRequired,
+    variableDomain: MobxPropTypes.observableArrayOf(PropTypes.string).isRequired,
+    mapper: PropTypes.objectOf(PropTypes.string).isRequired,
+    binaryMapping: MobxPropTypes.observableObject.isRequired,
+    binaryColors: MobxPropTypes.observableArrayOf(PropTypes.string).isRequired,
     setBinaryMapping: PropTypes.func.isRequired,
     setBinaryColors: PropTypes.func.isRequired,
 };

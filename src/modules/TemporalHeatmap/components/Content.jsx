@@ -7,6 +7,7 @@ import {
     Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
+import { extendObservable } from 'mobx';
 import MainView from './MainView';
 import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
 import Tooltip from './Tooltip';
@@ -16,6 +17,7 @@ import ContextMenuHeatmapRow from './ContextMenuHeatmapRow';
 
 import VariableManager from './VariableModals/VariableManager';
 import ContextMenu from './RowOperators/ContextMenu';
+import SaveVariableDialog from './Modals/SaveVariableDialog';
 
 /**
  * Component containing the view and controls
@@ -23,24 +25,26 @@ import ContextMenu from './RowOperators/ContextMenu';
 const Content = inject('rootStore', 'undoRedoStore')(observer(class Content extends React.Component {
     constructor() {
         super();
-        this.state = {
+        extendObservable(this, {
             binningModalIsOpen: false,
+            saveModalIsOpen: false,
             callback: null,
             clickedVariable: '',
             clickedTimepoint: -1,
+            clickedPatient: '',
             x: 0,
             y: 0,
-            showTooltip: 'hidden',
-            contextType: '',
-            patient: '',
-            showContextMenuHeatmapRow: false,
+            tooltipVisibility: 'hidden',
+            contextMenuType: '',
+            moveMenuVisibility: false,
             variableManagerOpen: false,
-        };
+        });
         this.openBinningModal = this.openBinningModal.bind(this);
+        this.openSaveVarModal = this.openSaveVarModal.bind(this);
         this.openVariableManager = this.openVariableManager.bind(this);
 
-
         this.closeBinningModal = this.closeBinningModal.bind(this);
+        this.closeSaveModal = this.closeSaveModal.bind(this);
         this.closeVariableManager = this.closeVariableManager.bind(this);
 
         this.showTooltip = this.showTooltip.bind(this);
@@ -52,8 +56,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         this.handleResetAlignment = this.handleResetAlignment.bind(this);
         this.handleResetSelection = this.handleResetSelection.bind(this);
 
-        this.updateVariable = this.updateVariable.bind(this);
-
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
     }
 
@@ -64,11 +66,11 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
     getContextMenuHeatmapRow() {
         return (
             <ContextMenuHeatmapRow
-                showContextMenu={this.state.showContextMenuHeatmapRow}
-                contextX={this.state.x}
-                contextY={this.state.y}
-                patient={this.state.patient}
-                timepoint={this.state.clickedTimepoint}
+                showContextMenu={this.moveMenuVisibility}
+                contextX={this.x}
+                contextY={this.y}
+                patient={this.clickedPatient}
+                timepoint={this.clickedTimepoint}
             />
         );
     }
@@ -78,11 +80,12 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      * @returns {(VariableManager|null)}
      */
     getVariableManager() {
-        if (this.state.variableManagerOpen) {
+        if (this.variableManagerOpen) {
             return (
                 <VariableManager
-                    variableManagerOpen={this.state.variableManagerOpen}
+                    variableManagerOpen={this.variableManagerOpen}
                     closeVariableManager={this.closeVariableManager}
+                    openSaveVarModal={this.openSaveVarModal}
                 />
             );
         }
@@ -95,12 +98,12 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      * @returns {(GroupBinningModal|null)}
      */
     getBinner() {
-        if (this.state.binningModalIsOpen) {
+        if (this.binningModalIsOpen) {
             return (
                 <GroupBinningModal
-                    modalIsOpen={this.state.binningModalIsOpen}
-                    variable={this.state.clickedVariable}
-                    callback={this.state.callback}
+                    modalIsOpen={this.binningModalIsOpen}
+                    variable={this.clickedVariable}
+                    callback={this.callback}
                     closeModal={this.closeBinningModal}
                 />
             );
@@ -110,66 +113,97 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
     }
 
     /**
+     * gets the modal for saving variables
+     * @return {(SaveVariableDialog|null)}
+     */
+    getSaveModal() {
+        if (this.saveModalIsOpen) {
+            return (
+                <SaveVariableDialog
+                    modalIsOpen={this.saveModalIsOpen}
+                    variable={this.clickedVariable}
+                    callback={this.callback}
+                    closeModal={this.closeSaveModal}
+                />
+            );
+        }
+
+        return null;
+    }
+
+    /**
      * Opens the modal window and sets the state parameters which are passed to GroupBinningModal
-     * @param {string} variableId - future primary variable
+     * @param {OriginalVariable} variable - future primary variable
      * @param {returnDataCallback} callback -  returns the newly derived variable
      */
-    openBinningModal(variableId, callback) {
-        this.setState({
-            binningModalIsOpen: true,
-            clickedVariable: variableId,
-            callback,
-        });
+    openBinningModal(variable, callback) {
+        this.binningModalIsOpen = true;
+        this.clickedVariable = variable;
+        this.callback = callback;
     }
 
     /**
      * closes binning modal
      */
     closeBinningModal() {
-        this.setState({
-            binningModalIsOpen: false, variable: '', timepointIndex: -1, callback: null,
-        });
+        this.binningModalIsOpen = false;
+        this.variable = '';
+        this.callback = null;
+    }
+
+    /**
+     * Opens the modal window and sets the state parameters which are passed to SaveVariableDialog
+     * @param {DerivedVariable} variable - variable to be saved
+     * @param {returnDataCallback} callback -  called after saving
+     */
+    openSaveVarModal(variable, callback) {
+        this.saveModalIsOpen = true;
+        this.clickedVariable = variable;
+        this.callback = callback;
+    }
+
+    /**
+     * closes save modal
+     */
+    closeSaveModal() {
+        this.saveModalIsOpen = false;
+        this.variable = '';
+        this.callback = null;
     }
 
     /**
      * opens variable manager
      */
     openVariableManager() {
-        this.setState({
-            variableManagerOpen: true,
-        });
+        this.variableManagerOpen = true;
     }
 
     /**
      * closes variable manager
      */
     closeVariableManager() {
-        this.setState({ variableManagerOpen: false });
+        this.variableManagerOpen = false;
     }
 
     /**
      * shows tooltip
-     * @param {event}e
+     * @param {event} e
      * @param {string} line1
      * @param {string} line2
      */
     showTooltip(e, line1, line2) {
-        this.setState({
-            showTooltip: 'visible',
-            x: e.pageX,
-            y: e.pageY,
-            line1,
-            line2,
-        });
+        this.tooltipVisibility = 'visible';
+        this.x = e.pageX;
+        this.y = e.pageY;
+        this.line1 = line1;
+        this.line2 = line2;
     }
 
     /**
      * hides tooltip
      */
     hideTooltip() {
-        this.setState({
-            showTooltip: 'hidden',
-        });
+        this.tooltipVisibility = 'hidden';
     }
 
     /**
@@ -180,13 +214,11 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      * @param {string} type
      */
     showContextMenu(e, timepointIndex, variableId, type) {
-        this.setState({
-            x: e.pageX,
-            y: e.pageY,
-            clickedTimepoint: timepointIndex,
-            clickedVariable: variableId,
-            contextType: type,
-        });
+        this.x = e.pageX;
+        this.y = e.pageY;
+        this.clickedTimepoint = timepointIndex;
+        this.clickedVariable = variableId;
+        this.contextMenuType = type;
         e.preventDefault();
     }
 
@@ -197,13 +229,11 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      * @param {number} timepointIndex
      */
     showContextMenuHeatmapRow(e, patient, timepointIndex) {
-        this.setState({
-            x: e.pageX,
-            y: e.pageY,
-            showContextMenuHeatmapRow: true,
-            patient,
-            clickedTimepoint: timepointIndex,
-        });
+        this.x = e.pageX;
+        this.y = e.pageY;
+        this.moveMenuVisibility = true;
+        this.clickedPatient = patient;
+        this.clickedTimepoint = timepointIndex;
         e.preventDefault();
     }
 
@@ -211,10 +241,8 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      * hide context menu for moving patients up/down
      */
     hideContextMenu() {
-        this.setState({
-            contextType: '',
-            showContextMenuHeatmapRow: false,
-        });
+        this.contextMenuType = '';
+        this.moveMenuVisibility = false;
     }
 
     /**
@@ -236,14 +264,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
      */
     handleResetSelection() {
         this.props.rootStore.dataStore.resetSelection();
-    }
-
-    /**
-     * updates the currently selected variable
-     * @param {string} variableId
-     */
-    updateVariable(variableId) {
-        this.setState({ clickedVariable: variableId });
     }
 
 
@@ -299,15 +319,15 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                             {' '}
                                             <input
                                                 type="range"
-                                                value={this.props.rootStore
-                                                    .visStore.transitionSpace}
+                                                value={Math.max(...this.props.rootStore
+                                                    .visStore.transitionSpaces)}
                                                 onChange={e => this.props.rootStore
-                                                    .visStore.setTransitionSpace(parseInt(
+                                                    .visStore.setAllTransitionSpaces(parseInt(
                                                         e.target.value, 10,
                                                     ))}
                                                 step={1}
-                                                min={5}
-                                                max={700}
+                                                min={this.props.rootStore.visStore.minTransHeight}
+                                                max={this.props.rootStore.visStore.plotHeight}
                                             />
                                             <Button onClick={this.props.rootStore
                                                 .visStore.fitToScreenHeight}
@@ -361,6 +381,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                 <MainView
                                     tooltipFunctions={tooltipFunctions}
                                     openBinningModal={this.openBinningModal}
+                                    openSaveVarModal={this.openSaveVarModal}
                                     showContextMenu={this.showContextMenu}
                                     hideContextMenu={this.hideContextMenu}
                                     showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
@@ -370,24 +391,25 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                     </Row>
                 </Grid>
                 {this.getBinner()}
+                {this.getSaveModal()}
                 {this.getVariableManager()}
                 {this.getContextMenuHeatmapRow()}
                 <Tooltip
                     key="tooltip"
-                    visibility={this.state.showTooltip}
-                    x={this.state.x}
-                    y={this.state.y}
-                    line1={this.state.line1}
-                    line2={this.state.line2}
+                    visibility={this.tooltipVisibility}
+                    x={this.x}
+                    y={this.y}
+                    line1={this.line1}
+                    line2={this.line2}
                 />
-                {this.state.contextType !== '' ? (
+                {this.contextMenuType !== '' ? (
                     <Provider dataStore={this.props.rootStore.dataStore}>
                         <ContextMenu
-                            action={this.state.contextType}
-                            contextX={this.state.x}
-                            contextY={this.state.y}
-                            clickedVariable={this.state.clickedVariable}
-                            clickedTimepoint={this.state.clickedTimepoint}
+                            action={this.contextMenuType}
+                            contextX={this.x}
+                            contextY={this.y}
+                            clickedVariable={this.clickedVariable}
+                            clickedTimepoint={this.clickedTimepoint}
                             hideContextMenu={this.hideContextMenu}
                             openBinningModal={this.openBinningModal}
                         />

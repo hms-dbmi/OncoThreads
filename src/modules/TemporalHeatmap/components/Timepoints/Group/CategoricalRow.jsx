@@ -11,20 +11,11 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
         this.previousOffset = 0;
     }
 
-    /**
-     * Creates a tooltip showing information about the row
-     * @param {string} value - category
-     * @param {number} numPatients - number of patients in that category
-     * @return {string}
-     */
-    static getTooltipContent(value, numPatients) {
-        let content = '';
+    static getFirstTooltipLine(value, numPatients, rowPatients) {
         if (numPatients === 1) {
-            content = `${value}: ${numPatients} patient`;
-        } else {
-            content = `${value}: ${numPatients} patients`;
+            return `${value}: ${Math.round(numPatients / rowPatients * 100)}% (${numPatients} patient) of group`;
         }
-        return content;
+        return `${value}: ${Math.round(numPatients / rowPatients * 100)}% (${numPatients} patients) of group`;
     }
 
 
@@ -176,6 +167,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
      * @return {rect[]}
      */
     createRow() {
+        const rowPatients = this.props.row.reduce((sum, curr) => sum + curr.patients.length, 0);
         const rects = [];
         let currCounts = 0;
         let offset;
@@ -249,8 +241,8 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
                     onClick={e => this.handleMouseClick(e, f.patients)}
                     points={partitionPoints}
                     key={`${f.key}`}
-                    onMouseEnter={e => this.props
-                        .showTooltip(e, CategoricalRow.getTooltipContent(f.key, f.patients.length))}
+                    onMouseEnter={e => this.props.showTooltip(e,
+                        CategoricalRow.getFirstTooltipLine(f.key, f.patients.length, rowPatients))}
                     onMouseLeave={this.props.hideTooltip}
                     fill={fill}
                     stroke={stroke}
@@ -292,8 +284,9 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
                     width={this.props.visStore.groupScale(this.props.patients.length)}
                     fill={fill}
                     stroke={stroke}
-                    onMouseEnter={e => this.props.showTooltip(e, CategoricalRow
-                        .getTooltipContent(row.key, row.patients.length))}
+                    onMouseEnter={e => this.props.showTooltip(e,
+                        CategoricalRow.getFirstTooltipLine(row.key, row.patients.length,
+                            rowPatients))}
                     onMouseLeave={this.props.hideTooltip}
                 />);
                 currCounts += row.patients.length;

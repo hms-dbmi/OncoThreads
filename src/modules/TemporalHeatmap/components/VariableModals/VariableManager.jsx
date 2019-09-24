@@ -74,12 +74,16 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
                     <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
                         <Tab eventKey={1} title="Timepoint Variables">
                             <Provider variableManagerStore={this.timepointVariableManager}>
-                                <AddTimepointVarTab />
+                                <AddTimepointVarTab
+                                    openSaveVarModal={this.props.openSaveVarModal}
+                                />
                             </Provider>
                         </Tab>
                         <Tab eventKey={2} title="Event Variables">
                             <Provider variableManagerStore={this.eventVariableManager}>
-                                <AddEventVarTab />
+                                <AddEventVarTab
+                                    openSaveVarModal={this.props.openSaveVarModal}
+                                />
                             </Provider>
                         </Tab>
                     </Tabs>

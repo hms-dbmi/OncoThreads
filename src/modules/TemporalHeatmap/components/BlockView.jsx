@@ -163,6 +163,7 @@ const BlockView = inject('rootStore')(observer(class BlockView extends React.Com
                             visStore={this.props.rootStore.visStore}
                         >
                             <LineTransition
+                                index={firstTP.globalIndex}
                                 from={firstTP.patients}
                                 to={secondTP.patients}
                                 firstHeatmapScale={this.props.rootStore.visStore.heatmapScales[i]}

@@ -1,131 +1,61 @@
-.scrollableX {
+/**
+scrollable div
+ */
+div.scrollableX {
     overflow-x: scroll;
     z-index: 1;
 }
 
-.overlaid {
+/**
+overlaid div
+ */
+div.overlaid {
     position: absolute;
     left: 0;
     top: 0;
     z-index: -1;
 }
 
-.floatDiv {
-    float: right;
-}
-
+/**
+enables linebreaks within words
+ */
 .wordBreak {
     white-space: pre-wrap;
 }
 
-.customTooltip {
-    pointer-events: none;
-    z-index: 100;
+/**
+properties of drag lines (lines to change height of transitions
+ */
+line.dragLine {
+    stroke: lightgray;
+    stroke-width: 3px;
+    cursor: row-resize;
 }
 
+/**
+changes cursor of clickable elements
+ */
 .clickable:hover {
     cursor: pointer;
 }
 
-.hidden {
-    display: none;
+/**
+properties of an inactive pane
+ */
+.pane-inactive {
+    border-right: 1px solid #f0f0f0;
 }
 
-.defaultView {
-    width: 400px;
-    position: absolute;
-    top: 35%;
-    left: 50%;
-    transform: translate(-50%, 0);
+/**
+properties of an active (dragged) pane
+ */
+.pane-active{
+    background-color: rgba(150,150,150,0.1);
 }
 
-.middle {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.noStyle {
-    background: none;
-    color: inherit;
-    border: none;
-    padding: 2px;
-    font: inherit;
-    cursor: pointer;
-    outline: inherit;
-    margin-left: 5px;
-    margin-right: 2px;
-}
-
-.currentVariable {
-    background-color: #efefef;
-    border: 1px solid darkgray;
-    border-radius: 2px;
-    margin-left: 2px;
-    padding: 2px;
-    font-size: 10px;
-}
-
-.btn {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar {
-    display: inline-block;
-    width: 15%;
-    margin-left: 0;
-    padding: 0;
-    background-color: #efefef;
-    white-space: nowrap;
-}
-
-.main {
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.helperAxis {
-    float: left;
-    white-space: nowrap;
-
-}
-
-.noSizeChange {
-    display: inline-block;
-    white-space: nowrap;
-
-}
-
-.Select-input {
-    position: absolute !important;
-    top: 0 !important;
-}
-
-.Select-value-label {
-    display: block !important;
-}
-
-.Select-value {
-    position: relative !important;
-}
-
-.Select-menu-outer {
-    width: auto;
-    min-width: 100%;
-}
-
-.Select-option {
-    white-space: nowrap;
-}
-
-.Select-control {
-    min-width: 100%;
-    width: auto;
-}
-
+/**
+big spinning study loader
+ */
 .bigLoader {
     border: 16px solid #f3f3f3; /* Light grey */
     border-top: 16px solid #3498db; /* Blue */
@@ -140,6 +70,9 @@
     animation: spin 2s linear infinite;
 }
 
+/**
+small spinning study loader
+ */
 .smallLoader {
     margin: 20px auto 0;
     border: 8px solid #f3f3f3; /* Light grey */
@@ -150,13 +83,6 @@
     animation: spin 2s linear infinite;
 }
 
-.pane-inactive {
-    border-right: 1px solid #f0f0f0;
-}
-.pane-active{
-    background-color: rgba(150,150,150,0.1);
-}
-
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -165,4 +91,11 @@
         transform: rotate(360deg);
     }
 }
+
+.fullSizeModal{
+    min-width: 95VW;
+    height: 90VH;
+    -webkit-overflow-scrolling: touch;
+}
+
 

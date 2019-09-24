@@ -1,5 +1,5 @@
 /**
- * class that gets data from LocalFileLoader. Imitates cBioAPI
+ * class that gets data from LocalFileLoader. Imitates CBioAPI
  */
 class FileAPI {
     constructor(localFileLoader, geneNamesAPI) {
@@ -45,8 +45,8 @@ class FileAPI {
      * @param {returnDataCallback} callback
      */
     getClinicalSampleData(callback) {
-        this.localFileLoader.loadClinicalFile(true, clinicalData=>{
-            callback(clinicalData.concat(this.localFileLoader.mutationCounts))
+        this.localFileLoader.loadClinicalFile(true, (clinicalData) => {
+            callback(clinicalData.concat(this.localFileLoader.mutationCounts));
         });
     }
 
@@ -57,7 +57,8 @@ class FileAPI {
      * @param {returnDataCallback} callback
      */
     getMutations(entrezIDs, profileId, callback) {
-        callback(this.localFileLoader.mutations.filter(d => entrezIDs.map(e => e.hgncSymbol).includes(d.gene.hugoGeneSymbol)));
+        callback(this.localFileLoader.mutations.filter(d => entrezIDs
+            .map(e => e.hgncSymbol).includes(d.gene.hugoGeneSymbol)));
     }
 
     /**
@@ -67,34 +68,33 @@ class FileAPI {
      * @param {returnDataCallback} callback
      */
     areProfiled(genes, profileId, callback) {
-        let profiledDict = {};
-        let profile = this.localFileLoader.molecularProfiles.filter(profile => profile.molecularProfileId === profileId)[0];
-        let key = "";
-        if (this.localFileLoader.panelMatrixParsed === "finished" && this.localFileLoader.genePanelsParsed === "finished"
-            && (profile.molecularAlterationType === "MUTATION_EXTENDED" || profile.molecularAlterationType === "COPY_NUMBER_ALTERATION")) {
-            if (profile.molecularAlterationType === "MUTATION_EXTENDED") {
-                key = "mutations"
+        const profiledDict = {};
+        const profile = this.localFileLoader.molecularProfiles
+            .filter(d => d.molecularProfileId === profileId)[0];
+        let key = '';
+        if (this.localFileLoader.panelMatrixParsed === 'finished' && this.localFileLoader.genePanelsParsed === 'finished'
+            && (profile.molecularAlterationType === 'MUTATION_EXTENDED' || profile.molecularAlterationType === 'COPY_NUMBER_ALTERATION')) {
+            if (profile.molecularAlterationType === 'MUTATION_EXTENDED') {
+                key = 'mutations';
+            } else {
+                key = 'cna';
             }
-            else {
-                key = "cna"
-            }
-            this.localFileLoader.samples.forEach(d => {
+            this.localFileLoader.samples.forEach((d) => {
                 profiledDict[d] = [];
-                let panel = this.localFileLoader.panelMatrix[d][key];
-                if(panel!=="NA") {
-                    let panelGenes = this.localFileLoader.genePanels.get(panel);
-                    genes.forEach(gene => {
+                const panel = this.localFileLoader.panelMatrix[d][key];
+                if (panel !== 'NA') {
+                    const panelGenes = this.localFileLoader.genePanels.get(panel);
+                    genes.forEach((gene) => {
                         if (panelGenes.includes(gene.hgncSymbol)) {
                             profiledDict[d].push(gene.entrezGeneId);
                         }
-                    })
+                    });
                 }
-            })
-        }
-        else {
-            this.localFileLoader.samples.forEach(d => {
-                profiledDict[d] = genes.map(d => d.entrezGeneId);
-            })
+            });
+        } else {
+            this.localFileLoader.samples.forEach((sample) => {
+                profiledDict[sample] = genes.map(d => d.entrezGeneId);
+            });
         }
         callback(profiledDict);
     }
@@ -107,7 +107,12 @@ class FileAPI {
      */
     getMolecularValues(profileId, entrezIDs, callback) {
         let returnArr = [];
-        entrezIDs.forEach(d => returnArr = returnArr.concat(this.localFileLoader.profileData.get(profileId).get(d.entrezGeneId)));
+        entrezIDs.forEach((d) => {
+            if (this.localFileLoader.profileData.get(profileId).has(d.entrezGeneId)) {
+                returnArr = returnArr
+                    .concat(this.localFileLoader.profileData.get(profileId).get(d.entrezGeneId));
+            }
+        });
         callback(returnArr);
     }
 
@@ -118,10 +123,9 @@ class FileAPI {
      */
     getGeneIDs(hgncSymbols, callback) {
         if (this.geneNamesAPI.geneListLoaded) {
-            this.geneNamesAPI.getGeneIDs(hgncSymbols, callback)
-        }
-        else {
-            alert("Could not (yet) load gene list");
+            this.geneNamesAPI.getGeneIDs(hgncSymbols, callback);
+        } else {
+            alert('Could not (yet) load gene list');
         }
     }
 }

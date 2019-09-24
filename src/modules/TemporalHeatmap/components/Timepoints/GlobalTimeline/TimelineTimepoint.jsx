@@ -22,7 +22,7 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
         const current = this.props.rootStore.dataStore.variableStores
             .between.referencedVariables[variableId];
         if (current.type === 'event') {
-            this.props.rootStore.eventTimelineMap.get(variableId)
+            this.props.rootStore.eventTimelineMap[variableId]
                 .filter(d => d.time === index).forEach(d => array.push(d));
             return array;
         }
@@ -92,10 +92,7 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
      */
     filterEvents(variableId, events) {
         const variable = this.props.rootStore.dataStore.variableStores.between.getById(variableId);
-        let filterMapper = {};
-        if (variable.datatype === 'BINARY') {
-            filterMapper = variable.mapper;
-        }
+        let filterMapper = variable.mapper;
         if (variable.derived && variable.modification.type === 'binaryCombine' && variable.modification.datatype === 'STRING') {
             filterMapper = DerivedMapperFunctions.getModificationMapper({
                 type: 'binaryCombine',

@@ -64,7 +64,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         let derivedVariable;
         const modification = {
             type: 'continuousTransform',
-            logTransform: false,
+            transformFunction: false,
             binning: {
                 bins: this.binningStore.bins,
                 binNames: this.binningStore.binNames,

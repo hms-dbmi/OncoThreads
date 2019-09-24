@@ -37,16 +37,24 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
             let finalValueColor = 'lightgray';
             let endHeight = 1;
             let mouseProperties = [];
-            if (this.props.minMax[d].value !== undefined) {
+            if (this.props.minMax[d].status !== undefined) {
                 endHeight = 3;
                 mouseProperties = {
-                    onMouseEnter: e => this.props.showTooltip(e, `${this.props.minMax[d].value}: `, `${this.props.minMax[d].end} days`),
+                    onMouseEnter: e => this.props.showTooltip(e, `${this.props.minMax[d].status}: `, `${this.props.minMax[d].end} days`),
                     onMouseLeave: this.props.hideTooltip,
                 };
-                if (this.props.minMax[d].value === 'DECEASED') {
+                if (this.props.minMax[d].status === 'DECEASED') {
                     finalValueColor = 'black';
                 }
             }
+            lines.push(<rect
+                key={`${d}startpoint`}
+                x={this.props.heatmapScale(d)}
+                y={this.props.visStore.timeScale(this.props.minMax[d].start)}
+                width={this.props.visStore.timelineRectSize}
+                height={1}
+                fill={strokeColor}
+            />);
             lines.push(
                 GlobalTransition.drawLine(this.props.heatmapScale(d)
                     + this.props.visStore.timelineRectSize / 2,

@@ -1,49 +1,18 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
-import SaveVariableDialog from '../Modals/SaveVariableDialog';
 import SingleTimepoint from '../../stores/SingleTimepoint';
+import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
 
 
 /**
  * Component for row operators of one timepoint in BlockView
  */
 const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class RowOperator extends React.Component {
-    /**
-     * crops text to a certain width and appends "..."
-     * @param {string} text
-     * @param {number} fontSize
-     * @param {*} fontweight
-     * @param {number} maxWidth
-     * @returns {number}
-     */
-    static cropText(text, fontSize, fontweight, maxWidth) {
-        let returnText = text;
-        const context = document.createElement('canvas').getContext('2d');
-        context.font = `${fontweight} ${fontSize}px Arial`;
-        const width = context.measureText(text).width;
-        if (width > maxWidth) {
-            for (let i = 1; i < text.length; i += 1) {
-                const prevText = text.substr(0, i - 1).concat('...');
-                const currText = text.substr(0, i).concat('...');
-                const prevWidth = context.measureText(prevText).width;
-                const currWidth = context.measureText(currText).width;
-                if (currWidth > maxWidth && prevWidth < maxWidth) {
-                    returnText = prevText;
-                    break;
-                }
-            }
-        }
-        return returnText;
-    }
-
-    constructor() {
-        super();
-        this.state = {
-            modalIsOpen: false,
-            callback: '',
-            currentVariable: '',
-        };
+    constructor(props) {
+        super(props);
+        this.iconScale = (props.rootStore.visStore.secondaryHeight) / 24;
+        this.iconDimensions = 24;
         this.sortTimepoint = this.sortTimepoint.bind(this);
         this.group = this.group.bind(this);
         this.unGroup = this.unGroup.bind(this);
@@ -57,26 +26,25 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      * creates an icon for sorting and associates it with the corresponding functions
      * @param {SingleTimepoint} timepoint
      * @param {(DerivedVariable|OriginalVariable)} variable
-     * @param {number} iconScale
      * @param {number} xPos
      * @param {number} yPos
      * @return {g}
      */
-    getSortIcon(timepoint, variable, iconScale, xPos, yPos) {
+    getSortIcon(timepoint, variable, xPos, yPos) {
         return (
             <g
                 id="sort"
                 className="not_exported"
-                transform={`translate(${xPos},${yPos})scale(${iconScale})`}
+                transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
                 onMouseOver={e => this.props.showTooltip(e, 'Sort timepoint by this variable')}
                 onMouseOut={this.props.hideTooltip}
             >
-                <path fill="gray" d="M3,13H15V11H3M3,6V8H21V6M3,18H9V16H3V18Z" />
+                <path fill="gray" d="M20,3.43v2.5H0V3.43ZM-.06,14.07v2.5h10v-2.5ZM0,8.75v2.5H15V8.75Z" />
                 <rect
                     onClick={() => this.sortTimepoint(timepoint, variable)}
                     onContextMenu={e => this.props.showContextMenu(e, timepoint.globalIndex, variable.id, 'SORT')}
-                    width={iconScale * 24}
-                    height={24}
+                    width={this.iconDimensions}
+                    height={this.iconDimensions}
                     fill="none"
                     pointerEvents="visible"
                 />
@@ -88,29 +56,28 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      * creates an icon for grouping and associates it with the corresponding functions
      * @param {SingleTimepoint} timepoint
      * @param {(DerivedVariable|OriginalVariable)} variable
-     * @param {number} iconScale
      * @param {number} xPos
      * @param {number} yPos
      * @return {g}
      */
-    getGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
+    getGroupIcon(timepoint, variable, xPos, yPos) {
         return (
             <g
                 id="group"
                 className="not_exported"
-                transform={`translate(${xPos},${yPos})scale(${iconScale})`}
+                transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
                 onMouseEnter={e => this.props.showTooltip(e, 'Group timepoint by this variable')}
                 onMouseLeave={this.props.hideTooltip}
             >
                 <path
                     fill="gray"
-                    d="M12.5,19.5V3.47H14.53V19.5H12.5M9.5,19.5V3.47H11.53V19.5H9.5M4.5,7.5L8.53,11.5L4.5,15.47V12.47H1.5V10.5H4.5V7.5M19.5,15.47L15.5,11.5L19.5,7.5V10.5H22.5V12.47H19.5V15.47Z"
+                    d="M20,20H0V0H20ZM7.16,1H1V19H7.16Z"
                 />
                 <rect
                     onClick={() => this.group(timepoint, variable)}
                     onContextMenu={e => this.props.showContextMenu(e, timepoint.globalIndex, variable.id, 'GROUP')}
-                    width={iconScale * 24}
-                    height={24}
+                    width={this.iconDimensions}
+                    height={this.iconDimensions}
                     fill="none"
                     pointerEvents="visible"
                 />
@@ -122,29 +89,28 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      * creates an icon for ungrouping and associates it with the corresponding functions
      * @param {SingleTimepoint} timepoint
      * @param {(DerivedVariable|OriginalVariable)} variable
-     * @param {number} iconScale
      * @param {number} xPos
      * @param {number} yPos
      * @return {g}
      */
-    getUnGroupIcon(timepoint, variable, iconScale, xPos, yPos) {
+    getUnGroupIcon(timepoint, variable, xPos, yPos) {
         return (
             <g
                 id="ungroup"
                 className="not_exported"
-                transform={`translate(${xPos},${yPos})scale(${iconScale})`}
+                transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
                 onMouseEnter={e => this.props.showTooltip(e, 'Ungroup timepoint')}
                 onMouseLeave={this.props.hideTooltip}
             >
                 <path
                     fill="gray"
-                    d="M9,11H15V8L19,12L15,16V13H9V16L5,12L9,8V11M2,20V4H4V20H2M20,20V4H22V20H20Z"
+                    d="M20,20H0V0H20ZM7.33,0h-2V20h2Zm7.33,0h-2V20h2ZM4.33,1H1V19H4.33Z"
                 />
                 <rect
                     onClick={() => this.unGroup(timepoint, variable.id)}
                     onContextMenu={e => this.props.showContextMenu(e, timepoint.globalIndex, variable.id, 'UNGROUP')}
-                    width={iconScale * 24}
-                    height={24}
+                    width={this.iconDimensions}
+                    height={this.iconDimensions}
                     fill="none"
                     pointerEvents="visible"
                 />
@@ -156,28 +122,27 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      * creates an icon for deleting and associates it with the corresponding functions
      * @param {SingleTimepoint} timepoint
      * @param {(DerivedVariable|OriginalVariable)} variable
-     * @param {number} iconScale
      * @param {number} xPos
      * @param {number} yPos
      * @return {g}
      */
-    getDeleteIcon(timepoint, variable, iconScale, xPos, yPos) {
+    getDeleteIcon(timepoint, variable, xPos, yPos) {
         return (
             <g
                 id="delete"
                 className="not_exported"
-                transform={`translate(${xPos},${yPos})scale(${iconScale})`}
+                transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
                 onMouseEnter={e => this.props.showTooltip(e, 'Delete variable from all blocks ')}
                 onMouseLeave={this.props.hideTooltip}
             >
                 <path
                     fill="gray"
-                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                    d="M12.12,10,20,17.87,17.87,20,10,12.12,2.13,20,0,17.87,7.88,10,0,2.13,2.13,0,10,7.88,17.87,0,20,2.13Z"
                 />
                 <rect
                     onClick={() => this.handleDelete(variable, timepoint)}
-                    width={iconScale * 24}
-                    height={24}
+                    width={this.iconDimensions}
+                    height={this.iconDimensions}
                     fill="none"
                     pointerEvents="visible"
                 />
@@ -191,13 +156,12 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      * @param {(DerivedVariable|OriginalVariable)} variable
      * @param {number} xPos
      * @param {number} yPos
-     * @param {number} iconScale
      * @param {number} width
      * @param {*} fontWeight
      * @param {number} fontSize
      * @return {g}
      */
-    getRowLabel(timepoint, variable, xPos, yPos, iconScale, width, fontWeight, fontSize) {
+    getRowLabel(timepoint, variable, xPos, yPos, width, fontWeight, fontSize) {
         return (
             <g
                 transform={`translate(${xPos},${yPos})`}
@@ -209,7 +173,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                     onContextMenu={e => this.props.showContextMenu(e, timepoint.globalIndex, variable.id, 'PROMOTE')}
                     onClick={() => this.promote(timepoint, variable)}
                 >
-                    {RowOperator.cropText(variable.name, fontSize, fontWeight, width)}
+                    {UtilityFunctions.cropText(variable.name, fontSize, fontWeight, width)}
                 </text>
             </g>
         );
@@ -229,9 +193,10 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      */
     getRowOperator() {
         let pos = 0;
+        const iconWidth = this.iconScale * this.iconDimensions;
         const rowOperators = [];
-        this.props.rootStore.dataStore
-            .variableStores[this.props.timepoint.type].fullCurrentVariables.forEach((d, i) => {
+        this.props.rootStore.dataStore.variableStores[this.props.timepoint.type]
+            .fullCurrentVariables.forEach((d, i) => {
                 if (!this.props.timepoint.heatmap[i].isUndef
                 || this.props.uiStore.showUndefined
                 || d.id === this.props.timepoint.primaryVariableId) {
@@ -241,24 +206,22 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                         lineHeight = this.props.rootStore.visStore.primaryHeight;
                         fontWeight = 'bold';
                     }
-                    const transform = `translate(0,${pos})`;
-                    const iconScale = (this.props.rootStore.visStore.secondaryHeight) / 20;
+                    const transform = `translate(${this.iconDimensions},${pos})`;
+                    pos += lineHeight + this.props.rootStore.uiStore.horizontalGap;
                     let fontSize = 10;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
-                    pos = pos + lineHeight + this.props.rootStore.uiStore.horizontalGap;
-                    const yPos = -(iconScale * 24 - lineHeight) / 2;
-                    let secondIcon;
+                    const yPos = -(iconWidth - lineHeight) / 2;
+                    const currentX = this.props.width - this.iconDimensions;
+                    let groupUngroup;
                     if (!this.props.timepoint.isGrouped) {
-                        secondIcon = this.getGroupIcon(
-                            this.props.timepoint, d, iconScale,
-                            this.props.width - iconScale * 48, yPos,
+                        groupUngroup = this.getGroupIcon(
+                            this.props.timepoint, d, currentX - 2 * iconWidth, yPos,
                         );
                     } else {
-                        secondIcon = this.getUnGroupIcon(
-                            this.props.timepoint, d, iconScale,
-                            this.props.width - iconScale * 48, yPos,
+                        groupUngroup = this.getUnGroupIcon(
+                            this.props.timepoint, d, currentX - 2 * iconWidth, yPos,
                         );
                     }
                     let highlightRect = null;
@@ -276,17 +239,14 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                             {highlightRect}
                             {this.getRowLabel(
                                 this.props.timepoint, d, 0, (lineHeight + fontSize / 2) / 2,
-                                iconScale, this.props.width - 3 * iconScale * 24,
-                                fontWeight, fontSize,
+                                currentX - 3 * iconWidth, fontWeight, fontSize,
                             )}
                             {this.getSortIcon(
-                                this.props.timepoint, d, iconScale,
-                                (this.props.width - iconScale * 72), yPos,
+                                this.props.timepoint, d, (currentX - 3 * iconWidth), yPos,
                             )}
-                            {secondIcon}
+                            {groupUngroup}
                             {this.getDeleteIcon(
-                                this.props.timepoint, d, iconScale,
-                                (this.props.width - iconScale * 24), yPos,
+                                this.props.timepoint, d, (currentX - iconWidth), yPos,
                             )}
                         </g>,
                     );
@@ -295,17 +255,41 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
         return rowOperators;
     }
 
+
+    getRaelign() {
+        const pos = (this.props.rootStore.visStore.getTPHeight(this.props.timepoint)
+            - this.iconDimensions) / 2;
+        return (
+            <g
+                transform={`translate(0,${pos})`}
+                onClick={() => this.realignPatients(this.props.timepoint.globalIndex)}
+                className="not_exported"
+                onMouseEnter={e => this.props.showTooltip(e, 'Realign patients')}
+                onMouseLeave={this.props.hideTooltip}
+            >
+                <path
+                    fill="gray"
+                    transform="translate(0,2)"
+                    d="M20,12.66H18.34V20h-2V12.66H14.67V7.33h1.67V0h2V7.33H20ZM3.75,0h-2V7.33H0v5.33H1.75V20h2V12.66H5.33V7.33H3.75Zm7.37,0h-2V7.33H7.34v5.33H9.12V20h2V12.66h1.54V7.33H11.12Z"
+                    // alternative: d="M9,3V21H11V3H9M5,3V21H7V3H5M13,3V21H15V3H13M19,3H17V21H19V3Z"
+                />
+                <rect
+                    width={this.iconDimensions}
+                    height={this.iconDimensions}
+                    fill="none"
+                    pointerEvents="visible"
+                />
+            </g>
+        );
+    }
+
     /**
-     * opens the modal for saving a variable
-     * @param {string} variableId
-     * @param callback
+     * realigns patiens so column order of patients is restored
+     * @param {number} index - timepoint index
      */
-    openSaveModal(variableId, callback) {
-        this.setState({
-            modalIsOpen: true,
-            currentVariable: variableId,
-            callback,
-        });
+    realignPatients(index) {
+        this.props.rootStore.dataStore.applyPatientOrderToAll(index);
+        this.props.undoRedoStore.saveRealignToHistory(index);
     }
 
     /**
@@ -389,7 +373,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
     removeVariable(variable, type) {
         const variableName = variable.name;
         if (variable.derived) {
-            this.openSaveModal(variable, (save) => {
+            this.props.openSaveVarModal(variable, (save) => {
                 this.props.rootStore.dataStore.variableStores[type]
                     .updateSavedVariables(variable.id, save);
                 this.props.rootStore.dataStore.variableStores[type].removeVariable(variable.id);
@@ -434,15 +418,8 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
     render() {
         return (
             <g transform={this.props.transform}>
+                {this.getRaelign()}
                 {this.getRowOperator()}
-                {this.state.modalIsOpen ? (
-                    <SaveVariableDialog
-                        modalIsOpen={this.state.modalIsOpen}
-                        variable={this.state.currentVariable}
-                        callback={this.state.callback}
-                        closeModal={() => this.setState({ modalIsOpen: false })}
-                    />
-                ) : null}
             </g>
         );
     }
@@ -457,5 +434,6 @@ RowOperator.propTypes = {
     unhighlightVariable: PropTypes.func.isRequired,
     openBinningModal: PropTypes.func.isRequired,
     transform: PropTypes.string.isRequired,
+    openSaveVarModal: PropTypes.func.isRequired,
 };
 export default RowOperator;

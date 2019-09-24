@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { observer } from 'mobx-react';
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { SketchPicker } from 'react-color';
 
@@ -25,7 +25,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
                         onChangeComplete={(color) => {
                             const binaryColors = this.props.binaryColors.slice();
                             binaryColors[i] = color.hex;
-                            this.props.setBinaryColors(binaryColors);
+                            this.props.setColors(binaryColors);
                         }}
                     />
                 </Popover>
@@ -50,8 +50,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
             );
         });
         let trueOccurence;
-        let
-            falseOccurence;
+        let falseOccurence;
         if (this.props.invert) {
             trueOccurence = Math.round(this.getPercentOccurence([false]) * 100) / 100;
             falseOccurence = Math.round(this.getPercentOccurence([true]) * 100) / 100;
@@ -62,31 +61,31 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
 
         return (
             <tbody>
-                <tr>
-                    <td>
+            <tr>
+                <td>
                     true
-                    </td>
-                    <td>{trueOccurence}</td>
-                    <td>
-                        {colorRects[0]}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
+                </td>
+                <td>{trueOccurence}</td>
+                <td>
+                    {colorRects[0]}
+                </td>
+            </tr>
+            <tr>
+                <td>
                     false
-                    </td>
-                    <td>{falseOccurence}</td>
-                    <td>
-                        {colorRects[1]}
-                    </td>
-                </tr>
+                </td>
+                <td>{falseOccurence}</td>
+                <td>
+                    {colorRects[1]}
+                </td>
+            </tr>
             </tbody>
         );
     }
 
     /**
      * gets percent occurences for categories
-     * @param {String[]} categories
+     * @param {boolean[]} categories
      * @return {number}
      */
     getPercentOccurence(categories) {
@@ -102,11 +101,11 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
         return (
             <Table bordered condensed responsive>
                 <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>% Occurence</th>
-                        <th>Color</th>
-                    </tr>
+                <tr>
+                    <th>Category</th>
+                    <th>% Occurence</th>
+                    <th>Color</th>
+                </tr>
                 </thead>
                 {this.getBinaryContent()}
             </Table>
@@ -114,9 +113,9 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
     }
 });
 BinaryTable.propTypes = {
-    binaryColors: PropTypes.arrayOf(PropTypes.string).isRequired,
-    setBinaryColors: PropTypes.func.isRequired,
-    mapper: PropTypes.shape(PropTypes.object).isRequired,
+    binaryColors: MobxPropTypes.observableArrayOf(PropTypes.string).isRequired,
+    setColors: PropTypes.func.isRequired,
+    mapper: PropTypes.objectOf(PropTypes.any).isRequired,
     invert: PropTypes.bool.isRequired,
 };
 export default BinaryTable;

@@ -20,7 +20,7 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
             }
             partitions.push(
                 <g
-                    key={d.partition}
+                    key={String(d.partition)}
                     style={{ backgroundColor: 'darkgray' }}
                     transform={transform}
                 >
