@@ -20,6 +20,7 @@ const RowOperators = inject('rootStore')(observer(class RowOperators extends Rea
                 {...this.props.tooltipFunctions}
                 showContextMenu={this.props.showContextMenu}
                 openBinningModal={this.props.openBinningModal}
+                openSaveVarModal={this.props.openSaveVarModal}
                 highlightVariable={this.props.setHighlightedVariable}
                 unhighlightVariable={this.props.removeHighlightedVariable}
                 highlightedVariable={this.props.highlightedVariable}
@@ -41,6 +42,7 @@ RowOperators.propTypes = {
     setHighlightedVariable: PropTypes.func.isRequired,
     removeHighlightedVariable: PropTypes.func.isRequired,
     openBinningModal: PropTypes.func.isRequired,
+    openSaveVarModal: PropTypes.func.isRequired,
     highlightedVariable: PropTypes.string,
 };
 RowOperators.defaultProps = {

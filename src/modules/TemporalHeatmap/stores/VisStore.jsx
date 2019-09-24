@@ -106,7 +106,12 @@ class VisStore {
              * @param {number} value
              */
             setAllTransitionSpaces: action((value) => {
-                this.transitionSpaces.replace(Array(this.transitionSpaces.length).fill(value));
+                if (value < this.minTransHeight) {
+                    this.transitionSpaces.replace(Array(this.transitionSpaces.length)
+                        .fill(this.minTransHeight));
+                } else {
+                    this.transitionSpaces.replace(Array(this.transitionSpaces.length).fill(value));
+                }
             }),
             /**
              * sets a transition space at an index to a value

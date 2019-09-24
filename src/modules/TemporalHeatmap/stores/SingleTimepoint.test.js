@@ -46,7 +46,7 @@ describe('SingleTimepoint', () => {
         expect(timepoint.heatmap[0].isUndef).toBe(false);
         expect(timepoint.primaryVariableId).toBe('id1');
         timepoint.sort('id1');
-        expect(timepoint.heatmapSorting).toEqual({ variable: 'id1', order: 1 });
+        expect(timepoint.heatmapSorting).toEqual({ variable: 'id1', sortDir: 1 });
         expect(timepoint.heatmapOrder.slice())
             .toEqual(sortOrder.map(d => d.patient));
         timepoint.sort('id1');

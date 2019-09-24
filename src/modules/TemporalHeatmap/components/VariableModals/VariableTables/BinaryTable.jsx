@@ -25,7 +25,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
                         onChangeComplete={(color) => {
                             const binaryColors = this.props.binaryColors.slice();
                             binaryColors[i] = color.hex;
-                            this.props.setBinaryColors(binaryColors);
+                            this.props.setColors(binaryColors);
                         }}
                     />
                 </Popover>
@@ -61,24 +61,24 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
 
         return (
             <tbody>
-                <tr>
-                    <td>
+            <tr>
+                <td>
                     true
-                    </td>
-                    <td>{trueOccurence}</td>
-                    <td>
-                        {colorRects[0]}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
+                </td>
+                <td>{trueOccurence}</td>
+                <td>
+                    {colorRects[0]}
+                </td>
+            </tr>
+            <tr>
+                <td>
                     false
-                    </td>
-                    <td>{falseOccurence}</td>
-                    <td>
-                        {colorRects[1]}
-                    </td>
-                </tr>
+                </td>
+                <td>{falseOccurence}</td>
+                <td>
+                    {colorRects[1]}
+                </td>
+            </tr>
             </tbody>
         );
     }
@@ -101,11 +101,11 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
         return (
             <Table bordered condensed responsive>
                 <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>% Occurence</th>
-                        <th>Color</th>
-                    </tr>
+                <tr>
+                    <th>Category</th>
+                    <th>% Occurence</th>
+                    <th>Color</th>
+                </tr>
                 </thead>
                 {this.getBinaryContent()}
             </Table>
@@ -114,7 +114,7 @@ const BinaryTable = observer(class BinaryTable extends React.Component {
 });
 BinaryTable.propTypes = {
     binaryColors: MobxPropTypes.observableArrayOf(PropTypes.string).isRequired,
-    setBinaryColors: PropTypes.func.isRequired,
+    setColors: PropTypes.func.isRequired,
     mapper: PropTypes.objectOf(PropTypes.any).isRequired,
     invert: PropTypes.bool.isRequired,
 };

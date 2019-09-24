@@ -38,7 +38,10 @@ const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extend
                         Add Variables
                     </Button>
                 </h4>
-                <VariableTable availableCategories={availableCategories} />
+                <VariableTable
+                    availableCategories={availableCategories}
+                    openSaveVarModal={this.props.openSaveVarModal}
+                />
                 <VariableExplorer
                     close={() => {
                         this.variableExplorerIsOpen = false;

@@ -1,11 +1,9 @@
 import React from 'react';
-import { inject, observer, Provider, PropTypes as MobxPropTypes } from 'mobx-react';
-import {
-    Button, Checkbox, ControlLabel, FormControl, Modal,
-} from 'react-bootstrap';
+import { inject, observer, PropTypes as MobxPropTypes, Provider } from 'mobx-react';
+import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootstrap';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
-import PropTypes from 'prop-types';
+import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import ColorScales from '../../../UtilityClasses/ColorScales';
@@ -169,12 +167,14 @@ const CategoryCombine = inject('variableManagerStore')(observer(class CategoryCo
                     <ControlLabel key="label">Result</ControlLabel>
                     ,
                     {' '}
-                    <Provider categoryStore={this.categoryStore} key="table"><CategoricalTable /></Provider>
+                    <Provider categoryStore={this.categoryStore} key="table"><CategoricalTable/></Provider>
                 </Modal.Body>
                 <Modal.Footer>
                     <Checkbox
                         disabled={this.props.derivedVariable !== null}
-                        onChange={() => { this.keep = !this.keep; }}
+                        onChange={() => {
+                            this.keep = !this.keep;
+                        }}
                         checked={!this.keep}
                     >
                         Discard
@@ -193,8 +193,11 @@ const CategoryCombine = inject('variableManagerStore')(observer(class CategoryCo
 }));
 CategoryCombine.propTypes = {
     variables: MobxPropTypes.observableArray.isRequired,
-    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
+    derivedVariable: PropTypes.instanceOf(DerivedVariable),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
+};
+CategoryCombine.defaultProps = {
+    derivedVariable: null,
 };
 export default CategoryCombine;

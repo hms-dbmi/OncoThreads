@@ -39,6 +39,7 @@ const GlobalRowOperators = inject('dataStore')(observer(class GlobalRowOperators
                 type="sample"
                 width={this.state.width}
                 height={this.props.dataStore.variableStores.sample.currentVariables.length * 20}
+                openSaveVarModal={this.props.openSaveVarModal}
                 {...this.props.tooltipFunctions}
             />
         );
@@ -55,6 +56,7 @@ const GlobalRowOperators = inject('dataStore')(observer(class GlobalRowOperators
                     type="between"
                     width={this.state.width}
                     height={this.props.dataStore.variableStores.between.getRelatedVariables('event').length * 20}
+                    openSaveVarModal={this.props.openSaveVarModal}
                     {...this.props.tooltipFunctions}
                 />
             );

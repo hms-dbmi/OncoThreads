@@ -1,9 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { PropTypes } from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import {
-    Button, Checkbox, ControlLabel, FormControl, Modal,
-} from 'react-bootstrap';
+import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootstrap';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
@@ -102,7 +100,7 @@ const ModifyBinary = inject('variableManagerStore', 'rootStore')(observer(class 
             if (this.props.derivedVariable === null) {
                 const newId = uuidv4();
                 const modification = {
-                    type: 'modifyCategorical',
+                    type: 'categoricalTransform',
                     mapping: { true: false, false: true },
                 };
                 let name = this.name;
@@ -189,9 +187,12 @@ const ModifyBinary = inject('variableManagerStore', 'rootStore')(observer(class 
     }
 }));
 ModifyBinary.propTypes = {
-    variable: PropTypes.instanceOf(OriginalVariable),
-    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
+    variable: PropTypes.instanceOf(OriginalVariable).isRequired,
+    derivedVariable: PropTypes.instanceOf(DerivedVariable),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
+};
+ModifyBinary.defaultProps = {
+    derivedVariable: null,
 };
 export default ModifyBinary;

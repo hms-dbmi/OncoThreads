@@ -29,9 +29,7 @@ import BlockView from './BlockView';
 const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class MainView extends React.Component {
     constructor(props) {
         super(props);
-
         this.padding = 20;
-
         this.handleTimeClick = this.handleTimeClick.bind(this);
         this.handleSwitchView = this.handleSwitchView.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
@@ -73,14 +71,10 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         window.removeEventListener('resize', this.updateDimensions);
     }
 
+
     /**
      * Gets block view
      * @return {div}
-     */
-
-    /*
-
-
      */
     getBlockView() {
         return (
@@ -161,6 +155,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                     tooltipFunctions={this.props.tooltipFunctions}
                                     showContextMenu={this.props.showContextMenu}
                                     openBinningModal={this.props.openBinningModal}
+                                    openSaveVarModal={this.props.openSaveVarModal}
                                 />
                             </Pane>
                             <Pane
@@ -217,6 +212,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                                 visStore={this.props.rootStore.visStore}
                             >
                                 <GlobalRowOperators
+                                    openSaveVarModal={this.props.openSaveVarModal}
                                     tooltipFunctions={this.props.tooltipFunctions}
                                 />
                             </Provider>
@@ -261,6 +257,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         this.highlightedVariable = '';
     }
 
+
     /**
      * handle visualizing real time
      */
@@ -284,6 +281,9 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         }
     }
 
+    /**
+     * updates view dimensions
+     */
     updateDimensions() {
         const prevWidth = Object.values(this.panes).map(d => d.width).reduce((a, b) => a + b);
         this.panes = {
@@ -338,5 +338,6 @@ MainView.propTypes = {
     showContextMenu: PropTypes.func.isRequired,
     showContextMenuHeatmapRow: PropTypes.func.isRequired,
     openBinningModal: PropTypes.func.isRequired,
+    openSaveVarModal: PropTypes.func.isRequired,
 };
 export default MainView;

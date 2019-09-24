@@ -1,7 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
-import SaveVariableDialog from '../Modals/SaveVariableDialog';
 import SingleTimepoint from '../../stores/SingleTimepoint';
 import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
 
@@ -10,14 +9,8 @@ import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
  * Component for row operators of one timepoint in BlockView
  */
 const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class RowOperator extends React.Component {
-
     constructor(props) {
         super(props);
-        this.state = {
-            modalIsOpen: false,
-            callback: '',
-            currentVariable: '',
-        };
         this.iconScale = (props.rootStore.visStore.secondaryHeight) / 24;
         this.iconDimensions = 24;
         this.sortTimepoint = this.sortTimepoint.bind(this);
@@ -300,19 +293,6 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
     }
 
     /**
-     * opens the modal for saving a variable
-     * @param {string} variableId
-     * @param callback
-     */
-    openSaveModal(variableId, callback) {
-        this.setState({
-            modalIsOpen: true,
-            currentVariable: variableId,
-            callback,
-        });
-    }
-
-    /**
      * sorts a timepoint
      * the variable has to be declared a primary variable, then the timepoint is sorted
      * @param {SingleTimepoint} timepoint - timepoint to be sorted
@@ -393,7 +373,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
     removeVariable(variable, type) {
         const variableName = variable.name;
         if (variable.derived) {
-            this.openSaveModal(variable, (save) => {
+            this.props.openSaveVarModal(variable, (save) => {
                 this.props.rootStore.dataStore.variableStores[type]
                     .updateSavedVariables(variable.id, save);
                 this.props.rootStore.dataStore.variableStores[type].removeVariable(variable.id);
@@ -440,14 +420,6 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
             <g transform={this.props.transform}>
                 {this.getRaelign()}
                 {this.getRowOperator()}
-                {this.state.modalIsOpen ? (
-                    <SaveVariableDialog
-                        modalIsOpen={this.state.modalIsOpen}
-                        variable={this.state.currentVariable}
-                        callback={this.state.callback}
-                        closeModal={() => this.setState({ modalIsOpen: false })}
-                    />
-                ) : null}
             </g>
         );
     }
@@ -462,5 +434,6 @@ RowOperator.propTypes = {
     unhighlightVariable: PropTypes.func.isRequired,
     openBinningModal: PropTypes.func.isRequired,
     transform: PropTypes.string.isRequired,
+    openSaveVarModal: PropTypes.func.isRequired,
 };
 export default RowOperator;

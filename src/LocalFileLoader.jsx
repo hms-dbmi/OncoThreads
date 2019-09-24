@@ -663,8 +663,7 @@ class LocalFileLoader {
             setMolecular: action((file, metaData, callback) => {
                 let firstRow = true;
                 let hasEntrezId;
-                let
-                    hasHugoSymbol;
+                let hasHugoSymbol;
                 let aborted = false;
                 let inconsistentLinebreaks = false;
                 const data = new Map();
@@ -685,31 +684,33 @@ class LocalFileLoader {
                                 firstRow = false;
                             }
                             const dataRow = [];
-                            const entrezId = parseInt(row.data[0].Entrez_Gene_Id, 10);
-                            Object.keys(row.data[0]).forEach((key) => {
-                                const dataPoint = {
-                                    gene: { entrezGeneId: entrezId, hugoGeneSymbol: '' },
-                                    entrezGeneId: entrezId,
-                                };
-                                if (hasHugoSymbol) {
-                                    dataPoint.gene.hugoGeneSymbol = row.data[0].Hugo_Symbol;
-                                }
-                                if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
-                                    let value = row.data[0][key];
-                                    if (value !== 'NA' && metaData === 'NUMBER') {
-                                        value = parseFloat(row.data[0][key]);
-                                        if (Number.isNaN(value)) {
-                                            aborted = true;
-                                            alert(`ERROR: file ${file.name} value is not a number`);
-                                            parser.abort();
-                                        }
+                            if (row.data[0].Entrz_Gene_Id !== 'NA') {
+                                const entrezId = parseInt(row.data[0].Entrez_Gene_Id, 10);
+                                Object.keys(row.data[0]).forEach((key) => {
+                                    const dataPoint = {
+                                        gene: { entrezGeneId: entrezId, hugoGeneSymbol: '' },
+                                        entrezGeneId: entrezId,
+                                    };
+                                    if (hasHugoSymbol) {
+                                        dataPoint.gene.hugoGeneSymbol = row.data[0].Hugo_Symbol;
                                     }
-                                    dataPoint.sampleId = key;
-                                    dataPoint.value = value;
-                                    dataRow.push(dataPoint);
-                                }
-                            });
-                            data.set(entrezId, dataRow);
+                                    if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
+                                        let value = row.data[0][key];
+                                        if (value !== 'NA' && metaData === 'NUMBER') {
+                                            value = parseFloat(row.data[0][key]);
+                                            if (Number.isNaN(value)) {
+                                                aborted = true;
+                                                alert(`ERROR: file ${file.name} value is not a number`);
+                                                parser.abort();
+                                            }
+                                        }
+                                        dataPoint.sampleId = key;
+                                        dataPoint.value = value;
+                                        dataRow.push(dataPoint);
+                                    }
+                                });
+                                data.set(entrezId, dataRow);
+                            }
                         } else {
                             inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
                                 row.data[0], file.name);

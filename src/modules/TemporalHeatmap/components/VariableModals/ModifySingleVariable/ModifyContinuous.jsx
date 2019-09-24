@@ -15,7 +15,7 @@ import {
 import FontAwesome from 'react-fontawesome';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
-import PropTypes from 'prop-types';
+import { PropTypes } from 'prop-types';
 import Binner from './Binner/Binner';
 import Histogram from './Binner/Histogram';
 import DerivedVariable from '../../../stores/DerivedVariable';
@@ -260,7 +260,7 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
     static getGradient(range, width, height) {
         let intermediateStop = null;
         if (range.length === 3) {
-            intermediateStop = <stop offset="50%" style={{ stopColor: range[1] }} />;
+            intermediateStop = <stop offset="50%" style={{ stopColor: range[1] }}/>;
         }
         const randomId = uuidv4();
         return (
@@ -271,12 +271,12 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
                 <g>
                     <defs>
                         <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style={{ stopColor: range[0] }} />
+                            <stop offset="0%" style={{ stopColor: range[0] }}/>
                             {intermediateStop}
-                            <stop offset="100%" style={{ stopColor: range[range.length - 1] }} />
+                            <stop offset="100%" style={{ stopColor: range[range.length - 1] }}/>
                         </linearGradient>
                     </defs>
-                    <rect width={width} height={height} fill={`url(#${randomId})`} />
+                    <rect width={width} height={height} fill={`url(#${randomId})`}/>
                 </g>
             </svg>
         );
@@ -560,9 +560,12 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
     }
 }));
 ModifyContinuous.propTypes = {
-    variable: PropTypes.instanceOf(OriginalVariable),
-    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
+    variable: PropTypes.instanceOf(OriginalVariable).isRequired,
+    derivedVariable: PropTypes.instanceOf(DerivedVariable),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
+};
+ModifyContinuous.defaultProps = {
+    derivedVariable: null,
 };
 export default ModifyContinuous;

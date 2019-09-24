@@ -1,7 +1,7 @@
 import SingleTimepoint from './SingleTimepoint';
 
 /*
-stores information about sample timepoints
+ stores information about sample timepoints
  */
 class MultipleTimepointsStore {
     constructor(rootStore, type) {
@@ -13,8 +13,8 @@ class MultipleTimepointsStore {
 
     /**
      * changes timepointStructure
-     * @param structure
-     * @param order
+     * @param {object[]} structure
+     * @param {string[]} order
      */
     updateTimepointStructure(structure, order) {
         this.structure = structure;
@@ -28,7 +28,7 @@ class MultipleTimepointsStore {
 
     /**
      * updates all names
-     * @param names
+     * @param {string[]} names
      */
     updateNames(names) {
         this.timepoints.forEach((d, i) => d.setName(names[i]));
@@ -37,8 +37,8 @@ class MultipleTimepointsStore {
 
     /**
      * adds rows to heatmaps
-     * @param variableId
-     * @param mapper
+     * @param {string} variableId
+     * @param {object} mapper
      */
     addHeatmapRows(variableId, mapper) {
         this.structure.forEach((d, i) => {
@@ -59,7 +59,7 @@ class MultipleTimepointsStore {
 
     /**
      * resort rows of all timepints
-     * @param order
+     * @param {string[]} order
      */
     resortHeatmapRows(order) {
         this.timepoints.forEach(d => d.resortRows(order));
@@ -67,12 +67,18 @@ class MultipleTimepointsStore {
 
     /**
      * Removes rows from the heatmaps
-     * @param variableId
+     * @param {string} variableId
      */
     removeHeatmapRows(variableId) {
         this.timepoints.forEach(d => d.removeRow(variableId));
     }
 
+    /**
+     * updates rows in heatmap based on new mapper
+     * @param {number} index
+     * @param {string} newId
+     * @param {object} mapper
+     */
     updateHeatmapRows(index, newId, mapper) {
         this.structure.forEach((d, i) => {
             const variableData = [];
@@ -91,7 +97,9 @@ class MultipleTimepointsStore {
     }
 
     /**
-     * checks if at least one of the timepoints is grouped
+     * checks if at least one of the timepoints  in a range is grouped
+     * @param {number} startIndex
+     * @param {number} endIndex
      * @returns {boolean}
      */
     atLeastOneGrouped(startIndex, endIndex) {
@@ -108,10 +116,10 @@ class MultipleTimepointsStore {
 
     /**
      * returns this appropriate function for an action
-     * @param action
-     * @param variable
-     * @param timepoint
-     * @param originalTimepoint
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     * @param {string} action
+     * @param {SingleTimepoint} timepoint
+     * @param {SingleTimepoint} originalTimepoint
      */
     static actionFunction(action, variable, timepoint, originalTimepoint) {
         switch (action) {
@@ -121,19 +129,23 @@ class MultipleTimepointsStore {
         case 'GROUP':
             timepoint.group(variable);
             break;
-        case 'SORT':
+        case 'SORT': {
             if (timepoint.localIndex === originalTimepoint.localIndex) {
                 timepoint.sort(variable);
             }
+            const sortDir = originalTimepoint.isGrouped
+                ? originalTimepoint.groupSortDir
+                : originalTimepoint.heatmapSorting.sortDir;
             if (variable !== timepoint.primaryVariableId) {
                 timepoint.promote(variable);
             }
             if (timepoint.isGrouped) {
-                timepoint.sortGroup(variable, originalTimepoint.groupOrder);
+                timepoint.sortGroup(sortDir);
             } else {
-                timepoint.sortHeatmap(variable, originalTimepoint.heatmapSorting.order);
+                timepoint.sortHeatmap(variable, sortDir);
             }
             break;
+        }
         default:
             timepoint.unGroup(variable);
             break;
@@ -142,9 +154,9 @@ class MultipleTimepointsStore {
 
     /**
      * applies an action to a previous timepoint
-     * @param timepointIndex
-     * @param variable
-     * @param action
+     * @param {number} timepointIndex
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     * @param {string} action
      */
     applyActionToPrevious(timepointIndex, variable, action) {
         MultipleTimepointsStore.actionFunction(action, variable,
@@ -157,9 +169,9 @@ class MultipleTimepointsStore {
 
     /**
      * applies an action to the next timepoint
-     * @param timepointIndex
-     * @param variable
-     * @param action
+     * @param {number} timepointIndex
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     * @param {string} action
      */
     applyActionToNext(timepointIndex, variable, action) {
         MultipleTimepointsStore.actionFunction(action, variable,
@@ -172,9 +184,9 @@ class MultipleTimepointsStore {
 
     /**
      * applies an action to all timepoints
-     * @param timepointIndex
-     * @param variable
-     * @param action
+     * @param {number} timepointIndex
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     * @param {string} action
      */
     applyActionToAll(timepointIndex, variable, action) {
         MultipleTimepointsStore.actionFunction(action, variable,

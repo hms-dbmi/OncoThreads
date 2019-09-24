@@ -9,7 +9,6 @@ import { extendObservable } from 'mobx';
 import ModifyCategorical from './ModifySingleVariable/ModifyCategorical';
 import ModifyContinuous from './ModifySingleVariable/ModifyContinuous';
 import ModifyBinary from './ModifySingleVariable/ModifyBinary';
-import SaveVariableDialog from '../Modals/SaveVariableDialog';
 import CombineModal from './CombineVariables/CombineModal';
 
 /**
@@ -23,7 +22,6 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
             modifyCategoricalIsOpen: false,
             modifyContinuousIsOpen: false,
             modifyBinaryIsOpen: false,
-            saveVariableIsOpen: false,
             combineVariablesIsOpen: false,
             currentVariable: '', // non-modified variable selected for modification
             derivedVariable: '', // modified variable selected for modification
@@ -42,7 +40,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
 
     /**
      * creates the modal for modification
-     * @returns {(ModifyBinary|ModifyContinuous|ModifyBinary|SaveVariableDialog|CombineModal)}
+     * @returns {(ModifyBinary|ModifyContinuous|ModifyBinary|CombineModal)}
      */
     getModal() {
         let modal = null;
@@ -74,15 +72,6 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                     closeModal={this.closeModal}
                 />
             );
-        } else if (this.saveVariableIsOpen) {
-            modal = (
-                <SaveVariableDialog
-                    modalIsOpen={this.saveVariableIsOpen}
-                    variable={this.currentVariable}
-                    callback={this.callback}
-                    closeModal={this.closeModal}
-                />
-            );
         } else if (this.combineVariablesIsOpen) {
             modal = (
                 <CombineModal
@@ -105,7 +94,6 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
         this.modifyCategoricalIsOpen = false;
         this.modifyContinuousIsOpen = false;
         this.modifyBinaryIsOpen = false;
-        this.saveVariableIsOpen = false;
         this.combineVariablesIsOpen = false;
     }
 
@@ -132,17 +120,6 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
         this.combineVariables = variables;
         this.derivedVariable = derivedVariable;
         this.combineVariablesIsOpen = true;
-    }
-
-    /**
-     * opens modal to save variable
-     * @param {DerivedVariable} variable
-     * @param callback
-     */
-    openSaveVariableModal(variable, callback) {
-        this.currentVariable = variable;
-        this.saveVariableIsOpen = true;
-        this.callback = callback;
     }
 
 
@@ -175,7 +152,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
      */
     removeVariable(variable) {
         if (variable.derived) {
-            this.openSaveVariableModal(variable, (save) => {
+            this.props.openSaveVarModal(variable, (save) => {
                 this.props.variableManagerStore.updateSavedVariables(variable.id, save);
                 this.props.variableManagerStore.removeVariable(variable.id);
             });

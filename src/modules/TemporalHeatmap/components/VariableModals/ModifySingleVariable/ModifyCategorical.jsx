@@ -1,11 +1,9 @@
 import React from 'react';
 import { inject, observer, Provider } from 'mobx-react';
-import {
-    Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio,
-} from 'react-bootstrap';
+import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } from 'react-bootstrap';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
-import PropTypes from 'prop-types';
+import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import ColorScales from '../../../UtilityClasses/ColorScales';
@@ -53,7 +51,7 @@ const ModifyCategorical = inject('variableManagerStore', 'rootStore')(observer(c
 
         return (
             <Provider categoryStore={this.categoryStore}>
-                <CategoricalTable />
+                <CategoricalTable/>
             </Provider>
         );
     }
@@ -350,9 +348,12 @@ const ModifyCategorical = inject('variableManagerStore', 'rootStore')(observer(c
     }
 }));
 ModifyCategorical.propTypes = {
-    variable: PropTypes.instanceOf(OriginalVariable),
-    derivedVariable: PropTypes.oneOf([PropTypes.instanceOf(DerivedVariable), null]),
+    variable: PropTypes.instanceOf(OriginalVariable).isRequired,
+    derivedVariable: PropTypes.instanceOf(DerivedVariable),
     modalIsOpen: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
+};
+ModifyCategorical.defaultProps = {
+    derivedVariable: null,
 };
 export default ModifyCategorical;

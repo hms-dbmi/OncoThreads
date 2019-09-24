@@ -1,4 +1,4 @@
-import {action, extendObservable, reaction} from "mobx";
+import { action, extendObservable, reaction } from 'mobx';
 import * as d3 from 'd3';
 
 
@@ -8,41 +8,30 @@ import * as d3 from 'd3';
 class CategoryStore {
     constructor(currentCategories, isOrdinal, allValues, colorRange) {
         this.allValues = allValues; // all possible values
-        this.domain = Array.from(new Set(Object.values(this.allValues))).filter(d => d !== undefined).sort(); // domain of variable
+        this.domain = Array.from(new Set(Object.values(this.allValues)))
+            .filter(d => d !== undefined).sort(); // domain of variable
         extendObservable(this, {
             currentCategories: currentCategories.map((d, i) => { // current categories of variable
-                d.percentOccurence = this.getPercentOccurence(d.categories);
+                const copy = d;
+                copy.percentOccurence = this.getPercentOccurence(d.categories);
                 if (isOrdinal) {
-                    d.color = d3.interpolateLab(...colorRange)(i / (currentCategories.length - 1));
+                    copy.color = d3.interpolateLab(...colorRange)(i
+                        / (currentCategories.length - 1));
+                } else {
+                    copy.color = colorRange[i % colorRange.length];
                 }
-                else {
-                    d.color = colorRange[i % colorRange.length]
-                }
-                return d
+                return copy;
             }),
-            isOrdinal: isOrdinal, // is variable ordinal
-            colorScale: isOrdinal ? d3.scaleLinear().range(colorRange).domain([0, 1]) : d3.scaleOrdinal().range(colorRange), // color scale of variable
-            restrictCategories: false, // restrict variable categories to a certain number
-            numberOfCategories: currentCategories.length, // number of categories for restricting categories
-            /**
-             * toggles restricting categories
-             */
-            toggleRestrictCategories: action(() => {
-                this.restrictCategories = !this.restrictCategories
-            }),
-            /**
-             * sets the number of restricted categories
-             * @param {number} numCat
-             */
-            setNumberOfCategories: action((numCat) => {
-                this.numberOfCategories = numCat;
-            }),
+            isOrdinal, // is variable ordinal
+            colorScale: isOrdinal ? d3.scaleLinear().range(colorRange).domain([0, 1])
+                : d3.scaleOrdinal().range(colorRange), // color scale of variable
+
             /**
              * changes if the variable is ordinal or not
-             * @param {boolean} isOrdinal
+             * @param {boolean} newIsOrdinal
              */
-            setIsOrdinal: action(isOrdinal => {
-                this.isOrdinal = isOrdinal;
+            setIsOrdinal: action((newIsOrdinal) => {
+                this.isOrdinal = newIsOrdinal;
             }),
             /**
              * handles renaming a category
@@ -69,14 +58,14 @@ class CategoryStore {
             }),
             /**
              * changes the color scale
-             * @param {string} colorRange
+             * @param {string} newColorRange
              */
-            changeColorScale: action(colorRange => {
+            changeColorScale: action((newColorRange) => {
                 if (this.isOrdinal) {
-                    this.colorScale = d3.scaleLinear().domain([0, 1]).range(colorRange);
-                }
-                else {
-                    this.colorScale = d3.scaleOrdinal().range(colorRange).domain(this.currentCategories.map(d => d.name));
+                    this.colorScale = d3.scaleLinear().domain([0, 1]).range(newColorRange);
+                } else {
+                    this.colorScale = d3.scaleOrdinal().range(newColorRange)
+                        .domain(this.currentCategories.map(d => d.name));
                 }
             }),
             /**
@@ -85,12 +74,11 @@ class CategoryStore {
              * @param {boolean} moveUp
              */
             move: action((index, moveUp) => {
-                let currentEntry = this.currentCategories[index];
+                const currentEntry = this.currentCategories[index];
                 if (moveUp && index > 0) {
                     this.currentCategories[index] = this.currentCategories[index - 1];
                     this.currentCategories[index - 1] = currentEntry;
-                }
-                else if (!moveUp && index < this.currentCategories.length - 1) {
+                } else if (!moveUp && index < this.currentCategories.length - 1) {
                     this.currentCategories[index] = this.currentCategories[index + 1];
                     this.currentCategories[index + 1] = currentEntry;
                 }
@@ -100,15 +88,16 @@ class CategoryStore {
              * merges the selected categories
              */
             merge: action(() => {
-                let mergedEntry = {selected: false, name: '', categories: [], color: ''};
-                let indicesToDelete = [];
+                const mergedEntry = {
+                    selected: false, name: '', categories: [], color: '',
+                };
+                const indicesToDelete = [];
                 this.currentCategories.forEach((d, i) => {
                     if (d.selected) {
                         indicesToDelete.push(i);
                         if (mergedEntry.name !== '') {
-                            mergedEntry.name += ('/' + d.name)
-                        }
-                        else {
+                            mergedEntry.name += (`/${d.name}`);
+                        } else {
                             mergedEntry.color = d.color;
                             mergedEntry.name = d.name;
                         }
@@ -116,109 +105,81 @@ class CategoryStore {
                     }
                 });
                 mergedEntry.percentOccurence = this.getPercentOccurence(mergedEntry.categories);
-                for (let i = indicesToDelete.length - 1; i >= 0; i--) {
+                for (let i = indicesToDelete.length - 1; i >= 0; i -= 1) {
                     if (i === 0) {
                         this.currentCategories[indicesToDelete[i]] = mergedEntry;
-                    }
-                    else {
+                    } else {
                         this.currentCategories.splice(indicesToDelete[i], 1);
                     }
-                }
-            }),
-
-            /**
-             * unmerges all the currently selected merged categories
-             */
-            unMerge: action((all) => {
-                let unmergedEntries = [];
-                let mergedIndeces = [];
-                this.currentCategories.forEach((d, i) => {
-                    if ((d.selected || all) && d.categories.length > 1) {
-                        let currentEntries = d.categories.map((d) => {
-                            return ({
-                                selected: false,
-                                name: d,
-                                categories: [d],
-                                color: this.colorScale(d),
-                                percentOccurence: this.getPercentOccurence([d])
-                            })
-                        });
-                        mergedIndeces.push(i);
-                        unmergedEntries.push(currentEntries);
-                    }
-                });
-                for (let i = mergedIndeces.length - 1; i >= 0; i--) {
-                    this.currentCategories.splice(mergedIndeces[i], 1);
-                    unmergedEntries[i].forEach((d, j) => this.currentCategories.splice(mergedIndeces[i] + j, 0, d));
                 }
             }),
             /**
              * unmerges at an index
              */
             unMergeIndex: action((index) => {
-                const categories=this.currentCategories[index].categories.slice();
+                const categories = this.currentCategories[index].categories.slice();
                 this.currentCategories.splice(index, 1);
                 categories.forEach((d, j) => this.currentCategories.splice(index + j, 0, {
-                                selected: false,
-                                name: d,
-                                categories: [d],
-                                color: this.colorScale(d),
-                                percentOccurence: this.getPercentOccurence([d])}));
+                    selected: false,
+                    name: d,
+                    categories: [d],
+                    color: this.colorScale(d),
+                    percentOccurence: this.getPercentOccurence([d]),
+                }));
             }),
             /**
              * sorts categories by name
              * @param {boolean} asc - sort ascending/descending
              */
-            sortByName: action(asc => {
+            sortByName: action((asc) => {
                 let factor = 1;
                 if (asc) {
                     factor = -1;
                 }
                 this.currentCategories.replace(this.currentCategories.sort((a, b) => {
-                        if (a.name < b.name) {
-                            return -factor
-                        }
-                        if (a.name > b.name) {
-                            return factor;
-                        }
-                        else return 0;
+                    if (a.name < b.name) {
+                        return -factor;
                     }
-                ))
+                    if (a.name > b.name) {
+                        return factor;
+                    }
+                    return 0;
+                }));
             }),
             /**
              * sorts categories by their percent occurence
              * @param {boolean} asc - sort ascending/descending
              */
-            sortByPercentage: action(asc => {
+            sortByPercentage: action((asc) => {
                 let factor = 1;
                 if (asc) {
                     factor = -1;
                 }
                 this.currentCategories.replace(this.currentCategories.sort((a, b) => {
-                        if (a.percentOccurence < b.percentOccurence) {
-                            return -factor
-                        }
-                        if (a.percentOccurence > b.percentOccurence) {
-                            return factor;
-                        }
-                        else return 0;
+                    if (a.percentOccurence < b.percentOccurence) {
+                        return -factor;
                     }
-                ))
+                    if (a.percentOccurence > b.percentOccurence) {
+                        return factor;
+                    }
+                    return 0;
+                }));
             }),
             /**
              * checks if current categories are unique (no names double)
              * @return {boolean}
              */
             get uniqueCategories() {
-                return new Set(this.currentCategories.map(d => d.name)).size === this.currentCategories.length
+                return new Set(this.currentCategories
+                    .map(d => d.name)).size === this.currentCategories.length;
             },
             /**
              * gets a mapping of original categories to new categories
              */
             get categoryMapping() {
-                let categoryMapping = {};
-                this.domain.forEach(d => {
-                    this.currentCategories.forEach(f => {
+                const categoryMapping = {};
+                this.domain.forEach((d) => {
+                    this.currentCategories.forEach((f) => {
                         if (f.categories.includes(d.toString())) {
                             categoryMapping[d] = f.name;
                         }
@@ -226,52 +187,26 @@ class CategoryStore {
                 });
                 return categoryMapping;
             },
-            get range(){
-                if(this.isOrdinal){
+            get range() {
+                if (this.isOrdinal) {
                     return this.colorScale.range();
                 }
-                else{
-                    return this.currentCategories.map(d => d.color)
-                }
-            }
 
-        });
-        // reaction to restricting categories
-        // unmerge all categories and merge categories with small percentages
-        reaction(() => this.restrictCategories, restrict => {
-            if (restrict && this.numberOfCategories !== this.currentCategories.length) {
-                this.unMerge(true);
-                let sorted = this.currentCategories.sort((a, b) => b.percentOccurence - a.percentOccurence);
-                sorted.slice(this.numberOfCategories - 1, this.currentCategories.length).map(d => d.name).forEach(category => {
-                    this.currentCategories.filter(d => d.name === category)[0].selected = true;
-                });
-                this.merge();
+                return this.currentCategories.map(d => d.color);
+            },
 
-            }
-        });
-        // reaction to restricting categoires
-        // unmerge all categories and merge categories with small percentages
-        reaction(() => this.numberOfCategories, numCat => {
-            if (this.restrictCategories && numCat !== this.currentCategories.length) {
-                this.unMerge(true);
-                let sorted = this.currentCategories.sort((a, b) => b.percentOccurence - a.percentOccurence);
-                sorted.slice(numCat - 1, this.currentCategories.length).map(d => d.name).forEach(category => {
-                    this.currentCategories.filter(d => d.name === category)[0].selected = true;
-                });
-                this.merge();
-            }
         });
         // reaction to changing color scale
-        reaction(() => this.colorScale, scale => {
+        reaction(() => this.colorScale, (scale) => {
             this.currentCategories.forEach((d, i) => {
                 let value = d.name;
                 if (this.isOrdinal) {
                     value = (i * 2 + 1) / (this.currentCategories.length * 2 + 1);
                 }
-                d.color = scale(value);
+                this.currentCategories[i].color = scale(value);
             });
         });
-        reaction(() => this.currentCategories.map(d => d.name), categories => {
+        reaction(() => this.currentCategories.map(d => d.name), (categories) => {
             if (this.isOrdinal) {
                 categories.forEach((d, i) => {
                     let value = d;
@@ -281,8 +216,7 @@ class CategoryStore {
                     this.currentCategories[i].color = this.colorScale(value);
                 });
             }
-        })
-
+        });
     }
 
     /**
@@ -292,10 +226,10 @@ class CategoryStore {
      */
     getPercentOccurence(categories) {
         let numOccurences = 0;
-        categories.forEach(d => {
+        categories.forEach((d) => {
             numOccurences += this.allValues.filter(f => d === f).length;
         });
-        return numOccurences / this.allValues.length * 100
+        return numOccurences / this.allValues.length * 100;
     }
 }
 

@@ -27,7 +27,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
     componentDidMount() {
         this.updateLineUp();
         this.lineUpRef.current.adapter.data.getFirstRanking().on('removeColumn', (c) => {
-            this.props.removeScore(c.desc.column);
+            this.props.removeColumn(c.desc.column);
         });
     }
 
@@ -36,10 +36,10 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         if (prevProps.data.length !== this.props.data.length) {
             this.updateLineUp();
         }
-        if (this.props.addedScores
-            .filter(desc => !prevProps.addedScores.includes(desc)).length > 0) {
-            this.addScoreColumn();
-        }
+        const addedColumns = this.props.addedColumns.filter(column => !prevProps.addedColumns.includes(column));
+        const removedColumns = prevProps.addedColumns.filter(column => !this.props.addedColumns.includes(column));
+        addedColumns.forEach(column => this.addColumn(column, 'source'));
+        removedColumns.forEach(column => this.removeColumn(column));
     }
 
     /**
@@ -116,26 +116,40 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
         }
     }
 
-    addScoreColumn() {
-        this.props.addedScores.forEach((columnName) => {
-            if (this.lineUpRef.current.adapter.data
-                .find(d => d.desc.column === columnName) === null) {
-                const columnDesc = this.lineUpRef.current.adapter.data.findDesc(columnName);
-                const column = this.lineUpRef.current.adapter.data.create(columnDesc);
-                const insertColumn = this.lineUpRef.current.adapter.data.find(d => d.desc.column === 'source');
-                if (column !== null) {
-                    if (insertColumn !== null) {
-                        this.lineUpRef.current.adapter.data.getFirstRanking()
-                            .insertAfter(column, insertColumn);
-                    } else {
-                        this.lineUpRef.current.adapter.data.getFirstRanking().push(column);
-                    }
-                    if (columnDesc.domain.length === 0) {
-                        this.updateNumericalColumn(columnName);
-                    }
+    /**
+     * adds a column to the view
+     * @param {string} columnName
+     * @param {string} insertAfter
+     */
+    addColumn(columnName, insertAfter) {
+        if (this.lineUpRef.current.adapter.data
+            .find(d => d.desc.column === columnName) === null) {
+            const columnDesc = this.lineUpRef.current.adapter.data.findDesc(columnName);
+            const column = this.lineUpRef.current.adapter.data.create(columnDesc);
+            const insertColumn = this.lineUpRef.current.adapter.data.find(d => d.desc.column === insertAfter);
+            if (column !== null) {
+                if (insertColumn !== null) {
+                    this.lineUpRef.current.adapter.data.getFirstRanking()
+                        .insertAfter(column, insertColumn);
+                } else {
+                    this.lineUpRef.current.adapter.data.getFirstRanking().push(column);
+                }
+                if (columnDesc.type === 'number' && columnDesc.domain.length === 0) {
+                    this.updateNumericalColumn(columnName);
                 }
             }
-        });
+        }
+    }
+
+    /**
+     * removes a column
+     * @param {string} columnName
+     */
+    removeColumn(columnName) {
+        const column = this.lineUpRef.current.adapter.data.find(d => d.desc.column === columnName);
+        if (column !== null) {
+            column.hide();
+        }
     }
 
     handleVariableSelect(s) {
@@ -157,7 +171,7 @@ const LineUpView = inject('rootStore', 'variableManagerStore')(observer(class Li
             >
                 {this.getColumnDefs()}
                 <LineUpRanking>
-                    <LineUpSupportColumn type="*" />
+                    <LineUpSupportColumn type="*"/>
                     {this.getVisibleColumns()}
                 </LineUpRanking>
             </LineUp>
@@ -169,6 +183,8 @@ LineUpView.propTypes = {
     columnDefs: PropTypes.arrayOf(PropTypes.object).isRequired,
     selected: PropTypes.arrayOf(PropTypes.number).isRequired,
     handleSelect: PropTypes.func.isRequired,
-    removeScore: PropTypes.func.isRequired,
+    removeColumn: PropTypes.func.isRequired,
+    addedColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
+    visibleColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 export default LineUpView;
