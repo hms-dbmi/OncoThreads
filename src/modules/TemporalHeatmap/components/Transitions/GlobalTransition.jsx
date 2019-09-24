@@ -53,7 +53,7 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
                 y={this.props.visStore.timeScale(this.props.minMax[d].start)}
                 width={this.props.visStore.timelineRectSize}
                 height={1}
-                fill="lightgray"
+                fill={strokeColor}
             />);
             lines.push(
                 GlobalTransition.drawLine(this.props.heatmapScale(d)

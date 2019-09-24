@@ -36,7 +36,6 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
         extendObservable(this, {
             callback: null,
             modalIsOpen: false,
-            fileType: '',
             fileNames: [],
             datatypes: [],
         });
@@ -273,9 +272,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
             return (
                 <SelectDatatype
                     modalIsOpen={this.modalIsOpen}
-                    type={this.fileType}
-                    fileNames={this.fileNames}
-                    datatypes={this.datatypes}
+                    fileNames={this.fileNames.slice()}
                     setDatatype={this.setDatatype}
                     callback={this.callback}
                     closeModal={() => {
@@ -356,7 +353,6 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
      */
     openModal(files, callback) {
         this.modalIsOpen = true;
-        this.fileType = 'CNV';
         this.datatypes = Array.from(files).map(() => ({ alterationType: 'ANY', datatype: 'CONTINUOUS' }));
         this.fileNames = Array.from(files).map(d => d.name);
         this.callback = callback;
@@ -432,7 +428,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
         return (
             <div>
                 <a
-                    href="https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md"
+                    href="https://github.com/hms-dbmi/OncoThreads/wiki/OncoThreads-File-Formats"
                     rel="noopener noreferrer"
                     target="_blank"
                 >

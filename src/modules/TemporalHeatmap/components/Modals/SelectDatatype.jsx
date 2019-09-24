@@ -1,8 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import {
-    Button, ControlLabel, FormControl, FormGroup, Modal,
-} from 'react-bootstrap';
+import { Button, ControlLabel, FormControl, FormGroup, Modal } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
 /**
@@ -28,8 +26,9 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
                     componentClass="select"
                     placeholder="select"
                 >
-                    <option value="UnspecCont">Continuous</option>
                     <option value="CNVDisc">Discrete CNV data</option>
+                    <option value="CNVCont">Continuous CNV data</option>
+                    <option value="UnspecCont">Other Continuous</option>
                 </FormControl>
             </FormGroup>
         ));
@@ -45,6 +44,9 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
         switch (value) {
         case 'UnspecCont':
             this.props.setDatatype(index, 'CONTINUOUS', fileName);
+            break;
+        case 'CNVCont':
+            this.props.setDatatype(index, 'CONTINUOUS', 'COPY_NUMBER_ALTERATION');
             break;
         default:
             this.props.setDatatype(index, 'DISCRETE', 'COPY_NUMBER_ALTERATION');
