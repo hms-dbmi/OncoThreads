@@ -35,7 +35,7 @@
     "electron-build": "electron-builder",
     "build": "npm run react-build && npm run electron-build",
     "electron-start": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-publish": "build --publish=always",
+    "electron-publish": "npm run build --publish=always",
     "preelectron-publish": "npm run react-build"
   },
   "homepage": ".",
