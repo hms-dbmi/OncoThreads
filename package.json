@@ -9,7 +9,6 @@
     "d3": "^5.12.0",
     "d3-scale-chromatic": "^1.5.0",
     "electron-is-dev": "^1.1.0",
-    "electron-builder": "^21.2.0",
     "html2canvas": "^1.0.0-rc.4",
     "jquery": "^3.4.1",
     "lineupjs": "^3.2.2",
@@ -67,6 +66,7 @@
   "devDependencies": {
     "concurrently": "^4.1.0",
     "electron": "^6.0.10",
+    "electron-builder": "^21.2.0",
     "cross-env": "^6.0.0",
     "eslint-config-airbnb": "^18.0.1",
     "jspdf": "^1.5.3",
