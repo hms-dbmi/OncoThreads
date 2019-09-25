@@ -1,6 +1,6 @@
 {
   "name": "OncoThreads",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "author": "Theresa Harbig, Sabrina Nusrat",
   "description": "Visualization of longitudinal cancer genomics data",
   "private": true,
