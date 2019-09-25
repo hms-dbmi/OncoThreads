@@ -168,7 +168,7 @@ class SingleTimepoint {
              * @param {string[]} newOrder
              */
             resortRows: action((newOrder) => {
-                this.heatmap = this.heatmap.sort((a, b) => {
+                this.heatmap.replace(this.heatmap.slice().sort((a, b) => {
                     if (newOrder.indexOf(a.variable) < newOrder.indexOf(b.variable)) {
                         return -1;
                     }
@@ -176,7 +176,7 @@ class SingleTimepoint {
                         return 1;
                     }
                     return 0;
-                });
+                }));
             }),
             /**
              * sorts the heatmap in the same way that the groups are sorted
@@ -208,7 +208,7 @@ class SingleTimepoint {
                     });
                 });
                 // first sort after primary variable values
-                this.heatmapOrder = helper.sort((a, b) => {
+                this.heatmapOrder.replace(helper.sort((a, b) => {
                     if (varToSort.datatype === 'NUMBER') {
                         if (a.value < b.value) return -newSortDir;
                         if (a.value > b.value) return newSortDir;
@@ -236,7 +236,7 @@ class SingleTimepoint {
                     }
 
                     return 0;
-                }).map(d => d.patient);
+                }).map(d => d.patient));
             }),
             /**
              * sorts the groups of a timepoint
