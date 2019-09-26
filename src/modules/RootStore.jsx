@@ -1,6 +1,4 @@
-import {
-    action, extendObservable, reaction, toJS,
-} from 'mobx';
+import { action, extendObservable, reaction, toJS } from 'mobx';
 import uuidv4 from 'uuid/v4';
 import DataStore from './TemporalHeatmap/stores/DataStore';
 
@@ -13,14 +11,13 @@ import FileAPI from '../FileAPI';
 import LocalFileLoader from '../LocalFileLoader';
 import GeneNamesLocalAPI from '../GeneNamesLocalAPI';
 import ScoreStore from './ScoreStore';
-import StudyAPI from '../studyAPI';
 
 /*
  Store containing all the other stores gets the data with either the CBioAPI
  or from local files, transforms it and gives it to the other stores
  */
 class RootStore {
-    constructor(uiStore) {
+    constructor(uiStore, studyAPI) {
         this.study = null; // current study
         this.patients = []; // patients ids in the current study
 
@@ -38,7 +35,6 @@ class RootStore {
 
         this.sampleStructure = {}; // structure of samples per patient
 
-        this.studyAPI = new StudyAPI(this);
         this.api = null; // current api in use: CBioAPI or FileAPI
         this.molProfileMapping = new MolProfileMapping(this); // store for loading data on demand
         this.dataStore = new DataStore(this); // substore containing the main data
@@ -48,6 +44,7 @@ class RootStore {
         this.geneNamesAPI = new GeneNamesLocalAPI(); // substore for gene name API
         this.localFileLoader = new LocalFileLoader(); // substore for loading local files
         this.uiStore = uiStore;
+        this.studyAPI = studyAPI;
 
         extendObservable(this, {
             // current state of data and data parsing

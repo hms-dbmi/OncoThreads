@@ -1,4 +1,5 @@
-import { action, createTransformer, extendObservable, toJS } from 'mobx';
+import { action, extendObservable, toJS } from 'mobx';
+import * as mobxUtils from 'mobx-utils';
 import OriginalVariable from './TemporalHeatmap/stores/OriginalVariable';
 import DerivedVariable from './TemporalHeatmap/stores/DerivedVariable';
 
@@ -266,7 +267,7 @@ class UndoRedoStore {
      * @param {string} type - type of history entry
      */
     saveHistory(type) {
-        const serializeTimepoints = createTransformer(timepoint => ({
+        const serializeTimepoints = mobxUtils.createTransformer(timepoint => ({
             name: timepoint.name,
             heatmapOrder: timepoint.heatmapOrder.slice(),
             groupSortDir: timepoint.groupSortDir,
@@ -274,7 +275,7 @@ class UndoRedoStore {
             heatmapSorting: toJS(timepoint.heatmapSorting),
             primaryVariableId: timepoint.primaryVariableId,
         }));
-        const serializeState = createTransformer(store => (
+        const serializeState = mobxUtils.createTransformer(store => (
             {
                 sampleTimepoints: store.rootStore.dataStore.variableStores
                     .sample.childStore.timepoints.map(serializeTimepoints),
