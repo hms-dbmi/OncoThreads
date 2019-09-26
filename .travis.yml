@@ -36,7 +36,7 @@ jobs:
         - npm run electron-publish
     - stage: Deploy website
       script:
-        - npm run react-build
+        - npm run react-build-web
       deploy:
         provider: s3
         access_key_id: $AWS_ACCESS_KEY_ID
