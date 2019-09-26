@@ -12,7 +12,7 @@ class GeneNamesLocalAPI {
         extendObservable(this, {
             geneListLoaded: false,
             getAllGeneSymbols: action(() => {
-                d3.tsv(data,data=>{
+                d3.tsv(data).then(data=>{
                     data.forEach(d=>{
                         this.geneList[d["Approved symbol"]]=parseInt(d["NCBI Gene ID(supplied by NCBI)"],10);
                     });
