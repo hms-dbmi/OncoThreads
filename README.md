@@ -30,6 +30,5 @@ Steps to create a new release of electron installers:
     ```
 Travis will build installers for Mac, Windows, and Linux and create a release with these files.
 
-
 Example:
 ![OncoThreads screenshot](https://user-images.githubusercontent.com/15909854/64640272-9869a300-d3d7-11e9-8901-f23789bd9525.png)
