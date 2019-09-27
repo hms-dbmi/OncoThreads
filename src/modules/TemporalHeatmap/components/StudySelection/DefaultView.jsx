@@ -2,7 +2,19 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import Select from 'react-select';
 import {
-    Button, Col, FormGroup, Grid, Panel, Radio, Row, Tab, Tabs,
+    Alert,
+    Button,
+    Col,
+    ControlLabel,
+    FormControl,
+    FormGroup,
+    Grid,
+    InputGroup,
+    Panel,
+    Radio,
+    Row,
+    Tab,
+    Tabs,
 } from 'react-bootstrap';
 import { extendObservable } from 'mobx';
 import StudySummary from '../StudySummary';
@@ -20,9 +32,11 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
         extendObservable(this, {
             selectedStudy: null,
             selectedTab: 'cBio',
+            ownInstanceURL: '',
         });
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
+        this.selectInstance = this.selectInstance.bind(this);
         this.handleInstanceChange = this.handleInstanceChange.bind(this);
     }
 
@@ -33,7 +47,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
     getStudy(selectedOption) {
         this.selectedStudy = selectedOption;
         this.props.rootStore.parseTimeline(this.props.rootStore.studyAPI.studies
-            .filter(d => d.studyId === selectedOption.value)[0], () => {
+            .filter((d) => d.studyId === selectedOption.value)[0], () => {
         });
     }
 
@@ -88,7 +102,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
         if (key === 'cBio') {
             if (this.selectedStudy !== null) {
                 this.props.rootStore.parseTimeline(this.props.rootStore.studyAPI.studies
-                    .filter(d => d.studyId === this.selectedStudy.value)[0], () => {
+                    .filter((d) => d.studyId === this.selectedStudy.value)[0], () => {
                 });
             }
         } else if (this.props.rootStore.localFileLoader.eventsParsed) {
@@ -114,6 +128,67 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
     handleInstanceChange(e) {
         this.selectedStudy = null;
         this.props.uiStore.setCBioInstance(e.target.value);
+    }
+
+    /**
+     * gets content for default view
+     * */
+    getDefaultViewContent() {
+        let instanceTextfield = null;
+        let connected = null;
+        if (this.props.uiStore.cBioInstance === 'own') {
+            instanceTextfield = (
+                <FormGroup>
+                    <ControlLabel>
+                        Select cBioPortal instance
+                    </ControlLabel>
+                    <InputGroup>
+                        <FormControl
+                            value={this.ownInstanceURL}
+                            onChange={(e) => {
+                                this.ownInstanceURL = e.target.value;
+                            }}
+                            type="url"
+                        />
+                        <InputGroup.Button>
+                            <Button onClick={this.selectInstance}>Select Instance</Button>
+                        </InputGroup.Button>
+                    </InputGroup>
+                </FormGroup>
+            );
+        }
+        if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'failed') {
+            connected = <Alert bsStyle="warning">Connection to instance failed</Alert>;
+        } else if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'success') {
+            connected = <Alert>Successfully connected</Alert>;
+        }
+        return (
+            <div style={{ marginTop: '10px', marginBottom: '10px' }}>
+                {instanceTextfield}
+                {connected}
+                <ControlLabel>
+                    Select study
+                </ControlLabel>
+                <Select
+                    type="text"
+                    searchable
+                    isDisabled={this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] !== 'success'}
+                    componentClass="select"
+                    placeholder="Select Study"
+                    value={this.selectedStudy}
+                    options={this.setOptions()}
+                    onChange={this.getStudy}
+                />
+            </div>
+        );
+    }
+
+    /**
+     * selects own instance and loads studies
+     * */
+    selectInstance() {
+        this.props.rootStore.studyAPI.setOwnLink(this.ownInstanceURL);
+        this.props.rootStore.studyAPI.loadOwnInstanceStudies();
     }
 
 
@@ -147,22 +222,22 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                         >
                                             cBioHack
                                         </Radio>
-                                        {' '}
-                                        <Radio
-                                            name="linkSelect"
-                                            value="portal"
-                                            disabled
-                                            checked={this.props.uiStore.cBioInstance === 'portal'}
-                                            onChange={this.handleInstanceChange}
-                                            inline
-                                        >
-                                            cBioPortal
-                                        </Radio>
+                                        {/**
+                                         <Radio
+                                         name="linkSelect"
+                                         value="portal"
+                                         disabled
+                                         checked={this.props.uiStore.cBioInstance === 'portal'}
+                                         onChange={this.handleInstanceChange}
+                                         inline
+                                         >
+                                         cBioPortal
+                                         </Radio>
+                                         * */}
                                         {' '}
                                         <Radio
                                             name="linkSelect"
                                             value="own"
-                                            disabled
                                             checked={this.props.uiStore.cBioInstance === 'own'}
                                             onChange={this.handleInstanceChange}
                                             inline
@@ -172,21 +247,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                         {' '}
                                     </FormGroup>
                                 </form>
-                                {this.props.uiStore.cBioInstance !== 'own'
-                                    ? (
-                                        <div style={{ marginTop: '10px', marginBottom: '10px' }}>
-                                            <Select
-                                                type="text"
-                                                searchable
-                                                componentClass="select"
-                                                placeholder="Select Study"
-                                                value={this.selectedStudy}
-                                                options={this.setOptions()}
-                                                onChange={this.getStudy}
-                                            />
-                                        </div>
-                                    )
-                                    : null}
+                                {this.getDefaultViewContent()}
                             </Tab>
                             <Tab eventKey="own" title="Load own dataset">
                                 <LocalFileSelection />

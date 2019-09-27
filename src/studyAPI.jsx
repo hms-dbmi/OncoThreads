@@ -12,34 +12,40 @@ class StudyAPI {
         extendObservable(this, {
             allLinks: { hack: 'http://www.cbiohack.org', portal: 'https://www.cbioportal.org' },
             allStudies: { hack: [], portal: [], own: [] },
+            connectionStatus: { hack: 'none', portal: 'none', own: 'none' },
             loadComplete: false,
             get studies() {
                 return this.allStudies[this.uiStore.cBioInstance];
             },
+            setOwnLink: action((link) => {
+                this.allLinks.own = link;
+            }),
             /**
              * gets available studies
              */
-            loadStudies: action((link, callback) => {
+            loadStudies: action((link, callback, setStatus) => {
                 axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
                     .then((response) => {
+                        setStatus('success');
                         response.data.forEach((study) => {
                             this.includeStudy(link, study, callback);
                         });
                     }).catch((thrown) => {
-                    if (CBioAPI.verbose) {
-                        console.log(thrown);
-                    } else {
-                        console.log('could not load studies');
-                    }
-                });
+                        setStatus('failed');
+                        if (CBioAPI.verbose) {
+                            console.log(thrown);
+                        } else {
+                            console.log('could not load studies');
+                        }
+                    });
             }),
             /**
              * adds a study to the corresponding array if it contains temporal data
              */
             includeStudy: action((link, study, callback) => {
                 StudyAPI.getEvents(study.studyId, link, (events) => {
-                    const specimenEvents = events.filter(event => event.eventType === 'SPECIMEN');
-                    if (specimenEvents.length > 0 && specimenEvents.some(event => event.attributes.map(d => d.key).includes('SAMPLE_ID'))) {
+                    const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
+                    if (specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'))) {
                         callback(study);
                     }
                 });
@@ -48,8 +54,16 @@ class StudyAPI {
              * loads default studies from cbiohack and cbioportal
              */
             loadDefaultStudies: action(() => {
-                this.loadStudies(this.allLinks.hack, study => this.allStudies.hack.push(study));
-                //this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
+                this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
+                    (status) => { this.connectionStatus.hack = status; });
+                // this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
+            }),
+            /**
+             * loads studies from own instance
+             */
+            loadOwnInstanceStudies: action(() => {
+                this.loadStudies(this.allLinks.own, (study) => this.allStudies.own.push(study),
+                    (status) => { this.connectionStatus.own = status; });
             }),
         });
     }
@@ -64,14 +78,14 @@ class StudyAPI {
     static getPatients(studyId, link, callback) {
         axios.get(`${link}/api/studies/${studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
             .then((response) => {
-                callback(response.data.map(patient => patient.patientId));
+                callback(response.data.map((patient) => patient.patientId));
             }).catch((error) => {
-            if (CBioAPI.verbose) {
-                console.log(error);
-            } else {
-                console.log('Could not load patients');
-            }
-        });
+                if (CBioAPI.verbose) {
+                    console.log(error);
+                } else {
+                    console.log('Could not load patients');
+                }
+            });
     }
 
 
@@ -87,12 +101,12 @@ class StudyAPI {
                 .then((response) => {
                     callback(response.data);
                 }).catch((error) => {
-                if (CBioAPI.verbose) {
-                    console.log(error);
-                } else {
-                    console.log('Could not load events');
-                }
-            });
+                    if (CBioAPI.verbose) {
+                        console.log(error);
+                    } else {
+                        console.log('Could not load events');
+                    }
+                });
         });
     }
 }

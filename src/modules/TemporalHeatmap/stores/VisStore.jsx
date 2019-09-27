@@ -23,7 +23,6 @@ class VisStore {
              * set plot height to current height
              */
             setPlotHeight: action((height) => {
-                console.log(height);
                 this.plotHeight = height;
             }),
             /**
