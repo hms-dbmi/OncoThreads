@@ -26,7 +26,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                 id="delete"
                 className="not_exported"
                 transform={`translate(${xPos},0)scale(${this.iconScale})`}
-                onMouseEnter={e => this.props.showTooltip(e, 'Delete variable from all blocks ')}
+                onMouseEnter={(e) => this.props.showTooltip(e, 'Delete variable from all blocks ')}
                 onMouseLeave={this.props.hideTooltip}
             >
                 <path
@@ -72,7 +72,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
         return (
             <g
                 key={variable.id}
-                onMouseEnter={e => this.props.showTooltip(e, variable.name,
+                onMouseEnter={(e) => this.props.showTooltip(e, variable.name,
                     variable.description)}
                 onMouseLeave={this.props.hideTooltip}
             >
@@ -97,29 +97,35 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
      * Creates the Row operator for a timepoint
      */
     getRowOperator() {
-        return this.props.dataStore.variableStores[this.props.type]
-            .currentVariables.map((variableId, i) => {
-                let lineHeight;
-                let fontWeight;
-                if (variableId === this.props.dataStore.globalPrimary) {
-                    lineHeight = this.props.visStore.secondaryHeight;
-                    fontWeight = 'bold';
-                } else {
-                    lineHeight = this.props.visStore.secondaryHeight;
-                    fontWeight = 'normal';
-                }
-                const transform = `translate(0,${i * lineHeight})`;
-                let fontSize = 10;
-                if (lineHeight < fontSize) {
-                    fontSize = Math.round(lineHeight);
-                }
-                return (
-                    <g key={variableId} className="clickable" transform={transform}>
-                        {this.getRowLabel(this.props.dataStore.variableStores[this.props.type]
-                            .getById(variableId), fontWeight, fontSize)}
-                    </g>
-                );
-            });
+        let variables;
+        if (this.props.type === 'between') {
+            variables = this.props.dataStore.variableStores.between.getRelatedVariables('event');
+        } else {
+            variables = this.props.dataStore.variableStores.sample
+                .currentVariables.map((id) => this.props.dataStore.variableStores.sample
+                    .getById(id));
+        }
+        return variables.map((variable, i) => {
+            let lineHeight;
+            let fontWeight;
+            if (variable.id === this.props.dataStore.globalPrimary) {
+                lineHeight = this.props.visStore.secondaryHeight;
+                fontWeight = 'bold';
+            } else {
+                lineHeight = this.props.visStore.secondaryHeight;
+                fontWeight = 'normal';
+            }
+            const transform = `translate(0,${i * lineHeight})`;
+            let fontSize = 10;
+            if (lineHeight < fontSize) {
+                fontSize = Math.round(lineHeight);
+            }
+            return (
+                <g key={variable.id} className="clickable" transform={transform}>
+                    {this.getRowLabel(variable, fontWeight, fontSize)}
+                </g>
+            );
+        });
     }
 
     /**

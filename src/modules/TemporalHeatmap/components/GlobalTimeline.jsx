@@ -3,6 +3,12 @@ import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
 import GlobalTransition from './Transitions/GlobalTransition';
+import { Col, Row } from 'react-bootstrap';
+import TimeAssign from './PlotLabeling/TimeAssign';
+import GlobalRowOperators from './RowOperators/GlobalRowOperators';
+import Legend from './Legend';
+import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
+import GlobalBands from './PlotLabeling/GlobalBands';
 
 
 /**
@@ -78,18 +84,56 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
     render() {
         const transitions = this.getGlobalTransitions();
         const timepoints = this.getGlobalTimepoints();
+        const globalPrimaryName = this.props.rootStore.dataStore
+            .variableStores.sample.fullCurrentVariables
+            .filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
         return (
-            <div ref={this.globalTime} className="scrollableX">
-                <svg
-                    width={this.props.rootStore.visStore.svgWidth}
-                    height={this.props.rootStore.visStore.svgHeight}
-                >
-                    <g transform={`translate(0,${this.props.rootStore.visStore.timelineRectSize / 2})`}>
-                        {transitions}
-                        {timepoints}
-                    </g>
-                </svg>
+            <div>
+                <div className="view" id="timeline-view">
+                    <Row>
+                        <Col xs={2} md={2} style={{ padding: 0 }}>
+                            <TimeAssign />
+                            <Provider
+                                dataStore={this.props.rootStore.dataStore}
+                                visStore={this.props.rootStore.visStore}
+                            >
+                                <GlobalRowOperators
+                                    openSaveVarModal={this.props.openSaveVarModal}
+                                    tooltipFunctions={this.props.tooltipFunctions}
+                                />
+                            </Provider>
+
+                            <h5>{`Legend of ${globalPrimaryName}`}</h5>
+                            <Legend {...this.props.tooltipFunctions} />
+                        </Col>
+                        <Col xs={1} md={1} style={{ padding: 0, width: 55 }}>
+                            <GlobalTimeAxis
+                                timeValue={this.props.rootStore.timeValue}
+                                width={55}
+                            />
+                        </Col>
+                        <Col xs={9} md={9} style={{ padding: 0, overflow: 'hidden' }}>
+                            <GlobalBands timeValue={this.props.rootStore.timeValue}/>
+                            <div ref={this.globalTime} className="scrollableX">
+                                <svg
+                                    width={this.props.rootStore.visStore.svgWidth}
+                                    height={this.props.rootStore.visStore.svgHeight}
+                                >
+                                    <g transform={`translate(0,${this.props.rootStore.visStore.timelineRectSize / 2})`}>
+                                        {transitions}
+                                        {timepoints}
+                                    </g>
+                                </svg>
+                            </div>
+                        </Col>
+                    </Row>
+                </div>
+                <form id="svgform" method="post">
+                    <input type="hidden" id="output_format" name="output_format" value=""/>
+                    <input type="hidden" id="data" name="data" value=""/>
+                </form>
             </div>
+
         );
     }
 }));
