@@ -25,7 +25,7 @@ jobs:
       os: osx
       osx_image: xcode10.1
       script:
-        - npm run electron-publish -- --mac --win
+        - npm run publish-mac-win
       before_cache:
         - rm -rf $HOME/.cache/electron-builder/wine
     - stage: Deploy linux
@@ -33,7 +33,7 @@ jobs:
       os: linux
       dist: trusty
       script:
-        - npm run electron-publish
+        - npm run publish-currentOS
     - stage: Deploy website
       script:
         - npm run react-build-web

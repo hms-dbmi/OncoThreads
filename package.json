@@ -33,10 +33,9 @@
     "react-build-web": "PUBLIC_URL=http://oncothreads.gehlenborglab.org react-scripts build",
     "react-test": "react-scripts test",
     "react-eject": "react-scripts eject",
-    "electron-build": "electron-builder",
-    "build": "npm run react-build-electron && npm run electron-build",
     "electron-start": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-publish": "npm run build --publish=always"
+    "publish-mac-win": "npm run react-build-electron && electron-builder --publish=always --mac --win",
+    "publish-currentOS": "npm run react-build-electron && electron-builder --publish=always"
   },
   "homepage": ".",
   "main": "public/electron.js",
