@@ -1,25 +1,62 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
+import FontAwesome from 'react-fontawesome';
+import { extendObservable, reaction } from 'mobx';
+import { Button, Row } from 'react-bootstrap';
+import { Pane, SortablePane } from 'react-sortable-pane';
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
 import HeatmapTimepoint from './Timepoints/Heatmap/HeatmapTimepoint';
 import GroupTimepoint from './Timepoints/Group/GroupTimepoint';
+import TimepointLabels from './PlotLabeling/TimepointLabels';
+import RowOperators from './RowOperators/RowOperators';
+import Legend from './Legend';
 
 
 /**
  * Component for the Block view
  */
-const BlockView = inject('rootStore')(observer(class BlockView extends React.Component {
-    constructor() {
-        super();
+const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class BlockView extends React.Component {
+    constructor(props) {
+        super(props);
+        this.padding = 20;
         this.blockView = React.createRef();
+
+        this.handleTimeClick = this.handleTimeClick.bind(this);
+        this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
+        this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.updateDimensions = this.updateDimensions.bind(this);
+        extendObservable(this, {
+            highlightedVariable: '', // variableId of currently highlighted variable
+            order: ['labels', 'operators', 'view', 'legend'],
+            panes: {
+                labels: { width: (window.innerWidth - 40) / 10, active: false },
+                operators: { width: ((window.innerWidth - 40) / 10) * 1.5, active: false },
+                view: { width: ((window.innerWidth - 40) / 10) * 6.5, active: false },
+                legend: { width: (window.innerWidth - 40) / 10, active: false },
+            },
+            active: {
+                labels: false,
+                operators: false,
+                view: false,
+                legend: false,
+            },
+        });
+        reaction(() => this.panes.view.width, (width) => {
+            this.props.rootStore.visStore.setPlotWidth(width - 10);
+        });
     }
 
+    /**
+     * Add event listener
+     */
     componentDidMount() {
-        this.updateDimensions();
+        this.props.rootStore.visStore.setPlotWidth(this.panes.view.width - 10);
+        this.props.rootStore.visStore
+            .setPlotHeight(window.innerHeight - this.blockView
+                .current.getBoundingClientRect().top);
         window.addEventListener('resize', this.updateDimensions);
     }
 
@@ -30,12 +67,60 @@ const BlockView = inject('rootStore')(observer(class BlockView extends React.Com
         window.removeEventListener('resize', this.updateDimensions);
     }
 
+    /**
+     * updates view dimensions
+     */
     updateDimensions() {
-        this.props.rootStore.visStore.setPlotHeight(window.innerHeight
-            - this.blockView.current.getBoundingClientRect().top);
+        const prevWidth = Object.values(this.panes).map(d => d.width).reduce((a, b) => a + b);
+        this.panes = {
+            labels: {
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.labels.width),
+            },
+            operators: {
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.operators.width),
+            },
+            view: {
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.view.width),
+            },
+            legend: {
+                width: (window.innerWidth - 40) / (prevWidth / this.panes.legend.width),
+            },
+        };
+        this.props.rootStore.visStore
+            .setPlotHeight(window.innerHeight - this.blockView
+                .current.getBoundingClientRect().top);
     }
 
-    render() {
+    /**
+     * sets a variable to be highlighted
+     * @param {string} newHighlighted
+     */
+    setHighlightedVariable(newHighlighted) {
+        this.highlightedVariable = newHighlighted;
+    }
+
+    /**
+     * removes the highlighted variable
+     */
+    removeHighlightedVariable() {
+        this.highlightedVariable = '';
+    }
+
+
+    /**
+     * handle visualizing real time
+     */
+    handleTimeClick() {
+        this.props.rootStore.dataStore.applyPatientOrderToAll(0);
+        this.props.uiStore.setRealTime(!this.props.uiStore.realTime);
+        this.props.undoRedoStore.saveRealTimeHistory(this.props.uiStore.realTime);
+    }
+
+    /**
+     * gets timepoints and transitions
+     * @return {*[]}
+     */
+    getTimepointAndTransitions() {
         const timepoints = [];
         const transitions = [];
         this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
@@ -189,15 +274,124 @@ const BlockView = inject('rootStore')(observer(class BlockView extends React.Com
                 );
             }
         });
+        return [timepoints, transitions];
+    }
+
+    render() {
         return (
-            <div ref={this.blockView} className="scrollableX">
-                <svg
-                    width={this.props.rootStore.visStore.svgWidth}
-                    height={this.props.rootStore.visStore.svgHeight}
-                >
-                    {timepoints}
-                    {transitions}
-                </svg>
+            <div>
+                <div className="view" id="block-view">
+                    <Row>
+                        <Button
+                            bsSize="xsmall"
+                            onClick={this.handleTimeClick}
+                            disabled={this.props.uiStore.globalTime
+                            || this.props.rootStore.dataStore.variableStores
+                                .between.currentVariables.length > 0}
+                            key="actualTimeline"
+                        >
+                            <FontAwesome
+                                name="clock"
+                            />
+                            {' '}
+                            {(this.props.uiStore.realTime) ? 'Hide relative time' : 'Show relative time'}
+                        </Button>
+                    </Row>
+                    <Row>
+                        <SortablePane
+                            direction="horizontal"
+                            margin={10}
+                            order={this.order}
+                            disableEffect
+                            onOrderChange={(order) => {
+                                this.order = order;
+                            }}
+                            onResizeStop={(e, key, dir, ref, d) => {
+                                this.panes = {
+                                    ...this.panes,
+                                    [key]: { width: this.panes[key].width + d.width },
+                                    [this.order[this.order.length - 1]]: {
+                                        width: this.panes[this.order[this.order.length - 1]].width
+                                            - d.width,
+                                    },
+                                };
+                            }}
+                            onDragStart={(e, key) => {
+                                if (e.target.tagName === 'svg') {
+                                    this.active[key] = true;
+                                }
+                            }}
+                            onDragStop={(e, key) => {
+                                this.active[key] = false;
+                            }}
+                        >
+                            <Pane
+                                className={this.active.labels ? 'pane-active' : 'pane-inactive'}
+                                key="labels"
+                                size={{ width: this.panes.labels.width }}
+                            >
+                                <Provider
+                                    dataStore={this.props.rootStore.dataStore}
+                                    visStore={this.props.rootStore.visStore}
+                                >
+                                    <TimepointLabels
+                                        width={this.panes.labels.width - 10}
+                                        padding={this.padding}
+                                    />
+                                </Provider>
+                            </Pane>
+                            <Pane
+                                className={this.active.operators ? 'pane-active' : 'pane-inactive'}
+                                key="operators"
+                                size={{ width: this.panes.operators.width }}
+                                style={{ paddingTop: this.padding }}
+                            >
+                                <RowOperators
+                                    highlightedVariable={this.highlightedVariable}
+                                    width={this.panes.operators.width - 10}
+                                    setHighlightedVariable={this.setHighlightedVariable}
+                                    removeHighlightedVariable={this.removeHighlightedVariable}
+                                    tooltipFunctions={this.props.tooltipFunctions}
+                                    showContextMenu={this.props.showContextMenu}
+                                    openBinningModal={this.props.openBinningModal}
+                                    openSaveVarModal={this.props.openSaveVarModal}
+                                />
+                            </Pane>
+                            <Pane
+                                className={this.active.view ? 'pane-active' : 'pane-inactive'}
+                                key="view"
+                                size={{ width: this.panes.view.width }}
+                                style={{ paddingTop: this.padding }}
+                            >
+                                <div ref={this.blockView} className="scrollableX">
+                                    <svg
+                                        width={this.props.rootStore.visStore.svgWidth}
+                                        height={this.props.rootStore.visStore.svgHeight}
+                                    >
+                                        {this.getTimepointAndTransitions()}
+                                    </svg>
+                                </div>
+                            </Pane>
+                            <Pane
+                                className={this.active.legend ? 'pane-active' : 'pane-inactive'}
+                                key="legend"
+                                size={{ width: this.panes.legend.width }}
+                                style={{ paddingTop: this.padding }}
+                            >
+                                <Legend
+                                    highlightedVariable={this.highlightedVariable}
+                                    setHighlightedVariable={this.setHighlightedVariable}
+                                    removeHighlightedVariable={this.removeHighlightedVariable}
+                                    {...this.props.tooltipFunctions}
+                                />
+                            </Pane>
+                        </SortablePane>
+                    </Row>
+                </div>
+                <form id="svgform" method="post">
+                    <input type="hidden" id="output_format" name="output_format" value=""/>
+                    <input type="hidden" id="data" name="data" value=""/>
+                </form>
             </div>
         );
     }
