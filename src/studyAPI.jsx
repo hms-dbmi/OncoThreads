@@ -9,6 +9,7 @@ import CBioAPI from './CBioAPI';
 class StudyAPI {
     constructor(uiStore) {
         this.uiStore = uiStore;
+        this.source = axios.CancelToken.source();
         extendObservable(this, {
             allLinks: { hack: 'http://www.cbiohack.org', portal: 'https://www.cbioportal.org' },
             allStudies: { hack: [], portal: [], own: [] },
@@ -17,9 +18,6 @@ class StudyAPI {
             get studies() {
                 return this.allStudies[this.uiStore.cBioInstance];
             },
-            setOwnLink: action((link) => {
-                this.allLinks.own = link;
-            }),
             /**
              * gets available studies
              */
@@ -43,7 +41,7 @@ class StudyAPI {
              * adds a study to the corresponding array if it contains temporal data
              */
             includeStudy: action((link, study, callback) => {
-                StudyAPI.getEvents(study.studyId, link, (events) => {
+                this.getEvents(study.studyId, link, (events) => {
                     const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
                     if (specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'))) {
                         callback(study);
@@ -55,15 +53,24 @@ class StudyAPI {
              */
             loadDefaultStudies: action(() => {
                 this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
-                    (status) => { this.connectionStatus.hack = status; });
+                    (status) => {
+                        this.connectionStatus.hack = status;
+                    });
                 // this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
             }),
             /**
              * loads studies from own instance
              */
-            loadOwnInstanceStudies: action(() => {
+            loadOwnInstanceStudies: action((link) => {
+                this.allLinks.own = link;
+                this.allStudies.own.clear();
+                this.connectionStatus.own = 'none';
+                this.source.cancel();
+                this.source = axios.CancelToken.source();
                 this.loadStudies(this.allLinks.own, (study) => this.allStudies.own.push(study),
-                    (status) => { this.connectionStatus.own = status; });
+                    (status) => {
+                        this.connectionStatus.own = status;
+                    });
             }),
         });
     }
@@ -75,12 +82,17 @@ class StudyAPI {
      * @param {string} link
      * @param {returnDataCallback} callback
      */
-    static getPatients(studyId, link, callback) {
-        axios.get(`${link}/api/studies/${studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
+    getPatients(studyId, link, callback) {
+        axios.get(`${link}/api/studies/${studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`,
+            {
+                cancelToken: this.source.token,
+            })
             .then((response) => {
                 callback(response.data.map((patient) => patient.patientId));
             }).catch((error) => {
-                if (CBioAPI.verbose) {
+                if (axios.isCancel(error)) {
+                    console.log('Request canceled');
+                } else if (CBioAPI.verbose) {
                     console.log(error);
                 } else {
                     console.log('Could not load patients');
@@ -95,13 +107,18 @@ class StudyAPI {
      * @param {string} link
      * @param {returnDataCallback} callback
      */
-    static getEvents(studyId, link, callback) {
-        StudyAPI.getPatients(studyId, link, (patients) => {
-            axios.get(`${link}/api/studies/${studyId}/patients/${patients[0]}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`)
+    getEvents(studyId, link, callback) {
+        this.getPatients(studyId, link, (patients) => {
+            axios.get(`${link}/api/studies/${studyId}/patients/${patients[0]}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`,
+                {
+                    cancelToken: this.source.token,
+                })
                 .then((response) => {
                     callback(response.data);
                 }).catch((error) => {
-                    if (CBioAPI.verbose) {
+                    if (axios.isCancel(error)) {
+                        console.log('Request canceled');
+                    } else if (CBioAPI.verbose) {
                         console.log(error);
                     } else {
                         console.log('Could not load events');
@@ -110,5 +127,6 @@ class StudyAPI {
         });
     }
 }
+
 
 export default StudyAPI;

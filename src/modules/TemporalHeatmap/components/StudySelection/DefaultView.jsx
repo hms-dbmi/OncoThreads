@@ -187,8 +187,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
      * selects own instance and loads studies
      * */
     selectInstance() {
-        this.props.rootStore.studyAPI.setOwnLink(this.ownInstanceURL);
-        this.props.rootStore.studyAPI.loadOwnInstanceStudies();
+        this.props.rootStore.studyAPI.loadOwnInstanceStudies(this.ownInstanceURL);
     }
 
 
