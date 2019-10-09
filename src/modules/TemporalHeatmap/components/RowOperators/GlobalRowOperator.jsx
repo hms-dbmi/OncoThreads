@@ -145,7 +145,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                     this.props.undoRedoStore.saveVariableHistory('REMOVE', variableName, true);
                 });
             } else {
-                this.props.rootStore.dataStore.variableStores[this.props.type]
+                this.props.dataStore.variableStores[this.props.type]
                     .removeVariable(variable.id);
                 this.props.undoRedoStore.saveVariableHistory('REMOVE', variableName, true);
             }
