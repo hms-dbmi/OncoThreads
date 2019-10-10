@@ -47,6 +47,8 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     y={this.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
                     fill={this.props.color(this.props.row.variable)}
                     opacity={opc1}
+                    stroke-width={0.5}
+                    stroke={"black"}
                 />);
             });
         } else {
@@ -79,6 +81,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     - this.props.rootStore.visStore.timelineRectSize / 2}
                     fill={fill}
                     opacity={this.props.opacity}
+                    
                 />);
                 if (d.value === undefined) {
                     rects.push(<line
