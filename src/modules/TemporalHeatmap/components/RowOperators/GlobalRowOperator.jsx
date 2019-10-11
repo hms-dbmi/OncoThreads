@@ -66,7 +66,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                     x={this.props.width - this.iconScale * this.iconDimensions - fontSize}
                     fill={this.props.visStore.globalTimelineColors(variable.id)}
                     opacity={0.5}
-                    stroke-width={0.5}
+                    strokeWidth={0.5}
                     stroke={"black"}
                 />
             );

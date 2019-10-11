@@ -65,7 +65,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                 .variableStores[d.type].fullCurrentVariables}
                             tooltipFunctions={this.props.tooltipFunctions}
                         />
-                    </g>,
+                    </g>
                 );
             }
         });

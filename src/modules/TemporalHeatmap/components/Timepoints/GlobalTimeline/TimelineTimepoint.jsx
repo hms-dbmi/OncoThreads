@@ -58,7 +58,7 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
                             row={row}
                             color={color}
                             events={events}
-                            opacity={0.5}
+                            opacity={0.3}
                         />
 
                     </g>,

@@ -47,7 +47,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     y={this.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
                     fill={this.props.color(this.props.row.variable)}
                     opacity={opc1}
-                    stroke-width={0.5}
+                    strokeWidth={1}
                     stroke={"black"}
                 />);
             });
