@@ -8,7 +8,7 @@ class GenomeNexusAPI {
      * @returns {AxiosPromise<any>}
      */
     static genomNexusMappingMultipleSymbols(hgncSymbols) {
-        return axios.post("https://genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
+        return axios.post("https://www.genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
     }
 
 
@@ -18,7 +18,7 @@ class GenomeNexusAPI {
      * @param {returnDataCallback} callback
      */
     getHugoSymbols(entrezIds, callback) {
-        axios.post("https://genomenexus.org/ensembl/canonical-gene/entrez", entrezIds).then(function (response) {
+        axios.post("https://www.genomenexus.org/ensembl/canonical-gene/entrez", entrezIds).then(function (response) {
             let mapper = {};
             response.data.forEach(d => {
                 mapper[d.entrezGeneId] = d.hugoSymbol;
