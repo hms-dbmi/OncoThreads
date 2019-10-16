@@ -46,9 +46,12 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     + this.props.rootStore.visStore.timelineRectSize * (1 / 6)}
                     y={this.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
                     fill={this.props.color(this.props.row.variable)}
-                    opacity={opc1}
+                    z-index="1"
+                    
+                    //opacity={opc1}
                     strokeWidth={1}
                     stroke={"black"}
+                    stroke-opacity="1"
                 />);
             });
         } else {
@@ -79,8 +82,10 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     y={this.props.rootStore.visStore
                         .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])
                     - this.props.rootStore.visStore.timelineRectSize / 2}
+                    z-index="-1"
+                    //paint-order= "fill"
                     fill={fill}
-                    opacity={this.props.opacity}
+                    //opacity={this.props.opacity}
                     
                 />);
                 if (d.value === undefined) {
