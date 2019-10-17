@@ -54,22 +54,36 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
     }
 
     getGlobalTimepoints() {
-        const timepoints = [];
+        const timepoints_between = [];
+        const timepoints_sample = [];
         this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
             if (d.heatmap.length > 0) {
-                timepoints.push(
-                    <g key={d.globalIndex}>
-                        <TimelineTimepoint
-                            timepoint={d}
-                            currentVariables={this.props.rootStore.dataStore
-                                .variableStores[d.type].fullCurrentVariables}
-                            tooltipFunctions={this.props.tooltipFunctions}
-                        />
-                    </g>,
-                );
+                if (d.type==='between') {
+                    timepoints_between.push(
+                        <g key={d.globalIndex}>
+                            <TimelineTimepoint
+                                timepoint={d}
+                                currentVariables={this.props.rootStore.dataStore
+                                    .variableStores[d.type].fullCurrentVariables}
+                                tooltipFunctions={this.props.tooltipFunctions}
+                            />
+                        </g>
+                    );    
+                } else {
+                    timepoints_sample.push(
+                        <g key={d.globalIndex}>
+                            <TimelineTimepoint
+                                timepoint={d}
+                                currentVariables={this.props.rootStore.dataStore
+                                    .variableStores[d.type].fullCurrentVariables}
+                                tooltipFunctions={this.props.tooltipFunctions}
+                            />
+                        </g>
+                    );    
+                }
             }
         });
-        return timepoints;
+        return timepoints_sample.concat(timepoints_between);
     }
 
     updateDimensions() {
