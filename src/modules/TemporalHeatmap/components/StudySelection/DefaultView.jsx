@@ -162,6 +162,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
         } else if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'success') {
             connected = <Alert>Successfully connected</Alert>;
         }
+        
         return (
             <div style={{ marginTop: '10px', marginBottom: '10px' }}>
                 {instanceTextfield}
