@@ -167,7 +167,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                 rects=circles;
 
                 //end
-                if (d.value === undefined) {
+                /*if (d.value === undefined) {
                     rects.push(<line
                         stroke="lightgrey"
                         key={`${d.patient + j}UNDEFINED`}
@@ -184,7 +184,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         + this.props.rootStore.visStore.timelineRectSize / 2}
                         opacity={this.props.opacity}
                     />);
-                }
+                }*/
             });
         }
         return rects;
