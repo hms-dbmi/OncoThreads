@@ -59,7 +59,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
             promoteFunction = () => this.promote(variable.id);
         } else {
             colorRect = (
-                <rect
+                /*<rect
                     key="rect"
                     width={fontSize}
                     height={fontSize}
@@ -68,7 +68,27 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                     opacity={0.8}
                     strokeWidth={0.8}
                     stroke={"black"}
+                />*/
+
+
+                <circle 
+                   
+                    
+
+                   
+                    key="circle"
+                    
+                    cx={this.props.width - this.iconScale * this.iconDimensions - fontSize}
+                   
+                    cy ={6}
+                    r = {5}//{r1}
+
+                    fill={this.props.visStore.globalTimelineColors(variable.id)}
+
+                    opacity={0.7}
+                   
                 />
+
             );
         }
         return (
