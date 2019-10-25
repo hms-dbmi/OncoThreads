@@ -117,7 +117,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                 />
                             </Provider>
 
-                            <h5>{`Legend of ${globalPrimaryName}`}</h5>
+                            <h5>{`${globalPrimaryName} Legend`}</h5>
                             <Legend {...this.props.tooltipFunctions} />
                         </Col>
                         <Col xs={1} md={1} style={{ padding: 0, width: 55 }}>

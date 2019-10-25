@@ -431,16 +431,16 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 categories: this.props.availableCategories.map(d => d.name).concat('Derived'),
             },
             {
-                datatype: 'number', column: 'range', label: 'range', domain: [],
+                datatype: 'number', column: 'range', label: 'Range (Max - Min)', domain: [],
             },
             {
-                datatype: 'number', column: 'numcat', label: 'numcat', domain: [],
+                datatype: 'number', column: 'numcat', label: 'Categories', domain: [],
             },
             {
-                datatype: 'number', column: 'na', label: 'na', domain: [],
+                datatype: 'number', column: 'na', label: 'N/A Values', domain: [],
             },
             {
-                datatype: 'categorical', column: 'inTable', label: 'inTable', categories: ['Yes', 'No'],
+                datatype: 'categorical', column: 'inTable', label: 'Current Variable', categories: ['Yes', 'No'],
             },
         ].concat(this.scores.map(d => ({
             datatype: 'number', column: d.column, label: d.label, domain: d.domain,
