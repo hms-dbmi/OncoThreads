@@ -286,7 +286,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                         color="secondary"
                                         onClick={this.openVariableManager}
                                     >
-                                        Variable manager
+                                        Variable Manager
                                     </Button>
                                 </ButtonGroup>
                                 <ButtonGroup>

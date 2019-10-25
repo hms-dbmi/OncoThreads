@@ -294,7 +294,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 name="clock"
                             />
                             {' '}
-                            {(this.props.uiStore.realTime) ? 'Hide relative time' : 'Show relative time'}
+                            {(this.props.uiStore.realTime) ? 'Hide Relative Time' : 'Show Relative Time'}
                         </Button>
                     </Row>
                     <Row>

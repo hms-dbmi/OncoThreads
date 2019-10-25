@@ -59,7 +59,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         if (this.props.rootStore.variablesParsed) {
             return ([
                 <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
-                <NavDropdown key="export" eventKey="dropdown" title="Export view" id="basic-nav-dropdown">
+                <NavDropdown key="export" eventKey="dropdown" title="Export View" id="basic-nav-dropdown">
                     <NavItem onClick={this.props.rootStore.svgExport.exportSVG}>
                             ...as SVG
                     </NavItem>

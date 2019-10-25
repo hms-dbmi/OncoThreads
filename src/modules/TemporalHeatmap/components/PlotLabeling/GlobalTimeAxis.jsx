@@ -105,6 +105,17 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
 
         d3.selectAll(".axisLabel").remove();
 
+        let text_var=this.props.rootStore.timeValue;
+
+        if(text_var==='days'){
+            text_var='Days';
+        }
+        else if(text_var==='months'){
+            text_var='Months';
+        }
+        else if(text_var==='years'){
+            text_var='Years';
+        }
 
         d3.select(".axisGlobal")
             .append("text")
@@ -119,7 +130,7 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
             .style("stroke-width", 0.5)
             .style("stroke", "black")
             .style("fill", "black")
-            .text(this.props.rootStore.timeValue);
+            .text(text_var);
         //.text(this.props.store.rootStore.timeValue);
 
 
