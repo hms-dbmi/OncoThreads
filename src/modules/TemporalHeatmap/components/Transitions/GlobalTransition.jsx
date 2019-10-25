@@ -49,9 +49,9 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
             }
             lines.push(<rect
                 key={`${d}startpoint`}
-                x={this.props.heatmapScale(d)}
+                x={this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4}
                 y={this.props.visStore.timeScale(this.props.minMax[d].start)}
-                width={this.props.visStore.timelineRectSize}
+                width={this.props.visStore.timelineRectSize/2}
                 height={1}
                 fill={strokeColor}
             />);
@@ -63,7 +63,7 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
                 this.props.visStore.timeScale(this.props.minMax[d].end),
                 d, strokeColor, 1),
             );
-            lines.push(<rect
+            /*lines.push(<rect
                 key={`${d}endpoint`}
                 x={this.props.heatmapScale(d)}
                 y={this.props.visStore.timeScale(this.props.minMax[d].end)}
@@ -71,7 +71,18 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
                 height={endHeight}
                 fill={finalValueColor}
                 {...mouseProperties}
+            />);*/
+
+            lines.push(<rect
+                key={`${d}endpoint`}
+                x={this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4}
+                y={this.props.visStore.timeScale(this.props.minMax[d].end)}
+                width={this.props.visStore.timelineRectSize/2}
+                height={endHeight}
+                fill={finalValueColor}
+                {...mouseProperties}
             />);
+
         });
         return lines;
     }
