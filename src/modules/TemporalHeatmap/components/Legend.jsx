@@ -39,34 +39,72 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
      * @param {string} tooltipText
      * @returns {g} legendEntry
      */
+
     getLegendEntry(value, opacity, rectWidth, fontSize, currX,
         lineheight, rectColor, textColor, tooltipText) {
-        return (
-            <g
-                key={value}
-                onMouseEnter={(e) => {
-                    this.props.showTooltip(e, tooltipText);
-                }}
-                onMouseLeave={this.props.hideTooltip}
-            >
-                <rect
-                    opacity={opacity}
-                    width={rectWidth}
-                    height={fontSize + 2}
-                    x={currX}
-                    y={lineheight / 2 - fontSize / 2}
-                    fill={rectColor}
-                />
-                <text
-                    fill={textColor}
-                    style={{ fontSize }}
-                    x={currX + 2}
-                    y={lineheight / 2 + fontSize / 2}
+
+        console.log(this.props.rootStore.uiStore.globalTime);
+        if(this.props.rootStore.uiStore.globalTime===false){
+   
+            return (
+                <g
+                    key={value}
+                    onMouseEnter={(e) => {
+                        this.props.showTooltip(e, tooltipText);
+                    }}
+                    onMouseLeave={this.props.hideTooltip}
                 >
-                    {value}
-                </text>
-            </g>
-        );
+                    <rect
+                        opacity={opacity}
+                        width={rectWidth}
+                        height={fontSize + 2}
+                        x={currX}
+                        y={lineheight / 2 - fontSize / 2}
+                        fill={rectColor}
+                    />
+                    <text
+                        fill={textColor}
+                        style={{ fontSize }}
+                        x={currX + 2}
+                        y={lineheight / 2 + fontSize / 2}
+                    >
+                        {value}
+                    </text>
+                </g>
+            );
+
+        }
+        else{
+
+            return (
+                <g
+                    key={value}
+                    onMouseEnter={(e) => {
+                        this.props.showTooltip(e, tooltipText);
+                    }}
+                    onMouseLeave={this.props.hideTooltip}
+                >
+                    <circle
+                        opacity={opacity}
+                        //width={rectWidth}
+                        //height={fontSize + 2}
+                        cx={currX+8}//+rectWidth/2}
+                        cy={lineheight / 2 - fontSize / 2}
+                        fill={rectColor}
+                        r={5}
+                    />
+                    <text
+                        fill={textColor}
+                        style={{ fontSize }}
+                        x={currX +16}//+ 2 +rectWidth}
+                        y={lineheight / 2 }
+                    >
+                        {value}
+                    </text>
+                </g>
+            );
+
+        }
     }
 
     /**
@@ -186,6 +224,8 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
     getCategoricalLegend(variable, row, opacity, fontSize, lineheight) {
         let currX = 0;
         const legendEntries = [];
+        let legend_y= lineheight;
+
         variable.domain.forEach((d, i) => {
             if (variable.datatype === 'ORDINAL' || row.includes(d)) {
                 let tooltipText;
@@ -196,10 +236,24 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 }
                 const rectWidth = Legend.getTextWidth(this.minCatWidth, d, fontSize) + 4;
                 if (d !== undefined) {
-                    legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
-                        fontSize, currX, lineheight, variable.colorScale(d),
-                        ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
-                    currX += (rectWidth + 2);
+
+                    if(this.props.rootStore.uiStore.globalTime===false){
+                        legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
+                            fontSize, currX, lineheight, variable.colorScale(d),
+                            ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
+                        currX += (rectWidth + 2);
+                    }
+                    else{
+
+                        
+                        legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
+                            fontSize, currX, legend_y, variable.colorScale(d),
+                            ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
+                        //currX += (rectWidth + 2);
+                        legend_y= legend_y+rectWidth;
+
+
+                    }
                 }
             }
         });
