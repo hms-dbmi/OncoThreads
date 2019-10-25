@@ -43,7 +43,6 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
     getLegendEntry(value, opacity, rectWidth, fontSize, currX,
         lineheight, rectColor, textColor, tooltipText) {
 
-        console.log(this.props.rootStore.uiStore.globalTime);
         if(this.props.rootStore.uiStore.globalTime===false){
    
             return (
