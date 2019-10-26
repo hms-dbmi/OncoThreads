@@ -36,7 +36,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                     //opc1 += 0.3;
 
-                    let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
+                    //let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
 
                     circles.push(<circle 
                        
@@ -94,14 +94,14 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
             });
         } else {
             this.props.row.data.forEach((d, i) => {
-                let stroke = 'none';
+                //let stroke = 'none';
                 let fill = this.props.color(d.value);
                 if (d.value === undefined) {
-                    stroke = 'lightgray';
+                    //stroke = 'lightgray';
                     fill = 'white';
                 }
                 if (this.props.rootStore.dataStore.selectedPatients.includes(d.patient)) {
-                    stroke = 'black';
+                    //stroke = 'black';
                 }
                 /*rects.push(<rect
                     stroke={stroke}
@@ -127,11 +127,11 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                 />);*/
 
                 //new code-start        
-                let offset = this.props.rootStore.visStore.timelineRectSize * (1 / 3);
+                //let offset = this.props.rootStore.visStore.timelineRectSize * (1 / 3);
 
                 //opc1 += 0.3;
 
-                let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
+                //let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
 
                 circles.push(<circle 
                    
