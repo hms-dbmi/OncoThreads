@@ -140,8 +140,10 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
             instanceTextfield = (
                 <FormGroup>
                     <ControlLabel>
+
                         Select cBioPortal instance (Please add URL, such as 'http://www.cbiohack.org')
                     </ControlLabel>
+                    
                     <InputGroup>
                         <FormControl
                             value={this.ownInstanceURL}
@@ -154,6 +156,23 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                             <Button onClick={this.selectInstance}>Select Instance</Button>
                         </InputGroup.Button>
                     </InputGroup>
+
+                    <ControlLabel>
+                        Access Token (if needed): 
+                    </ControlLabel>
+
+                    <InputGroup>
+                        <FormControl
+                            
+                            onChange={(e) => {
+                                console.log("new token:" + e.target.value);
+                                this.props.rootStore.studyAPI.accessTokenFromUser=e.target.value;
+                            }}
+                            
+                        />
+                        
+                    </InputGroup>
+
                 </FormGroup>
             );
         }

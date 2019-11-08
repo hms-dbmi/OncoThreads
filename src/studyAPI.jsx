@@ -15,14 +15,39 @@ class StudyAPI {
             allStudies: { hack: [], portal: [], own: [] },
             connectionStatus: { hack: 'none', portal: 'none', own: 'none' },
             loadComplete: false,
+            accessTokenFromUser: null,
             get studies() {
                 return this.allStudies[this.uiStore.cBioInstance];
             },
             /**
              * gets available studies
              */
+
+            
             loadStudies: action((link, callback, setStatus) => {
                 axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
+                    .then((response) => {
+                        setStatus('success');
+                        response.data.forEach((study) => {
+                            this.includeStudy(link, study, callback);
+                        });
+                    }).catch((thrown) => {
+                        setStatus('failed');
+                        if (CBioAPI.verbose) {
+                            console.log(thrown);
+                        } else {
+                            console.log('could not load studies');
+                        }
+                    });
+            }),
+
+
+             // return axios.get(URLConstants.USER_URL, { headers: { Authorization: `Bearer ${data.token}` } });
+
+            loadStudiesToken: action((link, token, callback, setStatus) => {
+                axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`
+                        , { headers: { Authorization: `Bearer ${token}` } }
+                    )
                     .then((response) => {
                         setStatus('success');
                         response.data.forEach((study) => {
@@ -55,7 +80,7 @@ class StudyAPI {
                 this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
                     (status) => {
                         this.connectionStatus.hack = status;
-                    });
+                    });  
                 // this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
             }),
             /**
@@ -67,10 +92,25 @@ class StudyAPI {
                 this.connectionStatus.own = 'none';
                 this.source.cancel();
                 this.source = axios.CancelToken.source();
-                this.loadStudies(this.allLinks.own, (study) => this.allStudies.own.push(study),
-                    (status) => {
-                        this.connectionStatus.own = status;
-                    });
+
+                if(this.accessTokenFromUser==null){
+
+                    console.log("access token null");
+                    this.loadStudies(this.allLinks.own, 
+                        (study) => this.allStudies.own.push(study),
+                        (status) => {
+                            this.connectionStatus.own = status;
+                        });
+                }
+                else{
+                    this.loadStudiesToken(this.allLinks.own, 
+                        this.accessTokenFromUser,
+                        (study) => this.allStudies.own.push(study),
+                        (status) => {
+                            this.connectionStatus.own = status;
+                        });
+                }
+                
             }),
         });
     }

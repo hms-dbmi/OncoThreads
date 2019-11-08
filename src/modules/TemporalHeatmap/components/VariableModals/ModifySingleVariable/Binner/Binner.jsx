@@ -119,6 +119,7 @@ const Binner = inject('binningStore')(observer(class Binner extends React.Compon
                         />
                     </label>
                     {this.getBinaryCheckbox()}
+                    
                 </Form>
                 <BinNames />
             </div>
