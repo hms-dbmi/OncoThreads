@@ -359,7 +359,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                     {this.showCurrentVariables()}
                 </div>
                 <DropdownButton
-                    title="Move selected..."
+                    title="Move Selected..."
                     id="MoveSelected"
                 >
                     <MenuItem onClick={() => this.moveSelected(true, false)} eventKey="1">Up</MenuItem>

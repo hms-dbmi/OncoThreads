@@ -51,14 +51,14 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
                 let events = this.getAllEvents(row.variable, this.props.timepoint.localIndex, []);
                 events = this.filterEvents(row.variable, events);
                 rows.push(
-                    <g key={row.variable + i + globalIndex}>
+                    <g key={row.variable + i + globalIndex} opacity={0.7}>
                         <TimelineRow
                             timepointType={this.props.timepoint.type}
                             {...this.props.tooltipFunctions}
                             row={row}
                             color={color}
                             events={events}
-                            opacity={0.5}
+                            
                         />
 
                     </g>,
@@ -68,13 +68,13 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
                     .filter(d => d.id === this.props.rootStore
                         .dataStore.globalPrimary)[0].colorScale;
                 rows.push(
-                    <g key={row.variable + i + globalIndex}>
+                    <g key={row.variable + i + globalIndex} opacity={0.8}>
                         <TimelineRow
                             timepointType={this.props.timepoint.type}
                             {...this.props.tooltipFunctions}
                             row={row}
                             color={color}
-                            opacity={1}
+                            //opacity={1}
                         />
                     </g>,
                 );

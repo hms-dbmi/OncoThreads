@@ -286,7 +286,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                         color="secondary"
                                         onClick={this.openVariableManager}
                                     >
-                                        Variable manager
+                                        Variable Manager
                                     </Button>
                                 </ButtonGroup>
                                 <ButtonGroup>
@@ -344,16 +344,16 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                         id="ResetButton"
                                     >
                                         <MenuItem eventKey="1" onClick={this.handleResetAlignment}>
-                                            ...timepoint
+                                            timepoint
                                             alignment
                                         </MenuItem>
                                         <MenuItem
                                             eventKey="2"
                                             onClick={this.handleResetSelection}
                                         >
-                                            ...selection
+                                            selection
                                         </MenuItem>
-                                        <MenuItem eventKey="3" onClick={this.handleResetAll}>...all</MenuItem>
+                                        <MenuItem eventKey="3" onClick={this.handleResetAll}>all</MenuItem>
                                     </DropdownButton>
                                     <Button onClick={this.props.undoRedoStore.undo}>
                                         <FontAwesome

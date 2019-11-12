@@ -1,12 +1,13 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
-    Col, Form, FormControl, FormGroup, HelpBlock,
+    Col, Form, FormControl, FormGroup, HelpBlock, Alert,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
 import SelectDatatype from '../Modals/SelectDatatype';
+
 
 
 /*
@@ -189,7 +190,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 onChange={this.handleMolecularLoad}
                             />
                             <HelpBlock>
-                                Expression data, cnv data,
+                                expression data, CNV data,
                                 protein levels, methylation data
                             </HelpBlock>
                         </Col>
@@ -232,7 +233,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                     </FormGroup>
                     <FormGroup>
                         <Col sm={5}>
-                            Gene panels
+                            Gene Panels
                             {' '}
                             {LocalFileSelection.getStateIcon(this.props.rootStore
                                 .localFileLoader.genePanelsParsed)}
@@ -425,8 +426,12 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
 
     render() {
         this.updateKeys();
+
+        let msg = <Alert>Data uploaded on this page will not leave your computer. If you are uploading any molecular data, identifiers might get resolved using external services.</Alert>;
         return (
             <div>
+                <br></br>
+                {msg}
                 <a
                     href="https://github.com/hms-dbmi/OncoThreads/wiki/OncoThreads-File-Formats"
                     rel="noopener noreferrer"

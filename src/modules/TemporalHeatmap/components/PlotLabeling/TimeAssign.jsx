@@ -173,13 +173,13 @@ const TimeAssign = inject("rootStore")(observer(class TimeAssign extends React.C
                         id={"ShowTime"}
                     >
 
-                        <MenuItem eventKey="1" onClick={e => this.handleClick2("1", "days")}>
+                        <MenuItem eventKey="1" onClick={e => this.handleClick2("1", "Days")}>
                             <small> Days</small>
                         </MenuItem>
-                        <MenuItem eventKey="2" onClick={e => this.handleClick2("30", "months")}>
+                        <MenuItem eventKey="2" onClick={e => this.handleClick2("30", "Months")}>
                             <small> Months</small>
                         </MenuItem>
-                        <MenuItem eventKey="3" onClick={e => this.handleClick2("365", "years")}>
+                        <MenuItem eventKey="3" onClick={e => this.handleClick2("365", "Years")}>
                             <small> Years</small>
                         </MenuItem>
                     </DropdownButton>
