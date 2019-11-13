@@ -102,8 +102,6 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     ));
                     const color = this.props.colorScale(d.value);
 
-                    console.log(this);
-
                     lines.push(
                         <rect
                             key={`${d.patient}_proxy`}
