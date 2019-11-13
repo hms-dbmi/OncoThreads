@@ -60,6 +60,7 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         return lines;
     }
 
+
     /**
      * draws lines for realTime mode
      * @return {(path|rect)[]}
@@ -100,6 +101,9 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                         d.patient, false, strokeColor,
                     ));
                     const color = this.props.colorScale(d.value);
+
+                    console.log(this);
+
                     lines.push(
                         <rect
                             key={`${d.patient}_proxy`}
@@ -110,6 +114,8 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                             width={this.props.visStore.sampleRectWidth / 2}
                             height={this.props.visStore.sampleRectWidth / 6}
                             fill={color}
+                            onMouseOver={e => this.props.tooltipFunctions.showTooltip(e, 'Sample taken in day: '+this.props.timeGapMapper[d.sample])}
+                            onMouseOut={this.props.tooltipFunctions.hideTooltip}
                         />,
                     );
                 }
@@ -117,6 +123,18 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         });
         return lines;
     }
+
+    /*showTooltip(e, text) {
+        this.tooltipVisibility = 'visible';
+        this.text = text;
+       
+    }
+
+    
+    hideTooltip() {
+        this.tooltipVisibility = 'hidden';
+    }*/
+
 
     render() {
         if (this.props.uiStore.realTime) {

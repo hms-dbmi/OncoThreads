@@ -260,6 +260,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 colorScale={this.props.rootStore.dataStore
                                     .variableStores[secondTP.type]
                                     .getById(secondTP.primaryVariableId).colorScale}
+                                tooltipFunctions={this.props.tooltipFunctions}    
                             />
                         </Provider>
                     );
