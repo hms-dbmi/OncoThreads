@@ -56,23 +56,21 @@ const CategoryCombine = inject('variableManagerStore')(observer(class CategoryCo
         let currentCategories;
         let isOrdinal;
         let allValues;
-        let
-            colorRange;
+        let colorRange;
+        const originalMapper = DerivedMapperFunctions
+            .createCategoryCombinedMapper(this.props.variables.map(d => d.mapper));
+        allValues = Object.values(originalMapper);
         if (this.props.derivedVariable === null) {
-            const mapper = DerivedMapperFunctions
-                .createCategoryCombinedMapper(this.props.variables.map(d => d.mapper));
-            currentCategories = Array.from(new Set(Object.values(mapper))).map(d => ({
+            currentCategories = Array.from(new Set(Object.values(originalMapper))).map(d => ({
                 selected: false,
                 name: d,
                 categories: [d],
             }));
             isOrdinal = false;
-            allValues = Object.values(mapper);
             colorRange = ColorScales.defaultCategoricalRange;
         } else {
             currentCategories = this.getCurrentDataOfDerivedVariable();
             isOrdinal = this.props.derivedVariable.datatype === 'ORDINAL';
-            allValues = Object.values(this.props.derivedVariable.mapper);
             colorRange = this.props.derivedVariable.range;
         }
         return new CategoryStore(currentCategories, isOrdinal, allValues, colorRange);
