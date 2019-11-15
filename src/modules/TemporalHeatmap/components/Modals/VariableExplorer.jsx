@@ -199,7 +199,11 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 value={values}
                 options={options}
                 onChange={(s) => {
-                    this.selectedScores.replace(s);
+                    if (s !== null) {
+                        this.selectedScores.replace(s);
+                    } else {
+                        this.selectedScores.clear();
+                    }
                 }}
                 onKeyDown={this.handleEnterAdd}
             />

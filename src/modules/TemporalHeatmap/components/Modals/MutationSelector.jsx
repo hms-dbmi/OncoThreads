@@ -165,7 +165,11 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
      * @param {object[]} selectedOptions
      */
     handleOptionSelect(selectedOptions) {
-        this.selectedOptions = selectedOptions;
+        if (selectedOptions !== null) {
+            this.selectedOptions.replace(selectedOptions);
+        } else {
+            this.selectedOptions.clear();
+        }
     }
 
     /**
@@ -174,7 +178,7 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
     addGeneVariables() {
         this.props.addGeneVariables(this.selectedOptions);
         this.geneListString = '';
-        this.selectedOptions = [];
+        this.selectedOptions.clear();
     }
 
 
