@@ -53,8 +53,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         cx={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
                             //+ this.props.rootStore.visStore.timelineRectSize * (1 / 6)
                             + this.props.rootStore.visStore.timelineRectSize/2}
-                        cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset
-                            + this.props.rootStore.visStore.timelineRectSize/2}
+                        cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate) //- offset
+                            //+ this.props.rootStore.visStore.timelineRectSize/2
+                        }
                         r = {5}//{r1}
 
                         fill={this.props.color(this.props.row.variable)}
