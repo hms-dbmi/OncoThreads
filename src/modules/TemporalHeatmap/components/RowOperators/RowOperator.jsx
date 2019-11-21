@@ -60,7 +60,9 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      * @param {number} yPos
      * @return {g}
      */
+
     getGroupIcon(timepoint, variable, xPos, yPos) {
+       
         return (
             <g
                 id="group"

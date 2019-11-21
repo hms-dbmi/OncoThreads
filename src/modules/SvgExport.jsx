@@ -580,65 +580,62 @@ class SvgExport {
         
         console.log(str);    
 
-        /*var svg_prefix =
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (25+maxH).toString() + ')">' +
-            '<text style="font-size:18px">Study: ' + name + '</text>' +
-            '</g>' +
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (50+maxH).toString() + ')">' +
-            '<text style="font-size:18px">Description: ' + desc + '</text>' +
-            '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (75+maxH).toString() + ')">' +
-            '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
-            '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (100+maxH).toString() + ')">' +
-            '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
-            '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (125+maxH).toString() + ')">' +
-            '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
-            '</g>' 
+        var today = new Date();
+        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+        var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+        var dateTime = date+' '+time;
+
+        console.log(dateTime);
+
+        var space=25;
+
+        var dates_info= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (maxH).toString() + ')">';
+
+        dates_info = dates_info + '<text style="font-size:20px" font-weight="bold">OncoThreads </text>';
+
+        dates_info = dates_info + '</g>';
+
+        dates_info=  dates_info + '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (space+maxH).toString() + ')">';
+
+        dates_info = dates_info + '<text style="font-size:18px">Date and time: ' + dateTime + '</text>';
+
+        dates_info = dates_info + '</g>';
 
 
-        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (150+maxH).toString() + ')">';
-        if(count>0) {
-            variableMetadata = variableMetadata + '<text style="font-size:18px">Derived variable(s):' + str + '</text>';
-        }
-        variableMetadata = variableMetadata + '</g>';
-
-        var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*15*5+15).toString() + '">' +
-            
-            print_svg +
-            svg_prefix +
-            variableMetadata  +
-            '</svg>';
         
-*/
-    
-var svg_prefix =
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (maxH).toString() + ')">' +
+
+        var svg_prefix =
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (2*space+maxH).toString() + ')">' +
             '<text style="font-size:18px">Study: ' + name + '</text>' +
             '</g>' +
-            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (25+maxH).toString() + ')">' +
+            '<g width="' + ((minW + maxW) * 2).toString() + '" height= "25" transform="translate(10, ' + (3*space+maxH).toString() + ')">' +
             '<text style="font-size:18px">Description: ' + desc + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (50+maxH).toString() + ')">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (4*space+maxH).toString() + ')">' +
             '<text style="font-size:18px">Citation: ' + this.rootStore.study.citation + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (75+maxH).toString() + ')">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (5*space+maxH).toString() + ')">' +
             '<text style="font-size:18px">Number of patients: ' + this.rootStore.patients.length + '</text>' +
             '</g>' +
-            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (100+maxH).toString() + ')">' +
+            '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (6*space+maxH).toString() + ')">' +
             '<text style="font-size:18px">Number of timepoints: ' + minTP + "-" + maxTP + '</text>' +
             '</g>' 
 
 
-        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (125+maxH).toString() + ')">';
+        var variableMetadata= '<g width="' + (minW + maxW).toString() + '" height= "25" transform="translate(10, ' + (7*space+maxH).toString() + ')">';
         if(count>0) {
             variableMetadata = variableMetadata + '<text style="font-size:18px">Derived variable(s):' + str + '</text>';
+
+            
         }
+
+
+        //variableMetadata = variableMetadata + '<text style="font-size:18px">Date and time: ' + dateTime + '</text>';
+
         variableMetadata = variableMetadata + '</g>';
 
         var svg_xml = '<svg xmlns="http://www.w3.org/2000/svg" font-family="Arial" width = "' + ((minW + maxW) * 2).toString() + '" height= "' + (minH + maxH + count*20*10+20).toString() + '">' +
-            
+            dates_info +
             print_svg +
             svg_prefix +
             variableMetadata  +

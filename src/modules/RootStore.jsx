@@ -244,10 +244,13 @@ class RootStore {
                 const excludeDates = {};
                 const toDelete = [];
                 this.patients.forEach((patient, i) => {
+
+                    
                     this.sampleStructure[patient] = [];
                     excludeDates[patient] = [];
                     let currTP = 0;
                     const sampleEvents = events[patient].filter(event => event.eventType === 'SPECIMEN');
+
                     const chooseRandom = (samples) => {
                         const chosenSample = samples[Math.floor(Math.random()
                             * samples.length)];
