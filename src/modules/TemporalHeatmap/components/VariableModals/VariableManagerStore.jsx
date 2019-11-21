@@ -38,7 +38,11 @@ class VariableManagerStore {
                 if (this.primaryVariables.includes(variableId)) {
                     this.primaryVariables.forEach((d, i) => {
                         if (d === variableId) {
-                            this.primaryVariables[i] = this.currentVariables[0].id;
+                            if (this.currentVariables.length > 0){
+                                this.primaryVariables[i] = this.currentVariables[0].id;
+                            } else {
+                                this.primaryVariables[i] = '';
+                            }
                         }
                     });
                 }
@@ -61,6 +65,7 @@ class VariableManagerStore {
                     this.currentVariables.push({ id: variable.id, isNew: true, isSelected: false });
                     this.addOrder.push(variable.id);
                 }
+                this.primaryVariables = this.primaryVariables.map(variableId => variableId === '' ? variable.id : variableId);
             }),
             /**
              * replaces a variable in the table
