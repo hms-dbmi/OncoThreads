@@ -153,9 +153,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
         <defs>
             <pattern id="pattern-stripe" 
-              width="2" height="4" 
+              width="4" height="4" 
               patternUnits="userSpaceOnUse"
-              patternTransform="rotate(45)">
+              patternTransform="rotate(135)">
               <rect width="1" height="4" transform="translate(0,0)" fill="grey"></rect>
             </pattern>
 

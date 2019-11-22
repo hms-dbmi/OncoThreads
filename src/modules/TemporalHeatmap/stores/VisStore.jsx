@@ -11,6 +11,8 @@ class VisStore {
         this.secondaryHeight = 15;
         this.verticalGap = 1;
         this.partitionGap = 10;
+        this.currentSVGHeight= 100;
+
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
             colorRectHeight: 2,
@@ -19,6 +21,8 @@ class VisStore {
             plotHeight: 700,
             plotWidth: 700,
             horizontalZoom: 0,
+            
+
             /**
              * set plot height to current height
              */
@@ -138,10 +142,19 @@ class VisStore {
              * @returns {*}
              */
             get svgHeight() {
-                return this.timepointPositions
+                if(this.rootStore.uiStore.globalTime==true){
+                    return this.currentSVGHeight;
+                }
+                else{
+                    var h = this.timepointPositions
                     .connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore
                         .timepoints[this.rootStore.dataStore.timepoints.length - 1]);
+    
+                    this.currentSVGHeight = h;
+                    return h;
+                }
+                
             },
             /**
              * width of rects based on plot width and zoom level

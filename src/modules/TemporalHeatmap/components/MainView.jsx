@@ -48,6 +48,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 />
             );
         }
+        
         return (
             <Grid fluid>
                 <Tabs
