@@ -43,12 +43,15 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         } else {
             timelineView = (
                 <GlobalTimeline
+                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                     tooltipFunctions={this.props.tooltipFunctions}
+                    showContextMenu={this.props.showContextMenu}
+                    openBinningModal={this.props.openBinningModal}
                     openSaveVarModal={this.props.openSaveVarModal}
                 />
             );
         }
-        
+
         return (
             <Grid fluid>
                 <Tabs

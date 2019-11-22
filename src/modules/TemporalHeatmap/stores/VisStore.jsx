@@ -11,7 +11,9 @@ class VisStore {
         this.secondaryHeight = 15;
         this.verticalGap = 1;
         this.partitionGap = 10;
-        this.currentSVGHeight= 100;
+        this.currentSVGHeight = undefined;
+        this.currentVerticalZoomLevel = undefined;
+        this.initialVerticalZoomLevel = undefined;
 
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
@@ -107,12 +109,16 @@ class VisStore {
              */
             setAllTransitionSpaces: action((value) => {
                 if (value < this.minTransHeight) {
-                    this.transitionSpaces.replace(Array(this.transitionSpaces.length)
-                        .fill(this.minTransHeight));
+                    this.currentVerticalZoomLevel = this.minTransHeight;
                 } else {
-                    this.transitionSpaces.replace(Array(this.transitionSpaces.length).fill(value));
+                    this.currentVerticalZoomLevel = value;
                 }
-            }),
+                if(this.initialVerticalZoomLevel === undefined) {
+                    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                }
+                this.transitionSpaces.replace(
+                    Array(this.transitionSpaces.length).fill(this.currentVerticalZoomLevel));
+        }),
             /**
              * sets a transition space at an index to a value
              * @param {number} index
@@ -142,15 +148,22 @@ class VisStore {
              * @returns {*}
              */
             get svgHeight() {
-                if(this.rootStore.uiStore.globalTime==true){
-                    return this.currentSVGHeight;
+                console.log("inside svgHeight");
+                var h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
+                    + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
+                /*if(this.currentSVGHeight === undefined) {
+                    this.currentSVGHeight = h;
+                }*/
+                if(this.rootStore.uiStore.globalTime === true) {
+                    if(this.currentVerticalZoomLevel === undefined) {
+                        //return this.currentSVGHeight;
+                        this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
+                        this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                    }
+                    return this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel;
+                    //return this.currentSVGHeight;
                 }
-                else{
-                    var h = this.timepointPositions
-                    .connection[this.timepointPositions.connection.length - 1]
-                    + this.getTPHeight(this.rootStore.dataStore
-                        .timepoints[this.rootStore.dataStore.timepoints.length - 1]);
-    
+                else {    
                     this.currentSVGHeight = h;
                     return h;
                 }
