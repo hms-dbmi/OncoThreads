@@ -2,6 +2,8 @@ import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import PropTypes from 'prop-types';
 
+
+
 /**
  * Component for a row in a timepoint in the global timeline
  = */
@@ -38,7 +40,8 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                     //let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
 
-                    circles.push(<circle 
+                    circles.push(
+                        <circle 
                        
                         onMouseEnter={e => this.handleMouseEnter(
                             e, ev.patientId, val, ev.eventStartDate,
@@ -134,7 +137,36 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                 //let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
 
-                circles.push(<circle 
+                circles.push(
+                    
+                    <g>
+                    
+
+                    <defs>
+            <pattern id="Triangle"
+                     width="10" height="10"
+                     patternUnits="userSpaceOnUse">
+                <polygon points="5,0 10,10 0,10"/>
+            </pattern>
+        </defs>
+                
+
+        <defs>
+            <pattern id="pattern-stripe" 
+              width="2" height="4" 
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)">
+              <rect width="1" height="4" transform="translate(0,0)" fill="grey"></rect>
+            </pattern>
+
+            
+            <mask id="mask-stripe">
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+            </mask>      
+          </defs>
+
+
+                <circle 
                    
                     
 
@@ -160,11 +192,16 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                     r = {5}//{r1}
 
-                    fill={fill}
+                    //fill={fill}
+
+                    fill="url(#pattern-stripe)"
 
                     opacity={this.props.opacity}
+
+                    strokeWidth={1}
+                    stroke={fill}
                    
-                />);
+                /></g>);
 
                 rects=circles;
 

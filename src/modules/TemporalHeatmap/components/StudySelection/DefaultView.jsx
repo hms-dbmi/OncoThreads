@@ -153,12 +153,12 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                             type="url"
                         />
                         <InputGroup.Button>
-                            <Button onClick={this.selectInstance}>Select Instance</Button>
+                            <Button onClick={this.selectInstance}>Connect an instance</Button>
                         </InputGroup.Button>
                     </InputGroup>
 
                     <ControlLabel>
-                        Access Token (if needed): 
+                        Access Token (optional): 
                     </ControlLabel>
 
                     <InputGroup>

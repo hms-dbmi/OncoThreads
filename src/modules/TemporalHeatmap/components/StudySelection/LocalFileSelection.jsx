@@ -437,7 +437,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                     rel="noopener noreferrer"
                     target="_blank"
                 >
-                    File format documentation
+                    File format documentation and sample data
                 </a>
                 {this.getForm()}
                 {this.getModal()}
