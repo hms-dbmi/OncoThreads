@@ -75,9 +75,9 @@ const GlobalRowOperators = inject('dataStore')(observer(class GlobalRowOperators
     render() {
         return (
             <div ref={this.rowOperators}>
-                <h5>Timepoint Variables</h5>
+                <h5>Timepoint Features</h5>
                 {this.getSampleRowHeader()}
-                <h5>Event Variables</h5>
+                <h5>Event Features</h5>
                 {this.getEventRowHeader()}
             </div>
         );

@@ -328,7 +328,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
         if (selectedVar.length > 1) {
             this.openCombineModal(this.props.variableManagerStore.getSelectedVariables(), null);
         } else {
-            alert('Please select at least two variables');
+            alert('Please select at least two features');
         }
     }
 

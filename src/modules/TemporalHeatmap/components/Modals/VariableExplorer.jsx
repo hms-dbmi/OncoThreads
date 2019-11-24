@@ -448,8 +448,8 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         // visible columns and column order for lineUp
         const visibleColumns = ['name', 'datatype', 'source', 'range', 'numcat', 'na', 'inTable'];
         const popoverRight = (
-            <Popover id="popover-positioned-right" title="Variable Explorer">
-                {'With the Variable explorer all variables of a data set can be explored and ranked. Gene variables can be added on demand. Add score columns to rank the variables by different measures of variability. Select variables in the exploration and click \'Add Selected\' to add them to the current set of displayed variables.'}
+            <Popover id="popover-positioned-right" title="Feature Explorer">
+                {'With the Feature explorer all features of a data set can be explored and ranked. Gene features can be added on demand. Add score columns to rank the features by different measures of variability. Select features in the exploration and click \'Add Selected\' to add them to the current set of displayed features.'}
             </Popover>
         );
         return (
@@ -460,7 +460,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             >
                 <Modal.Header closeButton>
                     <Modal.Title>
-                        {'Variable Explorer '}
+                        {'Feature Explorer '}
                         <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={popoverRight}>
                             <Label bsStyle="info">i</Label>
                         </OverlayTrigger>
@@ -474,7 +474,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                     {this.props.rootStore.hasProfileData
                                         ? ([
                                             <Col sm={3} key="geneAdd">
-                                                <ControlLabel>Add Gene Variable</ControlLabel>
+                                                <ControlLabel>Add Gene Feature</ControlLabel>
                                             </Col>,
                                             <Col sm={3} style={{ paddingLeft: 0 }} key="datatypeAdd">
                                                 <ControlLabel>Select Data Type</ControlLabel>
@@ -513,7 +513,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                     <Col sm={6} smOffset={this.props.rootStore.hasProfileData ? 6 : 0}>
                                         <Checkbox onChange={this.toggleDesciptionColumn}
                                                   checked={this.addedColumns.includes('description')}>
-                                            Show variable description column
+                                            Show feature description column
                                         </Checkbox>
                                     </Col>
                                 </FormGroup>

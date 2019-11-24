@@ -68,18 +68,18 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
                 onHide={this.props.closeVariableManager}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Variable Manager</Modal.Title>
+                    <Modal.Title>Feature Manager</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
-                        <Tab eventKey={1} title="Timepoint Variables">
+                        <Tab eventKey={1} title="Timepoint Features">
                             <Provider variableManagerStore={this.timepointVariableManager}>
                                 <AddTimepointVarTab
                                     openSaveVarModal={this.props.openSaveVarModal}
                                 />
                             </Provider>
                         </Tab>
-                        <Tab eventKey={2} title="Event Variables">
+                        <Tab eventKey={2} title="Event Features">
                             <Provider variableManagerStore={this.eventVariableManager}>
                                 <AddEventVarTab
                                     openSaveVarModal={this.props.openSaveVarModal}
