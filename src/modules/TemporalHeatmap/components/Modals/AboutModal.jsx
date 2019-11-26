@@ -21,24 +21,20 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     
                     <h4>About the Tool</h4>
                     <p>
-                        OncoThreads is a web-based visualization tool for the interactive exploration of tumor evolution
-                        designed to aid researchers in visualizing and exploring temporal patterns within a single patient
-                        and across an entire patient cohort.
-
+                        OncoThreads is a web-based visualization tool for the interactive exploration of tumor evolution data.
+                       
                         OncoThreads allows researchers find patterns such as effect of treatments, find correlation with
-                        treatments
-                        and mutation counts, and compare the results across patient cohorts.
+                        treatments and mutation counts, and compare the results across patient cohorts.
+                    </p>    
 
-                    </p>
+                        
+                    <a href="http://gehlenborglab.org/research/projects/oncothreads/" target="_blank"> Learn more</a>
+                  
 
-                    <br></br>
 
-                    <h4>Institutes</h4>
-                    <p>
-                    Harvard Medical School, Dana-Farber Cancer Institute, Novartis Institutes for BioMedical Research 
-                    </p>
 
                     <br></br>
+
 
                     <h4>Team Members</h4>
                     <p>
@@ -49,7 +45,20 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     Project Management, and Advising: Nils Gehlenborg, Tali Mazor, Ethan Cerami
                     </p>
 
+                    <br></br>
+                    <h4>Institutes</h4>
+                    <p>
+                    Harvard Medical School
+                    </p>
+                    <p>
+                    Dana-Farber Cancer Institute
+                    </p>
+                    <p>
+                    Novartis Institutes for BioMedical Research 
+                    </p>
 
+
+                   
                     <br></br>
 
                     <h4>Funding</h4>
@@ -62,7 +71,9 @@ const AboutModal = observer(class AboutModal extends React.Component {
 
                    <br></br>
 
-                    <a href="https://github.com/hms-dbmi/OncoThreads" target="_blank"> <h4>Github</h4></a>
+
+                   <h4>Download</h4>
+                    <a href="https://github.com/hms-dbmi/OncoThreads" target="_blank"> Github</a>
                   
 
 

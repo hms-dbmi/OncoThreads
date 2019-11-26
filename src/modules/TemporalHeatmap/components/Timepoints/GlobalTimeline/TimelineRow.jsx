@@ -33,14 +33,15 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                 const val = this.props.rootStore
                     .dataStore.variableStores.between.getById(this.props.row.variable).name;
                 if (height === 0) {
+                    let ft=3;
                     //height = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
-                    offset = this.props.rootStore.visStore.timelineRectSize * (1 / 3);
+                    offset = this.props.rootStore.visStore.timelineRectSize * (1 / ft);
 
                     //opc1 += 0.3;
 
                     //let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
 
-                    circles.push(
+                    /*circles.push(
                         <circle 
                        
                         onMouseEnter={e => this.handleMouseEnter(
@@ -68,7 +69,61 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     />);
 
                     rects=circles;
-                    //return circles;
+                    //return circles;*/
+
+
+                    rects.push(<g><rect
+                        onMouseEnter={e => this.handleMouseEnter(
+                            e, ev.patientId, val, ev.eventStartDate,
+                            ev.eventEndDate - ev.eventStartDate,
+                        )
+                        }
+                        onMouseLeave={this.handleMouseLeave}
+                        onDoubleClick={() => this.handleDoubleClick(ev.patientId)}
+                        onClick={() => this.handleClick(ev.patientId)}
+                        key={ev.patientId + i}
+                        height={offset/2}
+                        width={offset}
+                        x={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
+                            //+ offset + offset/2
+                            + (offset/2)*ft 
+                            - offset/2
+                            //-offset
+                            }
+                        y={this.props.rootStore.visStore.timeScale(ev.eventStartDate) -(offset/2)/2
+                            }
+                        fill="none" //{this.props.color(this.props.row.variable)}
+                        opacity={opc1}
+                        //rx={3}
+                        strokeWidth={1}
+                        //stroke={this.props.color(this.props.row.variable)}
+                        //strokeOpacity="1"
+                        stroke={this.props.color(this.props.row.variable)}//{"slategrey"}
+                    />
+
+                    <line 
+                        x1={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
+                            //+ offset + offset/2
+                            + (offset/2)*ft 
+                            - offset/2
+                        } 
+                        x2={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
+                            //+ offset + offset/2
+                            + (offset/2)*ft 
+                            - offset/2
+                            +offset
+                        }  
+                        y1={this.props.rootStore.visStore.timeScale(ev.eventStartDate) //+(offset/2)
+                        }
+                        y2={this.props.rootStore.visStore.timeScale(ev.eventStartDate) //+(offset/2)
+                        }
+                        stroke={this.props.color(this.props.row.variable)}
+                        strokeWidth={1.5}
+                        opacity={opc1}
+                    />
+
+                    </g>);
+
                 }
                 else{
                     rects.push(<rect
@@ -92,6 +147,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         //strokeWidth={1}
                         //stroke={"black"}
                         //strokeOpacity="1"
+                        strokeWidth={1}
+                        
+                        stroke={this.props.color(this.props.row.variable)}
                     />);
                 }
                 
@@ -192,9 +250,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                     r = {5}//{r1}
 
-                    //fill={fill}
+                    fill={fill}
 
-                    fill="url(#pattern-stripe)"
+                    //fill="url(#pattern-stripe)"
 
                     opacity={this.props.opacity}
 
