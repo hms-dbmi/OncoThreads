@@ -39,8 +39,8 @@ const SaveVariableDialog = observer(class SaveVariableDialog extends React.Compo
 
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleCancel}>Cancel</Button>
-                    <Button onClick={this.handleOkay}>Okay</Button>
+                    <Button onClick={this.handleCancel}>No</Button>
+                    <Button onClick={this.handleOkay}>Yes</Button>
                 </Modal.Footer>
             </Modal>
         );

@@ -55,9 +55,10 @@ const SelectAll = class SelectAll extends React.Component {
                 {...this.props}
                 options={[this.props.allOption, ...this.props.options]}
                 onChange={(selected) => {
-                    if (selected.length > 0
-                        && selected[selected.length - 1].value === this.props.allOption.value) {
-                        return this.props.onChange(flattenedOptions);
+                    if (selected !== null) {
+                        if(selected[selected.length - 1].value === this.props.allOption.value) {
+                            return this.props.onChange(flattenedOptions);
+                        }
                     }
                     return this.props.onChange(selected);
                 }}

@@ -1,4 +1,4 @@
-import { action, extendObservable, reaction } from 'mobx';
+import {action, extendObservable, observe} from 'mobx';
 import VariableStore from './VariableStore';
 
 /*
@@ -173,13 +173,14 @@ class DataStore {
             }),
         });
         // combines/uncombines timepoints if variables of type "between" are displayed/removed
-        reaction(() => this.transitionOn, (isOn) => {
+        observe(this.variableStores.between.currentVariables, () => {
+            let isOn = this.variableStores.between.currentVariables.length > 0;
             this.combineTimepoints(isOn);
             if (isOn) {
                 this.rootStore.uiStore.setRealTime(false);
             }
             this.rootStore.visStore.resetTransitionSpaces();
-        });
+        })
     }
 
     /**

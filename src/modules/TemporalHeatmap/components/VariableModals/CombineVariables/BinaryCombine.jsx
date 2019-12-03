@@ -40,7 +40,7 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
                         .map(d => d.mapper), this.modification)}
                     binaryColors={this.binaryColors}
                     invert={false}
-                    setBinaryColors={this.setBinaryColors}
+                    setColors={this.setBinaryColors}
                 />];
         }
 
@@ -97,26 +97,23 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
      */
     handleNameChange(event) {
         this.name = event.target.value;
-        this.nameChanged = true;
     }
 
 
     /**
      * gets the initial state
      * @return {{name: string, modification: {operator: string,
-     * datatype: string}, nameChanged: boolean, variableRange: string[],
+     * datatype: string}, variableRange: string[],
       * keep: boolean, isOrdinal: boolean, currentVarCategories: Object[]}}
      */
     initializeObservable() {
         let name; // name of combined variable
         let modification = { operator: 'or', datatype: 'BINARY' }; // way of modification
-        let nameChanged = false; // has the name been changed
         let binaryColors = ColorScales.defaultBinaryRange;
         // if the variable is already combined base parameters on this variable
         if (this.props.derivedVariable !== null) {
             modification = this.props.derivedVariable.modification;
             name = this.props.derivedVariable.name;
-            nameChanged = true;
             if (this.props.derivedVariable.modification.datatype !== 'STRING') {
                 binaryColors = this.props.derivedVariable.range;
             }
@@ -126,7 +123,6 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
         return {
             name,
             modification,
-            nameChanged,
             binaryColors,
             keep: true,
         };
