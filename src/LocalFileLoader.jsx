@@ -121,9 +121,9 @@ class LocalFileLoader {
                     Papa.parse(d, {
                         delimiter: '\t',
                         header: true,
+                        worker: true,
                         skipEmptyLines: true,
                         step: (row, parser) => {
-                            parser.pause();
                             // check header
                             if (LocalFileLoader.checkTimelineFileHeader(row.data.EVENT_TYPE,
                                 row.meta.fields, d.name)) {
@@ -131,7 +131,6 @@ class LocalFileLoader {
                             } else {
                                 this.eventsParsed = 'error';
                             }
-                            parser.abort();
                         },
                         complete: () => {
                             // all file headers have been checked and are valid
@@ -165,6 +164,7 @@ class LocalFileLoader {
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: true,
+                    worker: true,
                     skipEmptyLines: true,
                     step: (row, parser) => {
                         if (!patients.includes(row.data.PATIENT_ID)) {
@@ -209,6 +209,7 @@ class LocalFileLoader {
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: true,
+                    worker: true,
                     skipEmptyLines: true,
                     step: (row, parser) => {
                         if (row.errors.length === 0) {
@@ -310,6 +311,7 @@ class LocalFileLoader {
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: true,
+                    worker: true,
                     skipEmptyLines: true,
                     step: (row, parser) => {
                         if (row.errors.length === 0) {
@@ -423,6 +425,7 @@ class LocalFileLoader {
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: false,
+                    worker: true,
                     skipEmptyLines: true,
                     step: (row, parser) => {
                         if (rowCounter === 0 && !row.data[0].startsWith('#')) {
@@ -497,6 +500,7 @@ class LocalFileLoader {
                 if (file !== null) {
                     Papa.parse(file, {
                         delimiter: '\t',
+                        worker: true,
                         skipEmptyLines: true,
                         step: (row, parser) => {
                             if (row.errors.length === 0) {
@@ -573,6 +577,7 @@ class LocalFileLoader {
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: true,
+                    worker: true,
                     skipEmptyLines: true,
                     comments: '#',
                     step: (row, parser) => {
@@ -670,6 +675,7 @@ class LocalFileLoader {
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: true,
+                    worker: true,
                     skipEmptyLines: true,
                     step: (row, parser) => {
                         if (row.errors.length === 0) {
@@ -712,6 +718,7 @@ class LocalFileLoader {
                                 data.set(entrezId, dataRow);
                             }
                         } else {
+                            console.log(row);
                             inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
                                 row.data, file.name);
                             aborted = true;
@@ -745,6 +752,7 @@ class LocalFileLoader {
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: true,
+                    worker: true,
                     skipEmptyLines: true,
                     complete: (response) => {
                         const hasSampleID = response.meta.fields.includes('SAMPLE_ID');
