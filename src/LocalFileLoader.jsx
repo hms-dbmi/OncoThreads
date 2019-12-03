@@ -125,9 +125,9 @@ class LocalFileLoader {
                         step: (row, parser) => {
                             parser.pause();
                             // check header
-                            if (LocalFileLoader.checkTimelineFileHeader(row.data[0].EVENT_TYPE,
+                            if (LocalFileLoader.checkTimelineFileHeader(row.data.EVENT_TYPE,
                                 row.meta.fields, d.name)) {
-                                eventFiles.set(row.data[0].EVENT_TYPE, d);
+                                eventFiles.set(row.data.EVENT_TYPE, d);
                             } else {
                                 this.eventsParsed = 'error';
                             }
@@ -167,14 +167,14 @@ class LocalFileLoader {
                     header: true,
                     skipEmptyLines: true,
                     step: (row, parser) => {
-                        if (!patients.includes(row.data[0].PATIENT_ID)) {
-                            patients.push(row.data[0].PATIENT_ID);
+                        if (!patients.includes(row.data.PATIENT_ID)) {
+                            patients.push(row.data.PATIENT_ID);
                         }
-                        if (!samples.includes(row.data[0].SAMPLE_ID)) {
-                            samples.push(row.data[0].SAMPLE_ID);
-                            this.samplePatientMap[row.data[0].SAMPLE_ID] = row.data[0].PATIENT_ID;
+                        if (!samples.includes(row.data.SAMPLE_ID)) {
+                            samples.push(row.data.SAMPLE_ID);
+                            this.samplePatientMap[row.data.SAMPLE_ID] = row.data.PATIENT_ID;
                         }
-                        const date = parseInt(row.data[0].START_DATE, 10);
+                        const date = parseInt(row.data.START_DATE, 10);
                         if (Number.isNaN(date)) {
                             alert('ERROR: START_DATE is not a number');
                             this.eventsParsed = 'error';
@@ -216,7 +216,7 @@ class LocalFileLoader {
                                 // check header when parsing first row
                                 if (LocalFileLoader.checkMutationFileHeader(row.meta.fields,
                                     file.name)) {
-                                    if ('t_ref_count' in row.data[0] && 't_alt_count' in row.data[0]) {
+                                    if ('t_ref_count' in row.data && 't_alt_count' in row.data) {
                                         hasVaf = true;
                                     }
                                     firstRow = false;
@@ -228,31 +228,31 @@ class LocalFileLoader {
                             }
                             // add mutation if it's not in the list of excluded mutations
                             if (!aborted && !skipMutations
-                                .includes(row.data[0].Variant_Classification)) {
+                                .includes(row.data.Variant_Classification)) {
                                 const mutation = {
-                                    sampleId: row.data[0].Tumor_Sample_Barcode,
-                                    proteinChange: row.data[0].HGVSp_Short.substring(2),
+                                    sampleId: row.data.Tumor_Sample_Barcode,
+                                    proteinChange: row.data.HGVSp_Short.substring(2),
                                     gene: {
-                                        hugoGeneSymbol: row.data[0].Hugo_Symbol,
+                                        hugoGeneSymbol: row.data.Hugo_Symbol,
                                     },
-                                    mutationType: row.data[0].Variant_Classification,
+                                    mutationType: row.data.Variant_Classification,
                                 };
                                 if (hasVaf) {
-                                    mutation.tumorAltCount = row.data[0].t_alt_count;
-                                    mutation.tumorRefCount = row.data[0].t_ref_count;
+                                    mutation.tumorAltCount = row.data.t_alt_count;
+                                    mutation.tumorRefCount = row.data.t_ref_count;
                                 } else {
                                     mutation.tumorAltCount = -1;
                                     mutation.tumorRefCount = -1;
                                 }
                                 mutations.push(mutation);
-                                if (!(row.data[0].Tumor_Sample_Barcode in counts)) {
-                                    counts[row.data[0].Tumor_Sample_Barcode] = 0;
+                                if (!(row.data.Tumor_Sample_Barcode in counts)) {
+                                    counts[row.data.Tumor_Sample_Barcode] = 0;
                                 }
-                                counts[row.data[0].Tumor_Sample_Barcode] += 1;
+                                counts[row.data.Tumor_Sample_Barcode] += 1;
                             }
                         } else {
                             inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                row.data[0], file.name);
+                                row.data, file.name);
                             aborted = true;
                             parser.abort();
                         }
@@ -314,40 +314,40 @@ class LocalFileLoader {
                     step: (row, parser) => {
                         if (row.errors.length === 0) {
                             if (firstRow) {
-                                if ('STOP_DATE' in row.data[0]) {
+                                if ('STOP_DATE' in row.data) {
                                     hasEndDate = true;
                                 }
                                 firstRow = false;
                             }
-                            if (!(row.data[0].PATIENT_ID in events)) {
-                                events[row.data[0].PATIENT_ID] = [];
+                            if (!(row.data.PATIENT_ID in events)) {
+                                events[row.data.PATIENT_ID] = [];
                             }
                             const validStartDate = !Number
-                                .isNaN(parseInt(row.data[0].START_DATE, 10));
-                            const validEndDate = !hasEndDate || row.data[0].STOP_DATE === ''
+                                .isNaN(parseInt(row.data.START_DATE, 10));
+                            const validEndDate = !hasEndDate || row.data.STOP_DATE === ''
                                 || (hasEndDate && !Number
-                                    .isNaN(parseInt(row.data[0].STOP_DATE, 10)));
+                                    .isNaN(parseInt(row.data.STOP_DATE, 10)));
                             if (validStartDate && validEndDate) {
                                 const attributes = [];
-                                Object.keys(row.data[0]).forEach((key) => {
+                                Object.keys(row.data).forEach((key) => {
                                     if (key !== 'START_DATE' && key !== 'STOP_DATE' && key !== 'EVENT_TYPE' && key !== 'PATIENT_ID') {
-                                        if (row.data[0][key].length > 0) {
-                                            attributes.push({ key, value: row.data[0][key] });
+                                        if (row.data[key].length > 0) {
+                                            attributes.push({ key, value: row.data[key] });
                                         }
                                     }
                                 });
                                 const currRow = {
                                     attributes,
-                                    eventType: row.data[0].EVENT_TYPE,
-                                    patientId: row.data[0].PATIENT_ID,
+                                    eventType: row.data.EVENT_TYPE,
+                                    patientId: row.data.PATIENT_ID,
                                     startNumberOfDaysSinceDiagnosis:
-                                        parseInt(row.data[0].START_DATE, 10),
+                                        parseInt(row.data.START_DATE, 10),
                                 };
                                 if (hasEndDate) {
-                                    currRow.endNumberOfDaysSinceDiagnosis = parseInt(row.data[0]
+                                    currRow.endNumberOfDaysSinceDiagnosis = parseInt(row.data
                                         .STOP_DATE, 10);
                                 }
-                                events[row.data[0].PATIENT_ID].push(currRow);
+                                events[row.data.PATIENT_ID].push(currRow);
                             } else {
                                 aborted = true;
                                 if (!validStartDate) {
@@ -359,7 +359,7 @@ class LocalFileLoader {
                             }
                         } else {
                             inconsistentLinebreak = LocalFileLoader.checkErrors(row.errors,
-                                row.data[0], file.name);
+                                row.data, file.name);
                             aborted = true;
                             parser.abort();
                         }
@@ -425,27 +425,27 @@ class LocalFileLoader {
                     header: false,
                     skipEmptyLines: true,
                     step: (row, parser) => {
-                        if (rowCounter === 0 && !row.data[0][0].startsWith('#')) {
+                        if (rowCounter === 0 && !row.data[0].startsWith('#')) {
                             alert('ERROR: wrong header format, first row has to start with #');
                             correctHeader = false;
-                        } else if (rowCounter === 1 && !row.data[0][0].startsWith('#')) {
+                        } else if (rowCounter === 1 && !row.data[0].startsWith('#')) {
                             alert('ERROR: wrong header format, second row has to start with #');
                             correctHeader = false;
-                        } else if (rowCounter === 2 && !row.data[0][0].startsWith('#')) {
+                        } else if (rowCounter === 2 && !row.data[0].startsWith('#')) {
                             alert('ERROR: wrong header format, third row has to start with #');
                             correctHeader = false;
-                        } else if (rowCounter === 3 && !row.data[0][0].startsWith('#')) {
+                        } else if (rowCounter === 3 && !row.data[0].startsWith('#')) {
                             alert('ERROR: wrong header format, fourth row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 4) {
-                            if (row.data[0][0].startsWith('#')) {
+                            if (row.data[0].startsWith('#')) {
                                 alert('ERROR: wrong header format, fifth row should not start with #');
                                 correctHeader = false;
-                            } else if (row.data[0].includes('PATIENT_ID')) {
-                                if (isSample && !row.data[0].includes('SAMPLE_ID')) {
+                            } else if (row.data.includes('PATIENT_ID')) {
+                                if (isSample && !row.data.includes('SAMPLE_ID')) {
                                     alert('ERROR: no SAMPLE_ID column found');
                                     correctHeader = false;
-                                } else if (!isSample && row.data[0].includes('SAMPLE_ID')) {
+                                } else if (!isSample && row.data.includes('SAMPLE_ID')) {
                                     alert('ERROR: SAMPLE_ID provided for non-sample specific clinical data');
                                     correctHeader = false;
                                 }
@@ -501,23 +501,23 @@ class LocalFileLoader {
                         step: (row, parser) => {
                             if (row.errors.length === 0) {
                                 if (rowCounter === 0) {
-                                    row.data[0].forEach((d, i) => {
+                                    row.data.forEach((d, i) => {
                                         intermediateAttributes.push({
                                             displayName: LocalFileLoader.getSpliced(i, d),
                                         });
                                     });
                                 } else if (rowCounter === 1) {
-                                    row.data[0].forEach((d, i) => {
+                                    row.data.forEach((d, i) => {
                                         intermediateAttributes[i]
                                             .description = LocalFileLoader.getSpliced(i, d);
                                     });
                                 } else if (rowCounter === 2) {
-                                    row.data[0].forEach((d, i) => {
+                                    row.data.forEach((d, i) => {
                                         intermediateAttributes[i]
                                             .datatype = LocalFileLoader.getSpliced(i, d);
                                     });
                                 } else if (rowCounter === 4) {
-                                    row.data[0].forEach((d, i) => {
+                                    row.data.forEach((d, i) => {
                                         intermediateAttributes[i]
                                             .clinicalAttributeId = LocalFileLoader.getSpliced(i, d);
                                         clinicalAttributes[d] = intermediateAttributes[i];
@@ -527,7 +527,7 @@ class LocalFileLoader {
                                 rowCounter += 1;
                             } else {
                                 inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                    row.data[0], file.name);
+                                    row.data, file.name);
                                 abort = true;
                                 parser.abort();
                             }
@@ -577,12 +577,12 @@ class LocalFileLoader {
                     comments: '#',
                     step: (row, parser) => {
                         if (row.errors.length === 0) {
-                            const patientId = row.data[0].PATIENT_ID;
-                            const sampleId = row.data[0].SAMPLE_ID;
-                            Object.keys(row.data[0]).forEach((key) => {
-                                if (!(key === 'PATIENT_ID' || key === 'SAMPLE_ID') && row.data[0][key].trim() !== '') {
+                            const patientId = row.data.PATIENT_ID;
+                            const sampleId = row.data.SAMPLE_ID;
+                            Object.keys(row.data).forEach((key) => {
+                                if (!(key === 'PATIENT_ID' || key === 'SAMPLE_ID') && row.data[key].trim() !== '') {
                                     if (clinicalAttributes[key].datatype === 'NUMBER') {
-                                        if (Number.isNaN(parseFloat(row.data[0][key]))) {
+                                        if (Number.isNaN(parseFloat(row.data[key]))) {
                                             abort = true;
                                             alert(`ERROR: File ${file.name}- non numeric value of numeric variable ${key}`);
                                             parser.abort();
@@ -593,7 +593,7 @@ class LocalFileLoader {
                                         clinicalAttributeId: clinicalAttributes[key]
                                             .clinicalAttributeId,
                                         patientId,
-                                        value: row.data[0][key],
+                                        value: row.data[key],
                                     };
                                     if (isSample) {
                                         currRow.sampleId = sampleId;
@@ -603,7 +603,7 @@ class LocalFileLoader {
                             });
                         } else {
                             inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                row.data[0], file.name);
+                                row.data, file.name);
                             abort = true;
                             parser.abort();
                         }
@@ -674,8 +674,8 @@ class LocalFileLoader {
                     step: (row, parser) => {
                         if (row.errors.length === 0) {
                             if (firstRow) {
-                                hasEntrezId = 'Entrez_Gene_Id' in row.data[0];
-                                hasHugoSymbol = 'Hugo_Symbol' in row.data[0];
+                                hasEntrezId = 'Entrez_Gene_Id' in row.data;
+                                hasHugoSymbol = 'Hugo_Symbol' in row.data;
                                 if (!hasEntrezId) {
                                     alert(`ERROR: file ${file.name} missing Entrez_Gene_Id column`);
                                     aborted = true;
@@ -684,20 +684,20 @@ class LocalFileLoader {
                                 firstRow = false;
                             }
                             const dataRow = [];
-                            if (row.data[0].Entrz_Gene_Id !== 'NA') {
-                                const entrezId = parseInt(row.data[0].Entrez_Gene_Id, 10);
-                                Object.keys(row.data[0]).forEach((key) => {
+                            if (row.data.Entrz_Gene_Id !== 'NA') {
+                                const entrezId = parseInt(row.data.Entrez_Gene_Id, 10);
+                                Object.keys(row.data).forEach((key) => {
                                     const dataPoint = {
                                         gene: { entrezGeneId: entrezId, hugoGeneSymbol: '' },
                                         entrezGeneId: entrezId,
                                     };
                                     if (hasHugoSymbol) {
-                                        dataPoint.gene.hugoGeneSymbol = row.data[0].Hugo_Symbol;
+                                        dataPoint.gene.hugoGeneSymbol = row.data.Hugo_Symbol;
                                     }
                                     if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
-                                        let value = row.data[0][key];
+                                        let value = row.data[key];
                                         if (value !== 'NA' && metaData === 'NUMBER') {
-                                            value = parseFloat(row.data[0][key]);
+                                            value = parseFloat(row.data[key]);
                                             if (Number.isNaN(value)) {
                                                 aborted = true;
                                                 alert(`ERROR: file ${file.name} value is not a number`);
@@ -713,7 +713,7 @@ class LocalFileLoader {
                             }
                         } else {
                             inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                row.data[0], file.name);
+                                row.data, file.name);
                             aborted = true;
                             parser.abort();
                         }
@@ -963,7 +963,7 @@ class LocalFileLoader {
                 }
             }
             if (!inconsistentLinebreak) {
-                errorMessages.push(`${error.message} at data row ${error.row}`);
+                errorMessages.push(`${error.message} at data row ${error.row}. Please check for empty lines or inconsistent use of linebreaks.`);
             }
         });
         if (errorMessages.length > 0) {
