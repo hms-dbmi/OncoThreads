@@ -73,6 +73,10 @@ class VisStore {
                     }
                     return transitionSpace;
                 }));
+                if(this.rootStore.uiStore.globalTime === true) {
+                    this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
+                    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                }
             }),
             /**
              * fits content to screen height if the height of the svg would otherwise be bigger
@@ -108,16 +112,26 @@ class VisStore {
              * @param {number} value
              */
             setAllTransitionSpaces: action((value) => {
+                let val;
                 if (value < this.minTransHeight) {
-                    this.currentVerticalZoomLevel = this.minTransHeight;
+                    val = this.minTransHeight;
+                    //this.currentVerticalZoomLevel = this.minTransHeight;
                 } else {
-                    this.currentVerticalZoomLevel = value;
+                    val = value;
+                    //this.currentVerticalZoomLevel = value;
                 }
-                if(this.initialVerticalZoomLevel === undefined) {
-                    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                if(this.rootStore.uiStore.globalTime === true) {
+                    this.currentVerticalZoomLevel = val;
+                    //if(this.initialVerticalZoomLevel === undefined) {
+                    //    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                    //}
                 }
-                this.transitionSpaces.replace(
-                    Array(this.transitionSpaces.length).fill(this.currentVerticalZoomLevel));
+                //if(this.initialVerticalZoomLevel === undefined) {
+                //    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                //}
+                this.transitionSpaces.replace(Array(this.transitionSpaces.length)
+                    //.fill(this.currentVerticalZoomLevel));
+                    .fill(val));
         }),
             /**
              * sets a transition space at an index to a value
@@ -151,12 +165,10 @@ class VisStore {
                 console.log("inside svgHeight");
                 var h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
-                /*if(this.currentSVGHeight === undefined) {
-                    this.currentSVGHeight = h;
-                }*/
                 if(this.rootStore.uiStore.globalTime === true) {
                     if(this.currentVerticalZoomLevel === undefined) {
                         //return this.currentSVGHeight;
+                        this.currentSVGHeight = h;
                         this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
                         this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                     }
@@ -164,7 +176,8 @@ class VisStore {
                     //return this.currentSVGHeight;
                 }
                 else {    
-                    this.currentSVGHeight = h;
+                    //this.currentSVGHeight = h;
+                    //this.currentVerticalZoomLevel = undefined;
                     return h;
                 }
                 

@@ -26,6 +26,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
      */
     componentDidMount() {
         this.updateDimensions();
+        //this.props.rootStore.visStore.resetTransitionSpaces();
         window.addEventListener('resize', this.updateDimensions);
     }
 
@@ -33,6 +34,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
      * Remove event listener
      */
     componentWillUnmount() {
+        this.props.rootStore.visStore.currentVerticalZoomLevel = undefined;
         window.removeEventListener('resize', this.updateDimensions);
     }
 
