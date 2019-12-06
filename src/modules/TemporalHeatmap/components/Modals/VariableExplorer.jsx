@@ -127,7 +127,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
      * @return {Buffer | * | T[] | string}
      */
     getInitialVariables() {
-        return this.getCurrentVariables().concat(this.getClinicalVariables());
+        return this.getCurrentVariables().concat(this.getClinicalVariables()).concat(this.getSavedVariables());
     }
 
     /**
@@ -149,6 +149,12 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             .filter(variable => !this.props.variableManagerStore.isInTable(variable.id))
             .map(variable => new OriginalVariable(variable.id, variable.variable,
                 variable.datatype, variable.description, [], [], this.props.rootStore.staticMappers[variable.id], variable.source, 'clinical'));
+    }
+
+    getSavedVariables(){
+        return this.props.variableManagerStore.savedReferences
+            .filter(variableId => !this.props.variableManagerStore.isInTable(variableId))
+            .map(variableId => this.props.variableManagerStore.referencedVariables[variableId]);
     }
 
     /**
@@ -193,7 +199,11 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                 value={values}
                 options={options}
                 onChange={(s) => {
-                    this.selectedScores.replace(s);
+                    if (s !== null) {
+                        this.selectedScores.replace(s);
+                    } else {
+                        this.selectedScores.clear();
+                    }
                 }}
                 onKeyDown={this.handleEnterAdd}
             />

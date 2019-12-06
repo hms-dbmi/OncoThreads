@@ -155,7 +155,7 @@ class CategoryStore {
                 if (asc) {
                     factor = -1;
                 }
-                this.currentCategories.replace(this.currentCategories.sort((a, b) => {
+                this.currentCategories.replace(this.currentCategories.slice().sort((a, b) => {
                     if (a.percentOccurence < b.percentOccurence) {
                         return -factor;
                     }
