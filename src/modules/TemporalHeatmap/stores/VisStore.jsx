@@ -115,22 +115,13 @@ class VisStore {
                 let val;
                 if (value < this.minTransHeight) {
                     val = this.minTransHeight;
-                    //this.currentVerticalZoomLevel = this.minTransHeight;
                 } else {
                     val = value;
-                    //this.currentVerticalZoomLevel = value;
                 }
                 if(this.rootStore.uiStore.globalTime === true) {
                     this.currentVerticalZoomLevel = val;
-                    //if(this.initialVerticalZoomLevel === undefined) {
-                    //    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
-                    //}
                 }
-                //if(this.initialVerticalZoomLevel === undefined) {
-                //    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
-                //}
                 this.transitionSpaces.replace(Array(this.transitionSpaces.length)
-                    //.fill(this.currentVerticalZoomLevel));
                     .fill(val));
         }),
             /**
@@ -162,22 +153,18 @@ class VisStore {
              * @returns {*}
              */
             get svgHeight() {
-                console.log("inside svgHeight");
                 var h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
                 if(this.rootStore.uiStore.globalTime === true) {
+                    this.currentSVGHeight = window.innerHeight - 200;
                     if(this.currentVerticalZoomLevel === undefined) {
-                        //return this.currentSVGHeight;
-                        this.currentSVGHeight = h;
+                        //this.currentSVGHeight = window.innerHeight - 200;
                         this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
                         this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                     }
                     return this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel;
-                    //return this.currentSVGHeight;
                 }
                 else {    
-                    //this.currentSVGHeight = h;
-                    //this.currentVerticalZoomLevel = undefined;
                     return h;
                 }
                 
