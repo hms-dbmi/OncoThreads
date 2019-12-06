@@ -16,6 +16,7 @@ class StudyAPI {
             connectionStatus: { hack: 'none', portal: 'none', own: 'none' },
             loadComplete: false,
             accessTokenFromUser: null,
+            errorMsg: null,
             get studies() {
                 return this.allStudies[this.uiStore.cBioInstance];
             },
@@ -24,7 +25,7 @@ class StudyAPI {
              */
 
             
-            loadStudies: action((link, callback, setStatus) => {
+            loadStudies: action((link, callback, setStatus, setError) => {
                 axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
                     .then((response) => {
                         setStatus('success');
@@ -33,6 +34,7 @@ class StudyAPI {
                         });
                     }).catch((thrown) => {
                         setStatus('failed');
+                        setError(thrown.message);
                         if (CBioAPI.verbose) {
                             console.log(thrown);
                         } else {
@@ -44,7 +46,7 @@ class StudyAPI {
 
              // return axios.get(URLConstants.USER_URL, { headers: { Authorization: `Bearer ${data.token}` } });
 
-            loadStudiesToken: action((link, token, callback, setStatus) => {
+            loadStudiesToken: action((link, token, callback, setStatus, setError) => {
                 axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`
                         , { headers: { Authorization: `Bearer ${token}` } }
                     )
@@ -55,6 +57,7 @@ class StudyAPI {
                         });
                     }).catch((thrown) => {
                         setStatus('failed');
+                        setError(thrown.message);
                         if (CBioAPI.verbose) {
                             console.log(thrown);
                         } else {
@@ -93,13 +96,16 @@ class StudyAPI {
                 this.source.cancel();
                 this.source = axios.CancelToken.source();
 
-                if(this.accessTokenFromUser==null){
+                if(this.accessTokenFromUser===null || this.accessTokenFromUser===""){
 
                     console.log("access token null");
                     this.loadStudies(this.allLinks.own, 
                         (study) => this.allStudies.own.push(study),
                         (status) => {
                             this.connectionStatus.own = status;
+                        },
+                        (error) => {
+                            this.errorMsg = error;
                         });
                 }
                 else{
@@ -108,6 +114,9 @@ class StudyAPI {
                         (study) => this.allStudies.own.push(study),
                         (status) => {
                             this.connectionStatus.own = status;
+                        },
+                        (error) => {
+                            this.errorMsg = error;
                         });
                 }
                 
