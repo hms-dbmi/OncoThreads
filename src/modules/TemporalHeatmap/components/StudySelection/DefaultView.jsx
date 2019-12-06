@@ -158,7 +158,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                       <br></br>      
                     <ControlLabel>
                             
-                        Enter access token for password-protected instances of cBioPortal  <a href="https://docs.cbioportal.org/2.2-authorization-and-authentication/authenticating-users-via-tokens#using-data-access-tokens" target="_blank">(instructions to find token)</a>
+                        Enter access token for password-protected instances of cBioPortal  <a href="https://docs.cbioportal.org/2.2-authorization-and-authentication/authenticating-users-via-tokens#using-data-access-tokens" >(instructions to find token)</a>
                     </ControlLabel>
 
                     <InputGroup>

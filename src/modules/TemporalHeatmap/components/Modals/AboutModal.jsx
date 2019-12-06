@@ -28,7 +28,8 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     </p>    
 
                         
-                    <a href="http://gehlenborglab.org/research/projects/oncothreads/" target="_blank"> Learn more</a>
+                    <a href="http://gehlenborglab.org/research/projects/oncothreads/" //target="_blank"
+                    > Learn more</a>
                   
 
 
@@ -73,7 +74,8 @@ const AboutModal = observer(class AboutModal extends React.Component {
 
 
                    <h4>Download</h4>
-                    <a href="https://github.com/hms-dbmi/OncoThreads" target="_blank"> Github</a>
+                    <a href="https://github.com/hms-dbmi/OncoThreads" //target="_blank"
+                    > Github</a>
                   
 
 
