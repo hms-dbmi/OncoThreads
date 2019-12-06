@@ -41,21 +41,25 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
      * have to be adapted in the view to the changes in the variable manager
      */
     handleAddButton() {
-        this.props.rootStore.dataStore.variableStores.sample.replaceAll(
-            this.timepointVariableManager.referencedVariables,
-            this.timepointVariableManager.currentVariables.map(d => d.id),
-            this.timepointVariableManager.primaryVariables,
-        );
-        this.props.rootStore.dataStore.variableStores.between.replaceAll(
-            this.eventVariableManager.referencedVariables,
-            this.eventVariableManager.currentVariables.map(d => d.id),
-            this.eventVariableManager.primaryVariables,
-        );
-        this.props.undoRedoStore.saveVariableHistory('VARIABLE MANAGER', `${this.props.rootStore.dataStore.variableStores.sample.currentVariables
-            .map(d => this.props.rootStore.dataStore.variableStores.sample.getById(d).name)}\n${
-            this.props.rootStore.dataStore.variableStores.between.currentVariables
-                .map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).name)}`, true);
-        this.props.closeVariableManager();
+        if (this.timepointVariableManager.currentVariables.length > 0) {
+            this.props.rootStore.dataStore.variableStores.sample.replaceAll(
+                this.timepointVariableManager.referencedVariables,
+                this.timepointVariableManager.currentVariables.map(d => d.id),
+                this.timepointVariableManager.primaryVariables,
+            );
+            this.props.rootStore.dataStore.variableStores.between.replaceAll(
+                this.eventVariableManager.referencedVariables,
+                this.eventVariableManager.currentVariables.map(d => d.id),
+                this.eventVariableManager.primaryVariables,
+            );
+            this.props.undoRedoStore.saveVariableHistory('VARIABLE MANAGER', `${this.props.rootStore.dataStore.variableStores.sample.currentVariables
+                .map(d => this.props.rootStore.dataStore.variableStores.sample.getById(d).name)}\n${
+                this.props.rootStore.dataStore.variableStores.between.currentVariables
+                    .map(d => this.props.rootStore.dataStore.variableStores.between.getById(d).name)}`, true);
+            this.props.closeVariableManager();
+        } else {
+            alert('Timepoints have to be represented by at least one variable.')
+        }
     }
 
 
@@ -68,18 +72,18 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
                 onHide={this.props.closeVariableManager}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Variable Manager</Modal.Title>
+                    <Modal.Title>Feature Manager</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
-                        <Tab eventKey={1} title="Timepoint Variables">
+                        <Tab eventKey={1} title="Timepoint Features">
                             <Provider variableManagerStore={this.timepointVariableManager}>
                                 <AddTimepointVarTab
                                     openSaveVarModal={this.props.openSaveVarModal}
                                 />
                             </Provider>
                         </Tab>
-                        <Tab eventKey={2} title="Event Variables">
+                        <Tab eventKey={2} title="Event Features">
                             <Provider variableManagerStore={this.eventVariableManager}>
                                 <AddEventVarTab
                                     openSaveVarModal={this.props.openSaveVarModal}

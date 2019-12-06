@@ -17,7 +17,7 @@ const AddEventVarTab = inject('rootStore')(observer(class AddEventVarTab extends
         return (
             <div>
                 <EventVariableSelector eventCategories={categories} />
-                <h4>Current Variables</h4>
+                <h4>Current Features</h4>
                 <VariableTable
                     availableCategories={categories}
                     openSaveVarModal={this.props.openSaveVarModal}

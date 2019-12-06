@@ -11,6 +11,10 @@ class VisStore {
         this.secondaryHeight = 15;
         this.verticalGap = 1;
         this.partitionGap = 10;
+        this.currentSVGHeight = undefined;
+        this.currentVerticalZoomLevel = undefined;
+        this.initialVerticalZoomLevel = undefined;
+
         this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
         extendObservable(this, {
             colorRectHeight: 2,
@@ -19,6 +23,8 @@ class VisStore {
             plotHeight: 700,
             plotWidth: 700,
             horizontalZoom: 0,
+            
+
             /**
              * set plot height to current height
              */
@@ -67,6 +73,10 @@ class VisStore {
                     }
                     return transitionSpace;
                 }));
+                if(this.rootStore.uiStore.globalTime === true) {
+                    this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
+                    this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                }
             }),
             /**
              * fits content to screen height if the height of the svg would otherwise be bigger
@@ -102,13 +112,18 @@ class VisStore {
              * @param {number} value
              */
             setAllTransitionSpaces: action((value) => {
+                let val;
                 if (value < this.minTransHeight) {
-                    this.transitionSpaces.replace(Array(this.transitionSpaces.length)
-                        .fill(this.minTransHeight));
+                    val = this.minTransHeight;
                 } else {
-                    this.transitionSpaces.replace(Array(this.transitionSpaces.length).fill(value));
+                    val = value;
                 }
-            }),
+                if(this.rootStore.uiStore.globalTime === true) {
+                    this.currentVerticalZoomLevel = val;
+                }
+                this.transitionSpaces.replace(Array(this.transitionSpaces.length)
+                    .fill(val));
+        }),
             /**
              * sets a transition space at an index to a value
              * @param {number} index
@@ -138,10 +153,21 @@ class VisStore {
              * @returns {*}
              */
             get svgHeight() {
-                return this.timepointPositions
-                    .connection[this.timepointPositions.connection.length - 1]
-                    + this.getTPHeight(this.rootStore.dataStore
-                        .timepoints[this.rootStore.dataStore.timepoints.length - 1]);
+                var h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
+                    + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
+                if(this.rootStore.uiStore.globalTime === true) {
+                    this.currentSVGHeight = window.innerHeight - 200;
+                    if(this.currentVerticalZoomLevel === undefined) {
+                        //this.currentSVGHeight = window.innerHeight - 200;
+                        this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
+                        this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
+                    }
+                    return this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel;
+                }
+                else {    
+                    return h;
+                }
+                
             },
             /**
              * width of rects based on plot width and zoom level

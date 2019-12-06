@@ -141,28 +141,30 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                 <FormGroup>
                     <ControlLabel>
 
-                        Select cBioPortal instance (Please add URL, such as 'http://www.cbiohack.org')
+                    Enter URL for cBioPortal (e.g. 'http://www.cbiohack.org')
                     </ControlLabel>
                     
                     <InputGroup>
-                        <FormControl
+                        <FormControl componentClass="textarea" rows='1' cols='50' 
                             value={this.ownInstanceURL}
                             onChange={(e) => {
                                 this.ownInstanceURL = e.target.value;
                             }}
                             type="url"
                         />
-                        <InputGroup.Button>
-                            <Button onClick={this.selectInstance}>Select Instance</Button>
-                        </InputGroup.Button>
+                        
                     </InputGroup>
 
+                      <br></br>      
                     <ControlLabel>
-                        Access Token (if needed): 
+                            
+                        Enter access token for password-protected instances of cBioPortal  <a href="https://docs.cbioportal.org/2.2-authorization-and-authentication/authenticating-users-via-tokens#using-data-access-tokens" >(instructions to find token)</a>
                     </ControlLabel>
 
                     <InputGroup>
-                        <FormControl
+
+                        
+                        <FormControl componentClass="textarea" rows='1' cols='50' 
                             
                             onChange={(e) => {
                                 console.log("new token:" + e.target.value);
@@ -173,11 +175,18 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                         
                     </InputGroup>
 
+                    <br></br>  
+
+                    <Button variant="primary" onClick={this.selectInstance}>
+                        Connect to an instance
+                    </Button>   
+
                 </FormGroup>
             );
         }
+
         if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'failed') {
-            connected = <Alert bsStyle="warning">Connection to instance failed</Alert>;
+            connected = <Alert bsStyle="warning">Connection failed: {this.props.rootStore.studyAPI.errorMsg}</Alert>;
         } else if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'success') {
             connected = <Alert>Successfully connected</Alert>;
         }
@@ -194,7 +203,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                     searchable
                     isDisabled={this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] !== 'success'}
                     componentClass="select"
-                    placeholder="Select Study"
+                    placeholder="Connect to a cBioPortal instance to load study list"//"Select Study"
                     value={this.selectedStudy}
                     options={this.setOptions()}
                     onChange={this.getStudy}
@@ -229,7 +238,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                             animation={false}
                             onSelect={this.handleSelectTab}
                         >
-                            <Tab eventKey="cBio" title="Load cBio dataset">
+                            <Tab eventKey="cBio" title="Load data from cBioPortal">
                                 <form>
                                     <FormGroup>
                                         <Radio
@@ -239,7 +248,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                             onChange={this.handleInstanceChange}
                                             inline
                                         >
-                                            cBioHack
+                                            cBioPortal for OncoThreads
                                         </Radio>
                                         {/**
                                          <Radio
@@ -261,14 +270,14 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                             onChange={this.handleInstanceChange}
                                             inline
                                         >
-                                            Own instance
+                                            Custom cBioPortal
                                         </Radio>
                                         {' '}
                                     </FormGroup>
                                 </form>
                                 {this.getDefaultViewContent()}
                             </Tab>
-                            <Tab eventKey="own" title="Load own dataset">
+                            <Tab eventKey="own" title="Load data from files">
                                 <LocalFileSelection />
                             </Tab>
                         </Tabs>

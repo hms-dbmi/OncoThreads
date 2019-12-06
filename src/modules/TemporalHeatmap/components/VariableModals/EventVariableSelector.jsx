@@ -31,7 +31,7 @@ const EventVariableSelector = inject('variableManagerStore', 'rootStore')(observ
                 searchable
                 componentClass="select"
                 placeholder="Select..."
-                searchPlaceholder="Search variable"
+                searchPlaceholder="Search feature"
                 options={this.createOptions()}
                 onChange={this.handleOptionSelect}
             />
@@ -114,11 +114,11 @@ const EventVariableSelector = inject('variableManagerStore', 'rootStore')(observ
     render() {
         let savedOption = null;
         if (this.props.variableManagerStore.savedReferences.length > 0) {
-            savedOption = <option value="saved" key="saved">Saved variables</option>;
+            savedOption = <option value="saved" key="saved">Saved Features</option>;
         }
         return (
             <Form horizontal>
-                <h4>Select variable</h4>
+                <h4>Select Feature</h4>
                 <FormGroup>
                     <Col sm={4} style={{ paddingRight: '0' }}>
                         <FormControl

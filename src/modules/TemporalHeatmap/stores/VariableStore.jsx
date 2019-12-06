@@ -79,15 +79,15 @@ class VariableStore {
              * replaces referenced, current and primary variables
              */
             replaceAll: action((referencedVariables, currentVariables, primaryVariables) => {
+                this.replaceVariables(referencedVariables, currentVariables);
                 this.childStore.timepoints.forEach((d, i) => {
                     if (primaryVariables[i] !== '') {
                         if (referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
                             d.setIsGrouped(false);
                         }
-                        d.setPrimaryVariable(primaryVariables[i]);
                     }
+                    d.setPrimaryVariable(primaryVariables[i]);
                 });
-                this.replaceVariables(referencedVariables, currentVariables);
             }),
             /**
              * replaces referenced and current variables

@@ -117,7 +117,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
             });
             this.props.undoRedoStore.saveVariableHistory('ADD', this.selectedValues.map(d => d.label), true);
         }
-        this.selectedValues = [];
+        this.selectedValues.clear();
     }
 
 
@@ -251,7 +251,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                         'clinical'));
             });
             this.props.undoRedoStore.saveVariableHistory('ADD', this.selectedValues.map(d => d.object.variable), true);
-            this.selectedValues = [];
+            this.selectedValues.clear();
         }
     }
 
@@ -273,7 +273,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      */
     handleSelect(e) {
         this.category = e.target.value;
-        this.selectedValues = [];
+        this.selectedValues.clear();
     }
 
     /**
@@ -281,10 +281,10 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @param {Object[]} selectedOptions
      */
     handleOptionSelect(selectedOptions) {
-        if (selectedOptions.length > 0) {
+        if (selectedOptions !== null) {
             this.selectedValues.replace(selectedOptions);
         } else {
-            this.selectedValues = [];
+            this.selectedValues.clear();
         }
     }
 
@@ -309,10 +309,10 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                             onChange={this.handleSelect}
                             placeholder="Select Category"
                         >
-                            <optgroup label="Timepoint Variables">
+                            <optgroup label="Timepoint Features">
                                 {options}
                             </optgroup>
-                            <optgroup label="Event Variables">
+                            <optgroup label="Event Features">
                                 {Object.keys(this.props.rootStore.eventAttributes).filter(d => d !== 'SPECIMEN').map(d => (
                                     <option
                                         value={d}
@@ -321,7 +321,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                                         {UtilityFunctions.toTitleCase(d)}
                                     </option>
                                 ))}
-                                <option value="computed" key="computed">Computed variables</option>
+                                <option value="computed" key="computed">Computed features</option>
                             </optgroup>
                         </FormControl>
                     </Col>

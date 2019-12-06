@@ -3,6 +3,7 @@ import { action, extendObservable } from 'mobx';
 /**
  * store for storing the UI state
  */
+
 class UIStore {
     constructor() {
         extendObservable(this, {

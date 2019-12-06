@@ -26,7 +26,7 @@ const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extend
         return (
             <div>
                 <h4>
-                    Current Variables
+                    Current Features
                     <Button
                         style={{ marginLeft: 10 }}
                         bsStyle="primary"
@@ -35,7 +35,7 @@ const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extend
                         }}
                     >
                         <Glyphicon glyph="plus" />
-                        Add Variables
+                        Add Features
                     </Button>
                 </h4>
                 <VariableTable
