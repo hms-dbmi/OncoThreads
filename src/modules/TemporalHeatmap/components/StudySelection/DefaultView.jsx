@@ -178,7 +178,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                     <br></br>  
 
                     <Button variant="primary" onClick={this.selectInstance}>
-                        Connect to an instance
+                        Connect
                     </Button>   
 
                 </FormGroup>

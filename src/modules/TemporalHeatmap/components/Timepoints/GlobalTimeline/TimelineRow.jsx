@@ -220,26 +220,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                    />
 
 
-                    <line 
-                        x1={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
-                            //+ this.props.rootStore.visStore.timelineRectSize * (1 / 6)
-                            + this.props.rootStore.visStore.timelineRectSize/2
-                            -5
-                        } 
-                        x2={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
-                            //+ this.props.rootStore.visStore.timelineRectSize * (1 / 6)
-                            + this.props.rootStore.visStore.timelineRectSize/2
-                            +5
-                        }  
-                        y1={this.props.rootStore.visStore.timeScale(ev.eventStartDate) +(offset/2)/2
-                        }
-                        y2={this.props.rootStore.visStore.timeScale(ev.eventStartDate) +(offset/2)/2
-                        }
-                        stroke={"slategray"}//{this.props.color(this.props.row.variable)}
-                        strokeWidth={1.5}
-                        //opacity={opc1}
-                    />
-                
+                    
                     </g>);
 
                 }
