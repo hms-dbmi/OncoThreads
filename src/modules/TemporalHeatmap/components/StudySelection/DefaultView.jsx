@@ -136,7 +136,9 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
     getDefaultViewContent() {
         let instanceTextfield = null;
         let connected = null;
+        let placeHoplderText="Select Study";
         if (this.props.uiStore.cBioInstance === 'own') {
+            placeHoplderText= "Connect to a cBioPortal instance to load study list";
             instanceTextfield = (
                 <FormGroup>
                     <ControlLabel>
@@ -188,6 +190,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
         if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'failed') {
             connected = <Alert bsStyle="warning">Connection failed: {this.props.rootStore.studyAPI.errorMsg}</Alert>;
         } else if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'success') {
+            placeHoplderText="Select Study";
             connected = <Alert>Successfully connected</Alert>;
         }
 
@@ -203,7 +206,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                     searchable
                     isDisabled={this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] !== 'success'}
                     componentClass="select"
-                    placeholder="Connect to a cBioPortal instance to load study list"//"Select Study"
+                    placeholder={placeHoplderText}//"Connect to a cBioPortal instance to load study list"//"Select Study"
                     value={this.selectedStudy}
                     options={this.setOptions()}
                     onChange={this.getStudy}

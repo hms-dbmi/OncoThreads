@@ -97,8 +97,6 @@ class StudyAPI {
                 this.source = axios.CancelToken.source();
 
                 if(this.accessTokenFromUser===null || this.accessTokenFromUser===""){
-
-                    console.log("access token null");
                     this.loadStudies(this.allLinks.own, 
                         (study) => this.allStudies.own.push(study),
                         (status) => {
