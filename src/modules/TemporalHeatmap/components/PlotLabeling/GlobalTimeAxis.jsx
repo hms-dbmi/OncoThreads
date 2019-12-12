@@ -131,9 +131,30 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
             .style("stroke", "black")
             .style("fill", "black")
             .text(text_var);
+        d3.select(".axisGlobal")
+            .append("text")
+            .attr("class", "fa")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -50)
+            .attr("x", -1 * this.props.rootStore.visStore.svgHeight / 4 + 20)
+            .attr("dy", "1em")
+            //.style("font-family", "FontAwesome")
+            .style("font-size", "9px")
+            .style("text-anchor", "end")
+            .style("stroke-width", 1)
+            .style("stroke", "black")
+            .text("\uf013");
         //.text(this.props.store.rootStore.timeValue);
 
 
+        /*d3.select(".axisGlobal")
+        .append("image")
+      .attr("xlink:href", "https://img.icons8.com/small/16/000000/button2.png")
+      .attr("y", -40)
+            .attr("x", -1 * this.props.rootStore.visStore.svgHeight / 4)
+            .attr("dy", ".71em")
+      .attr("width", 16)
+      .attr("height", 16);*/
         /* d3.select(".axisGlobal2").call(yAxis);
 
          d3.selectAll(".axisLabel2").remove();
