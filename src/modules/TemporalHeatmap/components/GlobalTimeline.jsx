@@ -4,7 +4,7 @@ import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
 import GlobalTransition from './Transitions/GlobalTransition';
 import { Col, Row } from 'react-bootstrap';
-import TimeAssign from './PlotLabeling/TimeAssign';
+//import TimeAssign from './PlotLabeling/TimeAssign';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
 import Legend from './Legend';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
@@ -108,7 +108,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                 <div className="view" id="timeline-view">
                     <Row>
                         <Col xs={2} md={2} style={{ padding: 0 }}>
-                            <TimeAssign />
+                            
                             <Provider
                                 dataStore={this.props.rootStore.dataStore}
                                 visStore={this.props.rootStore.visStore}

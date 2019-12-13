@@ -249,7 +249,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                             fontSize, currX, legend_y, variable.colorScale(d),
                             ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
                         //currX += (rectWidth + 2);
-                        legend_y= legend_y+rectWidth;
+                        legend_y= legend_y+40;
 
 
                     }
