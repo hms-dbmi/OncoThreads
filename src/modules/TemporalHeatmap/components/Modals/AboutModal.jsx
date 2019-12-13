@@ -19,12 +19,12 @@ const AboutModal = observer(class AboutModal extends React.Component {
                 </Modal.Header>
                 <Modal.Body style={{ maxHeight: '600px', overflowY: 'auto' }}>
                     
-                    <h4>About the Tool</h4>
+                    <h4>About</h4>
                     <p>
-                        OncoThreads is a web-based visualization tool for the interactive exploration of tumor evolution data.
-                       
-                        OncoThreads allows researchers find patterns such as effect of treatments, find correlation with
-                        treatments and mutation counts, and compare the results across patient cohorts.
+
+                        OncoThreads is a tool for the visualization of longitudinal cancer genomics data in patient cohorts. 
+                        The tool visualizes patient cohorts as temporal heatmaps that can be iteratively transformed into Sankey diagrams. 
+                        OncoThreads supports the interactive exploration and ranking of a wide range of clinical and genomic features. 
                     </p>    
 
                         
@@ -37,27 +37,22 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     <br></br>
 
 
-                    <h4>Team Members</h4>
+                    <h4>Team</h4>
                     <p>
-                    Developers: Theresa Harbig, Sabrina Nusrat
-
+                    Theresa Harbig, Harvard Medical School
+                    <br/>
+                    Sabrina Nusrat, Harvard Medical School
+                    <br/>
+                    Nils Gehlenborg, Harvard Medical School
+                    <br/>
+                    Tali Mazor, Dana-Farber Cancer Institute
+                    <br/>
+                    Ethan Cerami, Dana-Farber Cancer Institute
+                    <br/>
+                    Alexander Thomson, Novartis Institutes for BioMedical Research 
+                    <br/>
+                    Hans Bitter, Novartis Institutes for BioMedical Research
                     </p>
-                    <p>
-                    Project Management, and Advising: Nils Gehlenborg, Tali Mazor, Ethan Cerami
-                    </p>
-
-                    <br></br>
-                    <h4>Institutes</h4>
-                    <p>
-                    Harvard Medical School
-                    </p>
-                    <p>
-                    Dana-Farber Cancer Institute
-                    </p>
-                    <p>
-                    Novartis Institutes for BioMedical Research 
-                    </p>
-
 
                    
                     <br></br>
@@ -65,7 +60,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     <h4>Funding</h4>
                     <p>
                     
-                    Dana-Farber Cancer Institute, Novartis Institutes for BioMedical Research 
+                    OncoThreads is supported by grants from Novartis/DFCI and the US National Institutes of Health (R00 HG007583).
                    
                     </p>
 
@@ -73,7 +68,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
                    <br></br>
 
 
-                   <h4>Download</h4>
+                   <h4>Software and Download</h4>
                     <a href="https://github.com/hms-dbmi/OncoThreads" //target="_blank"
                     > Github</a>
                   
