@@ -71,8 +71,9 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
     renderAxis() {
 
         const self=this;
-
+        
         var timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
+        //console.log(timeV);
         const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.rootStore.visStore.svgHeight - 35]).nice();
 
 
