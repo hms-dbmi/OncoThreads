@@ -114,10 +114,10 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
             .text(text_var);
         d3.select(".axisGlobal")
             .append("text")
-            .attr("class", "fa")
+            .attr("class", "axisLabel fa")
             .attr("transform", "rotate(-90)")
             .attr("y", -50)
-            .attr("x", -1 * this.props.rootStore.visStore.svgHeight / 4 + 20)
+            .attr("x", -1 * this.props.rootStore.visStore.svgHeight / 4 +20)
             .attr("dy", "1em")
             //.style("font-family", "FontAwesome")
             .style("font-size", "9px")
