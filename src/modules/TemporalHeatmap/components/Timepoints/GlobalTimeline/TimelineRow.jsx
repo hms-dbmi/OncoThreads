@@ -207,15 +207,17 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                        cx={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
                            //+ this.props.rootStore.visStore.timelineRectSize * (1 / 6)
                            + this.props.rootStore.visStore.timelineRectSize/2}
-                       cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate) +(offset/2)/2
+                       cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate) //+(offset/2)/2
                         //- offset
                            //+ this.props.rootStore.visStore.timelineRectSize/2
                        }
                        r = {5}//{r1}
 
-                       fill={this.props.color(this.props.row.variable)}
+                       fill={"none"}
 
                        opacity={opc1}
+
+                       stroke={this.props.color(this.props.row.variable)}
                       
                    />
 
@@ -240,7 +242,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         x={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
                         + this.props.rootStore.visStore.timelineRectSize * (2 / 6)}
                         y={this.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
-                        fill={this.props.color(this.props.row.variable)}
+                        fill={"none"}
                         opacity={opc1}
                         //rx={3}
                         //strokeWidth={1}
@@ -261,9 +263,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     //stroke = 'lightgray';
                     fill = 'white';
                 }
-                if (this.props.rootStore.dataStore.selectedPatients.includes(d.patient)) {
+                //if (this.props.rootStore.dataStore.selectedPatients.includes(d.patient)) {
                     //stroke = 'black';
-                }
+                //}
                 /*rects.push(<rect
                     stroke={stroke}
                     onMouseEnter={e => this.handleMouseEnter(
