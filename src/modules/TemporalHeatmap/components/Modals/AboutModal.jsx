@@ -52,15 +52,18 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     Alexander Thomson, Novartis Institutes for BioMedical Research 
                     <br/>
                     Hans Bitter, Novartis Institutes for BioMedical Research
+                    <br/>
+                    Audrey Kauffmann, Novartis Institutes for BioMedical Research
                     </p>
 
+                    
                    
                     <br></br>
 
                     <h4>Funding</h4>
                     <p>
                     
-                    OncoThreads is supported by grants from Novartis/DFCI and the US National Institutes of Health (R00 HG007583).
+                    OncoThreads is supported by the grant 'Drug Discovery & Translational Research Program' from Novartis/DFCI and the US National Institutes of Health (R00 HG007583).
                    
                     </p>
 

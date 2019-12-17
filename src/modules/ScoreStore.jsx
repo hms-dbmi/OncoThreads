@@ -1,19 +1,9 @@
-import { extendObservable } from 'mobx';
-
-/*
- Store containing all the other stores gets the data with either the CBioAPI
- or from local files, transforms it and gives it to the other stores
- */
 class ScoreStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.scoreStructure = {};
         this.TimeLineVariability = {};
 
-        extendObservable(this, {
-            // calculateVScore: action(() => {
-
-        });
     }
 
 
@@ -303,12 +293,14 @@ class ScoreStore {
             m = 0;
         }
 
-         // console.log(this.scoreStructure);
+        
 
         // }),
     }
     
-    getNumWithSetDec(num, numOfDec) {
+    /*returns a number up to a decimal point*/
+
+    getNumWithSetDec(num, numOfDec) { 
         const pow10s = Math.pow(10, numOfDec || 0);
         return (numOfDec) ? Math.round(pow10s * num) / pow10s : num;
     }
@@ -414,7 +406,6 @@ class ScoreStore {
 
              }
 
-             //console.log(u_vals);
 
              //u_vals contains number of variables in each category. Now calculate the variability
 
@@ -422,8 +413,7 @@ class ScoreStore {
 
              var t_v=0;
 
-             //console.log(iK);
-             //console.log("\n n is " + temp.length);
+             
 
              //else{
              for(x=0; x<u_vals.length; x++){

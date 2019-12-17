@@ -37,7 +37,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     //height = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
                     offset = this.props.rootStore.visStore.timelineRectSize * (1 / ft);
 
-                    console.log("offset = ", offset);
+                    //console.log("offset = ", offset);
                     //opc1 += 0.3;
 
                     //let r1 = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
