@@ -55,8 +55,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
     getRowLabel(variable, fontWeight, fontSize) {
         let promoteFunction = null;
         let colorRect = null;
-        console.log(variable);
-
+        
         if (this.props.type === 'sample') {
             promoteFunction = () => this.promote(variable.id);
         } else {
@@ -84,7 +83,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
 
                     fill={"none"}
                     opacity={0.8}
-                    strokeWidth={0.8}
+                    strokeWidth={1}
                     stroke={this.props.visStore.globalTimelineColors(variable.id)}
                    
                 />

@@ -15,7 +15,7 @@ class VisStore {
         this.currentVerticalZoomLevel = undefined;
         this.initialVerticalZoomLevel = undefined;
 
-        this.globalTimelineColors = d3.scaleOrdinal().range(['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#e31a1c']);
+        this.globalTimelineColors = d3.scaleOrdinal().range([ '#38aab0', '#f0027f', '#bf5b17', '#6a3d9a', '#ff7f00', '#d864f5', '#7fc97f', '#beaed4', '#fdc086','#c4c423']);
         extendObservable(this, {
             colorRectHeight: 2,
             bandRectHeight: 15,

@@ -217,6 +217,8 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                        opacity={opc1}
 
+                       strokeWidth={1}
+
                        stroke={this.props.color(this.props.row.variable)}
                       
                    />
