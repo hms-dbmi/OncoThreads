@@ -135,6 +135,7 @@ class RootStore {
                 this.clinicalSampleCategories.clear();
                 this.variablesParsed = false;
                 this.timelineParsed = false;
+                this.uiStore.globalTime = false;
                 this.api.getPatients((patients) => {
                     this.patients = patients;
                     this.api.getEvents(patients, (events) => {
