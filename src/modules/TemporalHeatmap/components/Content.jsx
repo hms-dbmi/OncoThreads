@@ -276,7 +276,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
                     <Row>
-                        <Col smOffset={1} xsOffset={1} md={7} xs={7}>
+                        <Col smOffset={0} xsOffset={0} md={7} xs={7}>
                             <QuickAddVariable />
                         </Col>
                         <Col sm={4} xs={4}>
@@ -375,7 +375,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                             sm={12}
                             md={12}
                             onMouseEnter={this.hideContextMenu}
-                            style={{ paddingTop: 0 }}
+                            style={{ paddingTop: 5 }}
                         >
                             <Row>
                                 <MainView

@@ -282,7 +282,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         return (
             <div>
                 <div className="view" id="block-view">
-                    <Row>
+                    <Row style={{marginLeft: '0'}}>
                         <Button
                             bsSize="xsmall"
                             onClick={this.handleTimeClick}
