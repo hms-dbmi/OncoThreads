@@ -73,15 +73,44 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
                 {...mouseProperties}
             />);*/
 
-            lines.push(<rect
-                key={`${d}endpoint`}
-                x={this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4}
-                y={this.props.visStore.timeScale(this.props.minMax[d].end)}
-                width={this.props.visStore.timelineRectSize/2}
-                height={endHeight}
-                fill={finalValueColor}
-                {...mouseProperties}
-            />);
+            if (this.props.minMax[d].status === 'DECEASED'){
+                lines.push(<rect
+                    key={`${d}endpoint`}
+                    x={this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4}
+                    y={this.props.visStore.timeScale(this.props.minMax[d].end)}
+                    width={this.props.visStore.timelineRectSize/2}
+                    height={endHeight}
+                    fill={finalValueColor}
+                    {...mouseProperties}
+                />);
+    
+            }
+            else{
+                let x1=this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4;
+                let x2=x1+this.props.visStore.timelineRectSize/2;
+                let y1=this.props.visStore.timeScale(this.props.minMax[d].end);
+                let y2=y1;
+                let x3=(x1+x2)/2;
+                let y3=y1+4;
+                let points = [];
+                points.push(
+                    `${x1},${y1}`
+                );
+                points.push(
+                    `${x2},${y2}`
+                );
+                points.push(
+                    `${x3},${y3}`
+                );
+                lines.push(<polygon 
+                    points={points}
+                    fill={finalValueColor}
+                    {...mouseProperties}
+                    />
+                );
+            }
+            
+            //<polygon points="200,10 250,190 160,210" style="fill:grey;stroke:purple;stroke-width:1" />
 
         });
         return lines;
