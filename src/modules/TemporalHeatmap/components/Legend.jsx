@@ -464,7 +464,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             >
                 <svg
                     width={this.maxWidth}
-                    height={this.props.rootStore.visStore.svgHeight}
+                    height={this.props.rootStore.visStore.svgHeight/4}
                     onMouseMove={this.dragLine}
                     onMouseUp={this.stopLineDrag}
                     onMouseEnter={() => { this.dragVisibility = 'visible'; }}

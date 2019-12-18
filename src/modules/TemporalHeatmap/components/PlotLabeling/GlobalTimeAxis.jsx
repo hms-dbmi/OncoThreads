@@ -107,12 +107,15 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
             .attr("x", -1 * this.props.rootStore.visStore.svgHeight / 4)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
-            .style("font-family", "times")
+            .style("font-family", "arial")
             .style("font-size", "12px")
             .style("stroke-width", 0.5)
             .style("stroke", "black")
             .style("fill", "black")
             .text(text_var);
+
+        /*
+        //cogwheel    
         d3.select(".axisGlobal")
             .append("text")
             .attr("class", "axisLabel fa")
@@ -120,7 +123,7 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
             .attr("y", -50)
             .attr("x", -1 * this.props.rootStore.visStore.svgHeight / 4 +20)
             .attr("dy", "1em")
-            //.style("font-family", "FontAwesome")
+            //.style("font-family", "FontAwesome") //this doesn't work
             .style("font-size", "9px")
             .style("text-anchor", "end")
             .style("stroke-width", 1)
@@ -128,7 +131,7 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
             .text("\uf013")
             .on("click", function(d){
                 self.openTimeVarModal();
-              });
+              });*/
 
 
 

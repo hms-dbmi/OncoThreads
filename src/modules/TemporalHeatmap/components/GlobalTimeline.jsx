@@ -7,6 +7,7 @@ import { Col, Row } from 'react-bootstrap';
 //import TimeAssign from './PlotLabeling/TimeAssign';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
 import Legend from './Legend';
+import TimeVarConfig from './TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
 import GlobalBands from './PlotLabeling/GlobalBands';
 
@@ -121,6 +122,14 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
 
                             <h5>{`${globalPrimaryName} Legend`}</h5>
                             <Legend {...this.props.tooltipFunctions} />
+
+                            <hr/>
+                            <h5>{`Timeline Configurations`}</h5>
+                            
+                            
+                            <TimeVarConfig {...this.props.tooltipFunctions} />
+
+                            
                         </Col>
                         <Col xs={1} md={1} style={{ padding: 0, width: 55 }}>
                             <GlobalTimeAxis
