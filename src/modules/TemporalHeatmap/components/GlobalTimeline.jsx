@@ -6,8 +6,8 @@ import GlobalTransition from './Transitions/GlobalTransition';
 import { Col, Row } from 'react-bootstrap';
 //import TimeAssign from './PlotLabeling/TimeAssign';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
-import Legend from './Legend';
-import TimeVarConfig from './TimeVarConfig';
+import Legend from './PlotLabeling/Legend';
+import TimeVarConfig from './PlotLabeling/TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
 import GlobalBands from './PlotLabeling/GlobalBands';
 

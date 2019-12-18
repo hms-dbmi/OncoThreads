@@ -70,7 +70,7 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
 
     renderAxis() {
 
-        const self=this;
+        //const self=this;
         
         var timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
         //console.log(timeV);
