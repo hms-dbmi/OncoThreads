@@ -413,11 +413,11 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
 
     render() {
         const textHeight = 10;
-        let legends = [];
 
         // draggable line for resizing
-        const lines = [];
         if (!this.props.uiStore.globalTime) {
+            const lines = [];
+            const legends = [];
             this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
                 if (i < this.props.rootStore.dataStore.timepoints.length - 1) {
                     lines.push(
@@ -451,30 +451,39 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                     </g>,
                 );
             });
+            return (
+                <div
+                    className="scrollableX"
+                    style={{ cursor: this.dragging ? 'row-resize' : 'auto' }}
+                >
+                    <svg
+                        width={this.maxWidth}
+                        height={this.props.rootStore.visStore.svgHeight}
+                        onMouseMove={this.dragLine}
+                        onMouseUp={this.stopLineDrag}
+                        onMouseEnter={() => { this.dragVisibility = 'visible'; }}
+                        onMouseLeave={() => { this.dragVisibility = 'hidden'; }}
+                    >
+                        {legends}
+                        {lines}
+                    </svg>
+                </div>
+            )
         } else {
             const primaryVariable = this.props.rootStore.dataStore.variableStores.sample
                 .fullCurrentVariables.filter(variable => variable.id
                     === this.props.rootStore.dataStore.globalPrimary)[0];
-            legends = this.getGlobalLegend(textHeight, primaryVariable);
+            return (
+                <div>
+                    <svg
+                        width={this.maxWidth}
+                        height={this.props.rootStore.visStore.svgHeight/4}
+                    >
+                        {this.getGlobalLegend(textHeight, primaryVariable)}
+                    </svg>
+                </div>
+            );
         }
-        return (
-            <div
-                className="scrollableX"
-                style={{ cursor: this.dragging ? 'row-resize' : 'auto' }}
-            >
-                <svg
-                    width={this.maxWidth}
-                    height={this.props.rootStore.visStore.svgHeight/4}
-                    onMouseMove={this.dragLine}
-                    onMouseUp={this.stopLineDrag}
-                    onMouseEnter={() => { this.dragVisibility = 'visible'; }}
-                    onMouseLeave={() => { this.dragVisibility = 'hidden'; }}
-                >
-                    {legends}
-                    {lines}
-                </svg>
-            </div>
-        );
     }
 }));
 Legend.propTypes = {
