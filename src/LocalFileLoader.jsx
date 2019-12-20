@@ -113,13 +113,14 @@ class LocalFileLoader {
                         header: true,
                         worker: true,
                         skipEmptyLines: true,
-                        step: (row) => {
+                        step: (row, parser) => {
                             // check header
                             if (LocalFileLoader.checkTimelineFileHeader(row.data.EVENT_TYPE,
                                 row.meta.fields, d.name)) {
                                 eventFiles.set(row.data.EVENT_TYPE, d);
                             } else {
                                 this.parsingStatus.events = 'error';
+                                parser.abort();
                             }
                         },
                         complete: () => {
@@ -411,6 +412,7 @@ class LocalFileLoader {
                 }
 
                 let correctHeader = true;
+                const errorMessages = [];
                 let rowCounter = 0;
                 Papa.parse(file, {
                     delimiter: '\t',
@@ -419,34 +421,35 @@ class LocalFileLoader {
                     skipEmptyLines: true,
                     step: (row, parser) => {
                         if (rowCounter === 0 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, first row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, first row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 1 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, second row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, second row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 2 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, third row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, third row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 3 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, fourth row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, fourth row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 4) {
                             if (row.data[0].startsWith('#')) {
-                                alert('ERROR: wrong header format, fifth row should not start with #');
+                                errorMessages.push('ERROR: wrong header format, fifth row should not start with #');
                                 correctHeader = false;
                             } else if (row.data.includes('PATIENT_ID')) {
                                 if (isSample && !row.data.includes('SAMPLE_ID')) {
-                                    alert('ERROR: no SAMPLE_ID column found');
+                                    errorMessages.push('ERROR: no SAMPLE_ID column found');
                                     correctHeader = false;
                                 } else if (!isSample && row.data.includes('SAMPLE_ID')) {
-                                    alert('ERROR: SAMPLE_ID provided for non-sample specific clinical data');
+                                    errorMessages.push('ERROR: SAMPLE_ID provided for non-sample specific clinical data');
                                     correctHeader = false;
                                 }
                             } else {
-                                alert('ERROR: No PATIENT_ID data column found');
+                                errorMessages.push('ERROR: No PATIENT_ID data column found');
                                 correctHeader = false;
                             }
                         } else if (rowCounter > 4) {
+                            alert(errorMessages);
                             parser.abort();
                         }
                         rowCounter += 1;
@@ -678,40 +681,41 @@ class LocalFileLoader {
                                     parser.abort();
                                 }
                                 firstRow = false;
-                            }
-                            const dataRow = [];
-                            if (row.data.Entrz_Gene_Id !== 'NA') {
-                                const entrezId = parseInt(row.data.Entrez_Gene_Id, 10);
-                                Object.keys(row.data).forEach((key) => {
-                                    const dataPoint = {
-                                        gene: {entrezGeneId: entrezId, hugoGeneSymbol: ''},
-                                        entrezGeneId: entrezId,
-                                    };
-                                    if (hasHugoSymbol) {
-                                        dataPoint.gene.hugoGeneSymbol = row.data.Hugo_Symbol;
-                                    }
-                                    if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
-                                        let value = row.data[key];
-                                        if (value !== 'NA' && metaData.datatype === 'CONTINUOUS') {
-                                            value = parseFloat(row.data[key]);
-                                            if (Number.isNaN(value)) {
-                                                aborted = true;
-                                                alert(`ERROR: file ${file.name} value is not a number`);
-                                                parser.abort();
-                                            }
+                            } else {
+                                const dataRow = [];
+                                if (row.data.Entrz_Gene_Id !== 'NA') {
+                                    const entrezId = parseInt(row.data.Entrez_Gene_Id, 10);
+                                    Object.keys(row.data).forEach((key) => {
+                                        const dataPoint = {
+                                            gene: {entrezGeneId: entrezId, hugoGeneSymbol: ''},
+                                            entrezGeneId: entrezId,
+                                        };
+                                        if (hasHugoSymbol) {
+                                            dataPoint.gene.hugoGeneSymbol = row.data.Hugo_Symbol;
                                         }
-                                        dataPoint.sampleId = key;
-                                        dataPoint.value = value;
-                                        dataRow.push(dataPoint);
-                                    }
-                                });
-                                data.set(entrezId, dataRow);
+                                        if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
+                                            let value = row.data[key];
+                                            if (value !== 'NA' && metaData.datatype === 'CONTINUOUS') {
+                                                value = parseFloat(row.data[key]);
+                                                if (Number.isNaN(value)) {
+                                                    aborted = true;
+                                                    alert(`ERROR: file ${file.name} value is not a number`);
+                                                    parser.abort();
+                                                }
+                                            }
+                                            dataPoint.sampleId = key;
+                                            dataPoint.value = value;
+                                            dataRow.push(dataPoint);
+                                        }
+                                    });
+                                    data.set(entrezId, dataRow);
+                                } else {
+                                    inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
+                                        row.data, file.name);
+                                    aborted = true;
+                                    parser.abort();
+                                }
                             }
-                        } else {
-                            inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                row.data, file.name);
-                            aborted = true;
-                            parser.abort();
                         }
                     },
                     complete: () => {
