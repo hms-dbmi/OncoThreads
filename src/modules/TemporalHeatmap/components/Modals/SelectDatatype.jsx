@@ -19,7 +19,7 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
      */
     getSelect() {
         return this.props.fileNames.map((fileName, i) => (
-            <FormGroup key={fileName} controlId="formControlsSelect">
+            <FormGroup key={fileName}>
                 <ControlLabel>{`${fileName} datatype`}</ControlLabel>
                 <FormControl
                     onChange={e => this.handleChange(fileName, e.target.value, i)}

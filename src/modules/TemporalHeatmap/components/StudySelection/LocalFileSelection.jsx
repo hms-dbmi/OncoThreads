@@ -1,13 +1,12 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import {
     Col, Form, FormControl, FormGroup, HelpBlock, Alert,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import uuidv4 from 'uuid/v4';
-import { extendObservable } from 'mobx';
+import {extendObservable, observe} from 'mobx';
 import SelectDatatype from '../Modals/SelectDatatype';
-
 
 
 /*
@@ -23,31 +22,33 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
     static getStateIcon(value) {
         let icon = null;
         if (value === 'finished') {
-            icon = <FontAwesome name="check" style={{ color: 'green' }} />;
+            icon = <FontAwesome name="check" style={{color: 'green'}}/>;
         } else if (value === 'loading') {
-            icon = <FontAwesome name="spinner" spin style={{ color: 'gray' }} />;
+            icon = <FontAwesome name="spinner" spin style={{color: 'gray'}}/>;
         } else if (value === 'error') {
-            icon = <FontAwesome name="times" style={{ color: 'red' }} />;
+            icon = <FontAwesome name="times" style={{color: 'red'}}/>;
         }
         return icon;
     }
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         extendObservable(this, {
             callback: null,
             modalIsOpen: false,
             fileNames: [],
             datatypes: [],
         });
-        // random keys for file inputs used for reset (inputs are reset if key changes)
-        this.timelineKey = uuidv4();
-        this.clinicalPatientKey = uuidv4();
-        this.clinicalSampleKey = uuidv4();
-        this.mutationKey = uuidv4();
-        this.molecularKey = uuidv4();
-        this.matrixKey = uuidv4();
-        this.panelKey = uuidv4();
+        // random keys for file inputs used for reset (inputs are reset if key changes to 'empty')
+        this.keys = {
+            events: uuidv4(),
+            mutations: uuidv4(),
+            molecular: uuidv4(),
+            clinicalPatient: uuidv4(),
+            clinicalSample: uuidv4(),
+            panelMatrix: uuidv4(),
+            genePanels: uuidv4(),
+        }
         this.handleEventsLoad = this.handleEventsLoad.bind(this);
         this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
         this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
@@ -56,6 +57,12 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
         this.setDatatype = this.setDatatype.bind(this);
         this.handleGeneMatrixLoad = this.handleGeneMatrixLoad.bind(this);
         this.handleGenePanelsLoad = this.handleGenePanelsLoad.bind(this);
+
+        observe(props.rootStore.localFileLoader.parsingStatus, (change) => {
+            if (change.oldValue !== 'empty' && change.newValue === 'empty') {
+                this.keys[change.name] = uuidv4();
+            }
+        });
     }
 
     /**
@@ -63,6 +70,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
      * @return {Form|div}
      */
     getForm() {
+        const parsingStatus = this.props.rootStore.localFileLoader.parsingStatus;
         if (this.props.rootStore.geneNamesAPI.geneListLoaded) {
             return (
                 <Form horizontal>
@@ -71,13 +79,12 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         <Col sm={5}>
                             Timeline
                             {' '}
-                            {LocalFileSelection.getStateIcon(this.props.rootStore
-                                .localFileLoader.eventsParsed)}
+                            {LocalFileSelection.getStateIcon(parsingStatus.events)}
                         </Col>
                         <Col sm={6}>
                             <FormControl
                                 type="file"
-                                key={this.timelineKey}
+                                key={this.keys.events}
                                 label="File"
                                 multiple
                                 onChange={this.handleEventsLoad}
@@ -85,7 +92,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         </Col>
                         <Col sm={1}>
                             <div
-                                style={{ visibility: this.props.rootStore.localFileLoader.eventsParsed === 'empty' ? 'hidden' : 'visible' }}
+                                style={{visibility: parsingStatus.events === 'empty' ? 'hidden' : 'visible'}}
                             >
                                 <FontAwesome
                                     name="times"
@@ -99,20 +106,19 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         <Col sm={5}>
                             Clinical Sample Data
                             {' '}
-                            {LocalFileSelection.getStateIcon(this.props.rootStore
-                                .localFileLoader.clinicalSampleParsed)}
+                            {LocalFileSelection.getStateIcon(parsingStatus.clinicalSample)}
                         </Col>
                         <Col sm={6}>
                             <FormControl
                                 type="file"
-                                key={this.clinicalSampleKey}
+                                key={this.keys.clinicalSample}
                                 label="File"
                                 onChange={this.handleClinicalSampleLoad}
                             />
                         </Col>
                         <Col sm={1}>
                             <div
-                                style={{ visibility: this.props.rootStore.localFileLoader.clinicalSampleParsed === 'empty' ? 'hidden' : 'visible' }}
+                                style={{visibility: parsingStatus.clinicalSample === 'empty' ? 'hidden' : 'visible'}}
                             >
                                 <FontAwesome
                                     name="times"
@@ -125,20 +131,19 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         <Col sm={5}>
                             Clinical Patient Data
                             {' '}
-                            {LocalFileSelection.getStateIcon(this.props.rootStore
-                                .localFileLoader.clinicalPatientParsed)}
+                            {LocalFileSelection.getStateIcon(parsingStatus.clinicalPatient)}
                         </Col>
                         <Col sm={6}>
                             <FormControl
                                 type="file"
-                                key={this.clinicalPatientKey}
+                                key={this.keys.clinicalPatient}
                                 label="File"
                                 onChange={this.handleClinicalPatientLoad}
                             />
                         </Col>
                         <Col sm={1}>
                             <div
-                                style={{ visibility: this.props.rootStore.localFileLoader.clinicalPatientParsed === 'empty' ? 'hidden' : 'visible' }}
+                                style={{visibility: parsingStatus.clinicalPatient === 'empty' ? 'hidden' : 'visible'}}
                             >
                                 <FontAwesome
                                     name="times"
@@ -151,20 +156,19 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         <Col sm={5}>
                             Mutations
                             {' '}
-                            {LocalFileSelection.getStateIcon(this.props.rootStore
-                                .localFileLoader.mutationsParsed)}
+                            {LocalFileSelection.getStateIcon(parsingStatus.mutations)}
                         </Col>
                         <Col sm={6}>
                             <FormControl
                                 type="file"
-                                key={this.mutationKey}
+                                key={this.keys.mutations}
                                 label="File"
                                 onChange={this.handleMutationsLoad}
                             />
                         </Col>
                         <Col sm={1}>
                             <div
-                                style={{ visibility: this.props.rootStore.localFileLoader.mutationsParsed === 'empty' ? 'hidden' : 'visible' }}
+                                style={{visibility: parsingStatus.mutations === 'empty' ? 'hidden' : 'visible'}}
                             >
                                 <FontAwesome
                                     name="times"
@@ -178,13 +182,12 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         <Col sm={5}>
                             Other files
                             {' '}
-                            {LocalFileSelection.getStateIcon(this.props.rootStore
-                                .localFileLoader.molecularParsed)}
+                            {LocalFileSelection.getStateIcon(parsingStatus.molecular)}
                         </Col>
                         <Col sm={6}>
                             <FormControl
                                 type="file"
-                                key={this.molecularKey}
+                                key={this.keys.molecular}
                                 label="File"
                                 multiple
                                 onChange={this.handleMolecularLoad}
@@ -196,7 +199,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         </Col>
                         <Col sm={1}>
                             <div
-                                style={{ visibility: this.props.rootStore.localFileLoader.molecularParsed === 'empty' ? 'hidden' : 'visible' }}
+                                style={{visibility: parsingStatus.molecular === 'empty' ? 'hidden' : 'visible'}}
                             >
                                 <FontAwesome
                                     name="times"
@@ -209,20 +212,19 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         <Col sm={5}>
                             Gene Panel Matrix
                             {' '}
-                            {LocalFileSelection.getStateIcon(this.props.rootStore
-                                .localFileLoader.panelMatrixParsed)}
+                            {LocalFileSelection.getStateIcon(parsingStatus.panelMatrix)}
                         </Col>
                         <Col sm={6}>
                             <FormControl
                                 type="file"
-                                key={this.matrixKey}
+                                key={this.keys.panelMatrix}
                                 label="File"
                                 onChange={this.handleGeneMatrixLoad}
                             />
                         </Col>
                         <Col sm={1}>
                             <div
-                                style={{ visibility: this.props.rootStore.localFileLoader.panelMatrixParsed === 'empty' ? 'hidden' : 'visible' }}
+                                style={{visibility: parsingStatus.panelMatrix === 'empty' ? 'hidden' : 'visible'}}
                             >
                                 <FontAwesome
                                     name="times"
@@ -235,13 +237,12 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         <Col sm={5}>
                             Gene Panels
                             {' '}
-                            {LocalFileSelection.getStateIcon(this.props.rootStore
-                                .localFileLoader.genePanelsParsed)}
+                            {LocalFileSelection.getStateIcon(parsingStatus.genePanels)}
                         </Col>
                         <Col sm={6}>
                             <FormControl
                                 type="file"
-                                key={this.panelKey}
+                                key={this.keys.genePanels}
                                 label="File"
                                 multiple
                                 onChange={this.handleGenePanelsLoad}
@@ -249,7 +250,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                         </Col>
                         <Col sm={1}>
                             <div
-                                style={{ visibility: this.props.rootStore.localFileLoader.genePanelsParsed === 'empty' ? 'hidden' : 'visible' }}
+                                style={{visibility: parsingStatus.genePanels === 'empty' ? 'hidden' : 'visible'}}
                             >
                                 <FontAwesome
                                     name="times"
@@ -261,7 +262,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                 </Form>
             );
         }
-        return (<div><FontAwesome name="spinner" spin style={{ color: 'gray' }} /></div>);
+        return (<div><FontAwesome name="spinner" spin style={{color: 'gray'}}/></div>);
     }
 
     /**
@@ -292,7 +293,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
      * @param {string} datatype
      */
     setDatatype(index, datatype, alterationType) {
-        this.datatypes[index] = { alterationType, datatype };
+        this.datatypes[index] = {alterationType, datatype};
     }
 
 
@@ -354,7 +355,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
      */
     openModal(files, callback) {
         this.modalIsOpen = true;
-        this.datatypes = Array.from(files).map(() => ({ alterationType: 'ANY', datatype: 'CONTINUOUS' }));
+        this.datatypes = Array.from(files).map(() => ({alterationType: 'ANY', datatype: 'CONTINUOUS'}));
         this.fileNames = Array.from(files).map(d => d.name);
         this.callback = callback;
     }
@@ -395,39 +396,9 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
         this.props.rootStore.localFileLoader.setGenePanels(e.target.files);
     }
 
-    /**
-     * updates keys of file inputs in order to reset them when the reset button is clicked.
-     * file inputs can only be uncontrolled and therefore cannot be reset in a "react" way
-     */
-    updateKeys() {
-        if (this.props.rootStore.localFileLoader.eventsParsed === 'empty') {
-            this.timelineKey = uuidv4();
-        }
-        if (this.props.rootStore.localFileLoader.clinicalSampleParsed === 'empty') {
-            this.clinicalSampleKey = uuidv4();
-        }
-        if (this.props.rootStore.localFileLoader.clinicalPatientParsed === 'empty') {
-            this.clinicalPatientKey = uuidv4();
-        }
-        if (this.props.rootStore.localFileLoader.mutationsParsed === 'empty') {
-            this.mutationKey = uuidv4();
-        }
-        if (this.props.rootStore.localFileLoader.molecularParsed === 'empty') {
-            this.molecularKey = uuidv4();
-        }
-        if (this.props.rootStore.localFileLoader.panelMatrixParsed === 'empty') {
-            this.matrixKey = uuidv4();
-        }
-        if (this.props.rootStore.localFileLoader.genePanelsParsed === 'empty') {
-            this.panelKey = uuidv4();
-        }
-    }
-
 
     render() {
-        this.updateKeys();
-
-        let msg = <Alert>Data uploaded on this page will not leave your computer. If you are uploading any molecular data, identifiers might get resolved using external services.</Alert>;
+        let msg = <Alert>Data uploaded on this page will not leave your computer.</Alert>;
         return (
             <div>
                 <br></br>
