@@ -113,7 +113,7 @@ class LocalFileLoader {
                         header: true,
                         worker: true,
                         skipEmptyLines: true,
-                        step: (row, parser) => {
+                        step: (row) => {
                             // check header
                             if (LocalFileLoader.checkTimelineFileHeader(row.data.EVENT_TYPE,
                                 row.meta.fields, d.name)) {
@@ -692,7 +692,7 @@ class LocalFileLoader {
                                     }
                                     if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
                                         let value = row.data[key];
-                                        if (value !== 'NA' && metaData === 'NUMBER') {
+                                        if (value !== 'NA' && metaData.datatype === 'CONTINUOUS') {
                                             value = parseFloat(row.data[key]);
                                             if (Number.isNaN(value)) {
                                                 aborted = true;
@@ -708,7 +708,6 @@ class LocalFileLoader {
                                 data.set(entrezId, dataRow);
                             }
                         } else {
-                            console.log(row);
                             inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
                                 row.data, file.name);
                             aborted = true;

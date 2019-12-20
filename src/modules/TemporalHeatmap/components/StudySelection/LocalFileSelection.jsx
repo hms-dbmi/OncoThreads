@@ -48,7 +48,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
             clinicalSample: uuidv4(),
             panelMatrix: uuidv4(),
             genePanels: uuidv4(),
-        }
+        };
         this.handleEventsLoad = this.handleEventsLoad.bind(this);
         this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
         this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
@@ -276,6 +276,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                     modalIsOpen={this.modalIsOpen}
                     fileNames={this.fileNames.slice()}
                     setDatatype={this.setDatatype}
+                    selectedTypes={this.datatypes.map(d => d.key)}
                     callback={this.callback}
                     closeModal={() => {
                         this.modalIsOpen = false;
@@ -289,11 +290,12 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
     /**
      * sets datatypes of currently selected files
      * @param {number} index
+     * @param {string} key
      * @param {string} alterationType
      * @param {string} datatype
      */
-    setDatatype(index, datatype, alterationType) {
-        this.datatypes[index] = {alterationType, datatype};
+    setDatatype(index, key, datatype, alterationType) {
+        this.datatypes[index] = {key, alterationType, datatype}
     }
 
 
@@ -355,7 +357,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
      */
     openModal(files, callback) {
         this.modalIsOpen = true;
-        this.datatypes = Array.from(files).map(() => ({alterationType: 'ANY', datatype: 'CONTINUOUS'}));
+        this.datatypes = Array.from(files).map(() => ({key: 'UnspecCont', alterationType: 'ANY', datatype: 'CONTINUOUS'}));
         this.fileNames = Array.from(files).map(d => d.name);
         this.callback = callback;
     }
