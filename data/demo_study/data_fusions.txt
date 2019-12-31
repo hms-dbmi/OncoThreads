@@ -1,0 +1,11 @@
+Hugo_Symbol	Entrez_Gene_Id	Center	Tumor_Sample_Barcode	Fusion	DNA_support	RNA_support	Method	Frame	Comments
+FGFR1	NA	MSKCC-DMP	P01_Pri	TACC1-FGFR1 fusion	yes	unknown	NA	unknown	FGFR1 (NM_001174067) rearrangement: chr8:g.38577463_c.716inv The FGFR1 (NM_001174067) rearrangement is an inversion of exons 1-7 of FGFR1. One of the breakpoints is within exon 7. The functional significance is undetermined.
+TACC1	NA	MSKCC-DMP	P01_Pri	TACC1-FGFR1 fusion	yes	unknown	NA	unknown	FGFR1 (NM_001174067) rearrangement: chr8:g.38577463_c.716inv The FGFR1 (NM_001174067) rearrangement is an inversion of exons 1-7 of FGFR1. One of the breakpoints is within exon 7. The functional significance is undetermined.
+EGFR	NA	MSKCC-DMP	P01_Rec	EGFR-intragenic	yes	unknown	NA	in frame	EGFR (NM_005228) VIII intragenic deletion : c.89-36701_890-195del
+EGFR	NA	MSKCC-DMP	P02_Pri	EGFR-intragenic	yes	unknown	NA	in frame	EGFR (NM_005228) VIII rearrangement: c.89-56768_c.889+761del
+EGFR	NA	MSKCC-DMP	P02_Rec	EGFR-intragenic	yes	unknown	NA	in frame	EGFR (NM_005228) vIII intragenic deletion: c.89-48637_c.890-295del
+EGFR	NA	MSKCC-DMP	P04_Pri	EGFR-intragenic	yes	unknown	NA	in frame	EGFR (NM_005228) vIII intragenic deletion: c.89-27828_c.890-82del
+KIAA1549	NA	MSKCC-DMP	P04_Rec1	BRAF-KIAA1549 fusion	yes	unknown	NA	in frame	KIAA1549 (NM_001164665) - BRAF (NM_004333) Fusion (KIAA1549 exon 16 fused to BRAF exon 9) : c.5248-1949:KIAA1549_c.1141-508:BRAFdup
+BRAF	NA	MSKCC-DMP	P04_Rec1	BRAF-KIAA1549 fusion	yes	unknown	NA	in frame	KIAA1549 (NM_001164665) - BRAF (NM_004333) Fusion (KIAA1549 exon 16 fused to BRAF exon 9) : c.5248-1949:KIAA1549_c.1141-508:BRAFdup
+KIAA1549	NA	MSKCC-DMP	P04_Rec2	BRAF-KIAA1549 fusion	yes	unknown	NA	in frame	c.4929+549:KIAA1549_c.1314+4:BRAFdup Note: The KIAA1549 (NM_001164665) - BRAF (NM_004333) rearrangement event is a duplication which results in the fusion of KIAA1549 exons 1 to 15 and BRAF exons 11 to 18.
+BRAF	NA	MSKCC-DMP	P04_Rec2	BRAF-KIAA1549 fusion	yes	unknown	NA	in frame	c.4929+549:KIAA1549_c.1314+4:BRAFdup Note: The KIAA1549 (NM_001164665) - BRAF (NM_004333) rearrangement event is a duplication which results in the fusion of KIAA1549 exons 1 to 15 and BRAF exons 11 to 18.
