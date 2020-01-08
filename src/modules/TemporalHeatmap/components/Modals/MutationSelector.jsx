@@ -39,6 +39,8 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
                 return [];
             },
         });
+        // stores if user is actively typing in the search field
+        this.typing = false;
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
@@ -127,7 +129,9 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
      */
     searchGenes() {
         // check for which profiles data is available for the entered HUGOSymbols
-        if (this.geneList.length > 0) {
+        // only do this if the user was actively in the searchfield before
+        // to prevent searching for gene multiple times
+        if (this.geneList.length > 0 && this.typing === true) {
             this.props.rootStore.molProfileMapping
                 .getDataContainingProfiles(this.geneList, (dataProfiles) => {
                     const hasMutations = this.props.rootStore
@@ -136,6 +140,7 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
                     this.mutationOptions = this.updateMutationOptions(hasMutations);
                     this.molecularOptions = this.updateMolecularOptions(dataProfiles);
                 });
+            this.typing = false;
         }
     }
 
@@ -145,6 +150,7 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
      * @param {event} event
      */
     updateSearchValue(event) {
+        this.typing = true;
         this.geneListString = event.target.value;
         this.mutationOptions = [];
         this.molecularOptions = [];
@@ -178,6 +184,8 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
     addGeneVariables() {
         this.props.addGeneVariables(this.selectedOptions);
         this.geneListString = '';
+        this.mutationOptions = [];
+        this.molecularOptions = [];
         this.selectedOptions.clear();
     }
 
@@ -190,7 +198,7 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
         if (this.props.rootStore.hasProfileData) {
             return (
                 [
-                    <Col sm={6} style={style} key="textfield">
+                    <Col sm={5} style={style} key="textfield">
                         {this.getGeneTextField()}
                     </Col>,
                     <Col sm={5} onClick={this.searchGenes} style={style} key="geneSearch">
@@ -198,6 +206,7 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
                     </Col>,
                     <Col sm={1} style={style} key="addButton">
                         <Button
+                            disabled={this.molecularOptions.length === 0 && this.mutationOptions.length === 0}
                             style={{ height: 38 }}
                             onClick={this.addGeneVariables}
                         >

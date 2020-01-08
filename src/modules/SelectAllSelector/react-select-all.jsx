@@ -69,6 +69,7 @@ const SelectAll = class SelectAll extends React.Component {
 SelectAll.propTypes = {
     options: PropTypes.arrayOf(PropTypes.object).isRequired,
     value: PropTypes.any.isRequired,
+    isDisabled: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
     allowSelectAll: PropTypes.bool,
     allOption: PropTypes.shape({
@@ -82,6 +83,7 @@ SelectAll.defaultProps = {
         label: 'Select all',
         value: '*',
     },
+    isDisabled: false,
     allowSelectAll: false,
 };
 
