@@ -47,8 +47,8 @@ class StudyAPI {
              // return axios.get(URLConstants.USER_URL, { headers: { Authorization: `Bearer ${data.token}` } });
 
             loadStudiesToken: action((link, token, callback, setStatus, setError) => {
-                axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`
-                        , { headers: { Authorization: `Bearer ${token}` } }
+                axios.get(`https://cors-anywhere.herokuapp.com/${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`
+                        , { headers: { Authorization: `Bearer ${token}` }, crossdomain: true }
                     )
                     .then((response) => {
                         setStatus('success');

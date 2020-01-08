@@ -162,6 +162,8 @@ class VisStore {
                         this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
                         this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                     }
+
+                    console.log("in globaltime, height= " + this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel);
                     return this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel;
                 }
                 else {    
@@ -282,6 +284,7 @@ class VisStore {
                 }
             });
 
+        console.log("in tp height, returning "+ height + (varCount - 1) * this.rootStore.uiStore.horizontalGap)    
         return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }
 
