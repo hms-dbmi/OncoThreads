@@ -19,16 +19,17 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
      */
     getSelect() {
         return this.props.fileNames.map((fileName, i) => (
-            <FormGroup key={fileName} controlId="formControlsSelect">
+            <FormGroup key={fileName}>
                 <ControlLabel>{`${fileName} datatype`}</ControlLabel>
                 <FormControl
                     onChange={e => this.handleChange(fileName, e.target.value, i)}
                     componentClass="select"
                     placeholder="select"
+                    value={this.props.selectedTypes[i]}
                 >
                     <option value="CNVDisc">Discrete CNV data</option>
                     <option value="CNVCont">Continuous CNV data</option>
-                    <option value="UnspecCont">Other Continuous</option>
+                    <option value="UnspecCont">Non-CNV continuous</option>
                 </FormControl>
             </FormGroup>
         ));
@@ -43,13 +44,13 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
     handleChange(fileName, value, index) {
         switch (value) {
         case 'UnspecCont':
-            this.props.setDatatype(index, 'CONTINUOUS', fileName);
+            this.props.setDatatype(index, value, 'CONTINUOUS', fileName);
             break;
         case 'CNVCont':
-            this.props.setDatatype(index, 'CONTINUOUS', 'COPY_NUMBER_ALTERATION');
+            this.props.setDatatype(index, value, 'CONTINUOUS', 'COPY_NUMBER_ALTERATION');
             break;
         default:
-            this.props.setDatatype(index, 'DISCRETE', 'COPY_NUMBER_ALTERATION');
+            this.props.setDatatype(index, value, 'DISCRETE', 'COPY_NUMBER_ALTERATION');
             break;
         }
     }

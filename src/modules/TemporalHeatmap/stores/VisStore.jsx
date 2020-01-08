@@ -191,7 +191,7 @@ class VisStore {
              * @returns {number}
              */
             get timelineRectSize() {
-                return this.sampleRectWidth * (2 / 3);
+                return this.sampleRectWidth * (2 / 5);
             },
             /**
              * width of heatmap
