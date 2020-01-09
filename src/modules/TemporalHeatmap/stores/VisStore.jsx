@@ -283,8 +283,7 @@ class VisStore {
                     }
                 }
             });
-
-        console.log("in tp height, returning "+ height + (varCount - 1) * this.rootStore.uiStore.horizontalGap)    
+    
         return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }
 

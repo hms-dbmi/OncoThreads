@@ -10,6 +10,7 @@ import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
 import GlobalBands from './PlotLabeling/GlobalBands';
+import UtilityFunctions from '../UtilityClasses/UtilityFunctions';
 
 
 /**
@@ -18,7 +19,9 @@ import GlobalBands from './PlotLabeling/GlobalBands';
 const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends React.Component {
     constructor() {
         super();
+        this.state = { rowOperatorsWidth: 100 };
         this.globalTime = React.createRef();
+        this.globalRowOperators = React.createRef();
         this.updateDimensions = this.updateDimensions.bind(this);
     }
 
@@ -95,15 +98,23 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
         this.props.rootStore.visStore
             .setPlotHeight(window.innerHeight - this.globalTime
                 .current.getBoundingClientRect().top);
+        this.setState({
+            rowOperatorsWidth: this.globalRowOperators.current.rowOperators.current.parentNode.clientWidth,
+        });
     }
 
 
     render() {
-        const transitions = this.getGlobalTransitions();
-        const timepoints = this.getGlobalTimepoints();
-        const globalPrimaryName = this.props.rootStore.dataStore
+        let transitions = this.getGlobalTransitions();
+        let timepoints = this.getGlobalTimepoints();
+        let globalPrimaryName = this.props.rootStore.dataStore
             .variableStores.sample.fullCurrentVariables
             .filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
+
+        let fontSize=10;
+        let fontWeight = 'bold';  
+        
+        
         return (
             <div>
                 <div className="view" id="timeline-view">
@@ -114,13 +125,16 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                 dataStore={this.props.rootStore.dataStore}
                                 visStore={this.props.rootStore.visStore}
                             >
-                                <GlobalRowOperators
+                                <GlobalRowOperators ref={this.globalRowOperators}
                                     openSaveVarModal={this.props.openSaveVarModal}
                                     tooltipFunctions={this.props.tooltipFunctions}
                                 />
                             </Provider>
 
-                            <h5>{`${globalPrimaryName} Legend`}</h5>
+
+                            
+                            <h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize,
+                        fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
                             <Legend {...this.props.tooltipFunctions} />
 
                             <hr/>
@@ -166,3 +180,7 @@ GlobalTimeline.propTypes = {
     tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
 };
 export default GlobalTimeline;
+
+//<h5>{`${globalPrimaryName} Legend`}</h5>
+
+//<h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize, fontWeight, 40)} Legend`}</h5>

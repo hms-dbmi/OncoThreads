@@ -63,7 +63,7 @@ class UtilityFunctions {
     }
 
     /**
-     * crops the text to a certain with and adds "..." in the end
+     * crops the text to a certain width and adds "..." in the end
      * @param {string} text
      * @param {number} fontSize
      * @param {*} fontweight
