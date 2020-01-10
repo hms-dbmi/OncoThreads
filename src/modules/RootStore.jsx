@@ -145,8 +145,8 @@ class RootStore {
 
                         this.timelineParsed = true;
                         callback();
-                    });
-                });
+                    }, this.studyAPI.accessTokenFromUser);
+                }, this.studyAPI.accessTokenFromUser);
             }),
             /**
              *  gets variable data and sets parameters
@@ -173,9 +173,9 @@ class RootStore {
                                 this.firstLoad = false;
                             }
                             callback();
-                        });
-                    });
-                });
+                        }, this.studyAPI.accessTokenFromUser);
+                    }, this.studyAPI.accessTokenFromUser);
+                }, this.studyAPI.accessTokenFromUser);
             }),
             /**
              * creates a dictionary mapping sample IDs onto clinical sample data

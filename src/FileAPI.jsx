@@ -11,7 +11,7 @@ class FileAPI {
      * get all patients in a study
      * @param {returnDataCallback} callback
      */
-    getPatients(callback) {
+    getPatients(callback, token) {
         callback(this.localFileLoader.patients);
     }
 
@@ -20,7 +20,7 @@ class FileAPI {
      * @param {string[]} patients
      * @param {returnDataCallback} callback
      */
-    getEvents(patients, callback) {
+    getEvents(patients, callback, token) {
         this.localFileLoader.loadEvents(callback);
     }
 

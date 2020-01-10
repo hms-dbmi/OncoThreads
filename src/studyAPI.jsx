@@ -25,12 +25,12 @@ class StudyAPI {
              */
 
             
-            loadStudies: action((link, callback, setStatus, setError) => {
-                axios.get(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
+            loadStudies: action((link, callback, setStatus, setError, token) => {
+                StudyAPI.callGetAPI(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
                     .then((response) => {
                         setStatus('success');
                         response.data.forEach((study) => {
-                            this.includeStudy(link, study, callback);
+                            this.includeStudy(link, study, callback, token);
                         });
                     }).catch((thrown) => {
                         setStatus('failed');
@@ -46,9 +46,9 @@ class StudyAPI {
 
              // return axios.get(URLConstants.USER_URL, { headers: { Authorization: `Bearer ${data.token}` } });
 
-            loadStudiesToken: action((link, token, callback, setStatus, setError) => {
+            /*loadStudiesToken: action((link, token, callback, setStatus, setError) => {
                 axios.get(`https://cors-anywhere.herokuapp.com/${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`
-                        , { headers: { Authorization: `Bearer ${token}` }, crossdomain: true }
+                        , { headers: { Authorization: `Bearer ${token}` } }
                     )
                     .then((response) => {
                         setStatus('success');
@@ -64,17 +64,17 @@ class StudyAPI {
                             console.log('could not load studies');
                         }
                     });
-            }),
+            }),*/
             /**
              * adds a study to the corresponding array if it contains temporal data
              */
-            includeStudy: action((link, study, callback) => {
+            includeStudy: action((link, study, callback, token) => {
                 this.getEvents(study.studyId, link, (events) => {
                     const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
                     if (specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'))) {
                         callback(study);
                     }
-                });
+                }, token);
             }),
             /**
              * loads default studies from cbiohack and cbioportal
@@ -83,7 +83,7 @@ class StudyAPI {
                 this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
                     (status) => {
                         this.connectionStatus.hack = status;
-                    });  
+                    }, null);  
                 // this.loadStudies(this.allLinks.portal, study => this.allStudies.portal.push(study));
             }),
             /**
@@ -96,28 +96,14 @@ class StudyAPI {
                 this.source.cancel();
                 this.source = axios.CancelToken.source();
 
-                if(this.accessTokenFromUser===null || this.accessTokenFromUser===""){
-                    this.loadStudies(this.allLinks.own, 
-                        (study) => this.allStudies.own.push(study),
-                        (status) => {
-                            this.connectionStatus.own = status;
-                        },
-                        (error) => {
-                            this.errorMsg = error;
-                        });
-                }
-                else{
-                    this.loadStudiesToken(this.allLinks.own, 
-                        this.accessTokenFromUser,
-                        (study) => this.allStudies.own.push(study),
-                        (status) => {
-                            this.connectionStatus.own = status;
-                        },
-                        (error) => {
-                            this.errorMsg = error;
-                        });
-                }
-                
+                this.loadStudies(this.allLinks.own, 
+                    (study) => this.allStudies.own.push(study),
+                    (status) => {
+                        this.connectionStatus.own = status;
+                    },
+                    (error) => {
+                        this.errorMsg = error;
+                    }, this.accessTokenFromUser);                
             }),
         });
     }
@@ -128,9 +114,10 @@ class StudyAPI {
      * @param {string} studyId
      * @param {string} link
      * @param {returnDataCallback} callback
+     * @param {string} token
      */
-    getPatients(studyId, link, callback) {
-        axios.get(`${link}/api/studies/${studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`,
+    getPatients(studyId, link, callback, token) {
+        StudyAPI.callGetAPI(`${link}/api/studies/${studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`, token,
             {
                 cancelToken: this.source.token,
             })
@@ -153,10 +140,11 @@ class StudyAPI {
      * @param {string} studyId
      * @param {string} link
      * @param {returnDataCallback} callback
+     * @param {string} token
      */
-    getEvents(studyId, link, callback) {
+    getEvents(studyId, link, callback, token) {
         this.getPatients(studyId, link, (patients) => {
-            axios.get(`${link}/api/studies/${studyId}/patients/${patients[0]}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`,
+            StudyAPI.callGetAPI(`${link}/api/studies/${studyId}/patients/${patients[0]}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`, token,
                 {
                     cancelToken: this.source.token,
                 })
@@ -171,7 +159,16 @@ class StudyAPI {
                         console.log('Could not load events');
                     }
                 });
-        });
+        }, token);
+    }
+
+    static callGetAPI(link, token, parameters) {
+        if (!token) {
+            return axios.get(link, parameters);
+        } else {
+            return axios.get(`https://cors-anywhere.herokuapp.com/${link}`,
+                Object.assign(parameters, { headers: { Authorization: `Bearer ${token}` } }));
+        }
     }
 }
 
