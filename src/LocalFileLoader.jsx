@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import * as Papa from 'papaparse';
-import { action, extendObservable, reaction } from 'mobx';
+import {action, extendObservable, reaction} from 'mobx';
 import uuidv4 from 'uuid/v4';
 
 /**
@@ -41,38 +41,28 @@ class LocalFileLoader {
         extendObservable(this, {
             // states reflecting the load status of the different types of files:
             // empty, loading, finished, or error
-            eventsParsed: 'empty',
-            mutationsParsed: 'empty',
-            molecularParsed: 'empty',
-            clinicalPatientParsed: 'empty',
-            clinicalSampleParsed: 'empty',
-            panelMatrixParsed: 'empty',
-            genePanelsParsed: 'empty',
+            parsingStatus: {
+                events: 'empty',
+                mutations: 'empty',
+                molecular: 'empty',
+                clinicalPatient: 'empty',
+                clinicalSample: 'empty',
+                panelMatrix: 'empty',
+                genePanels: 'empty',
+            },
             /**
              * is any of the files currently loading
              * @returns {boolean}
              */
             get dataLoading() {
-                return this.eventsParsed === 'loading'
-                    || this.mutationsParsed === 'loading'
-                    || this.molecularParsed === 'loading'
-                    || this.clinicalPatientParsed === 'loading'
-                    || this.clinicalSampleParsed === 'loading'
-                    || this.panelMatrixParsed === 'loading'
-                    || this.genePanelsParsed === 'loading';
+                return Object.values(this.parsingStatus).some(value => value === 'loading');
             },
             /**
              * were there errors during the file parsing
              * @returns {boolean}
              */
             get dataHasErrors() {
-                return this.eventsParsed === 'error'
-                    || this.mutationsParsed === 'error'
-                    || this.molecularParsed === 'error'
-                    || this.clinicalPatientParsed === 'error'
-                    || this.clinicalSampleParsed === 'error'
-                    || this.panelMatrixParsed === 'error'
-                    || this.genePanelsParsed === 'error';
+                return Object.values(this.parsingStatus).some(value => value === 'error');
             },
             /**
              * is data ready to be displayed
@@ -81,32 +71,32 @@ class LocalFileLoader {
             get dataReady() {
                 return !this.dataLoading
                     && !this.dataHasErrors
-                    && this.eventsParsed === 'finished'
-                    && (this.mutationsParsed === 'finished'
-                        || this.clinicalSampleParsed === 'finished'
-                        || this.clinicalPatientParsed === 'finished')
-                    && this.genePanelsParsed === this.panelMatrixParsed;
+                    && this.parsingStatus.events === 'finished'
+                    && (this.parsingStatus.mutations === 'finished'
+                        || this.parsingStatus.clinicalSample === 'finished'
+                        || this.parsingStatus.clinicalPatient === 'finished')
+                    && this.parsingStatus.genePanels === this.parsingStatus.panelMatrix;
             },
             setEventsParsed: action((loadingState) => {
-                this.eventsParsed = loadingState;
+                this.parsingStatus.events = loadingState;
             }),
             setMutationsParsed: action((loadingState) => {
-                this.mutationsParsed = loadingState;
+                this.parsingStatus.mutations = loadingState;
             }),
             setMolecularParsed: action((loadingState) => {
-                this.molecularParsed = loadingState;
+                this.parsingStatus.molecular = loadingState;
             }),
             setClinicalPatientParsed: action((loadingState) => {
-                this.clinicalPatientParsed = loadingState;
+                this.parsingStatus.clinicalPatient = loadingState;
             }),
             setClinicalSampleParsed: action((loadingState) => {
-                this.clinicalSampleParsed = loadingState;
+                this.parsingStatus.clinicalSample = loadingState;
             }),
             setPanelMatrixParsed: action((loadingState) => {
-                this.panelMatrixParsed = loadingState;
+                this.parsingStatus.panelMatrix = loadingState;
             }),
             setGenePanelsParsed: action((loadingState) => {
-                this.genePanelsParsed = loadingState;
+                this.parsingStatus.genePanels = loadingState;
             }),
             /**
              * sets current event files if headers are correct
@@ -116,7 +106,7 @@ class LocalFileLoader {
              */
             setEventFiles: action((files, callback) => {
                 const eventFiles = new Map();
-                this.eventsParsed = 'loading';
+                this.parsingStatus.events = 'loading';
                 Array.from(files).forEach((d) => {
                     Papa.parse(d, {
                         delimiter: '\t',
@@ -129,7 +119,8 @@ class LocalFileLoader {
                                 row.meta.fields, d.name)) {
                                 eventFiles.set(row.data.EVENT_TYPE, d);
                             } else {
-                                this.eventsParsed = 'error';
+                                this.parsingStatus.events = 'error';
+                                parser.abort();
                             }
                         },
                         complete: () => {
@@ -139,11 +130,11 @@ class LocalFileLoader {
                                 if (eventFiles.has('SPECIMEN')) {
                                     this.setPatientsAndSamples(eventFiles.get('SPECIMEN'), () => {
                                         this.eventFiles = eventFiles;
-                                        this.eventsParsed = 'finished';
+                                        this.parsingStatus.events = 'finished';
                                         callback();
                                     });
                                 } else {
-                                    this.eventsParsed = 'error';
+                                    this.parsingStatus.events = 'error';
                                     alert('ERROR: Required timeline file with EVENT_TYPE SPECIMEN missing');
                                 }
                             }
@@ -177,7 +168,7 @@ class LocalFileLoader {
                         const date = parseInt(row.data.START_DATE, 10);
                         if (Number.isNaN(date)) {
                             alert('ERROR: START_DATE is not a number');
-                            this.eventsParsed = 'error';
+                            this.parsingStatus.events = 'error';
                             dateCorrect = false;
                             parser.abort();
                         }
@@ -205,7 +196,7 @@ class LocalFileLoader {
                 let inconsistentLinebreaks = false;
                 const mutations = []; // data array for mutations
                 const counts = {}; // object for storing mutation counts
-                this.mutationsParsed = 'loading';
+                this.parsingStatus.mutations = 'loading';
                 Papa.parse(file, {
                     delimiter: '\t',
                     header: true,
@@ -222,7 +213,7 @@ class LocalFileLoader {
                                     }
                                     firstRow = false;
                                 } else {
-                                    this.mutationsParsed = 'error';
+                                    this.parsingStatus.mutations = 'error';
                                     aborted = true;
                                     parser.abort();
                                 }
@@ -283,14 +274,14 @@ class LocalFileLoader {
                                 };
                             });
                             this.mutations = mutations;
-                            this.mutationsParsed = 'finished';
+                            this.parsingStatus.mutations = 'finished';
                             // if linebreaks are inconsistent replace them and retry
                         } else if (inconsistentLinebreaks) {
                             LocalFileLoader.replaceLinebreaks(file, (newFile) => {
                                 this.setMutations(newFile);
                             });
                         } else {
-                            this.mutationsParsed = 'error';
+                            this.parsingStatus.mutations = 'error';
                         }
                     },
                 });
@@ -334,7 +325,7 @@ class LocalFileLoader {
                                 Object.keys(row.data).forEach((key) => {
                                     if (key !== 'START_DATE' && key !== 'STOP_DATE' && key !== 'EVENT_TYPE' && key !== 'PATIENT_ID') {
                                         if (row.data[key].length > 0) {
-                                            attributes.push({ key, value: row.data[key] });
+                                            attributes.push({key, value: row.data[key]});
                                         }
                                     }
                                 });
@@ -378,7 +369,7 @@ class LocalFileLoader {
                                 this.loadEventFile(newFile, callback);
                             });
                         } else {
-                            this.eventsParsed = 'error';
+                            this.parsingStatus.events = 'error';
                         }
                     },
                 });
@@ -415,12 +406,13 @@ class LocalFileLoader {
              */
             setClinicalFile: action((file, isSample) => {
                 if (isSample) {
-                    this.clinicalSampleParsed = 'loading';
+                    this.parsingStatus.clinicalSample = 'loading';
                 } else {
-                    this.clinicalPatientParsed = 'loading';
+                    this.parsingStatus.clinicalPatient = 'loading';
                 }
 
                 let correctHeader = true;
+                const errorMessages = [];
                 let rowCounter = 0;
                 Papa.parse(file, {
                     delimiter: '\t',
@@ -429,34 +421,35 @@ class LocalFileLoader {
                     skipEmptyLines: true,
                     step: (row, parser) => {
                         if (rowCounter === 0 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, first row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, first row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 1 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, second row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, second row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 2 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, third row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, third row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 3 && !row.data[0].startsWith('#')) {
-                            alert('ERROR: wrong header format, fourth row has to start with #');
+                            errorMessages.push('ERROR: wrong header format, fourth row has to start with #');
                             correctHeader = false;
                         } else if (rowCounter === 4) {
                             if (row.data[0].startsWith('#')) {
-                                alert('ERROR: wrong header format, fifth row should not start with #');
+                                errorMessages.push('ERROR: wrong header format, fifth row should not start with #');
                                 correctHeader = false;
                             } else if (row.data.includes('PATIENT_ID')) {
                                 if (isSample && !row.data.includes('SAMPLE_ID')) {
-                                    alert('ERROR: no SAMPLE_ID column found');
+                                    errorMessages.push('ERROR: no SAMPLE_ID column found');
                                     correctHeader = false;
                                 } else if (!isSample && row.data.includes('SAMPLE_ID')) {
-                                    alert('ERROR: SAMPLE_ID provided for non-sample specific clinical data');
+                                    errorMessages.push('ERROR: SAMPLE_ID provided for non-sample specific clinical data');
                                     correctHeader = false;
                                 }
                             } else {
-                                alert('ERROR: No PATIENT_ID data column found');
+                                errorMessages.push('ERROR: No PATIENT_ID data column found');
                                 correctHeader = false;
                             }
                         } else if (rowCounter > 4) {
+                            alert(errorMessages);
                             parser.abort();
                         }
                         rowCounter += 1;
@@ -465,15 +458,15 @@ class LocalFileLoader {
                         if (correctHeader) {
                             if (isSample) {
                                 this.clinicalSampleFile = file;
-                                this.clinicalSampleParsed = 'finished';
+                                this.parsingStatus.clinicalSample = 'finished';
                             } else {
                                 this.clinicalPatientFile = file;
-                                this.clinicalPatientParsed = 'finished';
+                                this.parsingStatus.clinicalPatient = 'finished';
                             }
                         } else if (isSample) {
-                            this.clinicalSampleParsed = 'error';
+                            this.parsingStatus.clinicalSample = 'error';
                         } else {
-                            this.clinicalPatientParsed = 'error';
+                            this.parsingStatus.clinicalPatient = 'error';
                         }
                     },
                 });
@@ -553,9 +546,9 @@ class LocalFileLoader {
                                     });
                                 }
                             } else if (isSample) {
-                                this.clinicalSampleParsed = 'error';
+                                this.parsingStatus.clinicalSample = 'error';
                             } else {
-                                this.clinicalPatientParsed = 'error';
+                                this.parsingStatus.clinicalPatient = 'error';
                             }
                         },
                     });
@@ -629,10 +622,10 @@ class LocalFileLoader {
                                     });
                                 }
                             } else if (isSample) {
-                                this.clinicalSampleParsed = 'error';
+                                this.parsingStatus.clinicalSample = 'error';
                                 this.clinicalSampleFile = null;
                             } else {
-                                this.clinicalPatientParsed = 'error';
+                                this.parsingStatus.clinicalPatient = 'error';
                                 this.clinicalPatientFile = null;
                             }
                         } else {
@@ -649,12 +642,12 @@ class LocalFileLoader {
              */
             setMolecularFiles: action((files, metaData) => {
                 let filesParsed = 0;
-                this.molecularParsed = 'loading';
+                this.parsingStatus.molecular = 'loading';
                 Array.from(files).forEach((file, i) => {
                     this.setMolecular(file, metaData[i], () => {
                         filesParsed += 1;
                         if (filesParsed === files.length) {
-                            this.molecularParsed = 'finished';
+                            this.parsingStatus.molecular = 'finished';
                         }
                     });
                 });
@@ -688,41 +681,41 @@ class LocalFileLoader {
                                     parser.abort();
                                 }
                                 firstRow = false;
-                            }
-                            const dataRow = [];
-                            if (row.data.Entrz_Gene_Id !== 'NA') {
-                                const entrezId = parseInt(row.data.Entrez_Gene_Id, 10);
-                                Object.keys(row.data).forEach((key) => {
-                                    const dataPoint = {
-                                        gene: { entrezGeneId: entrezId, hugoGeneSymbol: '' },
-                                        entrezGeneId: entrezId,
-                                    };
-                                    if (hasHugoSymbol) {
-                                        dataPoint.gene.hugoGeneSymbol = row.data.Hugo_Symbol;
-                                    }
-                                    if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
-                                        let value = row.data[key];
-                                        if (value !== 'NA' && metaData === 'NUMBER') {
-                                            value = parseFloat(row.data[key]);
-                                            if (Number.isNaN(value)) {
-                                                aborted = true;
-                                                alert(`ERROR: file ${file.name} value is not a number`);
-                                                parser.abort();
-                                            }
+                            } else {
+                                const dataRow = [];
+                                if (row.data.Entrz_Gene_Id !== 'NA') {
+                                    const entrezId = parseInt(row.data.Entrez_Gene_Id, 10);
+                                    Object.keys(row.data).forEach((key) => {
+                                        const dataPoint = {
+                                            gene: {entrezGeneId: entrezId, hugoGeneSymbol: ''},
+                                            entrezGeneId: entrezId,
+                                        };
+                                        if (hasHugoSymbol) {
+                                            dataPoint.gene.hugoGeneSymbol = row.data.Hugo_Symbol;
                                         }
-                                        dataPoint.sampleId = key;
-                                        dataPoint.value = value;
-                                        dataRow.push(dataPoint);
-                                    }
-                                });
-                                data.set(entrezId, dataRow);
+                                        if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
+                                            let value = row.data[key];
+                                            if (value !== 'NA' && metaData.datatype === 'CONTINUOUS') {
+                                                value = parseFloat(row.data[key]);
+                                                if (Number.isNaN(value)) {
+                                                    aborted = true;
+                                                    alert(`ERROR: file ${file.name} value is not a number`);
+                                                    parser.abort();
+                                                }
+                                            }
+                                            dataPoint.sampleId = key;
+                                            dataPoint.value = value;
+                                            dataRow.push(dataPoint);
+                                        }
+                                    });
+                                    data.set(entrezId, dataRow);
+                                } else {
+                                    inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
+                                        row.data, file.name);
+                                    aborted = true;
+                                    parser.abort();
+                                }
                             }
-                        } else {
-                            console.log(row);
-                            inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                row.data, file.name);
-                            aborted = true;
-                            parser.abort();
                         }
                     },
                     complete: () => {
@@ -741,13 +734,13 @@ class LocalFileLoader {
                                 this.setMolecular(newFile, metaData, callback);
                             });
                         } else {
-                            this.molecularParsed = 'error';
+                            this.parsingStatus.molecular = 'error';
                         }
                     },
                 });
             }),
             setGenePanelMatrix: action((file) => {
-                this.panelMatrixParsed = 'loading';
+                this.parsingStatus.panelMatrix = 'loading';
                 this.panelMatrix = {};
                 Papa.parse(file, {
                     delimiter: '\t',
@@ -768,7 +761,7 @@ class LocalFileLoader {
                                     this.panelMatrix[row.SAMPLE_ID].cna = row.cna;
                                 }
                             });
-                            this.panelMatrixParsed = 'finished';
+                            this.parsingStatus.panelMatrix = 'finished';
                         } else {
                             const missingColumns = [];
                             if (hasSampleID) {
@@ -787,13 +780,13 @@ class LocalFileLoader {
                                 }
                             }
                             alert(`The following columns are missing ${missingColumns}`);
-                            this.panelMatrixParsed = 'error';
+                            this.parsingStatus.panelMatrix = 'error';
                         }
                     },
                 });
             }),
             setGenePanels: action((files) => {
-                this.genePanelsParsed = 'loading';
+                this.parsingStatus.genePanels = 'loading';
                 this.genePanels.clear();
                 Array.from(files).forEach((file) => {
                     const reader = new FileReader();
@@ -808,18 +801,18 @@ class LocalFileLoader {
                                     this.genePanels.set(panelId, geneLineEntries[1].split('\t').filter(d => d.trim() !== ''));
                                 } else {
                                     alert(`Line 4 of file ${file.name} incorrect`);
-                                    this.genePanelsParsed = 'error';
+                                    this.parsingStatus.genePanels = 'error';
                                 }
                             } else {
                                 alert(`Line 1 of file ${file.name} incorrect`);
-                                this.genePanelsParsed = 'error';
+                                this.parsingStatus.genePanels = 'error';
                             }
                         } else {
                             alert('Incorrect number of lines');
-                            this.genePanelsParsed = 'error';
+                            this.parsingStatus.genePanels = 'error';
                         }
                         if (this.genePanels.size === files.length) {
-                            this.genePanelsParsed = 'finished';
+                            this.parsingStatus.genePanels = 'finished';
                         }
                     };
                     reader.readAsText(file);
@@ -829,17 +822,17 @@ class LocalFileLoader {
 
         // reactions to errors or removal of files:
         // clears data fields if there is an error or the file is removed
-        reaction(() => this.eventsParsed, (parsed) => {
+        reaction(() => this.parsingStatus.events, (parsed) => {
             if (parsed === 'error' || parsed === 'empty') {
                 this.eventFiles.clear();
             }
         });
-        reaction(() => this.mutationsParsed, (parsed) => {
+        reaction(() => this.parsingStatus.mutations, (parsed) => {
             if (parsed === 'error' || parsed === 'empty') {
                 this.mutations = [];
             }
         });
-        reaction(() => this.molecularParsed, (parsed) => {
+        reaction(() => this.parsingStatus.molecular, (parsed) => {
             if (parsed === 'error' || parsed === 'empty') {
                 const spliceIndices = [];
                 this.molecularProfiles.forEach((profile, i) => {
@@ -853,27 +846,27 @@ class LocalFileLoader {
                 }
             }
         });
-        reaction(() => this.clinicalSampleParsed, (parsed) => {
+        reaction(() => this.parsingStatus.clinicalSample, (parsed) => {
             if (parsed === 'error' || parsed === 'empty') {
                 this.clinicalSampleFile = null;
             }
         });
-        reaction(() => this.clinicalPatientParsed, (parsed) => {
+        reaction(() => this.parsingStatus.clinicalPatient, (parsed) => {
             if (parsed === 'error' || parsed === 'empty') {
                 this.clinicalPatientFile = null;
             }
         });
-        reaction(() => this.panelMatrixParsed, (parsed) => {
+        reaction(() => this.parsingStatus.panelMatrix, (parsed) => {
             if (parsed === 'empty') {
                 this.panelMatrix = {};
-            } else if (parsed === 'finished' && (this.genePanelsParsed === 'finished'
-                || (this.genePanelsParsed === 'error' && this.genePanels.size > 0))) {
+            } else if (parsed === 'finished' && (this.parsingStatus.genePanels === 'finished'
+                || (this.parsingStatus.genePanels === 'error' && this.genePanels.size > 0))) {
                 let broke = false;
                 Object.keys(this.panelMatrix).every((sample) => {
                     Object.keys(this.panelMatrix[sample]).every((key) => {
                         if (!this.genePanels.has(this.panelMatrix[sample][key]) && this.panelMatrix[sample][key] !== 'NA') {
-                            this.genePanelsParsed = 'error';
-                            this.panelMatrixParsed = 'error';
+                            this.parsingStatus.genePanels = 'error';
+                            this.parsingStatus.panelMatrix = 'error';
                             alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
                             broke = true;
                             return false;
@@ -883,21 +876,21 @@ class LocalFileLoader {
                     return !broke;
                 });
                 if (!broke) {
-                    this.genePanelsParsed = 'finished';
+                    this.parsingStatus.genePanels = 'finished';
                 }
             }
         });
-        reaction(() => this.genePanelsParsed, (parsed) => {
+        reaction(() => this.parsingStatus.genePanels, (parsed) => {
             if (parsed === 'empty') {
                 this.genePanels.clear();
-            } else if (parsed === 'finished' && (this.panelMatrixParsed === 'finished'
-                || (this.panelMatrixParsed === 'error' && Object.keys(this.panelMatrixParsed).length > 0))) {
+            } else if (parsed === 'finished' && (this.parsingStatus.panelMatrix === 'finished'
+                || (this.parsingStatus.panelMatrix === 'error' && Object.keys(this.parsingStatus.panelMatrix).length > 0))) {
                 let broke = false;
                 Object.keys(this.panelMatrix).every((sample) => {
                     Object.keys(this.panelMatrix[sample]).every((key) => {
                         if (!this.genePanels.has(this.panelMatrix[sample][key]) && this.panelMatrix[sample][key] !== 'NA') {
-                            this.genePanelsParsed = 'error';
-                            this.panelMatrixParsed = 'error';
+                            this.parsingStatus.genePanels = 'error';
+                            this.parsingStatus.panelMatrix = 'error';
                             alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
                             broke = true;
                             return false;
@@ -907,7 +900,7 @@ class LocalFileLoader {
                     return !broke;
                 });
                 if (!broke) {
-                    this.panelMatrixParsed = 'finished';
+                    this.parsingStatus.panelMatrix = 'finished';
                 }
             }
         });

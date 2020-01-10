@@ -211,7 +211,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         //- offset
                            //+ this.props.rootStore.visStore.timelineRectSize/2
                        }
-                       r = {5}//{r1}
+                       r = {this.props.rootStore.visStore.timelineRectSize/2}//{r1}
 
                        fill={"none"}
 
@@ -351,7 +351,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])
                     }
 
-                    r = {5}//{r1}
+                    r = {this.props.rootStore.visStore.timelineRectSize/2}//{r1}
 
                     fill={fill}
 
@@ -359,8 +359,8 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                     opacity={this.props.opacity}
 
-                    strokeWidth={1}
-                    stroke={fill}
+                    //strokeWidth={1}
+                    //stroke={fill}
                    
                 /></g>);
 

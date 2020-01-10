@@ -162,6 +162,8 @@ class VisStore {
                         this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
                         this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                     }
+
+                    console.log("in globaltime, height= " + this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel);
                     return this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel;
                 }
                 else {    
@@ -189,7 +191,7 @@ class VisStore {
              * @returns {number}
              */
             get timelineRectSize() {
-                return this.sampleRectWidth * (2 / 3);
+                return this.sampleRectWidth * (2 / 5);
             },
             /**
              * width of heatmap
@@ -281,7 +283,7 @@ class VisStore {
                     }
                 }
             });
-
+    
         return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }
 

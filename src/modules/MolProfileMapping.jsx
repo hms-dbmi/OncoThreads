@@ -238,30 +238,6 @@ class MolProfileMapping {
         }
     }
 
-    getMolecularProfiles(HUGOsymbols, profileId, callback) {
-        this.loadIds(HUGOsymbols, () => {
-            this.rootStore.api.areProfiled(this.currentIds, profileId, (profileDict) => {
-                this.currentPanels[profileId] = profileDict;
-                this.loadMolecularData(profileId, () => {
-                    callback(this.getMolecularProfile(this.filterMolecularData(profileId),
-                        profileId));
-                });
-            });
-        });
-    }
-
-    getMutationProfiles(HUGOsymbols, mappingType, callback) {
-        const geneProfileId = this.rootStore.mutationProfile.molecularProfileId;
-        this.loadIds(HUGOsymbols, () => {
-            this.rootStore.api.areProfiled(this.currentIds, geneProfileId, (profileDict) => {
-                this.currentPanels[geneProfileId] = profileDict;
-                this.loadMutations(geneProfileId, () => {
-                    callback(this.getMutationsProfile(this.filterGeneIDs(), mappingType));
-                });
-            });
-        });
-    }
-
     /**
      * gets multiple profiles and mapping types at once
      * @param {string[]} profileIds

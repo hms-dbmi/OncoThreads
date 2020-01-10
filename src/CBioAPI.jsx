@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import axios from 'axios';
 import GenomeNexusAPI from './GenomeNexusAPI';
+import StudyAPI from './studyAPI';
 
 /**
  * retrieves data using the cBio API
@@ -16,8 +17,8 @@ class CBioAPI {
      * get all patients in a study
      * @param {returnDataCallback} callback
      */
-    getPatients(callback) {
-        axios.get(`${this.cBioLink}/api/studies/${this.studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
+    getPatients(callback, token) {
+        StudyAPI.callGetAPI(`${this.cBioLink}/api/studies/${this.studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
             .then((response) => {
                 callback(response.data.map(patient => patient.patientId));
             }).catch((error) => {
@@ -35,8 +36,9 @@ class CBioAPI {
      * @param {string[]} patients
      * @param {returnDataCallback} callback
      */
-    getEvents(patients, callback) {
-        axios.all(patients.map(patient => axios.get(`${this.cBioLink}/api/studies/${this.studyId}/patients/${patient}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`)))
+    getEvents(patients, callback, token) {
+        axios.all(patients
+            .map(patient => StudyAPI.callGetAPI(`${this.cBioLink}/api/studies/${this.studyId}/patients/${patient}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`, token, {})))
             .then((eventResults) => {
                 const events = {};
                 eventResults.forEach((response, i) => {
@@ -56,8 +58,8 @@ class CBioAPI {
      * get all available clinical sample data in a study
      * @param {returnDataCallback} callback
      */
-    getClinicalPatientData(callback) {
-        axios.get(`${this.cBioLink}/api/studies/${this.studyId}/clinical-data?clinicalDataType=PATIENT&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`)
+    getClinicalPatientData(callback, token) {
+        StudyAPI.callGetAPI(`${this.cBioLink}/api/studies/${this.studyId}/clinical-data?clinicalDataType=PATIENT&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
@@ -73,8 +75,8 @@ class CBioAPI {
      * get all available molecular profiles for a study
      * @param {returnDataCallback} callback
      */
-    getAvailableMolecularProfiles(callback) {
-        axios.get(`${this.cBioLink}/api/studies/${this.studyId}/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`)
+    getAvailableMolecularProfiles(callback, token) {
+        StudyAPI.callGetAPI(`${this.cBioLink}/api/studies/${this.studyId}/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
@@ -90,8 +92,8 @@ class CBioAPI {
      * get all available clinical sample data in a study
      * @param {returnDataCallback} callback
      */
-    getClinicalSampleData(callback) {
-        axios.get(`${this.cBioLink}/api/studies/${this.studyId}/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`)
+    getClinicalSampleData(callback, token) {
+        StudyAPI.callGetAPI(`${this.cBioLink}/api/studies/${this.studyId}/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
