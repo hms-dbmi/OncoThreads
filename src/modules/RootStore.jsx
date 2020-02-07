@@ -46,6 +46,8 @@ class RootStore {
         this.uiStore = uiStore;
         this.studyAPI = studyAPI;
 
+        this.allEvents = null;
+
         extendObservable(this, {
             // current state of data and data parsing
             isOwnData: false,
@@ -67,6 +69,8 @@ class RootStore {
 
             // current structure of sample timepoints
             timepointStructure: [],
+
+            
 
             /**
              * resets everything
@@ -144,9 +148,21 @@ class RootStore {
                         this.createTimeGapMapping();
 
                         this.timelineParsed = true;
+                        
+                        
+
                         callback();
+
+                        //this.setEvents(events);
+                        //this.allEvents = events;
+
+                        //console.log(events);
+
                     }, this.studyAPI.accessTokenFromUser);
+
                 }, this.studyAPI.accessTokenFromUser);
+
+                
             }),
             /**
              *  gets variable data and sets parameters
@@ -511,6 +527,7 @@ class RootStore {
     }
 
 
+    
     /**
      * creates a dictionary mapping sample IDs onto time between timepoints
      */
@@ -557,6 +574,9 @@ class RootStore {
         return survivalEvents;
     }
 
+    setEvents(events){
+        this.allEvents=events;
+    }
     /**
      * creates all event variables
      * @param {object[]} events
@@ -564,6 +584,13 @@ class RootStore {
     createEventVariables(events) {
         this.eventTimelineMap = {};
         this.eventAttributes = {};
+
+        //this.setEvents(events);
+
+        this.allEvents=events;
+
+        console.log(this.allEvents);
+
         Object.keys(events).forEach((patient) => {
             const samples = [];
             // extract samples for current patient
@@ -574,6 +601,9 @@ class RootStore {
                     }
                 });
             });
+
+            
+
             events[patient].forEach((event) => {
                 if (!(event.eventType in this.eventAttributes)) {
                     this.eventAttributes[event.eventType] = {};

@@ -163,7 +163,7 @@ class VisStore {
                         this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                     }
 
-                    console.log("in globaltime, height= " + this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel);
+                    //console.log("in globaltime, height= " + this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel);
                     return this.currentSVGHeight * this.currentVerticalZoomLevel / this.initialVerticalZoomLevel;
                 }
                 else {    

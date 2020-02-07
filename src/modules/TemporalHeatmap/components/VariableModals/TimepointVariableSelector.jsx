@@ -162,18 +162,22 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
             }
         });
         // check for which profiles data is available for the entered HUGOSymbols
-        this.props.rootStore.molProfileMapping
-            .getDataContainingProfiles(geneList, (dataProfiles) => {
-                this.props.rootStore.availableProfiles.forEach((d) => {
-                    if (d.molecularAlterationType === 'MUTATION_EXTENDED') {
-                        this.updateMutationCheckBoxOptions(dataProfiles
-                            .includes(d.molecularProfileId));
-                    } else {
-                        this.updateMolecularCheckBoxOptions(d.molecularProfileId, dataProfiles
-                            .includes(d.molecularProfileId));
-                    }
-                });
+        let callback = (dataProfiles) => {
+            this.props.rootStore.availableProfiles.forEach((d) => {
+                if (d.molecularAlterationType === 'MUTATION_EXTENDED') {
+                    this.updateMutationCheckBoxOptions(dataProfiles
+                        .includes(d.molecularProfileId));
+                } else {
+                    this.updateMolecularCheckBoxOptions(d.molecularProfileId, dataProfiles
+                        .includes(d.molecularProfileId));
+                }
             });
+        };
+        if (this.props.rootStore.isOwnData) {
+            this.props.rootStore.molProfileMapping.getDataContainingProfiles(geneList, callback);
+        } else {
+            this.props.rootStore.molProfileMapping.getDataContainingProfiles(geneList, callback, this.props.rootStore.studyAPI.accessTokenFromUser);
+        }
     }
 
     /**

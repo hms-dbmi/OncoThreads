@@ -158,7 +158,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                     width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
-                                    <g transform={`translate(0,${this.props.rootStore.visStore.timelineRectSize / 2})`}>
+                                    <g transform={`translate(10,${this.props.rootStore.visStore.timelineRectSize / 2})`}>
                                         {transitions}
                                         {timepoints}
                                     </g>

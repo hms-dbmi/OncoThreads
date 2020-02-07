@@ -11,6 +11,7 @@ class CBioAPI {
         this.cBioLink = cBioLink;
         this.studyId = studyId;
         this.genomeNexusAPI = new GenomeNexusAPI();
+        this.allEvents = null;
     }
 
     /**
@@ -44,6 +45,9 @@ class CBioAPI {
                 eventResults.forEach((response, i) => {
                     events[patients[i]] = response.data;
                 });
+                //console.log(events);
+                
+                this.allEvents=events;
                 callback(events);
             }).catch((error) => {
                 if (CBioAPI.verbose) {
@@ -111,8 +115,8 @@ class CBioAPI {
      * @param {string} profileId
      * @param {returnDataCallback} callback
      */
-    getMutations(entrezIDs, profileId, callback) {
-        axios.post(`${this.cBioLink}/api/molecular-profiles/${profileId}/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`, {
+    getMutations(entrezIDs, profileId, callback, token) {
+        StudyAPI.callPostAPI(`${this.cBioLink}/api/molecular-profiles/${profileId}/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`, token, {}, {
             entrezGeneIds:
                 entrezIDs.map(d => d.entrezGeneId),
             sampleListId: `${this.studyId}_all`,
@@ -133,14 +137,14 @@ class CBioAPI {
      * @param {string} profileId
      * @param {returnDataCallback} callback
      */
-    areProfiled(genes, profileId, callback) {
+    areProfiled(genes, profileId, callback, token) {
         const profiledDict = {};
-        axios.post(`${this.cBioLink}/api/molecular-profiles/${profileId}/gene-panel-data/fetch`, {
+        StudyAPI.callPostAPI(`${this.cBioLink}/api/molecular-profiles/${profileId}/gene-panel-data/fetch`, token, {}, {
             sampleListId: `${this.studyId}_all`,
         }).then((samplePanels) => {
             const differentPanels = [...new Set(samplePanels.data.filter(d => 'genePanelId' in d).map(d => d.genePanelId))];
             if (differentPanels.length > 0) {
-                axios.all(differentPanels.map(d => axios.get(`http://www.cbiohack.org/api/gene-panels/${d}`))).then((panelList) => {
+                axios.all(differentPanels.map(d => axios.get(`${this.cBioLink}/api/gene-panels/${d}`))).then((panelList) => {
                     samplePanels.data.forEach((samplePanel) => {
                         profiledDict[samplePanel.sampleId] = [];
                         genes.forEach((gene) => {
@@ -184,8 +188,8 @@ class CBioAPI {
      * @param {Object[]} entrezIDs
      * @param {returnDataCallback} callback
      */
-    getMolecularValues(profileId, entrezIDs, callback) {
-        axios.post(`${this.cBioLink}/api/molecular-profiles/${profileId}/molecular-data/fetch?projection=SUMMARY`, {
+    getMolecularValues(profileId, entrezIDs, callback, token) {
+        StudyAPI.callPostAPI(`${this.cBioLink}/api/molecular-profiles/${profileId}/molecular-data/fetch?projection=SUMMARY`, token, {}, {
             entrezGeneIds:
                 entrezIDs.map(d => d.entrezGeneId),
             sampleListId: `${this.studyId}_all`,
@@ -196,8 +200,8 @@ class CBioAPI {
         });
     }
 
-    getGeneIDs(hgncSymbols, callback) {
-        this.genomeNexusAPI.getGeneIDs(hgncSymbols, callback);
+    getGeneIDs(hgncSymbols, callback, token) {
+        this.genomeNexusAPI.getGeneIDs(hgncSymbols, callback, token);
     }
 }
 
