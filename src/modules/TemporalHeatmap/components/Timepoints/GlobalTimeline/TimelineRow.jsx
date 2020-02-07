@@ -31,7 +31,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                 let height = this.props.rootStore
                     .visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
 
-                let maxEvents = Math.max(...Object.values(self.props.rootStore.allEvents).map(d=>d.length));
+                //let maxEvents = Math.max(...Object.values(self.props.rootStore.allEvents).map(d=>d.length));
 
                 let currEventNum= self.props.rootStore.dataStore.variableStores.between.getRelatedVariables('event').length;  
 
