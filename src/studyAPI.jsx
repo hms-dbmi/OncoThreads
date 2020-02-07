@@ -118,6 +118,15 @@ class StudyAPI {
                 Object.assign(parameters, {headers: {Authorization: `Bearer ${token}`}}));
         }
     }
+
+    static callPostAPI(link, token, parameters, body) {
+        if (!token) {
+            return axios.post(link, body, parameters);
+        } else {
+            return axios.post(`https://cors-anywhere.herokuapp.com/${link}`, body,
+                Object.assign(parameters, {headers: {Authorization: `Bearer ${token}`}}));
+        }
+    }
 }
 
 

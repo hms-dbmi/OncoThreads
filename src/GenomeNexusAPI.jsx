@@ -1,4 +1,5 @@
 import axios from 'axios';
+import StudyAPI from './studyAPI';
 
 
 class GenomeNexusAPI {
@@ -7,8 +8,9 @@ class GenomeNexusAPI {
      * @param {string[]} hgncSymbols
      * @returns {AxiosPromise<any>}
      */
-    static genomNexusMappingMultipleSymbols(hgncSymbols) {
-        return axios.post("https://www.genomenexus.org/ensembl/canonical-gene/hgnc", hgncSymbols);
+    static genomNexusMappingMultipleSymbols(hgncSymbols, token) {
+        console.log("token = "+token);
+        return StudyAPI.callPostAPI("https://www.genomenexus.org/ensembl/canonical-gene/hgnc", token, {}, hgncSymbols);
     }
 
 
@@ -39,8 +41,8 @@ class GenomeNexusAPI {
      * @param {string[]} hgncSymbols
      * @param {returnDataCallback} callback
      */
-    getGeneIDs(hgncSymbols, callback) {
-        GenomeNexusAPI.genomNexusMappingMultipleSymbols(hgncSymbols).then(function (response) {
+    getGeneIDs(hgncSymbols, callback, token) {
+        GenomeNexusAPI.genomNexusMappingMultipleSymbols(hgncSymbols, token).then(function (response) {
             if (response.data.length === 0) {
                 alert("No valid symbols found")
             }

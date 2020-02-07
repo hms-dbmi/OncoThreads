@@ -89,7 +89,7 @@ class MolProfileMapping {
      * @param {string[]} HUGOsymbols
      * @param {loadFinishedCallback} callback
      */
-    loadIds(HUGOsymbols, callback) {
+    loadIds(HUGOsymbols, callback, token) {
         this.currentIds = [];
         this.currentMutations = [];
         this.currentMolecular = {};
@@ -97,7 +97,7 @@ class MolProfileMapping {
         this.rootStore.api.getGeneIDs(HUGOsymbols, (entrezIDs) => {
             this.currentIds = entrezIDs;
             callback();
-        });
+        }, token);
     }
 
     /**
@@ -105,7 +105,7 @@ class MolProfileMapping {
      * @param {string[]} HUGOsymbols
      * @param {returnDataCallback} callback
      */
-    getDataContainingProfiles(HUGOsymbols, callback) {
+    getDataContainingProfiles(HUGOsymbols, callback, token) {
         const loaded = new Array(this.rootStore.availableProfiles.length).fill(false);
         const setLoaded = (index) => {
             loaded[index] = true;
@@ -115,29 +115,33 @@ class MolProfileMapping {
         };
         this.loadIds(HUGOsymbols, () => {
             this.rootStore.availableProfiles.forEach((profile, i) => {
-                this.rootStore.api.areProfiled(this.currentIds, profile.molecularProfileId,
-                    (profileDict) => {
-                        if (profile.molecularAlterationType === 'MUTATION_EXTENDED') {
-                            if (Object.keys(profileDict).join().length > 0) {
-                                this.loadMutations(profile.molecularProfileId, () => {
-                                    if (this.currentMutations.length > 0) {
-                                        this.currentPanels[profile
-                                            .molecularProfileId] = profileDict;
-                                    }
-                                    setLoaded(i);
-                                });
-                            } else setLoaded(i);
-                        } else if (Object.keys(profileDict).join().length > 0) {
-                            this.loadMolecularData(profile.molecularProfileId, () => {
-                                if (this.currentMolecular[profile.molecularProfileId].length > 0) {
-                                    this.currentPanels[profile.molecularProfileId] = profileDict;
+                let callback = (profileDict) => {
+                    if (profile.molecularAlterationType === 'MUTATION_EXTENDED') {
+                        if (Object.keys(profileDict).join().length > 0) {
+                            this.loadMutations(profile.molecularProfileId, () => {
+                                if (this.currentMutations.length > 0) {
+                                    this.currentPanels[profile
+                                        .molecularProfileId] = profileDict;
                                 }
                                 setLoaded(i);
                             });
                         } else setLoaded(i);
-                    });
+                    } else if (Object.keys(profileDict).join().length > 0) {
+                        this.loadMolecularData(profile.molecularProfileId, () => {
+                            if (this.currentMolecular[profile.molecularProfileId].length > 0) {
+                                this.currentPanels[profile.molecularProfileId] = profileDict;
+                            }
+                            setLoaded(i);
+                        });
+                    } else setLoaded(i);
+                };
+                if (this.rootStore.isOwnData) {
+                    this.rootStore.api.areProfiled(this.currentIds, profile.molecularProfileId, callback);
+                } else {
+                    this.rootStore.api.areProfiled(this.currentIds, profile.molecularProfileId, callback, this.rootStore.studyAPI.accessTokenFromUser);
+                }
             });
-        });
+        }, token);
     }
 
     /**
@@ -217,10 +221,17 @@ class MolProfileMapping {
      */
     loadMutations(profileId, callback) {
         if (this.currentIds.length !== 0) {
-            this.rootStore.api.getMutations(this.currentIds, profileId, (mutations) => {
-                this.currentMutations = mutations;
-                callback();
-            });
+            if (this.rootStore.isOwnData) {
+                this.rootStore.api.getMutations(this.currentIds, profileId, (mutations) => {
+                    this.currentMutations = mutations;
+                    callback();
+                });
+            } else {
+                this.rootStore.api.getMutations(this.currentIds, profileId, (mutations) => {
+                    this.currentMutations = mutations;
+                    callback();
+                }, this.rootStore.studyAPI.accessTokenFromUser);
+            }
         }
     }
 
@@ -231,10 +242,17 @@ class MolProfileMapping {
      */
     loadMolecularData(profileId, callback) {
         if (this.currentIds.length !== 0) {
-            this.rootStore.api.getMolecularValues(profileId, this.currentIds, (response) => {
-                this.currentMolecular[profileId] = response;
-                callback();
-            });
+            if (this.rootStore.isOwnData) {
+                this.rootStore.api.getMolecularValues(profileId, this.currentIds, (response) => {
+                    this.currentMolecular[profileId] = response;
+                    callback();
+                });
+            } else {
+                this.rootStore.api.getMolecularValues(profileId, this.currentIds, (response) => {
+                    this.currentMolecular[profileId] = response;
+                    callback();
+                }, this.rootStore.studyAPI.accessTokenFromUser);
+            }
         }
     }
 

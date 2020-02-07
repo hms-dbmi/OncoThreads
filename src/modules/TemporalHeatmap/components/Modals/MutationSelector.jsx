@@ -132,14 +132,18 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
         // only do this if the user was actively in the searchfield before
         // to prevent searching for gene multiple times
         if (this.geneList.length > 0 && this.typing === true) {
-            this.props.rootStore.molProfileMapping
-                .getDataContainingProfiles(this.geneList, (dataProfiles) => {
-                    const hasMutations = this.props.rootStore
-                        .availableProfiles.filter(d => dataProfiles.includes(d.molecularProfileId))
-                        .map(d => d.molecularAlterationType).includes('MUTATION_EXTENDED');
-                    this.mutationOptions = this.updateMutationOptions(hasMutations);
-                    this.molecularOptions = this.updateMolecularOptions(dataProfiles);
-                });
+            let callback = (dataProfiles) => {
+                const hasMutations = this.props.rootStore
+                    .availableProfiles.filter(d => dataProfiles.includes(d.molecularProfileId))
+                    .map(d => d.molecularAlterationType).includes('MUTATION_EXTENDED');
+                this.mutationOptions = this.updateMutationOptions(hasMutations);
+                this.molecularOptions = this.updateMolecularOptions(dataProfiles);
+            };
+            if (this.props.rootStore.isOwnData) {
+                this.props.rootStore.molProfileMapping.getDataContainingProfiles(this.geneList, callback);
+            } else {
+                this.props.rootStore.molProfileMapping.getDataContainingProfiles(this.geneList, callback, this.props.rootStore.studyAPI.accessTokenFromUser);
+            }
             this.typing = false;
         }
     }
