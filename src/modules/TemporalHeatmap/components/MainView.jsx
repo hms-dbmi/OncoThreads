@@ -25,8 +25,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         }
     }
 
-
-    render() {
+    getVisualization(){
         // create  views
         let blockView = null;
         let timelineView = null;
@@ -71,6 +70,23 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 </Tabs>
             </Grid>
         );
+    }
+
+
+    render() {
+        if(this.props.rootStore.dataStore.variableStores.sample.currentVariables.length > 0 ||
+            this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0){
+            return(this.getVisualization())
+        }
+        else{
+            return(
+                <div style={{height:this.props.rootStore.visStore.plotHeight}}>
+                    <div className='centeredText'>
+                        Please add data
+                    </div>
+                </div>
+            )
+        }
     }
 }));
 MainView.propTypes = {

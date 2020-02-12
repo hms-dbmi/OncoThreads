@@ -103,16 +103,28 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
         });
     }
 
+    getLegend(){
+        if(this.props.rootStore.dataStore.variableStores.sample.currentVariables.length>0){
+            let globalPrimaryName = this.props.rootStore.dataStore
+                .variableStores.sample.fullCurrentVariables
+                .filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
+
+            let fontSize=10;
+            let fontWeight = 'bold';
+            return  <div>
+                <h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize,
+                fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
+                <Legend {...this.props.tooltipFunctions} />
+            </div>
+        }
+        else return null;
+    }
+
 
     render() {
         let transitions = this.getGlobalTransitions();
         let timepoints = this.getGlobalTimepoints();
-        let globalPrimaryName = this.props.rootStore.dataStore
-            .variableStores.sample.fullCurrentVariables
-            .filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
 
-        let fontSize=10;
-        let fontWeight = 'bold';  
         
         
         return (
@@ -133,9 +145,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
 
 
                             
-                            <h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize,
-                        fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
-                            <Legend {...this.props.tooltipFunctions} />
+                            {this.getLegend()}
 
                             <hr/>
                             <h5>{`Timeline Configurations`}</h5>
