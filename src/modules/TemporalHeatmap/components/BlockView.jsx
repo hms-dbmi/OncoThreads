@@ -123,7 +123,6 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
     getTimepointAndTransitions() {
         const timepoints = [];
         const transitions = [];
-        console.log(this.props.rootStore.dataStore.timepoints.length)
         this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
             let rectWidth;
             // check the type of the timepoint to get the correct width of the heatmap rectangles

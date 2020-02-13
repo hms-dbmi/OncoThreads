@@ -153,7 +153,7 @@ class VisStore {
              * @returns {*}
              */
             get svgHeight() {
-                var h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
+                const h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
                 if(this.rootStore.uiStore.globalTime === true) {
                     this.currentSVGHeight = window.innerHeight - 200;

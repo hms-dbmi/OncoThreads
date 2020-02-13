@@ -154,6 +154,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
      * @param {(OriginalVariable|DerivedVariable)} variable
      */
     handleDelete(variable) {
+        this.props.hideTooltip();
         this.props.dataStore.variableStores[this.props.type].removeVariable(variable.id);
         const variableName = variable.name;
         if (variable.derived) {

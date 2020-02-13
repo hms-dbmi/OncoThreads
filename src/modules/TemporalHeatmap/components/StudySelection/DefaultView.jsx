@@ -253,18 +253,6 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                         >
                                             cBioPortal for OncoThreads
                                         </Radio>
-                                        {/**
-                                         <Radio
-                                         name="linkSelect"
-                                         value="portal"
-                                         disabled
-                                         checked={this.props.uiStore.cBioInstance === 'portal'}
-                                         onChange={this.handleInstanceChange}
-                                         inline
-                                         >
-                                         cBioPortal
-                                         </Radio>
-                                         * */}
                                         {' '}
                                         <Radio
                                             name="linkSelect"

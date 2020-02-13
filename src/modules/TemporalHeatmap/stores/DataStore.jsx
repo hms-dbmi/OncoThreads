@@ -119,9 +119,7 @@ class DataStore {
                 const sampleTimepoints = this.variableStores.sample.childStore.timepoints;
                 let timepoints = [];
                 if (!transitionOn) {
-                    if(sampleOn){
-                        timepoints = sampleTimepoints;
-                    }
+                    timepoints = sampleTimepoints;
                 } else {
                     if (sampleOn) {
                         for (let i = 0; i < sampleTimepoints.length; i += 1) {
