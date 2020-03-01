@@ -23,7 +23,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
         const j = 0;
 
-        const self=this;
+        //const self=this;
 
         if (this.props.timepointType === 'between') {
             this.props.events.forEach((ev, i) => {
@@ -31,23 +31,14 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                 let height = this.props.rootStore
                     .visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
 
-                //let maxEvents = Math.max(...Object.values(self.props.rootStore.allEvents).map(d=>d.length));
+                //let currEventNum= self.props.rootStore.dataStore.variableStores.between.getRelatedVariables('event').length;  
 
-                let currEventNum= self.props.rootStore.dataStore.variableStores.between.getRelatedVariables('event').length;  
-
-                let offset = 0;
                 const val = this.props.rootStore
                     .dataStore.variableStores.between.getById(this.props.row.variable).name;
+                const radius = this.props.rootStore.visStore.timelineRectSize/4;
                 if (height === 0) {
-                    let ft=3;
-                    //height = this.props.rootStore.visStore.timelineRectSize * (2 / 3);
-                    offset = this.props.rootStore.visStore.timelineRectSize * (1 / ft);
-
-
-                    //console.log("patient " + ev.patientId + " requires space " +self.props.rootStore.allEvents[ev.patientId].length);
-                    rects.push(<g>
-
-                    
+                    const xOffset = this.getXOffset(ev, radius);
+                    rects.push(<g>                    
                     <circle 
                        
                        onMouseEnter={e => this.handleMouseEnter(
@@ -61,16 +52,15 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                        key={ev.patientId + i}
                        
                        cx={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
+                            + this.props.rootStore.visStore.timelineRectSize * (1 / 2) + xOffset}
+                       /*cx={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
                            //+ this.props.rootStore.visStore.timelineRectSize * (1 / 6)
                            + (this.props.rootStore.visStore.timelineRectSize/2.0)
                            + (1.5*this.props.rootStore.visStore.timelineRectSize) * (this.props.eventNum-currEventNum/2.0)/currEventNum
                            // + (currEventNum/maxEvents)* 2 
-                        }
-                       cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate) //+(offset/2)/2
-                        //- offset
-                           //+ this.props.rootStore.visStore.timelineRectSize/2
-                       }
-                       r = {this.props.rootStore.visStore.timelineRectSize/3}//{r1}
+                        }*/
+                       cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
+                       r = {radius}
 
                        fill={"white"}
 
@@ -99,12 +89,12 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         onClick={() => this.handleClick(ev.patientId)}
                         key={ev.patientId + i}
                         height={height}
-                        width={this.props.rootStore.visStore.timelineRectSize * (1 / 3)}
+                        width={radius}
                         x={this.props.rootStore.visStore.heatmapScales[0](ev.patientId)
-                        + this.props.rootStore.visStore.timelineRectSize * (2 / 6)
+                        + this.props.rootStore.visStore.timelineRectSize * (1 / 2) - radius/2}
 
-                        + (1.5*this.props.rootStore.visStore.timelineRectSize) * (this.props.eventNum-currEventNum/2.0)/currEventNum}
-                        y={this.props.rootStore.visStore.timeScale(ev.eventStartDate) - offset}
+                        //+ (1.5*this.props.rootStore.visStore.timelineRectSize) * (this.props.eventNum-currEventNum/2.0)/currEventNum}
+                        y={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
                         fill={"white"}
                         opacity={opc1}
                        
@@ -175,10 +165,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                        // + this.props.rootStore.visStore.timelineRectSize/2}
                     
                     cy={this.props.rootStore.visStore
-                        .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])
-                    }
+                        .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])}
 
-                    r = {this.props.rootStore.visStore.timelineRectSize/2}//{r1}
+                    r = {this.props.rootStore.visStore.timelineRectSize/2}
 
                     fill={fill}
 
@@ -215,6 +204,24 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
             });
         }
         return rects;
+    }
+
+    getXOffset(event, radius) {
+        const overlappingEvents = this.props.overlappingEventsMap[event.patientId];
+        if (!overlappingEvents || !overlappingEvents.length) {
+            return 0;
+        }
+        const length = Math.ceil(overlappingEvents.length/2)-1;
+        const min = this.props.rootStore.visStore.timelineRectSize * (1 / 2) + radius;
+        const max = this.props.rootStore.visStore.timelineRectSize * (1 / 2) + 3*radius;
+        let xOffset = 0;
+        const index = overlappingEvents.indexOf(this.props.row.variable);
+        if (Math.floor(index/2) === 0) {
+            xOffset = min * 2 * (index%2-0.5);
+        } else if (Math.floor(index/2) > 0) {
+            xOffset = (min + ((max-min)/length)*Math.floor(index/2)) * 2 * (index%2-0.5);
+        }
+        return xOffset;
     }
 
     handleClick(patient) {
