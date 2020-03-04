@@ -197,7 +197,8 @@ class VisStore {
              * radius of sample variable circles in global view
              */
             get sampleRadius() {
-                return this.sampleRectWidth / 5;
+                //return this.sampleRectWidth / 5;
+                return this.sampleRectWidth / 10;
             },
             /**
              * radius of event variable circles in global view

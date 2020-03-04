@@ -62,7 +62,8 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
                             color={color}
                             events={this.props.allEvents[row.variable][this.props.timepoint.localIndex]}
                             overlappingEventsMap={this.props.overlappingEventsMap}
-                            opacity={0.8}
+                            //opacity={0.8}
+                            opacity={0.2}
                             eventNum={i}
                             
                         />
@@ -80,7 +81,8 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
                             {...this.props.tooltipFunctions}
                             row={row}
                             color={color}
-                            opacity={0.8}
+                            //opacity={0.8}
+                            opacity={0.2}
                         />
                     </g>,
                 );

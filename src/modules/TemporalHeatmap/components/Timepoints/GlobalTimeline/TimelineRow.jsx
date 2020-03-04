@@ -56,13 +56,16 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                        cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
                        r = {eventRadius}
 
-                       fill={"white"}
+                       //fill={"white"}
 
-                       opacity={opc1}
+                       fill={this.props.color(this.props.row.variable)}
+                       fill-opacity={opc1}
 
                        strokeWidth={1}
 
                        stroke={this.props.color(this.props.row.variable)}
+
+                       stroke-opacity={1}
                       
                    />
 
@@ -87,12 +90,16 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         x={this.props.rootStore.visStore.heatmapScales[0](ev.patientId) + translation + xOffset - eventRadius/2}
 
                         y={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
-                        fill={"white"}
-                        opacity={opc1}
+                        //fill={"white"}
+
+                        fill={this.props.color(this.props.row.variable)}
+                        fill-opacity={opc1}
                        
                         strokeWidth={1}
                         
                         stroke={this.props.color(this.props.row.variable)}
+
+                        stroke-opacity={1}
                     />);
                 }
                 
@@ -158,7 +165,17 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     r = {sampleRadius}
 
                     fill={fill}
-                    opacity={this.props.opacity}                   
+                    //opacity={this.props.opacity}  
+                    fill-opacity={1}  
+                    
+                    strokeWidth={1}
+                        
+                    //stroke={this.props.color(this.props.row.variable)}
+
+                    stroke={fill}
+                    
+                    stroke-opacity={1}  
+
                 /></g>);
                 rects=circles;
             });
