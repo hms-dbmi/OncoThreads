@@ -194,6 +194,18 @@ class VisStore {
                 return this.sampleRectWidth * (2 / 5);
             },
             /**
+             * radius of sample variable circles in global view
+             */
+            get sampleRadius() {
+                return this.sampleRectWidth / 5;
+            },
+            /**
+             * radius of event variable circles in global view
+             */
+            get eventRadius() {
+                return this.sampleRectWidth / 10;
+            },
+            /**
              * width of heatmap
              * @returns {number}
              */

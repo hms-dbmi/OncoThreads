@@ -153,13 +153,13 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                 .map(d => d.heatmap
                     .find(row => row.variable === this.props.rootStore.dataStore.globalPrimary));
         //const eventTimepoints = allTimepoints.filter(d => d.type==='between');
-        Object.keys(allEvents).forEach(eventId => {
+        Object.keys(allEvents).forEach((eventId, i) => {
             Object.values(allEvents[eventId]).flatMap(event => event).forEach(event => {
                 globalPrimaryRows
                         .map(row => row.data.find(d => d.patient === event.patientId))
                         .filter(sampleData => sampleData)
                         .forEach(sampleData => {
-                            if (this.isOverlapping(event, sampleData)) {
+                            if (this.isOverlappingEventSample(event, sampleData)) {
                                 if (!overlappingEvents[sampleData.patient]) {
                                     overlappingEvents[sampleData.patient] = [];
                                 }
@@ -168,6 +168,21 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                 }
                             }
                         });
+                Object.keys(allEvents).slice(0, i).forEach(eventId2 => {
+                    Object.values(allEvents[eventId2])
+                            .flatMap(event2 => event2)
+                            .filter(event2 => event.patientId === event2.patientId)
+                            .forEach(event2 => {
+                        if (this.isOverlappingEventPair(event, event2)) {
+                            if (!overlappingEvents[event.patientId]) {
+                                overlappingEvents[event.patientId] = [];
+                            }
+                            if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
+                                overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
+                            }
+                        }
+                    })
+                })
             })
         })
         return overlappingEvents;
@@ -182,17 +197,34 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
          */
     }
 
-    isOverlapping(event, sampleData) {
-        const sampleY = this.props.rootStore.visStore.timeScale(this.props.rootStore.sampleTimelineMap[sampleData.sample])
+    isOverlappingEventSample(event, sampleData) {
+        const sampleY = this.props.rootStore.visStore.timeScale(this.props.rootStore.sampleTimelineMap[sampleData.sample]);
         const eventHeight = this.props.rootStore.visStore.timeScale(event.eventEndDate - event.eventStartDate);
+        const eventStartY = this.props.rootStore.visStore.timeScale(event.eventStartDate);
+        const eventEndY = this.props.rootStore.visStore.timeScale(event.eventEndDate);
+        let dis = this.props.rootStore.visStore.sampleRadius;
         if (eventHeight === 0) {
-            const eventY = this.props.rootStore.visStore.timeScale(event.eventStartDate)
-            const dis = 3 * this.props.rootStore.visStore.timelineRectSize / 4.0;
-            if(sampleY-eventY<dis && eventY-sampleY<dis) {
-                return true;
-            }
+            dis = dis + this.props.rootStore.visStore.eventRadius;
         }
-        return false;
+        return (sampleY-eventEndY<dis && eventStartY-sampleY<dis);
+    }
+
+    isOverlappingEventPair(event1, event2) {
+        const eventHeight1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate - event1.eventStartDate);
+        let eventStartY1 = this.props.rootStore.visStore.timeScale(event1.eventStartDate);
+        let eventEndY1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate);
+        if (eventHeight1 !== 0) {
+            eventStartY1 = eventStartY1 - this.props.rootStore.visStore.eventRadius;
+            eventEndY1 = eventEndY1 + this.props.rootStore.visStore.eventRadius;
+        }
+        const eventHeight2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate - event2.eventStartDate);
+        let eventStartY2 = this.props.rootStore.visStore.timeScale(event2.eventStartDate);
+        let eventEndY2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate);
+        if (eventHeight2 !== 0) {
+            eventStartY2 = eventStartY2 - this.props.rootStore.visStore.eventRadius;
+            eventEndY2 = eventEndY2 + this.props.rootStore.visStore.eventRadius;
+        }
+        return (eventEndY1>eventStartY2 && eventEndY2>eventStartY1);
     }
 
     updateDimensions() {
