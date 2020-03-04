@@ -59,36 +59,63 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
         if (this.props.type === 'sample') {
             promoteFunction = () => this.promote(variable.id);
         } else {
-            colorRect = (
-                /*<rect
-                    key="rect"
-                    width={fontSize}
-                    height={fontSize}
-                    x={this.props.width - this.iconScale * this.iconDimensions - fontSize}
-                    fill={"none"}
-                    opacity={0.8}
-                    strokeWidth={0.8}
-                    stroke={this.props.visStore.globalTimelineColors(variable.id)}
-                />*/
 
+            if(variable.profile=== 'TREATMENT'){
 
-                <circle 
-                   
-                    key="circle"
+                colorRect = (
+                    <rect
+                        key="rect"
+                        width={fontSize}
+                        height={fontSize}
+                        x={this.props.width - this.iconScale * this.iconDimensions - fontSize - 5}
+                        fill={"none"}
+                        opacity={0.8}
+                        strokeWidth={0.8}
+                        stroke={this.props.visStore.globalTimelineColors(variable.id)}
+                    />
+    
+    
                     
-                    cx={this.props.width - this.iconScale * this.iconDimensions - fontSize}
-                   
-                    cy ={6}
-                    r = {5}//{r1}
+    
+                );
 
-                    fill={"none"}
-                    opacity={0.8}
-                    strokeWidth={1}
-                    stroke={this.props.visStore.globalTimelineColors(variable.id)}
-                   
-                />
+            }
+            else{
 
-            );
+
+                colorRect = (
+                    /*<rect
+                        key="rect"
+                        width={fontSize}
+                        height={fontSize}
+                        x={this.props.width - this.iconScale * this.iconDimensions - fontSize}
+                        fill={"none"}
+                        opacity={0.8}
+                        strokeWidth={0.8}
+                        stroke={this.props.visStore.globalTimelineColors(variable.id)}
+                    />*/
+    
+    
+                    <circle 
+                       
+                        key="circle"
+                        
+                        cx={this.props.width - this.iconScale * this.iconDimensions - fontSize}
+                       
+                        cy ={6}
+                        r = {5}//{r1}
+    
+                        fill={"none"}
+                        opacity={0.8}
+                        strokeWidth={1}
+                        stroke={this.props.visStore.globalTimelineColors(variable.id)}
+                       
+                    />
+    
+                );
+
+            }
+            
         }
         return (
             <g
