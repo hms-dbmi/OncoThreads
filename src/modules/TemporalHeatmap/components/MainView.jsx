@@ -79,13 +79,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
             return(this.getVisualization())
         }
         else{
-            let noDataText = '';
-            if(this.props.rootStore.hasClinical){
-                noDataText = 'You deleted all features from the visualization. Please select either a predefined feature or a gene and a molecular profile.'
-            }
-            else{
-                noDataText = 'No data added yet. Please select a gene and a molecular profile'
-            }
+            const noDataText = 'No data currently selected. Use "Add" button or "Feature Manager" to select one or more timepoint features';
             return(
                 <div style={{height:this.props.rootStore.visStore.plotHeight}}>
                     <div className='centeredText'>
