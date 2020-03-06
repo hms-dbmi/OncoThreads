@@ -44,12 +44,15 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
     getGlobalTimepointWithTransition() {
         const rows = [];
         let globalIndex = 0;
+
         this.props.timepoint.heatmap.forEach((row, i) => {
             let color;
             if (this.props.timepoint.type === 'between') {
                 color = this.props.rootStore.visStore.globalTimelineColors;
-                let events = this.getAllEvents(row.variable, this.props.timepoint.localIndex, []);
-                events = this.filterEvents(row.variable, events);
+                //let events = this.getAllEvents(row.variable, this.props.timepoint.localIndex, []);
+                //events = this.filterEvents(row.variable, events);
+                //console.log("events for timepoint " + this.props.timepoint.localIndex + " and variable " + row.variable);
+                //console.log(events);
                 rows.push(
                     <g key={row.variable + i + globalIndex} >
                         <TimelineRow
@@ -57,8 +60,10 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
                             {...this.props.tooltipFunctions}
                             row={row}
                             color={color}
-                            events={events}
-                            opacity={0.8}
+                            events={this.props.allEvents[row.variable][this.props.timepoint.localIndex]}
+                            overlappingEventsMap={this.props.overlappingEventsMap}
+                            //opacity={0.8}
+                            opacity={0.2}
                             eventNum={i}
                             
                         />
@@ -76,7 +81,8 @@ const TimelineTimepoint = inject('rootStore')(observer(class TimelineTimepoint e
                             {...this.props.tooltipFunctions}
                             row={row}
                             color={color}
-                            opacity={0.8}
+                            //opacity={0.8}
+                            opacity={0.2}
                         />
                     </g>,
                 );
