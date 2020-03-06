@@ -4,13 +4,14 @@ import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
 import GlobalTransition from './Transitions/GlobalTransition';
 import { Col, Row } from 'react-bootstrap';
-//import TimeAssign from './PlotLabeling/TimeAssign';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
 import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
 import GlobalBands from './PlotLabeling/GlobalBands';
 import UtilityFunctions from '../UtilityClasses/UtilityFunctions';
+import DerivedMapperFunctions from '../UtilityClasses/DeriveMapperFunctions';
+
 
 
 /**
@@ -62,6 +63,9 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
     getGlobalTimepoints() {
         const timepoints_between = [];
         const timepoints_sample = [];
+        const allTimepoints = this.props.rootStore.dataStore.timepoints.filter(d => !!d.heatmap.length);
+        const allEvents = this.getAllEvents(allTimepoints.filter(timepoint => timepoint.type === 'between'));
+        const overlappingEventsMap = this.getOverlappingEventsMap(allTimepoints, allEvents);
         this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
             if (d.heatmap.length > 0) {
                 if (d.type==='between') {
@@ -72,6 +76,8 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                 currentVariables={this.props.rootStore.dataStore
                                     .variableStores[d.type].fullCurrentVariables}
                                 tooltipFunctions={this.props.tooltipFunctions}
+                                allEvents={allEvents}
+                                overlappingEventsMap={overlappingEventsMap}
                             />
                         </g>
                     );    
@@ -90,6 +96,135 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
             }
         });
         return timepoints_sample.concat(timepoints_between);
+    }
+
+    getAllEvents(allEventTimepoints) {
+        const allEvents = {};
+        allEventTimepoints.forEach(timepoint => {
+            timepoint.heatmap.map(row => row.variable).forEach(eventId => {
+                if (!allEvents[eventId]) {
+                    allEvents[eventId] = {};
+                }
+                const filterMapper = this.getFilterMapper(eventId);
+                allEvents[eventId][timepoint.localIndex] = this
+                    .getEvents(eventId, timepoint.localIndex)
+                    .filter(event => filterMapper[event.sampleId]);
+            });
+        });
+        return allEvents;
+    }
+
+    /**
+     * gets all events associated with an event variable in a timepoint
+     * @param {string} eventId
+     * @param {number} timepointIndex
+     * @return {Object[]}
+     */
+    getEvents(eventId, timepointIndex) {
+        const reference = this.props.rootStore.dataStore.variableStores.between.referencedVariables[eventId];
+        if (reference.type === 'event') {
+            return this.props.rootStore.eventTimelineMap[eventId].filter(d => d.time === timepointIndex);
+        } else if (reference.derived) {
+            return reference.originalIds
+                    .map(originalId => this.getEvents(originalId, timepointIndex))
+                    .reduce((cumulative, current) => cumulative.concat(current), []);
+        }
+    }
+
+    getFilterMapper(eventId) {
+        const variable = this.props.rootStore.dataStore.variableStores.between.getById(eventId);
+        if (variable.derived && variable.modification.type === 'binaryCombine' && variable.modification.datatype === 'STRING') {
+            return DerivedMapperFunctions.getModificationMapper(
+                {
+                    type: 'binaryCombine',
+                    operator: variable.modification.operator,
+                    datatype: 'BINARY'
+                },
+                variable.originalIds.map(originalId => this.getFilterMapper(originalId)));
+        } else {
+            return variable.mapper;
+        }
+    }
+
+    getOverlappingEventsMap(allTimepoints, allEvents) {
+        const overlappingEvents = {};
+        const globalPrimaryRows = allTimepoints
+                .filter(d => d.type!=='between')
+                .map(d => d.heatmap
+                    .find(row => row.variable === this.props.rootStore.dataStore.globalPrimary));
+        //const eventTimepoints = allTimepoints.filter(d => d.type==='between');
+        Object.keys(allEvents).forEach((eventId, i) => {
+            Object.values(allEvents[eventId]).flatMap(event => event).forEach(event => {
+                globalPrimaryRows
+                        .map(row => row.data.find(d => d.patient === event.patientId))
+                        .filter(sampleData => sampleData)
+                        .forEach(sampleData => {
+                            if (this.isOverlappingEventSample(event, sampleData)) {
+                                if (!overlappingEvents[sampleData.patient]) {
+                                    overlappingEvents[sampleData.patient] = [];
+                                }
+                                if (overlappingEvents[sampleData.patient].indexOf(eventId) === -1) {
+                                    overlappingEvents[sampleData.patient] = overlappingEvents[sampleData.patient].concat([eventId]);
+                                }
+                            }
+                        });
+                Object.keys(allEvents).slice(0, i).forEach(eventId2 => {
+                    Object.values(allEvents[eventId2])
+                            .flatMap(event2 => event2)
+                            .filter(event2 => event.patientId === event2.patientId)
+                            .forEach(event2 => {
+                        if (this.isOverlappingEventPair(event, event2)) {
+                            if (!overlappingEvents[event.patientId]) {
+                                overlappingEvents[event.patientId] = [];
+                            }
+                            if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
+                                overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
+                            }
+                        }
+                    })
+                })
+            })
+        })
+        return overlappingEvents;
+
+        /**
+         *
+            time: 1
+            patientId: "P01"
+            sampleId: "P01_Rec"
+            eventStartDate: 124
+            eventEndDate: 124
+         */
+    }
+
+    isOverlappingEventSample(event, sampleData) {
+        const sampleY = this.props.rootStore.visStore.timeScale(this.props.rootStore.sampleTimelineMap[sampleData.sample]);
+        const eventHeight = this.props.rootStore.visStore.timeScale(event.eventEndDate - event.eventStartDate);
+        const eventStartY = this.props.rootStore.visStore.timeScale(event.eventStartDate);
+        const eventEndY = this.props.rootStore.visStore.timeScale(event.eventEndDate);
+        let dis = this.props.rootStore.visStore.sampleRadius;
+        if (eventHeight === 0) {
+            dis = dis + this.props.rootStore.visStore.eventRadius;
+        }
+        return (sampleY-eventEndY<dis && eventStartY-sampleY<dis);
+    }
+
+    isOverlappingEventPair(event1, event2) {
+        const eventHeight1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate - event1.eventStartDate);
+        let eventStartY1 = this.props.rootStore.visStore.timeScale(event1.eventStartDate);
+        let eventEndY1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate);
+        if (eventHeight1 !== 0) {
+            eventStartY1 = eventStartY1 - this.props.rootStore.visStore.eventRadius;
+            eventEndY1 = eventEndY1 + this.props.rootStore.visStore.eventRadius;
+        }
+        const eventHeight2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate - event2.eventStartDate);
+        let eventStartY2 = this.props.rootStore.visStore.timeScale(event2.eventStartDate);
+        let eventEndY2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate);
+        if (eventHeight2 !== 0) {
+            eventStartY2 = eventStartY2 - this.props.rootStore.visStore.eventRadius;
+            eventEndY2 = eventEndY2 + this.props.rootStore.visStore.eventRadius;
+        }
+        return (eventEndY1>eventStartY2 && eventEndY2>eventStartY1);
     }
 
     updateDimensions() {
