@@ -23,8 +23,17 @@ class VisStore {
             plotHeight: 700,
             plotWidth: 700,
             horizontalZoom: 0,
+            spreadAll: false,
             
 
+            /**
+             * Toggle the value of spreadAll,
+             * which indicates whether the events for all patient in the global time line
+             * will be spread out or not
+             */
+            toggleSpreadAll: action(() => {
+                this.spreadAll = !this.spreadAll;
+            }),
             /**
              * set plot height to current height
              */

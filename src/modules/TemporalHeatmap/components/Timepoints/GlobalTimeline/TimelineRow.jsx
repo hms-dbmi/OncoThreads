@@ -37,7 +37,8 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                 const val = this.props.rootStore
                     .dataStore.variableStores.between.getById(this.props.row.variable).name;
-                const xOffset = this.getXOffset(ev, sampleRadius, eventRadius);
+                const xOffset = this.props.rootStore.visStore.spreadAll || this.props.rootStore.dataStore.selectedPatients
+                    .includes(ev.patientId)? this.getXOffset(ev, sampleRadius, eventRadius): 0;
                 if (height === 0) {
                     rects.push(<g>                    
                     <circle 
@@ -59,13 +60,13 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                        //fill={"white"}
 
                        fill={this.props.color(this.props.row.variable)}
-                       fill-opacity={opc1}
+                       fillOpacity={opc1}
 
                        strokeWidth={1}
 
                        stroke={this.props.color(this.props.row.variable)}
 
-                       stroke-opacity={1}
+                       strokeOpacity={1}
                       
                    />
 
@@ -93,13 +94,13 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                         //fill={"white"}
 
                         fill={this.props.color(this.props.row.variable)}
-                        fill-opacity={opc1}
+                        fillOpacity={opc1}
                        
                         strokeWidth={1}
                         
                         stroke={this.props.color(this.props.row.variable)}
 
-                        stroke-opacity={1}
+                        strokeOpacity={1}
                     />);
                 }
                 
@@ -166,15 +167,15 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                     fill={fill}
                     //opacity={this.props.opacity}  
-                    fill-opacity={1}  
+                    fillOpacity={1}  
                     
                     strokeWidth={1}
                         
                     //stroke={this.props.color(this.props.row.variable)}
 
                     stroke={fill}
-                    
-                    stroke-opacity={1}  
+
+                    strokeOpacity={1}  
 
                 /></g>);
                 rects=circles;

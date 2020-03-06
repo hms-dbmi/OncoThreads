@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
 import GlobalTransition from './Transitions/GlobalTransition';
-import { Col, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
 import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
@@ -271,6 +271,15 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                             <h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize,
                         fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
                             <Legend {...this.props.tooltipFunctions} />
+
+                            <Button
+                                bsSize="xsmall"
+                                onClick={() => this.props.rootStore.visStore.toggleSpreadAll()}
+                                key="spreadAll"
+                            >
+                                {this.props.rootStore.visStore.spreadAll ? 'Collapse all events' : 'Spread out all events'}
+                            </Button>
+
 
                             <hr/>
                             <h5>{`Timeline Configurations`}</h5>
