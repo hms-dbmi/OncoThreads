@@ -28,8 +28,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
 
     constructor(props) {
         super(props);
-        extendObservable(this,
-            QuickAddVariable.getObservableFields());
+        extendObservable(this, this.getObservableFields(props));
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
@@ -42,9 +41,9 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @return {{category: string, profile: string, geneListString: string,
      * selectedValues: Object[]}}
      */
-    static getObservableFields() {
+     getObservableFields(props) {
         return {
-            category: 'clinical', // either clinical, computed, gene or any of the event categories
+            category: props.rootStore.hasClinical?'clinical':'genes', // either clinical, computed, gene or any of the event categories
             selectedValues: [], // selected values
         };
     }

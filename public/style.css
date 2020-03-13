@@ -23,6 +23,15 @@ enables linebreaks within words
     white-space: pre-wrap;
 }
 
+.centeredText {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
+}
+
 /**
 properties of drag lines (lines to change height of transitions
  */

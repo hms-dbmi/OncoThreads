@@ -177,7 +177,6 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                             </div>
                         </Col>
                     </FormGroup>
-                    <h4>Optional files</h4>
                     <FormGroup>
                         <Col sm={5}>
                             Other files
@@ -208,6 +207,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                             </div>
                         </Col>
                     </FormGroup>
+                    <h4>Optional files</h4>
                     <FormGroup>
                         <Col sm={5}>
                             Gene Panel Matrix

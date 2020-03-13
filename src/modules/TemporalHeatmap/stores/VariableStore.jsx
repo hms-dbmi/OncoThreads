@@ -129,6 +129,9 @@ class VariableStore {
                         this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
                     }
                 }
+                if(this.type === 'sample' && this.currentVariables.length === change.addedCount - change.removedCount){
+                    this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
+                }
                 if (change.addedCount > change.removedCount) {
                     this.rootStore.visStore.fitToBlockHeight();
                 }

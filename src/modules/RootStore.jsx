@@ -52,7 +52,8 @@ class RootStore {
             // current state of data and data parsing
             isOwnData: false,
             timelineParsed: false,
-            variablesParsed: false,
+            hasClinical: false,
+            dataParsed: false,
             firstLoad: true,
 
 
@@ -76,11 +77,13 @@ class RootStore {
              * resets everything
              */
             reset: action(() => {
-                this.variablesParsed = false;
+                this.dataParsed = false;
                 this.dataStore.reset();
                 this.resetTimepointStructure(false);
-                this.addInitialVariable();
-                this.variablesParsed = true;
+                if(this.hasClinical){
+                    this.addInitialVariable();
+                }
+                this.dataParsed = true;
             }),
             /**
              * sets global timeline axis scale
@@ -137,7 +140,8 @@ class RootStore {
 
                 this.clinicalPatientCategories.clear();
                 this.clinicalSampleCategories.clear();
-                this.variablesParsed = false;
+                this.hasClinical = false;
+                this.dataParsed = false;
                 this.timelineParsed = false;
                 this.uiStore.globalTime = false;
                 this.api.getPatients((patients) => {
@@ -175,18 +179,24 @@ class RootStore {
                         this.createClinicalSampleMapping(sampleData);
                         if (sampleData.length !== 0) {
                             this.initialVariable = this.clinicalSampleCategories[0];
-                            this.variablesParsed = true;
-                            this.firstLoad = false;
+                            this.hasClinical = true;
                         }
                         this.api.getClinicalPatientData((patientData) => {
                             this.createClinicalPatientMappers(patientData);
                             if (patientData.length !== 0) {
-                                if (!this.variablesParsed) {
+                                if (!this.hasClinical) {
                                     this.initialVariable = this.clinicalPatientCategories[0];
                                     this.initialVariable.source = 'clinPatient';
                                 }
-                                this.variablesParsed = true;
-                                this.firstLoad = false;
+                                this.hasClinical = true;
+                            }
+                            this.dataStore.initialize();
+                            this.firstLoad = false;
+                            this.dataParsed = true;
+                            this.visStore.fitToScreenHeight();
+                            this.visStore.fitToScreenWidth();
+                            if(this.hasClinical){
+                                this.addInitialVariable()
                             }
                             callback();
                         }, this.studyAPI.accessTokenFromUser);
@@ -438,15 +448,6 @@ class RootStore {
                 return this.studyAPI.allLinks[this.uiStore.cBioInstance];
             },
         });
-        // initialize dataStore and add initial variable if variables are parsed
-        reaction(() => this.variablesParsed, (parsed) => {
-            if (parsed) {
-                this.dataStore.initialize();
-                this.addInitialVariable();
-                this.visStore.fitToScreenHeight();
-                this.visStore.fitToScreenWidth();
-            }
-        });
         // reset timelineParsed if data input is changed
         reaction(() => this.isOwnData, (isOwnData) => {
             if (isOwnData && !this.geneNamesAPI.geneListLoaded) {
@@ -589,7 +590,6 @@ class RootStore {
 
         this.allEvents=events;
 
-        console.log(this.allEvents);
 
         Object.keys(events).forEach((patient) => {
             const samples = [];

@@ -1,5 +1,5 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
 
 /**
@@ -74,10 +74,10 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                         //strokeWidth={0.8}
                         stroke={this.props.visStore.globalTimelineColors(variable.id)}
                     />
-    
-    
-                    
-    
+
+
+
+
                 );
 
             }
@@ -95,29 +95,29 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                         strokeWidth={0.8}
                         stroke={this.props.visStore.globalTimelineColors(variable.id)}
                     />*/
-    
-    
-                    <circle 
-                       
+
+
+                    <circle
+
                         key="circle"
-                        
+
                         cx={this.props.width - this.iconScale * this.iconDimensions - fontSize}
-                       
+
                         cy ={6}
                         r = {5}//{r1}
-    
+
                         fill={this.props.visStore.globalTimelineColors(variable.id)}
                         fill-opacity={0.2}
                         strokeWidth={1}
                         stroke-opacity={1}
                         stroke={this.props.visStore.globalTimelineColors(variable.id)}
-                       
+
                     />
-    
+
                 );
 
             }
-            
+
         }
         return (
             <g
@@ -128,7 +128,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
             >
 
                 <text
-                    style={{ fontWeight, fontSize }}
+                    style={{fontWeight, fontSize}}
                     y={fontSize}
                     onClick={promoteFunction}
                 >
@@ -183,27 +183,24 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
      * @param {(OriginalVariable|DerivedVariable)} variable
      */
     handleDelete(variable) {
-        if (this.props.type === 'between' || this.props.dataStore.variableStores[this.props.type].currentVariables.length > 1) {
-            this.props.dataStore.variableStores[this.props.type].removeVariable(variable.id);
-            const variableName = variable.name;
-            if (variable.derived) {
-                this.props.openSaveVarModal(variable, (save) => {
-                    this.props.dataStore.variableStores[this.props.type]
-                        .updateSavedVariables(variable.id, save);
-                    this.props.dataStore.variableStores[this.props.type]
-                        .removeVariable(variable.id);
-                    this.props.undoRedoStore.saveVariableHistory('REMOVE', variableName, true);
-                });
-            } else {
+        this.props.hideTooltip();
+        this.props.dataStore.variableStores[this.props.type].removeVariable(variable.id);
+        const variableName = variable.name;
+        if (variable.derived) {
+            this.props.openSaveVarModal(variable, (save) => {
+                this.props.dataStore.variableStores[this.props.type]
+                    .updateSavedVariables(variable.id, save);
                 this.props.dataStore.variableStores[this.props.type]
                     .removeVariable(variable.id);
                 this.props.undoRedoStore.saveVariableHistory('REMOVE', variableName, true);
-            }
-            if (this.props.type.type === 'sample') {
-                this.promote(this.props.dataStore.variableStores.sample.currentVariables[0]);
-            }
+            });
         } else {
-            alert('Samples have to be represented by at least one variable');
+            this.props.dataStore.variableStores[this.props.type]
+                .removeVariable(variable.id);
+            this.props.undoRedoStore.saveVariableHistory('REMOVE', variableName, true);
+        }
+        if (this.props.type.type === 'sample') {
+            this.promote(this.props.dataStore.variableStores.sample.currentVariables[0]);
         }
     }
 

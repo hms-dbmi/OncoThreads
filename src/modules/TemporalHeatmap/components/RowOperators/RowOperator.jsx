@@ -410,11 +410,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
     handleDelete(variable, timepoint) {
         this.props.unhighlightVariable();
         this.props.hideTooltip();
-        if (timepoint.type === 'between' || this.props.rootStore.dataStore.variableStores[timepoint.type].currentVariables.length > 1) {
-            this.removeVariable(variable, timepoint.type);
-        } else {
-            alert('Samples have to be represented by at least one variable');
-        }
+        this.removeVariable(variable, timepoint.type);
     }
 
     render() {

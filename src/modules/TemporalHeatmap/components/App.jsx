@@ -41,8 +41,8 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <DefaultView />
             );
         }
-        // if everything is variablesParsed show the main view
-        if (this.props.rootStore.variablesParsed) {
+        // if everything is parsed show the main view
+        if (this.props.rootStore.dataParsed) {
             return (
                 <Content />
             );
@@ -56,7 +56,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
      * @return {[]|NavItem}
      */
     getNavbarContent() {
-        if (this.props.rootStore.variablesParsed) {
+        if (this.props.rootStore.dataParsed) {
             return ([
                 <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
                 <NavDropdown key="export" eventKey="dropdown" title="Export View" id="basic-nav-dropdown">
