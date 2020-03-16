@@ -158,13 +158,18 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                 globalPrimaryRows
                         .map(row => row.data.find(d => d.patient === event.patientId))
                         .filter(sampleData => sampleData)
+                        //.find(sampleData => sampleData && this.isOverlappingEventSample(event, sampleData)));
                         .forEach(sampleData => {
                             if (this.isOverlappingEventSample(event, sampleData)) {
-                                if (!overlappingEvents[sampleData.patient]) {
-                                    overlappingEvents[sampleData.patient] = [];
+                                if (!overlappingEvents[event.patientId]) {
+                                    overlappingEvents[event.patientId] = [];
                                 }
-                                if (overlappingEvents[sampleData.patient].indexOf(eventId) === -1) {
-                                    overlappingEvents[sampleData.patient] = overlappingEvents[sampleData.patient].concat([eventId]);
+                                if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
+                                    if(event.eventEndDate>event.eventStartDate) {
+                                        overlappingEvents[event.patientId] = [eventId].concat(overlappingEvents[event.patientId]);
+                                    } else {
+                                        overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
+                                    }
                                 }
                             }
                         });
@@ -173,14 +178,18 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                             .flatMap(event2 => event2)
                             .filter(event2 => event.patientId === event2.patientId)
                             .forEach(event2 => {
-                        if (this.isOverlappingEventPair(event, event2)) {
-                            if (!overlappingEvents[event.patientId]) {
-                                overlappingEvents[event.patientId] = [];
-                            }
-                            if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
-                                overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
-                            }
-                        }
+                                if (this.isOverlappingEventPair(event, event2)) {
+                                    if (!overlappingEvents[event.patientId]) {
+                                        overlappingEvents[event.patientId] = [];
+                                    }
+                                    if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
+                                        if(event.eventEndDate>event.eventStartDate) {
+                                            overlappingEvents[event.patientId] = [eventId].concat(overlappingEvents[event.patientId]);
+                                        } else {
+                                            overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
+                                        }
+                                    }
+                                }
                     })
                 })
             })
@@ -302,7 +311,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                     width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
-                                    <g transform={`translate(10,${this.props.rootStore.visStore.timelineRectSize / 2})`}>
+                                    <g transform={`translate(${this.props.rootStore.visStore.timelineRectSize},${this.props.rootStore.visStore.timelineRectSize / 2})`}>
                                         {transitions}
                                         {timepoints}
                                     </g>
