@@ -152,48 +152,61 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                 .filter(d => d.type!=='between')
                 .map(d => d.heatmap
                     .find(row => row.variable === this.props.rootStore.dataStore.globalPrimary));
-        //const eventTimepoints = allTimepoints.filter(d => d.type==='between');
-        Object.keys(allEvents).forEach((eventId, i) => {
-            Object.values(allEvents[eventId]).flatMap(event => event).forEach(event => {
-                globalPrimaryRows
-                        .map(row => row.data.find(d => d.patient === event.patientId))
-                        .filter(sampleData => sampleData)
-                        //.find(sampleData => sampleData && this.isOverlappingEventSample(event, sampleData)));
-                        .forEach(sampleData => {
-                            if (this.isOverlappingEventSample(event, sampleData)) {
-                                if (!overlappingEvents[event.patientId]) {
-                                    overlappingEvents[event.patientId] = [];
-                                }
-                                if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
-                                    if(event.eventEndDate>event.eventStartDate) {
-                                        overlappingEvents[event.patientId] = [eventId].concat(overlappingEvents[event.patientId]);
-                                    } else {
-                                        overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
-                                    }
-                                }
-                            }
-                        });
-                Object.keys(allEvents).slice(0, i).forEach(eventId2 => {
-                    Object.values(allEvents[eventId2])
-                            .flatMap(event2 => event2)
-                            .filter(event2 => event.patientId === event2.patientId)
-                            .forEach(event2 => {
-                                if (this.isOverlappingEventPair(event, event2)) {
-                                    if (!overlappingEvents[event.patientId]) {
-                                        overlappingEvents[event.patientId] = [];
-                                    }
-                                    if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
-                                        if(event.eventEndDate>event.eventStartDate) {
-                                            overlappingEvents[event.patientId] = [eventId].concat(overlappingEvents[event.patientId]);
-                                        } else {
-                                            overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
-                                        }
-                                    }
-                                }
-                    })
-                })
+        
+        const eventsMapByPatient = {};
+        let sortedEventIds = [];
+        Object.keys(allEvents).forEach(eventId => {
+            eventsMapByPatient[eventId] = {};
+            const eventsList = Object.values(allEvents[eventId]).flatMap(event => event);
+            eventsList.forEach(event => {
+                if (!eventsMapByPatient[eventId][event.patientId]) {
+                    eventsMapByPatient[eventId][event.patientId] = [];
+                }
+                eventsMapByPatient[eventId][event.patientId] = eventsMapByPatient[eventId][event.patientId].concat(event);
             })
-        })
+            if (!!eventsList.find(event => event.eventEndDate > event.eventStartDate)) {
+                sortedEventIds = [eventId].concat(sortedEventIds);
+            } else {
+                sortedEventIds = sortedEventIds.concat([eventId]);
+            }
+        });
+
+        sortedEventIds.forEach(eventId => {
+            Object.keys(eventsMapByPatient[eventId]).forEach(patient => {
+                if (!overlappingEvents[patient]) {
+                    overlappingEvents[patient] = [];
+                }
+                if (!overlappingEvents[patient][0]) {
+                    overlappingEvents[patient][0] = [];
+                }
+                const didOverlapWithSample = eventsMapByPatient[eventId][patient]
+                    .find(event => globalPrimaryRows.map(row => row.data.find(d => d.patient === patient))
+                        .find(sampleData => sampleData && this.isOverlappingEventSample(event, sampleData)));
+                const didOverlapWithEvents = eventsMapByPatient[eventId][patient]
+                    .find(event => overlappingEvents[patient][0]
+                        .find(eventId2 => eventsMapByPatient[eventId2][patient]
+                            .find(event2 => this.isOverlappingEventPair(event, event2))));
+                if (!didOverlapWithSample && !didOverlapWithEvents) {
+                    overlappingEvents[patient][0] = overlappingEvents[patient][0].concat([eventId]);
+                } else {
+                    let index = 1;
+                    while(true) {
+                        if (index >= overlappingEvents[patient].length) {
+                            overlappingEvents[patient][index] = [eventId];
+                            break;
+                        }
+                        if (!eventsMapByPatient[eventId][patient]
+                            .find(event => overlappingEvents[patient][index]
+                                .find(eventId2 => eventsMapByPatient[eventId2][patient]
+                                    .find(event2 => this.isOverlappingEventPair(event, event2))))) {
+                            overlappingEvents[patient][index] = overlappingEvents[patient][index].concat([eventId]);
+                            break;
+                        }
+                        index ++;
+                    }
+                }
+            });
+        });
         return overlappingEvents;
 
         /**

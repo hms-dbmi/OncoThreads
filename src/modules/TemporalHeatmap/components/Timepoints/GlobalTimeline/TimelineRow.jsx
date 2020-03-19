@@ -45,7 +45,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                        
                        onMouseEnter={e => this.handleMouseEnter(
                            e, ev.patientId, val, ev.eventStartDate,
-                           ev.eventEndDate - ev.eventStartDate,
+                           ev.eventEndDate - ev.eventStartDate
                        )
                        }
                        onMouseLeave={this.handleMouseLeave}
@@ -79,7 +79,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     rects.push(<rect
                         onMouseEnter={e => this.handleMouseEnter(
                             e, ev.patientId, val, ev.eventStartDate,
-                            ev.eventEndDate - ev.eventStartDate,
+                            ev.eventEndDate - ev.eventStartDate
                         )
                         }
                         onMouseLeave={this.handleMouseLeave}
@@ -150,7 +150,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                     onMouseEnter={e => this.handleMouseEnter(
                         e, d.patient, d.value,
-                        this.props.rootStore.sampleTimelineMap[d.sample], 0,
+                        this.props.rootStore.sampleTimelineMap[d.sample], 0
                     )
                     }
                     onMouseLeave={this.handleMouseLeave}
@@ -193,7 +193,8 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
         const min = sampleRadius + eventRadius;
         const max = sampleRadius + 3 * eventRadius;
         let xOffset = 0;
-        const index = overlappingEvents.indexOf(this.props.row.variable);
+        let index = [...overlappingEvents.keys()].find(i => overlappingEvents[i].indexOf(this.props.row.variable) !== -1);
+        index = index === null? -1: index - 1;
         if (Math.floor(index/2) === 0) {
             xOffset = min * 2 * (index%2-0.5);
         } else if (Math.floor(index/2) > 0) {
