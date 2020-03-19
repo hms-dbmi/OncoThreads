@@ -17,10 +17,11 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
      * @param {number} strokeWidth
      * @returns {path}
      */
-    static drawLine(x0, x1, y0, y1, key, strokeColor, strokeWidth) {
+    static drawLine(x0, x1, y0, y1, key, handleClick, strokeColor, strokeWidth) {
         const path = `M${x0},${y0
         }L${x1},${y1}`;
-        return (<path key={key} d={path} stroke={strokeColor} strokeWidth={strokeWidth} fill="none" />);
+        return (<path key={key} d={path} onClick={handleClick}
+            stroke={strokeColor} strokeWidth={strokeWidth} fill="none" />);
     }
 
     /**
@@ -61,8 +62,10 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
                 this.props.heatmapScale(d) + this.props.visStore.timelineRectSize / 2,
                 this.props.visStore.timeScale(this.props.minMax[d].start),
                 this.props.visStore.timeScale(this.props.minMax[d].end),
-                d, strokeColor, 1),
+                d, () => this.props.dataStore.handlePatientSelection(d),
+                strokeColor, 1),
             );
+
             /*lines.push(<rect
                 key={`${d}endpoint`}
                 x={this.props.heatmapScale(d)}
