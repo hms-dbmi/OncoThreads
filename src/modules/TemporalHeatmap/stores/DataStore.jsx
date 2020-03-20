@@ -35,6 +35,9 @@ class DataStore {
             get transitionOn() {
                 return this.variableStores.between.currentVariables.length > 0;
             },
+            get sampleOn(){
+                return this.variableStores.sample.currentVariables.length > 0;
+            },
             /**
              * set global primary
              * @param {string} varId
@@ -111,22 +114,27 @@ class DataStore {
              * combines the two sets of timepoints (samples, events)
              * @param {boolean} isOn - between variables contained/not contained
              */
-            combineTimepoints: action((isOn) => {
+            combineTimepoints: action((sampleOn, transitionOn) => {
                 const betweenTimepoints = this.variableStores.between.childStore.timepoints;
                 const sampleTimepoints = this.variableStores.sample.childStore.timepoints;
                 let timepoints = [];
-                if (!isOn) {
+                if (!transitionOn) {
                     timepoints = sampleTimepoints;
                 } else {
-                    for (let i = 0; i < sampleTimepoints.length; i += 1) {
-                        timepoints.push(betweenTimepoints[i]);
-                        betweenTimepoints[i].setHeatmapOrder(sampleTimepoints[i].heatmapOrder);
-                        timepoints.push(sampleTimepoints[i]);
+                    if (sampleOn) {
+                        for (let i = 0; i < sampleTimepoints.length; i += 1) {
+                            timepoints.push(betweenTimepoints[i]);
+                            betweenTimepoints[i].setHeatmapOrder(sampleTimepoints[i].heatmapOrder);
+                            timepoints.push(sampleTimepoints[i]);
+                        }
+                        betweenTimepoints[betweenTimepoints.length - 1]
+                            .setHeatmapOrder(sampleTimepoints[sampleTimepoints.length - 1]
+                                .heatmapOrder);
+                        timepoints.push(betweenTimepoints[betweenTimepoints.length - 1]);
                     }
-                    betweenTimepoints[betweenTimepoints.length - 1]
-                        .setHeatmapOrder(sampleTimepoints[sampleTimepoints.length - 1]
-                            .heatmapOrder);
-                    timepoints.push(betweenTimepoints[betweenTimepoints.length - 1]);
+                    else{
+                        timepoints = betweenTimepoints;
+                    }
                 }
                 timepoints.forEach((d, i) => {
                     timepoints[i].globalIndex = i;
@@ -145,7 +153,7 @@ class DataStore {
                 this.variableStores.between.resetVariables();
                 this.variableStores.between.update(this.rootStore.eventBlockStructure,
                     this.rootStore.patients);
-                this.combineTimepoints(false);
+                this.combineTimepoints(true, false);
                 this.rootStore.visStore.resetTransitionSpaces();
             }),
 
@@ -156,7 +164,7 @@ class DataStore {
             update: action((order) => {
                 this.variableStores.sample.update(this.rootStore.timepointStructure, order);
                 this.variableStores.between.update(this.rootStore.eventBlockStructure, order);
-                this.combineTimepoints(this.transitionOn);
+                this.combineTimepoints(this.sampleOn, this.transitionOn);
             }),
             /**
              * applies the patient order of the current timepoint to all the other timepoints
@@ -171,15 +179,25 @@ class DataStore {
                     d.setHeatmapOrder(sorting);
                 });
             }),
+            recombine: action(()=>{
+                const sampleOn = this.variableStores.sample.currentVariables.length > 0;
+                const transOn = this.variableStores.between.currentVariables.length > 0;
+                this.combineTimepoints(sampleOn,transOn);
+                if (transOn) {
+                    this.rootStore.uiStore.setRealTime(false);
+                }
+                if(sampleOn || transOn){
+                    this.rootStore.visStore.resetTransitionSpaces();
+                }
+            })
         });
         // combines/uncombines timepoints if variables of type "between" are displayed/removed
         observe(this.variableStores.between.currentVariables, () => {
-            let isOn = this.variableStores.between.currentVariables.length > 0;
-            this.combineTimepoints(isOn);
-            if (isOn) {
-                this.rootStore.uiStore.setRealTime(false);
-            }
-            this.rootStore.visStore.resetTransitionSpaces();
+            this.recombine();
+        });
+        // combines/uncombines timepoints if variables of type "sample" are displayed/removed
+        observe(this.variableStores.sample.currentVariables, () => {
+            this.recombine();
         })
     }
 

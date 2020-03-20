@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
 import GlobalTransition from './Transitions/GlobalTransition';
-import { Col, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
 import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
@@ -152,39 +152,58 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                 .filter(d => d.type!=='between')
                 .map(d => d.heatmap
                     .find(row => row.variable === this.props.rootStore.dataStore.globalPrimary));
-        //const eventTimepoints = allTimepoints.filter(d => d.type==='between');
-        Object.keys(allEvents).forEach((eventId, i) => {
-            Object.values(allEvents[eventId]).flatMap(event => event).forEach(event => {
-                globalPrimaryRows
-                        .map(row => row.data.find(d => d.patient === event.patientId))
-                        .filter(sampleData => sampleData)
-                        .forEach(sampleData => {
-                            if (this.isOverlappingEventSample(event, sampleData)) {
-                                if (!overlappingEvents[sampleData.patient]) {
-                                    overlappingEvents[sampleData.patient] = [];
-                                }
-                                if (overlappingEvents[sampleData.patient].indexOf(eventId) === -1) {
-                                    overlappingEvents[sampleData.patient] = overlappingEvents[sampleData.patient].concat([eventId]);
-                                }
-                            }
-                        });
-                Object.keys(allEvents).slice(0, i).forEach(eventId2 => {
-                    Object.values(allEvents[eventId2])
-                            .flatMap(event2 => event2)
-                            .filter(event2 => event.patientId === event2.patientId)
-                            .forEach(event2 => {
-                        if (this.isOverlappingEventPair(event, event2)) {
-                            if (!overlappingEvents[event.patientId]) {
-                                overlappingEvents[event.patientId] = [];
-                            }
-                            if (overlappingEvents[event.patientId].indexOf(eventId) === -1) {
-                                overlappingEvents[event.patientId] = overlappingEvents[event.patientId].concat([eventId]);
-                            }
-                        }
-                    })
-                })
+        
+        const eventsMapByPatient = {};
+        let sortedEventIds = [];
+        Object.keys(allEvents).forEach(eventId => {
+            eventsMapByPatient[eventId] = {};
+            const eventsList = Object.values(allEvents[eventId]).flatMap(event => event);
+            eventsList.forEach(event => {
+                if (!eventsMapByPatient[eventId][event.patientId]) {
+                    eventsMapByPatient[eventId][event.patientId] = [];
+                }
+                eventsMapByPatient[eventId][event.patientId] = eventsMapByPatient[eventId][event.patientId].concat(event);
             })
-        })
+            if (!!eventsList.find(event => event.eventEndDate > event.eventStartDate)) {
+                sortedEventIds = [eventId].concat(sortedEventIds);
+            } else {
+                sortedEventIds = sortedEventIds.concat([eventId]);
+            }
+        });
+
+        sortedEventIds.forEach(eventId => {
+            Object.keys(eventsMapByPatient[eventId]).forEach(patient => {
+                if (!overlappingEvents[patient]) {
+                    overlappingEvents[patient] = [];
+                }
+                if (!overlappingEvents[patient][0]) {
+                    overlappingEvents[patient][0] = [];
+                }
+                const didOverlapWithSample = eventsMapByPatient[eventId][patient]
+                    .find(event => globalPrimaryRows.map(row => row.data.find(d => d.patient === patient))
+                        .find(sampleData => sampleData && this.isOverlappingEventSample(event, sampleData)));
+                const didOverlapWithEvents = eventsMapByPatient[eventId][patient]
+                    .find(event => overlappingEvents[patient][0]
+                        .find(eventId2 => eventsMapByPatient[eventId2][patient]
+                            .find(event2 => this.isOverlappingEventPair(event, event2))));
+                if (!didOverlapWithSample && !didOverlapWithEvents) {
+                    overlappingEvents[patient][0] = overlappingEvents[patient][0].concat([eventId]);
+                } else {
+                    let index = 1;
+                    while(true) {
+                        if (index >= overlappingEvents[patient].length) {
+                            overlappingEvents[patient][index] = [eventId];
+                            break;
+                        }
+                        if (!this.isLaneBlocked(eventsMapByPatient, overlappingEvents, eventId, patient, index)) {
+                            overlappingEvents[patient][index] = overlappingEvents[patient][index].concat([eventId]);
+                            break;
+                        }
+                        index ++;
+                    }
+                }
+            });
+        });
         return overlappingEvents;
 
         /**
@@ -195,6 +214,13 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
             eventStartDate: 124
             eventEndDate: 124
          */
+    }
+
+    isLaneBlocked(eventsMapByPatient, overlappingEvents, eventId, patient, index) {
+        return eventsMapByPatient[eventId][patient]
+            .find(event => overlappingEvents[patient][index]
+                .find(eventId2 => eventsMapByPatient[eventId2][patient]
+                    .find(event2 => this.isOverlappingEventPair(event, event2))));
     }
 
     isOverlappingEventSample(event, sampleData) {
@@ -213,14 +239,14 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
         const eventHeight1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate - event1.eventStartDate);
         let eventStartY1 = this.props.rootStore.visStore.timeScale(event1.eventStartDate);
         let eventEndY1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate);
-        if (eventHeight1 !== 0) {
+        if (eventHeight1 === 0) {
             eventStartY1 = eventStartY1 - this.props.rootStore.visStore.eventRadius;
             eventEndY1 = eventEndY1 + this.props.rootStore.visStore.eventRadius;
         }
         const eventHeight2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate - event2.eventStartDate);
         let eventStartY2 = this.props.rootStore.visStore.timeScale(event2.eventStartDate);
         let eventEndY2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate);
-        if (eventHeight2 !== 0) {
+        if (eventHeight2 === 0) {
             eventStartY2 = eventStartY2 - this.props.rootStore.visStore.eventRadius;
             eventEndY2 = eventEndY2 + this.props.rootStore.visStore.eventRadius;
         }
@@ -238,16 +264,28 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
         });
     }
 
+    getLegend(){
+        if(this.props.rootStore.dataStore.variableStores.sample.currentVariables.length>0){
+            let globalPrimaryName = this.props.rootStore.dataStore
+                .variableStores.sample.fullCurrentVariables
+                .filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
+
+            let fontSize=10;
+            let fontWeight = 'bold';
+            return  <div>
+                <h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize,
+                fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
+                <Legend {...this.props.tooltipFunctions} />
+            </div>
+        }
+        else return null;
+    }
+
 
     render() {
         let transitions = this.getGlobalTransitions();
         let timepoints = this.getGlobalTimepoints();
-        let globalPrimaryName = this.props.rootStore.dataStore
-            .variableStores.sample.fullCurrentVariables
-            .filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
 
-        let fontSize=10;
-        let fontWeight = 'bold';  
         
         
         return (
@@ -268,9 +306,16 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
 
 
                             
-                            <h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize,
-                        fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
-                            <Legend {...this.props.tooltipFunctions} />
+                            {this.getLegend()}
+
+                            <Button
+                                bsSize="xsmall"
+                                onClick={() => this.props.rootStore.visStore.toggleSpreadAll()}
+                                key="spreadAll"
+                            >
+                                {this.props.rootStore.visStore.spreadAll ? 'Collapse all events' : 'Distribute all events'}
+                            </Button>
+
 
                             <hr/>
                             <h5>{`Timeline Configurations`}</h5>
@@ -293,7 +338,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                     width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
-                                    <g transform={`translate(10,${this.props.rootStore.visStore.timelineRectSize / 2})`}>
+                                    <g transform={`translate(${this.props.rootStore.visStore.timelineRectSize},${this.props.rootStore.visStore.timelineRectSize / 2})`}>
                                         {transitions}
                                         {timepoints}
                                     </g>

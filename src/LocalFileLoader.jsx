@@ -74,7 +74,8 @@ class LocalFileLoader {
                     && this.parsingStatus.events === 'finished'
                     && (this.parsingStatus.mutations === 'finished'
                         || this.parsingStatus.clinicalSample === 'finished'
-                        || this.parsingStatus.clinicalPatient === 'finished')
+                        || this.parsingStatus.clinicalPatient === 'finished'
+                        || this.parsingStatus.molecular === 'finished')
                     && this.parsingStatus.genePanels === this.parsingStatus.panelMatrix;
             },
             setEventsParsed: action((loadingState) => {
@@ -449,7 +450,9 @@ class LocalFileLoader {
                                 correctHeader = false;
                             }
                         } else if (rowCounter > 4) {
-                            alert(errorMessages);
+                            if (errorMessages.length > 0){
+                                alert(errorMessages);
+                            }
                             parser.abort();
                         }
                         rowCounter += 1;

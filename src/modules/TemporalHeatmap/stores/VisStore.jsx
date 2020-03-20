@@ -23,8 +23,17 @@ class VisStore {
             plotHeight: 700,
             plotWidth: 700,
             horizontalZoom: 0,
+            spreadAll: false,
             
 
+            /**
+             * Toggle the value of spreadAll,
+             * which indicates whether the events for all patient in the global time line
+             * will be spread out or not
+             */
+            toggleSpreadAll: action(() => {
+                this.spreadAll = !this.spreadAll;
+            }),
             /**
              * set plot height to current height
              */
@@ -153,7 +162,7 @@ class VisStore {
              * @returns {*}
              */
             get svgHeight() {
-                var h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
+                const h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
                 if(this.rootStore.uiStore.globalTime === true) {
                     this.currentSVGHeight = window.innerHeight - 200;
