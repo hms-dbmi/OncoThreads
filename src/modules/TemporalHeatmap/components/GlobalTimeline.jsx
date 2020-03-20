@@ -195,10 +195,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                             overlappingEvents[patient][index] = [eventId];
                             break;
                         }
-                        if (!eventsMapByPatient[eventId][patient]
-                            .find(event => overlappingEvents[patient][index]
-                                .find(eventId2 => eventsMapByPatient[eventId2][patient]
-                                    .find(event2 => this.isOverlappingEventPair(event, event2))))) {
+                        if (!this.isLaneBlocked(eventsMapByPatient, overlappingEvents, eventId, patient, index)) {
                             overlappingEvents[patient][index] = overlappingEvents[patient][index].concat([eventId]);
                             break;
                         }
@@ -219,6 +216,13 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
          */
     }
 
+    isLaneBlocked(eventsMapByPatient, overlappingEvents, eventId, patient, index) {
+        return eventsMapByPatient[eventId][patient]
+            .find(event => overlappingEvents[patient][index]
+                .find(eventId2 => eventsMapByPatient[eventId2][patient]
+                    .find(event2 => this.isOverlappingEventPair(event, event2))));
+    }
+
     isOverlappingEventSample(event, sampleData) {
         const sampleY = this.props.rootStore.visStore.timeScale(this.props.rootStore.sampleTimelineMap[sampleData.sample]);
         const eventHeight = this.props.rootStore.visStore.timeScale(event.eventEndDate - event.eventStartDate);
@@ -235,14 +239,14 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
         const eventHeight1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate - event1.eventStartDate);
         let eventStartY1 = this.props.rootStore.visStore.timeScale(event1.eventStartDate);
         let eventEndY1 = this.props.rootStore.visStore.timeScale(event1.eventEndDate);
-        if (eventHeight1 !== 0) {
+        if (eventHeight1 === 0) {
             eventStartY1 = eventStartY1 - this.props.rootStore.visStore.eventRadius;
             eventEndY1 = eventEndY1 + this.props.rootStore.visStore.eventRadius;
         }
         const eventHeight2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate - event2.eventStartDate);
         let eventStartY2 = this.props.rootStore.visStore.timeScale(event2.eventStartDate);
         let eventEndY2 = this.props.rootStore.visStore.timeScale(event2.eventEndDate);
-        if (eventHeight2 !== 0) {
+        if (eventHeight2 === 0) {
             eventStartY2 = eventStartY2 - this.props.rootStore.visStore.eventRadius;
             eventEndY2 = eventEndY2 + this.props.rootStore.visStore.eventRadius;
         }
@@ -309,7 +313,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                                 onClick={() => this.props.rootStore.visStore.toggleSpreadAll()}
                                 key="spreadAll"
                             >
-                                {this.props.rootStore.visStore.spreadAll ? 'Collapse all events' : 'Spread out all events'}
+                                {this.props.rootStore.visStore.spreadAll ? 'Collapse all events' : 'Distribute all events'}
                             </Button>
 
 
