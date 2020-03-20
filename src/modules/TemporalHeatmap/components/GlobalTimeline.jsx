@@ -195,10 +195,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                             overlappingEvents[patient][index] = [eventId];
                             break;
                         }
-                        if (!eventsMapByPatient[eventId][patient]
-                            .find(event => overlappingEvents[patient][index]
-                                .find(eventId2 => eventsMapByPatient[eventId2][patient]
-                                    .find(event2 => this.isOverlappingEventPair(event, event2))))) {
+                        if (!this.isLaneBlocked(eventsMapByPatient, overlappingEvents, eventId, patient, index)) {
                             overlappingEvents[patient][index] = overlappingEvents[patient][index].concat([eventId]);
                             break;
                         }
@@ -217,6 +214,13 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
             eventStartDate: 124
             eventEndDate: 124
          */
+    }
+
+    isLaneBlocked(eventsMapByPatient, overlappingEvents, eventId, patient, index) {
+        return eventsMapByPatient[eventId][patient]
+            .find(event => overlappingEvents[patient][index]
+                .find(eventId2 => eventsMapByPatient[eventId2][patient]
+                    .find(event2 => this.isOverlappingEventPair(event, event2))));
     }
 
     isOverlappingEventSample(event, sampleData) {
