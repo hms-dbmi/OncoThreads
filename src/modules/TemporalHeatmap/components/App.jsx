@@ -56,7 +56,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
      * @return {[]|NavItem}
      */
     getNavbarContent() {
-        if (this.props.rootStore.dataParsed) {
+        if (this.props.rootStore.dataParsed && !this.props.rootStore.firstLoad) {
             return ([
                 <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
                 <NavDropdown key="export" eventKey="dropdown" title="Export View" id="basic-nav-dropdown">
@@ -81,6 +81,14 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <NavItem key="home" onClick={() => this.props.rootStore.firstLoad=true}>
                   <img alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMTYiIGhlaWdodD0iMTYiCnZpZXdCb3g9IjAgMCAxNiAxNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDggMS4zMjAzMTMgTCAwLjY2MDE1NiA4LjEzMjgxMyBMIDEuMzM5ODQ0IDguODY3MTg4IEwgMiA4LjI1MzkwNiBMIDIgMTQgTCA3IDE0IEwgNyA5IEwgOSA5IEwgOSAxNCBMIDE0IDE0IEwgMTQgOC4yNTM5MDYgTCAxNC42NjAxNTYgOC44NjcxODggTCAxNS4zMzk4NDQgOC4xMzI4MTMgWiBNIDggMi42Nzk2ODggTCAxMyA3LjMyODEyNSBMIDEzIDEzIEwgMTAgMTMgTCAxMCA4IEwgNiA4IEwgNiAxMyBMIDMgMTMgTCAzIDcuMzI4MTI1IFoiPjwvcGF0aD48L3N2Zz4="></img> 
                         </NavItem>,
+
+            ]
+            );
+        }
+        else  if (this.props.rootStore.dataParsed && this.props.rootStore.firstLoad) {
+            return ([
+                <NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>,
+
 
             ]
             );
