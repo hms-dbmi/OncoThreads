@@ -138,6 +138,7 @@ class DataStore {
                 }
                 timepoints.forEach((d, i) => {
                     timepoints[i].globalIndex = i;
+                    timepoints[i].isGrouped = true // default grouped
                 });
                 this.timepoints.replace(timepoints);
             }),

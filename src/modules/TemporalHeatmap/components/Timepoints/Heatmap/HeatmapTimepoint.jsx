@@ -11,6 +11,7 @@ const HeatmapTimepoint = inject('visStore', 'uiStore')(observer(class HeatmapTim
     getTimepoint() {
         const rows = [];
         let previousYposition = 0;
+        
         this.props.timepoint.heatmap.forEach((d) => {
             const transform = `translate(0,${previousYposition})`;
             if (!d.isUndef || this.props.uiStore.showUndefined
@@ -22,7 +23,7 @@ const HeatmapTimepoint = inject('visStore', 'uiStore')(observer(class HeatmapTim
                     opacity = 1;
                 }
                 rows.push(
-                    <g key={d.variable} transform={transform}>
+                    <g key={d.variable} transform={transform} className='heatmap row'>
                         <HeatmapRow
                             showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                             {...this.props.tooltipFunctions}

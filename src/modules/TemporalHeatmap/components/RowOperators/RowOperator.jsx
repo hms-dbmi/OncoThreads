@@ -415,7 +415,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
 
     render() {
         return (
-            <g transform={this.props.transform}>
+            <g transform={this.props.transform} className='timepoint operator'>
                 {this.getRaelign()}
                 {this.getRowOperator()}
             </g>
