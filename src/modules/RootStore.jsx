@@ -515,11 +515,11 @@ class RootStore {
             Object.keys(this.eventAttributes[cate])
             .forEach((key) => {
                 const subOptions = this.eventAttributes[cate][key]
-                    // .map(d => ({
-                    //     value: d.id,
-                    //     object: d,
-                    //     profile: `event`
-                    // }));
+                    .map(d => ({
+                        ...d,
+                        category: cate,
+                        profile: `event`
+                    }));
 
                 eventOptions = eventOptions.concat(subOptions)
             });
@@ -529,7 +529,7 @@ class RootStore {
 
         console.info(sampleOptions, patientOptions, eventOptions)
 
-        // add all sample options
+        // add all sample variable
         sampleOptions.forEach(d=>{
             // this.dataStore.variableStores.sample.addVariableToBeDisplayed(option)
             this.dataStore.variableStores.sample
@@ -538,7 +538,19 @@ class RootStore {
                         this.staticMappers[d.id], d.profile,
                         'clinical'));
         })
-        this.undoRedoStore.saveVariableHistory('ADD', sampleOptions.map(d => d.variable), true);
+        // this.dataStore.variableStores.variableManagerStore.undoRedoStore.saveVariableHistory('ADD', sampleOptions.map(d => d.variable), true);
+
+        // add all even variable
+        eventOptions.forEach(d=>{
+            console.info(d,'event')
+                const variable = new OriginalVariable(d.id, d.name, 'BINARY', `Indicates if event: "${d.name}" has happened between two timepoints`,
+                    [], [], this.eventMappers[d.id], d.category, 'event');
+                this.dataStore.variableStores
+                    .between.addVariableToBeDisplayed(variable);   
+        })
+        // this.undoRedoStore.saveVariableHistory('ADD', eventOptions.map(d => d.label), true);
+        
+        
            
         
         // this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
