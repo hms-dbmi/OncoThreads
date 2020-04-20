@@ -210,10 +210,10 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @returns {Object[]}
      */
     createOptions() {
-        if (this.category !== 'clinical') {
-            return this.createEventOptions();
+        if (this.category === 'clinical') {
+            return this.createTimepointOptions();
         }
-        return this.createTimepointOptions();
+        return this.createEventOptions();
     }
 
     /**

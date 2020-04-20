@@ -483,10 +483,66 @@ class RootStore {
 
     /**
      * adds variable in the beginning or after reset
+     * add all sample variable in the beginning
      */
+    
     addInitialVariable() {
-        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
-        this.dataStore.globalPrimary = this.initialVariable.id;
+        let sampleOptions = this.clinicalSampleCategories
+            .filter(category => !this.dataStore
+                .variableStores.sample.fullCurrentVariables
+                .map(d => d.id).includes(category.id))
+            // .map((d) => { return {
+            //         value: d.variable + d.description,
+            //         object: d,
+            //         profile: 'clinSample',
+            //     };
+            // });
+        let patientOptions = this.clinicalPatientCategories
+            .filter(category => !this.dataStore
+                .variableStores.sample.fullCurrentVariables
+                .map(d => d.id).includes(category.id))
+            // .map((d) => {return {
+            //         value: `${d.variable} ${d.description}`,
+            //         object: d,
+            //         profile: 'clinPatient',
+            //     };
+            // });
+        
+        
+        let eventOptions = [];
+        Object.keys(this.eventAttributes).filter(d => d !== 'SPECIMEN') //
+        .forEach(cate=>{
+            Object.keys(this.eventAttributes[cate])
+            .forEach((key) => {
+                const subOptions = this.eventAttributes[cate][key]
+                    // .map(d => ({
+                    //     value: d.id,
+                    //     object: d,
+                    //     profile: `event`
+                    // }));
+
+                eventOptions = eventOptions.concat(subOptions)
+            });
+        })
+        
+    
+
+        console.info(sampleOptions, patientOptions, eventOptions)
+
+        // add all sample options
+        sampleOptions.forEach(d=>{
+            // this.dataStore.variableStores.sample.addVariableToBeDisplayed(option)
+            this.dataStore.variableStores.sample
+                    .addVariableToBeDisplayed(new OriginalVariable(d.id, d.variable,
+                        d.datatype, d.description, [], [],
+                        this.staticMappers[d.id], d.profile,
+                        'clinical'));
+        })
+        this.undoRedoStore.saveVariableHistory('ADD', sampleOptions.map(d => d.variable), true);
+           
+        
+        // this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
+        // this.dataStore.globalPrimary = this.initialVariable.id;
     }
 
     /**
