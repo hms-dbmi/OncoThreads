@@ -9,6 +9,7 @@ import {
 import FontAwesome from 'react-fontawesome';
 import { extendObservable } from 'mobx';
 import MainView from './MainView';
+import CustomGrouping from './CustomGrouping'
 import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
 import Tooltip from './Tooltip';
 import QuickAddVariable from './VariableSelector/QuickAddVariable';
@@ -18,6 +19,7 @@ import ContextMenuHeatmapRow from './ContextMenuHeatmapRow';
 import VariableManager from './VariableModals/VariableManager';
 import ContextMenu from './RowOperators/ContextMenu';
 import SaveVariableDialog from './Modals/SaveVariableDialog';
+
 
 /**
  * Component containing the view and controls
@@ -374,6 +376,13 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         <Col className="selectGroup" 
                             sm={3}
                             md={3}>
+                                <CustomGrouping 
+                                    timepoints={
+                                        this.props.rootStore.dataStore.timepoints
+                                        .filter(timepoint=>timepoint.type=="sample")
+                                    }
+                                />
+                                {/* <CustomGrouping/> */}
                         </Col>
                         <Col
                             sm={9}

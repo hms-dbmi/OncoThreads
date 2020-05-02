@@ -97,7 +97,6 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 width: (this.width - 40) / (prevWidth / this.panes.legend.width),
             },
         };
-        console.info(this.width, this.panes.labels.width)
         this.props.rootStore.visStore
             .setPlotHeight(window.innerHeight - this.blockView
                 .current.getBoundingClientRect().top);
