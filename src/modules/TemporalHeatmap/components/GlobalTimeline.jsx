@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
-import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
+import TimelineTimepoint from './Timepoints/TimelinePoints';
 import GlobalTransition from './Transitions/GlobalTransition';
 import { Button, Col, Row } from 'react-bootstrap';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
