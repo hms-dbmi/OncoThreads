@@ -487,26 +487,16 @@ class RootStore {
      */
     
     addInitialVariable() {
+
         let sampleOptions = this.clinicalSampleCategories
             .filter(category => !this.dataStore
                 .variableStores.sample.fullCurrentVariables
                 .map(d => d.id).includes(category.id))
-            // .map((d) => { return {
-            //         value: d.variable + d.description,
-            //         object: d,
-            //         profile: 'clinSample',
-            //     };
-            // });
+
         let patientOptions = this.clinicalPatientCategories
             .filter(category => !this.dataStore
                 .variableStores.sample.fullCurrentVariables
                 .map(d => d.id).includes(category.id))
-            // .map((d) => {return {
-            //         value: `${d.variable} ${d.description}`,
-            //         object: d,
-            //         profile: 'clinPatient',
-            //     };
-            // });
         
         
         let eventOptions = [];
@@ -524,10 +514,6 @@ class RootStore {
                 eventOptions = eventOptions.concat(subOptions)
             });
         })
-        
-    
-
-        console.info(sampleOptions, patientOptions, eventOptions)
 
         // add all sample variable
         sampleOptions.forEach(d=>{
@@ -538,18 +524,13 @@ class RootStore {
                         this.staticMappers[d.id], d.profile,
                         'clinical'));
         })
-        // this.dataStore.variableStores.variableManagerStore.undoRedoStore.saveVariableHistory('ADD', sampleOptions.map(d => d.variable), true);
-
         // add all even variable
         eventOptions.forEach(d=>{
-            console.info(d,'event')
                 const variable = new OriginalVariable(d.id, d.name, 'BINARY', `Indicates if event: "${d.name}" has happened between two timepoints`,
                     [], [], this.eventMappers[d.id], d.category, 'event');
                 this.dataStore.variableStores
                     .between.addVariableToBeDisplayed(variable);   
         })
-        // this.undoRedoStore.saveVariableHistory('ADD', eventOptions.map(d => d.label), true);
-        
         
            
         

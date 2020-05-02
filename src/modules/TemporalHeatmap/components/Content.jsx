@@ -275,7 +275,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         return (
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
-                    <Row>
+                    <Row className='controlPane'>
                         <Col smOffset={0} xsOffset={0} md={7} xs={7}>
                             <QuickAddVariable />
                         </Col>
@@ -370,14 +370,18 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                             </ButtonToolbar>
                         </Col>
                     </Row>
-                    <Row>
+                    <Row className='mainVIStab'>
+                        <Col className="selectGroup" 
+                            sm={3}
+                            md={3}>
+                        </Col>
                         <Col
-                            sm={12}
-                            md={12}
+                            sm={9}
+                            md={9}
                             onMouseEnter={this.hideContextMenu}
                             style={{ paddingTop: 5 }}
                         >
-                            <Row>
+                            {/* <Row> */}
                                 <MainView
                                     tooltipFunctions={tooltipFunctions}
                                     openBinningModal={this.openBinningModal}
@@ -386,7 +390,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                     hideContextMenu={this.hideContextMenu}
                                     showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
                                 />
-                            </Row>
+                            {/* </Row> */}
                         </Col>
                     </Row>
                 </Grid>

@@ -52,8 +52,9 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         }
 
         return (
-            <Grid fluid>
+            // <Grid fluid className="tabContent">
                 <Tabs
+                    style={{width:"100%"}}
                     mountOnEnter
                     unmountOnExit
                     animation={false}
@@ -68,7 +69,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                         {timelineView}
                     </Tab>
                 </Tabs>
-            </Grid>
+            // </Grid>
         );
     }
 

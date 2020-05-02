@@ -48,6 +48,7 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
                 str = d.value;
             }
             rects.push(<rect
+                className={`heatmap ind ${d.patient}`}
                 stroke={stroke}
                 onMouseEnter={e => this.handleMouseEnter(e, d.patient, str)}
                 onMouseLeave={this.handleMouseLeave}
@@ -64,6 +65,7 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
             />);
             if (d.value === undefined) {
                 rects.push(<line
+                    className='heatmap ind undefined'
                     stroke={stroke}
                     key={`${d.patient}UNDEFINED`}
                     height={this.props.height}
