@@ -381,6 +381,8 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                         this.props.rootStore.dataStore.timepoints
                                         .filter(timepoint=>timepoint.type=="sample")
                                     }
+                                    currentVariables={this.props.rootStore.dataStore.variableStores.sample.currentVariables}
+                                    referencedVariables = {this.props.rootStore.dataStore.variableStores.sample.referencedVariables}
                                 />
                                 {/* <CustomGrouping/> */}
                         </Col>
