@@ -151,29 +151,21 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
         var lasso_draw = function () {
             // Style the possible dots
-            mylasso.items().filter(function (d) { return d.possible === true })
-                .classed({ "not_possible": false, "possible": true });
+            // mylasso.items().filter(function (d) { return d.possible === true })
+            //     .classed({ "not_possible": false, "possible": true });
 
-            // Style the not possible dot
-            mylasso.items().filter(function (d) { return d.possible === false })
-                .classed({ "not_possible": true, "possible": false });
+            // // Style the not possible dot
+            // mylasso.items().filter(function (d) { return d.possible === false })
+            //     .classed({ "not_possible": true, "possible": false });
         };
 
         var lasso_end = function () {
             // Reset the color of all dots
         
-
-            // Style the selected dots
-            mylasso.items().filter(function (d) { return d.selected === true })
-                .classed({ "not_possible": false, "possible": false })
+            mylasso.selectedItems()
                 .attr('fill', 'blue')
-                .attr("r", 7);
-
-            // Reset the style of the not selected dots
-            mylasso.items().filter(function (d) { return d.selected === false })
-                .classed({ "not_possible": false, "possible": false })
-                .attr("r", 5);
-
+                .attr('r', '7')
+            
         };
 
 
