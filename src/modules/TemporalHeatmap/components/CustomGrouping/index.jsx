@@ -5,35 +5,34 @@ import PropTypes from 'prop-types';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import { lasso } from 'd3-lasso'
+
 import "./CustomGrouping.css"
+
+import PCP from './pcp'
+import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
  */
-const style = {
-    height: "500px",
-    width: "95%",
-    margin: "2%",
-    boxShadow: "0 1px 6px 0 rgba(32, 33, 36, .28)"
-}
+
 
 const CustomGrouping = observer(class CustomGrouping extends React.Component {
     constructor(props) {
         super(props);
         this.getPoints = this.getPoints.bind(this)
+        this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
+        this.height = 800
         extendObservable(this, {
-            width: window.innerWidth / 2
+            width: window.innerWidth / 2, 
+            selected: [] // selected ids string[]
         })
     }
 
 
-    getPoints() {
+    getPoints(timepoints) {
         var points = []
-
-        let { timepoints, currentVariables, referencedVariables } = this.props
-        if (timepoints[0].heatmap.length != currentVariables.length) return []
 
         // get points,each points is one patient at one timepoint
         timepoints.forEach((timepoint) => {
@@ -52,14 +51,8 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
         // console.info('old points', points)
 
-        var normPoints = this.normalizePoints(points.map(d => d.value), currentVariables, referencedVariables)
-        var newPoints = normPoints.map((d, i) => {
-            return {
-                patient: points[i].patient,
-                value: d
-            }
-        })
-        return newPoints
+        
+        return points
     }
 
     // convert points to [0,1] range.
@@ -69,8 +62,8 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     // return: points: number[][]
     normalizePoints(points, currentVariables, referencedVariables) {
         if (points.length == 0) return points
-        var newPoints = points.map(point => {
-            var newPoint = point.map((value, i) => {
+        var normValues = points.map(point => {
+            var normValue = point.value.map((value, i) => {
                 let ref = referencedVariables[currentVariables[i]]
                 if (value == undefined) {
                     return 0
@@ -80,17 +73,26 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                     return (value - ref.domain[0]) / (ref.domain[1] - ref.domain[0])
                 }
             })
-            return newPoint
+            return normValue
         })
 
-        var pca = new PCA(newPoints)
+        var pca = new PCA(normValues)
         // console.info(newPoints)
-        if (points[0].length > 2) {
+        if (normValues[0].length > 2) {
             // only calculate pca when dimension is larger than 2
-            newPoints = pca.predict(newPoints, { nComponents: 2 }).data
+            normValues = pca.predict(normValues, { nComponents: 2 }).data
             // console.info('pca points', newPoints)
         }
-        return newPoints
+        
+
+        var normPoints = normValues.map((d, i) => {
+            return {
+                ...points[i],
+                value: d
+            }
+        })
+
+        return normPoints
 
     }
 
@@ -98,6 +100,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     // @params: width:number, height:number, r:number
     // @return: <g></g>
     drawVIS(points, width, height, r = 5, margin = 10) {
+
         if (points.length == 0) {
             return <g className='points' />
         }
@@ -112,6 +115,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         var circles = points.map((point,i) => {
             return <circle
                 key={`${point.patient}_${i}`}
+                id = {`${point.patient}_${i}`}
                 cx={xScale(point.value[0])}
                 cy={yScale(point.value[1])}
                 r={r}
@@ -133,8 +137,10 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
     addLasso(width, height) {
         // lasso draw
-        var svg = d3.select('svg.scatterPlot')
+        d3.selectAll('.lasso').remove()
+        var svg = d3.select('svg.customGrouping')
         var lasso_area = svg.append("rect")
+            .attr('class','lasso area')
             .attr("width", width)
             .attr("height", height)
             .style("opacity", 0);
@@ -143,13 +149,13 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         //     lasso()()
         //     )
         // Lasso functions to execute while lassoing
-        var lasso_start = function () {
+        var lasso_start =  () =>{
             mylasso.items()
                 .attr("r", 5) // reset size
                 .attr('fill', 'white')
         };
 
-        var lasso_draw = function () {
+        var lasso_draw = ()=> {
             // Style the possible dots
             // mylasso.items().filter(function (d) { return d.possible === true })
             //     .classed({ "not_possible": false, "possible": true });
@@ -159,12 +165,14 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             //     .classed({ "not_possible": true, "possible": false });
         };
 
-        var lasso_end = function () {
+        var lasso_end = ()=>{
             // Reset the color of all dots
         
             mylasso.selectedItems()
-                .attr('fill', 'blue')
+                .attr('fill', ColorScales.defaultCategoricalRange[0])
                 .attr('r', '7')
+
+            this.selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
             
         };
 
@@ -188,15 +196,31 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
 
     render() {
-        let points = this.getPoints()
-        let { width } = this
+        
+        let {timepoints, currentVariables, referencedVariables} = this.props
+        let points = this.getPoints(timepoints)
+        let normPoints = this.normalizePoints(points, currentVariables, referencedVariables)
+        let { width, height } = this
+        let pcpMargin = 15
         return (
             <div className="container" style={{ width: "100%" }}>
-                <div className="customGrouping" style={style} ref={this.ref}>
-                    {points.length}
-                    {this.props.timepoints.length}
-                    <svg className='scatterPlot' width="100%" height="70%">
-                        {this.drawVIS(points, width, 500)}
+                <div 
+                    className="customGrouping" 
+                    style={{ height:`${this.height}px`, width: "95%",marginRight: "2%"}} 
+                    ref={this.ref}
+                >
+                    <svg className='customGrouping' width="100%" height="100%">
+                        {this.drawVIS(normPoints, width, height*0.4)}
+
+                        <g className='PCP' transform={`translate(${pcpMargin}, ${height/2+pcpMargin})`}>
+                            <PCP points={points} selected={[]} 
+                            currentVariables={currentVariables}
+                            referencedVariables={referencedVariables}
+                            width={width-2*pcpMargin}
+                            height={height/2-2*pcpMargin}
+                            selected = {this.selected}
+                            />
+                        </g>
                     </svg>
                 </div>
             </div>
