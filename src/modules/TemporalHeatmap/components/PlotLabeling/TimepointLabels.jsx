@@ -25,6 +25,7 @@ const TimepointLabels = inject('dataStore', 'visStore')(observer(class Timepoint
 
 
     render() {
+        // console.info("time lables render")
         // create textfields for sample timepoints, but not for between timepoints
         const labels = this.props.dataStore.timepoints.map((d, i) => {
             const pos = this.props.padding + this.props.visStore.timepointPositions.timepoint[i]

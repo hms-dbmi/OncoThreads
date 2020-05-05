@@ -47,6 +47,7 @@ const HeatmapTimepoint = inject('visStore', 'uiStore')(observer(class HeatmapTim
     }
 
     render() {
+        console.info('heatmap render')
         return (
             this.getTimepoint()
         );

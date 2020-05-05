@@ -44,7 +44,8 @@ const PCP = observer(class CustomGrouping extends React.Component {
                 d={wholeLine} 
                 fill='none' 
                 key={id}
-                stroke={`${isSelected?ColorScales.defaultCategoricalRange[0]:"gray"}`}
+                stroke={
+                    `${isSelected?ColorScales.defaultCategoricalRange[2]:ColorScales.defaultCategoricalRange[0]}`}
                 strokeWidth='2'
                 opacity={`${isSelected?'1':'0.2'}`}
                 />
@@ -68,7 +69,7 @@ const PCP = observer(class CustomGrouping extends React.Component {
                 </text>
                 <g className='ticks'>
                     {xScales[i].domain().map(v=>{
-                        return <text x={xScales[i](v)+5} y={y-5} title={v} key={v}>
+                        return <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle">
                             {v}
                             </text>
                     })}
@@ -83,9 +84,7 @@ const PCP = observer(class CustomGrouping extends React.Component {
     
 
     render() {
-        
-        let {selected}=this.props
-        console.info('update selected color'+selected.length)
+        // console.info('scatter render')
         return this.generateLines()
     }
 })

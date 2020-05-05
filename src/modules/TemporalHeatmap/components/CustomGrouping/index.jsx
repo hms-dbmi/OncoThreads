@@ -23,7 +23,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         this.getPoints = this.getPoints.bind(this)
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
-        this.height = 800
+        this.height = window.innerHeight-120
         extendObservable(this, {
             width: window.innerWidth / 2, 
             selected: [] // selected ids string[]
@@ -99,7 +99,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
-    drawVIS(points, width, height, r = 5, margin = 10) {
+    drawVIS(points, width, height, r = 5, margin = 20) {
 
         if (points.length == 0) {
             return <g className='points' />
@@ -169,7 +169,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             // Reset the color of all dots
         
             mylasso.selectedItems()
-                .attr('fill', ColorScales.defaultCategoricalRange[0])
+                .attr('fill', ColorScales.defaultCategoricalRange[2])
                 .attr('r', '7')
 
             this.selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
@@ -201,23 +201,24 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         let points = this.getPoints(timepoints)
         let normPoints = this.normalizePoints(points, currentVariables, referencedVariables)
         let { width, height } = this
-        let pcpMargin = 15
+        let pcpMargin = 25
+        let scatterHeight = height*0.35, pcpHeight = height*0.65
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div 
                     className="customGrouping" 
-                    style={{ height:`${this.height}px`, width: "95%",marginRight: "2%"}} 
+                    style={{ height:`${this.height}px`, width: "100%",marginTop: "5px"}} 
                     ref={this.ref}
                 >
                     <svg className='customGrouping' width="100%" height="100%">
-                        {this.drawVIS(normPoints, width, height*0.4)}
+                        {this.drawVIS(normPoints, width, scatterHeight)}
 
-                        <g className='PCP' transform={`translate(${pcpMargin}, ${height/2+pcpMargin})`}>
+                        <g className='PCP' transform={`translate(${pcpMargin}, ${scatterHeight})`}>
                             <PCP points={points} selected={[]} 
                             currentVariables={currentVariables}
                             referencedVariables={referencedVariables}
                             width={width-2*pcpMargin}
-                            height={height/2-2*pcpMargin}
+                            height={pcpHeight-2*pcpMargin}
                             selected = {this.selected}
                             />
                         </g>
