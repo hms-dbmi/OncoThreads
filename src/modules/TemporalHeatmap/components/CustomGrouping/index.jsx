@@ -4,13 +4,15 @@ import { extendObservable } from 'mobx';
 import PropTypes from 'prop-types';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
-import { lasso } from 'd3-lasso'
+import lasso from './lasso.js'
 
 import "./CustomGrouping.css"
 
 import PCP from './pcp'
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import GroupInfo from './GroupInfo'
 
+const colors = ColorScales.defaultCategoricalRange
 /*
  * BlockViewTimepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
@@ -169,7 +171,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             // Reset the color of all dots
         
             mylasso.selectedItems()
-                .attr('fill', ColorScales.defaultCategoricalRange[2])
+                .attr('fill', colors[2])
                 .attr('r', '7')
 
             this.selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
@@ -190,6 +192,32 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
     }
 
+    /**
+     * summarize the selected group of points
+     * @param {patient:string, value:number[]}[] points 
+     * @param string[] selected: ids of points
+     * @param string[] currentVariables
+     * @return {variableName: domain} group
+     */
+    getGroup(points, selected, currentVariables){
+        let selectedPoints = points.filter((p,i)=>selected.includes(`${p.patient}_${i}`))
+
+        const summarizeDomain = (values)=>{
+            if (typeof(values[0])=="number"){
+                return [Math.min(...values).toPrecision(4), Math.max(...values).toPrecision(4)]
+            }else if (typeof(values[0])=="string"){
+                return [... new Set(values)]
+            } else return []
+        }
+
+        let group = {}
+        currentVariables.forEach((name,i)=>{
+            group[name] = summarizeDomain( selectedPoints.map(p=>p.value[i]) )
+        })
+
+        return group
+    }
+
     componentDidMount() {
         this.width = this.ref.current.getBoundingClientRect().width
     }
@@ -202,7 +230,9 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         let normPoints = this.normalizePoints(points, currentVariables, referencedVariables)
         let { width, height } = this
         let pcpMargin = 25
-        let scatterHeight = height*0.35, pcpHeight = height*0.65
+        let scatterHeight = height*0.35, pcpHeight = height*0.45, infoHeight=height*0.2
+
+        let group = this.getGroup(points, this.selected, currentVariables)
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div 
@@ -210,10 +240,10 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                     style={{ height:`${this.height}px`, width: "100%",marginTop: "5px"}} 
                     ref={this.ref}
                 >
-                    <svg className='customGrouping' width="100%" height="100%">
+                    <svg className='customGrouping' width="100%" height="80%">
                         {this.drawVIS(normPoints, width, scatterHeight)}
 
-                        <g className='PCP' transform={`translate(${pcpMargin}, ${scatterHeight})`}>
+                        <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin+scatterHeight})`}>
                             <PCP points={points} selected={[]} 
                             currentVariables={currentVariables}
                             referencedVariables={referencedVariables}
@@ -223,6 +253,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                             />
                         </g>
                     </svg>
+                    <GroupInfo groups={[group]} height={infoHeight}/>
                 </div>
             </div>
         );

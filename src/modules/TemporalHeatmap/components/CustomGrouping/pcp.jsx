@@ -1,8 +1,18 @@
 import React from 'react';
 import { observer , PropTypes as MobxPropTypes } from 'mobx-react';
-import PropTypes from 'prop-types';
 import * as d3 from 'd3';
+import PropTypes from 'prop-types';
+import {Tooltip} from 'antd';
+
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+
+const clipText =(text, len)=>{
+    if (typeof(text)=='number') return text
+    else if (text.length<len) return text
+    else {
+        return text.substring(0, len-1)+'..'
+    }
+}
 
 const PCP = observer(class CustomGrouping extends React.Component {
     constructor(props){
@@ -54,9 +64,8 @@ const PCP = observer(class CustomGrouping extends React.Component {
         // add axis
         let axes = currentVariables.map((v, i)=>{
             let y = yScale(v)
-            return <g className={`axis ${v}`}>
+            return <g className={`axis ${v}`} key={`axis_${i}`}>
                 <line className={`axis ${v}`}
-                    key={`axis_${i}`}
                     x1={0}
                     y1={y}
                     x2={width}
@@ -69,9 +78,17 @@ const PCP = observer(class CustomGrouping extends React.Component {
                 </text>
                 <g className='ticks'>
                     {xScales[i].domain().map(v=>{
-                        return <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle">
-                            {v}
-                            </text>
+                        const maxLen = 5
+                        if (v.length>maxLen){ // tooltip only when clip
+                            return <Tooltip title={v} >
+                                <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                                {clipText(v, maxLen)}
+                                </text>
+                            </Tooltip>
+                        }else {
+                            return <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                            {v} </text>
+                        }
                     })}
                 </g>
             </g>
