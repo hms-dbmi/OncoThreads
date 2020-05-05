@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import {Tooltip} from 'antd';
 
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+const colors = ColorScales.defaultCategoricalRange
 
 const clipText =(text, len)=>{
     if (typeof(text)=='number') return text
@@ -49,15 +50,15 @@ const PCP = observer(class CustomGrouping extends React.Component {
             })
             let wholeLine = `${lineMid.join(' ')}`
             let id = `${point.patient}_${i}`
-            let isSelected = this.props.selected.includes(id)
+            let groupIdx = this.props.selected.findIndex(p=>p.includes(id))
+            
             return <path 
                 d={wholeLine} 
                 fill='none' 
                 key={id}
-                stroke={
-                    `${isSelected?ColorScales.defaultCategoricalRange[2]:ColorScales.defaultCategoricalRange[0]}`}
-                strokeWidth='2'
-                opacity={`${isSelected?'1':'0.2'}`}
+                stroke={groupIdx>-1?colors[groupIdx]:"lightgray"}
+                strokeWidth='4'
+                opacity={`${groupIdx>-1?'0.7':'0.4'}`}
                 />
         })
 
@@ -81,12 +82,12 @@ const PCP = observer(class CustomGrouping extends React.Component {
                         const maxLen = 5
                         if (v.length>maxLen){ // tooltip only when clip
                             return <Tooltip title={v} >
-                                <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                                <text x={xScales[i](v)+5} y={y-8} title={v} key={v} textAnchor="middle" cursor='pointer'>
                                 {clipText(v, maxLen)}
                                 </text>
                             </Tooltip>
                         }else {
-                            return <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                            return <text x={xScales[i](v)+5} y={y-8} title={v} key={v} textAnchor="middle" cursor='pointer'>
                             {v} </text>
                         }
                     })}
@@ -108,7 +109,7 @@ const PCP = observer(class CustomGrouping extends React.Component {
 
 PCP.propTypes = {
     points: PropTypes.arrayOf(PropTypes.object).isRequired,
-    selected: MobxPropTypes.observableArrayOf(PropTypes.string).isRequired,
+    selected: PropTypes.arrayOf(PropTypes.array).isRequired,
     currentVariables: PropTypes.arrayOf(PropTypes.string).isRequired,
     referencedVariables: PropTypes.object.isRequired,
     height:PropTypes.number,

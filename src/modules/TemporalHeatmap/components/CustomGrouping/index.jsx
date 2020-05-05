@@ -26,6 +26,8 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
         this.height = window.innerHeight-120
+        this.resetGroup = this.resetGroup.bind(this)
+
         extendObservable(this, {
             width: window.innerWidth / 2, 
             selected: [] // selected ids string[]
@@ -124,7 +126,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                 fill="white"
                 stroke='black'
                 strokeWidth='1'
-                opacity={0.5}
+                opacity={0.7}
                 className='point'
             />
         })
@@ -154,7 +156,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         var lasso_start =  () =>{
             mylasso.items()
                 .attr("r", 5) // reset size
-                .attr('fill', 'white')
+                // .attr('fill', 'white')
         };
 
         var lasso_draw = ()=> {
@@ -171,10 +173,14 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             // Reset the color of all dots
         
             mylasso.selectedItems()
-                .attr('fill', colors[2])
+                .attr('fill', colors[this.selected.length])
                 .attr('r', '7')
 
-            this.selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
+             
+            let selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
+            if (selected.length>0){
+                this.selected.push(selected)
+            }
             
         };
 
@@ -199,8 +205,12 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
      * @param string[] currentVariables
      * @return {variableName: domain} group
      */
-    getGroup(points, selected, currentVariables){
-        let selectedPoints = points.filter((p,i)=>selected.includes(`${p.patient}_${i}`))
+    getGroups(points, selected, currentVariables){
+        let selectedPoints = selected
+            .map(s=>{
+                return points
+                .filter((p,i)=>s.includes(`${p.patient}_${i}`))
+            })
 
         const summarizeDomain = (values)=>{
             if (typeof(values[0])=="number"){
@@ -210,12 +220,24 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             } else return []
         }
 
-        let group = {}
-        currentVariables.forEach((name,i)=>{
-            group[name] = summarizeDomain( selectedPoints.map(p=>p.value[i]) )
+        let groups = selectedPoints.map(p=>{
+            let group = {}
+            currentVariables.forEach((name,i)=>{
+                group[name] = summarizeDomain( p.map(p=>p.value[i]) )
+            })
+            
+            return group
         })
+        
+        
 
-        return group
+        return groups
+    }
+    resetGroup(){
+        this.selected = []
+        d3.selectAll('circle.point')
+        .attr('fill','white')
+        .attr('r',5)
     }
 
     componentDidMount() {
@@ -232,7 +254,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         let pcpMargin = 25
         let scatterHeight = height*0.35, pcpHeight = height*0.45, infoHeight=height*0.2
 
-        let group = this.getGroup(points, this.selected, currentVariables)
+        let groups = this.getGroups(points, this.selected, currentVariables)
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div 
@@ -244,7 +266,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                         {this.drawVIS(normPoints, width, scatterHeight)}
 
                         <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin+scatterHeight})`}>
-                            <PCP points={points} selected={[]} 
+                            <PCP points={points} 
                             currentVariables={currentVariables}
                             referencedVariables={referencedVariables}
                             width={width-2*pcpMargin}
@@ -253,7 +275,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                             />
                         </g>
                     </svg>
-                    <GroupInfo groups={[group]} height={infoHeight}/>
+                    <GroupInfo groups={groups} height={infoHeight} resetGroup={this.resetGroup}/>
                 </div>
             </div>
         );
