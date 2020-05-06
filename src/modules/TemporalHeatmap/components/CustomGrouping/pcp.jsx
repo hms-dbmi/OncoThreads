@@ -44,7 +44,7 @@ const PCP = observer(class CustomGrouping extends React.Component {
         let svgLines = points.map((point, i)=>{
             let lineMid = point.value.map((v,j)=>{
                 let x = xScales[j](v)
-                if (!v) {x = xScales[j].range()[0]}
+                if (typeof(v)=="undefined") {x = xScales[j].range()[0]}
                 let y = yScale(currentVariables[j])
                 return `${j==0?'M':'L'} ${x} ${y}`
             })
@@ -79,15 +79,16 @@ const PCP = observer(class CustomGrouping extends React.Component {
                 </text>
                 <g className='ticks'>
                     {xScales[i].domain().map(v=>{
-                        const maxLen = 5
+                        const maxLen = (this.props.width/xScales[i].domain().length)/5
+                        v=v.toString()
                         if (v.length>maxLen){ // tooltip only when clip
-                            return <Tooltip title={v} >
-                                <text x={xScales[i](v)+5} y={y-8} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                            return <Tooltip title={v} key={v} >
+                                <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
                                 {clipText(v, maxLen)}
                                 </text>
                             </Tooltip>
                         }else {
-                            return <text x={xScales[i](v)+5} y={y-8} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                            return <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
                             {v} </text>
                         }
                     })}
@@ -102,7 +103,6 @@ const PCP = observer(class CustomGrouping extends React.Component {
     
 
     render() {
-        // console.info('scatter render')
         return this.generateLines()
     }
 })

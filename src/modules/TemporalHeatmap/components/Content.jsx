@@ -277,6 +277,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         return (
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
+                <h4>{this.props.rootStore.study.name}</h4>
                     <Row className='controlPane'>
                         <Col smOffset={0} xsOffset={0} md={7} xs={7}>
                             <QuickAddVariable />
@@ -376,6 +377,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         <Col className="selectGroup" 
                             sm={3}
                             md={3}>
+                                
                                 <CustomGrouping 
                                     timepoints={
                                         this.props.rootStore.dataStore.timepoints

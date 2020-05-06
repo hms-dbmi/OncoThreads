@@ -25,7 +25,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         this.getPoints = this.getPoints.bind(this)
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
-        this.height = window.innerHeight-120
+        this.height = window.innerHeight-140
         this.resetGroup = this.resetGroup.bind(this)
 
         extendObservable(this, {
@@ -71,11 +71,13 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                 let ref = referencedVariables[currentVariables[i]]
                 if (value == undefined) {
                     return 0
-                } else if (ref.datatype === 'STRING') {
-                    return ref.domain.indexOf(value) / ref.domain.length
                 } else if (ref.datatype == "NUMBER") {
                     return (value - ref.domain[0]) / (ref.domain[1] - ref.domain[0])
-                }
+                } else if (ref.domain.length==1){
+                    return 0
+                }else{
+                    return ref.domain.indexOf(value) / (ref.domain.length-1)
+                } 
             })
             return normValue
         })
