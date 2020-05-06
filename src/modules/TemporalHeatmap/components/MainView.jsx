@@ -75,7 +75,6 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
 
 
     render() {
-        console.info('main view render')
         if(this.props.rootStore.dataStore.variableStores.sample.currentVariables.length > 0 ||
             this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0){
             return(this.getVisualization())
