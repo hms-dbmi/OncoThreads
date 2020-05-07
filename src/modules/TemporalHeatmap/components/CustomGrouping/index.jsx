@@ -26,7 +26,9 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
         this.height = window.innerHeight-140
+
         this.resetGroup = this.resetGroup.bind(this)
+        this.deleteGroup = this.deleteGroup.bind(this)
 
         extendObservable(this, {
             width: window.innerWidth / 2, 
@@ -105,7 +107,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
-    drawVIS(points, width, height, r = 5, margin = 20) {
+    drawVIS(points, selected, width, height, r = 5, margin = 20) {
 
         if (points.length == 0) {
             return <g className='points' />
@@ -118,14 +120,18 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             .domain(d3.extent(points.map(d => d.value[1])))
             .range([margin, height - margin])
 
+        
+
         var circles = points.map((point,i) => {
+            let id = `${point.patient}_${i}`
+            let groupIdx = selected.findIndex(p=>p.includes(id))
             return <circle
-                key={`${point.patient}_${i}`}
-                id = {`${point.patient}_${i}`}
+                key={id}
+                id = {id}
                 cx={xScale(point.value[0])}
                 cy={yScale(point.value[1])}
                 r={r}
-                fill="white"
+                fill={groupIdx>-1?colors[groupIdx]:"white"}
                 stroke='black'
                 strokeWidth='1'
                 opacity={0.7}
@@ -163,20 +169,20 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
         var lasso_draw = ()=> {
             // Style the possible dots
-            // mylasso.items().filter(function (d) { return d.possible === true })
-            //     .classed({ "not_possible": false, "possible": true });
-
-            // // Style the not possible dot
-            // mylasso.items().filter(function (d) { return d.possible === false })
-            //     .classed({ "not_possible": true, "possible": false });
+            // mylasso
+            // .possibleItems()
+            // .classed("possible", true)
         };
 
         var lasso_end = ()=>{
-            // Reset the color of all dots
         
-            mylasso.selectedItems()
-                .attr('fill', colors[this.selected.length])
-                .attr('r', '7')
+            // mylasso.selectedItems()
+            //     .attr('fill', colors[this.selected.length])
+            //     .attr('r', '7')
+            //     .classed(`group_${this.selected.length}`, true)
+            // mylasso
+            // .items()
+            // .classed("possible", false)
 
              
             let selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
@@ -237,9 +243,21 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     }
     resetGroup(){
         this.selected = []
+
+
         d3.selectAll('circle.point')
         .attr('fill','white')
         .attr('r',5)
+        .attr('class', 'point')
+    }
+    deleteGroup(i){
+        this.selected.splice(i,1)
+
+        d3.selectAll(`circle.group_${i}`)
+        .attr('fill','white')
+        .attr('r',5)
+        .attr('class', 'point')
+
     }
 
     componentDidMount() {
@@ -265,7 +283,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                     ref={this.ref}
                 >
                     <svg className='customGrouping' width="100%" height="80%">
-                        {this.drawVIS(normPoints, width, scatterHeight)}
+                        {this.drawVIS(normPoints, this.selected, width, scatterHeight)}
 
                         <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin+scatterHeight})`}>
                             <PCP points={points} 
@@ -277,7 +295,11 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                             />
                         </g>
                     </svg>
-                    <GroupInfo groups={groups} height={infoHeight} resetGroup={this.resetGroup}/>
+                    <GroupInfo 
+                    groups={groups} height={infoHeight} 
+                    resetGroup={this.resetGroup}
+                    deleteGroup={this.deleteGroup}
+                    />
                 </div>
             </div>
         );

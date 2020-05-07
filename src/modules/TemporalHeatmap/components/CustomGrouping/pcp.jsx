@@ -74,12 +74,12 @@ const PCP = observer(class CustomGrouping extends React.Component {
                     stroke='black'
                     strokeWidth='2'
                 />
-                <text className='label' x={width} y={y-15} textAnchor="end">
+                <text className='label' x={width} y={y-18} textAnchor="end">
                     {v}
                 </text>
                 <g className='ticks'>
                     {xScales[i].domain().map(v=>{
-                        const maxLen = (this.props.width/xScales[i].domain().length)/5
+                        const maxLen = (this.props.width/xScales[i].domain().length)/6
                         v=v.toString()
                         if (v.length>maxLen){ // tooltip only when clip
                             return <Tooltip title={v} key={v} >

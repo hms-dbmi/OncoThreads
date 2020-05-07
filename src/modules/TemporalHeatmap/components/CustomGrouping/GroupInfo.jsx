@@ -2,6 +2,7 @@ import React from 'react';
 import { observer , PropTypes as MobxPropTypes } from 'mobx-react';
 import PropTypes from 'prop-types';
 import {Button, Table} from 'antd';
+import {CloseSquareOutlined} from '@ant-design/icons';
 import * as d3 from 'd3';
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 const colors = ColorScales.defaultCategoricalRange
@@ -38,14 +39,17 @@ const GroupInfo = observer(class GroupInfo extends React.Component {
         let content = groups.map((g,i)=>{
             let values = Object.keys(g).map(key=>{
                 let domain = g[key]
-                return <span style={{marginRight:'2px'}} >{
+                return <span style={{marginRight:'2px'}} key={key}>{
                     domain.length==0?'':`[${domain.join()}]`
                     }</span>
                 })
             // if(Object.values(g)){
                 values.unshift(<span>Group_{i}</span>)
             // }
-            return <p key={`group_${i}`} style={{color: colors[i]}}>{values }</p>
+            return <p key={`group_${i}`} style={{color: colors[i]}}>
+                {values} 
+                <CloseSquareOutlined onClick={()=>this.props.deleteGroup(i)}/> 
+                </p>
         })
         
         return <div className="GroupInfo"  style={{height:this.props.height, padding:"5px"}}>
@@ -61,10 +65,11 @@ const GroupInfo = observer(class GroupInfo extends React.Component {
     }}
     )
 
-GroupInfo.PropTypes={
+GroupInfo.propTypes={
     groups: PropTypes.arrayOf(PropTypes.object).isRequired,
     height: PropTypes.number.isRequired,
     resetGroup: PropTypes.func.isRequired,
+    deleteGroup: PropTypes.func.isRequired,
 }
 
 export default GroupInfo
