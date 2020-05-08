@@ -49,7 +49,7 @@ const PCP = observer(class CustomGrouping extends React.Component {
                 return `${j==0?'M':'L'} ${x} ${y}`
             })
             let wholeLine = `${lineMid.join(' ')}`
-            let id = i.toString()
+            let id = i
             let groupIdx = this.props.selected.findIndex(p=>p.includes(id))
             
             return <path 

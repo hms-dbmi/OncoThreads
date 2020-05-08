@@ -11,6 +11,7 @@ import "./CustomGrouping.css"
 import PCP from './pcp'
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 import GroupInfo from './GroupInfo'
+import { Switch } from 'antd';
 
 const colors = ColorScales.defaultCategoricalRange
 /*
@@ -32,13 +33,15 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
         extendObservable(this, {
             width: window.innerWidth / 2, 
-            selected: [] // selected ids string[]
+            selected: [], // selected ids string[],
+            hasLink: false
         })
     }
 
 
     getPoints(timepoints) {
         var points = []
+        var patientDict = {} // the point id of each patient {paitent:{patient:string, points:id[]}}
 
         // get points,each points is one patient at one timepoint
         timepoints.forEach((timepoint, timeIdx) => {
@@ -46,10 +49,19 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
             if (heatmap[0]) {
                 heatmap[0].data.forEach((_, i) => {
+                    let patient = timepoint.heatmapOrder[i]
                     var point = {
-                        patient: timepoint.heatmapOrder[i],
+                        patient,
                         value: heatmap.map(d => d.data[i].value),
                         timeIdx 
+                    }
+                    if ( patientDict[patient]==undefined){
+                        patientDict[patient]={
+                            patient,
+                            points:[points.length]
+                        }
+                    }else{
+                        patientDict[patient].points.push(points.length)
                     }
                     points.push(point)
                 })
@@ -59,7 +71,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         // console.info('old points', points)
 
         
-        return points
+        return {points, patientDict}
     }
 
     // convert points to [0,1] range.
@@ -108,7 +120,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
-    drawVIS(points, selected, width, height, r = 5, margin = 20) {
+    drawVIS(points, patientDict, selected, width, height, r = 5, margin = 20) {
 
         if (points.length == 0) {
             return <g className='points' />
@@ -122,29 +134,62 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             .range([margin, height - margin])
 
         
-
+        const maxTimeIdx = Math.max(...points.map(p=>p.timeIdx))
         var circles = points.map((point,i) => {
-            let id = i.toString()
+            let id = i
             let groupIdx = selected.findIndex(p=>p.includes(id))
+            let opacity = this.hasLink? 0.1+ point.timeIdx*0.6/maxTimeIdx : 0.5
             return <circle
                 key={id}
                 id = {id}
                 cx={xScale(point.value[0])}
                 cy={yScale(point.value[1])}
                 r={r}
-                fill={groupIdx>-1?colors[groupIdx]:"white"}
+                fill={groupIdx>-1?colors[groupIdx]:(this.hasLink?"black":"white")}
                 stroke='black'
                 strokeWidth='1'
-                opacity={0.7}
+                opacity={opacity}
                 className='point'
+            />
+        })
+
+        var lines = Object.keys(patientDict).map(patient=>{
+            let pointIds = patientDict[patient].points 
+            let path = pointIds.map((id, i)=>{
+                let x = xScale( points[id].value[0] )
+                let y = yScale( points[id].value[1] )
+                return `${i==0?'M':'L'} ${x} ${y}`
+            })
+
+            return <path 
+            key={patient} 
+            d={path.join(' ')} 
+            fill='none'
+            stroke='gray'
+            strokeWidth='1'
             />
         })
 
         this.addLasso(width, height)
 
-        return <g className="points">
-            {circles}
+        if (this.hasLink){
+            return <g className='patientTrajectory'>
+            <g className="points">
+                {circles}
+            </g>
+            <g className="lines">
+                {lines}
+            </g>
         </g>
+        }
+        else {
+            return <g className='patientTrajectory'>
+            <g className="points">
+                {circles}
+            </g>
+            </g>
+        }
+        
 
     }
 
@@ -188,8 +233,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
              
             let selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
             if (selected.length>0){
-                this.selected.push(selected)
-                console.info(selected)
+                this.selected.push(selected.map(d=>parseInt(d)))        
             }
             
         };
@@ -219,7 +263,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         let selectedPoints = selected
             .map(s=>{
                 return points
-                .filter((_,i)=>s.includes(i.toString()))
+                .filter((_,i)=>s.includes(i))
             })
 
         const summarizeDomain = (values)=>{
@@ -270,7 +314,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     render() {
         
         let {timepoints, currentVariables, referencedVariables} = this.props
-        let points = this.getPoints(timepoints)
+        let {points, patientDict} = this.getPoints(timepoints)
         let normPoints = this.normalizePoints(points, currentVariables, referencedVariables)
         let { width, height } = this
         let pcpMargin = 25
@@ -284,8 +328,15 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                     style={{ height:`${this.height}px`, width: "100%",marginTop: "5px"}} 
                     ref={this.ref}
                 >
+                    <Switch size="small" 
+                    style={{position:"absolute"}}
+                    defaultChecked 
+                    onChange={()=>{
+                        this.hasLink = !this.hasLink
+                    }}/>
+
                     <svg className='customGrouping' width="100%" height="80%">
-                        {this.drawVIS(normPoints, this.selected, width, scatterHeight)}
+                        {this.drawVIS(normPoints, patientDict, this.selected, width, scatterHeight)}
 
                         <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin+scatterHeight})`}>
                             <PCP points={points} 
