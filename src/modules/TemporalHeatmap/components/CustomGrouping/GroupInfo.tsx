@@ -1,41 +1,25 @@
 import React from 'react';
-import { observer , PropTypes as MobxPropTypes } from 'mobx-react';
-import PropTypes from 'prop-types';
+import { observer  } from 'mobx-react';
 import {Button, Table} from 'antd';
 import {CloseSquareOutlined} from '@ant-design/icons';
-import * as d3 from 'd3';
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 const colors = ColorScales.defaultCategoricalRange
 
-const GroupInfo = observer(class GroupInfo extends React.Component {
-    constructor(props){
+interface Props {
+    groups: any[],
+    height: number,
+    resetGroup: ()=>void,
+    deleteGroup: (groupIdx:number)=>void,
+}
+
+
+const GroupInfo = observer(class GroupInfo extends React.Component<Props, {}> {
+    constructor(props:Props){
         super(props)
     }
     render(){
         let {groups} = this.props
-        // const col = [{
-        //     title: 'group',
-        //     dataIndex: 'group',
-        //     key: 'group',
-        //     render: text => <span style={{color: colors[2]}}>{text}</span>,
-        //   }].concat(
-        //       Object.keys(groups[0]).map(name=>{
-        //           return {
-        //               title: name,
-        //               dataIndex: name,
-        //               key: name,
-        //               render: domain=>{return domain.length==0?'':`[${domain.join()}]`}
-        //           }
-        //       })
 
-        //   )
-
-        // const data = groups.map((g,i)=>{
-        //     return {
-        //         ...g,
-        //         key: i
-        //     }
-        // })
         let content = groups.map((g,i)=>{
             let values = Object.keys(g).map(key=>{
                 let domain = g[key]
@@ -65,11 +49,5 @@ const GroupInfo = observer(class GroupInfo extends React.Component {
     }}
     )
 
-GroupInfo.propTypes={
-    groups: PropTypes.arrayOf(PropTypes.object).isRequired,
-    height: PropTypes.number.isRequired,
-    resetGroup: PropTypes.func.isRequired,
-    deleteGroup: PropTypes.func.isRequired,
-}
 
 export default GroupInfo

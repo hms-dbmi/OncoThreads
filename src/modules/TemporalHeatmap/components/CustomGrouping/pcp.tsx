@@ -1,13 +1,14 @@
+import {Point, ReferencedVariables} from 'modules/Type'
 import React from 'react';
-import { observer , PropTypes as MobxPropTypes } from 'mobx-react';
+import { observer } from 'mobx-react';
 import * as d3 from 'd3';
-import PropTypes from 'prop-types';
 import {Tooltip} from 'antd';
 
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 const colors = ColorScales.defaultCategoricalRange
 
-const clipText =(text, len)=>{
+
+const clipText =(text:string|number, len:number):string|number=>{
     if (typeof(text)=='number') return text
     else if (text.length<len) return text
     else {
@@ -15,8 +16,18 @@ const clipText =(text, len)=>{
     }
 }
 
-const PCP = observer(class CustomGrouping extends React.Component {
-    constructor(props){
+interface Props {
+    points: Point[],
+    selected: number[][],
+    currentVariables: string[],
+    referencedVariables: ReferencedVariables, // add more detils later
+    height:number,
+    width: number,
+}
+
+
+const PCP = observer(class CustomGrouping extends React.Component<Props> {
+    constructor(props: Props){
         super(props)
         this.generateLines = this.generateLines.bind(this)
     }
@@ -32,18 +43,18 @@ const PCP = observer(class CustomGrouping extends React.Component {
             let ref = referencedVariables[name]
             if (ref.datatype === 'NUMBER'){
                 return d3.scaleLinear()
-                .domain(ref.domain)
+                .domain(ref.domain as number[])
                 .range([0, width])
             } else {
                 return d3.scalePoint()
-                .domain(ref.domain)
+                .domain(ref.domain as string[])
                 .range([0, width])
             } 
         }) 
 
         let svgLines = points.map((point, i)=>{
             let lineMid = point.value.map((v,j)=>{
-                let x = xScales[j](v)
+                let x = xScales[j](v as any)
                 if (typeof(v)=="undefined") {x = xScales[j].range()[0]}
                 let y = yScale(currentVariables[j])
                 return `${j==0?'M':'L'} ${x} ${y}`
@@ -64,7 +75,7 @@ const PCP = observer(class CustomGrouping extends React.Component {
 
         // add axis
         let axes = currentVariables.map((v, i)=>{
-            let y = yScale(v)
+            let y = yScale(v)||0
             return <g className={`axis ${v}`} key={`axis_${i}`}>
                 <line className={`axis ${v}`}
                     x1={0}
@@ -78,17 +89,16 @@ const PCP = observer(class CustomGrouping extends React.Component {
                     {v}
                 </text>
                 <g className='ticks'>
-                    {xScales[i].domain().map(v=>{
+                    {(xScales[i].domain() as string[] ).map((v:string)=>{
                         const maxLen = (this.props.width/xScales[i].domain().length)/6
-                        v=v.toString()
-                        if (v.length>maxLen){ // tooltip only when clip
+                        if (v.toString().length>maxLen){ // tooltip only when clip
                             return <Tooltip title={v} key={v} >
-                                <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                                <text x={xScales[i](v as any)||0+5} y={y-5} key={v} textAnchor="middle" cursor='pointer'>
                                 {clipText(v, maxLen)}
                                 </text>
                             </Tooltip>
                         }else {
-                            return <text x={xScales[i](v)+5} y={y-5} title={v} key={v} textAnchor="middle" cursor='pointer'>
+                            return <text x={xScales[i](v as any)||0+5} y={y-5} key={v} textAnchor="middle" cursor='pointer'>
                             {v} </text>
                         }
                     })}
@@ -107,13 +117,6 @@ const PCP = observer(class CustomGrouping extends React.Component {
     }
 })
 
-PCP.propTypes = {
-    points: PropTypes.arrayOf(PropTypes.object).isRequired,
-    selected: PropTypes.arrayOf(PropTypes.array).isRequired,
-    currentVariables: PropTypes.arrayOf(PropTypes.string).isRequired,
-    referencedVariables: PropTypes.object.isRequired,
-    height:PropTypes.number,
-    width: PropTypes.number,
-}
+
 
 export default PCP;
