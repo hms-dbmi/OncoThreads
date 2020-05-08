@@ -170,6 +170,23 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             />
         })
 
+        let curveGenerator = d3.line()
+            .x(d=>xScale(d.value[0]))
+            .y(d=>yScale(d.value[1]))
+            .curve(d3.curveMonotoneX)
+
+        let curves=Object.keys(patientDict).map(patient=>{
+            let pointIds = patientDict[patient].points 
+            let path = curveGenerator(pointIds.map(id=>points[id]))
+            return <path 
+            key={patient} 
+            d={path} 
+            fill='none'
+            stroke='gray'
+            strokeWidth='1'
+            />
+        })
+
         this.addLasso(width, height)
 
         if (this.hasLink){
@@ -178,7 +195,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
                 {circles}
             </g>
             <g className="lines">
-                {lines}
+                {curves}
             </g>
         </g>
         }
