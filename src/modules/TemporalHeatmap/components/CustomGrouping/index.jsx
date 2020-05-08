@@ -41,14 +41,15 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         var points = []
 
         // get points,each points is one patient at one timepoint
-        timepoints.forEach((timepoint) => {
+        timepoints.forEach((timepoint, timeIdx) => {
             var heatmap = timepoint.heatmap
 
             if (heatmap[0]) {
                 heatmap[0].data.forEach((_, i) => {
                     var point = {
                         patient: timepoint.heatmapOrder[i],
-                        value: heatmap.map(d => d.data[i].value)
+                        value: heatmap.map(d => d.data[i].value),
+                        timeIdx 
                     }
                     points.push(point)
                 })
@@ -123,7 +124,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         
 
         var circles = points.map((point,i) => {
-            let id = `${point.patient}_${i}`
+            let id = i.toString()
             let groupIdx = selected.findIndex(p=>p.includes(id))
             return <circle
                 key={id}
@@ -188,6 +189,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             let selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
             if (selected.length>0){
                 this.selected.push(selected)
+                console.info(selected)
             }
             
         };
@@ -208,7 +210,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
     /**
      * summarize the selected group of points
-     * @param {patient:string, value:number[]}[] points 
+     * @param {patient:string, value:number[], timeIdx: number}[] points 
      * @param string[] selected: ids of points
      * @param string[] currentVariables
      * @return {variableName: domain} group
@@ -217,7 +219,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         let selectedPoints = selected
             .map(s=>{
                 return points
-                .filter((p,i)=>s.includes(`${p.patient}_${i}`))
+                .filter((_,i)=>s.includes(i.toString()))
             })
 
         const summarizeDomain = (values)=>{
