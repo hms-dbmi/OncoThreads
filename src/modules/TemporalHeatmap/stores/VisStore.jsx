@@ -82,7 +82,7 @@ class VisStore {
                     }
                     return transitionSpace;
                 }));
-                if(this.rootStore.uiStore.globalTime === true) {
+                if(this.rootStore.uiStore.globalTime === 'line') {
                     this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
                     this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                 }
@@ -127,7 +127,7 @@ class VisStore {
                 } else {
                     val = value;
                 }
-                if(this.rootStore.uiStore.globalTime === true) {
+                if(this.rootStore.uiStore.globalTime === 'line') {
                     this.currentVerticalZoomLevel = val;
                 }
                 this.transitionSpaces.replace(Array(this.transitionSpaces.length)
@@ -164,7 +164,7 @@ class VisStore {
             get svgHeight() {
                 const h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
-                if(this.rootStore.uiStore.globalTime === true) {
+                if(this.rootStore.uiStore.globalTime === 'line') {
                     this.currentSVGHeight = window.innerHeight - 200;
                     if(this.currentVerticalZoomLevel === undefined) {
                         //this.currentSVGHeight = window.innerHeight - 200;

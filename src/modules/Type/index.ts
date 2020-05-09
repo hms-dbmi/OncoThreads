@@ -18,6 +18,14 @@ export interface ReferencedVariables {
 }
 
 export interface TimePoint {
-    heatmap:{data: any[], }[],
+    heatmap:HeatMap[],
     heatmapOrder: string[],
+    type:'between'|'sample',
+    isGrouped:boolean,
+    [other:string]:any // **TODO**
+}
+export interface HeatMap{
+    data: {patient:string, sample:string, value:string}[],
+    variable:string, // attribute name
+    isUndef: boolean
 }

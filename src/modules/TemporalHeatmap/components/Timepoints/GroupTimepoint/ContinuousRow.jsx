@@ -408,8 +408,8 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
             .computeBoxPlotValues(values.map(element => element.value));
         if (this.props.uiStore.continuousRepresentation === 'gradient') {
             const selectedPartitionPatients = this.props.row.map(d => d.patients[0])
-                .filter(element => this.props.dataStore.selectedPatients
-                    .indexOf(element) !== -1);
+                .filter(patientId => this.props.dataStore.selectedPatients
+                    .indexOf(patientId) !== -1);
             return (
                 this.createGradientRow(this.props.row.map(element => ({
                     patient: element.patients[0],
@@ -417,13 +417,14 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
                 })), boxPlotValues, selectedPartitionPatients)
             );
         }
-        if (this.props.uiStore.continuousRepresentation === 'boxplot') {
+        else if (this.props.uiStore.continuousRepresentation === 'boxplot') {
             return (
                 this.createBoxPlot(boxPlotValues, values.length)
             );
+        } else{
+            return (this.createMedianValue(boxPlotValues, values.length));
         }
-
-        return (this.createMedianValue(boxPlotValues, values.length));
+        
     }
 }));
 ContinuousRow.propTypes = {

@@ -136,9 +136,12 @@ class DataStore {
                         timepoints = betweenTimepoints;
                     }
                 }
-                timepoints.forEach((d, i) => {
+                timepoints.forEach((timepoint, i) => {
                     timepoints[i].globalIndex = i;
-                    timepoints[i].isGrouped = true // default grouped
+                    // default grouped
+                    let variableId= this.variableStores[timepoint.type].currentVariables[0]
+                    timepoints[i].setPrimaryVariable(variableId)
+                    timepoints[i].setIsGrouped(true)
                 });
                 this.timepoints.replace(timepoints);
             }),

@@ -143,7 +143,7 @@ class RootStore {
                 this.hasClinical = false;
                 this.dataParsed = false;
                 this.timelineParsed = false;
-                this.uiStore.globalTime = false;
+                this.uiStore.globalTime = 'myblock';
                 this.api.getPatients((patients) => {
                     this.patients = patients;
                     this.api.getEvents(patients, (events) => {
@@ -524,13 +524,15 @@ class RootStore {
                         this.staticMappers[d.id], d.profile,
                         'clinical'));
         })
-        // add all even variable
-        eventOptions.forEach(d=>{
-                const variable = new OriginalVariable(d.id, d.name, 'BINARY', `Indicates if event: "${d.name}" has happened between two timepoints`,
-                    [], [], this.eventMappers[d.id], d.category, 'event');
-                this.dataStore.variableStores
-                    .between.addVariableToBeDisplayed(variable);   
-        })
+
+
+        // // add all even variable
+        // eventOptions.forEach(d=>{
+        //         const variable = new OriginalVariable(d.id, d.name, 'BINARY', `Indicates if event: "${d.name}" has happened between two timepoints`,
+        //             [], [], this.eventMappers[d.id], d.category, 'event');
+        //         this.dataStore.variableStores
+        //             .between.addVariableToBeDisplayed(variable);   
+        // })
         
            
         

@@ -40,7 +40,7 @@ class CustomGrouping extends React.Component <Props> {
     @observable width:number=window.innerWidth / 2 
     @observable height:number=window.innerHeight-140 
     @observable selected:number[][]=[]
-    @observable hasLink:boolean = true
+    @observable hasLink:boolean = false
     private ref =  React.createRef<HTMLDivElement>(); 
 
     constructor(props:Props) {

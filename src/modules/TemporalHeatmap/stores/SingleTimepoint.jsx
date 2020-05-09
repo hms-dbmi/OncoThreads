@@ -16,7 +16,7 @@ class SingleTimepoint {
             groupSortDir: 1,
             heatmap: [],
             isGrouped: false,
-            primaryVariableId: '',
+            primaryVariableId: undefined,
             name: localIndex,
             /**
              * computes grouped layout based on current heatmap and order.
@@ -24,6 +24,7 @@ class SingleTimepoint {
              */
             get grouped() {
                 const grouped = [];
+                
                 let variableDomain = this.rootStore.dataStore.variableStores[this.type]
                     .getById(this.primaryVariableId).domain.concat(undefined);
                 if (this.groupSortDir === -1) {
@@ -117,7 +118,7 @@ class SingleTimepoint {
                     data: variableData,
                     isUndef: variableData.every(d => d.value === undefined),
                 });
-                if (this.primaryVariableId === '') {
+                if (this.primaryVariableId === undefined) {
                     this.setPrimaryVariable(variableId);
                 }
             }),

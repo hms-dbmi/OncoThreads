@@ -43,7 +43,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
     getLegendEntry(value, opacity, rectWidth, fontSize, currX,
         lineheight, rectColor, textColor, tooltipText) {
 
-        if(this.props.rootStore.uiStore.globalTime===false){
+        if(this.props.rootStore.uiStore.globalTime.includes('block')){
    
             return (
                 <g
@@ -236,7 +236,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 const rectWidth = Legend.getTextWidth(this.minCatWidth, d, fontSize) + 4;
                 if (d !== undefined) {
 
-                    if(this.props.rootStore.uiStore.globalTime===false){
+                    if(this.props.rootStore.uiStore.globalTime.includes('block')){
                         legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
                             fontSize, currX, lineheight, variable.colorScale(d),
                             ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
@@ -415,7 +415,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
         const textHeight = 10;
 
         // draggable line for resizing
-        if (!this.props.uiStore.globalTime) {
+        if (this.props.uiStore.globalTime.includes('block')) {
             const lines = [];
             const legends = [];
             this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
