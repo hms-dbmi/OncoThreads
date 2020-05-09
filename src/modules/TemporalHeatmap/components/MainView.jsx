@@ -4,6 +4,7 @@ import { inject, observer } from 'mobx-react';
 import { Grid, Tab, Tabs } from 'react-bootstrap';
 import GlobalTimeline from './GlobalTimeline';
 import BlockView from './BlockView';
+import MyBlockView from './BlockViewMy';
 
 /**
  * Component containing the main visualization
@@ -27,11 +28,12 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
 
     getVisualization(){
         // create  views
-        let blockView = null;
-        let timelineView = null;
-        if (!this.props.uiStore.globalTime) {
-            blockView = (
-                <BlockView
+        let blockView = null,
+        timelineView = null,
+        myblockView = null
+        if (this.props.uiStore.globalTime==='myblock') {
+            myblockView = (
+                <MyBlockView
                     showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                     tooltipFunctions={this.props.tooltipFunctions}
                     showContextMenu={this.props.showContextMenu}
@@ -39,9 +41,19 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                     openSaveVarModal={this.props.openSaveVarModal}
                 />
             );
-        } else {
+        } else if(this.props.uiStore.globalTime==='line') {
             timelineView = (
                 <GlobalTimeline
+                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                    tooltipFunctions={this.props.tooltipFunctions}
+                    showContextMenu={this.props.showContextMenu}
+                    openBinningModal={this.props.openBinningModal}
+                    openSaveVarModal={this.props.openSaveVarModal}
+                />
+            ); 
+        } else{
+            blockView = (
+                <BlockView
                     showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                     tooltipFunctions={this.props.tooltipFunctions}
                     showContextMenu={this.props.showContextMenu}
@@ -62,10 +74,13 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                     onSelect={this.handleSwitchView}
                     id="viewTab"
                 >
-                    <Tab eventKey={false} style={{ paddingTop: 10 }} title="Block View">
+                    <Tab eventKey='myblock' style={{ paddingTop: 10 }} title="New">
+                        {myblockView}
+                    </Tab>
+                    <Tab eventKey='block' style={{ paddingTop: 10 }} title="Block View">
                         {blockView}
                     </Tab>
-                    <Tab eventKey style={{ paddingTop: 10 }} title="Timeline">
+                    <Tab eventKey='line' style={{ paddingTop: 10 }} title="Timeline">
                         {timelineView}
                     </Tab>
                 </Tabs>
