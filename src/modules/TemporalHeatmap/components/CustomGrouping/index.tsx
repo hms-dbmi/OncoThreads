@@ -1,10 +1,11 @@
 import React from 'react';
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import { extendObservable } from 'mobx';
-import PropTypes from 'prop-types';
+import { inject, observer} from 'mobx-react';
+import { extendObservable, observable } from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
+
+import {Point, ReferencedVariables, TimePoint, NormPoint} from 'modules/Type'
 
 import "./CustomGrouping.css"
 
@@ -19,30 +20,50 @@ const colors = ColorScales.defaultCategoricalRange
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
  */
 
+interface Props {
+    timepoints: any[],
+    currentVariables: string[],
+    referencedVariables: ReferencedVariables,
+}
 
-const CustomGrouping = observer(class CustomGrouping extends React.Component {
-    constructor(props) {
+type TPatientDict = {
+    [p:string]:{
+        patient:string, points:number[]
+    }
+}// the point id of each patient {paitent:{patient:string, points:id[]}}
+
+type TGroup = {
+    [domain:string]:string[]|number[]
+}
+
+class CustomGrouping extends React.Component <Props> {
+    @observable width:number=window.innerWidth / 2 
+    @observable height:number=window.innerHeight-140 
+    @observable selected:number[][]=[]
+    @observable hasLink:boolean = true
+    private ref =  React.createRef<HTMLDivElement>(); 
+
+    constructor(props:Props) {
         super(props);
         this.getPoints = this.getPoints.bind(this)
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
-        this.height = window.innerHeight-140
 
         this.resetGroup = this.resetGroup.bind(this)
         this.deleteGroup = this.deleteGroup.bind(this)
 
-        extendObservable(this, {
-            width: window.innerWidth / 2, 
-            selected: [], // selected ids string[],
-            hasLink: false
-        })
+        // extendObservable(this, {
+        //     width: window.innerWidth / 2 as number, 
+        //     height: window.innerHeight-140 as number,
+        //     selected: [] as number[][], // selected ids string[],
+        //     hasLink: false as boolean
+        // })
     }
 
-
-    getPoints(timepoints) {
-        var points = []
-        var patientDict = {} // the point id of each patient {paitent:{patient:string, points:id[]}}
-
+    getPoints(timepoints: TimePoint[]) {
+        var points:Point[] = []
+        
+        var patientDict:TPatientDict = {} 
         // get points,each points is one patient at one timepoint
         timepoints.forEach((timepoint, timeIdx) => {
             var heatmap = timepoint.heatmap
@@ -79,19 +100,21 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     // @param: currentVariable: [variableName:string][]
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
     // return: points: number[][]
-    normalizePoints(points, currentVariables, referencedVariables) {
-        if (points.length == 0) return points
-        var normValues = points.map(point => {
-            var normValue = point.value.map((value, i) => {
+    normalizePoints(points: Point[], currentVariables:string[], referencedVariables:ReferencedVariables):NormPoint[] {
+        if (points.length == 0) return []
+        let normValues = points.map(point => {
+            let normValue = point.value.map((value, i) => {
                 let ref = referencedVariables[currentVariables[i]]
                 if (value == undefined) {
                     return 0
-                } else if (ref.datatype == "NUMBER") {
-                    return (value - ref.domain[0]) / (ref.domain[1] - ref.domain[0])
+                } else if (typeof(value) == "number") {
+                    let domain = ref.domain as number[]
+                    return (value - domain[0]) / (domain[1] - domain[0])
                 } else if (ref.domain.length==1){
                     return 0
                 }else{
-                    return ref.domain.indexOf(value) / (ref.domain.length-1)
+                    let domain: number[]|boolean[] = ref.domain as number[]|boolean[]
+                    return domain.findIndex((d:number|boolean)=>d==value) / (domain.length-1)
                 } 
             })
             return normValue
@@ -101,12 +124,12 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         // console.info(newPoints)
         if (normValues[0].length > 2) {
             // only calculate pca when dimension is larger than 2
-            normValues = pca.predict(normValues, { nComponents: 2 }).data
+            normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
             // console.info('pca points', newPoints)
         }
         
 
-        var normPoints = normValues.map((d, i) => {
+        var normPoints:NormPoint[] = normValues.map((d, i) => {
             return {
                 ...points[i],
                 value: d
@@ -120,17 +143,18 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
-    drawVIS(points, patientDict, selected, width, height, r = 5, margin = 20) {
+    drawVIS(points:NormPoint[], patientDict:TPatientDict, 
+        selected:number[][], width:number, height:number, r:number = 5, margin:number = 20) {
 
         if (points.length == 0) {
             return <g className='points' />
         }
         var xScale = d3.scaleLinear()
-            .domain(d3.extent(points.map(d => d.value[0])))
+            .domain(d3.extent(points.map(d => d.value[0])) as [number,number])
             .range([margin, width - margin])
 
         var yScale = d3.scaleLinear()
-            .domain(d3.extent(points.map(d => d.value[1])))
+            .domain(d3.extent(points.map(d => d.value[1])) as [number, number])
             .range([margin, height - margin])
 
         
@@ -141,7 +165,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             let opacity = this.hasLink? 0.1+ point.timeIdx*0.6/maxTimeIdx : 0.5
             return <circle
                 key={id}
-                id = {id}
+                id = {id.toString()}
                 cx={xScale(point.value[0])}
                 cy={yScale(point.value[1])}
                 r={r}
@@ -171,16 +195,16 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         })
 
         let curveGenerator = d3.line()
-            .x(d=>xScale(d.value[0]))
-            .y(d=>yScale(d.value[1]))
+            .x((p: NormPoint|any)=> xScale(p.value[0]) )
+            .y((p: NormPoint|any)=>yScale(p.value[1]))
             .curve(d3.curveMonotoneX)
 
         let curves=Object.keys(patientDict).map(patient=>{
             let pointIds = patientDict[patient].points 
-            let path = curveGenerator(pointIds.map(id=>points[id]))
+            let path = curveGenerator(pointIds.map(id=>points[id]) as any[])
             return <path 
             key={patient} 
-            d={path} 
+            d={path as string} 
             fill='none'
             stroke='gray'
             strokeWidth='1'
@@ -210,7 +234,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
 
     }
 
-    addLasso(width, height) {
+    addLasso(width:number, height:number) {
         // lasso draw
         d3.selectAll('.lasso').remove()
         var svg = d3.select('svg.customGrouping')
@@ -225,7 +249,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         //     )
         // Lasso functions to execute while lassoing
         var lasso_start =  () =>{
-            mylasso.items()
+            (mylasso.items() as any)
                 .attr("r", 5) // reset size
                 // .attr('fill', 'white')
         };
@@ -248,9 +272,9 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             // .classed("possible", false)
 
              
-            let selected = mylasso.selectedItems()._groups[0].map(d=>d.attributes.id.value)
+            let selected = (mylasso.selectedItems() as any)._groups[0].map((d:any)=>d.attributes.id.value)
             if (selected.length>0){
-                this.selected.push(selected.map(d=>parseInt(d)))        
+                this.selected.push(selected.map((d:string)=>parseInt(d)))        
             }
             
         };
@@ -276,25 +300,27 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
      * @param string[] currentVariables
      * @return {variableName: domain} group
      */
-    getGroups(points, selected, currentVariables){
+    getGroups(points:Point[], selected:number[][], currentVariables:string[]){
         let selectedPoints = selected
             .map(s=>{
                 return points
                 .filter((_,i)=>s.includes(i))
             })
 
-        const summarizeDomain = (values)=>{
+        const summarizeDomain = (values:string[]|number[]|boolean[])=>{
             if (typeof(values[0])=="number"){
-                return [Math.min(...values).toPrecision(4), Math.max(...values).toPrecision(4)]
+                let v = values as number[] // stupid typescropt
+                return [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
             }else if (typeof(values[0])=="string"){
-                return [... new Set(values)]
+                let v = values as string[]
+                return [... new Set(v)]
             } else return []
         }
 
         let groups = selectedPoints.map(p=>{
-            let group = {}
+            let group:TGroup = {}
             currentVariables.forEach((name,i)=>{
-                group[name] = summarizeDomain( p.map(p=>p.value[i]) )
+                group[name] = summarizeDomain( p.map(p=>p.value[i])  as number[]|string[]|boolean[])
             })
             
             return group
@@ -313,7 +339,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         .attr('r',5)
         .attr('class', 'point')
     }
-    deleteGroup(i){
+    deleteGroup(i:number){
         this.selected.splice(i,1)
 
         d3.selectAll(`circle.group_${i}`)
@@ -324,7 +350,10 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
     }
 
     componentDidMount() {
-        this.width = this.ref.current.getBoundingClientRect().width
+        if (this.ref.current){
+            this.width = this.ref.current.getBoundingClientRect().width
+        }
+        
     }
 
 
@@ -332,7 +361,7 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
         
         let {timepoints, currentVariables, referencedVariables} = this.props
         let {points, patientDict} = this.getPoints(timepoints)
-        let normPoints = this.normalizePoints(points, currentVariables, referencedVariables)
+        let normPoints = this.normalizePoints(points, currentVariables, referencedVariables) 
         let { width, height } = this
         let pcpMargin = 25
         let scatterHeight = height*0.35, pcpHeight = height*0.45, infoHeight=height*0.2
@@ -374,14 +403,6 @@ const CustomGrouping = observer(class CustomGrouping extends React.Component {
             </div>
         );
     }
-})
+}
 
-
-CustomGrouping.propTypes = {
-    timepoints: PropTypes.arrayOf(PropTypes.object).isRequired,
-    currentVariables: PropTypes.arrayOf(PropTypes.string).isRequired,
-    referencedVariables: PropTypes.object.isRequired,
-    // timepoints: MobxPropTypes.observableArray.isRequired,
-};
-
-export default CustomGrouping;
+export default  observer(CustomGrouping)
