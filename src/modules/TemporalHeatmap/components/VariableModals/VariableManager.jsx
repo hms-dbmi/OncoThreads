@@ -41,11 +41,13 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
      * have to be adapted in the view to the changes in the variable manager
      */
     handleAddButton() {
+        console.info( this.timepointVariableManager)
         this.props.rootStore.dataStore.variableStores.sample.replaceAll(
             this.timepointVariableManager.referencedVariables,
             this.timepointVariableManager.currentVariables.map(d => d.id),
             this.timepointVariableManager.primaryVariables,
         );
+        console.info(this.eventVariableManager.primaryVariables)
         this.props.rootStore.dataStore.variableStores.between.replaceAll(
             this.eventVariableManager.referencedVariables,
             this.eventVariableManager.currentVariables.map(d => d.id),

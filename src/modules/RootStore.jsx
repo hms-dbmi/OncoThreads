@@ -521,10 +521,9 @@ class RootStore {
             this.dataStore.variableStores.sample
                     .addVariableToBeDisplayed(new OriginalVariable(d.id, d.variable,
                         d.datatype, d.description, [], [],
-                        this.staticMappers[d.id], d.profile,
+                        this.staticMappers[d.id], d.source,
                         'clinical'));
         })
-
 
         // // add all even variable
         // eventOptions.forEach(d=>{
@@ -536,7 +535,9 @@ class RootStore {
         
            
         
-        // this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
+        // this.dataStore.variableStores.sample.addVariableToBeDisplayed(
+            // new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, 
+            // this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
         // this.dataStore.globalPrimary = this.initialVariable.id;
     }
 
