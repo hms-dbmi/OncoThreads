@@ -10,10 +10,17 @@ interface Props {
     height: number,
     resetGroup: ()=>void,
     deleteGroup: (groupIdx:number)=>void,
+    applyCustomGroups:()=>void,
+}
+
+const num2letter = (num:number):string=>{
+    var mod = num % 26
+    
+    return String.fromCharCode(65 + mod)
 }
 
 
-const GroupInfo = observer(class GroupInfo extends React.Component<Props, {}> {
+const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
     constructor(props:Props){
         super(props)
     }
@@ -24,30 +31,30 @@ const GroupInfo = observer(class GroupInfo extends React.Component<Props, {}> {
             let values = Object.keys(g).map(key=>{
                 let domain = g[key]
                 return <span style={{marginRight:'2px'}} key={key}>{
-                    domain.length==0?'':`[${domain.join()}]`
+                    domain.length===0?'':`[${domain.join()}]`
                     }</span>
                 })
             // if(Object.values(g)){
-                values.unshift(<span>Group_{i}</span>)
+                values.unshift(<span>stage_{num2letter(i)}</span>)
             // }
-            return <p key={`group_${i}`} style={{color: colors[i]}}>
+            return <p key={`stage_${num2letter(i)}`} style={{color: colors[i]}}>
                 {values} 
                 <CloseSquareOutlined onClick={()=>this.props.deleteGroup(i)}/> 
                 </p>
         })
         
-        return <div className="GroupInfo"  style={{height:this.props.height, padding:"5px"}}>
+        return <div className="StageInfo"  style={{height:this.props.height, padding:"5px"}}>
             {/* <Table columns={col} dataSource={data} pagination={false} size="small"/> */}
-            <div className="groups" style={{height:this.props.height-35, overflow:"auto"}}>
+            <div className="stage" style={{height:this.props.height-35, overflow:"auto"}}>
                 {content}
             </div>
             <div className='button group' style={{float:'right'}}>
                 <Button size="small" onClick={this.props.resetGroup}>Reset</Button>
-                <Button size="small">Apply</Button>
+                <Button size="small" onClick={this.props.applyCustomGroups}>Apply</Button>
             </div>
             </div>
     }}
     )
 
 
-export default GroupInfo
+export default StageInfo
