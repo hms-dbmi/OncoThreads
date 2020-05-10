@@ -1,4 +1,4 @@
-import { action, extendObservable } from 'mobx';
+import { action, extendObservable, computed, observable } from 'mobx';
 
 /*
  stores information about a single timepoint
@@ -18,6 +18,7 @@ class SingleTimepoint {
             isGrouped: false,
             primaryVariableId: undefined,
             name: localIndex,
+            customGroups:[],
             /**
              * computes grouped layout based on current heatmap and order.
              * @returns {object[]}
@@ -304,6 +305,28 @@ class SingleTimepoint {
             unGroup: action((variableId) => {
                 this.setPrimaryVariable(variableId);
                 this.setIsGrouped(false);
+            }),
+
+            /**
+             * group based customized grouping in the scatter plot
+             */
+            customGrouped: action((partitions)=>{
+                this.customGroups = partitions.map(partition=>{
+                    let rows = this.rootStore.dataStore.variableStores.sample
+                    .currentVariables.map(variableName=>{
+                        let counts = partition[variableName]
+                        return {
+                            variable: variableName,
+                            counts
+                        }
+                    })
+                    return {
+                        partition: partition.name,
+                        patients: partition.patients,
+                        rows,
+                    }
+                })
+                
             }),
         });
     }

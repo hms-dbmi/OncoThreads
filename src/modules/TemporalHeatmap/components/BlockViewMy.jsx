@@ -145,7 +145,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             // create timepoints
             if (d.heatmap) {
                 if (d.isGrouped) {
-                    const transformTP = `translate(${this.props.rootStore.visStore.getTpXTransform(i)},${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
+                    const transformTP = `translate(
+                        ${this.props.rootStore.visStore.getTpXTransform(i)},
+                        ${this.props.rootStore.visStore.timepointPositions.timepoint[i]}
+                        )`;
                     timepoints.push(
                         <g key={d.globalIndex} transform={transformTP}>
                             <Provider

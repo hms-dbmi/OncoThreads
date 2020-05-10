@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer} from 'mobx-react';
-import { extendObservable, observable } from 'mobx';
+import { extendObservable, observable, computed } from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
@@ -11,7 +11,7 @@ import "./CustomGrouping.css"
 
 import PCP from './pcp'
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
-import GroupInfo from './GroupInfo'
+import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 
 const colors = ColorScales.defaultCategoricalRange
@@ -19,9 +19,8 @@ const colors = ColorScales.defaultCategoricalRange
  * BlockViewTimepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
  */
-
 interface Props {
-    timepoints: any[],
+    timepoints: TimePoint[],
     currentVariables: string[],
     referencedVariables: ReferencedVariables,
 }
@@ -45,27 +44,23 @@ class CustomGrouping extends React.Component <Props> {
 
     constructor(props:Props) {
         super(props);
-        this.getPoints = this.getPoints.bind(this)
+        // this.getPoints = this.getPoints.bind(this)
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
 
         this.resetGroup = this.resetGroup.bind(this)
         this.deleteGroup = this.deleteGroup.bind(this)
+        this.applyCustomGroups = this.applyCustomGroups.bind(this)
 
-        // extendObservable(this, {
-        //     width: window.innerWidth / 2 as number, 
-        //     height: window.innerHeight-140 as number,
-        //     selected: [] as number[][], // selected ids string[],
-        //     hasLink: false as boolean
-        // })
     }
+    @computed
+    get pointsAndPatientDict() {
 
-    getPoints(timepoints: TimePoint[]) {
         var points:Point[] = []
         
         var patientDict:TPatientDict = {} 
         // get points,each points is one patient at one timepoint
-        timepoints.forEach((timepoint, timeIdx) => {
+        this.props.timepoints.forEach((timepoint, timeIdx) => {
             var heatmap = timepoint.heatmap
 
             if (heatmap[0]) {
@@ -76,7 +71,7 @@ class CustomGrouping extends React.Component <Props> {
                         value: heatmap.map(d => d.data[i].value),
                         timeIdx 
                     }
-                    if ( patientDict[patient]==undefined){
+                    if ( patientDict[patient] === undefined){
                         patientDict[patient]={
                             patient,
                             points:[points.length]
@@ -95,26 +90,64 @@ class CustomGrouping extends React.Component <Props> {
         return {points, patientDict}
     }
 
+    @computed
+    get groups(){
+        let {selected} = this
+        let {currentVariables} = this.props
+        let {points} = this.pointsAndPatientDict
+        let selectedPoints = selected
+            .map(s=>{
+                return points
+                .filter((_,i)=>s.includes(i))
+            })
+
+        const summarizeDomain = (values:string[]|number[]|boolean[])=>{
+            if (typeof(values[0])=="number"){
+                let v = values as number[] // stupid typescropt
+                return [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
+            }else if (typeof(values[0])=="string"){
+                let v = values as string[]
+                return [...new Set(v)]
+            } else return []
+        }
+
+        let groups = selectedPoints.map(p=>{
+            let group:TGroup = {}
+            currentVariables.forEach((name,i)=>{
+                group[name] = summarizeDomain( p.map(p=>p.value[i])  as number[]|string[]|boolean[])
+            })
+            
+            return group
+        })
+        
+        
+
+        return groups
+    }
+
     // convert points to [0,1] range.
     // @param: points: string||number[][], 
     // @param: currentVariable: [variableName:string][]
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
     // return: points: number[][]
-    normalizePoints(points: Point[], currentVariables:string[], referencedVariables:ReferencedVariables):NormPoint[] {
-        if (points.length == 0) return []
+    @computed
+    get normalizePoints():NormPoint[] {
+        let {points} = this.pointsAndPatientDict
+        let {currentVariables, referencedVariables} = this.props
+        if (points.length === 0) return []
         let normValues = points.map(point => {
             let normValue = point.value.map((value, i) => {
                 let ref = referencedVariables[currentVariables[i]]
-                if (value == undefined) {
+                if (value === undefined) {
                     return 0
                 } else if (typeof(value) == "number") {
                     let domain = ref.domain as number[]
                     return (value - domain[0]) / (domain[1] - domain[0])
-                } else if (ref.domain.length==1){
+                } else if (ref.domain.length === 1){
                     return 0
                 }else{
                     let domain: number[]|boolean[] = ref.domain as number[]|boolean[]
-                    return domain.findIndex((d:number|boolean)=>d==value) / (domain.length-1)
+                    return domain.findIndex((d:number|boolean)=>d===value) / (domain.length-1)
                 } 
             })
             return normValue
@@ -143,10 +176,14 @@ class CustomGrouping extends React.Component <Props> {
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
-    drawVIS(points:NormPoint[], patientDict:TPatientDict, 
-        selected:number[][], width:number, height:number, r:number = 5, margin:number = 20) {
+    drawVIS( width:number, height:number, r:number = 5, margin:number = 20) {
+        
 
-        if (points.length == 0) {
+        let {patientDict} = this.pointsAndPatientDict
+        let {selected} = this
+        let points = this.normalizePoints
+
+        if (points.length === 0) {
             return <g className='points' />
         }
         var xScale = d3.scaleLinear()
@@ -182,7 +219,7 @@ class CustomGrouping extends React.Component <Props> {
             let path = pointIds.map((id, i)=>{
                 let x = xScale( points[id].value[0] )
                 let y = yScale( points[id].value[1] )
-                return `${i==0?'M':'L'} ${x} ${y}`
+                return `${i===0?'M':'L'} ${x} ${y}`
             })
 
             return <path 
@@ -272,9 +309,18 @@ class CustomGrouping extends React.Component <Props> {
             // .classed("possible", false)
 
              
-            let selected = (mylasso.selectedItems() as any)._groups[0].map((d:any)=>d.attributes.id.value)
+            let selected = (mylasso.selectedItems() as any)._groups[0].map((d:any):number=>parseInt(d.attributes.id.value))
             if (selected.length>0){
-                this.selected.push(selected.map((d:string)=>parseInt(d)))        
+                // if selected nodes are in previous groups
+                this.selected.forEach((g,i)=>{
+                    g = g.filter(point=>!selected.includes(point))
+                    if(g.length>0) {
+                        this.selected[i]=g
+                    }else{
+                        this.selected.splice(i, 1)
+                    }
+                })
+                this.selected.push(selected)        
             }
             
         };
@@ -300,36 +346,7 @@ class CustomGrouping extends React.Component <Props> {
      * @param string[] currentVariables
      * @return {variableName: domain} group
      */
-    getGroups(points:Point[], selected:number[][], currentVariables:string[]){
-        let selectedPoints = selected
-            .map(s=>{
-                return points
-                .filter((_,i)=>s.includes(i))
-            })
-
-        const summarizeDomain = (values:string[]|number[]|boolean[])=>{
-            if (typeof(values[0])=="number"){
-                let v = values as number[] // stupid typescropt
-                return [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-            }else if (typeof(values[0])=="string"){
-                let v = values as string[]
-                return [... new Set(v)]
-            } else return []
-        }
-
-        let groups = selectedPoints.map(p=>{
-            let group:TGroup = {}
-            currentVariables.forEach((name,i)=>{
-                group[name] = summarizeDomain( p.map(p=>p.value[i])  as number[]|string[]|boolean[])
-            })
-            
-            return group
-        })
-        
-        
-
-        return groups
-    }
+   
     resetGroup(){
         this.selected = []
 
@@ -349,6 +366,36 @@ class CustomGrouping extends React.Component <Props> {
 
     }
 
+    applyCustomGroups(){
+        let {selected} = this
+        let {points} = this.pointsAndPatientDict
+
+        // check whether has unselected nodes
+        let allSelected = [...new Set(selected.flat())]
+        if (allSelected.length<points.length){
+
+        }
+        
+        
+        let timeStages = []
+        this.props.timepoints.forEach((_, timeIdx)=>{
+            timeStages.push({
+                timeIdx,
+            })
+        })
+
+        this.selected.forEach(ids=>{
+            ids.forEach(id=>{
+                let {patient, timeIdx} = points[id]
+            })
+        })
+
+        this.props.timepoints.forEach(TP=>{
+            TP.customGrouped()
+        })
+
+    }
+
     componentDidMount() {
         if (this.ref.current){
             this.width = this.ref.current.getBoundingClientRect().width
@@ -359,14 +406,12 @@ class CustomGrouping extends React.Component <Props> {
 
     render() {
         
-        let {timepoints, currentVariables, referencedVariables} = this.props
-        let {points, patientDict} = this.getPoints(timepoints)
-        let normPoints = this.normalizePoints(points, currentVariables, referencedVariables) 
+        let {points} = this.pointsAndPatientDict
         let { width, height } = this
         let pcpMargin = 25
         let scatterHeight = height*0.35, pcpHeight = height*0.45, infoHeight=height*0.2
 
-        let groups = this.getGroups(points, this.selected, currentVariables)
+        let groups = this.groups
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div 
@@ -382,22 +427,23 @@ class CustomGrouping extends React.Component <Props> {
                     }}/>
 
                     <svg className='customGrouping' width="100%" height="80%">
-                        {this.drawVIS(normPoints, patientDict, this.selected, width, scatterHeight)}
+                        {this.drawVIS(width, scatterHeight)}
 
                         <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin+scatterHeight})`}>
                             <PCP points={points} 
-                            currentVariables={currentVariables}
-                            referencedVariables={referencedVariables}
+                            currentVariables={this.props.currentVariables}
+                            referencedVariables={this.props.referencedVariables}
                             width={width-2*pcpMargin}
                             height={pcpHeight-2*pcpMargin}
                             selected = {this.selected}
                             />
                         </g>
                     </svg>
-                    <GroupInfo 
+                    <StageInfo 
                     groups={groups} height={infoHeight} 
                     resetGroup={this.resetGroup}
                     deleteGroup={this.deleteGroup}
+                    applyCustomGroups={this.applyCustomGroups}
                     />
                 </div>
             </div>

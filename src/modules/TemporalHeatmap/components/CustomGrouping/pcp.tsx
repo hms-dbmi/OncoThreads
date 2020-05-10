@@ -9,7 +9,7 @@ const colors = ColorScales.defaultCategoricalRange
 
 
 const clipText =(text:string|number, len:number):string|number=>{
-    if (typeof(text)=='number') return text
+    if (typeof(text)==='number') return text
     else if (text.length<len) return text
     else {
         return text.substring(0, len-1)+'..'
