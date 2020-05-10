@@ -59,6 +59,11 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         this.handleResetSelection = this.handleResetSelection.bind(this);
 
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
+
+        this.tooltipFunctions = {
+            showTooltip: this.showTooltip,
+            hideTooltip: this.hideTooltip,
+        };
     }
 
     /**
@@ -270,10 +275,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
-        const tooltipFunctions = {
-            showTooltip: this.showTooltip,
-            hideTooltip: this.hideTooltip,
-        };
+        
         return (
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
@@ -381,7 +383,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                 <CustomGrouping 
                                     timepoints={
                                         this.props.rootStore.dataStore.timepoints
-                                        .filter(timepoint=>timepoint.type=="sample")
+                                        .filter(timepoint=>timepoint.type==="sample")
                                     }
                                     currentVariables={this.props.rootStore.dataStore.variableStores.sample.currentVariables}
                                     referencedVariables = {this.props.rootStore.dataStore.variableStores.sample.referencedVariables}
@@ -396,7 +398,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         >
                             {/* <Row> */}
                                 <MainView
-                                    tooltipFunctions={tooltipFunctions}
+                                    tooltipFunctions={this.tooltipFunctions}
                                     openBinningModal={this.openBinningModal}
                                     openSaveVarModal={this.openSaveVarModal}
                                     showContextMenu={this.showContextMenu}
