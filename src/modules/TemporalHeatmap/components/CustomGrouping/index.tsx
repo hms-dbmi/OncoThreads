@@ -412,7 +412,7 @@ class CustomGrouping extends React.Component <Props> {
         this.selected.forEach((pointIds,stageId)=>{
             pointIds.forEach(id=>{
                 
-                let stageName = String.fromCharCode(65 + stageId)
+                let stageName = String.fromCharCode(stageId+65)
                 let {patient, timeIdx} = points[id]
                 let timeStage = timeStages[timeIdx]
                 let partitionId = timeStage.partitions.map(d=>d.partition).indexOf(stageName)

@@ -5,6 +5,13 @@ import CategoricalRow from './CategoricalRow';
 import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
+import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import UtilityFunctions from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
+const colors = ColorScales.defaultCategoricalRange
+const getTextWidth = UtilityFunctions.getTextWidth
+
+
+
 
 /**
  * Component for a partition in a grouped timepiint
@@ -71,9 +78,29 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     }
 
     render() {
-        return (
-            this.createPartition()
-        );
+        const stageName = this.props.partition.partition||'',
+            labelColor = colors[stageName.charCodeAt(0)-65]||'black',
+            labelHeight = this.props.visStore.primaryHeight, 
+            labelWidth = Math.max(getTextWidth(stageName, 14), 20)
+
+        const stageLable = <g className='stageLabel'>
+                    <rect 
+                        width={labelWidth} height={labelHeight} 
+                        rx={0.2*labelHeight}
+                        fill='white' 
+                        stroke='black' strokeWidth='2'
+                    />
+                    <text 
+                    y={0.8*labelHeight} x={0.5*labelWidth} textAnchor="middle"
+                    fill={labelColor} fontWeight={800}
+                    >
+                            {stageName}
+                    </text>
+                </g>
+        return  <g className={`partitions ${stageName}`}>
+            {this.createPartition()}   
+            {stageLable}       
+        </g>;
     }
 }));
 GroupPartition.propTypes = {

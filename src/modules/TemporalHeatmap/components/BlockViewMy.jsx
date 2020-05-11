@@ -289,7 +289,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 );
             }
         });
-        return [timepoints, transitions];
+        return [transitions, timepoints];
     }
 
 
