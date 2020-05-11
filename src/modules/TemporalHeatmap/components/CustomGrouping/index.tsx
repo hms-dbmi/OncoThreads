@@ -4,6 +4,7 @@ import { extendObservable, observable, computed } from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
+import { message} from 'antd';
 
 import {Point, ReferencedVariables, TimePoint, NormPoint} from 'modules/Type'
 
@@ -13,6 +14,7 @@ import PCP from './pcp'
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
+import Variable from 'modules/TemporalHeatmap/stores/Variable.jsx';
 
 const colors = ColorScales.defaultCategoricalRange
 /*
@@ -371,27 +373,100 @@ class CustomGrouping extends React.Component <Props> {
         let {points} = this.pointsAndPatientDict
 
         // check whether has unselected nodes
-        let allSelected = [...new Set(selected.flat())]
+        let allSelected = selected.flat()
         if (allSelected.length<points.length){
-
+            let leftNodes = points.map((_,i)=>i)
+                .filter(i=>!allSelected.includes(i))
+            this.selected.push(leftNodes)
+            message.info('All unselected nodes are grouped as one stage')
         }
         
-        
-        let timeStages = []
+        type TimeStage = {
+            timeIdx: number,
+            partitions: Partition[]
+        }
+        type Partition = {
+            partition: string, //stage name
+            patients: string[],
+            points:number[], // point ids
+            rows:Row[]
+        }
+        type Row ={
+            variable:string, //attribute name
+            counts: Count[]
+        }
+        type Count = {
+            key:string|number|boolean, // attribute value
+            patients:string[]
+        }
+
+        let timeStages:TimeStage[] = []
         this.props.timepoints.forEach((_, timeIdx)=>{
             timeStages.push({
                 timeIdx,
+                partitions:[]
             })
         })
 
-        this.selected.forEach(ids=>{
-            ids.forEach(id=>{
+        // push points to corresponding time stage
+        this.selected.forEach((pointIds,stageId)=>{
+            pointIds.forEach(id=>{
+                
+                let stageName = String.fromCharCode(65 + stageId)
                 let {patient, timeIdx} = points[id]
+                let timeStage = timeStages[timeIdx]
+                let partitionId = timeStage.partitions.map(d=>d.partition).indexOf(stageName)
+                if (partitionId>-1){
+                    
+                    let partition = timeStage.partitions[partitionId],
+                    {points, patients} = partition
+                    points.push(id)
+                    if (! patients.includes(patient)){
+                        patients.push(patient)
+                    }
+                }else{
+                    timeStage.partitions.push({
+                        partition:stageName,
+                        points:[id],
+                        rows:[],
+                        patients:[patient]
+                    })
+                }
             })
         })
 
-        this.props.timepoints.forEach(TP=>{
-            TP.customGrouped()
+        // summarize rows
+        timeStages.forEach(timeStage=>{
+            timeStage.partitions.forEach(partition=>{
+                let partitionPoints:Point[] = partition.points.map(id=>points[id])
+
+                partition.rows = this.props.currentVariables.map((variable, variableId)=>{
+                    let counts:Count[] = []
+                    partitionPoints.forEach(point=>{
+                        let key = point.value[variableId]
+                        let keyIdx = counts.map(d=>d.key).indexOf(key)
+                        if (keyIdx===-1){
+                            counts.push({
+                                key,
+                                patients:[point.patient]
+                            })
+                        }else{
+                            if (!(counts[keyIdx].patients.includes(point.patient))){
+                                counts[keyIdx].patients.push(point.patient)
+                            }         
+                        }
+                    })
+                    return {
+                        variable,
+                        counts
+                    }
+                })
+            })
+        })
+        console.info(timeStages)
+
+        this.props.timepoints.forEach((TP,i)=>{
+            TP.applyCustomStage(timeStages[i].partitions)
         })
 
     }

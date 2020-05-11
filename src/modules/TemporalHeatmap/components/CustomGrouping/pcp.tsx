@@ -106,8 +106,8 @@ const PCP = observer(class CustomGrouping extends React.Component<Props> {
             </g>
         })
         return [
-            <g className='pcpLines'>{svgLines}</g>,
-            <g className='pcpAxis'>{axes}</g>,
+            <g className='pcpLines' key='PCPlines'>{svgLines}</g>,
+            <g className='pcpAxes' key='PCPAxes'>{axes}</g>,
         ]
     }
     

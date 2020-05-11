@@ -18,7 +18,7 @@ class SingleTimepoint {
             isGrouped: false,
             primaryVariableId: undefined,
             name: localIndex,
-            customGroups:[],
+            customStage:[],
             /**
              * computes grouped layout based on current heatmap and order.
              * @returns {object[]}
@@ -310,22 +310,10 @@ class SingleTimepoint {
             /**
              * group based customized grouping in the scatter plot
              */
-            customGrouped: action((partitions)=>{
-                this.customGroups = partitions.map(partition=>{
-                    let rows = this.rootStore.dataStore.variableStores.sample
-                    .currentVariables.map(variableName=>{
-                        let counts = partition[variableName]
-                        return {
-                            variable: variableName,
-                            counts
-                        }
-                    })
-                    return {
-                        partition: partition.name,
-                        patients: partition.patients,
-                        rows,
-                    }
-                })
+            applyCustomStage: action((timeStage)=>{
+                console.info(timeStage)
+                this.customStage = timeStage
+                console.info(this.customStage, this.grouped)
                 
             }),
         });

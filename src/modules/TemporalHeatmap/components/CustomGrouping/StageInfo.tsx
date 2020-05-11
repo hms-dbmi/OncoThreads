@@ -35,7 +35,7 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
                     }</span>
                 })
             // if(Object.values(g)){
-                values.unshift(<span>stage_{num2letter(i)}</span>)
+                values.unshift(<span key='stageName'>stage_{num2letter(i)}</span>)
             // }
             return <p key={`stage_${num2letter(i)}`} style={{color: colors[i]}}>
                 {values} 

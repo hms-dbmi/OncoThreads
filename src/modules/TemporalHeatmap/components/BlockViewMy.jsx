@@ -156,7 +156,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 visStore={this.props.rootStore.visStore}
                             >
                                 <GroupTimepoint
-                                    group={d.grouped}
+                                    group={d.customStage.length===0?d.grouped:d.customStage}
                                     heatmap={d.heatmap}
                                     index={i}
                                     currentVariables={this.props.rootStore.dataStore
@@ -196,8 +196,8 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 const firstTP = d;
                 const secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
                 let transition;
-                if (firstTP.isGrouped) {
-                    if (secondTP.isGrouped) {
+                if (firstTP.customStage.length>0) {
+                    if (secondTP.customStage.length>0) {
                         transition = (
                             <Provider
                                 dataStore={this.props.rootStore.dataStore}
@@ -205,8 +205,8 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                             >
                                 <SankeyTransition
                                     index={i}
-                                    firstGrouped={firstTP.grouped}
-                                    secondGrouped={secondTP.grouped}
+                                    firstGrouped={firstTP.customStage}
+                                    secondGrouped={secondTP.customStage}
                                     firstPrimary={this.props.rootStore.dataStore
                                         .variableStores[firstTP.type]
                                         .getById(firstTP.primaryVariableId)}
