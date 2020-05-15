@@ -1,3 +1,5 @@
+export type {VariableStore} from './Store'
+
 export interface Point{
     patient: string,
     timeIdx: number,
@@ -29,3 +31,4 @@ export interface HeatMap{
     variable:string, // attribute name
     isUndef: boolean
 }
+

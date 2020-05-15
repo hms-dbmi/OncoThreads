@@ -380,6 +380,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         <Col className="selectGroup" 
                             sm={3}
                             md={3}>
+                            <Provider sampleStore={sampleStore}>
                                 <CustomGrouping 
                                     points={
                                         sampleStore.points
@@ -391,6 +392,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                     referencedVariables = {sampleStore.referencedVariables}
                                 />
                                 {/* <CustomGrouping/> */}
+                            </Provider>
                         </Col>
                         <Col
                             sm={9}

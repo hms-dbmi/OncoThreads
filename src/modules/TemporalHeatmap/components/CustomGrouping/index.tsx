@@ -1,12 +1,12 @@
 import React from 'react';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { observable} from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
 import { message } from 'antd';
 
-import { Point, ReferencedVariables, TimePoint, NormPoint } from 'modules/Type'
+import { Point, ReferencedVariables, TimePoint, NormPoint, VariableStore } from 'modules/Type'
 import { TStage } from './StageInfo'
 
 import "./CustomGrouping.css"
@@ -46,7 +46,8 @@ interface Props {
     points: Point[],
     timepoints: TimePoint[],
     currentVariables: string[],
-    referencedVariables: ReferencedVariables
+    referencedVariables: ReferencedVariables,
+    sampleStore: VariableStore
 }
 
 type TPatientDict = {
@@ -59,7 +60,7 @@ type TPatientDict = {
 
 export type TSelected = { stageName: string, pointIdx: number[] }[]
 
-
+@inject('sampleStore')
 @observer
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
@@ -360,6 +361,7 @@ class CustomGrouping extends React.Component<Props> {
             let selected = (mylasso.selectedItems() as any)._groups[0].map((d: any): number => parseInt(d.attributes.id.value))
             if (selected.length > 0) {
                 // if selected nodes are in previous stages
+                
                 this.selected.forEach((g, i) => {
                     g.pointIdx = g.pointIdx.filter(point => !selected.includes(point))
                     if (g.pointIdx.length > 0) {
@@ -368,8 +370,17 @@ class CustomGrouping extends React.Component<Props> {
                         this.selected.splice(i, 1) // delete the whole group if all points overlap
                     }
                 })
+                const getStageName =(num:number):string=>{
+                    let name = num2letter(num)
+                    console.info(name, this.selected.map(d=>d.stageName))
+                    if (this.selected.map(d=>d.stageName).includes(name)){
+                        return  getStageName(num+1)
+                    }else return name
+                }
+
+                let stageName = getStageName(this.selected.length)
                 this.selected.push({
-                    stageName: num2letter(this.selected.length),
+                    stageName,
                     pointIdx: selected
                 })
             }
@@ -471,9 +482,7 @@ class CustomGrouping extends React.Component<Props> {
             })
         })
 
-        this.props.timepoints.forEach((TP, i) => {
-            TP.applyCustomStage(timeStages[i].partitions)
-        }) 
+        this.props.sampleStore.applyCustomStages(timeStages)
 
     }
 

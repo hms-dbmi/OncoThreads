@@ -158,3 +158,15 @@ ColorScales.categoricalColors = [
 ];
 
 export default ColorScales;
+
+
+let colorDict = {}
+export const getColorByName = (name)=>{
+    if (name in colorDict){
+        return colorDict[name]
+    }else{
+        let color = ColorScales.categoricalColors[1][Object.keys(colorDict).length]
+        colorDict[name]=color
+        return color
+    }
+}

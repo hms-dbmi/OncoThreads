@@ -348,6 +348,15 @@ class VariableStore {
         return false;
     }
 
+    applyCustomStages(timeStages){
+        if (this.childStore){
+            this.childStore.timepoints.forEach((TP, i) => {
+                TP.applyCustomStage(timeStages[i].partitions)
+            })
+        }else{
+            console.info(this.childStore, this, timeStages)
+        }
+    }
 }
 
 export default VariableStore;
