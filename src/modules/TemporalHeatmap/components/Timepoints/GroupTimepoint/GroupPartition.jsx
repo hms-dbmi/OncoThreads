@@ -93,7 +93,9 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         const stageKey = this.props.partition.partition||'',
             // labelColor = colors[stageKey.charCodeAt(0)-65]||'black',
             
-        stageName = this.props.stageLabels[stageKey]||stageKey,
+        stageName = this.props.stageLabels[stageKey]===undefined?
+            stageKey:this.props.stageLabels[stageKey],
+            
         labelColor = 'black',
         labelHeight = this.props.visStore.primaryHeight, 
         labelWidth = Math.max(getTextWidth(stageName, 14)+26, 40)
