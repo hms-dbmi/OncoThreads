@@ -275,6 +275,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
+        let sampleStore = this.props.rootStore.dataStore.variableStores.sample
               
         return (
             <div>
@@ -381,13 +382,13 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                             md={3}>
                                 <CustomGrouping 
                                     points={
-                                        this.props.rootStore.dataStore.variableStores.sample.points
+                                        sampleStore.points
                                     }
                                     timepoints={
-                                        this.props.rootStore.dataStore.variableStores.sample.childStore.timepoints
+                                        sampleStore.childStore.timepoints
                                     }
-                                    currentVariables={this.props.rootStore.dataStore.variableStores.sample.currentVariables}
-                                    referencedVariables = {this.props.rootStore.dataStore.variableStores.sample.referencedVariables}
+                                    currentVariables={sampleStore.currentVariables}
+                                    referencedVariables = {sampleStore.referencedVariables}
                                 />
                                 {/* <CustomGrouping/> */}
                         </Col>

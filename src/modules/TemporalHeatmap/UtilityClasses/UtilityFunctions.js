@@ -92,3 +92,9 @@ class UtilityFunctions {
 }
 
 export default UtilityFunctions;
+
+export const num2letter = (num)=>{
+    var mod = num % 26
+    
+    return String.fromCharCode(65 + mod)
+}

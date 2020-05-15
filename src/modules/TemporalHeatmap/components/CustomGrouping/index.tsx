@@ -1,6 +1,6 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
-import { extendObservable, observable, computed } from 'mobx';
+import { observer } from 'mobx-react';
+import { observable} from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
@@ -13,6 +13,7 @@ import "./CustomGrouping.css"
 
 import PCP from './pcp'
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import {num2letter} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 
@@ -21,11 +22,31 @@ const colors = ColorScales.defaultCategoricalRange
  * BlockViewTimepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
  */
+
+type TimeStage = {
+    timeIdx: number,
+    partitions: Partition[]
+}
+type Partition = {
+    partition: string, //stage name
+    patients: string[],
+    points: number[], // point ids
+    rows: Row[]
+}
+type Row = {
+    variable: string, //attribute name
+    counts: Count[]
+}
+type Count = {
+    key: string | number | boolean, // attribute value
+    patients: string[]
+}
+
 interface Props {
     points: Point[],
     timepoints: TimePoint[],
     currentVariables: string[],
-    referencedVariables: ReferencedVariables,
+    referencedVariables: ReferencedVariables
 }
 
 type TPatientDict = {
@@ -203,7 +224,7 @@ class CustomGrouping extends React.Component<Props> {
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
-    drawVIS(width: number, height: number, r: number = 5, margin: number = 20) {
+    drawScatterPlot(width: number, height: number, r: number = 5, margin: number = 20) {
 
 
         let patientDict  = this.getPatientDict()
@@ -348,7 +369,7 @@ class CustomGrouping extends React.Component<Props> {
                     }
                 })
                 this.selected.push({
-                    stageName: this.selected.length.toString(),
+                    stageName: num2letter(this.selected.length),
                     pointIdx: selected
                 })
             }
@@ -406,30 +427,13 @@ class CustomGrouping extends React.Component<Props> {
             let leftNodes = points.map((_, i) => i)
                 .filter(i => !allSelected.includes(i))
             this.selected.push({
-                stageName: 'left',
+                stageName: num2letter(this.selected.length),
                 pointIdx: leftNodes
             })
             message.info('All unselected nodes are grouped as one stage')
         }
 
-        type TimeStage = {
-            timeIdx: number,
-            partitions: Partition[]
-        }
-        type Partition = {
-            partition: string, //stage name
-            patients: string[],
-            points: number[], // point ids
-            rows: Row[]
-        }
-        type Row = {
-            variable: string, //attribute name
-            counts: Count[]
-        }
-        type Count = {
-            key: string | number | boolean, // attribute value
-            patients: string[]
-        }
+     
 
         let timeStages: TimeStage[] = []
         this.props.timepoints.forEach((_, timeIdx) => {
@@ -467,38 +471,9 @@ class CustomGrouping extends React.Component<Props> {
             })
         })
 
-        // // summarize rows
-        // timeStages.forEach(timeStage => {
-        //     timeStage.partitions.forEach(partition => {
-        //         let partitionPoints: Point[] = partition.points.map(idx => points[idx])
-
-        //         partition.rows = this.props.currentVariables.map((variable, variableIdx) => {
-        //             let counts: Count[] = []
-        //             partitionPoints.forEach(point => {
-        //                 let key = point.value[variableIdx]
-        //                 let keyIdx = counts.map(d => d.key).indexOf(key)
-        //                 if (keyIdx === -1) {
-        //                     counts.push({
-        //                         key,
-        //                         patients: [point.patient]
-        //                     })
-        //                 } else {
-        //                     if (!(counts[keyIdx].patients.includes(point.patient))) {
-        //                         counts[keyIdx].patients.push(point.patient)
-        //                     }
-        //                 }
-        //             })
-        //             return {
-        //                 variable,
-        //                 counts
-        //             }
-        //         })
-        //     })
-        // })
-
         this.props.timepoints.forEach((TP, i) => {
             TP.applyCustomStage(timeStages[i].partitions)
-        })
+        }) 
 
     }
 
@@ -518,7 +493,6 @@ class CustomGrouping extends React.Component<Props> {
         let pcpMargin = 25
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
 
-        console.info(this.props)
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div
@@ -534,7 +508,7 @@ class CustomGrouping extends React.Component<Props> {
                         }} />
 
                     <svg className='customGrouping' width="100%" height="80%">
-                        {this.drawVIS(width, scatterHeight)}
+                        {this.drawScatterPlot(width, scatterHeight)}
 
                         <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
                             <PCP points={points}

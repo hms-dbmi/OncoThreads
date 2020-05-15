@@ -43,7 +43,7 @@ class VariableStore {
                         })
                     }
                 })
-                console.info(this.childStore.timepoints, points)
+
                 return points
                 
                 
@@ -347,6 +347,7 @@ class VariableStore {
 
         return false;
     }
+
 }
 
 export default VariableStore;

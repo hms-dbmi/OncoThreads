@@ -19,11 +19,7 @@ interface Props {
     applyCustomGroups:()=>void,
 }
 
-const num2letter = (num:number):string=>{
-    var mod = num % 26
-    
-    return String.fromCharCode(65 + mod)
-}
+
 
 
 const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
