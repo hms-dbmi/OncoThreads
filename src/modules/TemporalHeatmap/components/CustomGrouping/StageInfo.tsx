@@ -8,12 +8,13 @@ const colors = ColorScales.defaultCategoricalRange
 
 export type TStage = {
     domains:{[domain:string]:string[]|number[]},
-    stageName:string
+    stageKey:string
 }
 
 interface Props {
     stages: TStage[],
     height: number,
+    stageLabels: {[key:string]:string}
     resetGroup: ()=>void,
     deleteGroup: (groupIdx:number)=>void,
     applyCustomGroups:()=>void,
@@ -30,14 +31,20 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
         let {stages} = this.props
 
         let content = stages.map((stage,i)=>{
-            let values = Object.keys(stage.domains).map(key=>{
-                let domain = stage.domains[key]
+            let {domains, stageKey} = stage
+            let values = Object.keys(domains).map(key=>{
+                let domain = domains[key]
                 return <span style={{marginRight:'2px'}} key={key}>{
                     domain.length===0?'':`[${domain.join()}]`
                     }</span>
                 })
+
+            let stageName:string;
+            if (this.props.stageLabels[stageKey]===undefined){
+                stageName=stageKey
+            }else stageName = this.props.stageLabels[stageKey]
             // if(Object.values(g)){
-                values.unshift(<span key='stageName'>{stage.stageName}</span>)
+                values.unshift(<span key='stageKey'>{stageName}</span>)
             // }
             return <p key={`stage_${i}`} style={{color: colors[i]}}>
                 {values} 

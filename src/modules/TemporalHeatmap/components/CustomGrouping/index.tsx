@@ -47,7 +47,8 @@ interface Props {
     timepoints: TimePoint[],
     currentVariables: string[],
     referencedVariables: ReferencedVariables,
-    sampleStore: VariableStore
+    sampleStore: VariableStore,
+    stageLabels:{[stageKey:string]:string}
 }
 
 type TPatientDict = {
@@ -58,7 +59,7 @@ type TPatientDict = {
 
 
 
-export type TSelected = { stageName: string, pointIdx: number[] }[]
+export type TSelected = { stageKey: string, pointIdx: number[] }[]
 
 @inject('sampleStore')
 @observer
@@ -161,7 +162,7 @@ class CustomGrouping extends React.Component<Props> {
 
         let stages = selectedPoints.map((p, i) => {
             let group: TStage = {
-                stageName: selected[i].stageName,
+                stageKey: selected[i].stageKey,
                 domains: {}
             }
             currentVariables.forEach((name, i) => {
@@ -372,15 +373,15 @@ class CustomGrouping extends React.Component<Props> {
                 })
                 const getStageName =(num:number):string=>{
                     let name = num2letter(num)
-                    console.info(name, this.selected.map(d=>d.stageName))
-                    if (this.selected.map(d=>d.stageName).includes(name)){
+                    if (this.selected.map(d=>d.stageKey).includes(name)){
                         return  getStageName(num+1)
                     }else return name
                 }
 
-                let stageName = getStageName(this.selected.length)
+                
+                let stageKey = getStageName(this.selected.length)
                 this.selected.push({
-                    stageName,
+                    stageKey,
                     pointIdx: selected
                 })
             }
@@ -430,15 +431,16 @@ class CustomGrouping extends React.Component<Props> {
 
     applyCustomGroups() {
         let { selected } = this
-        let {points } = this.props
+        let { points } = this.props
 
         // check whether has unselected nodes
         let allSelected = selected.map(d => d.pointIdx).flat()
         if (allSelected.length < points.length) {
             let leftNodes = points.map((_, i) => i)
                 .filter(i => !allSelected.includes(i))
+
             this.selected.push({
-                stageName: num2letter(this.selected.length),
+                stageKey: num2letter(this.selected.length),
                 pointIdx: leftNodes
             })
             message.info('All unselected nodes are grouped as one stage')
@@ -457,12 +459,12 @@ class CustomGrouping extends React.Component<Props> {
         // push points to corresponding time stage
         this.selected.forEach((stage) => {
 
-            let stageName = stage.stageName
+            let stageKey = stage.stageKey
 
             stage.pointIdx.forEach(id => {
                 let { patient, timeIdx } = points[id]
                 let timeStage = timeStages[timeIdx]
-                let partitionId = timeStage.partitions.map(d => d.partition).indexOf(stageName)
+                let partitionId = timeStage.partitions.map(d => d.partition).indexOf(stageKey)
                 if (partitionId > -1) {
 
                     let partition = timeStage.partitions[partitionId],
@@ -473,7 +475,7 @@ class CustomGrouping extends React.Component<Props> {
                     }
                 } else {
                     timeStage.partitions.push({
-                        partition: stageName,
+                        partition: stageKey,
                         points: [id],
                         rows: [],
                         patients: [patient]
@@ -531,6 +533,7 @@ class CustomGrouping extends React.Component<Props> {
                     </svg>
                     <StageInfo
                         stages={stages} height={infoHeight}
+                        stageLabels={this.props.stageLabels}
                         resetGroup={this.resetGroup}
                         deleteGroup={this.deleteGroup}
                         applyCustomGroups={this.applyCustomGroups}

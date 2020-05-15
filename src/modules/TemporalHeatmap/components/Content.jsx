@@ -390,6 +390,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                     }
                                     currentVariables={sampleStore.currentVariables}
                                     referencedVariables = {sampleStore.referencedVariables}
+                                    stageLabels={sampleStore.stageLabels}
                                 />
                                 {/* <CustomGrouping/> */}
                             </Provider>

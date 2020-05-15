@@ -1,10 +1,13 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
+import {Input} from 'antd'
+
 import PropTypes from 'prop-types';
 import CategoricalRow from './CategoricalRow';
 import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
+
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 import UtilityFunctions from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
 const colors = ColorScales.defaultCategoricalRange
@@ -17,6 +20,10 @@ const getTextWidth = UtilityFunctions.getTextWidth
  * Component for a partition in a grouped timepiint
  */
 const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class GroupPartition extends React.Component {
+    constructor(props){
+        super(props)
+        this.changeLabel = this.changeLabel.bind(this)
+    }
     createPartition() {
         let previousYposition = 0;
         const rows = [];
@@ -76,31 +83,45 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         });
         return rows;
     }
+    
+    changeLabel(e){
+        this.props.dataStore.variableStores.sample
+        .setStageLabel(this.props.partition.partition, e.target.value)
+    }
 
     render() {
-        const stageName = this.props.partition.partition||'',
-            // labelColor = colors[stageName.charCodeAt(0)-65]||'black',
-            labelColor = 'black',
-            labelHeight = this.props.visStore.primaryHeight, 
-            labelWidth = Math.max(getTextWidth(stageName, 14), 20)
+        const stageKey = this.props.partition.partition||'',
+            // labelColor = colors[stageKey.charCodeAt(0)-65]||'black',
+            
+        stageName = this.props.stageLabels[stageKey]||stageKey,
+        labelColor = 'black',
+        labelHeight = this.props.visStore.primaryHeight, 
+        labelWidth = Math.max(getTextWidth(stageName, 14)+26, 40)
 
-        const stageLable = <g className='stageLabel'>
-                    <rect 
-                        width={labelWidth} height={labelHeight} 
-                        rx={0.2*labelHeight}
-                        fill='white' 
-                        stroke='black' strokeWidth='2'
-                    />
-                    <text 
-                    y={0.8*labelHeight} x={0.5*labelWidth} textAnchor="middle"
-                    fill={labelColor} fontWeight={800}
-                    >
-                            {stageName}
-                    </text>
-                </g>
-        return  <g className={`partitions ${stageName}`}>
+
+
+        // const stageLabel = <g className='stageLabel'>
+        //             <rect 
+        //                 width={labelWidth} height={labelHeight} 
+        //                 rx={0.2*labelHeight}
+        //                 fill='white' 
+        //                 stroke='black' strokeWidth='2'
+        //             />
+        //             <text 
+        //             y={0.8*labelHeight} x={0.5*labelWidth} textAnchor="middle"
+        //             fill={labelColor} fontWeight={800}
+        //             >
+        //                     {stageName}
+        //             </text>
+        //         </g>
+
+        return  <g className={`partitions ${stageKey}`}>
             {this.createPartition()}   
-            {stageLable}       
+            {/* {stageLabel}   */}
+            <foreignObject style={{width:labelWidth, height:labelHeight}}>
+                <Input value={stageName} 
+                onChange={this.changeLabel}/>    
+            </foreignObject> 
         </g>;
     }
 }));
@@ -118,5 +139,6 @@ GroupPartition.propTypes = {
     ])).isRequired,
     stroke: PropTypes.string.isRequired,
     tooltipFunctions: PropTypes.objectOf(PropTypes.func),
+    stageLabels: PropTypes.object.isRequired
 };
 export default GroupPartition;

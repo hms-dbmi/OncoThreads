@@ -16,6 +16,7 @@ class VariableStore {
             currentVariables: [],
             // Variables that are referenced (displayed or used to create a derived variable)
             referencedVariables: {},
+            stageLabels:{}, // key & label pairs
 
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
@@ -48,6 +49,11 @@ class VariableStore {
                 
                 
             },
+            
+            setStageLabel: action((stageKey, stageLabel)=>{
+                
+                this.stageLabels[stageKey] = stageLabel
+            }),
 
             resetVariables: action(() => {
                 this.referencedVariables = {};
@@ -349,13 +355,10 @@ class VariableStore {
     }
 
     applyCustomStages(timeStages){
-        if (this.childStore){
-            this.childStore.timepoints.forEach((TP, i) => {
-                TP.applyCustomStage(timeStages[i].partitions)
-            })
-        }else{
-            console.info(this.childStore, this, timeStages)
-        }
+        this.childStore.timepoints.forEach((TP, i) => {
+            TP.applyCustomStage(timeStages[i].partitions)
+        })
+        
     }
 }
 
