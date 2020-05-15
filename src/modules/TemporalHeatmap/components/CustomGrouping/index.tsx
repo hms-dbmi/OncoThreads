@@ -81,54 +81,22 @@ class CustomGrouping extends React.Component<Props> {
         this.applyCustomGroups = this.applyCustomGroups.bind(this)
 
     }
-    // @computed
-    // /***
-    //  * each point is one patient at one time point
-    //  * calculated based on 
-    //  */
-    // get points() {
-    //     let timepoints = this.props.timepoints
 
-    //     let points: Point[] = []
-    //     timepoints.forEach((timepoint, timeIdx) => {
-    //         var heatmap = timepoint.heatmap
-
-    //         if (heatmap[0]) {
-    //             heatmap[0].data.forEach((_, i) => {
-    //                 let patient = timepoint.heatmapOrder[i]
-    //                 var point = {
-    //                     patient,
-    //                     value: heatmap.map(d => d.data[i].value),
-    //                     timeIdx
-    //                 }
-    //                 points.push(point)
-    //             })
-    //         }
-    //     })
-
-    //     return points
-    // }
 
     getPatientDict() {
-        let timepoints = this.props.timepoints
+        let points = this.props.points
 
         let patientDict: TPatientDict = {}
         // get points,each points is one patient at one timepoint
-        timepoints.forEach((timepoint, timeIdx) => {
-            var heatmap = timepoint.heatmap
-
-            if (heatmap[0]) {
-                heatmap[0].data.forEach((_, i) => {
-                    let patient = timepoint.heatmapOrder[i]
-                    if (patientDict[patient] === undefined) {
-                        patientDict[patient] = {
-                            patient,
-                            points: [i]
-                        }
-                    } else {
-                        patientDict[patient].points.push(i)
-                    }
-                })
+        points.forEach((point, pointIdx) => {
+            let {patient} = point
+            if (patient in patientDict){
+                patientDict[patient].points.push(pointIdx)
+            }else{
+                patientDict[patient] = {
+                    patient,
+                    points:[pointIdx]
+                }
             }
         })
 
@@ -176,7 +144,7 @@ class CustomGrouping extends React.Component<Props> {
         return stages
     }
 
-    // convert points to [0,1] range.
+    // normalize points to [0,1] range.
     // @param: points: string||number[][], 
     // @param: currentVariable: [variableName:string][]
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
@@ -513,7 +481,7 @@ class CustomGrouping extends React.Component<Props> {
                 >
                     <Switch size="small"
                         style={{ position: "absolute" }}
-                        defaultChecked
+                        checkedChildren="links" unCheckedChildren="links"
                         onChange={() => {
                             this.hasLink = !this.hasLink
                         }} />
