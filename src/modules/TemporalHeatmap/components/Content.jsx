@@ -275,6 +275,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
+        console.info('content render')
         
         return (
             <div>
@@ -379,6 +380,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         <Col className="selectGroup" 
                             sm={3}
                             md={3}>
+                                <Provider sampleStore={this.props.rootStore.dataStore.variableStores.sample}>
                                 
                                 <CustomGrouping 
                                     timepoints={
@@ -389,6 +391,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                     referencedVariables = {this.props.rootStore.dataStore.variableStores.sample.referencedVariables}
                                 />
                                 {/* <CustomGrouping/> */}
+                                </Provider>
                         </Col>
                         <Col
                             sm={9}
