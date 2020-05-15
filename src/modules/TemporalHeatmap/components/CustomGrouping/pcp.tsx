@@ -5,8 +5,7 @@ import * as d3 from 'd3';
 import {Tooltip} from 'antd';
 import {TSelected} from './index'
 
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
-const colors = ColorScales.defaultCategoricalRange
+import ColorScales, {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 
 
 const clipText =(text:string|number, len:number):string|number=>{
@@ -68,7 +67,7 @@ const PCP = observer(class CustomGrouping extends React.Component<Props> {
                 d={wholeLine} 
                 fill='none' 
                 key={id}
-                stroke={groupIdx>-1?colors[groupIdx]:"lightgray"}
+                stroke={groupIdx>-1?getColorByName(selected[groupIdx].stageKey):"lightgray"}
                 strokeWidth='4'
                 opacity={`${groupIdx>-1?'0.7':'0.4'}`}
                 />

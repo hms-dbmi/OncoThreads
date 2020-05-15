@@ -54,6 +54,10 @@ class VariableStore {
                 
                 this.stageLabels[stageKey] = stageLabel
             }),
+            resetStageLabel: action(()=>{
+                
+                this.stageLabels = {}
+            }),
 
             resetVariables: action(() => {
                 this.referencedVariables = {};

@@ -2,7 +2,7 @@ import React from 'react';
 import { observer  } from 'mobx-react';
 import {Button, Table} from 'antd';
 import {CloseSquareOutlined} from '@ant-design/icons';
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import ColorScales, { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 const colors = ColorScales.defaultCategoricalRange
 
 
@@ -46,7 +46,7 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
             // if(Object.values(g)){
                 values.unshift(<span key='stageKey'>{stageName}</span>)
             // }
-            return <p key={`stage_${i}`} style={{color: colors[i]}}>
+            return <p key={`stage_${i}`} style={{color: getColorByName(stageKey)}}>
                 {values} 
                 <CloseSquareOutlined onClick={()=>this.props.deleteGroup(i)}/> 
                 </p>

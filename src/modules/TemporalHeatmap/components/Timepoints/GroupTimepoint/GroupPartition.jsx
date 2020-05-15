@@ -8,9 +8,9 @@ import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
 import UtilityFunctions from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
-const colors = ColorScales.defaultCategoricalRange
+
 const getTextWidth = UtilityFunctions.getTextWidth
 
 
@@ -95,8 +95,8 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             
         stageName = this.props.stageLabels[stageKey]===undefined?
             stageKey:this.props.stageLabels[stageKey],
-            
-        labelColor = 'black',
+
+        labelColor = getColorByName(stageKey),
         labelHeight = this.props.visStore.primaryHeight, 
         labelWidth = Math.max(getTextWidth(stageName, 14)+26, 40)
 
@@ -121,7 +121,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             {this.createPartition()}   
             {/* {stageLabel}   */}
             <foreignObject style={{width:labelWidth, height:labelHeight}}>
-                <Input value={stageName} 
+                <Input value={stageName} style={{color: labelColor, fontWeight:800}}
                 onChange={this.changeLabel}/>    
             </foreignObject> 
         </g>;

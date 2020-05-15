@@ -12,12 +12,11 @@ import { TStage } from './StageInfo'
 import "./CustomGrouping.css"
 
 import PCP from './pcp'
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
-import {num2letter} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
+import ColorScales, { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import {num2letter} from 'modules/TemporalHeatmap/UtilityClasses/'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 
-const colors = ColorScales.defaultCategoricalRange
 /*
  * BlockViewTimepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
@@ -256,7 +255,7 @@ class CustomGrouping extends React.Component<Props> {
                 cx={xScale(normPoint.value[0])}
                 cy={yScale(normPoint.value[1])}
                 r={r}
-                fill={groupIdx > -1 ? colors[groupIdx] : (this.hasLink ? "black" : "white")}
+                fill={groupIdx > -1 ? getColorByName(this.selected[groupIdx].stageKey) : (this.hasLink ? "black" : "white")}
                 stroke='black'
                 strokeWidth='1'
                 opacity={opacity}
@@ -412,6 +411,7 @@ class CustomGrouping extends React.Component<Props> {
 
     resetGroup() {
         this.selected = []
+        this.props.sampleStore.resetStageLabel()
 
 
         d3.selectAll('circle.point')
