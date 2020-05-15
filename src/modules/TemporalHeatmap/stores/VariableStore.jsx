@@ -16,9 +16,39 @@ class VariableStore {
             currentVariables: [],
             // Variables that are referenced (displayed or used to create a derived variable)
             referencedVariables: {},
+
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
+            /**
+             * each point is one patient at one time point
+             */
+            get points() {
+            
+                let points = []
+                this.rootStore.dataStore
+                .timepoints.filter(timepoint=>timepoint.type===this.type)
+                .forEach((timepoint, timeIdx) => {
+                    var heatmap = timepoint.heatmap
+        
+                    if (heatmap[0]) {
+                        heatmap[0].data.forEach((_, i) => {
+                            let patient = timepoint.heatmapOrder[i]
+                            var point = {
+                                patient,
+                                value: heatmap.map(d => d.data[i].value),
+                                timeIdx
+                            }
+                            points.push(point)
+                        })
+                    }
+                })
+                console.info(this.childStore.timepoints, points)
+                return points
+                
+                
+            },
+
             resetVariables: action(() => {
                 this.referencedVariables = {};
                 this.currentVariables.clear();
@@ -108,6 +138,7 @@ class VariableStore {
         });
         // Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
+
             if (change.type === 'splice') {
                 if (change.removedCount > 0) {
                     change.removed.forEach((d) => {

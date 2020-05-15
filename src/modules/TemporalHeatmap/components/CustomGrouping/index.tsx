@@ -22,6 +22,7 @@ const colors = ColorScales.defaultCategoricalRange
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
  */
 interface Props {
+    points: Point[],
     timepoints: TimePoint[],
     currentVariables: string[],
     referencedVariables: ReferencedVariables,
@@ -37,7 +38,7 @@ type TPatientDict = {
 
 export type TSelected = { stageName: string, pointIdx: number[] }[]
 
-@inject('sampleStore')
+
 @observer
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
@@ -51,45 +52,42 @@ class CustomGrouping extends React.Component<Props> {
         // this.getPoints = this.getPoints.bind(this)
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
+        
 
         this.resetGroup = this.resetGroup.bind(this)
         this.deleteGroup = this.deleteGroup.bind(this)
         this.applyCustomGroups = this.applyCustomGroups.bind(this)
 
     }
-    @computed
-    /***
-     * each point is one patient at one time point
-     * calculated based on 
-     */
-    get points() {
-        let timepoints = this.props.timepoints
+    // @computed
+    // /***
+    //  * each point is one patient at one time point
+    //  * calculated based on 
+    //  */
+    // get points() {
+    //     let timepoints = this.props.timepoints
 
-        let points: Point[] = []
-        timepoints.forEach((timepoint, timeIdx) => {
-            var heatmap = timepoint.heatmap
+    //     let points: Point[] = []
+    //     timepoints.forEach((timepoint, timeIdx) => {
+    //         var heatmap = timepoint.heatmap
 
-            if (heatmap[0]) {
-                heatmap[0].data.forEach((_, i) => {
-                    let patient = timepoint.heatmapOrder[i]
-                    var point = {
-                        patient,
-                        value: heatmap.map(d => d.data[i].value),
-                        timeIdx
-                    }
-                    points.push(point)
-                })
-            }
-        })
+    //         if (heatmap[0]) {
+    //             heatmap[0].data.forEach((_, i) => {
+    //                 let patient = timepoint.heatmapOrder[i]
+    //                 var point = {
+    //                     patient,
+    //                     value: heatmap.map(d => d.data[i].value),
+    //                     timeIdx
+    //                 }
+    //                 points.push(point)
+    //             })
+    //         }
+    //     })
 
-        return points
-    }
+    //     return points
+    // }
 
-    @computed
-    /***
-     * each patient has several points in the above get points
-     */
-    get patientDict() {
+    getPatientDict() {
         let timepoints = this.props.timepoints
 
         let patientDict: TPatientDict = {}
@@ -115,11 +113,13 @@ class CustomGrouping extends React.Component<Props> {
         return patientDict
     }
 
-    @computed
-    get stages() {
+    /**
+     * computed based on selected, points, currentVariables
+     * return the attribute domain of each stages
+     */
+    getStages() {
         let { selected } = this
-        let { currentVariables } = this.props
-        let points = this.points
+        let { currentVariables, points } = this.props
 
         let selectedPoints = selected
             .map(s => {
@@ -159,10 +159,8 @@ class CustomGrouping extends React.Component<Props> {
     // @param: currentVariable: [variableName:string][]
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
     // return: points: number[][]
-    @computed
-    get normalizePoints(): NormPoint[] {
-        let points = this.points
-        let { currentVariables, referencedVariables } = this.props
+    normalizePoints(): NormPoint[] {
+        let {points, currentVariables, referencedVariables } = this.props
         if (points.length === 0) return []
         let normValues = points.map(point => {
             let normValue = point.value.map((value, i) => {
@@ -208,32 +206,32 @@ class CustomGrouping extends React.Component<Props> {
     drawVIS(width: number, height: number, r: number = 5, margin: number = 20) {
 
 
-        let patientDict  = this.patientDict
+        let patientDict  = this.getPatientDict()
         let { selected } = this
-        let points = this.normalizePoints
+        let normPoints = this.normalizePoints()
 
-        if (points.length === 0) {
+        if (normPoints.length === 0) {
             return <g className='points' />
         }
         var xScale = d3.scaleLinear()
-            .domain(d3.extent(points.map(d => d.value[0])) as [number, number])
+            .domain(d3.extent(normPoints.map(d => d.value[0])) as [number, number])
             .range([margin, width - margin])
 
         var yScale = d3.scaleLinear()
-            .domain(d3.extent(points.map(d => d.value[1])) as [number, number])
+            .domain(d3.extent(normPoints.map(d => d.value[1])) as [number, number])
             .range([margin, height - margin])
 
 
-        const maxTimeIdx = Math.max(...points.map(p => p.timeIdx))
-        var circles = points.map((point, i) => {
+        const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
+        var circles = normPoints.map((normPoint, i) => {
             let id = i
             let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let opacity = this.hasLink ? 0.1 + point.timeIdx * 0.6 / maxTimeIdx : 0.5
+            let opacity = this.hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
             return <circle
                 key={id}
                 id={id.toString()}
-                cx={xScale(point.value[0])}
-                cy={yScale(point.value[1])}
+                cx={xScale(normPoint.value[0])}
+                cy={yScale(normPoint.value[1])}
                 r={r}
                 fill={groupIdx > -1 ? colors[groupIdx] : (this.hasLink ? "black" : "white")}
                 stroke='black'
@@ -246,8 +244,8 @@ class CustomGrouping extends React.Component<Props> {
         var lines = Object.keys(patientDict).map(patient => {
             let pointIds = patientDict[patient].points
             let path = pointIds.map((id, i) => {
-                let x = xScale(points[id].value[0])
-                let y = yScale(points[id].value[1])
+                let x = xScale(normPoints[id].value[0])
+                let y = yScale(normPoints[id].value[1])
                 return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
             })
 
@@ -267,7 +265,7 @@ class CustomGrouping extends React.Component<Props> {
 
         let curves = Object.keys(patientDict).map(patient => {
             let pointIds = patientDict[patient].points
-            let path = curveGenerator(pointIds.map(id => points[id]) as any[])
+            let path = curveGenerator(pointIds.map(id => normPoints[id]) as any[])
             return <path
                 key={patient}
                 d={path as string}
@@ -400,7 +398,7 @@ class CustomGrouping extends React.Component<Props> {
 
     applyCustomGroups() {
         let { selected } = this
-        let points  = this.points
+        let {points } = this.props
 
         // check whether has unselected nodes
         let allSelected = selected.map(d => d.pointIdx).flat()
@@ -469,35 +467,34 @@ class CustomGrouping extends React.Component<Props> {
             })
         })
 
-        // summarize rows
-        timeStages.forEach(timeStage => {
-            timeStage.partitions.forEach(partition => {
-                let partitionPoints: Point[] = partition.points.map(idx => points[idx])
+        // // summarize rows
+        // timeStages.forEach(timeStage => {
+        //     timeStage.partitions.forEach(partition => {
+        //         let partitionPoints: Point[] = partition.points.map(idx => points[idx])
 
-                partition.rows = this.props.currentVariables.map((variable, variableIdx) => {
-                    let counts: Count[] = []
-                    partitionPoints.forEach(point => {
-                        let key = point.value[variableIdx]
-                        let keyIdx = counts.map(d => d.key).indexOf(key)
-                        if (keyIdx === -1) {
-                            counts.push({
-                                key,
-                                patients: [point.patient]
-                            })
-                        } else {
-                            if (!(counts[keyIdx].patients.includes(point.patient))) {
-                                counts[keyIdx].patients.push(point.patient)
-                            }
-                        }
-                    })
-                    return {
-                        variable,
-                        counts
-                    }
-                })
-            })
-        })
-        console.info(timeStages)
+        //         partition.rows = this.props.currentVariables.map((variable, variableIdx) => {
+        //             let counts: Count[] = []
+        //             partitionPoints.forEach(point => {
+        //                 let key = point.value[variableIdx]
+        //                 let keyIdx = counts.map(d => d.key).indexOf(key)
+        //                 if (keyIdx === -1) {
+        //                     counts.push({
+        //                         key,
+        //                         patients: [point.patient]
+        //                     })
+        //                 } else {
+        //                     if (!(counts[keyIdx].patients.includes(point.patient))) {
+        //                         counts[keyIdx].patients.push(point.patient)
+        //                     }
+        //                 }
+        //             })
+        //             return {
+        //                 variable,
+        //                 counts
+        //             }
+        //         })
+        //     })
+        // })
 
         this.props.timepoints.forEach((TP, i) => {
             TP.applyCustomStage(timeStages[i].partitions)
@@ -515,12 +512,13 @@ class CustomGrouping extends React.Component<Props> {
 
     render() {
 
-        let points = this.points
-        let { width, height } = this
+        let {points} = this.props
+        let { width, height, } = this
+        let stages = this.getStages()
         let pcpMargin = 25
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
 
-        let stages = this.stages
+        console.info(this.props)
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div

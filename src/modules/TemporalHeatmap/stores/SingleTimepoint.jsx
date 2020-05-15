@@ -18,7 +18,7 @@ class SingleTimepoint {
             isGrouped: false,
             primaryVariableId: undefined,
             name: localIndex,
-            customStage:[],
+            customPartitions:[],
             /**
              * computes grouped layout based on current heatmap and order.
              * @returns {object[]}
@@ -65,6 +65,41 @@ class SingleTimepoint {
                     }
                 });
                 return grouped;
+            },
+            /**
+             * computes custom grouped layout based on current heatmap, order and time stage
+             * @returns {object[]}
+             */
+            get customGrouped() {
+                let {currentVariables, points} = this.rootStore.dataStore.variableStores[this.type]
+                return this.customPartitions.map(partition => {
+                    let partitionPoints = partition.points.map(idx => points[idx])
+                    let partitionRows = {...partition}
+    
+                    partitionRows.rows = currentVariables.map((variable, variableIdx) => {
+                        let counts = []
+                        partitionPoints.forEach(point => {
+                            let key = point.value[variableIdx]
+                            let keyIdx = counts.map(d => d.key).indexOf(key)
+                            if (keyIdx === -1) {
+                                counts.push({
+                                    key,
+                                    patients: [point.patient]
+                                })
+                            } else {
+                                if (!(counts[keyIdx].patients.includes(point.patient))) {
+                                    counts[keyIdx].patients.push(point.patient)
+                                }
+                            }
+                        })
+                        return {
+                            variable,
+                            counts
+                        }
+                    })
+                    
+                    return partitionRows
+                })
             },
             /**
              * sets timepoint name
@@ -310,10 +345,8 @@ class SingleTimepoint {
             /**
              * group based customized grouping in the scatter plot
              */
-            applyCustomStage: action((timeStage)=>{
-                console.info(timeStage)
-                this.customStage = timeStage
-                console.info(this.customStage, this.grouped)
+            applyCustomStage: action((customPartitions)=>{
+                this.customPartitions = customPartitions
                 
             }),
         });
