@@ -3,6 +3,7 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import * as d3 from 'd3';
 import {Tooltip} from 'antd';
+import {TSelected} from './index'
 
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 const colors = ColorScales.defaultCategoricalRange
@@ -18,7 +19,7 @@ const clipText =(text:string|number, len:number):string|number=>{
 
 interface Props {
     points: Point[],
-    selected: number[][],
+    selected: TSelected,
     currentVariables: string[],
     referencedVariables: ReferencedVariables, // add more detils later
     height:number,
@@ -61,7 +62,7 @@ const PCP = observer(class CustomGrouping extends React.Component<Props> {
             })
             let wholeLine = `${lineMid.join(' ')}`
             let id = i
-            let groupIdx = this.props.selected.findIndex(p=>p.includes(id))
+            let groupIdx = this.props.selected.findIndex(p=>p.pointIdx.includes(id))
             
             return <path 
                 d={wholeLine} 

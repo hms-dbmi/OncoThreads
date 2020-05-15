@@ -5,8 +5,14 @@ import {CloseSquareOutlined} from '@ant-design/icons';
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 const colors = ColorScales.defaultCategoricalRange
 
+
+export type TStage = {
+    domains:{[domain:string]:string[]|number[]},
+    stageName:string
+}
+
 interface Props {
-    groups: any[],
+    stages: TStage[],
     height: number,
     resetGroup: ()=>void,
     deleteGroup: (groupIdx:number)=>void,
@@ -25,19 +31,19 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
         super(props)
     }
     render(){
-        let {groups} = this.props
+        let {stages} = this.props
 
-        let content = groups.map((g,i)=>{
-            let values = Object.keys(g).map(key=>{
-                let domain = g[key]
+        let content = stages.map((stage,i)=>{
+            let values = Object.keys(stage.domains).map(key=>{
+                let domain = stage.domains[key]
                 return <span style={{marginRight:'2px'}} key={key}>{
                     domain.length===0?'':`[${domain.join()}]`
                     }</span>
                 })
             // if(Object.values(g)){
-                values.unshift(<span key='stageName'>stage_{num2letter(i)}</span>)
+                values.unshift(<span key='stageName'>{stage.stageName}</span>)
             // }
-            return <p key={`stage_${num2letter(i)}`} style={{color: colors[i]}}>
+            return <p key={`stage_${i}`} style={{color: colors[i]}}>
                 {values} 
                 <CloseSquareOutlined onClick={()=>this.props.deleteGroup(i)}/> 
                 </p>

@@ -7,6 +7,7 @@ import lasso from './lasso.js'
 import { message} from 'antd';
 
 import {Point, ReferencedVariables, TimePoint, NormPoint} from 'modules/Type'
+import {TStage} from './StageInfo'
 
 import "./CustomGrouping.css"
 
@@ -14,7 +15,6 @@ import PCP from './pcp'
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
-import Variable from 'modules/TemporalHeatmap/stores/Variable.jsx';
 
 const colors = ColorScales.defaultCategoricalRange
 /*
@@ -33,14 +33,16 @@ type TPatientDict = {
     }
 }// the point id of each patient {paitent:{patient:string, points:id[]}}
 
-type TGroup = {
-    [domain:string]:string[]|number[]
-}
 
-class CustomGrouping extends React.Component <Props> {
+
+export type TSelected = {stageName:string, pointIdx:number[]}[]
+
+@inject('sampleStore')
+@observer
+class CustomGrouping extends React.Component<Props> {
     @observable width:number=window.innerWidth / 2 
     @observable height:number=window.innerHeight-140 
-    @observable selected:number[][]=[]
+    @observable selected:TSelected=[]
     @observable hasLink:boolean = false
     private ref =  React.createRef<HTMLDivElement>(); 
 
@@ -57,12 +59,13 @@ class CustomGrouping extends React.Component <Props> {
     }
     @computed
     get pointsAndPatientDict() {
+        let timepoints:TimePoint[] = this.props.timepoints
 
         var points:Point[] = []
         
         var patientDict:TPatientDict = {} 
         // get points,each points is one patient at one timepoint
-        this.props.timepoints.forEach((timepoint, timeIdx) => {
+        timepoints.forEach((timepoint, timeIdx) => {
             var heatmap = timepoint.heatmap
 
             if (heatmap[0]) {
@@ -93,14 +96,15 @@ class CustomGrouping extends React.Component <Props> {
     }
 
     @computed
-    get groups(){
+    get stages(){
         let {selected} = this
         let {currentVariables} = this.props
         let {points} = this.pointsAndPatientDict
+        
         let selectedPoints = selected
             .map(s=>{
                 return points
-                .filter((_,i)=>s.includes(i))
+                .filter((_,i)=>s.pointIdx.includes(i))
             })
 
         const summarizeDomain = (values:string[]|number[]|boolean[])=>{
@@ -113,10 +117,13 @@ class CustomGrouping extends React.Component <Props> {
             } else return []
         }
 
-        let groups = selectedPoints.map(p=>{
-            let group:TGroup = {}
+        let stages = selectedPoints.map((p,i)=>{
+            let group:TStage = {
+                stageName:selected[i].stageName, 
+                domains:{}
+            }
             currentVariables.forEach((name,i)=>{
-                group[name] = summarizeDomain( p.map(p=>p.value[i])  as number[]|string[]|boolean[])
+                group.domains[name] = summarizeDomain( p.map(p=>p.value[i])  as number[]|string[]|boolean[])
             })
             
             return group
@@ -124,7 +131,7 @@ class CustomGrouping extends React.Component <Props> {
         
         
 
-        return groups
+        return stages
     }
 
     // convert points to [0,1] range.
@@ -200,7 +207,7 @@ class CustomGrouping extends React.Component <Props> {
         const maxTimeIdx = Math.max(...points.map(p=>p.timeIdx))
         var circles = points.map((point,i) => {
             let id = i
-            let groupIdx = selected.findIndex(p=>p.includes(id))
+            let groupIdx = selected.findIndex(p=>p.pointIdx.includes(id))
             let opacity = this.hasLink? 0.1+ point.timeIdx*0.6/maxTimeIdx : 0.5
             return <circle
                 key={id}
@@ -313,16 +320,18 @@ class CustomGrouping extends React.Component <Props> {
              
             let selected = (mylasso.selectedItems() as any)._groups[0].map((d:any):number=>parseInt(d.attributes.id.value))
             if (selected.length>0){
-                // if selected nodes are in previous groups
+                // if selected nodes are in previous stages
                 this.selected.forEach((g,i)=>{
-                    g = g.filter(point=>!selected.includes(point))
-                    if(g.length>0) {
-                        this.selected[i]=g
+                    g.pointIdx = g.pointIdx.filter(point=>!selected.includes(point))
+                    if(g.pointIdx.length>0) {
+                        this.selected[i]=g // update the group by removing overlapping points
                     }else{
-                        this.selected.splice(i, 1)
+                        this.selected.splice(i, 1) // delete the whole group if all points overlap
                     }
                 })
-                this.selected.push(selected)        
+                this.selected.push({
+                    stageName: this.selected.length.toString(),
+                    pointIdx: selected})        
             }
             
         };
@@ -373,11 +382,13 @@ class CustomGrouping extends React.Component <Props> {
         let {points} = this.pointsAndPatientDict
 
         // check whether has unselected nodes
-        let allSelected = selected.flat()
+        let allSelected = selected.map(d=>d.pointIdx).flat()
         if (allSelected.length<points.length){
             let leftNodes = points.map((_,i)=>i)
                 .filter(i=>!allSelected.includes(i))
-            this.selected.push(leftNodes)
+            this.selected.push({
+                stageName: 'left',
+                pointIdx:leftNodes})
             message.info('All unselected nodes are grouped as one stage')
         }
         
@@ -409,10 +420,11 @@ class CustomGrouping extends React.Component <Props> {
         })
 
         // push points to corresponding time stage
-        this.selected.forEach((pointIds,stageId)=>{
-            pointIds.forEach(id=>{
-                
-                let stageName = String.fromCharCode(stageId+65)
+        this.selected.forEach((stage)=>{
+            
+            let stageName = stage.stageName
+
+            stage.pointIdx.forEach(id=>{
                 let {patient, timeIdx} = points[id]
                 let timeStage = timeStages[timeIdx]
                 let partitionId = timeStage.partitions.map(d=>d.partition).indexOf(stageName)
@@ -438,12 +450,12 @@ class CustomGrouping extends React.Component <Props> {
         // summarize rows
         timeStages.forEach(timeStage=>{
             timeStage.partitions.forEach(partition=>{
-                let partitionPoints:Point[] = partition.points.map(id=>points[id])
+                let partitionPoints:Point[] = partition.points.map(idx=>points[idx])
 
-                partition.rows = this.props.currentVariables.map((variable, variableId)=>{
+                partition.rows = this.props.currentVariables.map((variable, variableIdx)=>{
                     let counts:Count[] = []
                     partitionPoints.forEach(point=>{
-                        let key = point.value[variableId]
+                        let key = point.value[variableIdx]
                         let keyIdx = counts.map(d=>d.key).indexOf(key)
                         if (keyIdx===-1){
                             counts.push({
@@ -486,7 +498,7 @@ class CustomGrouping extends React.Component <Props> {
         let pcpMargin = 25
         let scatterHeight = height*0.35, pcpHeight = height*0.45, infoHeight=height*0.2
 
-        let groups = this.groups
+        let stages = this.stages
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div 
@@ -515,7 +527,7 @@ class CustomGrouping extends React.Component <Props> {
                         </g>
                     </svg>
                     <StageInfo 
-                    groups={groups} height={infoHeight} 
+                    stages={stages} height={infoHeight} 
                     resetGroup={this.resetGroup}
                     deleteGroup={this.deleteGroup}
                     applyCustomGroups={this.applyCustomGroups}
@@ -526,4 +538,4 @@ class CustomGrouping extends React.Component <Props> {
     }
 }
 
-export default  observer(CustomGrouping)
+export default  CustomGrouping
