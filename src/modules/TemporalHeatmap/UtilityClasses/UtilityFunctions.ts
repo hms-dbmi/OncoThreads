@@ -4,14 +4,14 @@
  * @param {number} value
  * @returns {number}
  */
-const getScientificNotation = (value) =>{
+const getScientificNotation = (value:number|undefined):number|undefined =>{
     if (value !== undefined) {
         const roundedValue = Math.round(value * 100) / 100;
         if (roundedValue.toString().length < 8) {
             return roundedValue;
         }
 
-        return value.toExponential(2);
+        return parseFloat( value.toExponential(2) );
     }
     return value;
 }
@@ -21,7 +21,7 @@ const getScientificNotation = (value) =>{
  * @param {string} str
  * @return {string}
  */
-const toTitleCase = (str)=> {
+const toTitleCase = (str:string):string=> {
     return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()).replace('_', ' ');
 }
 
@@ -30,7 +30,7 @@ const toTitleCase = (str)=> {
  * @param {number} value
  * @returns {boolean}
  */
-const isValidValue = (value)=> {
+const isValidValue = (value:any):boolean=> {
     let isValid = false;
     if (!Number.isNaN(value) || value === '.' || value === '-') {
         isValid = true;
@@ -53,9 +53,9 @@ const isValidValue = (value)=> {
  * @param {number} fontSize
  * @returns {number}
  */
-const getTextWidth=(text, fontSize)=>{
-    const context = document.createElement('canvas').getContext('2d');
-    context.font = `${fontSize}px Arial`;
+const getTextWidth=(text:string, fontSize:number, fontWeight:number=400)=>{
+    const context = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
+    context.font = `${fontWeight} ${fontSize}px Arial`;
     return context.measureText(text).width;
 }
 
@@ -63,14 +63,14 @@ const getTextWidth=(text, fontSize)=>{
  * crops the text to a certain width and adds "..." in the end
  * @param {string} text
  * @param {number} fontSize
- * @param {*} fontweight
+ * @param {*} fontWeight
  * @param {number} maxWidth
  * @returns {string}
  */
-const cropText = (text, fontSize, fontweight, maxWidth)=> {
+const cropText = (text:string, fontSize:number, fontWeight:number, maxWidth:number):string=> {
     let returnText = text;
-    const context = document.createElement('canvas').getContext('2d');
-    context.font = `${fontweight} ${fontSize}px Arial`;
+    const context = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
+    context.font = `${fontWeight} ${fontSize}px Arial`;
     const width = context.measureText(text).width;
     if (width > maxWidth) {
         for (let i = 1; i < text.length; i += 1) {
@@ -88,7 +88,7 @@ const cropText = (text, fontSize, fontweight, maxWidth)=> {
 }
 
 
- const num2letter = (num) => {
+ const num2letter = (num:number):string => {
 
     return String.fromCharCode(65 + num)
 }
