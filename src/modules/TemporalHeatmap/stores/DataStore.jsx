@@ -60,9 +60,6 @@ class DataStore {
                 if (this.hasEvent===false){
                     return this.variableStores.sample.currentVariables
                 }else{
-                    console.info(this.variableStores.sample.currentVariables.concat(
-                        this.variableStores.between.currentVariables
-                    ))
                     return this.variableStores.sample.currentVariables.concat(
                         this.variableStores.between.currentVariables
                     )

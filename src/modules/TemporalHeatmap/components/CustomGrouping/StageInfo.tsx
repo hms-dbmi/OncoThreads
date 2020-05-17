@@ -25,7 +25,6 @@ interface Props {
 const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
    
     render(){
-        console.info(this.props.stages)
         let {stages} = this.props
 
         let content = stages.map((stage,i)=>{
