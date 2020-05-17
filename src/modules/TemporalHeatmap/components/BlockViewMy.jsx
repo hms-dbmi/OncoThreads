@@ -130,14 +130,12 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
     getTimepointAndTransitions() {
         const timepoints = [];
         const transitions = [];
-        this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
-            let rectWidth;
+        this.props.rootStore.dataStore.timepoints
+        .forEach((d, i) => {
+            let rectWidth = this.props.rootStore.visStore.sampleRectWidth;
             // check the type of the timepoint to get the correct width of the heatmap rectangles
-            if (d.type === 'between') {
-                rectWidth = this.props.rootStore.visStore.sampleRectWidth / 2;
-            } else {
-                rectWidth = this.props.rootStore.visStore.sampleRectWidth;
-            }
+            if (d.type === 'between') return
+               
             // create timepoints
             if (d.heatmap) {
                 if (d.isGrouped) {
@@ -190,7 +188,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
                 const transformTR = `translate(0,${this.props.rootStore.visStore.timepointPositions.connection[i]})`;
                 const firstTP = d;
-                const secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
+                let secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
+                if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
+                    secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
+                }
                 let transition;
                 if (firstTP.customPartitions.length>0) {
                     if (secondTP.customPartitions.length>0) {

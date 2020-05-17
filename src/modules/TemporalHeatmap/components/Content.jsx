@@ -276,6 +276,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
     render() {
         let sampleStore = this.props.rootStore.dataStore.variableStores.sample
+        let {dataStore} = this.props.rootStore
               
         return (
             <div>
@@ -380,14 +381,14 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         <Col className="selectGroup" 
                             sm={3}
                             md={3}>
-                            <Provider sampleStore={sampleStore}>
+                            <Provider dataStore={dataStore}>
                                 <CustomGrouping 
                                     points={
-                                        sampleStore.points
+                                        dataStore.points
                                     }
-                                    currentVariables={sampleStore.currentVariables}
-                                    referencedVariables = {sampleStore.referencedVariables}
-                                    stageLabels={sampleStore.stageLabels}
+                                    currentVariables={dataStore.currentVariables}
+                                    referencedVariables = {dataStore.referencedVariables}
+                                    stageLabels={dataStore.stageLabels}
                                 />
                                 {/* <CustomGrouping/> */}
                             </Provider>

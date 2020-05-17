@@ -45,7 +45,7 @@ interface Props {
     points: Point[],
     currentVariables: string[],
     referencedVariables: ReferencedVariables,
-    sampleStore: VariableStore,
+    dataStore: VariableStore,
     stageLabels:{[stageKey:string]:string}
 }
 
@@ -59,7 +59,7 @@ type TPatientDict = {
 
 export type TSelected = { stageKey: string, pointIdx: number[] }[]
 
-@inject('sampleStore')
+@inject('dataStore')
 @observer
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
@@ -109,8 +109,9 @@ class CustomGrouping extends React.Component<Props> {
     getStages() {
         let { selected } = this
         let { currentVariables, points } = this.props
+        console.info(currentVariables)
 
-        let selectedPoints = selected
+        let selectedPoints:Point[][] = selected
             .map(s => {
                 return points
                     .filter((_, i) => s.pointIdx.includes(i))
@@ -120,8 +121,11 @@ class CustomGrouping extends React.Component<Props> {
             if (typeof (values[0]) == "number") {
                 let v = values as number[] // stupid typescropt
                 return [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-            } else if (typeof (values[0]) == "string") {
+            } else if (typeof (values[0]) == "string" ) {
                 let v = values as string[]
+                return [...new Set(v)]
+            } else if (typeof (values[0]) == "boolean" ) {
+                let v = values as boolean[]
                 return [...new Set(v)]
             } else return []
         }
@@ -380,7 +384,7 @@ class CustomGrouping extends React.Component<Props> {
 
     resetGroup() {
         this.selected = []
-        this.props.sampleStore.resetStageLabel()
+        this.props.dataStore.resetStageLabel()
 
 
         d3.selectAll('circle.point')
@@ -457,7 +461,7 @@ class CustomGrouping extends React.Component<Props> {
             })
         })
 
-        this.props.sampleStore.applyCustomStages(timeStages)
+        this.props.dataStore.applyCustomStages(timeStages)
 
     }
 
@@ -473,9 +477,12 @@ class CustomGrouping extends React.Component<Props> {
 
         let {points} = this.props
         let { width, height, } = this
-        let stages = this.getStages()
         let pcpMargin = 25
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
+
+
+        // used stroe actions
+        let toggleHasEvent = this.props.dataStore.toggleHasEvent
 
         return (
             <div className="container" style={{ width: "100%" }}>
@@ -485,11 +492,14 @@ class CustomGrouping extends React.Component<Props> {
                     ref={this.ref}
                 >
                     <Switch size="small"
-                        style={{ position: "absolute" }}
                         checkedChildren="links" unCheckedChildren="links"
                         onChange={() => {
                             this.hasLink = !this.hasLink
                         }} />
+                    <Switch size="small"
+                        style={{ marginLeft:'5px'}}
+                        checkedChildren="events" unCheckedChildren="events"
+                        onChange={toggleHasEvent} />
 
                     <svg className='customGrouping' width="100%" height="80%">
                         {this.drawScatterPlot(width, scatterHeight)}
@@ -505,7 +515,7 @@ class CustomGrouping extends React.Component<Props> {
                         </g>
                     </svg>
                     <StageInfo
-                        stages={stages} height={infoHeight}
+                        stages={this.getStages()} height={infoHeight}
                         stageLabels={this.props.stageLabels}
                         resetGroup={this.resetGroup}
                         deleteGroup={this.deleteGroup}

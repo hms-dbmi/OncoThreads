@@ -16,6 +16,9 @@ class DataStore {
             timepoints: [], // all timepoints
             selectedPatients: [], // currently selected patients
             globalPrimary: '', // global primary for sample timepoints of global timeline
+            hasEvent: false, // whether event attributes are included in custom grouping
+            stageLabels:{}, // key & label pairs
+
             /**
              * get the maximum number of currently displayed partitions
              * @returns {number}
@@ -38,6 +41,53 @@ class DataStore {
             get sampleOn(){
                 return this.variableStores.sample.currentVariables.length > 0;
             },
+            get points(){
+                let samplePoints = this.variableStores.sample.points,
+                eventPoints = this.variableStores.between.points
+                if (this.hasEvent===false || eventPoints.length==0){
+                    return samplePoints
+                }else{
+
+                    return this.variableStores.sample.points.map((p,i)=>{
+                        let newPoint = {...p}
+                        newPoint.value = newPoint.value.concat(eventPoints[i].value)
+                        
+                        return newPoint
+                    })
+                }
+            },
+            get currentVariables(){ 
+                if (this.hasEvent===false){
+                    return this.variableStores.sample.currentVariables
+                }else{
+                    console.info(this.variableStores.sample.currentVariables.concat(
+                        this.variableStores.between.currentVariables
+                    ))
+                    return this.variableStores.sample.currentVariables.concat(
+                        this.variableStores.between.currentVariables
+                    )
+                }
+            },
+            get referencedVariables(){
+                if (this.hasEvent===false){
+                    return this.variableStores.sample.referencedVariables
+                }else{
+                    return {
+                        ...this.variableStores.sample.referencedVariables,
+                        ...this.variableStores.between.referencedVariables
+                    }
+                }
+            },
+            toggleHasEvent:action(()=>{
+                this.hasEvent = ! this.hasEvent
+            }),
+            setStageLabel: action((stageKey, stageLabel)=>{             
+                this.stageLabels[stageKey] = stageLabel
+            }),
+            resetStageLabel: action(()=>{       
+                this.stageLabels = {}
+            }),
+
             /**
              * set global primary
              * @param {string} varId
@@ -237,6 +287,14 @@ class DataStore {
         const structure = type === 'sample' ? this.rootStore.timepointStructure : this.rootStore.eventBlockStructure;
         structure.forEach(d => d.forEach(f => allValues.push(mapper[f.sample])));
         return allValues;
+    }
+
+
+    applyCustomStages(timeStages){
+        this.variableStores.sample.childStore.timepoints.forEach((TP, i) => {
+            TP.applyCustomStage(timeStages[i].partitions)
+        })
+        
     }
 }
 
