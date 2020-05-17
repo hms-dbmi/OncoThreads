@@ -287,9 +287,16 @@ class DataStore {
     }
 
 
-    applyCustomStages(timeStages){
-        this.variableStores.sample.childStore.timepoints.forEach((TP, i) => {
+    applyCustomStages(timeStages, eventStages){
+        let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
+            eventTimepoints = this.variableStores.between.childStore.timepoints
+
+        sampleTimepoints.forEach((TP, i) => {
             TP.applyCustomStage(timeStages[i].partitions)
+        })
+
+        eventTimepoints.forEach((TP, i) => {
+            TP.applyCustomStage(eventStages[i].partitions)
         })
         
     }

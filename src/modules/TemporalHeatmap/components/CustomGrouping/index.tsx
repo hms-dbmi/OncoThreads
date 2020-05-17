@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import { observable} from 'mobx';
+import { observable } from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
@@ -13,7 +13,7 @@ import "./CustomGrouping.css"
 
 import PCP from './pcp'
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
-import {num2letter} from 'modules/TemporalHeatmap/UtilityClasses/'
+import { num2letter } from 'modules/TemporalHeatmap/UtilityClasses/'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 
@@ -26,6 +26,7 @@ type TimeStage = {
     timeIdx: number,
     partitions: Partition[]
 }
+type EventStage = TimeStage
 type Partition = {
     partition: string, //stage name
     patients: string[],
@@ -46,7 +47,7 @@ interface Props {
     currentVariables: string[],
     referencedVariables: ReferencedVariables,
     dataStore: VariableStore,
-    stageLabels:{[stageKey:string]:string}
+    stageLabels: { [stageKey: string]: string }
 }
 
 type TPatientDict = {
@@ -55,11 +56,11 @@ type TPatientDict = {
     }
 }// the point id of each patient {paitent:{patient:string, points:id[]}}
 
-const getUniqueName =(num:number, existingNames:string[]):string=>{
+const getUniqueName = (num: number, existingNames: string[]): string => {
     let name = num2letter(num)
-    if (existingNames.includes(name)){
-        return  getUniqueName(num+1, existingNames)
-    }else return name
+    if (existingNames.includes(name)) {
+        return getUniqueName(num + 1, existingNames)
+    } else return name
 }
 
 
@@ -79,7 +80,7 @@ class CustomGrouping extends React.Component<Props> {
         // this.getPoints = this.getPoints.bind(this)
         this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
-        
+
 
         this.resetGroup = this.resetGroup.bind(this)
         this.deleteGroup = this.deleteGroup.bind(this)
@@ -94,13 +95,13 @@ class CustomGrouping extends React.Component<Props> {
         let patientDict: TPatientDict = {}
         // get points,each points is one patient at one timepoint
         points.forEach((point, pointIdx) => {
-            let {patient} = point
-            if (patient in patientDict){
+            let { patient } = point
+            if (patient in patientDict) {
                 patientDict[patient].points.push(pointIdx)
-            }else{
+            } else {
                 patientDict[patient] = {
                     patient,
-                    points:[pointIdx]
+                    points: [pointIdx]
                 }
             }
         })
@@ -116,7 +117,7 @@ class CustomGrouping extends React.Component<Props> {
         let { selected } = this
         let { currentVariables, points } = this.props
 
-        let selectedPoints:Point[][] = selected
+        let selectedPoints: Point[][] = selected
             .map(s => {
                 return points
                     .filter((_, i) => s.pointIdx.includes(i))
@@ -126,10 +127,10 @@ class CustomGrouping extends React.Component<Props> {
             if (typeof (values[0]) == "number") {
                 let v = values as number[] // stupid typescropt
                 return [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-            } else if (typeof (values[0]) == "string" ) {
+            } else if (typeof (values[0]) == "string") {
                 let v = values as string[]
                 return [...new Set(v)]
-            } else if (typeof (values[0]) == "boolean" ) {
+            } else if (typeof (values[0]) == "boolean") {
                 let v = values as boolean[]
                 return [...new Set(v)]
             } else return []
@@ -158,7 +159,7 @@ class CustomGrouping extends React.Component<Props> {
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
     // return: points: number[][]
     normalizePoints(): NormPoint[] {
-        let {points, currentVariables, referencedVariables } = this.props
+        let { points, currentVariables, referencedVariables } = this.props
         if (points.length === 0) return []
         let normValues = points.map(point => {
             let normValue = point.value.map((value, i) => {
@@ -204,7 +205,7 @@ class CustomGrouping extends React.Component<Props> {
     drawScatterPlot(width: number, height: number, r: number = 5, margin: number = 20) {
 
 
-        let patientDict  = this.getPatientDict()
+        let patientDict = this.getPatientDict()
         let { selected } = this
         let normPoints = this.normalizePoints()
 
@@ -231,8 +232,8 @@ class CustomGrouping extends React.Component<Props> {
                 cx={xScale(normPoint.value[0])}
                 cy={yScale(normPoint.value[1])}
                 r={r}
-                fill={this.hasLink?"black":(
-                    groupIdx>-1?getColorByName(this.selected[groupIdx].stageKey):"white"
+                fill={this.hasLink ? "black" : (
+                    groupIdx > -1 ? getColorByName(this.selected[groupIdx].stageKey) : "white"
                 )}
                 stroke='black'
                 strokeWidth='1'
@@ -324,7 +325,7 @@ class CustomGrouping extends React.Component<Props> {
             let selected = (mylasso.selectedItems() as any)._groups[0].map((d: any): number => parseInt(d.attributes.id.value))
             if (selected.length > 0) {
                 // if selected nodes are in previous stages
-                
+
                 this.selected.forEach((g, i) => {
                     g.pointIdx = g.pointIdx.filter(point => !selected.includes(point))
                     if (g.pointIdx.length > 0) {
@@ -333,10 +334,10 @@ class CustomGrouping extends React.Component<Props> {
                         this.selected.splice(i, 1) // delete the whole group if all points overlap
                     }
                 })
-                
 
-                
-                let stageKey = getUniqueName(this.selected.length, this.selected.map(d=>d.stageKey))
+
+
+                let stageKey = getUniqueName(this.selected.length, this.selected.map(d => d.stageKey))
                 this.selected.push({
                     stageKey,
                     pointIdx: selected
@@ -398,17 +399,18 @@ class CustomGrouping extends React.Component<Props> {
                 .filter(i => !allSelected.includes(i))
 
             this.selected.push({
-                stageKey: getUniqueName(this.selected.length, this.selected.map(d=>d.stageKey)),
+                stageKey: getUniqueName(this.selected.length, this.selected.map(d => d.stageKey)),
                 pointIdx: leftNodes
             })
             message.info('All unselected nodes are grouped as one stage')
         }
 
-     
+
 
         let timeStages: TimeStage[] = []
-        let uniqueTimeIds = [...new Set(points.map(p=>p.timeIdx))]
-        uniqueTimeIds.forEach(timeIdx=> {
+        let uniqueTimeIds = [...new Set(points.map(p => p.timeIdx))]
+
+        uniqueTimeIds.forEach(timeIdx => {
             timeStages.push({
                 timeIdx,
                 partitions: []
@@ -432,9 +434,7 @@ class CustomGrouping extends React.Component<Props> {
                     let partition = timeStage.partitions[partitionIdx],
                         { points, patients } = partition
                     points.push(id)
-                    if (!patients.includes(patient)) {
-                        patients.push(patient)
-                    }
+                    patients.push(patient)
                 } else {
                     timeStage.partitions.push({
                         partition: stageKey,
@@ -446,7 +446,51 @@ class CustomGrouping extends React.Component<Props> {
             })
         })
 
-        this.props.dataStore.applyCustomStages(timeStages)
+        // creat event stages
+        let eventStages: EventStage[] = [timeStages[0]]
+        for (let i = 0; i < timeStages.length - 1; i++) {
+            let eventStage: EventStage = { timeIdx: i + 1, partitions: [] }
+            let curr = timeStages[i], next = timeStages[i + 1]
+
+
+            next.partitions.forEach(nextPartition => {
+                let {
+                    partition: nextName,
+                    patients: nextPatients,
+                } = nextPartition
+                
+                curr.partitions.forEach((currPartition: Partition) => {
+                    let {
+                        partition: currName,
+                        patients: currPatients,
+                        points: currPoints
+                    } = currPartition
+                    
+                    let intersection = currPatients.filter(d => nextPatients.includes(d))
+                    if (intersection.length > 0) {
+                        eventStage.partitions.push({
+                            partition: `${currName}-${nextName}`,
+                            patients: intersection,
+                            points: currPoints.map(id => points[id])
+                                .filter(p => intersection.includes(p.patient))
+                                .map(p => p.idx),
+                            rows: []
+                        }
+                        )
+                    }
+                })
+            })
+            eventStages.push(eventStage)
+
+        }
+        eventStages.push(
+            {
+                ...timeStages[timeStages.length - 1],
+                timeIdx: timeStages.length
+            }
+        )
+
+        this.props.dataStore.applyCustomStages(timeStages, eventStages)
 
     }
 
@@ -460,7 +504,7 @@ class CustomGrouping extends React.Component<Props> {
 
     render() {
 
-        let {points} = this.props
+        let { points } = this.props
         let { width, height, } = this
         let pcpMargin = 25
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
@@ -482,7 +526,7 @@ class CustomGrouping extends React.Component<Props> {
                             this.hasLink = !this.hasLink
                         }} />
                     <Switch size="small"
-                        style={{ marginLeft:'5px'}}
+                        style={{ marginLeft: '5px' }}
                         checkedChildren="events" unCheckedChildren="events"
                         onChange={toggleHasEvent} />
 

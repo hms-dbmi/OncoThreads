@@ -28,6 +28,7 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
                     transform={transform}
                 >
                     <GroupPartition
+                        type={this.props.type}
                         heatmap={this.props.heatmap}
                         currentVariables={this.props.currentVariables}
                         tooltipFunctions={this.props.tooltipFunctions}

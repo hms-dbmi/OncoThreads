@@ -64,6 +64,7 @@ const PCP = observer(class CustomGrouping extends React.Component<Props> {
             let groupIdx = this.props.selected.findIndex(p=>p.pointIdx.includes(id))
             
             return <path 
+                className='pcpLine'
                 d={wholeLine} 
                 fill='none' 
                 key={id}

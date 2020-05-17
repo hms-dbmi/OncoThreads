@@ -134,7 +134,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         .forEach((d, i) => {
             let rectWidth = this.props.rootStore.visStore.sampleRectWidth;
             // check the type of the timepoint to get the correct width of the heatmap rectangles
-            if (d.type === 'between') return
+            
                
             // create timepoints
             if (d.heatmap) {
@@ -150,6 +150,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 visStore={this.props.rootStore.visStore}
                             >
                                 <GroupTimepoint
+                                    type={d.type}
                                     group={d.customPartitions.length===0?d.grouped:d.customGrouped}
                                     heatmap={d.heatmap}
                                     index={i}
@@ -185,6 +186,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 }
             }
             // create transitions
+            if (d.type === 'between') return
             if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
                 const transformTR = `translate(0,${this.props.rootStore.visStore.timepointPositions.connection[i]})`;
                 const firstTP = d;

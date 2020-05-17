@@ -35,6 +35,9 @@
     transition: all 400ms ease-in-out;
   }
 
+  path.pcpLine, line.axis {
+    transition: width 400ms ease-in-out;
+  }
   
 
   path.curve {
