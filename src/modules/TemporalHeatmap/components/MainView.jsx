@@ -4,7 +4,7 @@ import { inject, observer } from 'mobx-react';
 import { Tab, Tabs } from 'react-bootstrap';
 import GlobalTimeline from './GlobalTimeline';
 import BlockView from './BlockView';
-import MyBlockView from './BlockViewMy';
+import MyBlockView from './BlockViewNew';
 
 /**
  * Component containing the main visualization

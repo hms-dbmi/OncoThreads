@@ -55,6 +55,12 @@ type TPatientDict = {
     }
 }// the point id of each patient {paitent:{patient:string, points:id[]}}
 
+const getUniqueName =(num:number, existingNames:string[]):string=>{
+    let name = num2letter(num)
+    if (existingNames.includes(name)){
+        return  getUniqueName(num+1, existingNames)
+    }else return name
+}
 
 
 export type TSelected = { stageKey: string, pointIdx: number[] }[]
@@ -109,7 +115,6 @@ class CustomGrouping extends React.Component<Props> {
     getStages() {
         let { selected } = this
         let { currentVariables, points } = this.props
-        console.info(currentVariables)
 
         let selectedPoints:Point[][] = selected
             .map(s => {
@@ -236,22 +241,6 @@ class CustomGrouping extends React.Component<Props> {
             />
         })
 
-        var lines = Object.keys(patientDict).map(patient => {
-            let pointIds = patientDict[patient].points
-            let path = pointIds.map((id, i) => {
-                let x = xScale(normPoints[id].value[0])
-                let y = yScale(normPoints[id].value[1])
-                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-            })
-
-            return <path
-                key={patient}
-                d={path.join(' ')}
-                fill='none'
-                stroke='gray'
-                strokeWidth='1'
-            />
-        })
 
         let curveGenerator = d3.line()
             .x((p: NormPoint | any) => xScale(p.value[0]))
@@ -267,6 +256,7 @@ class CustomGrouping extends React.Component<Props> {
                 fill='none'
                 stroke='gray'
                 strokeWidth='1'
+                className='curve'
             />
         })
 
@@ -343,15 +333,10 @@ class CustomGrouping extends React.Component<Props> {
                         this.selected.splice(i, 1) // delete the whole group if all points overlap
                     }
                 })
-                const getStageName =(num:number):string=>{
-                    let name = num2letter(num)
-                    if (this.selected.map(d=>d.stageKey).includes(name)){
-                        return  getStageName(num+1)
-                    }else return name
-                }
+                
 
                 
-                let stageKey = getStageName(this.selected.length)
+                let stageKey = getUniqueName(this.selected.length, this.selected.map(d=>d.stageKey))
                 this.selected.push({
                     stageKey,
                     pointIdx: selected
@@ -413,7 +398,7 @@ class CustomGrouping extends React.Component<Props> {
                 .filter(i => !allSelected.includes(i))
 
             this.selected.push({
-                stageKey: num2letter(this.selected.length),
+                stageKey: getUniqueName(this.selected.length, this.selected.map(d=>d.stageKey)),
                 pointIdx: leftNodes
             })
             message.info('All unselected nodes are grouped as one stage')

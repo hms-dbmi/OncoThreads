@@ -90,9 +90,41 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     }
 
     render() {
+        const stageKey = this.props.partition.partition||'',
+        fontWeight=700,
+            // labelColor = colors[stageKey.charCodeAt(0)-65]||'black',
+            
+        stageName = this.props.stageLabels[stageKey]===undefined?
+            stageKey:this.props.stageLabels[stageKey],
 
-        return  <g className={`partitions`}>
+        labelColor = getColorByName(stageKey),
+        labelHeight = this.props.visStore.primaryHeight, 
+        labelWidth = Math.max(getTextWidth(stageName, 14, fontWeight)+25, 40)
+
+
+
+        // const stageLabel = <g className='stageLabel'>
+        //             <rect 
+        //                 width={labelWidth} height={labelHeight} 
+        //                 rx={0.2*labelHeight}
+        //                 fill='white' 
+        //                 stroke='black' strokeWidth='2'
+        //             />
+        //             <text 
+        //             y={0.8*labelHeight} x={0.5*labelWidth} textAnchor="middle"
+        //             fill={labelColor} fontWeight={800}
+        //             >
+        //                     {stageName}
+        //             </text>
+        //         </g>
+
+        return  <g className={`partitions ${stageKey}`}>
             {this.createPartition()}   
+            {/* {stageLabel}   */}
+            <foreignObject style={{width:labelWidth, height:labelHeight}}>
+                <Input value={stageName} style={{color: labelColor, fontWeight:fontWeight}}
+                onChange={this.changeLabel}/>    
+            </foreignObject> 
         </g>;
     }
 }));
@@ -109,6 +141,7 @@ GroupPartition.propTypes = {
         PropTypes.instanceOf(OriginalVariable),
     ])).isRequired,
     stroke: PropTypes.string.isRequired,
-    tooltipFunctions: PropTypes.objectOf(PropTypes.func)
+    tooltipFunctions: PropTypes.objectOf(PropTypes.func),
+    stageLabels: PropTypes.object.isRequired
 };
 export default GroupPartition;

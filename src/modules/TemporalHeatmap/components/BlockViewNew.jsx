@@ -9,7 +9,7 @@ import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/Heatmap
 import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
 import HeatmapTimepoint from './Timepoints/Heatmap';
-import GroupTimepoint from './Timepoints/GroupTimepoint/';
+import GroupTimepoint from './Timepoints/GroupTimepointCustom';
 import TimepointLabels from './PlotLabeling/TimepointLabels';
 import RowOperators from './RowOperators/RowOperators';
 import Legend from './Legend';
