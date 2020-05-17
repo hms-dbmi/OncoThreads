@@ -165,7 +165,7 @@ export const getColorByName = (name)=>{
     if (name in colorDict){
         return colorDict[name]
     }else{
-        let colors = ColorScales.categoricalColors[0]
+        let colors =  ['#b15928', '#999', '#1f78b4', '#b2df8a', '#fb9a99',  '#cab2d6', '#33a02c','#fdbf6f',  '#e31a1c', '#ff7f00', '#6a3d9a']
         let color = colors[Object.keys(colorDict).length % colors.length]
         colorDict[name]=color
         return color
