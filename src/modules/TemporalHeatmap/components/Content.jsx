@@ -385,9 +385,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                     points={
                                         sampleStore.points
                                     }
-                                    timepoints={
-                                        sampleStore.childStore.timepoints
-                                    }
                                     currentVariables={sampleStore.currentVariables}
                                     referencedVariables = {sampleStore.referencedVariables}
                                     stageLabels={sampleStore.stageLabels}

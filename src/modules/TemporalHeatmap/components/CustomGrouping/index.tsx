@@ -43,7 +43,6 @@ type Count = {
 
 interface Props {
     points: Point[],
-    timepoints: TimePoint[],
     currentVariables: string[],
     referencedVariables: ReferencedVariables,
     sampleStore: VariableStore,
@@ -417,7 +416,8 @@ class CustomGrouping extends React.Component<Props> {
      
 
         let timeStages: TimeStage[] = []
-        this.props.timepoints.forEach((_, timeIdx) => {
+        let uniqueTimeIds = [...new Set(points.map(p=>p.timeIdx))]
+        uniqueTimeIds.forEach(timeIdx=> {
             timeStages.push({
                 timeIdx,
                 partitions: []
@@ -431,11 +431,14 @@ class CustomGrouping extends React.Component<Props> {
 
             stage.pointIdx.forEach(id => {
                 let { patient, timeIdx } = points[id]
+                // get the timestage is stored
                 let timeStage = timeStages[timeIdx]
-                let partitionId = timeStage.partitions.map(d => d.partition).indexOf(stageKey)
-                if (partitionId > -1) {
 
-                    let partition = timeStage.partitions[partitionId],
+                // check whether the partition in the timestage
+                let partitionIdx = timeStage.partitions.map(d => d.partition).indexOf(stageKey)
+                if (partitionIdx > -1) {
+
+                    let partition = timeStage.partitions[partitionIdx],
                         { points, patients } = partition
                     points.push(id)
                     if (!patients.includes(patient)) {
