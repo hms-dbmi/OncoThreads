@@ -23,9 +23,7 @@ interface Props {
 
 
 const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
-    constructor(props:Props){
-        super(props)
-    }
+   
     render(){
         let {stages} = this.props
 

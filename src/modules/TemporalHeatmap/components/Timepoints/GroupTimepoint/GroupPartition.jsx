@@ -91,6 +91,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 
     render() {
         const stageKey = this.props.partition.partition||'',
+        fontWeight=700,
             // labelColor = colors[stageKey.charCodeAt(0)-65]||'black',
             
         stageName = this.props.stageLabels[stageKey]===undefined?
@@ -98,7 +99,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 
         labelColor = getColorByName(stageKey),
         labelHeight = this.props.visStore.primaryHeight, 
-        labelWidth = Math.max(getTextWidth(stageName, 14)+26, 40)
+        labelWidth = Math.max(getTextWidth(stageName, 14, fontWeight)+30, 40)
 
 
 
@@ -121,7 +122,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             {this.createPartition()}   
             {/* {stageLabel}   */}
             <foreignObject style={{width:labelWidth, height:labelHeight}}>
-                <Input value={stageName} style={{color: labelColor, fontWeight:800}}
+                <Input value={stageName} style={{color: labelColor, fontWeight:fontWeight}}
                 onChange={this.changeLabel}/>    
             </foreignObject> 
         </g>;
