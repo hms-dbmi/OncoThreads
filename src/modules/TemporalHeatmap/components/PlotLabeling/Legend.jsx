@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
-import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
-import ColorScales from '../../UtilityClasses/ColorScales';
+import {getTextWidth, getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
 
 /**
  * Legend Component
@@ -115,7 +115,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
      * @returns {number}
      */
     static getTextWidth(min, text, fontSize) {
-        const width = UtilityFunctions.getTextWidth(text, fontSize);
+        const width = getTextWidth(text, fontSize);
         if (width > min) {
             return width;
         }
@@ -146,7 +146,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         x={0}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(min)}
+                        {getScientificNotation(min)}
                     </text>,
                     <text
                         key="text med"
@@ -162,10 +162,10 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         fill={ColorScales.getHighContrastColor(color(max))}
                         style={{ fontSize }}
                         x={this.defaultWidth - Legend.getTextWidth(0,
-                            UtilityFunctions.getScientificNotation(max), fontSize)}
+                            getScientificNotation(max), fontSize)}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(max)}
+                        {getScientificNotation(max)}
                     </text>,
                 );
             } else {
@@ -177,17 +177,17 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         x={0}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(min)}
+                        {getScientificNotation(min)}
                     </text>,
                     <text
                         key="text max"
                         fill={ColorScales.getHighContrastColor(color(max))}
                         style={{ fontSize }}
                         x={this.defaultWidth - Legend.getTextWidth(0,
-                            UtilityFunctions.getScientificNotation(max), fontSize)}
+                            getScientificNotation(max), fontSize)}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(max)}
+                        {getScientificNotation(max)}
                     </text>,
                 );
             }
@@ -229,7 +229,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             if (variable.datatype === 'ORDINAL' || row.includes(d)) {
                 let tooltipText;
                 if (variable.derived && variable.datatype === 'ORDINAL' && variable.modification.type === 'continuousTransform' && variable.modification.binning.binNames[i].modified) {
-                    tooltipText = `${d}: ${UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i])} to ${UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i + 1])}`;
+                    tooltipText = `${d}: ${getScientificNotation(variable.modification.binning.bins[i])} to ${getScientificNotation(variable.modification.binning.bins[i + 1])}`;
                 } else {
                     tooltipText = d;
                 }

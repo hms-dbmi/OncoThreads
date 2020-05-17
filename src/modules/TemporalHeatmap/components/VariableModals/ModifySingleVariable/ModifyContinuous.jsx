@@ -18,12 +18,12 @@ import { extendObservable } from 'mobx';
 import { PropTypes } from 'prop-types';
 import Binner from './Binner/Binner';
 import Histogram from './Binner/Histogram';
-import DerivedVariable from '../../../stores/DerivedVariable';
-import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
-import ColorScales from '../../../UtilityClasses/ColorScales';
-import UtilityFunctions from '../../../UtilityClasses/UtilityFunctions';
+import DerivedVariable from 'modules/TemporalHeatmap/stores/DerivedVariable';
+import DerivedMapperFunctions from 'modules/TemporalHeatmap/UtilityClasses/DeriveMapperFunctions';
+import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
+import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
 import BinningStore from './Binner/BinningStore';
-import OriginalVariable from '../../../stores/OriginalVariable';
+import OriginalVariable from 'modules/TemporalHeatmap/stores/OriginalVariable';
 
 /**
  * Modification of a continuous variable
@@ -116,10 +116,10 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
             bins[0] = min;
             bins[bins.length - 1] = max;
             if (!binNames[0].modified) {
-                binNames[0].name = `${UtilityFunctions.getScientificNotation(bins[0])} to ${UtilityFunctions.getScientificNotation(bins[1])}`;
+                binNames[0].name = `${getScientificNotation(bins[0])} to ${getScientificNotation(bins[1])}`;
             }
             if (!binNames[binNames.length - 1].modified) {
-                binNames[binNames.length - 1].name = `${UtilityFunctions.getScientificNotation(bins[bins.length - 2])} to ${UtilityFunctions.getScientificNotation(bins[bins.length - 1])}`;
+                binNames[binNames.length - 1].name = `${getScientificNotation(bins[bins.length - 2])} to ${getScientificNotation(bins[bins.length - 1])}`;
             }
         }
         return {
@@ -447,10 +447,10 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
             }
             bins = [min, med, max];
             binNames = [{
-                name: `${UtilityFunctions.getScientificNotation(min)} to ${UtilityFunctions.getScientificNotation(med)}`,
+                name: `${getScientificNotation(min)} to ${getScientificNotation(med)}`,
                 modified: false,
             }, {
-                name: `${UtilityFunctions.getScientificNotation(med)} to ${UtilityFunctions.getScientificNotation(max)}`,
+                name: `${getScientificNotation(med)} to ${getScientificNotation(max)}`,
                 modified: false,
             }];
             isBinary = false;

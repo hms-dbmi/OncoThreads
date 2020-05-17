@@ -9,9 +9,9 @@ import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
 import {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
-import UtilityFunctions from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
+import {getTextWidth} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
 
-const getTextWidth = UtilityFunctions.getTextWidth
+
 
 
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
-import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
+import {cropText} from '../../UtilityClasses/UtilityFunctions';
 
 /**
  * Component for a a row operators of a timepont type in the Global timeline
@@ -132,7 +132,7 @@ const GlobalRowOperator = inject('dataStore', 'visStore', 'undoRedoStore')(obser
                     y={fontSize}
                     onClick={promoteFunction}
                 >
-                    {UtilityFunctions.cropText(variable.name, fontSize,
+                    {cropText(variable.name, fontSize,
                         fontWeight, this.props.width - this.iconScale
                         * this.iconDimensions - fontSize)}
                 </text>

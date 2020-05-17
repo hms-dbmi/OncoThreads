@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react';
 import * as d3 from 'd3';
 import Axis from './Axis';
-import UtilityFunctions from '../../../../UtilityClasses/UtilityFunctions';
+import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
 
 /**
  * Component for displaying a histogram of the distribution of the values of a variable
@@ -22,7 +22,7 @@ const Histogram = observer(class Histogram extends React.Component {
             />
         ));
         const xAxis = d3.axisBottom()
-            .scale(this.props.xScale).tickFormat(d => UtilityFunctions.getScientificNotation(d));
+            .scale(this.props.xScale).tickFormat(d => getScientificNotation(d));
         const yAxis = d3.axisLeft()
             .scale(this.props.yScale)
             .tickFormat(d => Math.round(d / this.props.numValues * 100));

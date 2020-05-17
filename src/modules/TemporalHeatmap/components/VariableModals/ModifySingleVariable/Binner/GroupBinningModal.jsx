@@ -6,7 +6,7 @@ import uuidv4 from 'uuid/v4';
 import { Alert, Button, Modal } from 'react-bootstrap';
 import DerivedVariable from 'modules/TemporalHeatmap/stores/DerivedVariable';
 import DerivedMapperFunctions from 'modules/TemporalHeatmap/UtilityClasses/DeriveMapperFunctions';
-import UtilityFunctions from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
 import BinningStore from './BinningStore';
 import Binner from './Binner';
 import OriginalVariable from '../../../../stores/OriginalVariable';
@@ -38,10 +38,10 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
         }
         const bins = [min, med, max];
         const binNames = [{
-            name: `${UtilityFunctions.getScientificNotation(min)} to ${UtilityFunctions.getScientificNotation(med)}`,
+            name: `${getScientificNotation(min)} to ${getScientificNotation(med)}`,
             modified: false,
         }, {
-            name: `${UtilityFunctions.getScientificNotation(med)} to ${UtilityFunctions.getScientificNotation(max)}`,
+            name: `${getScientificNotation(med)} to ${getScientificNotation(max)}`,
             modified: false,
         }];
         const xScale = d3.scaleLinear().domain([min, max]).range([0, this.width]);

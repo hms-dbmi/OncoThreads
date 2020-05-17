@@ -2,7 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import EventVariableSelector from './EventVariableSelector';
 import VariableTable from './VariableTable';
-import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
+import {toTitleCase} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
 
 /**
  * Component for managing event variables
@@ -12,7 +12,7 @@ const AddEventVarTab = inject('rootStore')(observer(class AddEventVarTab extends
         // set available categories (event eventType)
         const categories = [...Object.keys(this.props.rootStore.eventAttributes).filter(d => d !== 'SPECIMEN').map(d => ({
             id: d,
-            name: UtilityFunctions.toTitleCase(d),
+            name: toTitleCase(d),
         })), { id: 'Computed', name: 'Computed' }];
         return (
             <div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import UtilityFunctions from '../UtilityClasses/UtilityFunctions';
+import {getTextWidth} from '../UtilityClasses/UtilityFunctions';
 
 /**
  * Basic tooltip component
@@ -14,8 +14,8 @@ const Tooltip = observer(class SankeyTransitionTooltip extends React.Component {
     }
 
     render() {
-        const line1Width = UtilityFunctions.getTextWidth(this.props.line1, this.textHeight);
-        const line2Width = UtilityFunctions.getTextWidth(this.props.line2, this.textHeight);
+        const line1Width = getTextWidth(this.props.line1, this.textHeight);
+        const line2Width = getTextWidth(this.props.line2, this.textHeight);
         const rectHeight = this.props.line2 !== undefined
             ? this.textHeight * 2 + this.padding
             : this.textHeight + this.padding;

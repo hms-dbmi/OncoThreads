@@ -2,4 +2,12 @@ import ColorScales from './ColorScales'
 
 export {getColorByName} from './ColorScales'
 export {ColorScales}
-export {num2letter} from './UtilityFunctions'
+
+export {
+    getScientificNotation,
+    toTitleCase,
+    isValidValue,
+    getTextWidth,
+    cropText,
+    num2letter,
+} from './UtilityFunctions'

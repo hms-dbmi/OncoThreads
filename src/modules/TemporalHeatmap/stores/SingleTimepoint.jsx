@@ -1,4 +1,4 @@
-import { action, extendObservable, computed, observable } from 'mobx';
+import { action, extendObservable} from 'mobx';
 
 /*
  stores information about a single timepoint

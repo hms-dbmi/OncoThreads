@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import {Tooltip} from 'antd';
 import {TSelected} from './index'
 
-import ColorScales, {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
 
 
 const clipText =(text:string|number, len:number):string|number=>{
@@ -55,9 +55,9 @@ const PCP = observer(class CustomGrouping extends React.Component<Props> {
         let svgLines = points.map((point, i)=>{
             let lineMid = point.value.map((v,j)=>{
                 let x = xScales[j](v as any)
-                if (typeof(v)=="undefined") {x = xScales[j].range()[0]}
+                if (typeof(v)==="undefined") {x = xScales[j].range()[0]}
                 let y = yScale(currentVariables[j])
-                return `${j==0?'M':'L'} ${x} ${y}`
+                return `${j===0?'M':'L'} ${x} ${y}`
             })
             let wholeLine = `${lineMid.join(' ')}`
             let id = i
@@ -69,7 +69,7 @@ const PCP = observer(class CustomGrouping extends React.Component<Props> {
                 key={id}
                 stroke={groupIdx>-1?getColorByName(selected[groupIdx].stageKey):"lightgray"}
                 strokeWidth='4'
-                opacity={`${groupIdx>-1?'0.7':'0.4'}`}
+                opacity={`${groupIdx>-1?'1':'0.4'}`}
                 />
         })
 

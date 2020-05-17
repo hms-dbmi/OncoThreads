@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { action, extendObservable, reaction } from 'mobx';
-import UtilityFunctions from '../../../../UtilityClasses/UtilityFunctions';
+import {getScientificNotation, isValidValue} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
 
 
 class BinningStore {
@@ -8,7 +8,7 @@ class BinningStore {
         extendObservable(this, {
             x: bins.filter((d, i) => i !== 0 && i !== bins.length - 1).map(d => xScale(d)),
             textFieldTexts: bins.filter((d, i) => i !== 0 && i !== bins.length - 1)
-                .map(d => UtilityFunctions.getScientificNotation(d)),
+                .map(d => getScientificNotation(d)),
             binNames,
             isBinary,
             xScale,
@@ -46,7 +46,7 @@ class BinningStore {
                     .map(d => this.xScale(d)));
                 this.textFieldTexts.replace(newBins
                     .filter((d, i) => i !== 0 && i !== newBins.length - 1)
-                    .map(d => UtilityFunctions.getScientificNotation(d)));
+                    .map(d => getScientificNotation(d)));
             }),
             /**
              * reset binNames to bin coordinates
@@ -55,7 +55,7 @@ class BinningStore {
                 this.binNames.clear();
                 for (let i = 1; i < this.bins.length; i += 1) {
                     this.binNames.push({
-                        name: `${UtilityFunctions.getScientificNotation(this.bins[i - 1])} to ${UtilityFunctions.getScientificNotation(this.bins[i])}`,
+                        name: `${getScientificNotation(this.bins[i - 1])} to ${getScientificNotation(this.bins[i])}`,
                         modified: false,
                     });
                 }
@@ -66,7 +66,7 @@ class BinningStore {
             toggleIsBinary: action(() => {
                 if (this.isBinary) {
                     for (let i = 1; i < this.bins.length; i += 1) {
-                        this.binNames[i - 1].name = `${UtilityFunctions.getScientificNotation(this.bins[i - 1])} to ${UtilityFunctions.getScientificNotation(this.bins[i])}`;
+                        this.binNames[i - 1].name = `${getScientificNotation(this.bins[i - 1])} to ${getScientificNotation(this.bins[i])}`;
                         this.binNames[i - 1].modified = false;
                     }
                 } else {
@@ -102,8 +102,7 @@ class BinningStore {
                 if (this.x[this.selectedIndex] - xDiff > 0 && this.x[this.selectedIndex]
                     - xDiff < this.xScale.range()[1]) {
                     this.x[this.selectedIndex] = this.x[this.selectedIndex] - xDiff;
-                    this.textFieldTexts[this.selectedIndex] = UtilityFunctions
-                        .getScientificNotation(this.inverseXScale(this.x[this.selectedIndex]
+                    this.textFieldTexts[this.selectedIndex] = getScientificNotation(this.inverseXScale(this.x[this.selectedIndex]
                             - xDiff));
                     // this.adaptBinNames();
                 }
@@ -134,8 +133,7 @@ class BinningStore {
                     }
                 }
                 this.x.push(newPos);
-                this.textFieldTexts.push(UtilityFunctions
-                    .getScientificNotation(this.inverseXScale(newPos)));
+                this.textFieldTexts.push(getScientificNotation(this.inverseXScale(newPos)));
             }),
 
             /**
@@ -166,7 +164,7 @@ class BinningStore {
              * @param {number} index - index of bin border
              */
             handlePositionTextFieldChange: action((value, index) => {
-                if (UtilityFunctions.isValidValue(value)) {
+                if (isValidValue(value)) {
                     this.textFieldTexts[index] = value;
                     if (!Number.isNaN(value) && value > this.bins[0]
                         && value < this.bins[this.bins.length - 1]) {
@@ -210,14 +208,14 @@ class BinningStore {
                 if (this.binNames.length === newBins.length - 1) {
                     for (let i = 1; i < newBins.length; i += 1) {
                         if (!this.binNames[i - 1].modified) {
-                            this.binNames[i - 1].name = `${UtilityFunctions.getScientificNotation(newBins[i - 1])} to ${UtilityFunctions.getScientificNotation(newBins[i])}`;
+                            this.binNames[i - 1].name = `${getScientificNotation(newBins[i - 1])} to ${getScientificNotation(newBins[i])}`;
                         }
                     }
                 } else {
                     this.binNames.clear();
                     for (let i = 1; i < newBins.length; i += 1) {
                         this.binNames.push({
-                            name: `${UtilityFunctions.getScientificNotation(newBins[i - 1])} to ${UtilityFunctions.getScientificNotation(newBins[i])}`,
+                            name: `${getScientificNotation(newBins[i - 1])} to ${getScientificNotation(newBins[i])}`,
                             modified: false,
                         });
                     }

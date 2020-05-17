@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import { Grid, Tab, Tabs } from 'react-bootstrap';
+import { Tab, Tabs } from 'react-bootstrap';
 import GlobalTimeline from './GlobalTimeline';
 import BlockView from './BlockView';
 import MyBlockView from './BlockViewMy';

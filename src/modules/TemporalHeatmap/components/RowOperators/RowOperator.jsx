@@ -2,7 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import SingleTimepoint from '../../stores/SingleTimepoint';
-import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
+import {cropText} from '../../UtilityClasses/UtilityFunctions';
 
 
 /**
@@ -175,7 +175,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                     onContextMenu={e => this.props.showContextMenu(e, timepoint.globalIndex, variable.id, 'PROMOTE')}
                     onClick={() => this.promote(timepoint, variable)}
                 >
-                    {UtilityFunctions.cropText(variable.name, fontSize, fontWeight, width)}
+                    {cropText(variable.name, fontSize, fontWeight, width)}
                 </text>
             </g>
         );

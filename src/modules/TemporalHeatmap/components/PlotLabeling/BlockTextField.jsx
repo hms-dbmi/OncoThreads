@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import PropTypes from 'prop-types';
-import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
+import {getTextWidth} from '../../UtilityClasses/UtilityFunctions';
 import SingleTimepoint from '../../stores/SingleTimepoint';
 
 
@@ -19,13 +19,13 @@ const BlockTextField = observer(class BlockTextField extends React.Component {
      */
     static cropText(text, fontSize, maxWidth) {
         let returnText = text.toString();
-        const width = UtilityFunctions.getTextWidth(returnText, fontSize);
+        const width = getTextWidth(returnText, fontSize);
         if (width > maxWidth) {
             let prevText = returnText.substr(0, 0);
             for (let i = 1; i < returnText.length; i += 1) {
                 const currText = returnText.substr(0, i);
-                const prevWidth = UtilityFunctions.getTextWidth(prevText, fontSize);
-                const currWidth = UtilityFunctions.getTextWidth(currText, fontSize);
+                const prevWidth = getTextWidth(prevText, fontSize);
+                const currWidth = getTextWidth(currText, fontSize);
                 if (currWidth > maxWidth && prevWidth < maxWidth) {
                     returnText = prevText;
                     break;
@@ -48,7 +48,7 @@ const BlockTextField = observer(class BlockTextField extends React.Component {
                     height={this.props.height - 2}
                     y={20}
                     style={{ font: '14px Sans-Serif' }}
-                    x={(this.props.width - UtilityFunctions.getTextWidth(croppedText,
+                    x={(this.props.width - getTextWidth(croppedText,
                         (this.props.height - 2) / 2)) / 2 + 1}
                 >
                     {croppedText}

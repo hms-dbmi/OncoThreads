@@ -6,13 +6,13 @@ import * as d3 from 'd3';
 import lasso from './lasso.js'
 import { message } from 'antd';
 
-import { Point, ReferencedVariables, TimePoint, NormPoint, VariableStore } from 'modules/Type'
+import { Point, ReferencedVariables, NormPoint, VariableStore } from 'modules/Type'
 import { TStage } from './StageInfo'
 
 import "./CustomGrouping.css"
 
 import PCP from './pcp'
-import ColorScales, { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
+import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
 import {num2letter} from 'modules/TemporalHeatmap/UtilityClasses/'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
@@ -215,14 +215,16 @@ class CustomGrouping extends React.Component<Props> {
         var circles = normPoints.map((normPoint, i) => {
             let id = i
             let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let opacity = this.hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
+            let opacity = this.hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 1
             return <circle
                 key={id}
                 id={id.toString()}
                 cx={xScale(normPoint.value[0])}
                 cy={yScale(normPoint.value[1])}
                 r={r}
-                fill={groupIdx > -1 ? getColorByName(this.selected[groupIdx].stageKey) : (this.hasLink ? "black" : "white")}
+                fill={this.hasLink?"black":(
+                    groupIdx>-1?getColorByName(this.selected[groupIdx].stageKey):"white"
+                )}
                 stroke='black'
                 strokeWidth='1'
                 opacity={opacity}

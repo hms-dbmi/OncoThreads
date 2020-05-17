@@ -3,7 +3,8 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import * as d3 from 'd3';
 import ReactDOM from 'react-dom';
-import UtilityFunctions from '../../../../UtilityClasses/UtilityFunctions';
+import {getTextWidth} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+
 
 /**
  * Axis component
@@ -27,7 +28,7 @@ const Axis = observer(class Axis extends React.Component {
     render() {
         const translatex = `translate(0,${this.props.h})`;
         const translatey = 'translate(-10, 0)';
-        const textWidth = UtilityFunctions.getTextWidth(this.props.label, 12);
+        const textWidth = getTextWidth(this.props.label, 12);
         const textTranslateX = `translate(${(this.props.w - textWidth) / 2},${30})`;
         const textTranslateY = `translate(-30, ${(this.props.h - textWidth) / 2})rotate(270)`;
         return (

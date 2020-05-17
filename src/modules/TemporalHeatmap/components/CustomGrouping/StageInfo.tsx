@@ -1,9 +1,8 @@
 import React from 'react';
 import { observer  } from 'mobx-react';
-import {Button, Table} from 'antd';
+import {Button} from 'antd';
 import {CloseSquareOutlined} from '@ant-design/icons';
-import ColorScales, { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/ColorScales'
-const colors = ColorScales.defaultCategoricalRange
+import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 
 export type TStage = {
