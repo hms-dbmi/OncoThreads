@@ -20,10 +20,7 @@ import {getTextWidth} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFuncti
  * Component for a partition in a grouped timepiint
  */
 const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class GroupPartition extends React.Component {
-    constructor(props){
-        super(props)
-        this.changeLabel = this.changeLabel.bind(this)
-    }
+    
     createPartition() {
         let previousYposition = 0;
         const rows = [];
@@ -82,11 +79,6 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             }
         });
         return rows;
-    }
-    
-    changeLabel(e){
-        this.props.dataStore.variableStores.sample
-        .setStageLabel(this.props.partition.partition, e.target.value)
     }
 
     render() {

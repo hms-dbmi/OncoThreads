@@ -88,7 +88,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     }
     
     changeLabel(e){
-        this.props.dataStore.variableStores.sample
+        this.props.dataStore
         .setStageLabel(this.props.partition.partition, e.target.value)
     }
 
