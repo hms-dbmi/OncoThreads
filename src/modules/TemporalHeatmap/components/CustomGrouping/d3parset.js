@@ -2,6 +2,9 @@
 // Functionality based on http://eagereyes.org/parallel-sets
 /* global d3 */
 /* eslint indent: "off" */
+
+import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+
 const d3 = require("d3");
 (function() {
   d3.parsets = function() {
@@ -248,7 +251,10 @@ const d3 = require("d3");
 
           ribbonEnter.merge(ribbon)
               .attr("class", function(d) { return "category-" + d.major; })
-              .attr("d", ribbonPath);
+              .attr("d", ribbonPath)
+              .attr('fill', d=>getColorByName(d.major))
+              .attr('stroke', d=>getColorByName(d.major))
+
           ribbonEnter.merge(ribbon).sort(function(a, b) { return b.count - a.count; });
           ribbon.exit().remove();
 
@@ -596,7 +602,7 @@ const d3 = require("d3");
       dim.categories.forEach(function(c) {
         var k = c.name;
         if (tree.children.hasOwnProperty(k)) {
-          recurse(c, {node: tree.children[k], path: k}, 1, ordinal(k));
+          recurse(c, {node: tree.children[k], path: k}, 1, k);
         }
       });
 

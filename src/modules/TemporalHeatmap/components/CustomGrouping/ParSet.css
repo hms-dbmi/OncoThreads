@@ -15,7 +15,7 @@
 .ribbon path.active { fill-opacity: .9; }
 .ribbon-mouse path { fill-opacity: 0; }
 
-.category-0 { fill: #1f77b4; stroke: #1f77b4; }
+/* .category-0 { fill: #1f77b4; stroke: #1f77b4; }
 .category-1 { fill: #ff7f0e; stroke: #ff7f0e; }
 .category-2 { fill: #2ca02c; stroke: #2ca02c; }
 .category-3 { fill: #d62728; stroke: #d62728; }
@@ -24,7 +24,7 @@
 .category-6 { fill: #e377c2; stroke: #e377c2; }
 .category-7 { fill: #7f7f7f; stroke: #7f7f7f; }
 .category-8 { fill: #bcbd22; stroke: #bcbd22; }
-.category-9 { fill: #17becf; stroke: #17becf; }
+.category-9 { fill: #17becf; stroke: #17becf; } */
 
 .tooltip {
   background-color: rgba(242, 242, 242, .6);

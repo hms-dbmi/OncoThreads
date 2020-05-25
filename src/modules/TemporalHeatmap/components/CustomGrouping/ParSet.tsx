@@ -5,7 +5,7 @@ import './ParSet.css'
 import { TSelected } from './index'
 import { Point, ReferencedVariables } from 'modules/Type'
 import { computed } from 'mobx';
-import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+
 
 
 require("./d3parset.js");
