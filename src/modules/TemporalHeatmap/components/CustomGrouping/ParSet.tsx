@@ -34,7 +34,6 @@ class ParSet extends React.Component<Props> {
     drawVIS() {
         let { width, height } = this.props
         let { catePoints, dimensions } = this.props.parsetData
-        console.info(catePoints.map((d:any)=>d.STAGE))
 
         let vis = d3.select("g#parset")
 
@@ -52,12 +51,9 @@ class ParSet extends React.Component<Props> {
         this.drawVIS()
     }
 
-    componentDidUpdate() {
-        if (this.props.points[0] && this.props.points[0].value.length == 5) {
-
-        console.info('update parset')
+    componentDidUpdate() {    
             this.drawVIS()
-        }
+        // this.drawVIS()
 
     }
 

@@ -210,17 +210,19 @@ class CustomGrouping extends React.Component<Props> {
     get parsetData() {
         let { points, referencedVariables } = this.props
         let {selected} = this
-        let dimensions: string[] = ['STAGE']
+        let dimensions: object[] = [{name:'STAGE', type:'STRING'}]
 
         Object.keys(referencedVariables)
             .forEach(key => {
                 let ref = referencedVariables[key]
-                if (ref.datatype != 'NUMBER') {
-                    dimensions.push(key)
-                }
+                // if (ref.datatype != 'NUMBER') {
+                //     dimensions.push(key)
+                // }
+                dimensions.push({
+                    name:key,
+                    type: ref.datatype
+                })
             })
-
-        console.info(selected.map(d=>d.stageKey))
 
         let catePoints: CatePoint[] = points
             .map(point => {
@@ -234,10 +236,10 @@ class CustomGrouping extends React.Component<Props> {
                 Object.keys(referencedVariables)
                     .forEach((key, i) => {
                         let ref = referencedVariables[key]
-                        if (ref.datatype != 'NUMBER') {
-                            catePoint[key] = point.value[i]
-                        }
-
+                        // if (ref.datatype != 'NUMBER') {
+                        //     catePoint[key] = point.value[i]
+                        // }
+                        catePoint[key] = point.value[i]
                     })
 
                 return catePoint
@@ -247,11 +249,15 @@ class CustomGrouping extends React.Component<Props> {
         // assign stage if has
         selected.forEach(g => {
             g.pointIdx.forEach(idx=>{
-                catePoints[idx].STAGE = g.stageKey
+                let stageName = this.props.stageLabels[g.stageKey]
+                if (stageName==undefined){
+                    stageName = g.stageKey
+                }
+                catePoints[idx].STAGE = stageName
             })
         })
         
-        catePoints = catePoints.filter(d => Object.values(d)[0]!== undefined)
+        catePoints = catePoints.filter(d => Object.values(d)[1]!== undefined)
 
         return { dimensions, catePoints }
     }
