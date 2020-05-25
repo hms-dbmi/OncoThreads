@@ -26,7 +26,8 @@ interface Props {
 }
 
 
-const PCP = observer(class CustomGrouping extends React.Component<Props> {
+@observer
+class PCP extends React.Component<Props> {
     constructor(props: Props){
         super(props)
         this.generateLines = this.generateLines.bind(this)
@@ -116,7 +117,7 @@ const PCP = observer(class CustomGrouping extends React.Component<Props> {
     render() {
         return this.generateLines()
     }
-})
+}
 
 
 

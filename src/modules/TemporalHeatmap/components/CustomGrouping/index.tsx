@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import { observable } from 'mobx';
+import { observable, action, computed } from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
@@ -11,7 +11,8 @@ import { TStage } from './StageInfo'
 
 import "./CustomGrouping.css"
 
-import PCP from './pcp'
+import Parset from './ParSet'
+// import ParallelSet from './ParallelSet'
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { num2letter } from 'modules/TemporalHeatmap/UtilityClasses/'
 import StageInfo from './StageInfo'
@@ -40,6 +41,10 @@ type Row = {
 type Count = {
     key: string | number | boolean, // attribute value
     patients: string[]
+}
+
+type CatePoint = {
+    [name: string]: any,
 }
 
 interface Props {
@@ -113,7 +118,8 @@ class CustomGrouping extends React.Component<Props> {
      * computed based on selected, points, currentVariables
      * return the attribute domain of each stages
      */
-    getStages() {
+    @computed
+    get stages() {
         let { selected } = this
         let { currentVariables, points } = this.props
 
@@ -158,7 +164,8 @@ class CustomGrouping extends React.Component<Props> {
     // @param: currentVariable: [variableName:string][]
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
     // return: points: number[][]
-    normalizePoints(): NormPoint[] {
+    @computed
+    get normalizePoints(): NormPoint[] {
         let { points, currentVariables, referencedVariables } = this.props
         if (points.length === 0) return []
         let normValues = points.map(point => {
@@ -180,7 +187,7 @@ class CustomGrouping extends React.Component<Props> {
         })
 
         var pca = new PCA(normValues)
-        // console.info(newPoints)
+
         if (normValues[0].length > 2) {
             // only calculate pca when dimension is larger than 2
             normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
@@ -199,15 +206,64 @@ class CustomGrouping extends React.Component<Props> {
 
     }
 
+    @computed
+    get parsetData() {
+        let { points, referencedVariables } = this.props
+        let {selected} = this
+        let dimensions: string[] = ['STAGE']
+
+        Object.keys(referencedVariables)
+            .forEach(key => {
+                let ref = referencedVariables[key]
+                if (ref.datatype != 'NUMBER') {
+                    dimensions.push(key)
+                }
+            })
+
+        console.info(selected.map(d=>d.stageKey))
+
+        let catePoints: CatePoint[] = points
+            .map(point => {
+
+                
+                let catePoint: CatePoint = {
+                    STAGE: 'noStage'
+                }
+
+                
+                Object.keys(referencedVariables)
+                    .forEach((key, i) => {
+                        let ref = referencedVariables[key]
+                        if (ref.datatype != 'NUMBER') {
+                            catePoint[key] = point.value[i]
+                        }
+
+                    })
+
+                return catePoint
+
+            })
+
+        // assign stage if has
+        selected.forEach(g => {
+            g.pointIdx.forEach(idx=>{
+                catePoints[idx].STAGE = g.stageKey
+            })
+        })
+        
+        catePoints = catePoints.filter(d => Object.values(d)[0]!== undefined)
+
+        return { dimensions, catePoints }
+    }
+
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
     drawScatterPlot(width: number, height: number, r: number = 5, margin: number = 20) {
 
-
         let patientDict = this.getPatientDict()
         let { selected } = this
-        let normPoints = this.normalizePoints()
+        let normPoints = this.normalizePoints
 
         if (normPoints.length === 0) {
             return <g className='points' />
@@ -293,10 +349,7 @@ class CustomGrouping extends React.Component<Props> {
             .attr("width", width)
             .attr("height", height)
             .style("opacity", 0);
-        // console.info(
-        //     lasso(),
-        //     lasso()()
-        //     )
+        
         // Lasso functions to execute while lassoing
         var lasso_start = () => {
             (mylasso.items() as any)
@@ -368,6 +421,7 @@ class CustomGrouping extends React.Component<Props> {
      * @return {variableName: domain} group
      */
 
+    @action
     resetGroup() {
         this.selected = []
         this.props.dataStore.resetStageLabel()
@@ -378,6 +432,8 @@ class CustomGrouping extends React.Component<Props> {
             .attr('r', 5)
             .attr('class', 'point')
     }
+
+    @action
     deleteGroup(i: number) {
         this.selected.splice(i, 1)
 
@@ -388,6 +444,7 @@ class CustomGrouping extends React.Component<Props> {
 
     }
 
+    @action
     applyCustomGroups() {
         let { selected } = this
         let { points } = this.props
@@ -534,17 +591,22 @@ class CustomGrouping extends React.Component<Props> {
                         {this.drawScatterPlot(width, scatterHeight)}
 
                         <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
-                            <PCP points={points}
+                            <Parset parsetData={this.parsetData}
+                                width={width - 2 * pcpMargin}
+                                height={pcpHeight - 2 * pcpMargin}
+                                points={points}
+                            />
+                            {/* <ParallelSet points={points}
                                 currentVariables={this.props.currentVariables}
                                 referencedVariables={this.props.referencedVariables}
                                 width={width - 2 * pcpMargin}
                                 height={pcpHeight - 2 * pcpMargin}
                                 selected={this.selected}
-                            />
+                            /> */}
                         </g>
                     </svg>
                     <StageInfo
-                        stages={this.getStages()} height={infoHeight}
+                        stages={this.stages} height={infoHeight}
                         stageLabels={this.props.stageLabels}
                         resetGroup={this.resetGroup}
                         deleteGroup={this.deleteGroup}

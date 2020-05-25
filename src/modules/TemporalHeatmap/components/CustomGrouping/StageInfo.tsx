@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer  } from 'mobx-react';
 import {Button} from 'antd';
-import {CloseSquareOutlined} from '@ant-design/icons';
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 
@@ -45,7 +44,7 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
             // }
             return <p key={`stage_${i}`} style={{color: getColorByName(stageKey)}}>
                 {values} 
-                <CloseSquareOutlined onClick={()=>this.props.deleteGroup(i)}/> 
+                <Button size='small' onClick={()=>this.props.deleteGroup(i)}> x </Button> 
                 </p>
         })
         

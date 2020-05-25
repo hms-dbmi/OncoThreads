@@ -35,10 +35,11 @@ class VariableStore {
                     if (heatmap[0]) {
                         heatmap[0].data.forEach((_, i) => {
                             let patient = timepoint.heatmapOrder[i]
+                            let value = heatmap.map(d => d.data[i].value)
                             var point = {
                                 idx:i,
                                 patient,
-                                value: heatmap.map(d => d.data[i].value),
+                                value,
                                 timeIdx
                             }
                             points.push(point)
