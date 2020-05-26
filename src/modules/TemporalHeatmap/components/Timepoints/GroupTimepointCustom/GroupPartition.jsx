@@ -1,5 +1,6 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
+import { extendObservable } from 'mobx';
 import {Input} from 'antd'
 
 import PropTypes from 'prop-types';
@@ -11,10 +12,7 @@ import OriginalVariable from '../../../stores/OriginalVariable';
 import {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
 import {getTextWidth} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
 
-
-
-
-
+import './GroupPartition.css'
 
 /**
  * Component for a partition in a grouped timepiint
@@ -23,10 +21,15 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     constructor(props){
         super(props)
         this.changeLabel = this.changeLabel.bind(this)
+        extendObservable(this, {
+            hasBackground: true
+        })
+        
     }
     createPartition() {
         let previousYposition = 0;
         const rows = [];
+        let totalH = 0
         this.props.partition.rows.forEach((d, i) => {
             if (!this.props.heatmap[i].isUndef
                 || this.props.uiStore.showUndefined
@@ -46,6 +49,8 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     height = this.props.visStore.primaryHeight;
                     stroke = this.props.stroke;
                 } 
+
+                totalH += height
                 // else {
                 //     height = this.props.visStore.secondaryHeight;
                 //     opacity = 0.5;
@@ -84,13 +89,16 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 previousYposition += height + this.props.uiStore.horizontalGap;
             }
         });
-        return rows;
+
+        let totalW = this.props.visStore.groupScale(this.props.partition.patients.length)
+        return {totalH, totalW, rows};
     }
     
     changeLabel(e){
         this.props.dataStore
         .setStageLabel(this.props.partition.partition, e.target.value)
     }
+
 
     render() {
         let stageInputLabel = <g/>, stageKey = this.props.partition.partition||''
@@ -113,10 +121,28 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         </foreignObject> 
         }
         
+        
 
-        return  <g className={`partitions ${stageKey}`}>
-            {this.createPartition()}   
-            {stageInputLabel}
+        let {rows, totalH, totalW} = this.createPartition()
+
+        return  <g className={`partitions ${stageKey}`} ref={this.ref}>
+            {rows}   
+           
+            <rect 
+            className='stageBackground'
+            opacity={0.8}
+            width={this.hasBackground?totalW:0} 
+            height={totalH} 
+            fill={getColorByName(stageKey)} />
+            <circle 
+            r= {4}
+            cx={totalW-2}
+            cy={totalH-2}
+            stroke='lightgray'
+            onClick={()=>{this.hasBackground=!this.hasBackground}}
+            />
+
+             {stageInputLabel}
         </g>;
     }
 }));

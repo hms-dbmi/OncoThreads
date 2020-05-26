@@ -44,7 +44,9 @@ const d3 = require("d3");
     }
 
     function parsets(selection) {
+      
       selection.each(function (data, i) {
+        
         var g = d3.select(this),
           ordinal = d3.scaleOrdinal(),
           dragging = false,
@@ -65,7 +67,10 @@ const d3 = require("d3");
           .enter().append("g")
           .attr("class", String);
 
+        
+        
         updateDimensions();
+
         if (tension != tension0) {
           var t = d3.transition(g);
           if (t.tween) t.tween("ribbon", tensionTween);
@@ -126,6 +131,8 @@ const d3 = require("d3");
               categories(d.children[k], i + 1);
             }
           })(tree, 0);
+
+          // sort categories based on alphe or numerical value
           dimensions.forEach((d, i) => {
             dimensions[i].categories = d.categories.sort((a, b) => {
               if (d.type === 'NUMBER') {
