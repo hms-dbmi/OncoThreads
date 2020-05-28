@@ -101,7 +101,10 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 
 
     render() {
-        let stageInputLabel = <g/>, stageKey = this.props.partition.partition||''
+        let stageInputLabel = <g/>, stageKey = this.props.partition.partition||'', 
+        stageBackground = <g/>
+
+        let {rows, totalH, totalW} = this.createPartition()
 
         // add changable stage label if this is a sample timepoint
         if(this.props.type=='sample'){
@@ -116,22 +119,15 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             labelWidth = Math.max(getTextWidth(stageName, 14, fontWeight)+25, 40)
 
             stageInputLabel =  <foreignObject style={{width:labelWidth, height:labelHeight}}>
-            <Input value={stageName} style={{color: labelColor, fontWeight:fontWeight}}
-            onChange={this.changeLabel}/>    
-        </foreignObject> 
-        }
-        
-        
+                <Input value={stageName} style={{color: labelColor, fontWeight:fontWeight}}
+                onChange={this.changeLabel}/>    
+            </foreignObject> 
 
-        let {rows, totalH, totalW} = this.createPartition()
-
-        return  <g className={`partitions ${stageKey}`} ref={this.ref}>
-            {rows}   
-           
-            <rect 
+            stageBackground = <g className='stageBackground'>
+                <rect 
             className='stageBackground'
             opacity={0.8}
-            width={this.hasBackground?totalW:0} 
+            width={this.props.hasBackground?totalW:0} 
             height={totalH} 
             fill={getColorByName(stageKey)} />
             <circle 
@@ -141,8 +137,13 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             stroke='lightgray'
             onClick={()=>{this.hasBackground=!this.hasBackground}}
             />
+            </g>
+        }
 
-             {stageInputLabel}
+        return  <g className={`partitions ${stageKey}`} ref={this.ref}>
+            {rows}   
+            {stageBackground} 
+            {stageInputLabel}
         </g>;
     }
 }));
@@ -160,6 +161,7 @@ GroupPartition.propTypes = {
     ])).isRequired,
     stroke: PropTypes.string.isRequired,
     tooltipFunctions: PropTypes.objectOf(PropTypes.func),
-    stageLabels: PropTypes.object.isRequired
+    stageLabels: PropTypes.object.isRequired,
+    hasBackground: PropTypes.bool.isRequired
 };
 export default GroupPartition;

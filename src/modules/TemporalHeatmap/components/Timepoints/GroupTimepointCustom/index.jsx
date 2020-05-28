@@ -37,6 +37,7 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
                         stroke={stroke}
                         primaryVariableId={this.props.primaryVariableId}
                         stageLabels={stageLabels}
+                        hasBackground={this.props.hasBackground}
                     />
                 </g>,
             );
@@ -76,5 +77,6 @@ GroupTimepoint.propTypes = {
     ])).isRequired,
     tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
     primaryVariableId: PropTypes.string.isRequired,
+    hasBackground: PropTypes.bool.isRequired,
 };
 export default GroupTimepoint;

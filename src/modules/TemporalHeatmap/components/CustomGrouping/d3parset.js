@@ -134,14 +134,13 @@ const d3 = require("d3");
 
           // sort categories based on alphe or numerical value
           dimensions.forEach((d, i) => {
-            dimensions[i].categories = d.categories.sort((a, b) => {
-              if (d.type === 'NUMBER') {
-                return (+a.name) - (+b.name)
-              } else {
-                return a.name < b.name ? -1 : 1;
-              }
+            if (d.type === 'NUMBER') {
 
+              dimensions[i].categories = d.categories.sort((a, b) => {
+                return (+a.name) - (+b.name)
+    
             })
+            } 
           })
           ordinal.domain([]).range(d3.range(dimensions[0].categories.length));
 

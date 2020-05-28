@@ -5,6 +5,7 @@ import FontAwesome from 'react-fontawesome';
 import { extendObservable, reaction } from 'mobx';
 import { Button, Row } from 'react-bootstrap';
 import { Pane, SortablePane } from 'react-sortable-pane';
+import {Switch} from 'antd'
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
@@ -32,6 +33,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
             width:window.innerWidth,
+            hasBackground:true,
             panes: {
                 labels: { width: (window.innerWidth - 40) / 10 * 0.5, active: false },
                 operators: { width: ((window.innerWidth - 40) / 10) * 1.5, active: false },
@@ -159,6 +161,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                     rectWidth={rectWidth}
                                     tooltipFunctions={this.props.tooltipFunctions}
                                     primaryVariableId={d.primaryVariableId}
+                                    hasBackground={this.hasBackground}
                                 />
                             </Provider>
                         </g>,
@@ -379,6 +382,11 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 style={{ paddingTop: this.padding }}
                             >
                                 <div ref={this.blockView} className="scrollableX">
+                                    <Switch size="small" 
+                                        onChange={()=>this.hasBackground=!this.hasBackground}
+                                        checkedChildren="bg" unCheckedChildren="bg"
+                                        style={{position:'absolute', top:"-15px"}}
+                                    />
                                     <svg
                                         width={this.props.rootStore.visStore.svgWidth}
                                         height={this.props.rootStore.visStore.svgHeight}
