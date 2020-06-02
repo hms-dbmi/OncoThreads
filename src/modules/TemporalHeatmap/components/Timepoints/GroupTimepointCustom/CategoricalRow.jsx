@@ -186,8 +186,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
 
             this.props.row.forEach((f, i) => {
                 let partitionPoints;
-                let
-                    selectedPoints;
+                let selectedPoints;
                 let fill = this.props.color(f.key);
                 let stroke = this.props.stroke;
                 if (f.key === undefined) {

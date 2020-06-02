@@ -56,6 +56,16 @@ class DataStore {
                     })
                 }
             },
+            get colorScales(){
+                let sampleScales = this.variableStores.sample.fullCurrentVariables.map(d=>d.colorScale),
+                eventScales = this.variableStores.between.fullCurrentVariables.map(d=>d.colorScale)
+
+                if (this.hasEvent===false){
+                    return sampleScales
+                }else{
+                    return sampleScales.concat(eventScales)
+                }
+            },
             get currentVariables(){ 
                 if (this.hasEvent===false){
                     return this.variableStores.sample.currentVariables

@@ -2,12 +2,8 @@ import React from 'react';
 import { observer  } from 'mobx-react';
 import {Button} from 'antd';
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import {TStage} from './index'
 
-
-export type TStage = {
-    domains:{[domain:string]:string[]|number[]|boolean[]},
-    stageKey:string
-}
 
 interface Props {
     stages: TStage[],
@@ -29,9 +25,9 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
         let content = stages.map((stage,i)=>{
             let {domains, stageKey} = stage
             let values = Object.keys(domains).map(key=>{
-                let domain = domains[key]
+                let range = domains[key]
                 return <span style={{marginRight:'2px'}} key={key}>{
-                    domain.length===0?'':`[${domain.join()}]`
+                    range.length===0?'':`[${range.join()}]`
                     }</span>
                 })
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import * as d3 from 'd3';
 import {Tooltip} from 'antd';
-import {TSelected} from './index'
+import {TSelected} from '.'
 
 import {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
 

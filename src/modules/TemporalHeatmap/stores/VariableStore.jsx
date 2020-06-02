@@ -37,7 +37,7 @@ class VariableStore {
                             let patient = timepoint.heatmapOrder[i]
                             let value = heatmap.map(d => d.data[i].value)
                             var point = {
-                                idx:i,
+                                idx:points.length,
                                 patient,
                                 value,
                                 timeIdx

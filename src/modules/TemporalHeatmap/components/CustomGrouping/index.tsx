@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, inject } from 'mobx-react';
+import { observer, inject, Provider } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
@@ -7,16 +7,15 @@ import lasso from './lasso.js'
 import { message } from 'antd';
 
 import { Point, ReferencedVariables, NormPoint, VariableStore } from 'modules/Type'
-import { TStage } from './StageInfo'
+
 
 import "./CustomGrouping.css"
 
-import Parset from './ParSet'
-// import ParallelSet from './ParallelSet'
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { num2letter } from 'modules/TemporalHeatmap/UtilityClasses/'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
+import StageBlock from './StageBlock';
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -47,19 +46,23 @@ type CatePoint = {
     [name: string]: any,
 }
 
-interface Props {
-    points: Point[],
-    currentVariables: string[],
-    referencedVariables: ReferencedVariables,
-    dataStore: VariableStore,
-    stageLabels: { [stageKey: string]: string }
-}
+
 
 type TPatientDict = {
-    [p: string]: {
+    [patient: string]: {
         patient: string, points: number[]
     }
 }// the point id of each patient {paitent:{patient:string, points:id[]}}
+
+
+export type TStage = {
+    domains:{
+        [attrName:string]:string[]|number[]|boolean[]
+    },
+    points: number[],
+    stageKey:string
+}
+
 
 const getUniqueName = (num: number, existingNames: string[]): string => {
     let name = num2letter(num)
@@ -71,6 +74,16 @@ const getUniqueName = (num: number, existingNames: string[]): string => {
 
 export type TSelected = { stageKey: string, pointIdx: number[] }[]
 
+
+interface Props {
+    points: Point[],
+    currentVariables: string[],
+    referencedVariables: ReferencedVariables,
+    dataStore: VariableStore,
+    stageLabels: { [stageKey: string]: string },
+    colorScales: Array<(value: string|number|boolean)=>string>,
+}
+
 @inject('dataStore')
 @observer
 class CustomGrouping extends React.Component<Props> {
@@ -78,6 +91,7 @@ class CustomGrouping extends React.Component<Props> {
     @observable height: number = window.innerHeight - 140
     @observable selected: TSelected = []
     @observable hasLink: boolean = false
+    @observable hoverPointID:number = -1
     private ref = React.createRef<HTMLDivElement>();
 
     constructor(props: Props) {
@@ -119,7 +133,7 @@ class CustomGrouping extends React.Component<Props> {
      * return the attribute domain of each stages
      */
     @computed
-    get stages() {
+    get stages():TStage[] {
         let { selected } = this
         let { currentVariables, points } = this.props
 
@@ -132,7 +146,8 @@ class CustomGrouping extends React.Component<Props> {
         const summarizeDomain = (values: string[] | number[] | boolean[]) => {
             if (typeof (values[0]) == "number") {
                 let v = values as number[] // stupid typescropt
-                return [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
+                let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
+                return range
             } else if (typeof (values[0]) == "string") {
                 let v = values as string[]
                 return [...new Set(v)]
@@ -142,16 +157,19 @@ class CustomGrouping extends React.Component<Props> {
             } else return []
         }
 
-        let stages = selectedPoints.map((p, i) => {
-            let group: TStage = {
-                stageKey: selected[i].stageKey,
-                domains: {}
+        let stages = selectedPoints.map((p, stageIdx) => {
+            let stage: TStage = {
+                stageKey: selected[stageIdx].stageKey,
+                domains: {},
+                points: p.map(p=>p.idx)
             }
-            currentVariables.forEach((name, i) => {
-                group.domains[name] = summarizeDomain(p.map(p => p.value[i]) as number[] | string[] | boolean[])
+            currentVariables.forEach((name, valueIdx) => {
+                stage.domains[name] = summarizeDomain(
+                    p.map(p => p.value[valueIdx]) as number[] | string[] | boolean[]
+                    )
             })
 
-            return group
+            return stage
         })
 
 
@@ -206,66 +224,12 @@ class CustomGrouping extends React.Component<Props> {
 
     }
 
-    @computed
-    get parsetData() {
-        let { points, referencedVariables } = this.props
-        let {selected} = this
-        let dimensions: object[] = [{name:'STAGE', type:'STRING'}]
-
-        Object.keys(referencedVariables)
-            .forEach(key => {
-                let ref = referencedVariables[key]
-                // if (ref.datatype != 'NUMBER') {
-                //     dimensions.push(key)
-                // }
-                dimensions.push({
-                    name:key,
-                    type: ref.datatype
-                })
-            })
-
-        let catePoints: CatePoint[] = points
-            .map(point => {
-
-                
-                let catePoint: CatePoint = {
-                    STAGE: 'noStage'
-                }
-
-                
-                Object.keys(referencedVariables)
-                    .forEach((key, i) => {
-                        let ref = referencedVariables[key]
-                        // if (ref.datatype != 'NUMBER') {
-                        //     catePoint[key] = point.value[i]
-                        // }
-                        catePoint[key] = point.value[i]
-                    })
-
-                return catePoint
-
-            })
-
-        // assign stage if has
-        selected.forEach(g => {
-            g.pointIdx.forEach(idx=>{
-                let stageName = this.props.stageLabels[g.stageKey]
-                if (stageName==undefined){
-                    stageName = g.stageKey
-                }
-                catePoints[idx].STAGE = stageName
-            })
-        })
-        
-        catePoints = catePoints.filter(d => Object.values(d)[1]!== undefined)
-
-        return { dimensions, catePoints }
-    }
 
     // @params: points: {patient:string, value:[number, number]}[]
     // @params: width:number, height:number, r:number
     // @return: <g></g>
     drawScatterPlot(width: number, height: number, r: number = 5, margin: number = 20) {
+        this.addLasso(width, height)
 
         let patientDict = this.getPatientDict()
         let { selected } = this
@@ -284,8 +248,8 @@ class CustomGrouping extends React.Component<Props> {
 
 
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
-        var circles = normPoints.map((normPoint, i) => {
-            let id = i
+        var circles = normPoints.map((normPoint) => {
+            let id = normPoint.idx
             let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
             let opacity = this.hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 1
             return <circle
@@ -301,6 +265,9 @@ class CustomGrouping extends React.Component<Props> {
                 strokeWidth='1'
                 opacity={opacity}
                 className='point'
+                onMouseEnter={()=>{this.hoverPointID=id}}
+                onMouseLeave={()=>{this.hoverPointID=-1}}
+                cursor='pointer'
             />
         })
 
@@ -323,10 +290,10 @@ class CustomGrouping extends React.Component<Props> {
             />
         })
 
-        this.addLasso(width, height)
+        
 
         if (this.hasLink) {
-            return <g className='patientTrajectory'>
+            return <g className='patientScatter'>
                 <g className="points">
                     {circles}
                 </g>
@@ -336,7 +303,7 @@ class CustomGrouping extends React.Component<Props> {
             </g>
         }
         else {
-            return <g className='patientTrajectory'>
+            return <g className='patientScatter'>
                 <g className="points">
                     {circles}
                 </g>
@@ -596,20 +563,32 @@ class CustomGrouping extends React.Component<Props> {
                     <svg className='customGrouping' width="100%" height="80%">
                         {this.drawScatterPlot(width, scatterHeight)}
 
-                        <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
+                        <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
+                            <StageBlock 
+                                stageLabels={this.props.stageLabels}
+                                width={width - 2 * pcpMargin}
+                                height={pcpHeight - 2 * pcpMargin}
+                                points={points}
+                                selected={this.selected}
+                                colorScales={this.props.colorScales}
+                                hoverPointID={this.hoverPointID}
+                            />
+                        </g>
+
+                        {/* <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
                             <Parset parsetData={this.parsetData}
                                 width={width - 2 * pcpMargin}
                                 height={pcpHeight - 2 * pcpMargin}
                                 points={points}
-                            />
-                            {/* <ParallelSet points={points}
+                            /> 
+                            <ParallelSet points={points}
                                 currentVariables={this.props.currentVariables}
                                 referencedVariables={this.props.referencedVariables}
                                 width={width - 2 * pcpMargin}
                                 height={pcpHeight - 2 * pcpMargin}
                                 selected={this.selected}
-                            /> */}
-                        </g>
+                            />
+                        </g> */}
                     </svg>
                     <StageInfo
                         stages={this.stages} height={infoHeight}

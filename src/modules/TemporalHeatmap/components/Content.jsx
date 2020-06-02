@@ -389,6 +389,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                     currentVariables={dataStore.currentVariables}
                                     referencedVariables = {dataStore.referencedVariables}
                                     stageLabels={dataStore.stageLabels}
+                                    colorScales={dataStore.colorScales}
                                 />
                                 {/* <CustomGrouping/> */}
                             </Provider>

@@ -34,7 +34,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             if (!this.props.heatmap[i].isUndef
                 || this.props.uiStore.showUndefined
                 || d.variable === this.props.primaryVariableId) {
-                const color = this.props.currentVariables[i].colorScale;
+              const color = this.props.currentVariables[i].colorScale;
                 // let height = 0;
                 // let opacity = 1;
                 let height = this.props.visStore.secondaryHeight;
