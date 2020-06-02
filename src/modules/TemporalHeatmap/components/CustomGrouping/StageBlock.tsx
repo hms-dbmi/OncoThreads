@@ -81,7 +81,7 @@ class StageBlock extends React.Component<Props> {
                 stageBlocks.push(
                     <g key={'noStage'} className={`noStage`} transform={`translate(${offsetX}, 0)`}>
                         <text>noStage</text>
-                        <g transform={`translate(0, ${fontHeight})`} className='blockCols' opacity='0.5'>
+                        <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
                             {this.drawBlock(leftNodes.map(id => points[id]), cellWidth, cellHeight)}
                         </g>
                     </g>)
