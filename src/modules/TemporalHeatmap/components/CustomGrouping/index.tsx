@@ -315,13 +315,15 @@ class CustomGrouping extends React.Component<Props> {
 
     addLasso(width: number, height: number) {
         // lasso draw
-        d3.selectAll('.lasso').remove()
+        d3.selectAll('g.lasso').remove()
         var svg = d3.select('svg.customGrouping')
-        var lasso_area = svg.append("rect")
-            .attr('class', 'lasso area')
-            .attr("width", width)
-            .attr("height", height)
-            .style("opacity", 0);
+        // var lasso_area = svg.append("rect")
+        //     .attr('class', 'lasso area')
+        //     .attr("width", width)
+        //     .attr("height", height)
+        //     .style("opacity", 0);
+        
+        var lasso_area = d3.select("rect.lasso")
         
         // Lasso functions to execute while lassoing
         var lasso_start = () => {
@@ -561,6 +563,7 @@ class CustomGrouping extends React.Component<Props> {
                         onChange={toggleHasEvent} />
 
                     <svg className='customGrouping' width="100%" height="80%">
+                        <rect className='lasso area' width={width} height={scatterHeight} opacity={0}/>
                         {this.drawScatterPlot(width, scatterHeight)}
 
                         <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>

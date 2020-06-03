@@ -115,7 +115,7 @@ class StageBlock extends React.Component<Props> {
                 />
             })
 
-            let opacity=this.props.hoverPointID===point.id?1:0.5
+            let opacity= (this.props.hoverPointID===point.idx)?1:0.5
 
             return <g key={`point_${point.idx}`} className={`point_${point.idx}`} opacity={opacity}>
                 {pointCol}
