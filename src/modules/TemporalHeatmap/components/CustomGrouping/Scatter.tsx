@@ -1,14 +1,13 @@
-import {NormPoint, Point, ReferencedVariables} from 'modules/Type'
+import { NormPoint, Point, ReferencedVariables } from 'modules/Type'
 import React from 'react';
 import { observer } from 'mobx-react';
-import {computed, has} from 'mobx';
+import { computed } from 'mobx';
 import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
-import {Tooltip} from 'antd';
-import {TSelected} from '.';
+import { TSelected } from '.';
 import lasso from './lasso.js'
 
-import {getColorByName, getUniqueKeyName} from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 type TPatientDict = {
     [patient: string]: {
@@ -20,20 +19,20 @@ type TPatientDict = {
 interface Props {
     points: Point[],
     currentVariables: string[],
-    referencedVariables: ReferencedVariables, 
+    referencedVariables: ReferencedVariables,
     selected: TSelected,
     width: number,
     height: number,
     hasLink: boolean,
     colorScales: Array<(value: string | number | boolean) => string>,
-    setHoverID: (id:number)=>void;
-    resetHoverID:()=>void
+    setHoverID: (id: number) => void;
+    resetHoverID: () => void
 }
 
 
 @observer
 class Scatter extends React.Component<Props> {
-    constructor(props: Props){
+    constructor(props: Props) {
         super(props)
     }
 
@@ -86,7 +85,7 @@ class Scatter extends React.Component<Props> {
 
     @computed
     get patientDict() {
-        let {points} = this.props
+        let { points } = this.props
 
         let patientDict: TPatientDict = {}
         // get points,each points is one patient at one timepoint
@@ -105,11 +104,9 @@ class Scatter extends React.Component<Props> {
         return patientDict
     }
 
-    drawScatterPlot( r: number = 5, margin: number = 20) {
-        let {width, height, selected, hasLink, resetHoverID, setHoverID} = this.props
+    drawScatterPlot( margin: number = 20) {
+        let { width, height} = this.props
         this.addLasso(width, height)
-
-        let patientDict = this.patientDict
 
         let normPoints = this.normalizePoints
 
@@ -124,6 +121,16 @@ class Scatter extends React.Component<Props> {
             .domain(d3.extent(normPoints.map(d => d.pos[1])) as [number, number])
             .range([margin, height - margin])
 
+        let circles = this.drawPoints(xScale, yScale), 
+        links = this.drawLinks(xScale, yScale)
+
+        return [links, circles]
+    }
+
+    drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>){
+        let normPoints = this.normalizePoints
+        let {selected, hasLink, resetHoverID, setHoverID} = this.props
+        const r=5
 
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         var circles = normPoints.map((normPoint) => {
@@ -143,54 +150,49 @@ class Scatter extends React.Component<Props> {
                 strokeWidth='1'
                 opacity={opacity}
                 className='point'
-                onMouseEnter={()=>setHoverID(id)}
-                onMouseLeave={()=>resetHoverID()}
+                onMouseEnter={() => setHoverID(id)}
+                onMouseLeave={() => resetHoverID()}
                 cursor='pointer'
             />
         })
 
-        let links = this.drawLinks(xScale, yScale)
-
-        return [circles, links]
-
-
-
+        return <g className='circles'>{circles}</g>
     }
 
-    drawLinks(xScale:d3.ScaleLinear<number,number>, yScale:d3.ScaleLinear<number,number>){
+    drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
 
-        let {hasLink} = this.props
-        if (!hasLink) return <g className="lines" key='links'/>
+        let { hasLink } = this.props
+        if (!hasLink) return <g className="nolines" key='links' />
 
         let curveGenerator = d3.line()
-        .x((p: NormPoint | any) => xScale(p.value[0]))
-        .y((p: NormPoint | any) => yScale(p.value[1]))
-        .curve(d3.curveMonotoneX)
+            .x((p: NormPoint | any) => xScale(p.pos[0]))
+            .y((p: NormPoint | any) => yScale(p.pos[1]))
+            .curve(d3.curveMonotoneX)
 
-        
 
-    let curves = Object.keys(this.patientDict).map(patient => {
-        let pointIds = this.patientDict[patient].points
-        let path = curveGenerator(pointIds.map(id => this.normalizePoints[id]) as any[])
-        return <path
-            key={patient}
-            d={path as string}
-            fill='none'
-            stroke='gray'
-            strokeWidth='1'
-            className='curve'
-        />
-    })
 
-    return <g className="lines" key='links'>
-                    {curves}
-            </g>
+        let curves = Object.keys(this.patientDict).map(patient => {
+            let pointIds = this.patientDict[patient].points
+            let path = curveGenerator(pointIds.map(id => this.normalizePoints[id]) as any[])
+            return <path
+                key={patient}
+                d={path as string}
+                fill='none'
+                stroke='gray'
+                strokeWidth='1'
+                className='curve'
+            />
+        })
+
+        return <g className="lines" key='links'>
+            {curves}
+        </g>
 
 
     }
 
     addLasso(width: number, height: number) {
-        let {selected} = this.props
+        let { selected } = this.props
         // lasso draw
         d3.selectAll('g.lasso').remove()
         var svg = d3.select('svg.customGrouping')
@@ -199,9 +201,9 @@ class Scatter extends React.Component<Props> {
         //     .attr("width", width)
         //     .attr("height", height)
         //     .style("opacity", 0);
-        
+
         var lasso_area = d3.select("rect.lasso")
-        
+
         // Lasso functions to execute while lassoing
         var lasso_start = () => {
             (mylasso.items() as any)
@@ -268,11 +270,11 @@ class Scatter extends React.Component<Props> {
 
 
     render() {
-        let {width, height} = this.props
+        let { width, height } = this.props
         return <g className='scatter'>
-            <rect className='lasso area' width={width} height={height} opacity={0}/>
+            <rect className='lasso area' width={width} height={height} opacity={0} />
             {this.drawScatterPlot()}
-            </g>
+        </g>
     }
 }
 

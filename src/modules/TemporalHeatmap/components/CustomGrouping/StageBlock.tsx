@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import { TSelected } from '.'
 
 import { Point, ReferencedVariables } from 'modules/Type'
-import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 
 const clipText = (text: string | number, len: number): string | number => {
@@ -29,7 +29,7 @@ interface Props {
 
 @observer
 class StageBlock extends React.Component<Props> {
-    public margin = 20; maxCellHeight = 20;
+    public gap = 20; maxCellHeight = 20;
     constructor(props: Props) {
         super(props)
         this.drawVIS = this.drawVIS.bind(this)
@@ -44,7 +44,10 @@ class StageBlock extends React.Component<Props> {
         let offsetX = 0
 
         let stageBlocks: JSX.Element[] = []
-        let cellWidth = (width - this.margin) / points.length
+        let allSelected = selected.map(d => d.pointIdx).flat()
+        let hasLeftPoints =allSelected.length < points.length
+        let wholeGap = (hasLeftPoints? selected.length : selected.length-1) * this.gap
+        let cellWidth =  (width-wholeGap) / points.length
         let fontHeight = 15
         let cellHeight = Math.min(
             (height - fontHeight) / points[0].value.length,
@@ -52,10 +55,9 @@ class StageBlock extends React.Component<Props> {
         )
 
         if (selected.length > 0) {
-            let allSelected = selected.map(d => d.pointIdx).flat()
-            let hasLeftPoints =allSelected.length < points.length
+           
 
-            let gap = hasLeftPoints? this.margin / selected.length:this.margin / (selected.length - 1)
+            let strokeW = 4
 
             selected.forEach(g => {
                 let { stageKey, pointIdx } = g
@@ -64,13 +66,30 @@ class StageBlock extends React.Component<Props> {
 
                 stageBlocks.push(
                     <g key={stageKey} className={`stage${stageKey}`} transform={`translate(${offsetX}, 0)`}>
-                        <text>{stageName}</text>
+                        
+                        <rect fill={stageColor} className='labelBG'
+                        width={Math.max(getTextWidth(stageName, 14), 20)} height={fontHeight}
+                        rx={3} opacity={0.5}
+                        stroke={stageColor}
+                        strokeWidth={strokeW}
+                        />
+                        <text alignment-baseline="hanging">{stageName}</text>
+                        
+                        <rect className='stageBox'
+                            fill='none'
+                            stroke={stageColor} 
+                            strokeWidth={strokeW}
+                            y={fontHeight}
+                            width={cellWidth*pointIdx.length + strokeW}
+                            height={cellHeight*points[0].value.length + strokeW}
+                        />
+
                         <g transform={`translate(0, ${fontHeight})`} className='blockCols' >
                             {this.drawBlock(pointIdx.map(id => points[id]), cellWidth, cellHeight)}
                         </g>
                     </g>)
 
-                offsetX += cellWidth * pointIdx.length + gap
+                offsetX += cellWidth * pointIdx.length + this.gap
             })
 
             
@@ -80,7 +99,7 @@ class StageBlock extends React.Component<Props> {
 
                 stageBlocks.push(
                     <g key={'noStage'} className={`noStage`} transform={`translate(${offsetX}, 0)`}>
-                        <text>noStage</text>
+                        <text alignment-baseline="hanging">noStage</text>
                         <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
                             {this.drawBlock(leftNodes.map(id => points[id]), cellWidth, cellHeight)}
                         </g>
@@ -91,7 +110,7 @@ class StageBlock extends React.Component<Props> {
             //if no selected stages, treat all points at one stage
             stageBlocks.push(
                 <g key='noStage' className={`noStage`} transform={`translate(${offsetX}, 0)`}>
-                    <text>noStage</text>
+                    <text alignment-baseline="hanging">noStage</text>
                     <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
                         {this.drawBlock(points, cellWidth, cellHeight)}
                     </g>
