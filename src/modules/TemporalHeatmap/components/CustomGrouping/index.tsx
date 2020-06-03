@@ -11,11 +11,11 @@ import { Point, ReferencedVariables, NormPoint, VariableStore } from 'modules/Ty
 
 import "./CustomGrouping.css"
 
-import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { num2letter } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, num2letter, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 import StageBlock from './StageBlock';
+import Scatter from './Scatter'
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -42,33 +42,12 @@ type Count = {
     patients: string[]
 }
 
-type CatePoint = {
-    [name: string]: any,
-}
-
-
-
-type TPatientDict = {
-    [patient: string]: {
-        patient: string, points: number[]
-    }
-}// the point id of each patient {paitent:{patient:string, points:id[]}}
-
-
 export type TStage = {
     domains:{
         [attrName:string]:string[]|number[]|boolean[]
     },
     points: number[],
     stageKey:string
-}
-
-
-const getUniqueName = (num: number, existingNames: string[]): string => {
-    let name = num2letter(num)
-    if (existingNames.includes(name)) {
-        return getUniqueName(num + 1, existingNames)
-    } else return name
 }
 
 
@@ -96,36 +75,15 @@ class CustomGrouping extends React.Component<Props> {
 
     constructor(props: Props) {
         super(props);
-        // this.getPoints = this.getPoints.bind(this)
-        this.addLasso = this.addLasso.bind(this)
         this.ref = React.createRef()
-
 
         this.resetGroup = this.resetGroup.bind(this)
         this.deleteGroup = this.deleteGroup.bind(this)
         this.applyCustomGroups = this.applyCustomGroups.bind(this)
+        this.setHoverID = this.setHoverID.bind(this)
+        this.resetHoverID = this.resetHoverID.bind(this)
+        this.updateSize = this.updateSize.bind(this)
 
-    }
-
-
-    getPatientDict() {
-        let points = this.props.points
-
-        let patientDict: TPatientDict = {}
-        // get points,each points is one patient at one timepoint
-        points.forEach((point, pointIdx) => {
-            let { patient } = point
-            if (patient in patientDict) {
-                patientDict[patient].points.push(pointIdx)
-            } else {
-                patientDict[patient] = {
-                    patient,
-                    points: [pointIdx]
-                }
-            }
-        })
-
-        return patientDict
     }
 
     /**
@@ -177,216 +135,7 @@ class CustomGrouping extends React.Component<Props> {
         return stages
     }
 
-    // normalize points to [0,1] range.
-    // @param: points: string||number[][], 
-    // @param: currentVariable: [variableName:string][]
-    // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
-    // return: points: number[][]
-    @computed
-    get normalizePoints(): NormPoint[] {
-        let { points, currentVariables, referencedVariables } = this.props
-        if (points.length === 0) return []
-        let normValues = points.map(point => {
-            let normValue = point.value.map((value, i) => {
-                let ref = referencedVariables[currentVariables[i]]
-                if (value === undefined) {
-                    return 0
-                } else if (typeof (value) == "number") {
-                    let domain = ref.domain as number[]
-                    return (value - domain[0]) / (domain[1] - domain[0])
-                } else if (ref.domain.length === 1) {
-                    return 0
-                } else {
-                    let domain: number[] | boolean[] = ref.domain as number[] | boolean[]
-                    return domain.findIndex((d: number | boolean) => d === value) / (domain.length - 1)
-                }
-            })
-            return normValue
-        })
-
-        var pca = new PCA(normValues)
-
-        if (normValues[0].length > 2) {
-            // only calculate pca when dimension is larger than 2
-            normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
-            // console.info('pca points', newPoints)
-        }
-
-
-        var normPoints: NormPoint[] = normValues.map((d, i) => {
-            return {
-                ...points[i],
-                value: d
-            }
-        })
-
-        return normPoints
-
-    }
-
-
-    // @params: points: {patient:string, value:[number, number]}[]
-    // @params: width:number, height:number, r:number
-    // @return: <g></g>
-    drawScatterPlot(width: number, height: number, r: number = 5, margin: number = 20) {
-        this.addLasso(width, height)
-
-        let patientDict = this.getPatientDict()
-        let { selected } = this
-        let normPoints = this.normalizePoints
-
-        if (normPoints.length === 0) {
-            return <g className='points' />
-        }
-        var xScale = d3.scaleLinear()
-            .domain(d3.extent(normPoints.map(d => d.value[0])) as [number, number])
-            .range([margin, width - margin])
-
-        var yScale = d3.scaleLinear()
-            .domain(d3.extent(normPoints.map(d => d.value[1])) as [number, number])
-            .range([margin, height - margin])
-
-
-        const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
-        var circles = normPoints.map((normPoint) => {
-            let id = normPoint.idx
-            let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let opacity = this.hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 1
-            return <circle
-                key={id}
-                id={id.toString()}
-                cx={xScale(normPoint.value[0])}
-                cy={yScale(normPoint.value[1])}
-                r={r}
-                fill={this.hasLink ? "black" : (
-                    groupIdx > -1 ? getColorByName(this.selected[groupIdx].stageKey) : "white"
-                )}
-                stroke='black'
-                strokeWidth='1'
-                opacity={opacity}
-                className='point'
-                onMouseEnter={()=>{this.hoverPointID=id}}
-                onMouseLeave={()=>{this.hoverPointID=-1}}
-                cursor='pointer'
-            />
-        })
-
-
-        let curveGenerator = d3.line()
-            .x((p: NormPoint | any) => xScale(p.value[0]))
-            .y((p: NormPoint | any) => yScale(p.value[1]))
-            .curve(d3.curveMonotoneX)
-
-        let curves = Object.keys(patientDict).map(patient => {
-            let pointIds = patientDict[patient].points
-            let path = curveGenerator(pointIds.map(id => normPoints[id]) as any[])
-            return <path
-                key={patient}
-                d={path as string}
-                fill='none'
-                stroke='gray'
-                strokeWidth='1'
-                className='curve'
-            />
-        })
-
-        
-
-        if (this.hasLink) {
-            return <g className='patientScatter'>
-                <g className="points">
-                    {circles}
-                </g>
-                <g className="lines">
-                    {curves}
-                </g>
-            </g>
-        }
-        else {
-            return <g className='patientScatter'>
-                <g className="points">
-                    {circles}
-                </g>
-            </g>
-        }
-
-
-    }
-
-    addLasso(width: number, height: number) {
-        // lasso draw
-        d3.selectAll('g.lasso').remove()
-        var svg = d3.select('svg.customGrouping')
-        // var lasso_area = svg.append("rect")
-        //     .attr('class', 'lasso area')
-        //     .attr("width", width)
-        //     .attr("height", height)
-        //     .style("opacity", 0);
-        
-        var lasso_area = d3.select("rect.lasso")
-        
-        // Lasso functions to execute while lassoing
-        var lasso_start = () => {
-            (mylasso.items() as any)
-                .attr("r", 5) // reset size
-            // .attr('fill', 'white')
-        };
-
-        var lasso_draw = () => {
-            // Style the possible dots
-            // mylasso
-            // .possibleItems()
-            // .classed("possible", true)
-        };
-
-        var lasso_end = () => {
-
-            // mylasso.selectedItems()
-            //     .attr('fill', colors[this.selected.length])
-            //     .attr('r', '7')
-            //     .classed(`group_${this.selected.length}`, true)
-            // mylasso
-            // .items()
-            // .classed("possible", false)
-
-
-            let selected = (mylasso.selectedItems() as any)._groups[0].map((d: any): number => parseInt(d.attributes.id.value))
-            if (selected.length > 0) {
-                // if selected nodes are in previous stages
-
-                this.selected.forEach((g, i) => {
-                    g.pointIdx = g.pointIdx.filter(point => !selected.includes(point))
-                    if (g.pointIdx.length > 0) {
-                        this.selected[i] = g // update the group by removing overlapping points
-                    } else {
-                        this.selected.splice(i, 1) // delete the whole group if all points overlap
-                    }
-                })
-
-
-
-                let stageKey = getUniqueName(this.selected.length, this.selected.map(d => d.stageKey))
-                this.selected.push({
-                    stageKey,
-                    pointIdx: selected
-                })
-            }
-
-        };
-
-
-        var mylasso = lasso()
-        mylasso.items(d3.selectAll('circle.point'))
-        mylasso.targetArea(lasso_area) // area where the lasso can be started
-            .on("start", lasso_start) // lasso start function
-            .on("draw", lasso_draw) // lasso draw function
-            .on("end", lasso_end); // lasso end function
-
-
-        svg.call(mylasso)
-
-
-    }
+    
 
     /**
      * summarize the selected group of points
@@ -431,7 +180,7 @@ class CustomGrouping extends React.Component<Props> {
                 .filter(i => !allSelected.includes(i))
 
             this.selected.push({
-                stageKey: getUniqueName(this.selected.length, this.selected.map(d => d.stageKey)),
+                stageKey: getUniqueKeyName(this.selected.length, this.selected.map(d => d.stageKey)),
                 pointIdx: leftNodes
             })
             message.info('All unselected nodes are grouped as one stage')
@@ -526,18 +275,34 @@ class CustomGrouping extends React.Component<Props> {
 
     }
 
+    @action
+    setHoverID(id:number){
+        this.hoverPointID = id
+    }
+
+    @action
+    resetHoverID(){
+        this.hoverPointID = -1
+    }
+
     componentDidMount() {
+        this.updateSize()
+        window.addEventListener('resize', this.updateSize);
+    }
+    componentWillUnmount(){
+        window.removeEventListener('resize', this.updateSize);
+    }
+    updateSize(){
         if (this.ref.current) {
             this.width = this.ref.current.getBoundingClientRect().width
         }
-
     }
 
 
     render() {
 
-        let { points } = this.props
-        let { width, height, } = this
+        let { points, currentVariables, referencedVariables, colorScales } = this.props
+        let { width, height, selected, hasLink } = this
         let pcpMargin = 25
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
 
@@ -563,9 +328,18 @@ class CustomGrouping extends React.Component<Props> {
                         onChange={toggleHasEvent} />
 
                     <svg className='customGrouping' width="100%" height="80%">
-                        <rect className='lasso area' width={width} height={scatterHeight} opacity={0}/>
-                        {this.drawScatterPlot(width, scatterHeight)}
-
+                        <Scatter
+                        points={points}
+                        currentVariables={currentVariables}
+                        referencedVariables= {referencedVariables} 
+                        selected={selected}
+                        width={width}
+                        height={scatterHeight}
+                        hasLink={hasLink}
+                        colorScales={colorScales}
+                        setHoverID={this.setHoverID}
+                        resetHoverID={this.resetHoverID}
+                        />
                         <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
                             <StageBlock 
                                 stageLabels={this.props.stageLabels}

@@ -93,6 +93,14 @@ const cropText = (text:string, fontSize:number, fontWeight:number, maxWidth:numb
     return String.fromCharCode(65 + num)
 }
 
+const getUniqueKeyName = (num: number, existingNames: string[]): string => {
+    let name = num2letter(num)
+    if (existingNames.includes(name)) {
+        return getUniqueKeyName(num + 1, existingNames)
+    } else return name
+}
+
+
 export {
     getScientificNotation,
     toTitleCase,
@@ -100,4 +108,5 @@ export {
     getTextWidth,
     cropText,
     num2letter,
+    getUniqueKeyName
 }

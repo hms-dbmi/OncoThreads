@@ -10,7 +10,7 @@ export interface Point{
 }
 
 export interface NormPoint extends Point{
-    value: number[]
+    pos: number[]
 }
 
 export interface ReferencedVariables {

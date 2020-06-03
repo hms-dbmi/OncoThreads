@@ -29,7 +29,7 @@ interface Props {
 
 @observer
 class StageBlock extends React.Component<Props> {
-    public margin = 20; minCellHeight = 20;
+    public margin = 20; maxCellHeight = 20;
     constructor(props: Props) {
         super(props)
         this.drawVIS = this.drawVIS.bind(this)
@@ -48,7 +48,7 @@ class StageBlock extends React.Component<Props> {
         let fontHeight = 15
         let cellHeight = Math.min(
             (height - fontHeight) / points[0].value.length,
-            this.minCellHeight
+            this.maxCellHeight
         )
 
         if (selected.length > 0) {
