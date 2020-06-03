@@ -23,9 +23,10 @@ interface Props {
     selected: TSelected,
     width: number,
     height: number,
+    hoverPointID:number,
     hasLink: boolean,
     colorScales: Array<(value: string | number | boolean) => string>,
-    setHoverID: (id: number) => void;
+    setHoverID: (id: number) => void,
     resetHoverID: () => void
 }
 
@@ -104,8 +105,8 @@ class Scatter extends React.Component<Props> {
         return patientDict
     }
 
-    drawScatterPlot( margin: number = 20) {
-        let { width, height} = this.props
+    drawScatterPlot(margin: number = 20) {
+        let { width, height } = this.props
         this.addLasso(width, height)
 
         let normPoints = this.normalizePoints
@@ -121,42 +122,56 @@ class Scatter extends React.Component<Props> {
             .domain(d3.extent(normPoints.map(d => d.pos[1])) as [number, number])
             .range([margin, height - margin])
 
-        let circles = this.drawPoints(xScale, yScale), 
-        links = this.drawLinks(xScale, yScale)
+        let circles = this.drawPoints(xScale, yScale),
+            links = this.drawLinks(xScale, yScale)
 
         return [links, circles]
     }
 
-    drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>){
+    drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
         let normPoints = this.normalizePoints
-        let {selected, hasLink, resetHoverID, setHoverID} = this.props
-        const r=5
+        let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
+        const r = 5
+        const cellWidth = 8, cellHeight = 4
 
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         var circles = normPoints.map((normPoint) => {
             let id = normPoint.idx
             let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 1
-            return <circle
-                key={id}
-                id={id.toString()}
-                cx={xScale(normPoint.pos[0])}
-                cy={yScale(normPoint.pos[1])}
-                r={r}
-                fill={hasLink ? "black" : (
-                    groupIdx > -1 ? getColorByName(selected[groupIdx].stageKey) : "white"
-                )}
-                stroke='black'
-                strokeWidth='1'
-                opacity={opacity}
-                className='point'
+            let stageColor = groupIdx>-1? getColorByName(selected[groupIdx].stageKey): 'none'
+            let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID===normPoint.idx?1:0.5)
+            return <g transform={`translate(
+                    ${xScale(normPoint.pos[0]) - cellWidth / 2}, 
+                    ${yScale(normPoint.pos[1]) - cellHeight * normPoint.value.length / 2}
+                    )`}
                 onMouseEnter={() => setHoverID(id)}
                 onMouseLeave={() => resetHoverID()}
+                opacity={opacity}
                 cursor='pointer'
-            />
+            >
+                {this.glyph(normPoint, stageColor, cellWidth, cellHeight)}
+            </g>
         })
 
         return <g className='circles'>{circles}</g>
+    }
+
+    glyph(normPoint: NormPoint, stageColor: string, cellWidth:number, cellHeight:number ) {
+        const strokeW = 3
+        let pointCol = normPoint.value.map((v, rowIdx) => {
+            let fill = this.props.colorScales[rowIdx](v) || 'gray'
+            return <rect key={rowIdx}
+                width={cellWidth} height={cellHeight}
+                y={rowIdx * cellHeight}
+                fill={fill}
+            />
+        })
+        let outline = <rect fill='none'
+            key={'stageOutline'}
+            stroke={stageColor} strokeWidth={3}
+            width={cellWidth + strokeW} height={normPoint.value.length * cellHeight + strokeW}
+        />
+        return [...pointCol, outline]
     }
 
     drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {

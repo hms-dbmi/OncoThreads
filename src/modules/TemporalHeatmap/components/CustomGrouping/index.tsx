@@ -337,6 +337,7 @@ class CustomGrouping extends React.Component<Props> {
                         height={scatterHeight}
                         hasLink={hasLink}
                         colorScales={colorScales}
+                        hoverPointID={this.hoverPointID}
                         setHoverID={this.setHoverID}
                         resetHoverID={this.resetHoverID}
                         />
@@ -349,6 +350,8 @@ class CustomGrouping extends React.Component<Props> {
                                 selected={this.selected}
                                 colorScales={this.props.colorScales}
                                 hoverPointID={this.hoverPointID}
+                                setHoverID={this.setHoverID}
+                                resetHoverID={this.resetHoverID}
                             />
                         </g>
 

@@ -21,9 +21,11 @@ interface Props {
     stageLabels: { [key: string]: string },
     width: number,
     height: number,
-    hoverPointID:number,
+    hoverPointID: number,
     selected: TSelected,
     colorScales: Array<(value: string | number | boolean) => string>,
+    setHoverID: (id: number) => void,
+    resetHoverID: () => void,
 }
 
 
@@ -45,9 +47,9 @@ class StageBlock extends React.Component<Props> {
 
         let stageBlocks: JSX.Element[] = []
         let allSelected = selected.map(d => d.pointIdx).flat()
-        let hasLeftPoints =allSelected.length < points.length
-        let wholeGap = (hasLeftPoints? selected.length : selected.length-1) * this.gap
-        let cellWidth =  (width-wholeGap) / points.length
+        let hasLeftPoints = allSelected.length < points.length
+        let wholeGap = (hasLeftPoints ? selected.length : selected.length - 1) * this.gap
+        let cellWidth = (width - wholeGap) / points.length
         let fontHeight = 15
         let cellHeight = Math.min(
             (height - fontHeight) / points[0].value.length,
@@ -55,7 +57,7 @@ class StageBlock extends React.Component<Props> {
         )
 
         if (selected.length > 0) {
-           
+
 
             let strokeW = 4
 
@@ -66,22 +68,22 @@ class StageBlock extends React.Component<Props> {
 
                 stageBlocks.push(
                     <g key={stageKey} className={`stage${stageKey}`} transform={`translate(${offsetX}, 0)`}>
-                        
+
                         <rect fill={stageColor} className='labelBG'
-                        width={Math.max(getTextWidth(stageName, 14), 20)} height={fontHeight}
-                        rx={3} opacity={0.5}
-                        stroke={stageColor}
-                        strokeWidth={strokeW}
+                            width={Math.max(getTextWidth(stageName, 14), 20)} height={fontHeight}
+                            rx={3} opacity={0.5}
+                            stroke={stageColor}
+                            strokeWidth={strokeW}
                         />
                         <text alignment-baseline="hanging">{stageName}</text>
-                        
+
                         <rect className='stageBox'
                             fill='none'
-                            stroke={stageColor} 
+                            stroke={stageColor}
                             strokeWidth={strokeW}
                             y={fontHeight}
-                            width={cellWidth*pointIdx.length + strokeW}
-                            height={cellHeight*points[0].value.length + strokeW}
+                            width={cellWidth * pointIdx.length + strokeW}
+                            height={cellHeight * points[0].value.length + strokeW}
                         />
 
                         <g transform={`translate(0, ${fontHeight})`} className='blockCols' >
@@ -92,7 +94,7 @@ class StageBlock extends React.Component<Props> {
                 offsetX += cellWidth * pointIdx.length + this.gap
             })
 
-            
+
             if (hasLeftPoints) {
                 let leftNodes = points.map((_, i) => i)
                     .filter(i => !allSelected.includes(i))
@@ -123,6 +125,7 @@ class StageBlock extends React.Component<Props> {
 
     drawBlock(points: Point[], cellWidth: number, cellHeight: number) {
         points = this.reorderPoints(points)
+        let { setHoverID, resetHoverID } = this.props
         let block = points.map((point, i) => {
 
             let pointCol = point.value.map((v, rowIdx) => {
@@ -134,9 +137,13 @@ class StageBlock extends React.Component<Props> {
                 />
             })
 
-            let opacity= (this.props.hoverPointID===point.idx)?1:0.5
+            let opacity = (this.props.hoverPointID === point.idx) ? 1 : 0.5
 
-            return <g key={`point_${point.idx}`} className={`point_${point.idx}`} opacity={opacity}>
+            return <g
+                key={`point_${point.idx}`} className={`point_${point.idx}`} opacity={opacity}
+                onMouseEnter={() => setHoverID(point.idx)}
+                onMouseLeave={() => resetHoverID()}
+            >
                 {pointCol}
             </g>
         })
