@@ -75,7 +75,7 @@ class StageBlock extends React.Component<Props> {
                             stroke={stageColor}
                             strokeWidth={strokeW}
                         />
-                        <text alignment-baseline="hanging">{stageName}</text>
+                        <text alignmentBaseline="hanging">{stageName}</text>
 
                         <rect className='stageBox'
                             fill='none'
@@ -101,7 +101,7 @@ class StageBlock extends React.Component<Props> {
 
                 stageBlocks.push(
                     <g key={'noStage'} className={`noStage`} transform={`translate(${offsetX}, 0)`}>
-                        <text alignment-baseline="hanging">noStage</text>
+                        <text alignmentBaseline="hanging">noStage</text>
                         <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
                             {this.drawBlock(leftNodes.map(id => points[id]), cellWidth, cellHeight)}
                         </g>
@@ -112,7 +112,7 @@ class StageBlock extends React.Component<Props> {
             //if no selected stages, treat all points at one stage
             stageBlocks.push(
                 <g key='noStage' className={`noStage`} transform={`translate(${offsetX}, 0)`}>
-                    <text alignment-baseline="hanging">noStage</text>
+                    <text alignmentBaseline="hanging">noStage</text>
                     <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
                         {this.drawBlock(points, cellWidth, cellHeight)}
                     </g>

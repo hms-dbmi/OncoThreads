@@ -31,7 +31,7 @@
     border: 0.5px solid #ccc
   }
 
-  circle.point{
+  g.glyph{
     transition: all 400ms ease-in-out;
   }
 
@@ -40,7 +40,7 @@
   }
   
 
-  path.curve {
+  path.link {
     stroke-dasharray: 1000;
     stroke-dashoffset: 1000;
     animation: dash 1s linear forwards;

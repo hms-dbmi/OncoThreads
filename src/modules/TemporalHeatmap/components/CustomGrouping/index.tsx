@@ -83,6 +83,7 @@ class CustomGrouping extends React.Component<Props> {
         this.setHoverID = this.setHoverID.bind(this)
         this.resetHoverID = this.resetHoverID.bind(this)
         this.updateSize = this.updateSize.bind(this)
+        this.updateSelected = this.updateSelected.bind(this)
 
     }
 
@@ -285,6 +286,18 @@ class CustomGrouping extends React.Component<Props> {
         this.hoverPointID = -1
     }
 
+    @action
+    updateSelected(i:number, group:TSelected[number]|undefined){
+        if (group==undefined){
+            this.selected.splice(i,1)
+        }else if(i<this.selected.length){
+            this.selected[i] = group
+        }else {
+            this.selected.push(group)
+        }
+        
+    }
+
     componentDidMount() {
         this.updateSize()
         window.addEventListener('resize', this.updateSize);
@@ -340,6 +353,7 @@ class CustomGrouping extends React.Component<Props> {
                         hoverPointID={this.hoverPointID}
                         setHoverID={this.setHoverID}
                         resetHoverID={this.resetHoverID}
+                        updateSelected = {this.updateSelected}
                         />
                         <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
                             <StageBlock 

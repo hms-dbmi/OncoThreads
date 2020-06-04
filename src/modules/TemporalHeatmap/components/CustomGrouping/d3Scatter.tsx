@@ -7,7 +7,9 @@ import * as d3 from 'd3';
 import { TSelected } from '.';
 import lasso from './lasso.js'
 
-import { getColorByName, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getUniqueKeyName, ColorScales } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { updateData } from 'lineupjs/src/ui/EngineRanking';
+import { selection } from 'd3';
 
 type TPatientDict = {
     [patient: string]: {
@@ -23,7 +25,7 @@ interface Props {
     selected: TSelected,
     width: number,
     height: number,
-    hoverPointID:number,
+    hoverPointID: number,
     hasLink: boolean,
     colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
@@ -44,7 +46,7 @@ class Scatter extends React.Component<Props> {
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
     // return: points: number[][]
     @computed
-    get normalizePoints(): NormPoint[] {
+    get normPoints(): NormPoint[] {
         let { points, currentVariables, referencedVariables } = this.props
         if (points.length === 0) return []
         let normValues = points.map(point => {
@@ -106,11 +108,12 @@ class Scatter extends React.Component<Props> {
         return patientDict
     }
 
-    drawScatterPlot(margin: number = 20) {
+
+    d3Draw(margin: number = 20) {
         let { width, height } = this.props
         this.addLasso(width, height)
 
-        let normPoints = this.normalizePoints
+        let normPoints = this.normPoints
 
         if (normPoints.length === 0) {
             return <g className='points' />
@@ -123,64 +126,108 @@ class Scatter extends React.Component<Props> {
             .domain(d3.extent(normPoints.map(d => d.pos[1])) as [number, number])
             .range([margin, height - margin])
 
-        let circles = this.drawPoints(xScale, yScale),
-            links = this.drawLinks(xScale, yScale)
-
-        return [links, circles]
+        this.d3Links(xScale, yScale, d3.select('g.glyphs'))
+        this.d3Glyphs(xScale, yScale, d3.select('g.glyphs'))
+        
     }
 
-    drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
-        let normPoints = this.normalizePoints
-        let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
-        const r = 5
-        const cellWidth = 8, cellHeight = 4
+    d3Glyphs(
+        xScale: d3.ScaleLinear<number, number>,
+        yScale: d3.ScaleLinear<number, number>,
+        selection: d3.Selection<d3.BaseType, {}, HTMLElement, {}>
+    ) {
+        let normPoints = this.normPoints
+        let { selected, colorScales, hoverPointID, hasLink, setHoverID, resetHoverID } = this.props
+        let cellWidth = 10, cellHeight = 8, strokeW = 3
 
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
-        var circles = normPoints.map((normPoint) => {
-            let id = normPoint.idx
-            let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let stageColor = groupIdx>-1? getColorByName(selected[groupIdx].stageKey): 'none'
-            let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID===normPoint.idx?1:0.5)
-            return <g transform={`translate(
-                    ${xScale(normPoint.pos[0]) - cellWidth / 2}, 
-                    ${yScale(normPoint.pos[1]) - cellHeight * normPoint.value.length / 2}
-                    )`}
-                    className='glyph'
-                    id={normPoint.idx.toString()}
-                onMouseEnter={() => setHoverID(id)}
-                onMouseLeave={() => resetHoverID()}
-                opacity={opacity}
-                cursor='pointer'
-            >
-                {this.glyph(normPoint, stageColor, cellWidth, cellHeight)}
-            </g>
-        })
 
-        return <g className='circles'>{circles}</g>
+        let glyphs = selection.selectAll('g.glyph')
+            .data(normPoints)
+            .join(
+                enter => enter.append('g')
+                    .attr('class', 'glyph')
+                    .style('opacity', d => {
+                        if (hasLink) {
+                            return 0.1 + d.timeIdx * 0.6 / maxTimeIdx
+                        } else {
+                            return (hoverPointID === d.idx ? 1 : 0.5)
+                        }
+                    })
+                    .attr('transform', d => `translate(
+                    ${xScale(d.pos[0]) - cellWidth / 2}, 
+                    ${yScale(d.pos[1]) - cellHeight * d.value.length / 2}
+                    )`)
+                    .attr('cursor', 'point')
+                    .on('mouseover', (d) => setHoverID(d.idx))
+                    .on('mouseout', ()=>resetHoverID()),
+
+                update => update
+                    .style('opacity', d => {
+                        if (hasLink) {
+                            return 0.1 + d.timeIdx * 0.6 / maxTimeIdx
+                        } else {
+                            return (hoverPointID === d.idx ? 1 : 0.5)
+                        }
+                    })
+                    .attr('transform', d => `translate(
+                    ${xScale(d.pos[0]) - cellWidth / 2}, 
+                    ${yScale(d.pos[1]) - cellHeight * d.value.length / 2}
+                    )`),
+
+                exit => exit.remove()
+            )
+
+        // add the outlines to indicate stages
+        glyphs
+            .join(
+                enter => enter.append('rect')
+                    .attr('class', 'outline')
+                    .attr('width', cellWidth)
+                    .attr('height', d => cellHeight * d.value.length)
+                    .attr('fill', 'none')
+                    .style('stroke', d => {
+                        let stageKey = selected.find(p=>p.pointIdx.includes(d.idx))?.stageKey
+                        return stageKey ? getColorByName(stageKey) : 'none'
+                    })
+                    .style('stroke-width', strokeW),
+
+                update => update.select('rect.outline')
+                    .attr('height', d => cellHeight * d.value.length)
+                    .style('stroke', d => {
+                        let stageKey = selected.find(p=>p.pointIdx.includes(d.idx))?.stageKey
+                        return stageKey ? getColorByName(stageKey) : 'none'
+                    }),
+
+                exit => exit.remove()
+            )
+
+
+        // draw glyp
+        glyphs.selectAll('rect.val')
+            .data(d => d.value)
+            .join(
+                enter => enter.append('rect')
+                    .attr('class', 'val')
+                    .attr('width', cellWidth)
+                    .attr('height', cellHeight)
+                    .attr('y', (_, i) => cellHeight * i)
+                    .attr('fill', (v, i) => colorScales[i](v)),
+
+                update => update.attr('y', (_, i) => cellHeight * i)
+                    .attr('fill', (v, i) => colorScales[i](v)),
+
+                exit => exit.remove()
+            )
+
     }
 
-    glyph(normPoint: NormPoint, stageColor: string, cellWidth:number, cellHeight:number ) {
-        const strokeW = 3
-        let pointCol = normPoint.value.map((v, rowIdx) => {
-            let fill = this.props.colorScales[rowIdx](v) || 'gray'
-            return <rect key={rowIdx}
-                width={cellWidth} height={cellHeight}
-                y={rowIdx * cellHeight}
-                fill={fill}
-            />
-        })
-        let outline = <rect fill='none'
-            key={'stageOutline'}
-            stroke={stageColor} strokeWidth={3}
-            width={cellWidth + strokeW} height={normPoint.value.length * cellHeight + strokeW}
-        />
-        return [...pointCol, outline]
-    }
-
-    drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
-
+    d3Links(
+        xScale: d3.ScaleLinear<number, number>,
+        yScale: d3.ScaleLinear<number, number>,
+        selection: d3.Selection<d3.BaseType, {}, HTMLElement, {}>
+    ) {
         let { hasLink } = this.props
-        if (!hasLink) return <g className="nolines" key='links' />
 
         let curveGenerator = d3.line()
             .x((p: NormPoint | any) => xScale(p.pos[0]))
@@ -188,26 +235,31 @@ class Scatter extends React.Component<Props> {
             .curve(d3.curveMonotoneX)
 
 
+        selection.selectAll('path.link')
+        .data(Object.values(this.patientDict))
+        .join(
+            enter=>enter.append('path')
+            .attr('class', 'link')
+            .attr('fill', 'none')
+            .attr('stroke','gray')
+            .attr('d', p=>{
+                let pointIds = p.points
+                let path= curveGenerator(pointIds.map(id => this.normPoints[id]) as any[])
+                return hasLink? path:''
+            }),
 
-        let curves = Object.keys(this.patientDict).map(patient => {
-            let pointIds = this.patientDict[patient].points
-            let path = curveGenerator(pointIds.map(id => this.normalizePoints[id]) as any[])
-            return <path
-                key={patient}
-                d={path as string}
-                fill='none'
-                stroke='gray'
-                strokeWidth='1'
-                className='curve'
-            />
-        })
+            update=>update
+            .attr('d', p=>{
+                let pointIds = p.points
+                let path= curveGenerator(pointIds.map(id => this.normPoints[id]) as any[])
+                return hasLink? path:''
+            }),
 
-        return <g className="lines" key='links'>
-            {curves}
-        </g>
+            exit=>exit.remove()
 
-
+        )
     }
+    
 
     addLasso(width: number, height: number) {
         let { selected, updateSelected } = this.props
@@ -245,9 +297,8 @@ class Scatter extends React.Component<Props> {
             // mylasso
             // .items()
             // .classed("possible", false)
-            
-            let thisSelected = (mylasso.selectedItems() as any)._groups[0].map((d: any): number => parseInt(d.attributes.id.value))
-           
+
+            let thisSelected:number[] = (mylasso.selectedItems() as any).data().map((d:NormPoint) =>d.idx )
             if (thisSelected.length > 0) {
                 // if selected nodes are in previous stages
 
@@ -289,13 +340,22 @@ class Scatter extends React.Component<Props> {
 
     }
 
+    componentDidMount() {
+        this.d3Draw()
+    }
+
+    componentDidUpdate() {
+        this.d3Draw()
+    }
 
 
     render() {
         let { width, height } = this.props
         return <g className='scatter'>
             <rect className='lasso area' width={width} height={height} opacity={0} />
-            {this.drawScatterPlot()}
+            <g className='glyphs' />
+            <g className='links' />
+            {/* {this.drawVIS()} */}
         </g>
     }
 }

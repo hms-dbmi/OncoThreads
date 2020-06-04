@@ -130,13 +130,13 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             width={this.props.hasBackground?totalW:0} 
             height={totalH} 
             fill={getColorByName(stageKey)} />
-            <circle 
+            {/* <circle 
             r= {4}
             cx={totalW-2}
             cy={totalH-2}
             stroke='lightgray'
             onClick={()=>{this.hasBackground=!this.hasBackground}}
-            />
+            /> */}
             </g>
         }
 
