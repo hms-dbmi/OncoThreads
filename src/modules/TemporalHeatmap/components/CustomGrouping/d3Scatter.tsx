@@ -10,6 +10,7 @@ import lasso from './lasso.js'
 import { getColorByName, getUniqueKeyName, ColorScales } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { updateData } from 'lineupjs/src/ui/EngineRanking';
 import { selection } from 'd3';
+import { BaseType } from 'antd/lib/typography/Base';
 
 type TPatientDict = {
     [patient: string]: {
@@ -30,15 +31,12 @@ interface Props {
     colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
-    updateSelected: (i:number, group:TSelected[number]|undefined)=>void
+    updateSelected: (i: number, group: TSelected[number] | undefined) => void
 }
 
 
 @observer
 class Scatter extends React.Component<Props> {
-    constructor(props: Props) {
-        super(props)
-    }
 
     // normalize points to [0,1] range.
     // @param: points: string||number[][], 
@@ -128,7 +126,9 @@ class Scatter extends React.Component<Props> {
 
         this.d3Links(xScale, yScale, d3.select('g.glyphs'))
         this.d3Glyphs(xScale, yScale, d3.select('g.glyphs'))
+
         
+
     }
 
     d3Glyphs(
@@ -160,7 +160,7 @@ class Scatter extends React.Component<Props> {
                     )`)
                     .attr('cursor', 'point')
                     .on('mouseover', (d) => setHoverID(d.idx))
-                    .on('mouseout', ()=>resetHoverID()),
+                    .on('mouseout', () => resetHoverID()),
 
                 update => update
                     .style('opacity', d => {
@@ -187,7 +187,7 @@ class Scatter extends React.Component<Props> {
                     .attr('height', d => cellHeight * d.value.length)
                     .attr('fill', 'none')
                     .style('stroke', d => {
-                        let stageKey = selected.find(p=>p.pointIdx.includes(d.idx))?.stageKey
+                        let stageKey = selected.find(p => p.pointIdx.includes(d.idx))?.stageKey
                         return stageKey ? getColorByName(stageKey) : 'none'
                     })
                     .style('stroke-width', strokeW),
@@ -195,7 +195,7 @@ class Scatter extends React.Component<Props> {
                 update => update.select('rect.outline')
                     .attr('height', d => cellHeight * d.value.length)
                     .style('stroke', d => {
-                        let stageKey = selected.find(p=>p.pointIdx.includes(d.idx))?.stageKey
+                        let stageKey = selected.find(p => p.pointIdx.includes(d.idx))?.stageKey
                         return stageKey ? getColorByName(stageKey) : 'none'
                     }),
 
@@ -220,6 +220,54 @@ class Scatter extends React.Component<Props> {
                 exit => exit.remove()
             )
 
+
+            /***
+             * avoidCollide
+             ********/
+         
+        // const padding = 1
+
+        // d3.forceSimulation()
+        //     .nodes(normPoints as any)
+        //     .force("x-force", d3.forceX( (p:any)=>xScale(p.pos[0]) ))
+        //     .force("y-force", d3.forceY( (p:any)=>yScale(p.pos[1]) ))
+        //     .force("collide", rectCollide)
+        //     .on("tick", tick);
+
+        // function tick() {
+        //     glyphs
+        //     .attr("transform", 
+        //         (d:NormPoint) =>`translate(${d.x}, ${d.y})`
+        //         )
+        // }
+
+        // function rectCollide() {
+        //     for (var k = 0, iterations = 4, strength = 0.5; k < iterations; ++k) {
+        //         for (var i = 0, n = normPoints.length; i < n; ++i) {
+        //             for (var a = normPoints[i], j = i + 1; j < n; ++j) {
+        //                 var b = normPoints[j],
+        //                     x = a.x + a.vx - b.x - b.vx,
+        //                     y = a.y + a.vy - b.y - b.vy,
+        //                     lx = Math.abs(x),
+        //                     ly = Math.abs(y),
+        //                     w = cellWidth, h = cellHeight*a.value.length,
+        //                     rx = w + padding,
+        //                     ry = h + padding
+
+        //                 if (lx < rx && ly < ry) {
+        //                     if (lx > ly) {
+        //                         lx = (lx - rx) * (x < 0 ? -strength : strength);
+        //                         a.vx -= lx; b.vx += lx;
+        //                     } else {
+        //                         ly = (ly - ry) * (y < 0 ? -strength : strength);
+        //                         a.vy -= ly; b.vy += ly;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
     }
 
     d3Links(
@@ -236,30 +284,29 @@ class Scatter extends React.Component<Props> {
 
 
         selection.selectAll('path.link')
-        .data(Object.values(this.patientDict))
-        .join(
-            enter=>enter.append('path')
-            .attr('class', 'link')
-            .attr('fill', 'none')
-            .attr('stroke','gray')
-            .attr('d', p=>{
-                let pointIds = p.points
-                let path= curveGenerator(pointIds.map(id => this.normPoints[id]) as any[])
-                return hasLink? path:''
-            }),
+            .data(Object.values(this.patientDict))
+            .join(
+                enter => enter.append('path')
+                    .attr('class', 'link')
+                    .attr('fill', 'none')
+                    .attr('stroke', 'gray')
+                    .attr('d', p => {
+                        let pointIds = p.points
+                        let path = curveGenerator(pointIds.map(id => this.normPoints[id]) as any[])
+                        return hasLink ? path : ''
+                    }),
 
-            update=>update
-            .attr('d', p=>{
-                let pointIds = p.points
-                let path= curveGenerator(pointIds.map(id => this.normPoints[id]) as any[])
-                return hasLink? path:''
-            }),
+                update => update
+                    .attr('d', p => {
+                        let pointIds = p.points
+                        let path = curveGenerator(pointIds.map(id => this.normPoints[id]) as any[])
+                        return hasLink ? path : ''
+                    }),
 
-            exit=>exit.remove()
+                exit => exit.remove()
 
-        )
+            )
     }
-    
 
     addLasso(width: number, height: number) {
         let { selected, updateSelected } = this.props
@@ -298,7 +345,7 @@ class Scatter extends React.Component<Props> {
             // .items()
             // .classed("possible", false)
 
-            let thisSelected:number[] = (mylasso.selectedItems() as any).data().map((d:NormPoint) =>d.idx )
+            let thisSelected: number[] = (mylasso.selectedItems() as any).data().map((d: NormPoint) => d.idx)
             if (thisSelected.length > 0) {
                 // if selected nodes are in previous stages
 
@@ -306,7 +353,7 @@ class Scatter extends React.Component<Props> {
                     g.pointIdx = g.pointIdx.filter(point => !thisSelected.includes(point))
                     if (g.pointIdx.length > 0) {
                         // selected[i] = g // update the group by removing overlapping points
-                        updateSelected(i,g)
+                        updateSelected(i, g)
                     } else {
                         // selected.splice(i, 1) // delete the whole group if all points overlap
                         updateSelected(i, undefined)
@@ -316,7 +363,7 @@ class Scatter extends React.Component<Props> {
 
 
                 let stageKey = getUniqueKeyName(selected.length, selected.map(d => d.stageKey))
-                let newGroup={
+                let newGroup = {
                     stageKey,
                     pointIdx: thisSelected
                 }

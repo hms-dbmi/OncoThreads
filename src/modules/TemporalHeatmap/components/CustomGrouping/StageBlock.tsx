@@ -81,7 +81,8 @@ class StageBlock extends React.Component<Props> {
                             fill='none'
                             stroke={stageColor}
                             strokeWidth={strokeW}
-                            y={fontHeight}
+                            y={fontHeight-strokeW/2}
+                            x={-strokeW/2}
                             width={cellWidth * pointIdx.length + strokeW}
                             height={cellHeight * points[0].value.length + strokeW}
                         />

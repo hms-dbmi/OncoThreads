@@ -106,6 +106,30 @@ class Scatter extends React.Component<Props> {
         return patientDict
     }
 
+    @computed
+    get maxTimeIdx():number{
+        let normPoints = this.normalizePoints
+        const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
+        return maxTimeIdx
+    }
+
+    generateGradients(){
+       let maxTimeIdx = this.maxTimeIdx
+
+       let graySclae = d3.interpolate('#eee','#333')
+
+       let gradients:JSX.Element[] = []
+       for(let i =0;i<maxTimeIdx;i++){
+           let grad = <linearGradient id={`grad${i}`}>
+           <stop offset="0%" style={{stopColor:"#eee"} }/>
+           <stop offset="100%" style={{stopColor:graySclae(i/maxTimeIdx)} }/>
+           </linearGradient>
+           gradients.push(grad)
+       }
+        
+       return gradients
+    }
+
     drawScatterPlot(margin: number = 20) {
         let { width, height } = this.props
         this.addLasso(width, height)
@@ -133,13 +157,14 @@ class Scatter extends React.Component<Props> {
         let normPoints = this.normalizePoints
         let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
         const r = 5
-        const cellWidth = 8, cellHeight = 4
+        const cellWidth =10, cellHeight = 7
 
-        const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
+        const maxTimeIdx = this.maxTimeIdx
+
         var circles = normPoints.map((normPoint) => {
             let id = normPoint.idx
             let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let stageColor = groupIdx>-1? getColorByName(selected[groupIdx].stageKey): 'none'
+            let stageColor = groupIdx>-1? getColorByName(selected[groupIdx].stageKey): 'gray'
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID===normPoint.idx?1:0.5)
             return <g transform={`translate(
                     ${xScale(normPoint.pos[0]) - cellWidth / 2}, 
@@ -149,29 +174,32 @@ class Scatter extends React.Component<Props> {
                     id={normPoint.idx.toString()}
                 onMouseEnter={() => setHoverID(id)}
                 onMouseLeave={() => resetHoverID()}
-                opacity={opacity}
                 cursor='pointer'
             >
-                {this.glyph(normPoint, stageColor, cellWidth, cellHeight)}
+                {this.glyph(normPoint, stageColor, cellWidth, cellHeight, opacity)}
             </g>
         })
 
         return <g className='circles'>{circles}</g>
     }
 
-    glyph(normPoint: NormPoint, stageColor: string, cellWidth:number, cellHeight:number ) {
-        const strokeW = 3
+    glyph(normPoint: NormPoint, stageColor: string, cellWidth:number, cellHeight:number, opacity:number ) {
+        const strokeW = 2
         let pointCol = normPoint.value.map((v, rowIdx) => {
             let fill = this.props.colorScales[rowIdx](v) || 'gray'
             return <rect key={rowIdx}
                 width={cellWidth} height={cellHeight}
                 y={rowIdx * cellHeight}
                 fill={fill}
+                stroke='gray'
+                opacity={opacity}
+                strokeOpacity={1}
             />
         })
         let outline = <rect fill='none'
             key={'stageOutline'}
             stroke={stageColor} strokeWidth={3}
+            x={-strokeW/2} y={-strokeW/2} 
             width={cellWidth + strokeW} height={normPoint.value.length * cellHeight + strokeW}
         />
         return [...pointCol, outline]
@@ -191,12 +219,16 @@ class Scatter extends React.Component<Props> {
 
         let curves = Object.keys(this.patientDict).map(patient => {
             let pointIds = this.patientDict[patient].points
-            let path = curveGenerator(pointIds.map(id => this.normalizePoints[id]) as any[])
+            let pathPoints = pointIds
+                .map(id => this.normalizePoints[id])
+                .sort((a,b)=>a.timeIdx-b.timeIdx)
+            let path:string = curveGenerator(pointIds.map(id => this.normalizePoints[id]) as any[])||''
             return <path
                 key={patient}
-                d={path as string}
+                d={path}
                 fill='none'
-                stroke='gray'
+                // stroke='gray'
+                stroke={`url(#grad${pathPoints.length-1})`}
                 strokeWidth='1'
                 className='curve'
             />
@@ -294,6 +326,9 @@ class Scatter extends React.Component<Props> {
     render() {
         let { width, height } = this.props
         return <g className='scatter'>
+            <defs>
+           {this.generateGradients()}
+            </defs>
             <rect className='lasso area' width={width} height={height} opacity={0} />
             {this.drawScatterPlot()}
         </g>

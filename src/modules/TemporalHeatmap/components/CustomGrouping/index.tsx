@@ -1,9 +1,7 @@
 import React from 'react';
 import { observer, inject, Provider } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
-import { PCA } from 'ml-pca';
 import * as d3 from 'd3';
-import lasso from './lasso.js'
 import { message } from 'antd';
 
 import { Point, ReferencedVariables, NormPoint, VariableStore } from 'modules/Type'
@@ -11,7 +9,7 @@ import { Point, ReferencedVariables, NormPoint, VariableStore } from 'modules/Ty
 
 import "./CustomGrouping.css"
 
-import { getColorByName, num2letter, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
 import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 import StageBlock from './StageBlock';
