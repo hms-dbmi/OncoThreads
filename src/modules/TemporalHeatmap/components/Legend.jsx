@@ -301,7 +301,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 let lineheight;
                 let adaptedFontSize = fontSize;
                 let opacity = 1;
-                if (primary === d.id) {
+                if (primary === d.id && this.props.uiStore.globalTime!=='myblock') {
                     lineheight = this.props.rootStore.visStore.primaryHeight;
                 } else {
                     lineheight = this.props.rootStore.visStore.secondaryHeight;
