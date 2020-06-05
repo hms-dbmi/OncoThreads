@@ -12,7 +12,7 @@ import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
 import HeatmapTimepoint from './Timepoints/Heatmap';
 import GroupTimepoint from './Timepoints/GroupTimepointCustom';
 import TimepointLabels from './PlotLabeling/TimepointLabels';
-import RowOperators from './RowOperators/RowOperators';
+import RowOperators from './RowOperatorsNew/';
 import Legend from './Legend';
 
 
@@ -143,7 +143,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 if (d.isGrouped) {
                     const transformTP = `translate(
                         ${this.props.rootStore.visStore.getTpXTransform(i)},
-                        ${this.props.rootStore.visStore.timepointPositions.timepoint[i]}
+                        ${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]}
                         )`;
                     timepoints.push(
                         <g key={d.globalIndex} transform={transformTP}>
@@ -167,7 +167,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                         </g>,
                     );
                 } else {
-                    const transformTP = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
+                    const transformTP = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]})`;
                     timepoints.push(
                         <g key={d.globalIndex} transform={transformTP}>
                             <Provider
@@ -189,9 +189,9 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 }
             }
             // create transitions
-            if (d.type === 'between') return
+            if(d.type=='between') return
             if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
-                const transformTR = `translate(0,${this.props.rootStore.visStore.timepointPositions.connection[i]})`;
+                const transformTR = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.connection[i]})`;
                 const firstTP = d;
                 let secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
                 if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
@@ -351,6 +351,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 <Provider
                                     dataStore={this.props.rootStore.dataStore}
                                     visStore={this.props.rootStore.visStore}
+                                    uiStore={this.props.uiStore}
                                 >
                                     <TimepointLabels
                                         width={this.panes.labels.width - 10}

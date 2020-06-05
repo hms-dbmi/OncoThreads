@@ -419,11 +419,16 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             const lines = [];
             const legends = [];
             this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
+                let transofrm = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`
+                if (this.props.uiStore.globalTime==='myblock'){
+                    transform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i + 1]})`
+                
+                }
                 if (i < this.props.rootStore.dataStore.timepoints.length - 1) {
                     lines.push(
                         <g
                             key={d.globalIndex}
-                            transform={`translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`}
+                            transform={transform}
                         >
                             <line
                                 className="dragLine"
@@ -439,7 +444,10 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         </g>,
                     );
                 }
-                const transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
+                let transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
+                if (this.props.uiStore.globalTime==='myblock'){
+                    transform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]})`
+                }
                 const lg = this.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight,
                     this.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables);
                 legends.push(

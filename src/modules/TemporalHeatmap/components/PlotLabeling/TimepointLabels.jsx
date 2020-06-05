@@ -8,7 +8,7 @@ import BlockTextField from './BlockTextField';
  * BlockView: Timepoint Labels on the left side of the main view
  * Sample Timepoints are displayed as numbers
  */
-const TimepointLabels = inject('dataStore', 'visStore')(observer(class TimepointLabels extends React.Component {
+const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(class TimepointLabels extends React.Component {
     constructor() {
         super();
         this.textFieldHeight = 30;
@@ -28,8 +28,12 @@ const TimepointLabels = inject('dataStore', 'visStore')(observer(class Timepoint
         // console.info("time lables render")
         // create textfields for sample timepoints, but not for between timepoints
         const labels = this.props.dataStore.timepoints.map((d, i) => {
-            const pos = this.props.padding + this.props.visStore.timepointPositions.timepoint[i]
-                + (this.props.visStore.getTPHeight(d) - this.textFieldHeight) / 2;
+            let pos = this.props.padding + this.props.visStore.timepointPositions.timepoint[i]
+                + (this.props.visStore.getNewTPHeight(d) - this.textFieldHeight) / 2;
+            if (this.props.uiStore.globalTime==='myblock'){
+                pos = this.props.padding + this.props.visStore.newTimepointPositions.timepoint[i]
+                + (this.props.visStore.getNewTPHeight(d) - this.textFieldHeight) / 2;
+            }
             let textfield = null;
             if (d.type === 'sample') {
                 textfield = (
@@ -47,12 +51,22 @@ const TimepointLabels = inject('dataStore', 'visStore')(observer(class Timepoint
             );
         });
         // create vertical line with whiskers at the ends
-        const firstPos = this.props.padding + this.props.visStore.timepointPositions.timepoint[0]
+        let firstPos = this.props.padding + this.props.visStore.timepointPositions.timepoint[0]
             + this.props.visStore.getTPHeight(this.props.dataStore.timepoints[0]) / 2;
-        const lastPos = this.props.padding + this.props.visStore.timepointPositions
+        let lastPos = this.props.padding + this.props.visStore.timepointPositions
             .timepoint[this.props.visStore.timepointPositions.timepoint.length - 1]
             + this.props.visStore.getTPHeight(this.props.dataStore
                 .timepoints[this.props.dataStore.timepoints.length - 1]) / 2;
+
+        if (this.props.uiStore.globalTime==='myblock'){
+            firstPos = this.props.padding + this.props.visStore.newTimepointPositions.timepoint[0]
+            + this.props.visStore.getNewTPHeight(this.props.dataStore.timepoints[0]) / 2;
+
+        const lastPos = this.props.padding + this.props.visStore.newTimepointPositions
+            .timepoint[this.props.visStore.timepointPositions.timepoint.length - 1]
+            + this.props.visStore.getNewTPHeight(this.props.dataStore
+                .timepoints[this.props.dataStore.timepoints.length - 1]) / 2;
+        }
         return (
             <div>
                 <svg

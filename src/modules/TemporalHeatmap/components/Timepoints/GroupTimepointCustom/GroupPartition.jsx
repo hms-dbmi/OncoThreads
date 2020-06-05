@@ -45,10 +45,10 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     shiftOffset = this.props.uiStore.rowOffset;
                 }
                 const transform = `translate(${shiftOffset},${previousYposition})`;
-                if (this.props.primaryVariableId === d.variable) {
-                    height = this.props.visStore.primaryHeight;
-                    stroke = this.props.stroke;
-                } 
+                // if (this.props.primaryVariableId === d.variable) {
+                //     height = this.props.visStore.primaryHeight;
+                //     stroke = this.props.stroke;
+                // } 
 
                 totalH += height
                 // else {

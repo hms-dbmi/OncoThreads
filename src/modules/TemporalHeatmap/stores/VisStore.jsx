@@ -251,6 +251,28 @@ class VisStore {
                 });
                 return timepointPositions;
             },
+
+            // encode event data in flow
+            get newTimepointPositions() {
+                const timepointPositions = { timepoint: [], connection: [] };
+                let prevY = 0;
+                this.rootStore.dataStore.timepoints.forEach((timepoint, i) => {
+                    const tpHeight = this.getNewTPHeight(timepoint);
+                    timepointPositions.timepoint.push(prevY);
+                    
+                    timepointPositions.connection.push(prevY + tpHeight);
+                    
+                    if (i < this.rootStore.dataStore.timepoints.length - 1) {
+                        if(timepoint.type=='sample'){
+                            prevY += this.transitionSpaces[timepoint.globalIndex] + tpHeight;
+                        }else{
+                            prevY += tpHeight;
+                        }
+                        
+                    }
+                });
+                return timepointPositions;
+            },
             /**
              * gets scales for placement of heatmap rectangles
              * @return {d3.scalePoint[]}
@@ -303,6 +325,27 @@ class VisStore {
                     } else {
                         height += this.secondaryHeight;
                     }
+                }
+            });
+    
+        return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
+    }
+
+    /**
+     * gets height of a timepoint
+     * @param timepoint
+     * @returns {number}
+     */
+    getNewTPHeight(timepoint) {
+        let height = 0;
+        let varCount = 0;
+        this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
+            .forEach((variableId, i) => {
+                if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
+                    || variableId === timepoint.primaryVariableId) {
+                    
+                    varCount += 1;
+                    height += this.secondaryHeight;            
                 }
             });
     
