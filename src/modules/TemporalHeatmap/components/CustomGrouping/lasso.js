@@ -142,7 +142,7 @@ export default function() {
             }
 
             items.nodes().forEach(function(n) {
-                n.__lasso.loopSelect = (isPathClosed && closePathSelect) ? (classifyPoint(drawnCoords,n.__lasso.lassoPoint) < 1) : false; 
+                n.__lasso.loopSelect = (isPathClosed && closePathSelect && n.__lasso.lassoPoint) ? (classifyPoint(drawnCoords,n.__lasso.lassoPoint) < 1) : false; 
                 n.__lasso.possible = n.__lasso.hoverSelect || n.__lasso.loopSelect; 
             });
 
