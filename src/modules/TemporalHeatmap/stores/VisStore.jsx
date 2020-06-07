@@ -263,11 +263,12 @@ class VisStore {
                     timepointPositions.connection.push(prevY + tpHeight);
                     
                     if (i < this.rootStore.dataStore.timepoints.length - 1) {
-                        if(timepoint.type=='sample'){
-                            prevY += this.transitionSpaces[timepoint.globalIndex] + tpHeight;
-                        }else{
-                            prevY += tpHeight;
-                        }
+                        prevY += this.transitionSpaces[timepoint.globalIndex] + tpHeight;
+                        // if(timepoint.type=='sample'){
+                        //     prevY += this.transitionSpaces[timepoint.globalIndex] + tpHeight;
+                        // }else{
+                        //     prevY += tpHeight;
+                        // }
                         
                     }
                 });

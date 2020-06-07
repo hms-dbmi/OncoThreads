@@ -189,14 +189,14 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 }
             }
             // create transitions
-            if(d.type=='between') return
+            // if(d.type=='between') return
             if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
                 const transformTR = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.connection[i]})`;
                 const firstTP = d;
                 let secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
-                if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
-                    secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
-                }
+                // if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
+                //     secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
+                // }
                 let transition;
                 if (firstTP.customPartitions.length>0) {
                     if (secondTP.customPartitions.length>0) {
