@@ -120,9 +120,9 @@ class Scatter extends React.Component<Props> {
 
        let gradients:JSX.Element[] = []
        for(let i =0;i<maxTimeIdx;i++){
-           let grad = <linearGradient id={`grad${i}`}>
+           let grad = <linearGradient id={`grad${i+1}`}>
            <stop offset="0%" style={{stopColor:"#eee"} }/>
-           <stop offset="100%" style={{stopColor:graySclae(i/maxTimeIdx)} }/>
+           <stop offset="100%" style={{stopColor:graySclae((i+1)/maxTimeIdx)} }/>
            </linearGradient>
            gradients.push(grad)
        }
@@ -164,7 +164,7 @@ class Scatter extends React.Component<Props> {
         var circles = normPoints.map((normPoint) => {
             let id = normPoint.idx
             let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let stageColor = groupIdx>-1? getColorByName(selected[groupIdx].stageKey): 'gray'
+            let stageColor = groupIdx>-1? getColorByName(selected[groupIdx].stageKey): 'none'
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID===normPoint.idx?1:0.5)
             return <g transform={`translate(
                     ${xScale(normPoint.pos[0]) - cellWidth / 2}, 
@@ -222,13 +222,15 @@ class Scatter extends React.Component<Props> {
             let pathPoints = pointIds
                 .map(id => this.normalizePoints[id])
                 .sort((a,b)=>a.timeIdx-b.timeIdx)
-            let path:string = curveGenerator(pointIds.map(id => this.normalizePoints[id]) as any[])||''
+
+               
+            let path:string = curveGenerator(pathPoints as any[])||''
             return <path
                 key={patient}
                 d={path}
                 fill='none'
-                // stroke='gray'
-                stroke={`url(#grad${pathPoints.length-1})`}
+                stroke='gray'
+                // stroke={`url(#grad${pathPoints.length-1})`}
                 strokeWidth='1'
                 className='curve'
             />

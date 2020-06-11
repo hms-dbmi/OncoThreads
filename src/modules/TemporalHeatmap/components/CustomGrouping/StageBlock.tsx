@@ -101,8 +101,8 @@ class StageBlock extends React.Component<Props> {
                     .filter(i => !allSelected.includes(i))
 
                 stageBlocks.push(
-                    <g key={'noStage'} className={`noStage`} transform={`translate(${offsetX}, 0)`}>
-                        <text alignmentBaseline="hanging">noStage</text>
+                    <g key={'undefined'} className={`undefined`} transform={`translate(${offsetX}, 0)`}>
+                        <text alignmentBaseline="hanging">undefined</text>
                         <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
                             {this.drawBlock(leftNodes.map(id => points[id]), cellWidth, cellHeight)}
                         </g>
@@ -112,8 +112,8 @@ class StageBlock extends React.Component<Props> {
         } else {
             //if no selected stages, treat all points at one stage
             stageBlocks.push(
-                <g key='noStage' className={`noStage`} transform={`translate(${offsetX}, 0)`}>
-                    <text alignmentBaseline="hanging">noStage</text>
+                <g key='undefined' className={`undefined`} transform={`translate(${offsetX}, 0)`}>
+                    <text alignmentBaseline="hanging">undefined</text>
                     <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
                         {this.drawBlock(points, cellWidth, cellHeight)}
                     </g>

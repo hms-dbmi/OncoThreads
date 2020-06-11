@@ -101,8 +101,8 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 
 
     render() {
-        let stageInputLabel = <g/>, stageKey = this.props.partition.partition||'', 
-        stageBackground = <g/>
+        let stageInputLabel, stageKey = this.props.partition.partition||'', 
+        stageBackground, strokeW = 5
 
         let {rows, totalH, totalW} = this.createPartition()
 
@@ -130,6 +130,16 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             width={this.props.hasBackground?totalW:0} 
             height={totalH} 
             fill={getColorByName(stageKey)} />
+            <rect 
+            className='stageBackground'
+            opacity={0.8}
+            width={totalW+strokeW} 
+            height={totalH+strokeW}
+            x={-strokeW/2}
+            y={-strokeW/2} 
+            fill="none"
+            stroke={getColorByName(stageKey)}
+            strokeWidth={strokeW} />
             {/* <circle 
             r= {4}
             cx={totalW-2}
