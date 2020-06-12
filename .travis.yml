@@ -3,6 +3,11 @@ node_js:
 - 10.16.3
 before_script:
   export NODE_OPTIONS=--max_old_space_size=4096
+  if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+    export BUCKET=oncothreads.gehlenborglab.org
+  else
+    export BUCKET=oncothreads-v2.gehlenborglab.org
+  fi
 cache:
   directories:
     - node_modules
@@ -41,7 +46,7 @@ jobs:
         provider: s3
         access_key_id: $AWS_ACCESS_KEY_ID
         secret_access_key: $AWS_SECRET_ACCESS_KEY
-        bucket: oncothreads.gehlenborglab.org
+        bucket: $BUCKET
         local_dir: build
         skip_cleanup: true
         on:
