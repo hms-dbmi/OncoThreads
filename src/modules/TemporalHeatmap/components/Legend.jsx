@@ -444,16 +444,16 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         </g>,
                     );
                 }
-                let transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
+                let leTransform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
                 if (this.props.uiStore.globalTime==='myblock'){
-                    transform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]})`
+                    leTransform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]})`
                 }
                 const lg = this.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight,
                     this.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables);
                 legends.push(
                     <g
                         key={d.globalIndex}
-                        transform={transform}
+                        transform={leTransform}
                     >
                         {lg}
                     </g>,
