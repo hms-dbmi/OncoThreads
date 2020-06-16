@@ -41,7 +41,7 @@ jobs:
         - npm run publish-currentOS
     - stage: Deploy website
       script:
-        - npm run react-build-web
+        - CI=false npm run react-build-web
       deploy:
         provider: s3
         access_key_id: $AWS_ACCESS_KEY_ID
