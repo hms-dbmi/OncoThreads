@@ -1,4 +1,4 @@
-import {action, extendObservable, observe} from 'mobx';
+import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 
 /*
@@ -17,7 +17,7 @@ class DataStore {
             selectedPatients: [], // currently selected patients
             globalPrimary: '', // global primary for sample timepoints of global timeline
             hasEvent: false, // whether event attributes are included in custom grouping
-            stageLabels:{}, // key & label pairs
+            stageLabels: {}, // key & label pairs
 
             /**
              * get the maximum number of currently displayed partitions
@@ -26,10 +26,13 @@ class DataStore {
             get maxPartitions() {
                 let maxPartitions = 0;
                 const groupedTP = this.timepoints.filter(d => d.isGrouped);
-                if (groupedTP.length > 0) {
-                    maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length));
+                if (this.rootStore.uiStore.globalTime == 'block') {
+                    maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);    
+                }else{
+                    maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);    
                 }
                 return maxPartitions;
+
             },
             /**
              * are variables of type "between" displayed
@@ -38,60 +41,60 @@ class DataStore {
             get transitionOn() {
                 return this.variableStores.between.currentVariables.length > 0;
             },
-            get sampleOn(){
+            get sampleOn() {
                 return this.variableStores.sample.currentVariables.length > 0;
             },
-            get points(){
+            get points() {
                 let samplePoints = this.variableStores.sample.points,
-                eventPoints = this.variableStores.between.points
-                if (this.hasEvent===false || eventPoints.length==0){
+                    eventPoints = this.variableStores.between.points
+                if (this.hasEvent === false || eventPoints.length == 0) {
                     return samplePoints
-                }else{
+                } else {
 
-                    return this.variableStores.sample.points.map((p,i)=>{
-                        let newPoint = {...p}
+                    return this.variableStores.sample.points.map((p, i) => {
+                        let newPoint = { ...p }
                         newPoint.value = newPoint.value.concat(eventPoints[i].value)
-                        
+
                         return newPoint
                     })
                 }
             },
-            get colorScales(){
-                let sampleScales = this.variableStores.sample.fullCurrentVariables.map(d=>d.colorScale),
-                eventScales = this.variableStores.between.fullCurrentVariables.map(d=>d.colorScale)
+            get colorScales() {
+                let sampleScales = this.variableStores.sample.fullCurrentVariables.map(d => d.colorScale),
+                    eventScales = this.variableStores.between.fullCurrentVariables.map(d => d.colorScale)
 
-                if (this.hasEvent===false){
+                if (this.hasEvent === false) {
                     return sampleScales
-                }else{
+                } else {
                     return sampleScales.concat(eventScales)
                 }
             },
-            get currentVariables(){ 
-                if (this.hasEvent===false){
+            get currentVariables() {
+                if (this.hasEvent === false) {
                     return this.variableStores.sample.currentVariables
-                }else{
+                } else {
                     return this.variableStores.sample.currentVariables.concat(
                         this.variableStores.between.currentVariables
                     )
                 }
             },
-            get referencedVariables(){
-                if (this.hasEvent===false){
+            get referencedVariables() {
+                if (this.hasEvent === false) {
                     return this.variableStores.sample.referencedVariables
-                }else{
+                } else {
                     return {
                         ...this.variableStores.sample.referencedVariables,
                         ...this.variableStores.between.referencedVariables
                     }
                 }
             },
-            toggleHasEvent:action(()=>{
-                this.hasEvent = ! this.hasEvent
+            toggleHasEvent: action(() => {
+                this.hasEvent = !this.hasEvent
             }),
-            setStageLabel: action((stageKey, stageLabel)=>{             
+            setStageLabel: action((stageKey, stageLabel) => {
                 this.stageLabels[stageKey] = stageLabel
             }),
-            resetStageLabel: action(()=>{       
+            resetStageLabel: action(() => {
                 this.stageLabels = {}
             }),
 
@@ -189,14 +192,14 @@ class DataStore {
                                 .heatmapOrder);
                         timepoints.push(betweenTimepoints[betweenTimepoints.length - 1]);
                     }
-                    else{
+                    else {
                         timepoints = betweenTimepoints;
                     }
                 }
                 timepoints.forEach((timepoint, i) => {
                     timepoints[i].globalIndex = i;
                     // default grouped
-                    let variableId= this.variableStores[timepoint.type].currentVariables[0]
+                    let variableId = this.variableStores[timepoint.type].currentVariables[0]
                     timepoints[i].setPrimaryVariable(variableId)
                     // timepoints[i].setIsGrouped(true)
                 });
@@ -240,14 +243,14 @@ class DataStore {
                     d.setHeatmapOrder(sorting);
                 });
             }),
-            recombine: action(()=>{
+            recombine: action(() => {
                 const sampleOn = this.variableStores.sample.currentVariables.length > 0;
                 const transOn = this.variableStores.between.currentVariables.length > 0;
-                this.combineTimepoints(sampleOn,transOn);
+                this.combineTimepoints(sampleOn, transOn);
                 if (transOn) {
                     this.rootStore.uiStore.setRealTime(false);
                 }
-                if(sampleOn || transOn){
+                if (sampleOn || transOn) {
                     this.rootStore.visStore.resetTransitionSpaces();
                 }
             })
@@ -297,7 +300,7 @@ class DataStore {
     }
 
 
-    applyCustomStages(timeStages, eventStages){
+    applyCustomStages(timeStages, eventStages) {
         let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
             eventTimepoints = this.variableStores.between.childStore.timepoints
 
@@ -308,7 +311,7 @@ class DataStore {
         eventTimepoints.forEach((TP, i) => {
             TP.applyCustomStage(eventStages[i].partitions)
         })
-        
+
     }
 }
 

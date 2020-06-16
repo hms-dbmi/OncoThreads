@@ -325,7 +325,7 @@ class CustomGrouping extends React.Component<Props> {
             <div className="container" style={{ width: "100%" }}>
                 <div
                     className="customGrouping"
-                    style={{ height: `${this.height}px`, width: "100%", marginTop: "5px" }}
+                    style={{ height: `${height}px`, width: "100%", marginTop: "5px" }}
                     ref={this.ref}
                 >
                     <Switch size="small"
@@ -338,7 +338,7 @@ class CustomGrouping extends React.Component<Props> {
                         checkedChildren="events" unCheckedChildren="events"
                         onChange={toggleHasEvent} />
 
-                    <svg className='customGrouping' width="100%" height="80%">
+                    <svg className='customGrouping' width="100%" height={`${scatterHeight+pcpHeight-35}px`}>
                         <Scatter
                         points={points}
                         currentVariables={currentVariables}
