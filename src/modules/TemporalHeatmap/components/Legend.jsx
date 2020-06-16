@@ -419,7 +419,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             const lines = [];
             const legends = [];
             this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
-                let transofrm = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`
+                let transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`
                 if (this.props.uiStore.globalTime==='myblock'){
                     transform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i + 1]})`
                 

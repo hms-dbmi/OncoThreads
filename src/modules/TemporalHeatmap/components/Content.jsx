@@ -275,7 +275,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
-        let sampleStore = this.props.rootStore.dataStore.variableStores.sample
+        // let sampleStore = this.props.rootStore.dataStore.variableStores.sample
         let {dataStore} = this.props.rootStore
               
         return (

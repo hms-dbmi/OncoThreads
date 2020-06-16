@@ -493,10 +493,10 @@ class RootStore {
                 .variableStores.sample.fullCurrentVariables
                 .map(d => d.id).includes(category.id))
 
-        let patientOptions = this.clinicalPatientCategories
-            .filter(category => !this.dataStore
-                .variableStores.sample.fullCurrentVariables
-                .map(d => d.id).includes(category.id))
+        // let patientOptions = this.clinicalPatientCategories
+        //     .filter(category => !this.dataStore
+        //         .variableStores.sample.fullCurrentVariables
+        //         .map(d => d.id).includes(category.id))
         
         
         let eventOptions = [];

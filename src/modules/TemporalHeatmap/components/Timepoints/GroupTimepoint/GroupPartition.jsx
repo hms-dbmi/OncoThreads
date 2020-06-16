@@ -1,16 +1,11 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import {Input} from 'antd'
 
 import PropTypes from 'prop-types';
 import CategoricalRow from './CategoricalRow';
 import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
-
-import {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
-import {getTextWidth} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
-
 
 
 

@@ -80,16 +80,16 @@ class SvgExport {
 
             prev_right = new_right - 1;
 
-            if (minW == null || boundingRect.left < minW) {
+            if (minW===null || boundingRect.left < minW) {
                 minW = boundingRect.left;
             }
-            if (maxW == null || new_right > maxW) {
+            if (maxW===null || new_right > maxW) {
                 maxW = new_right;
             }
-            if (minH == null || boundingRect.top > minH) {
+            if (minH===null || boundingRect.top > minH) {
                 minH = boundingRect.top;
             }
-            if (maxH == null || boundingRect.bottom > maxH) {
+            if (maxH===null || boundingRect.bottom > maxH) {
                 maxH = boundingRect.bottom;
             }
 
@@ -504,16 +504,16 @@ class SvgExport {
 
             prev_right = new_right - 1;
 
-            if (minW == null || boundingRect.left < minW) {
+            if (minW===null || boundingRect.left < minW) {
                 minW = boundingRect.left;
             }
-            if (maxW == null || new_right > maxW) {
+            if (maxW===null || new_right > maxW) {
                 maxW = new_right;
             }
-            if (minH == null || boundingRect.top < minH) {
+            if (minH===null || boundingRect.top < minH) {
                 minH = boundingRect.top;
             }
-            if (maxH == null || boundingRect.bottom > maxH) {
+            if (maxH===null || boundingRect.bottom > maxH) {
                 maxH = boundingRect.bottom;
             }
 

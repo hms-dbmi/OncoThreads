@@ -26,7 +26,7 @@ class DataStore {
             get maxPartitions() {
                 let maxPartitions = 0;
                 const groupedTP = this.timepoints.filter(d => d.isGrouped);
-                if (this.rootStore.uiStore.globalTime == 'block') {
+                if (this.rootStore.uiStore.globalTime==='block') {
                     maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);    
                 }else{
                     maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);    
@@ -47,7 +47,7 @@ class DataStore {
             get points() {
                 let samplePoints = this.variableStores.sample.points,
                     eventPoints = this.variableStores.between.points
-                if (this.hasEvent === false || eventPoints.length == 0) {
+                if (this.hasEvent === false || eventPoints.length===0) {
                     return samplePoints
                 } else {
 

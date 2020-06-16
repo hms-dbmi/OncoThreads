@@ -107,7 +107,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         let {rows, totalH, totalW} = this.createPartition()
 
         // add changable stage label if this is a sample timepoint
-        if(this.props.type=='sample'){
+        if(this.props.type==='sample'){
             const fontWeight=700,
                 // labelColor = colors[stageKey.charCodeAt(0)-65]||'black',
                 

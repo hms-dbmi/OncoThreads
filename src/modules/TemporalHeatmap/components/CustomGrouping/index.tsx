@@ -1,10 +1,10 @@
 import React from 'react';
-import { observer, inject, Provider } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
 import { message } from 'antd';
 
-import { Point, ReferencedVariables, NormPoint, VariableStore } from 'modules/Type'
+import { Point, ReferencedVariables, VariableStore } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
@@ -286,7 +286,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     updateSelected(i:number, group:TSelected[number]|undefined){
-        if (group==undefined){
+        if (group===undefined){
             this.selected.splice(i,1)
         }else if(i<this.selected.length){
             this.selected[i] = group

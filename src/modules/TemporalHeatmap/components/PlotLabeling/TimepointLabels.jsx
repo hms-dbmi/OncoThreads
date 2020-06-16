@@ -62,7 +62,7 @@ const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(clas
             firstPos = this.props.padding + this.props.visStore.newTimepointPositions.timepoint[0]
             + this.props.visStore.getNewTPHeight(this.props.dataStore.timepoints[0]) / 2;
 
-        const lastPos = this.props.padding + this.props.visStore.newTimepointPositions
+            lastPos = this.props.padding + this.props.visStore.newTimepointPositions
             .timepoint[this.props.visStore.timepointPositions.timepoint.length - 1]
             + this.props.visStore.getNewTPHeight(this.props.dataStore
                 .timepoints[this.props.dataStore.timepoints.length - 1]) / 2;

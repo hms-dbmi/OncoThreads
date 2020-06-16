@@ -1,20 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { TStage } from '.'
-import * as d3 from 'd3';
 import { TSelected } from '.'
 
-import { Point, ReferencedVariables } from 'modules/Type'
+import { Point } from 'modules/Type'
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 
-
-const clipText = (text: string | number, len: number): string | number => {
-    if (typeof (text) === 'number') return text
-    else if (text.length < len) return text
-    else {
-        return text.substring(0, len - 1) + '..'
-    }
-}
 
 interface Props {
     points: Point[],
@@ -41,7 +31,7 @@ class StageBlock extends React.Component<Props> {
 
     drawVIS() {
         let { points, width, height, selected, stageLabels } = this.props
-        if (points.length == 0) return <g />
+        if (points.length === 0) return <g />
 
         let offsetX = 0
 
@@ -155,9 +145,9 @@ class StageBlock extends React.Component<Props> {
 
     reorderPoints(points: Point[]) {
         return [...points].sort((a, b) => {
-            let dif = 0, i = 0
+            let dif = 0
             for (let i = 0; i < a.value.length; i++) {
-                if (a.value[i] != b.value[i]) {
+                if (a.value[i] !== b.value[i]) {
                     dif = a.value[i] > b.value[i] ? 1 : -1
                     break
                 }

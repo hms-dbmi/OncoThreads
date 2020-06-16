@@ -34,10 +34,7 @@ interface Props {
 
 @observer
 class Scatter extends React.Component<Props> {
-    constructor(props: Props) {
-        super(props)
-    }
-
+    
     // normalize points to [0,1] range.
     // @param: points: string||number[][], 
     // @param: currentVariable: [variableName:string][]
@@ -156,7 +153,7 @@ class Scatter extends React.Component<Props> {
     drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
         let normPoints = this.normalizePoints
         let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
-        const r = 5
+        // const r = 5
         const cellWidth =10, cellHeight = 7
 
         const maxTimeIdx = this.maxTimeIdx
