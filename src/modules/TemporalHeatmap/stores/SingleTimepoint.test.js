@@ -10,7 +10,6 @@ describe('SingleTimepoint', () => {
     beforeAll(() => {
         const uiStore = new UIStore()
         const rootStore = new RootStore(uiStore);
-        uiStore.setGlobalTime('block')
         rootStore.patients = ['a', 'b', 'c', 'd', 'e'];
         const timepointStructure = [];
         sortOrder = [];
@@ -39,6 +38,7 @@ describe('SingleTimepoint', () => {
         rootStore.timepointStructure.replace(timepointStructure);
         rootStore.dataStore.initialize();
         timepoint = rootStore.dataStore.timepoints[0];
+        timepoint.setIsGrouped(false)
         variableStore = rootStore.dataStore.variableStores.sample;
 
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable('id1', 'name1', 'NUMBER', 'description1', [], [], mapper1, '', ''));

@@ -41,7 +41,7 @@ class VariableManagerStore {
                             if (this.currentVariables.length > 0){
                                 this.primaryVariables[i] = this.currentVariables[0].id;
                             } else {
-                                this.primaryVariables[i] = '';
+                                this.primaryVariables[i] = undefined;
                             }
                         }
                     });
@@ -65,7 +65,7 @@ class VariableManagerStore {
                     this.currentVariables.push({ id: variable.id, isNew: true, isSelected: false });
                     this.addOrder.push(variable.id);
                 }
-                this.primaryVariables = this.primaryVariables.map(variableId => variableId === '' ? variable.id : variableId);
+                this.primaryVariables = this.primaryVariables.map(variableId => variableId === undefined ? variable.id : variableId);
             }),
             /**
              * replaces a variable in the table

@@ -198,7 +198,7 @@ class DataStore {
                     // default grouped
                     let variableId= this.variableStores[timepoint.type].currentVariables[0]
                     timepoints[i].setPrimaryVariable(variableId)
-                    timepoints[i].setIsGrouped(true)
+                    // timepoints[i].setIsGrouped(true)
                 });
                 this.timepoints.replace(timepoints);
             }),

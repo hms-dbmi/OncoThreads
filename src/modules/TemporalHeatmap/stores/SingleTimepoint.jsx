@@ -15,7 +15,7 @@ class SingleTimepoint {
             heatmapOrder: order,
             groupSortDir: 1,
             heatmap: [],
-            isGrouped: false,
+            isGrouped: true,
             primaryVariableId: undefined,
             name: localIndex,
             customPartitions:[],
@@ -173,7 +173,7 @@ class SingleTimepoint {
                 }
                 this.heatmap.splice(deleteIndex, 1);
                 if (this.heatmap.length < 1) {
-                    this.primaryVariableId = '';
+                    this.primaryVariableId = undefined;
                 } else if (variableId === this.primaryVariableId) {
                     const primaryIndex = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables.map(d => d.datatype === 'NUMBER').indexOf(false);
                     if (this.isGrouped && primaryIndex !== -1) {
