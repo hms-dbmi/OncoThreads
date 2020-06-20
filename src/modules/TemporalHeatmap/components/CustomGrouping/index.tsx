@@ -237,6 +237,7 @@ class CustomGrouping extends React.Component<Props> {
                 let {
                     partition: nextName,
                     patients: nextPatients,
+                    points: nextPoints,
                 } = nextPartition
                 
                 curr.partitions.forEach((currPartition: Partition) => {
@@ -251,7 +252,7 @@ class CustomGrouping extends React.Component<Props> {
                         eventStage.partitions.push({
                             partition: `${currName}-${nextName}`,
                             patients: intersection,
-                            points: currPoints.map(id => points[id])
+                            points: nextPoints.map(id => points[id])
                                 .filter(p => intersection.includes(p.patient))
                                 .map(p => p.idx),
                             rows: []
@@ -269,7 +270,6 @@ class CustomGrouping extends React.Component<Props> {
                 timeIdx: timeStages.length
             }
         )
-
         this.props.dataStore.applyCustomStages(timeStages, eventStages)
 
     }
@@ -316,7 +316,6 @@ class CustomGrouping extends React.Component<Props> {
         let { width, height, selected, hasLink } = this
         let pcpMargin = 25
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
-
 
         // used stroe actions
         let toggleHasEvent = this.props.dataStore.toggleHasEvent

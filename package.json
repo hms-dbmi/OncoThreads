@@ -38,6 +38,7 @@
     "react-start": "react-scripts start",
     "react-build-electron": "react-scripts build",
     "react-build-web": "PUBLIC_URL=http://oncothreads.gehlenborglab.org react-scripts build",
+    "build-v2": "PUBLIC_URL=http://oncothreads-v2.gehlenborglab.org react-scripts build",
     "react-test": "react-scripts test",
     "react-eject": "react-scripts eject",
     "electron-start": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\"",
