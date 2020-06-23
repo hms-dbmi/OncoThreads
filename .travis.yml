@@ -46,6 +46,7 @@ jobs:
         bucket: oncothreads.gehlenborglab.org
         local_dir: build
         skip_cleanup: true
+        region: us-east-1
         on:
           branch: master
     
@@ -59,5 +60,6 @@ jobs:
         bucket: oncothreads-v2.gehlenborglab.org
         local_dir: build
         skip_cleanup: true
+        region: us-east-2
         on:
           branch: version2
