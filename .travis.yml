@@ -3,11 +3,7 @@ node_js:
 - 10.16.3
 before_script: |
   export NODE_OPTIONS=--max_old_space_size=4096
-  if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-    export BUCKET=oncothreads.gehlenborglab.org
-  else 
-    export BUCKET=oncothreads-v2.gehlenborglab.org
-  fi
+ 
 cache:
   directories:
     - node_modules
@@ -39,6 +35,7 @@ jobs:
       dist: trusty
       script:
         - npm run publish-currentOS
+
     - stage: Deploy website
       script:
         - CI=false npm run react-build-web
@@ -46,8 +43,21 @@ jobs:
         provider: s3
         access_key_id: $AWS_ACCESS_KEY_ID
         secret_access_key: $AWS_SECRET_ACCESS_KEY
-        bucket: $BUCKET
+        bucket: oncothreads.gehlenborglab.org
         local_dir: build
         skip_cleanup: true
         on:
-          branch: $TRAVIS_BRANCH =~ ^(master|qianwen_dev)$
+          branch: master
+    
+    - stage: Deploy website version 2
+      script:
+        - CI=false npm run build-v2
+      deploy:
+        provider: s3
+        access_key_id: $AWS_ACCESS_KEY_ID
+        secret_access_key: $AWS_SECRET_ACCESS_KEY
+        bucket: oncothreads-v2.gehlenborglab.org
+        local_dir: build
+        skip_cleanup: true
+        on:
+          branch: version2
