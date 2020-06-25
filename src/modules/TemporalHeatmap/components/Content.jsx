@@ -57,6 +57,11 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         this.handleResetSelection = this.handleResetSelection.bind(this);
 
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
+
+        this.tooltipFunctions = {
+            showTooltip: this.showTooltip,
+            hideTooltip: this.hideTooltip,
+        };
     }
 
     /**
@@ -268,10 +273,6 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
-        const tooltipFunctions = {
-            showTooltip: this.showTooltip,
-            hideTooltip: this.hideTooltip,
-        };
         return (
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
@@ -379,7 +380,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         >
                             <Row>
                                 <MainView
-                                    tooltipFunctions={tooltipFunctions}
+                                    tooltipFunctions={this.tooltipFunctions}
                                     openBinningModal={this.openBinningModal}
                                     openSaveVarModal={this.openSaveVarModal}
                                     showContextMenu={this.showContextMenu}
