@@ -276,12 +276,13 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
     render() {
         // let sampleStore = this.props.rootStore.dataStore.variableStores.sample
-        let {dataStore} = this.props.rootStore
+        let {dataStore, study} = this.props.rootStore
+        let studyName = study?study.name:'unknown'
               
         return (
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
-                <h4>{this.props.rootStore.study.name}</h4>
+                <h4>{studyName}</h4>
                     <Row className='controlPane'>
                         <Col smOffset={0} xsOffset={0} md={7} xs={7}>
                             <QuickAddVariable />
