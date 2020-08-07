@@ -111,7 +111,7 @@ for patient_idx in range(PATIENT_NUM):
         suit_sample = X[flag]
         X = np.delete(X, flag, 0) 
         y = np.delete(y, flag, 0)
-        sample_status = [str(i) for i in suit_sample] + [str(random.uniform(-2,2)) for _ in range(STATUS_DIM_RANDOM)]
+        sample_status = [str(i) for i in suit_sample] + [str(random.uniform(-12,12)) for _ in range(STATUS_DIM_RANDOM)]
         sample_file.write(
             '{patient_id}\t{sample_id}\t{status}\n'.format(
                 patient_id = patient_id, sample_id = sample_id, status = '\t'.join(sample_status)

@@ -346,6 +346,7 @@ HierarchicalClustering.prototype = {
       for (var i = 0; i < items.length; i++) {
          var cluster = {
             value: items[i],
+            itemIdx: [i],
             key: i,
             index: i,
             size: 1
@@ -409,6 +410,7 @@ HierarchicalClustering.prototype = {
       var merged = {
          left: c1,
          right: c2,
+         itemIdx: c1.itemIdx.concat(c2.itemIdx),
          key: c1.key,
          size: c1.size + c2.size
       };

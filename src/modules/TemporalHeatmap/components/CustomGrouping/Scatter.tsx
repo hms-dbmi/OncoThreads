@@ -2,7 +2,7 @@ import { NormPoint, Point, ReferencedVariables } from 'modules/Type'
 import React from 'react';
 import { observer } from 'mobx-react';
 import { computed } from 'mobx';
-import { PCA } from 'ml-pca';
+
 import * as d3 from 'd3';
 import { TSelected } from '.';
 import lasso from './lasso.js'
@@ -18,6 +18,7 @@ type TPatientDict = {
 
 interface Props {
     points: Point[],
+    normPoints: NormPoint[],
     currentVariables: string[],
     referencedVariables: ReferencedVariables,
     selected: TSelected,
@@ -35,52 +36,55 @@ interface Props {
 @observer
 class Scatter extends React.Component<Props> {
     
-    // normalize points to [0,1] range.
+    // normalize points to [0,1] range and reduce them to 2d space.
     // @param: points: string||number[][], 
     // @param: currentVariable: [variableName:string][]
     // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
     // return: points: number[][]
-    @computed
-    get normalizePoints(): NormPoint[] {
-        let { points, currentVariables, referencedVariables } = this.props
-        if (points.length === 0) return []
-        let normValues = points.map(point => {
-            let normValue = point.value.map((value, i) => {
-                let ref = referencedVariables[currentVariables[i]]
-                if (value === undefined) {
-                    return 0
-                } else if (typeof (value) == "number") {
-                    let domain = ref.domain as number[]
-                    return (value - domain[0]) / (domain[1] - domain[0])
-                } else if (ref.domain.length === 1) {
-                    return 0
-                } else {
-                    let domain: number[] | boolean[] = ref.domain as number[] | boolean[]
-                    return domain.findIndex((d: number | boolean) => d === value) / (domain.length - 1)
-                }
-            })
-            return normValue
-        })
+    // @computed
+    // get normalizePoints(): NormPoint[] {
+    //     let { points, currentVariables, referencedVariables } = this.props
+    //     if (points.length === 0) return []
+    //     let normValues = points.map(point => {
+    //         let normValue = point.value.map((value, i) => {
+    //             let ref = referencedVariables[currentVariables[i]]
+    //             if (value === undefined) {
+    //                 return 0
+    //             } else if (typeof (value) == "number") {
+    //                 let domain = ref.domain as number[]
+    //                 return (value - domain[0]) / (domain[1] - domain[0])
+    //             } else if (ref.domain.length === 1) {
+    //                 return 0
+    //             } else {
+    //                 let domain: number[] | boolean[] = ref.domain as number[] | boolean[]
+    //                 return domain.findIndex((d: number | boolean) => d === value) / (domain.length - 1)
+    //             }
+    //         })
+    //         return normValue
+    //     })
 
-        var pca = new PCA(normValues)
+    //     var pca = new PCA(normValues)
 
-        if (normValues[0].length > 2) {
-            // only calculate pca when dimension is larger than 2
-            normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
-            // console.info('pca points', newPoints)
-        }
+    //     if (normValues[0].length > 2) {
+    //         console.info(pca.getEigenvectors().getColumn(0), pca.getEigenvectors().getColumn(1))
+    //         // only calculate pca when dimension is larger than 2
+    //         normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
+    //         // console.info('pca points', newPoints)
+            
+            
+    //     }
 
 
-        var normPoints: NormPoint[] = normValues.map((d, i) => {
-            return {
-                ...points[i],
-                pos: d
-            }
-        })
+    //     var normPoints: NormPoint[] = normValues.map((d, i) => {
+    //         return {
+    //             ...points[i],
+    //             pos: d
+    //         }
+    //     })
 
-        return normPoints
+    //     return normPoints
 
-    }
+    // }
 
     @computed
     get patientDict() {
@@ -105,7 +109,7 @@ class Scatter extends React.Component<Props> {
 
     @computed
     get maxTimeIdx():number{
-        let normPoints = this.normalizePoints
+        let normPoints = this.props.normPoints
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         return maxTimeIdx
     }
@@ -128,10 +132,9 @@ class Scatter extends React.Component<Props> {
     }
 
     drawScatterPlot(margin: number = 20) {
-        let { width, height } = this.props
+        let { width, height, normPoints } = this.props
         this.addLasso(width, height)
 
-        let normPoints = this.normalizePoints
 
         if (normPoints.length === 0) {
             return <g className='points' />
@@ -151,10 +154,10 @@ class Scatter extends React.Component<Props> {
     }
 
     drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
-        let normPoints = this.normalizePoints
+        let {normPoints} = this.props
         let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
         // const r = 5
-        const cellWidth =10, cellHeight = 7
+        const cellWidth =10, cellHeight = Math.min(7, 40/normPoints[0].value.length)
 
         const maxTimeIdx = this.maxTimeIdx
 
@@ -204,7 +207,7 @@ class Scatter extends React.Component<Props> {
 
     drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
 
-        let { hasLink } = this.props
+        let { hasLink, normPoints } = this.props
         if (!hasLink) return <g className="nolines" key='links' />
 
         let curveGenerator = d3.line()
@@ -217,7 +220,7 @@ class Scatter extends React.Component<Props> {
         let curves = Object.keys(this.patientDict).map(patient => {
             let pointIds = this.patientDict[patient].points
             let pathPoints = pointIds
-                .map(id => this.normalizePoints[id])
+                .map(id => normPoints[id])
                 .sort((a,b)=>a.timeIdx-b.timeIdx)
 
                

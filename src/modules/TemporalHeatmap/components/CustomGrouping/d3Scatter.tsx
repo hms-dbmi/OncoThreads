@@ -71,6 +71,7 @@ class Scatter extends React.Component<Props> {
             // only calculate pca when dimension is larger than 2
             normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
             // console.info('pca points', newPoints)
+            console.info(pca.getExplainedVariance())
         }
 
 

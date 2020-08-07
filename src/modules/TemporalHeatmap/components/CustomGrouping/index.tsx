@@ -3,8 +3,10 @@ import { observer, inject } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
 import { message } from 'antd';
+import { PCA } from 'ml-pca';
 
-import { Point, ReferencedVariables, VariableStore } from 'modules/Type'
+
+import { Point, ReferencedVariables, VariableStore, NormPoint } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
@@ -14,6 +16,8 @@ import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 import StageBlock from './StageBlock';
 import Scatter from './Scatter'
+
+import {clusterfck} from "../../UtilityClasses/clusterfck.js";
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -134,6 +138,69 @@ class CustomGrouping extends React.Component<Props> {
         return stages
     }
 
+    @computed
+    get normPoints(): NormPoint[] {
+        let { points, currentVariables, referencedVariables } = this.props
+        if (points.length === 0) return []
+        let normValues = points.map(point => {
+            let normValue = point.value.map((value, i) => {
+                let ref = referencedVariables[currentVariables[i]]
+                if (value === undefined) {
+                    return 0
+                } else if (typeof (value) == "number") {
+                    let domain = ref.domain as number[]
+                    return (value - domain[0]) / (domain[1] - domain[0])
+                } else if (ref.domain.length === 1) {
+                    return 0
+                } else {
+                    let domain: number[] | boolean[] = ref.domain as number[] | boolean[]
+                    return domain.findIndex((d: number | boolean) => d === value) / (domain.length - 1)
+                }
+            })
+            return normValue
+        })
+
+        var pca = new PCA(normValues)
+
+        if (normValues[0].length > 2) {
+            console.info(pca.getEigenvectors().getColumn(0), pca.getEigenvectors().getColumn(1))
+            // only calculate pca when dimension is larger than 2
+            normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
+            // console.info('pca points', newPoints)
+            
+            
+        }
+
+
+        var normPoints: NormPoint[] = normValues.map((d, i) => {
+            return {
+                ...points[i],
+                pos: d
+            }
+        })
+        
+
+
+        return normPoints
+
+    }
+
+    @action
+    autoGroup(){
+        let normPoints = this.normPoints
+        var clusters = clusterfck.hcluster(normPoints.map(d=>d.value), "euclidean", "average", 1*normPoints[0].value.length);
+        // console.info(tree)
+        this.selected = clusters.map((cluster:any,i:number)=>{
+            return {
+                stageKey: getUniqueKeyName(i, []),
+                pointIdx: cluster.itemIdx
+            }
+        })
+
+        // console.info(selected)
+
+        this.applyCustomGroups()
+    }
     
 
     /**
@@ -298,8 +365,12 @@ class CustomGrouping extends React.Component<Props> {
 
     componentDidMount() {
         this.updateSize()
+        this.autoGroup()
         window.addEventListener('resize', this.updateSize);
     }
+    // componentDidUpdate(){
+    //     this.autoGroup()
+    // }
     componentWillUnmount(){
         window.removeEventListener('resize', this.updateSize);
     }
@@ -340,6 +411,7 @@ class CustomGrouping extends React.Component<Props> {
                     <svg className='customGrouping' width="100%" height={`${scatterHeight+pcpHeight-35}px`}>
                         <Scatter
                         points={points}
+                        normPoints={this.normPoints}
                         currentVariables={currentVariables}
                         referencedVariables= {referencedVariables} 
                         selected={selected}
