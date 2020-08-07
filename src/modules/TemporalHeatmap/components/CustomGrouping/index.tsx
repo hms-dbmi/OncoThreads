@@ -161,21 +161,23 @@ class CustomGrouping extends React.Component<Props> {
         })
 
         var pca = new PCA(normValues)
+        let norm2dValues:any = []
 
         if (normValues[0].length > 2) {
             console.info(pca.getEigenvectors().getColumn(0), pca.getEigenvectors().getColumn(1))
             // only calculate pca when dimension is larger than 2
-            normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
-            // console.info('pca points', newPoints)
-            
-            
+            norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
+            // console.info('pca points', newPoints)            
+        } else{
+            norm2dValues = normValues
         }
 
 
         var normPoints: NormPoint[] = normValues.map((d, i) => {
             return {
                 ...points[i],
-                pos: d
+                normValue: d,
+                pos: norm2dValues[i]
             }
         })
         
@@ -188,7 +190,7 @@ class CustomGrouping extends React.Component<Props> {
     @action
     autoGroup(){
         let normPoints = this.normPoints
-        var clusters = clusterfck.hcluster(normPoints.map(d=>d.value), "euclidean", "average", 1*normPoints[0].value.length);
+        var clusters = clusterfck.hcluster(normPoints.map(d=>d.normValue), "euclidean", "average", 0.1*normPoints[0].value.length);
         // console.info(tree)
         this.selected = clusters.map((cluster:any,i:number)=>{
             return {
@@ -196,8 +198,6 @@ class CustomGrouping extends React.Component<Props> {
                 pointIdx: cluster.itemIdx
             }
         })
-
-        // console.info(selected)
 
         this.applyCustomGroups()
     }
