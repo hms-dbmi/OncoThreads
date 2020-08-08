@@ -4,6 +4,7 @@ import { TSelected } from '.'
 
 import { Point } from 'modules/Type'
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { attr } from 'lineupjs/src/renderer/utils';
 
 
 interface Props {
@@ -21,30 +22,36 @@ interface Props {
 
 @observer
 class StageBlock extends React.Component<Props> {
-    public gap = 20; maxCellHeight = 20;
+    public horizonGap = 20; maxCellHeight = 20; verticalGap = 10;
     constructor(props: Props) {
         super(props)
-        this.drawVIS = this.drawVIS.bind(this)
-        this.drawBlock = this.drawBlock.bind(this)
+        this.drawAllStates = this.drawAllStates.bind(this)
+        this.drawOneState = this.drawOneState.bind(this)
+        this.drawTiemDist = this.drawTiemDist.bind(this)
 
     }
 
-    drawVIS() {
+    drawAllStates() {
         let { points, width, height, selected, stageLabels } = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
+        let fontHeight = 15,
+        blockHeightRatio = 0.6 // the heigh of block of the whole chart 
 
         let stageBlocks: JSX.Element[] = []
         let allSelected = selected.map(d => d.pointIdx).flat()
         let hasLeftPoints = allSelected.length < points.length
-        let wholeGap = (hasLeftPoints ? selected.length : selected.length - 1) * this.gap
+        let wholeGap = (hasLeftPoints ? selected.length : selected.length - 1) * this.horizonGap
         let cellWidth = (width - wholeGap) / points.length
-        let fontHeight = 15
+        
+        let attrNum = points[0].value.length
         let cellHeight = Math.min(
-            (height - fontHeight) / points[0].value.length,
+            (height - fontHeight - this.verticalGap)*blockHeightRatio / attrNum,
             this.maxCellHeight
         )
+        let maxTimeIdx = Math.max(...points.map(p=>p.timeIdx))
+        const timeStepHeight = (height - fontHeight - this.verticalGap)*(1-blockHeightRatio)/(maxTimeIdx+1)
 
         if (selected.length > 0) {
 
@@ -77,12 +84,13 @@ class StageBlock extends React.Component<Props> {
                             height={cellHeight * points[0].value.length + strokeW}
                         />
 
-                        <g transform={`translate(0, ${fontHeight})`} className='blockCols' >
-                            {this.drawBlock(pointIdx.map(id => points[id]), cellWidth, cellHeight)}
+                        <g transform={`translate(0, ${fontHeight})`} className='oneState' >
+                            {this.drawOneState(pointIdx.map(id => points[id]), cellWidth, cellHeight, maxTimeIdx, timeStepHeight)}
                         </g>
+
                     </g>)
 
-                offsetX += cellWidth * pointIdx.length + this.gap
+                offsetX += cellWidth * pointIdx.length + this.horizonGap
             })
 
 
@@ -93,8 +101,8 @@ class StageBlock extends React.Component<Props> {
                 stageBlocks.push(
                     <g key={'undefined'} className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                         <text alignmentBaseline="hanging">undefined</text>
-                        <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
-                            {this.drawBlock(leftNodes.map(id => points[id]), cellWidth, cellHeight)}
+                        <g transform={`translate(0, ${fontHeight})`} className='oneState'>
+                            {this.drawOneState(leftNodes.map(id => points[id]), cellWidth, cellHeight, maxTimeIdx,timeStepHeight)}
                         </g>
                     </g>)
             }
@@ -104,8 +112,8 @@ class StageBlock extends React.Component<Props> {
             stageBlocks.push(
                 <g key='undefined' className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                     <text alignmentBaseline="hanging">undefined</text>
-                    <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
-                        {this.drawBlock(points, cellWidth, cellHeight)}
+                    <g transform={`translate(0, ${fontHeight})`} className='onsState'>
+                        {this.drawOneState(points, cellWidth, cellHeight, maxTimeIdx, timeStepHeight)}
                     </g>
                 </g>
             )
@@ -114,7 +122,19 @@ class StageBlock extends React.Component<Props> {
         return stageBlocks
     }
 
-    drawBlock(points: Point[], cellWidth: number, cellHeight: number) {
+    // draw the block of one state
+    drawOneState(points: Point[], cellWidth: number, cellHeight: number, maxTimeIdx:number, timeStepHeight:number) {
+        
+
+        let block = this.drawBlock(points, cellWidth, cellHeight)
+
+        let timeDist = this.drawTiemDist(points, cellWidth, cellHeight, maxTimeIdx, timeStepHeight)
+        
+        return [block, timeDist]
+
+    }
+
+    drawBlock(points: Point[], cellWidth: number, cellHeight: number){
         points = this.reorderPoints(points)
         let { setHoverID, resetHoverID } = this.props
         let block = points.map((point, i) => {
@@ -139,8 +159,30 @@ class StageBlock extends React.Component<Props> {
             </g>
         })
 
-        return block
+        return <g key="block" className="block"> {block} </g>
+    }
 
+    // draw the time dist of one identified state
+    drawTiemDist(points: Point[], cellWidth: number,cellHeight:number,  maxTimeIdx:number, timeStepHeight:number){
+        let attrNum = points[0].value.length
+
+        let dist = [...Array(maxTimeIdx+1)].map(d=>0)
+        points.forEach(point=>{
+            let timeIdx = point.timeIdx
+            dist[timeIdx] += 1
+        })
+
+        let charPoints = dist.map((d,i)=>`L ${d*cellWidth} ${i*timeStepHeight}`)
+        
+
+        return <g className='timeDist' key="timeDist" transform={`translate(0, ${cellHeight*attrNum + this.verticalGap})`}>
+            <path 
+                d= {`M 0 0 ${charPoints.join(' ')} L ${0} ${maxTimeIdx*timeStepHeight} z`}
+                fill='gray'
+                stroke = 'gray'
+                strokeWidth = '2'
+            />
+        </g>
     }
 
     reorderPoints(points: Point[]) {
@@ -158,7 +200,7 @@ class StageBlock extends React.Component<Props> {
 
     render() {
         return <g className='stageBlock'>
-            {this.drawVIS()}
+            {this.drawAllStates()}
         </g>
     }
 }
