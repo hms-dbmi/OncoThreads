@@ -153,7 +153,8 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                             >
                                 <GroupTimepoint
                                     type={d.type}
-                                    group={d.customPartitions.length===0?d.grouped:d.customGrouped}
+                                    // group={d.customPartitions.length>0?d.customGrouped:d.grouped}
+                                    group = {d.customGrouped}
                                     heatmap={d.heatmap}
                                     index={i}
                                     currentVariables={this.props.rootStore.dataStore

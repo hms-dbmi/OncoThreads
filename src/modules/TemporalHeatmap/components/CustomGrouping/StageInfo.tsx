@@ -10,7 +10,7 @@ interface Props {
     height: number,
     stageLabels: {[key:string]:string}
     resetGroup: ()=>void,
-    deleteGroup: (groupIdx:number)=>void,
+    deleteGroup: (stageKey:string)=>void,
     applyCustomGroups:()=>void,
 }
 
@@ -40,7 +40,7 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
             // }
             return <p key={`stage_${i}`} style={{color: getColorByName(stageKey)}}>
                 {values} 
-                <Button size='small' onClick={()=>this.props.deleteGroup(i)}> x </Button> 
+                <Button size='small' onClick={()=>this.props.deleteGroup(stageKey)}> x </Button> 
                 </p>
         })
         

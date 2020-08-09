@@ -8,6 +8,7 @@ import { TSelected } from '.';
 import lasso from './lasso.js'
 
 import { getColorByName, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import Group from 'antd/lib/input/Group';
 
 type TPatientDict = {
     [patient: string]: {
@@ -29,7 +30,7 @@ interface Props {
     colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
-    updateSelected: (i:number, group:TSelected[number]|undefined)=>void
+    updateSelected: (stageKeys:string[], groups:number[][])=>void
 }
 
 
@@ -163,8 +164,8 @@ class Scatter extends React.Component<Props> {
 
         var circles = normPoints.map((normPoint) => {
             let id = normPoint.idx
-            let groupIdx = selected.findIndex(p => p.pointIdx.includes(id))
-            let stageColor = groupIdx>-1? getColorByName(selected[groupIdx].stageKey): 'none'
+            let groupIdx = Object.values(selected).findIndex(p => p.pointIdx.includes(id))
+            let stageColor = groupIdx>-1? getColorByName(Object.keys(selected)[groupIdx]): 'none'
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID===normPoint.idx?1:0.5)
             return <g transform={`translate(
                     ${xScale(normPoint.pos[0]) - cellWidth / 2}, 
@@ -280,30 +281,34 @@ class Scatter extends React.Component<Props> {
             // .items()
             // .classed("possible", false)
             
-            let thisSelected = (mylasso.selectedItems() as any)._groups[0].map((d: any): number => parseInt(d.attributes.id.value))
+            let currentSelected = (mylasso.selectedItems() as any)._groups[0].map((d: any): number => parseInt(d.attributes.id.value))
+            
            
-            if (thisSelected.length > 0) {
+            if (currentSelected.length > 0) {
+                let stageKeys:string[] = [], groups = [] // groups that need  to be updated
                 // if selected nodes are in previous stages
 
-                selected.forEach((g, i) => {
-                    g.pointIdx = g.pointIdx.filter(point => !thisSelected.includes(point))
-                    if (g.pointIdx.length > 0) {
-                        // selected[i] = g // update the group by removing overlapping points
-                        updateSelected(i,g)
+                Object.keys(selected).forEach((stageKey, i) => {
+                    let g = selected[stageKey]
+                    let remainPoints = g.pointIdx.filter(point => !currentSelected.includes(point))
+                    stageKeys.push(stageKey)
+                    if (remainPoints.length > 0) {
+                        
+                        groups.push(remainPoints)
                     } else {
                         // selected.splice(i, 1) // delete the whole group if all points overlap
-                        updateSelected(i, undefined)
+                        groups.push([])
                     }
                 })
 
 
 
-                let stageKey = getUniqueKeyName(selected.length, selected.map(d => d.stageKey))
-                let newGroup={
-                    stageKey,
-                    pointIdx: thisSelected
-                }
-                updateSelected(selected.length, newGroup)
+                let newStageKey = getUniqueKeyName(Object.keys(selected).length, Object.keys(selected))
+                
+                stageKeys.push(newStageKey)
+                groups.push(currentSelected)
+
+                updateSelected(stageKeys, groups)
             }
             // this.d3Draw()
 

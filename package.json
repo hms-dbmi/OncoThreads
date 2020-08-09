@@ -84,6 +84,7 @@
     "jspdf": "^1.5.3",
     "popper.js": "^1.16.1",
     "react-scripts": "^3.4.1",
+    "tslib": "^2.0.1",
     "typescript": "^3.9.3",
     "wait-on": "^3.2.0"
   }

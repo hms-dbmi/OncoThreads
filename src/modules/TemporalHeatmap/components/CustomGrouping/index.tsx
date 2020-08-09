@@ -53,7 +53,7 @@ export type TStage = {
 }
 
 
-export type TSelected = { stageKey: string, pointIdx: number[] }[]
+export type TSelected ={ [stageKey:string]: { stageKey: string, pointIdx: number[] }}
 
 
 interface Props {
@@ -70,7 +70,7 @@ interface Props {
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
     @observable height: number = window.innerHeight - 140
-    @observable selected: TSelected = []
+    @observable selected: TSelected = {}
     @observable hasLink: boolean = false
     @observable hoverPointID:number = -1
     private ref = React.createRef<HTMLDivElement>();
@@ -86,6 +86,7 @@ class CustomGrouping extends React.Component<Props> {
         this.resetHoverID = this.resetHoverID.bind(this)
         this.updateSize = this.updateSize.bind(this)
         this.updateSelected = this.updateSelected.bind(this)
+        this.autoGroup = this.autoGroup.bind(this)
 
     }
 
@@ -98,7 +99,7 @@ class CustomGrouping extends React.Component<Props> {
         let { selected } = this
         let { currentVariables, points } = this.props
 
-        let selectedPoints: Point[][] = selected
+        let selectedPoints: Point[][] = Object.values(selected)
             .map(s => {
                 return points
                     .filter((_, i) => s.pointIdx.includes(i))
@@ -120,7 +121,7 @@ class CustomGrouping extends React.Component<Props> {
 
         let stages = selectedPoints.map((p, stageIdx) => {
             let stage: TStage = {
-                stageKey: selected[stageIdx].stageKey,
+                stageKey: Object.keys(selected)[stageIdx],
                 domains: {},
                 points: p.map(p=>p.idx)
             }
@@ -190,16 +191,22 @@ class CustomGrouping extends React.Component<Props> {
     @action
     autoGroup(){
         let normPoints = this.normPoints
-        var clusters = clusterfck.hcluster(normPoints.map(d=>d.normValue), "euclidean", "average", 0.1*normPoints[0].value.length);
+        if (normPoints.length==0) return 
+        var clusters = clusterfck.hcluster(normPoints.map(d=>d.pos), "euclidean", "single", 0.15);
         // console.info(tree)
-        this.selected = clusters.map((cluster:any,i:number)=>{
-            return {
-                stageKey: getUniqueKeyName(i, []),
-                pointIdx: cluster.itemIdx
-            }
-        })
 
-        this.applyCustomGroups()
+        this.updateSelected(
+            clusters.map((_:any,i:number)=>getUniqueKeyName(i, [])), 
+            clusters.map((d:any)=>d.itemIdx)
+        )
+        // this.selected = clusters.map((cluster:any,i:number)=>{
+        //     return {
+        //         stageKey: getUniqueKeyName(i, []),
+        //         pointIdx: cluster.itemIdx
+        //     }
+        // })
+
+        // this.applyCustomGroups()
     }
     
 
@@ -213,7 +220,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     resetGroup() {
-        this.selected = []
+        this.selected = {}
         this.props.dataStore.resetStageLabel()
 
 
@@ -224,10 +231,10 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    deleteGroup(i: number) {
-        this.selected.splice(i, 1)
+    deleteGroup(stageKey: string) {
+        delete this.selected[stageKey]
 
-        d3.selectAll(`circle.group_${i}`)
+        d3.selectAll(`circle.group_${stageKey}`)
             .attr('fill', 'white')
             .attr('r', 5)
             .attr('class', 'point')
@@ -240,16 +247,18 @@ class CustomGrouping extends React.Component<Props> {
         let { points } = this.props
 
         // check whether has unselected nodes
-        let allSelected = selected.map(d => d.pointIdx).flat()
+        let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
         if (allSelected.length < points.length) {
             let leftNodes = points.map((_, i) => i)
                 .filter(i => !allSelected.includes(i))
 
-            this.selected.push({
-                stageKey: getUniqueKeyName(this.selected.length, this.selected.map(d => d.stageKey)),
+            let newStageKey = getUniqueKeyName(Object.keys(this.selected).length, Object.keys(this.selected))
+
+            this.selected[newStageKey] ={
+                stageKey: newStageKey,
                 pointIdx: leftNodes
-            })
-            message.info('All unselected nodes are grouped as one stage')
+            }
+            // message.info('All unselected nodes are grouped as one stage')
         }
 
 
@@ -265,7 +274,7 @@ class CustomGrouping extends React.Component<Props> {
         })
 
         // push points to corresponding time stage
-        this.selected.forEach((stage) => {
+        Object.values(this.selected).forEach((stage) => {
 
             let stageKey = stage.stageKey
 
@@ -352,14 +361,23 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    updateSelected(i:number, group:TSelected[number]|undefined){
-        if (group===undefined){
-            this.selected.splice(i,1)
-        }else if(i<this.selected.length){
-            this.selected[i] = group
-        }else {
-            this.selected.push(group)
+    updateSelected(stageKeys:string[], groups:number[][]){
+        
+        for (let i=0;i<groups.length;i++){
+            let stageKey = stageKeys[i], group = groups[i]
+           
+                if (group.length===0){
+                    delete this.selected[stageKey]
+                }else {
+                    this.selected[stageKey] = {
+                        stageKey,
+                        pointIdx: group
+                    }
+                }
+            
         }
+        console.info(this.selected)
+        this.applyCustomGroups()
         
     }
 
