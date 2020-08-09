@@ -10,6 +10,7 @@ import { computed } from 'mobx';
 
 interface Props {
     points: Point[],
+    importanceScores: number[],
     stageLabels: { [key: string]: string },
     width: number,
     height: number,
@@ -28,7 +29,8 @@ class StageBlock extends React.Component<Props> {
         verticalGap = 10; 
         fontHeight = 15; 
         strokeW = 4;
-        blockHeightRatio = 0.6 // the heigh of block of the whole chart 
+        blockHeightRatio = 0.6 // the heigh of block : the height of whole chart 
+        scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
 
     constructor(props: Props) {
         super(props)
@@ -41,7 +43,7 @@ class StageBlock extends React.Component<Props> {
     get wholeGap():number{
         let {selected, points} = this.props
         let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
-        console.info(allSelected.length, points.length)
+
         let hasLeftPoints = allSelected.length < points.length
         let wholeGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
         return wholeGap
@@ -49,7 +51,7 @@ class StageBlock extends React.Component<Props> {
     @computed
     get cellWidth():number{
         let {width, points} = this.props
-        let cellWidth = (width - this.wholeGap) / points.length
+        let cellWidth = ( width*(1 - this.scoreRatio) - this.wholeGap) / points.length
         // console.info(width, this.wholeGap, points.length, cellWidth)
         return cellWidth
     }
@@ -220,6 +222,14 @@ class StageBlock extends React.Component<Props> {
         </g>
     }
 
+    showScores(){
+        let {importanceScores} = this.props
+        let scores = importanceScores.map((score,i)=><text y={this.cellHeight*i}>
+            {score.toFixed(3)}
+        </text>)
+        return scores
+    }
+
     reorderPoints(points: Point[]) {
         return [...points].sort((a, b) => {
             let dif = 0
@@ -234,8 +244,13 @@ class StageBlock extends React.Component<Props> {
     }
 
     render() {
-        return <g className='stageBlock'>
-            {this.drawAllStates()}
+        return <g className='stateSummary'>
+            <g className='importanceScores' transform ={`translate(0, ${this.fontHeight + this.cellHeight})`}>
+                {this.showScores()}
+            </g>
+            <g className='state' transform={`translate(${this.props.width*this.scoreRatio}, 0)`}>
+                {this.drawAllStates()}
+            </g>
         </g>
     }
 }

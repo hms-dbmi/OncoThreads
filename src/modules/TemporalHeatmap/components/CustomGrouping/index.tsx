@@ -140,8 +140,8 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @computed
-    get normPoints(): NormPoint[] {
-        let { points, currentVariables, referencedVariables } = this.props
+    get normValues(): number[][]{
+        let {points, referencedVariables, currentVariables} = this.props
         if (points.length === 0) return []
         let normValues = points.map(point => {
             let normValue = point.value.map((value, i) => {
@@ -160,12 +160,17 @@ class CustomGrouping extends React.Component<Props> {
             })
             return normValue
         })
+        return normValues
+    }
 
-        var pca = new PCA(normValues)
+    @computed
+    get normPoints(): NormPoint[] {
+        let {normValues} = this
+
+        let pca = new PCA(normValues)
         let norm2dValues:any = []
 
-        if (normValues[0].length > 2) {
-            console.info(pca.getEigenvectors().getColumn(0), pca.getEigenvectors().getColumn(1))
+        if (this.normValues[0].length > 2) {
             // only calculate pca when dimension is larger than 2
             norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
             // console.info('pca points', newPoints)            
@@ -176,16 +181,21 @@ class CustomGrouping extends React.Component<Props> {
 
         var normPoints: NormPoint[] = normValues.map((d, i) => {
             return {
-                ...points[i],
+                ...this.props.points[i],
                 normValue: d,
                 pos: norm2dValues[i]
             }
         })
         
-
-
         return normPoints
+    }
 
+    @computed
+    get importanceScores(): number[]{
+        let pca = new PCA(this.normValues)
+        let egiVector = pca.getEigenvectors()
+        let importanceScores = egiVector.getColumn(0).map((d,i)=>Math.abs(d)+ Math.abs(egiVector.getColumn(1)[i]))
+        return importanceScores
     }
 
     @action
@@ -445,6 +455,7 @@ class CustomGrouping extends React.Component<Props> {
                         <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
                             <StageBlock 
                                 stageLabels={this.props.stageLabels}
+                                importanceScores = {this.importanceScores}
                                 width={width - 2 * pcpMargin}
                                 height={pcpHeight - 2 * pcpMargin}
                                 points={points}

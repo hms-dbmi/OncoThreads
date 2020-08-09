@@ -36,56 +36,7 @@ interface Props {
 
 @observer
 class Scatter extends React.Component<Props> {
-    
-    // normalize points to [0,1] range and reduce them to 2d space.
-    // @param: points: string||number[][], 
-    // @param: currentVariable: [variableName:string][]
-    // @param: referencedVariables: {[variableName:string]: {range:[], datatype:"NUMBER"|"STRING"}}
-    // return: points: number[][]
-    // @computed
-    // get normalizePoints(): NormPoint[] {
-    //     let { points, currentVariables, referencedVariables } = this.props
-    //     if (points.length === 0) return []
-    //     let normValues = points.map(point => {
-    //         let normValue = point.value.map((value, i) => {
-    //             let ref = referencedVariables[currentVariables[i]]
-    //             if (value === undefined) {
-    //                 return 0
-    //             } else if (typeof (value) == "number") {
-    //                 let domain = ref.domain as number[]
-    //                 return (value - domain[0]) / (domain[1] - domain[0])
-    //             } else if (ref.domain.length === 1) {
-    //                 return 0
-    //             } else {
-    //                 let domain: number[] | boolean[] = ref.domain as number[] | boolean[]
-    //                 return domain.findIndex((d: number | boolean) => d === value) / (domain.length - 1)
-    //             }
-    //         })
-    //         return normValue
-    //     })
-
-    //     var pca = new PCA(normValues)
-
-    //     if (normValues[0].length > 2) {
-    //         console.info(pca.getEigenvectors().getColumn(0), pca.getEigenvectors().getColumn(1))
-    //         // only calculate pca when dimension is larger than 2
-    //         normValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
-    //         // console.info('pca points', newPoints)
-            
-            
-    //     }
-
-
-    //     var normPoints: NormPoint[] = normValues.map((d, i) => {
-    //         return {
-    //             ...points[i],
-    //             pos: d
-    //         }
-    //     })
-
-    //     return normPoints
-
-    // }
+    public cellWidth = 10;
 
     @computed
     get patientDict() {
@@ -113,6 +64,12 @@ class Scatter extends React.Component<Props> {
         let normPoints = this.props.normPoints
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         return maxTimeIdx
+    }
+    @computed
+    get cellHeight():number{
+        let {normPoints} = this.props
+        const cellHeight = Math.min(7, 40/normPoints[0].value.length)
+        return cellHeight
     }
 
     generateGradients(){
@@ -158,7 +115,7 @@ class Scatter extends React.Component<Props> {
         let {normPoints} = this.props
         let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
         // const r = 5
-        const cellWidth =10, cellHeight = Math.min(7, 40/normPoints[0].value.length)
+        
 
         const maxTimeIdx = this.maxTimeIdx
 
@@ -168,8 +125,8 @@ class Scatter extends React.Component<Props> {
             let stageColor = groupIdx>-1? getColorByName(Object.keys(selected)[groupIdx]): 'none'
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID===normPoint.idx?1:0.5)
             return <g transform={`translate(
-                    ${xScale(normPoint.pos[0]) - cellWidth / 2}, 
-                    ${yScale(normPoint.pos[1]) - cellHeight * normPoint.value.length / 2}
+                    ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
+                    ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
                     )`}
                     className='glyph'
                     id={normPoint.idx.toString()}
@@ -177,15 +134,16 @@ class Scatter extends React.Component<Props> {
                 onMouseLeave={() => resetHoverID()}
                 cursor='pointer'
             >
-                {this.glyph(normPoint, stageColor, cellWidth, cellHeight, opacity)}
+                {this.glyph(normPoint, stageColor, opacity)}
             </g>
         })
 
         return <g className='circles'>{circles}</g>
     }
 
-    glyph(normPoint: NormPoint, stageColor: string, cellWidth:number, cellHeight:number, opacity:number ) {
+    glyph(normPoint: NormPoint, stageColor: string, opacity:number ) {
         const strokeW = 2
+        let {cellWidth, cellHeight} = this
         let pointCol = normPoint.value.map((v, rowIdx) => {
             let fill = this.props.colorScales[rowIdx](v) || 'gray'
             return <rect key={rowIdx}
