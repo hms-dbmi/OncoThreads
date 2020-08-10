@@ -174,7 +174,7 @@ class SingleTimepoint {
                 this.heatmap.splice(deleteIndex, 1);
                 if (this.heatmap.length < 1) {
                     this.primaryVariableId = undefined;
-                } else if (variableId === this.primaryVariableId) {
+                } else if (this.customPartitions.length==0 && variableId === this.primaryVariableId) {
                     const primaryIndex = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables.map(d => d.datatype === 'NUMBER').indexOf(false);
                     if (this.isGrouped && primaryIndex !== -1) {
                         this.setPrimaryVariable(this.heatmap[primaryIndex].variable);
