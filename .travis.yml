@@ -21,35 +21,35 @@ jobs:
     - stage: Test
       script:
         - npm run react-test
-    - stage: Deploy Windows & Mac
-      if: tag IS present
-      os: osx
-      osx_image: xcode10.1
-      script:
-        - npm run publish-mac-win
-      before_cache:
-        - rm -rf $HOME/.cache/electron-builder/wine
-    - stage: Deploy linux
-      if: tag IS present
-      os: linux
-      dist: trusty
-      script:
-        - npm run publish-currentOS
+    # - stage: Deploy Windows & Mac
+    #   if: tag IS present
+    #   os: osx
+    #   osx_image: xcode10.1
+    #   script:
+    #     - npm run publish-mac-win
+    #   before_cache:
+    #     - rm -rf $HOME/.cache/electron-builder/wine
+    # - stage: Deploy linux
+    #   if: tag IS present
+    #   os: linux
+    #   dist: trusty
+    #   script:
+    #     - npm run publish-currentOS
 
-    - stage: Deploy website
-      script:
-        - CI=false npm run react-build-web
-      deploy:
-        provider: s3
-        access_key_id: $AWS_ACCESS_KEY_ID
-        secret_access_key: $AWS_SECRET_ACCESS_KEY
-        bucket: oncothreads.gehlenborglab.org
-        local_dir: build
-        skip_cleanup: true
-        region: us-east-1
-        acl: public_read
-        on:
-          branch: master
+    # - stage: Deploy website
+    #   script:
+    #     - CI=false npm run react-build-web
+    #   deploy:
+    #     provider: s3
+    #     access_key_id: $AWS_ACCESS_KEY_ID
+    #     secret_access_key: $AWS_SECRET_ACCESS_KEY
+    #     bucket: oncothreads.gehlenborglab.org
+    #     local_dir: build
+    #     skip_cleanup: true
+    #     region: us-east-1
+    #     acl: public_read
+    #     on:
+    #       branch: master
     
     - stage: Deploy website version 2
       script:
