@@ -39,6 +39,8 @@ const AboutModal = observer(class AboutModal extends React.Component {
 
                     <h4>Team</h4>
                     <p>
+                    Qianwen Wang, Harvard Medical School
+                    <br/>
                     Theresa Harbig, Harvard Medical School
                     <br/>
                     Sabrina Nusrat, Harvard Medical School
