@@ -11,13 +11,13 @@ TIMEPOINT_NUM = 10
 STATUS_DIM = 8
 STATUS_DIM_RANDOM = 3 # number of noise status dimensions
 EVENT_DIM = 8
-STATE_NUM = 5
+STATE_NUM = 7
 
 treatment_types = ['treat_'+chr(65+i) for i in range(EVENT_DIM)]
 
-timeline_points_mocker_filename = os.path.join(os.getcwd(), "mocker_timeline_specimen.txt" )
-timeline_treatment_mocker_filename = os.path.join(os.getcwd(), "mocker_timeline_treatment.txt" )
-sample_mocker_filename = os.path.join(os.getcwd(), "mocker_clinical_sample.txt")
+timeline_points_mocker_filename = os.path.join(os.getcwd(), "mocker_timeline_specimen2.txt" )
+timeline_treatment_mocker_filename = os.path.join(os.getcwd(), "mocker_timeline_treatment2.txt" )
+sample_mocker_filename = os.path.join(os.getcwd(), "mocker_clinical_sample2.txt")
 
 patient_len_dict = {}
 
@@ -111,7 +111,7 @@ for patient_idx in range(PATIENT_NUM):
         suit_sample = X[flag]
         X = np.delete(X, flag, 0) 
         y = np.delete(y, flag, 0)
-        sample_status = ['dummy'] + [str(random.uniform(-12,12)) for _ in range(STATUS_DIM_RANDOM-1)] + [str(i) for i in suit_sample] 
+        sample_status = ['positive'] + [str(random.uniform(-12,12)) for _ in range(STATUS_DIM_RANDOM-1)] + [str(i) for i in suit_sample] 
         sample_file.write(
             '{patient_id}\t{sample_id}\t{status}\n'.format(
                 patient_id = patient_id, sample_id = sample_id, status = '\t'.join(sample_status)

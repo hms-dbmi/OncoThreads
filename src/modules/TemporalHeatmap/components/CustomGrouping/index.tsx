@@ -166,7 +166,7 @@ class CustomGrouping extends React.Component<Props> {
     @computed
     get normPoints(): NormPoint[] {
         let {normValues} = this
-
+        if (normValues.length==0) return []
         let pca = new PCA(normValues)
         let norm2dValues:any = []
 
@@ -192,6 +192,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @computed
     get importanceScores(): number[]{
+        if (this.normValues.length==0) return []
         let pca = new PCA(this.normValues)
         let egiVector = pca.getEigenvectors()
         let importanceScores = egiVector.getColumn(0).map((d,i)=>Math.abs(d)+ Math.abs(egiVector.getColumn(1)[i]))
@@ -202,7 +203,7 @@ class CustomGrouping extends React.Component<Props> {
     autoGroup(){
         let normPoints = this.normPoints
         if (normPoints.length==0) return 
-        var clusters = clusterfck.hcluster(normPoints.map(d=>d.pos), "euclidean", "single", 0.15);
+        var clusters = clusterfck.hcluster(normPoints.map(d=>d.pos), "euclidean", "single", 0.08);
         // console.info(tree)
 
         this.updateSelected(
