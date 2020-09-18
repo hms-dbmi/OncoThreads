@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
-import { message } from 'antd';
+import { message, InputNumber, Slider } from 'antd';
 import { PCA } from 'ml-pca';
 
 
@@ -18,6 +18,7 @@ import StageBlock from './StageBlock';
 import Scatter from './Scatter'
 
 import {clusterfck} from "../../UtilityClasses/clusterfck.js";
+import { SliderValue } from 'antd/lib/slider';
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -73,6 +74,7 @@ class CustomGrouping extends React.Component<Props> {
     @observable selected: TSelected = {}
     @observable hasLink: boolean = false
     @observable hoverPointID:number = -1
+    @observable clusterTHR:number = 0.08
     private ref = React.createRef<HTMLDivElement>();
 
     constructor(props: Props) {
@@ -87,6 +89,7 @@ class CustomGrouping extends React.Component<Props> {
         this.updateSize = this.updateSize.bind(this)
         this.updateSelected = this.updateSelected.bind(this)
         this.autoGroup = this.autoGroup.bind(this)
+        this.onChangeThreshold = this.onChangeThreshold.bind(this)
 
     }
 
@@ -203,7 +206,8 @@ class CustomGrouping extends React.Component<Props> {
     autoGroup(){
         let normPoints = this.normPoints
         if (normPoints.length==0) return 
-        var clusters = clusterfck.hcluster(normPoints.map(d=>d.pos), "euclidean", "single", 0.08);
+        let {clusterTHR} = this
+        var clusters = clusterfck.hcluster(normPoints.map(d=>d.pos), "euclidean", "single", clusterTHR);
         // console.info(tree)
 
         this.updateSelected(
@@ -409,6 +413,11 @@ class CustomGrouping extends React.Component<Props> {
         }
     }
 
+    @action
+    onChangeThreshold(thr:SliderValue){
+        this.clusterTHR = thr as number
+        this.autoGroup()
+    }
 
     render() {
 
@@ -419,7 +428,7 @@ class CustomGrouping extends React.Component<Props> {
 
         // used stroe actions
         let toggleHasEvent = this.props.dataStore.toggleHasEvent
-
+        console.info('thr', this.clusterTHR)
         return (
             <div className="container" style={{ width: "100%" }}>
                 <div
@@ -436,6 +445,15 @@ class CustomGrouping extends React.Component<Props> {
                         style={{ marginLeft: '5px' }}
                         checkedChildren="events" unCheckedChildren="events"
                         onChange={toggleHasEvent} />
+                    {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
+                    cluster threshold
+                    <Slider
+                        min={0}
+                        max={1}
+                        onAfterChange={this.onChangeThreshold}
+                        value={this.clusterTHR}
+                        style={{width:"80px", display:"inline-block"}}
+                    />
 
                     <svg className='customGrouping' width="100%" height={`${scatterHeight+pcpHeight-35}px`}>
                         <Scatter

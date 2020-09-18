@@ -40,12 +40,19 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
             // }
             return <p key={`stage_${i}`} style={{color: getColorByName(stageKey)}}>
                 {values} 
-                <Button size='small' onClick={()=>this.props.deleteGroup(stageKey)}> x </Button> 
+                <Button size='small' onClick={()=>this.props.deleteGroup(stageKey)} style={{borderRadius:'3px'}}> delete </Button> 
                 </p>
         })
         
         return <div className="StageInfo"  style={{height:this.props.height, padding:"5px"}}>
             {/* <Table columns={col} dataSource={data} pagination={false} size="small"/> */}
+            <h3 style={{
+                    border: "solid #bbb 1px",
+                    borderRadius:"5px",
+                    width: "auto",
+                    display: "inline-block",
+                    padding: "3px 15px"
+            }}>State Summary</h3>
             <div className="stage" style={{height:this.props.height-35, overflow:"auto"}}>
                 {content}
             </div>

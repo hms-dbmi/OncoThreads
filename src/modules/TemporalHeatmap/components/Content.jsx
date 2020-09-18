@@ -277,7 +277,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
     render() {
         // let sampleStore = this.props.rootStore.dataStore.variableStores.sample
         let {dataStore, study} = this.props.rootStore
-        let studyName = study?study.name:'unknown'
+        let studyName = study?study.name:'example'
               
         return (
             <div>

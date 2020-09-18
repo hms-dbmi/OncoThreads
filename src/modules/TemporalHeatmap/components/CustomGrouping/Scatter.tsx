@@ -130,18 +130,19 @@ class Scatter extends React.Component<Props> {
                     )`}
                     className='glyph'
                     id={normPoint.idx.toString()}
-                onMouseEnter={() => setHoverID(id)}
-                onMouseLeave={() => resetHoverID()}
+                // onMouseEnter={() => setHoverID(id)}
+                // onMouseLeave={() => resetHoverID()}
                 cursor='pointer'
             >
-                {this.glyph(normPoint, stageColor, opacity)}
+                {/* {this.drawGlyph(normPoint, stageColor, opacity)} */}
+                <circle fill={stageColor}/>
             </g>
         })
 
         return <g className='circles'>{circles}</g>
     }
 
-    glyph(normPoint: NormPoint, stageColor: string, opacity:number ) {
+    drawGlyph(normPoint: NormPoint, stageColor: string, opacity:number ) {
         const strokeW = 2
         let {cellWidth, cellHeight} = this
         let pointCol = normPoint.value.map((v, rowIdx) => {
@@ -163,6 +164,7 @@ class Scatter extends React.Component<Props> {
         />
         return [...pointCol, outline]
     }
+
 
     drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
 
@@ -195,7 +197,7 @@ class Scatter extends React.Component<Props> {
             />
         })
 
-        return <g className="lines" key='links'>
+        return <g className="lines" key='links' opacity={0.4}>
             {curves}
         </g>
 

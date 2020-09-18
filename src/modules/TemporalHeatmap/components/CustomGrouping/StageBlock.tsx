@@ -1,10 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import { TSelected } from '.'
+import * as d3 from "d3"
 
 import { Point } from 'modules/Type'
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { attr } from 'lineupjs/src/renderer/utils';
 import { computed } from 'mobx';
 
 
@@ -36,7 +36,7 @@ class StageBlock extends React.Component<Props> {
         super(props)
         this.drawAllStates = this.drawAllStates.bind(this)
         this.drawOneState = this.drawOneState.bind(this)
-        this.drawTiemDist = this.drawTiemDist.bind(this)
+        this.drawTimeDist = this.drawTimeDist.bind(this)
 
     }
     @computed
@@ -57,9 +57,16 @@ class StageBlock extends React.Component<Props> {
     }
 
     @computed
-    get cellHeight():number{
-        let {points, height} = this.props
+    get attrNum():number{
+        let {points} = this.props
         let attrNum = points[0].value.length
+        return attrNum   
+    }
+
+    @computed
+    get cellHeight():number{
+        let {height} = this.props
+        let attrNum = this.attrNum
         let cellHeight = Math.min(
             (height - this.fontHeight - this.verticalGap)*this.blockHeightRatio / attrNum,
             this.maxCellHeight
@@ -68,16 +75,23 @@ class StageBlock extends React.Component<Props> {
     }
 
     @computed
-    get timeStepHeight():number{
+    get maxTimeIdx():number{
         let {points, height} = this.props
         let maxTimeIdx = Math.max(...points.map(p=>p.timeIdx))
-        const timeStepHeight = (height - this.fontHeight - this.verticalGap)*(1 - this.blockHeightRatio)/(maxTimeIdx+1)
+        return maxTimeIdx
+    }
+
+    @computed
+    get timeStepHeight():number{
+        let {points, height} = this.props
+        
+        const timeStepHeight = (height - this.fontHeight - this.verticalGap)*(1 - this.blockHeightRatio)/(this.maxTimeIdx+1)
 
         return timeStepHeight
     }
 
     drawAllStates() {
-        let { points, selected, stageLabels } = this.props
+        let { points, selected, stageLabels , height} = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
@@ -152,7 +166,29 @@ class StageBlock extends React.Component<Props> {
             )
         }
 
-        return stageBlocks
+        let allStates = <g className='state' key='allStates' transform={`translate(${this.props.width*this.scoreRatio}, 0)`}>
+                {stageBlocks}
+            </g>
+
+        let importanceScores = this.showScores()
+
+        let timeDistLabel = <g 
+            className="timeDistLable" 
+            key="timeDistLable" 
+            transform = {`translate(${this.props.width * this.scoreRatio /2}, ${this.attrNum*this.cellHeight + this.fontHeight + this.verticalGap + this.maxTimeIdx*this.timeStepHeight}) rotate(-90 0 0)`}
+        >
+            <rect 
+                width={getTextWidth('temportal Distribution', this.fontHeight) + 10 } height={this.fontHeight * 1.2}
+                rx="3"
+                stroke="gray"
+                fill="white"
+            />
+            <text y={this.fontHeight} x={4}> 
+                Temporal Distribution
+            </text>
+        </g>
+
+        return [importanceScores, timeDistLabel, allStates]
     }
 
     // draw the block of one state
@@ -164,7 +200,7 @@ class StageBlock extends React.Component<Props> {
 
         let block = this.drawBlock(points)
 
-        let timeDist = this.drawTiemDist(points)
+        let timeDist = this.drawTimeDist(points)
         
         return [block, timeDist]
 
@@ -199,35 +235,63 @@ class StageBlock extends React.Component<Props> {
     }
 
     // draw the time dist of one identified state
-    drawTiemDist(points: Point[]){
-        let maxTimeIdx = Math.max( ...this.props.points.map(d=>d.timeIdx) )
-        let attrNum = points[0].value.length
+    drawTimeDist(points: Point[]){
 
-        let dist = [...Array(maxTimeIdx+1)].map(d=>0)
+        let dist = [...Array(this.maxTimeIdx+1)].map(d=>0)
         points.forEach(point=>{
             let timeIdx = point.timeIdx
             dist[timeIdx] += 1
         })
 
-        let charPoints = dist.map((d,i)=>`L ${d*this.cellWidth} ${i * this.timeStepHeight}`)
-        
+        // let charPoints = dist.map((d,i)=>`L ${d*this.cellWidth} ${i * this.timeStepHeight}`)
+        // return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
+        //     <path 
+        //         d= {`M 0 0 ${charPoints.join(' ')} L ${0} ${this.maxTimeIdx* this.timeStepHeight} z`}
+        //         fill='lightgray'
+        //         stroke = 'lightgray'
+        //         strokeWidth = '2'
+        //     />
+        // </g>
 
-        return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * attrNum + this.verticalGap})`}>
+        
+        var lineGene = d3.line().curve(d3.curveMonotoneY);
+        let pathString = lineGene(
+            dist.map(
+                (d,i)=>[d*this.cellWidth, i * this.timeStepHeight]
+                )
+            )
+
+        pathString = `${pathString} L ${0} ${this.maxTimeIdx* this.timeStepHeight} L ${0} ${0} z`
+        
+        return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
             <path 
-                d= {`M 0 0 ${charPoints.join(' ')} L ${0} ${maxTimeIdx* this.timeStepHeight} z`}
-                fill='gray'
-                stroke = 'gray'
+                d= {pathString as string}
+                fill='lightgray'
+                stroke = 'lightgray'
                 strokeWidth = '2'
             />
         </g>
+        
     }
 
     showScores(){
-        let {importanceScores} = this.props
-        let scores = importanceScores.map((score,i)=><text y={this.cellHeight*i}>
+        let {importanceScores, width} = this.props
+        let scores = importanceScores.map((score,i)=><text y={this.cellHeight*(i+1)} opacity={score}>
             {score.toFixed(3)}
         </text>)
-        return scores
+
+        let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
+        return <g className='importanceScores' transform ={`translate(${impLableWidth/2}, ${this.fontHeight - this.strokeW})`} textAnchor="middle">
+
+                <rect width={impLableWidth} height={this.fontHeight*1.2} rx={3} 
+                    y={-this.fontHeight} x={-0.5 * impLableWidth} 
+                    fill="white" stroke="gray"
+                />
+                <text x={2}>
+                    {impLable}
+                </text>
+                {scores}
+            </g>
     }
 
     reorderPoints(points: Point[]) {
@@ -245,12 +309,7 @@ class StageBlock extends React.Component<Props> {
 
     render() {
         return <g className='stateSummary'>
-            <g className='importanceScores' transform ={`translate(0, ${this.fontHeight + this.cellHeight})`}>
-                {this.showScores()}
-            </g>
-            <g className='state' transform={`translate(${this.props.width*this.scoreRatio}, 0)`}>
-                {this.drawAllStates()}
-            </g>
+            {this.drawAllStates()}
         </g>
     }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import { extendObservable } from 'mobx';
-import {Input} from 'antd'
+import { Input } from 'antd'
 
 import PropTypes from 'prop-types';
 import CategoricalRow from './CategoricalRow';
@@ -9,8 +9,8 @@ import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
-import {getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
-import {getTextWidth} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
+import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
 
 import './GroupPartition.css'
 
@@ -18,13 +18,13 @@ import './GroupPartition.css'
  * Component for a partition in a grouped timepiint
  */
 const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class GroupPartition extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props)
         this.changeLabel = this.changeLabel.bind(this)
         extendObservable(this, {
             hasBackground: true
         })
-        
+
     }
     createPartition() {
         let previousYposition = 0;
@@ -34,7 +34,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             if (!this.props.heatmap[i].isUndef
                 || this.props.uiStore.showUndefined
                 || d.variable === this.props.primaryVariableId) {
-              const color = this.props.currentVariables[i].colorScale;
+                const color = this.props.currentVariables[i].colorScale;
                 // let height = 0;
                 // let opacity = 1;
                 let height = this.props.visStore.secondaryHeight;
@@ -91,56 +91,63 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         });
 
         let totalW = this.props.visStore.groupScale(this.props.partition.patients.length)
-        return {totalH, totalW, rows};
+        return { totalH, totalW, rows };
     }
-    
-    changeLabel(e){
+
+    changeLabel(e) {
         this.props.dataStore
-        .setStageLabel(this.props.partition.partition, e.target.value)
+            .setStageLabel(this.props.partition.partition, e.target.value)
     }
 
 
     render() {
-        let stageInputLabel, stageKey = this.props.partition.partition||'', 
-        stageBackground, strokeW = 5
+        let stageInputLabel, stageKey = this.props.partition.partition || '',
+            stageBackground, strokeW = 5
 
-        let {rows, totalH, totalW} = this.createPartition()
+        let { rows, totalH, totalW } = this.createPartition()
 
         // add changable stage label if this is a sample timepoint
-        if(this.props.type==='sample'){
-            const fontWeight=700,
+        if (this.props.type === 'sample') {
+            const fontWeight = 700,
                 // labelColor = colors[stageKey.charCodeAt(0)-65]||'black',
-                
-            stageName = this.props.stageLabels[stageKey]===undefined?
-                stageKey:this.props.stageLabels[stageKey],
 
-            labelColor = getColorByName(stageKey),
-            labelHeight = this.props.visStore.primaryHeight, 
-            labelWidth = Math.max(getTextWidth(stageName, 14, fontWeight)+25, 40)
+                stageName = this.props.stageLabels[stageKey] === undefined ?
+                    stageKey : this.props.stageLabels[stageKey],
 
-            stageInputLabel =  <foreignObject style={{width:labelWidth, height:labelHeight}}>
-                <Input value={stageName} style={{color: labelColor, fontWeight:fontWeight}}
-                onChange={this.changeLabel}/>    
-            </foreignObject> 
+                labelColor = getColorByName(stageKey),
+                labelHeight = this.props.visStore.primaryHeight,
+                labelWidth = Math.max(getTextWidth(stageName, 14, fontWeight) + 25, 40)
+
+            stageInputLabel = <foreignObject style={{ width: labelWidth, height: labelHeight }}>
+                <Input value={stageName} style={{ color: labelColor, fontWeight: fontWeight }}
+                    onChange={this.changeLabel} />
+            </foreignObject>
 
             stageBackground = <g className='stageBackground'>
-                <rect 
-            className='stageBackground'
-            opacity={0.8}
-            width={this.props.hasBackground?totalW:0} 
-            height={totalH} 
-            fill={getColorByName(stageKey)} />
-            <rect 
-            className='stageBackground'
-            opacity={0.8}
-            width={totalW+strokeW} 
-            height={totalH+strokeW}
-            x={-strokeW/2}
-            y={-strokeW/2} 
-            fill="none"
-            stroke={getColorByName(stageKey)}
-            strokeWidth={strokeW} />
-            {/* <circle 
+                <rect
+                    className='stageBackground'
+                    opacity={0.6}
+                    width={this.props.hasBackground ? totalW : 0}
+                    height={totalH}
+                    fill="white" />
+                <rect
+                    className='stageBackground'
+                    opacity={0.4}
+                    width={this.props.hasBackground ? totalW : 0}
+                    height={totalH}
+                    fill={getColorByName(stageKey)} />
+
+                <rect
+                    className='stageBackgroundOuter'
+                    opacity={0.8}
+                    width={totalW + strokeW}
+                    height={totalH + strokeW}
+                    x={-strokeW / 2}
+                    y={-strokeW / 2}
+                    fill="none"
+                    stroke={getColorByName(stageKey)}
+                    strokeWidth={strokeW} />
+                {/* <circle 
             r= {4}
             cx={totalW-2}
             cy={totalH-2}
@@ -150,9 +157,9 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             </g>
         }
 
-        return  <g className={`partitions ${stageKey}`} ref={this.ref}>
-            {rows}   
-            {stageBackground} 
+        return <g className={`partitions ${stageKey}`} ref={this.ref}>
+            {rows}
+            {stageBackground}
             {stageInputLabel}
         </g>;
     }
