@@ -1,7 +1,7 @@
 import { NormPoint, Point, ReferencedVariables } from 'modules/Type'
 import React from 'react';
 import { observer } from 'mobx-react';
-import { computed } from 'mobx';
+import { computed, action } from 'mobx';
 
 import * as d3 from 'd3';
 import { TSelected } from '.';
@@ -72,6 +72,13 @@ class Scatter extends React.Component<Props> {
         return cellHeight
     }
 
+    @action
+    toggleSelectID(id:number){
+        let {resetHoverID, setHoverID, hoverPointID } = this.props
+        if (id==hoverPointID) resetHoverID()
+        else setHoverID(id)
+    }
+
     generateGradients(){
        let maxTimeIdx = this.maxTimeIdx
 
@@ -123,19 +130,25 @@ class Scatter extends React.Component<Props> {
             let id = normPoint.idx
             let groupIdx = Object.values(selected).findIndex(p => p.pointIdx.includes(id))
             let stageColor = groupIdx>-1? getColorByName(Object.keys(selected)[groupIdx]): 'none'
-            let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID===normPoint.idx?1:0.5)
+            // let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID==-1?1: (hoverPointID===normPoint.idx?1:0.5))
+            let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
             return <g transform={`translate(
                     ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
                     ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
                     )`}
                     className='glyph'
                     id={normPoint.idx.toString()}
+                    onClick={()=>this.toggleSelectID(id)}
                 // onMouseEnter={() => setHoverID(id)}
                 // onMouseLeave={() => resetHoverID()}
                 cursor='pointer'
             >
+                {hoverPointID==id?
+                this.drawGlyph(normPoint, stageColor, opacity)
+                :<circle fill={stageColor} r="3" stroke="white" strokeWidth="1" opacity={opacity}/>
+            }
                 {/* {this.drawGlyph(normPoint, stageColor, opacity)} */}
-                <circle fill={stageColor}/>
+                {/* <circle fill={stageColor} r="3" stroke="white" strokeWidth="1" opacity={opacity}/> */}
             </g>
         })
 

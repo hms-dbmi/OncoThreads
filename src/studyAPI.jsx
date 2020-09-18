@@ -32,7 +32,7 @@ class StudyAPI {
                         });
                     }).catch((thrown) => {
                     setStatus('failed');
-                    setError(thrown.message);
+                    // setError(thrown.message);
                     if (CBioAPI.verbose) {
                         console.log(thrown);
                     } else {
