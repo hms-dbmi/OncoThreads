@@ -17,7 +17,7 @@ import { Switch } from 'antd';
 import StageBlock from './StageBlock';
 import Scatter from './Scatter'
 
-import {clusterfck} from "../../UtilityClasses/clusterfck.js";
+import { clusterfck } from "../../UtilityClasses/clusterfck.js";
 import { SliderValue } from 'antd/lib/slider';
 
 /*
@@ -46,15 +46,15 @@ type Count = {
 }
 
 export type TStage = {
-    domains:{
-        [attrName:string]:string[]|number[]|boolean[]
+    domains: {
+        [attrName: string]: string[] | number[] | boolean[]
     },
     points: number[],
-    stageKey:string
+    stageKey: string
 }
 
 
-export type TSelected ={ [stageKey:string]: { stageKey: string, pointIdx: number[] }}
+export type TSelected = { [stageKey: string]: { stageKey: string, pointIdx: number[] } }
 
 
 interface Props {
@@ -63,7 +63,7 @@ interface Props {
     referencedVariables: ReferencedVariables,
     dataStore: VariableStore,
     stageLabels: { [stageKey: string]: string },
-    colorScales: Array<(value: string|number|boolean)=>string>,
+    colorScales: Array<(value: string | number | boolean) => string>,
 }
 
 @inject('dataStore')
@@ -73,8 +73,9 @@ class CustomGrouping extends React.Component<Props> {
     @observable height: number = window.innerHeight - 140
     @observable selected: TSelected = {}
     @observable hasLink: boolean = false
-    @observable hoverPointID:number = -1
-    @observable clusterTHR:number = 0.08
+    @observable hoverPointID: number = -1
+    @observable clusterTHR: number = 0.08
+    @observable showGlyph: boolean = false
     private ref = React.createRef<HTMLDivElement>();
 
     constructor(props: Props) {
@@ -98,7 +99,7 @@ class CustomGrouping extends React.Component<Props> {
      * return the attribute domain of each stages
      */
     @computed
-    get stages():TStage[] {
+    get stages(): TStage[] {
         let { selected } = this
         let { currentVariables, points } = this.props
 
@@ -126,12 +127,12 @@ class CustomGrouping extends React.Component<Props> {
             let stage: TStage = {
                 stageKey: Object.keys(selected)[stageIdx],
                 domains: {},
-                points: p.map(p=>p.idx)
+                points: p.map(p => p.idx)
             }
             currentVariables.forEach((name, valueIdx) => {
                 stage.domains[name] = summarizeDomain(
                     p.map(p => p.value[valueIdx]) as number[] | string[] | boolean[]
-                    )
+                )
             })
 
             return stage
@@ -143,8 +144,8 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @computed
-    get normValues(): number[][]{
-        let {points, referencedVariables, currentVariables} = this.props
+    get normValues(): number[][] {
+        let { points, referencedVariables, currentVariables } = this.props
         if (points.length === 0) return []
         let normValues = points.map(point => {
             let normValue = point.value.map((value, i) => {
@@ -168,16 +169,16 @@ class CustomGrouping extends React.Component<Props> {
 
     @computed
     get normPoints(): NormPoint[] {
-        let {normValues} = this
-        if (normValues.length==0) return []
+        let { normValues } = this
+        if (normValues.length == 0) return []
         let pca = new PCA(normValues)
-        let norm2dValues:any = []
+        let norm2dValues: any = []
 
         if (this.normValues[0].length > 2) {
             // only calculate pca when dimension is larger than 2
             norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
             // console.info('pca points', newPoints)            
-        } else{
+        } else {
             norm2dValues = normValues
         }
 
@@ -189,30 +190,30 @@ class CustomGrouping extends React.Component<Props> {
                 pos: norm2dValues[i]
             }
         })
-        
+
         return normPoints
     }
 
     @computed
-    get importanceScores(): number[]{
-        if (this.normValues.length==0) return []
+    get importanceScores(): number[] {
+        if (this.normValues.length == 0) return []
         let pca = new PCA(this.normValues)
         let egiVector = pca.getEigenvectors()
-        let importanceScores = egiVector.getColumn(0).map((d,i)=>Math.abs(d)+ Math.abs(egiVector.getColumn(1)[i]))
+        let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
         return importanceScores
     }
 
     @action
-    autoGroup(){
+    autoGroup() {
         let normPoints = this.normPoints
-        if (normPoints.length==0) return 
-        let {clusterTHR} = this
-        var clusters = clusterfck.hcluster(normPoints.map(d=>d.pos), "euclidean", "single", clusterTHR);
+        if (normPoints.length == 0) return
+        let { clusterTHR } = this
+        var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "single", clusterTHR);
         // console.info(tree)
 
         this.updateSelected(
-            clusters.map((_:any,i:number)=>getUniqueKeyName(i, [])), 
-            clusters.map((d:any)=>d.itemIdx)
+            clusters.map((_: any, i: number) => getUniqueKeyName(i, [])),
+            clusters.map((d: any) => d.itemIdx)
         )
         // this.selected = clusters.map((cluster:any,i:number)=>{
         //     return {
@@ -223,7 +224,7 @@ class CustomGrouping extends React.Component<Props> {
 
         // this.applyCustomGroups()
     }
-    
+
 
     /**
      * summarize the selected group of points
@@ -269,7 +270,7 @@ class CustomGrouping extends React.Component<Props> {
 
             let newStageKey = getUniqueKeyName(Object.keys(this.selected).length, Object.keys(this.selected))
 
-            this.selected[newStageKey] ={
+            this.selected[newStageKey] = {
                 stageKey: newStageKey,
                 pointIdx: leftNodes
             }
@@ -330,14 +331,14 @@ class CustomGrouping extends React.Component<Props> {
                     patients: nextPatients,
                     points: nextPoints,
                 } = nextPartition
-                
+
                 curr.partitions.forEach((currPartition: Partition) => {
                     let {
                         partition: currName,
                         patients: currPatients,
                         points: currPoints
                     } = currPartition
-                    
+
                     let intersection = currPatients.filter(d => nextPatients.includes(d))
                     if (intersection.length > 0) {
                         eventStage.partitions.push({
@@ -366,34 +367,34 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    setHoverID(id:number){
+    setHoverID(id: number) {
         this.hoverPointID = id
     }
 
     @action
-    resetHoverID(){
+    resetHoverID() {
         this.hoverPointID = -1
     }
 
     @action
-    updateSelected(stageKeys:string[], groups:number[][]){
-        
-        for (let i=0;i<groups.length;i++){
+    updateSelected(stageKeys: string[], groups: number[][]) {
+
+        for (let i = 0; i < groups.length; i++) {
             let stageKey = stageKeys[i], group = groups[i]
-           
-                if (group.length===0){
-                    delete this.selected[stageKey]
-                }else {
-                    this.selected[stageKey] = {
-                        stageKey,
-                        pointIdx: group
-                    }
+
+            if (group.length === 0) {
+                delete this.selected[stageKey]
+            } else {
+                this.selected[stageKey] = {
+                    stageKey,
+                    pointIdx: group
                 }
-            
+            }
+
         }
         console.info(this.selected)
         this.applyCustomGroups()
-        
+
     }
 
     componentDidMount() {
@@ -404,17 +405,17 @@ class CustomGrouping extends React.Component<Props> {
     // componentDidUpdate(){
     //     this.autoGroup()
     // }
-    componentWillUnmount(){
+    componentWillUnmount() {
         window.removeEventListener('resize', this.updateSize);
     }
-    updateSize(){
+    updateSize() {
         if (this.ref.current) {
             this.width = this.ref.current.getBoundingClientRect().width
         }
     }
 
     @action
-    onChangeThreshold(thr:SliderValue){
+    onChangeThreshold(thr: SliderValue) {
         this.clusterTHR = thr as number
         this.autoGroup()
     }
@@ -433,9 +434,11 @@ class CustomGrouping extends React.Component<Props> {
             <div className="container" style={{ width: "100%" }}>
                 <div
                     className="customGrouping"
-                    style={{ height: `${height}px`, width: "100%", marginTop: "5px" }}
+                    style={{ height: `${height}px`, width: "100%", marginTop: "5px", padding:"5px" }}
                     ref={this.ref}
                 >
+                    <div className="controller" style={{borderBottom:"solid 1px lightgray", paddingBottom:"2px"}}>
+
                     <Switch size="small"
                         checkedChildren="links" unCheckedChildren="links"
                         onChange={() => {
@@ -445,36 +448,47 @@ class CustomGrouping extends React.Component<Props> {
                         style={{ marginLeft: '5px' }}
                         checkedChildren="events" unCheckedChildren="events"
                         onChange={toggleHasEvent} />
+                    <Switch size="small"
+                        style={{ marginLeft: '5px' }}
+                        checkedChildren="glyph" unCheckedChildren="circle"
+                        onChange={() => {
+                            this.showGlyph = !this.showGlyph
+                        }} />
                     {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
-                    cluster threshold
-                    <Slider
-                        min={0}
-                        max={1}
-                        onAfterChange={this.onChangeThreshold}
-                        value={this.clusterTHR}
-                        style={{width:"80px", display:"inline-block"}}
-                    />
+                    <div>
+                        cluster threshold
+                        <Slider
+                            min={0}
+                            max={1}
+                            onAfterChange={this.onChangeThreshold}
+                            value={this.clusterTHR}
+                            style={{ width: "80px", marginBottom:"0px", padding:"0px" }}
+                        />
+                    </div>
 
-                    <svg className='customGrouping' width="100%" height={`${scatterHeight+pcpHeight-35}px`}>
+                    </div>
+
+                    <svg className='customGrouping' width="100%" height={`${scatterHeight + pcpHeight - 35}px`}>
                         <Scatter
-                        points={points}
-                        normPoints={this.normPoints}
-                        currentVariables={currentVariables}
-                        referencedVariables= {referencedVariables} 
-                        selected={selected}
-                        width={width}
-                        height={scatterHeight}
-                        hasLink={hasLink}
-                        colorScales={colorScales}
-                        hoverPointID={this.hoverPointID}
-                        setHoverID={this.setHoverID}
-                        resetHoverID={this.resetHoverID}
-                        updateSelected = {this.updateSelected}
+                            points={points}
+                            normPoints={this.normPoints}
+                            currentVariables={currentVariables}
+                            referencedVariables={referencedVariables}
+                            selected={selected}
+                            width={width}
+                            height={scatterHeight}
+                            hasLink={hasLink}
+                            colorScales={colorScales}
+                            hoverPointID={this.hoverPointID}
+                            setHoverID={this.setHoverID}
+                            resetHoverID={this.resetHoverID}
+                            updateSelected={this.updateSelected}
+                            showGlyph={this.showGlyph}
                         />
                         <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
-                            <StageBlock 
+                            <StageBlock
                                 stageLabels={this.props.stageLabels}
-                                importanceScores = {this.importanceScores}
+                                importanceScores={this.importanceScores}
                                 width={width - 2 * pcpMargin}
                                 height={pcpHeight - 2 * pcpMargin}
                                 points={points}
