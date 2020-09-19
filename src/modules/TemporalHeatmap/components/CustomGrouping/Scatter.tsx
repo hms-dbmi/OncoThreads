@@ -27,6 +27,7 @@ interface Props {
     height: number,
     hoverPointID:number,
     hasLink: boolean,
+    showGlyph:boolean,
     colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
@@ -119,9 +120,9 @@ class Scatter extends React.Component<Props> {
     }
 
     drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
-        let {normPoints} = this.props
+        let {normPoints, showGlyph} = this.props
         let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
-        // const r = 5
+        const r = 5
         
 
         const maxTimeIdx = this.maxTimeIdx
@@ -132,9 +133,15 @@ class Scatter extends React.Component<Props> {
             let stageColor = groupIdx>-1? getColorByName(Object.keys(selected)[groupIdx]): 'none'
             // let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID==-1?1: (hoverPointID===normPoint.idx?1:0.5))
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
-            return <g transform={`translate(
-                    ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
-                    ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
+            let glyph = this.drawGlyph(normPoint, stageColor, opacity)
+            return <g 
+                // transform={`translate(
+                //     ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
+                //     ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
+                //     )`}
+                transform={`translate(
+                    ${xScale(normPoint.pos[0]) }, 
+                    ${yScale(normPoint.pos[1]) }
                     )`}
                     className='glyph'
                     id={normPoint.idx.toString()}
@@ -143,9 +150,10 @@ class Scatter extends React.Component<Props> {
                 // onMouseLeave={() => resetHoverID()}
                 cursor='pointer'
             >
-                {hoverPointID==id?
-                this.drawGlyph(normPoint, stageColor, opacity)
-                :<circle fill={stageColor} r="3" stroke="white" strokeWidth="1" opacity={opacity}/>
+                {showGlyph? glyph:
+                hoverPointID==id?
+                glyph
+                :<circle fill={stageColor} r={r}  stroke="white" strokeWidth="1" opacity={opacity}/>
             }
                 {/* {this.drawGlyph(normPoint, stageColor, opacity)} */}
                 {/* <circle fill={stageColor} r="3" stroke="white" strokeWidth="1" opacity={opacity}/> */}
