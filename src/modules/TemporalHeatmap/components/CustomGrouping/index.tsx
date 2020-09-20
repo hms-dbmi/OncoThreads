@@ -53,6 +53,11 @@ export type TStage = {
     stageKey: string
 }
 
+export interface IImportantScore {
+    name:string,
+    score:number
+}
+
 
 export type TSelected = { [stageKey: string]: { stageKey: string, pointIdx: number[] } }
 
@@ -91,6 +96,7 @@ class CustomGrouping extends React.Component<Props> {
         this.updateSelected = this.updateSelected.bind(this)
         this.autoGroup = this.autoGroup.bind(this)
         this.onChangeThreshold = this.onChangeThreshold.bind(this)
+        this.removeVariable = this.removeVariable.bind(this)
 
     }
 
@@ -195,12 +201,18 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @computed
-    get importanceScores(): number[] {
+    get importanceScores(): IImportantScore[] {
         if (this.normValues.length == 0) return []
+        let {currentVariables} = this.props
         let pca = new PCA(this.normValues)
         let egiVector = pca.getEigenvectors()
         let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
-        return importanceScores
+        return importanceScores.map((score,i)=>{
+            return {
+                name:currentVariables[i],
+                score
+            }
+        })
     }
 
     @action
@@ -420,18 +432,24 @@ class CustomGrouping extends React.Component<Props> {
         this.autoGroup()
     }
 
+    @action
+    removeVariable(variableName:string){
+
+        this.props.dataStore.removeVariable(variableName);
+    }
+
     render() {
 
         let { points, currentVariables, referencedVariables, colorScales } = this.props
         let { width, height, selected, hasLink } = this
-        let pcpMargin = 25
+        let pcpMargin = 15
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
 
         // used stroe actions
         let toggleHasEvent = this.props.dataStore.toggleHasEvent
         console.info('thr', this.clusterTHR)
         return (
-            <div className="container" style={{ width: "100%" }}>
+            <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
                 <div
                     className="customGrouping"
                     style={{ height: `${height}px`, width: "100%", marginTop: "5px", padding:"5px" }}
@@ -497,6 +515,7 @@ class CustomGrouping extends React.Component<Props> {
                                 hoverPointID={this.hoverPointID}
                                 setHoverID={this.setHoverID}
                                 resetHoverID={this.resetHoverID}
+                                removeVariable = {this.removeVariable}
                             />
                         </g>
 

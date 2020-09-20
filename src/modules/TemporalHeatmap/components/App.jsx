@@ -16,6 +16,7 @@ import AboutModal from './Modals/AboutModal';
 import StudySummary from './StudySummary';
 
 import { QuestionCircleOutlined, HomeOutlined} from '@ant-design/icons';
+import * as introJs from 'intro.js';
 
 /**
  * Base Component
@@ -79,7 +80,12 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
                 <NavItem key="info" onClick={() => this.openModal('info')}>Study Info</NavItem>,
                 <NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>,
-                <NavItem key="turoial" onClick={() => {}}>
+                <NavItem key="tutorial" onClick={
+                    ()=>{
+                        console.info("click question")
+                        introJs().start()
+                    }
+                    }>
                     <QuestionCircleOutlined />
                 </NavItem>,
 
