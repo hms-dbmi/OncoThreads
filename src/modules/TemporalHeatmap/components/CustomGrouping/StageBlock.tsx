@@ -52,7 +52,7 @@ class StageBlock extends React.Component<Props> {
         ))
         // console.info('colwidth', scoreWidth, nameWidth)
         // console.info(Object.keys(this.props.importanceScores))
-        return scoreWidth + nameWidth
+        return scoreWidth + nameWidth + this.strokeW*2
     }
     @computed
     get wholeHorizonGap(): number {
@@ -61,7 +61,7 @@ class StageBlock extends React.Component<Props> {
 
         let hasLeftPoints = allSelected.length < points.length
         // let wholeHorizonGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * this.horizonGap
+        let wholeHorizonGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * this.horizonGap + 2*this.strokeW
         return wholeHorizonGap
     }
     @computed

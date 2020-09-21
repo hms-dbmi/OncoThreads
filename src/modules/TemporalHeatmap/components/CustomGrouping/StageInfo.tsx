@@ -46,13 +46,13 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
         
         return <div className="StageInfo"  style={{height:this.props.height, padding:"5px"}}>
             {/* <Table columns={col} dataSource={data} pagination={false} size="small"/> */}
-            <h3 style={{
+            <h4 style={{
                     border: "solid #bbb 1px",
                     borderRadius:"5px",
                     width: "auto",
                     display: "inline-block",
                     padding: "3px 15px"
-            }}>State Summary</h3>
+            }}>State Summary</h4>
             <div className="stage" style={{height:this.props.height-35, overflow:"auto"}}>
                 {content}
             </div>

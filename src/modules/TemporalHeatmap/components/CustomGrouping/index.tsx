@@ -2,8 +2,10 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
-import { message, InputNumber, Slider } from 'antd';
+import { message, InputNumber, Slider, Card, Tooltip } from 'antd';
 import { PCA } from 'ml-pca';
+import { InfoCircleOutlined } from '@ant-design/icons';
+
 
 
 import { Point, ReferencedVariables, VariableStore, NormPoint } from 'modules/Type'
@@ -444,47 +446,55 @@ class CustomGrouping extends React.Component<Props> {
         let { width, height, selected, hasLink } = this
         let pcpMargin = 15
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
-
         // used stroe actions
         let toggleHasEvent = this.props.dataStore.toggleHasEvent
-        console.info('thr', this.clusterTHR)
+
+        let controllerView =  <div className="controller">
+
+        <Switch size="small"
+            checkedChildren="links" unCheckedChildren="links"
+            onChange={() => {
+                this.hasLink = !this.hasLink
+            }} />
+        <Switch size="small"
+            style={{ marginLeft: '5px' }}
+            checkedChildren="events" unCheckedChildren="events"
+            onChange={toggleHasEvent} />
+        <Switch size="small"
+            style={{ marginLeft: '5px' }}
+            checkedChildren="glyph" unCheckedChildren="circle"
+            onChange={() => {
+                this.showGlyph = !this.showGlyph
+            }} />
+        {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
+        <span className="thrController">
+            <span style={{padding:"0px 10px 0px 3px"}}>
+                cluster thr
+            </span>
+            <Slider
+                min={0}
+                max={1}
+                onAfterChange={this.onChangeThreshold}
+                value={this.clusterTHR}
+                style={{ width: "80px", display:"inline-block", margin:"0px"}}
+            />
+        </span>
+
+        </div>
+
         return (
-            <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
+            // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
+            <Card 
+                title={<span style={{fontSize:"17px"}}>State Identifier <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
+                extra={controllerView} style={{ width: "100%", marginTop: "5px" }}
+            >
+      
                 <div
                     className="customGrouping"
-                    style={{ height: `${height}px`, width: "100%", marginTop: "5px", padding:"5px" }}
+                    style={{ height: `${height}px`, width: "100%"}}
                     ref={this.ref}
                 >
-                    <div className="controller" style={{borderBottom:"solid 1px lightgray", paddingBottom:"2px"}}>
-
-                    <Switch size="small"
-                        checkedChildren="links" unCheckedChildren="links"
-                        onChange={() => {
-                            this.hasLink = !this.hasLink
-                        }} />
-                    <Switch size="small"
-                        style={{ marginLeft: '5px' }}
-                        checkedChildren="events" unCheckedChildren="events"
-                        onChange={toggleHasEvent} />
-                    <Switch size="small"
-                        style={{ marginLeft: '5px' }}
-                        checkedChildren="glyph" unCheckedChildren="circle"
-                        onChange={() => {
-                            this.showGlyph = !this.showGlyph
-                        }} />
-                    {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
-                    <div>
-                        cluster threshold
-                        <Slider
-                            min={0}
-                            max={1}
-                            onAfterChange={this.onChangeThreshold}
-                            value={this.clusterTHR}
-                            style={{ width: "80px", marginBottom:"0px", padding:"0px" }}
-                        />
-                    </div>
-
-                    </div>
+                   
 
                     <svg className='customGrouping' width="100%" height={`${scatterHeight + pcpHeight - 35}px`}>
                         <Scatter
@@ -503,11 +513,11 @@ class CustomGrouping extends React.Component<Props> {
                             updateSelected={this.updateSelected}
                             showGlyph={this.showGlyph}
                         />
-                        <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
+                        <g className='stageBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`}>
                             <StageBlock
                                 stageLabels={this.props.stageLabels}
                                 importanceScores={this.importanceScores}
-                                width={width - 2 * pcpMargin}
+                                width={width}
                                 height={pcpHeight - 2 * pcpMargin}
                                 points={points}
                                 selected={this.selected}
@@ -542,7 +552,8 @@ class CustomGrouping extends React.Component<Props> {
                         applyCustomGroups={this.applyCustomGroups}
                     />
                 </div>
-            </div>
+            </Card>
+            /* </div> */
         );
     }
 }
