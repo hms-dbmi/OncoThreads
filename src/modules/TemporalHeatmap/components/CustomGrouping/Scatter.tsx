@@ -25,13 +25,13 @@ interface Props {
     selected: TSelected,
     width: number,
     height: number,
-    hoverPointID:number,
+    hoverPointID: number,
     hasLink: boolean,
-    showGlyph:boolean,
+    showGlyph: boolean,
     colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
-    updateSelected: (stageKeys:string[], groups:number[][])=>void
+    updateSelected: (stageKeys: string[], groups: number[][]) => void
 }
 
 
@@ -61,40 +61,40 @@ class Scatter extends React.Component<Props> {
     }
 
     @computed
-    get maxTimeIdx():number{
+    get maxTimeIdx(): number {
         let normPoints = this.props.normPoints
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         return maxTimeIdx
     }
     @computed
-    get cellHeight():number{
-        let {normPoints} = this.props
-        const cellHeight = Math.min(7, 40/normPoints[0].value.length)
+    get cellHeight(): number {
+        let { normPoints } = this.props
+        const cellHeight = Math.min(7, 40 / normPoints[0].value.length)
         return cellHeight
     }
 
     @action
-    toggleSelectID(id:number){
-        let {resetHoverID, setHoverID, hoverPointID } = this.props
-        if (id==hoverPointID) resetHoverID()
+    toggleSelectID(id: number) {
+        let { resetHoverID, setHoverID, hoverPointID } = this.props
+        if (id == hoverPointID) resetHoverID()
         else setHoverID(id)
     }
 
-    generateGradients(){
-       let maxTimeIdx = this.maxTimeIdx
+    generateGradients() {
+        let maxTimeIdx = this.maxTimeIdx
 
-       let graySclae = d3.interpolate('#eee','#333')
+        let graySclae = d3.interpolate('#eee', '#333')
 
-       let gradients:JSX.Element[] = []
-       for(let i =0;i<maxTimeIdx;i++){
-           let grad = <linearGradient id={`grad${i+1}`}>
-           <stop offset="0%" style={{stopColor:"#eee"} }/>
-           <stop offset="100%" style={{stopColor:graySclae((i+1)/maxTimeIdx)} }/>
-           </linearGradient>
-           gradients.push(grad)
-       }
-        
-       return gradients
+        let gradients: JSX.Element[] = []
+        for (let i = 0; i < maxTimeIdx; i++) {
+            let grad = <linearGradient id={`grad${i + 1}`}>
+                <stop offset="0%" style={{ stopColor: "#eee" }} />
+                <stop offset="100%" style={{ stopColor: graySclae((i + 1) / maxTimeIdx) }} />
+            </linearGradient>
+            gradients.push(grad)
+        }
+
+        return gradients
     }
 
     drawScatterPlot(margin: number = 20) {
@@ -120,52 +120,53 @@ class Scatter extends React.Component<Props> {
     }
 
     drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
-        let {normPoints, showGlyph} = this.props
+        let { normPoints, showGlyph } = this.props
         let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
         const r = 5
-        
+
 
         const maxTimeIdx = this.maxTimeIdx
 
         var circles = normPoints.map((normPoint) => {
             let id = normPoint.idx
             let groupIdx = Object.values(selected).findIndex(p => p.pointIdx.includes(id))
-            let stageColor = groupIdx>-1? getColorByName(Object.keys(selected)[groupIdx]): 'none'
+            let stageColor = groupIdx > -1 ? getColorByName(Object.keys(selected)[groupIdx]) : 'none'
             // let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID==-1?1: (hoverPointID===normPoint.idx?1:0.5))
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
-            let glyph = this.drawGlyph(normPoint, stageColor, opacity)
-            return <g 
-                // transform={`translate(
-                //     ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
-                //     ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
-                //     )`}
+            let glyph = <g
                 transform={`translate(
-                    ${xScale(normPoint.pos[0]) }, 
-                    ${yScale(normPoint.pos[1]) }
-                    )`}
-                    className='glyph'
-                    id={normPoint.idx.toString()}
-                    onClick={()=>this.toggleSelectID(id)}
-                // onMouseEnter={() => setHoverID(id)}
-                // onMouseLeave={() => resetHoverID()}
+                ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
+                ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
+                )`}
+
+                className='glyph'
+                id={id.toString()}
+                key={id}
+                onClick={() => this.toggleSelectID(id)}
                 cursor='pointer'
             >
-                {showGlyph? glyph:
-                hoverPointID==id?
-                glyph
-                :<circle fill={stageColor} r={r}  stroke="white" strokeWidth="1" opacity={opacity}/>
-            }
-                {/* {this.drawGlyph(normPoint, stageColor, opacity)} */}
-                {/* <circle fill={stageColor} r="3" stroke="white" strokeWidth="1" opacity={opacity}/> */}
+                {this.drawGlyph(normPoint, stageColor, opacity)}
             </g>
+            return showGlyph ? glyph :
+                hoverPointID == id ?
+                    glyph
+                    : <circle
+                        key={id}
+                        cx={xScale(normPoint.pos[0])}
+                        cy={yScale(normPoint.pos[1])}
+                        className="circleGlyph"
+                        onClick={() => this.toggleSelectID(id)}
+                        id={id.toString()} fill={stageColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}
+                        cursor="pointer"
+                    />
         })
 
         return <g className='circles'>{circles}</g>
     }
 
-    drawGlyph(normPoint: NormPoint, stageColor: string, opacity:number ) {
+    drawGlyph(normPoint: NormPoint, stageColor: string, opacity: number) {
         const strokeW = 2
-        let {cellWidth, cellHeight} = this
+        let { cellWidth, cellHeight } = this
         let pointCol = normPoint.value.map((v, rowIdx) => {
             let fill = this.props.colorScales[rowIdx](v) || 'gray'
             return <rect key={rowIdx}
@@ -180,7 +181,7 @@ class Scatter extends React.Component<Props> {
         let outline = <rect fill='none'
             key={'stageOutline'}
             stroke={stageColor} strokeWidth={3}
-            x={-strokeW/2} y={-strokeW/2} 
+            x={-strokeW / 2} y={-strokeW / 2}
             width={cellWidth + strokeW} height={normPoint.value.length * cellHeight + strokeW}
         />
         return [...pointCol, outline]
@@ -203,10 +204,10 @@ class Scatter extends React.Component<Props> {
             let pointIds = this.patientDict[patient].points
             let pathPoints = pointIds
                 .map(id => normPoints[id])
-                .sort((a,b)=>a.timeIdx-b.timeIdx)
+                .sort((a, b) => a.timeIdx - b.timeIdx)
 
-               
-            let path:string = curveGenerator(pathPoints as any[])||''
+
+            let path: string = curveGenerator(pathPoints as any[]) || ''
             return <path
                 key={patient}
                 d={path}
@@ -261,12 +262,12 @@ class Scatter extends React.Component<Props> {
             // mylasso
             // .items()
             // .classed("possible", false)
-            
+
             let currentSelected = (mylasso.selectedItems() as any)._groups[0].map((d: any): number => parseInt(d.attributes.id.value))
-            
-           
+
+
             if (currentSelected.length > 0) {
-                let stageKeys:string[] = [], groups = [] // groups that need  to be updated
+                let stageKeys: string[] = [], groups = [] // groups that need  to be updated
                 // if selected nodes are in previous stages
 
                 Object.keys(selected).forEach((stageKey, i) => {
@@ -274,7 +275,7 @@ class Scatter extends React.Component<Props> {
                     let remainPoints = g.pointIdx.filter(point => !currentSelected.includes(point))
                     stageKeys.push(stageKey)
                     if (remainPoints.length > 0) {
-                        
+
                         groups.push(remainPoints)
                     } else {
                         // selected.splice(i, 1) // delete the whole group if all points overlap
@@ -285,7 +286,7 @@ class Scatter extends React.Component<Props> {
 
 
                 let newStageKey = getUniqueKeyName(Object.keys(selected).length, Object.keys(selected))
-                
+
                 stageKeys.push(newStageKey)
                 groups.push(currentSelected)
 
@@ -315,7 +316,7 @@ class Scatter extends React.Component<Props> {
         let { width, height } = this.props
         return <g className='scatter'>
             <defs>
-           {this.generateGradients()}
+                {this.generateGradients()}
             </defs>
             <rect className='lasso area' width={width} height={height} opacity={0} />
             {this.drawScatterPlot()}

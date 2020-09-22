@@ -20,7 +20,6 @@ import StageBlock from './StageBlock';
 import Scatter from './Scatter'
 
 import { clusterfck } from "../../UtilityClasses/clusterfck.js";
-import { SliderValue } from 'antd/lib/slider';
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -406,7 +405,6 @@ class CustomGrouping extends React.Component<Props> {
             }
 
         }
-        console.info(this.selected)
         this.applyCustomGroups()
 
     }
@@ -429,7 +427,7 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    onChangeThreshold(thr: SliderValue) {
+    onChangeThreshold(thr: number|string|undefined) {
         this.clusterTHR = thr as number
         this.autoGroup()
     }
@@ -466,18 +464,22 @@ class CustomGrouping extends React.Component<Props> {
             onChange={() => {
                 this.showGlyph = !this.showGlyph
             }} />
+            
         {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
         <span className="thrController">
             <span style={{padding:"0px 10px 0px 3px"}}>
                 cluster thr
             </span>
-            <Slider
+            
+            <InputNumber size="small" 
                 min={0}
-                max={1}
-                onAfterChange={this.onChangeThreshold}
+                max={0.2}
+                step={0.02} 
                 value={this.clusterTHR}
-                style={{ width: "80px", display:"inline-block", margin:"0px"}}
-            />
+                onChange={this.onChangeThreshold} 
+                style={{ width: "70px"}}
+                />
+           
         </span>
 
         </div>
