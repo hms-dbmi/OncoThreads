@@ -138,7 +138,6 @@ class Scatter extends React.Component<Props> {
                 ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
                 ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
                 )`}
-
                 className='glyph'
                 id={id.toString()}
                 key={id}
@@ -147,18 +146,18 @@ class Scatter extends React.Component<Props> {
             >
                 {this.drawGlyph(normPoint, stageColor, opacity)}
             </g>
+
+            let circle = <g key={id} className="circle glyph" id={id.toString()} onClick={() => this.toggleSelectID(id)} cursor="pointer">
+                <circle                   
+                    cx={xScale(normPoint.pos[0])}
+                    cy={yScale(normPoint.pos[1])}                                     
+                    fill={stageColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}                   
+                />
+            </g>
             return showGlyph ? glyph :
                 hoverPointID == id ?
                     glyph
-                    : <circle
-                        key={id}
-                        cx={xScale(normPoint.pos[0])}
-                        cy={yScale(normPoint.pos[1])}
-                        className="circleGlyph"
-                        onClick={() => this.toggleSelectID(id)}
-                        id={id.toString()} fill={stageColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}
-                        cursor="pointer"
-                    />
+                    : circle
         })
 
         return <g className='circles'>{circles}</g>
