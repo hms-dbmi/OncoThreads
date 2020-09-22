@@ -391,8 +391,9 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                     <svg
                                         width={this.props.rootStore.visStore.svgWidth}
                                         height={this.props.rootStore.visStore.svgHeight}
-                                    >
+                                    > <g transform={`translate(5, 5)`}>
                                         {this.getTimepointAndTransitions()}
+                                    </g>
                                     </svg>
                                 </div>
                             </Pane>
