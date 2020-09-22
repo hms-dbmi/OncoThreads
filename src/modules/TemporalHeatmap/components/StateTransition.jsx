@@ -14,11 +14,12 @@ import * as d3 from "d3"
  * Component for the Block view
  */
 const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class BlockView extends React.Component {
-    timeStepHeight = 50;
+    timeStepHeight = 65;
     rectHeight = 20;
     padding = 20;
     partitionGap = 15;
     overviewWidthRatio = 0.35;
+    linkMaxWidth = 20;
     constructor(props) {
         super(props);
         this.blockView = React.createRef();
@@ -75,82 +76,75 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         .domain([0, dataStore.numberOfPatients])
         .range([0, this.width - (dataStore.maxPartitions - 1) * this.partitionGap ]);
 
+        let layoutDict = []
+
+        // draw timepoints
         this.props.rootStore.dataStore.timepoints
             .forEach((d, i) => {
-                let rectWidth = this.props.rootStore.visStore.sampleRectWidth;
-                // check the type of the timepoint to get the correct width of the heatmap rectangles
+
+                    const transformTP = `translate(
+                    ${0},
+                    ${i*this.timeStepHeight}
+                    )`;
+                    let offsetX = 0, gap= this.partitionGap;
+                    let timepoint = []
+                    layoutDict.push({})
+
+                    d.customGrouped.forEach(d=>{
+                        let stageKey = d.partition||''
+                        let patients = d.patients
+                        let rectWidth = rectWidthScale(patients.length)
+                        timepoint.push( <rect fill={getColorByName(stageKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${i}state${stageKey}`}/>)
+                        
+                        layoutDict[i][stageKey] = {
+                            width: rectWidth,
+                            x: offsetX
+                        }
+
+                        offsetX += rectWidth + gap
+                    })
+                    timepoints.push(
+                        <g key={d.globalIndex} transform={transformTP}>
+                            {timepoint}
+                        </g>,
+                    )
+            });
 
 
-                // create timepoints
-                if (d.heatmap) {
-                    if (d.isGrouped) {
-                        const transformTP = `translate(
-                        ${0},
-                        ${i*this.timeStepHeight}
-                        )`;
-                        let offsetX = 0, gap= this.partitionGap;
-                        let timePoint = []
-
-                        d.customGrouped.forEach(d=>{
-                            let stageKey = d.partition||''
-                            let patients = d.patients
-                            let rectWidth = rectWidthScale(patients.length)
-                            timePoint.push( <rect fill={getColorByName(stageKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${i}state${stageKey}`}/>)
-                            offsetX += rectWidth + gap
-                        })
-                        timepoints.push(
-                            <g key={d.globalIndex} transform={transformTP}>
-                                {timePoint}
-                            </g>,
-                        );
-                    } 
-                }
-                // create transitions
-                // if(d.type=='between') return
-                if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
+        // draw transitions
+        let linkGene = d3.linkVertical().x(d=>d[0]).y(d=>d[1])
+        let linkWidthScale = d3.scaleLinear().domain([0, dataStore.numberOfPatients]).range([1, this.linkMaxWidth])
+        this.props.rootStore.dataStore.timepoints
+            .forEach((d,i)=>{
+                if(i !== this.props.rootStore.dataStore.timepoints.length - 1){
                     const transformTR = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.connection[i]})`;
-                    const firstTP = d;
-                    let secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
-                    // if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
-                    //     secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
-                    // }
+                    let firstTP = d,
+                    secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
                     let firstGrouped=firstTP.customGrouped,
                     secondGrouped=secondTP.customGrouped
-                    
-                    let transition;
-                    if (firstTP.customPartitions.length > 0) {
-                        if (secondTP.customPartitions.length > 0) {
-                            transition = (
-                                <Provider
-                                    dataStore={this.props.rootStore.dataStore}
-                                    visStore={this.props.rootStore.visStore}
-                                >
-                                    <SankeyTransition
-                                        index={i}
-                                        firstGrouped={firstTP.customGrouped}
-                                        secondGrouped={secondTP.customGrouped}
-                                        firstPrimary={this.props.rootStore.dataStore
-                                            .variableStores[firstTP.type]
-                                            .getById(firstTP.primaryVariableId)}
-                                        secondPrimary={this.props.rootStore.dataStore
-                                            .variableStores[secondTP.type]
-                                            .getById(secondTP.primaryVariableId)}
-                                        tooltipFunctions={this.props.tooltipFunctions}
-                                    />
-                                </Provider>
-                            );
-                        } 
-                    } 
-                    transitions.push(
-                        <g
-                            key={firstTP.globalIndex}
-                            transform={transformTR}
-                        >
-                            {transition}
-                        </g>,
-                    );
+                    firstGrouped.forEach((group1, firstIdx)=>{
+                        secondGrouped.forEach((group2, secondIdx)=>{
+                            let {patients: patients1, partition: partition1} = group1, {patients: patients2, partition: partition2} = group2
+                            let transPatients = patients1.filter(d=>patients2.includes(d))
+                            if (transPatients.length>0){
+                                let layoutDict1 = layoutDict[i][partition1], layoutDict2 = layoutDict[i+1][partition2]
+                                let sourceX = layoutDict1.x + layoutDict1.width/2, 
+                                    sourceY = i*this.timeStepHeight + this.rectHeight, 
+                                    targetX = layoutDict2.x + layoutDict2.width/2, 
+                                    targetY =  (i+1)*this.timeStepHeight
+                                transitions.push( <path key={`time_${i}to${i+1}_trans_${partition1}_${partition2}`} 
+                                d={linkGene({
+                                    source: [sourceX, sourceY], target:[targetX, targetY]
+                                })}
+                                fill="none"
+                                stroke="lightgray"
+                                strokeWidth={linkWidthScale(transPatients.length)}
+                                />)
+                            }
+                        })
+                    })
                 }
-            });
+            })
         return [transitions, timepoints];
     }
 
