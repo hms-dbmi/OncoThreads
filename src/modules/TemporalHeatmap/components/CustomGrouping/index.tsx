@@ -224,7 +224,7 @@ class CustomGrouping extends React.Component<Props> {
         var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "single", clusterTHR);
         // console.info(tree)
 
-        this.updateSelected(
+        this.resetSelected(
             clusters.map((_: any, i: number) => getUniqueKeyName(i, [])),
             clusters.map((d: any) => d.itemIdx)
         )
@@ -409,6 +409,21 @@ class CustomGrouping extends React.Component<Props> {
 
     }
 
+    @action
+    resetSelected(stageKeys: string[], groups: number[][]) {
+        let newSelected:TSelected = {}
+        for (let i = 0; i < stageKeys.length; i++) {
+            let stageKey = stageKeys[i], group = groups[i]
+            newSelected[stageKey] = {
+                stageKey,
+                pointIdx: group
+            }
+        }
+        this.selected = newSelected
+        this.applyCustomGroups()
+
+    }
+
     componentDidMount() {
         this.updateSize()
         this.autoGroup()
@@ -467,10 +482,10 @@ class CustomGrouping extends React.Component<Props> {
             
         {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
         <span className="thrController">
-            <span style={{padding:"0px 10px 0px 3px"}}>
+            <span style={{padding:"0px 0px 0px 5px"}}>
                 cluster thr
             </span>
-            
+
             <InputNumber size="small" 
                 min={0}
                 max={0.2}
