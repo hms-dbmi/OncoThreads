@@ -5,7 +5,7 @@ import * as d3 from "d3"
 
 import { Point } from 'modules/Type'
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { computed } from 'mobx';
+import { computed, get } from 'mobx';
 
 import { IImportantScore } from './index'
 
@@ -148,7 +148,7 @@ class StageBlock extends React.Component<Props> {
                         />
 
                         <g transform={`translate(0, ${fontHeight})`} className='oneState' >
-                            {this.drawOneState(pointIdx.map(id => points[id]))}
+                            {this.drawOneState(pointIdx.map(id => points[id]), stageKey)}
                         </g>
 
                     </g>)
@@ -165,7 +165,7 @@ class StageBlock extends React.Component<Props> {
                     <g key={'undefined'} className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                         <text alignmentBaseline="hanging">undefined</text>
                         <g transform={`translate(0, ${fontHeight})`} className='oneState'>
-                            {this.drawOneState(leftNodes.map(id => points[id]))}
+                            {this.drawOneState(leftNodes.map(id => points[id]), 'undefined')}
                         </g>
                     </g>)
             }
@@ -176,7 +176,7 @@ class StageBlock extends React.Component<Props> {
                 <g key='undefined' className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                     <text alignmentBaseline="hanging">undefined</text>
                     <g transform={`translate(0, ${fontHeight})`} className='onsState'>
-                        {this.drawOneState(points)}
+                        {this.drawOneState(points, 'undefined')}
                     </g>
                 </g>
             )
@@ -208,7 +208,7 @@ class StageBlock extends React.Component<Props> {
     }
 
     // draw the block of one state
-    drawOneState(points: Point[]) {
+    drawOneState(points: Point[], stageKey:string) {
         if (points.length == 0) {
             return []
         }
@@ -216,7 +216,7 @@ class StageBlock extends React.Component<Props> {
 
         let block = this.drawBlock(points)
 
-        let timeDist = this.drawTimeDist(points)
+        let timeDist = this.drawTimeDist(points, stageKey)
 
         return [block, timeDist]
 
@@ -251,7 +251,7 @@ class StageBlock extends React.Component<Props> {
     }
 
     // draw the time dist of one identified state
-    drawTimeDist(points: Point[]) {
+    drawTimeDist(points: Point[], stageKey:string) {
 
         let dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
         points.forEach(point => {
@@ -278,12 +278,12 @@ class StageBlock extends React.Component<Props> {
         )
 
         pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
-
+        let color = getColorByName(stageKey)
         return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
             <path
                 d={pathString as string}
-                fill='lightgray'
-                stroke='lightgray'
+                fill={color}
+                stroke={color}
                 strokeWidth='2'
             />
         </g>
