@@ -76,7 +76,7 @@ interface Props {
 @observer
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
-    @observable height: number = window.innerHeight - 140
+    @observable height: number = window.innerHeight - 250
     @observable selected: TSelected = {}
     @observable hasLink: boolean = false
     @observable hoverPointID: number = -1
@@ -439,6 +439,7 @@ class CustomGrouping extends React.Component<Props> {
         if (this.ref.current) {
             this.width = this.ref.current.getBoundingClientRect().width
         }
+        this.height = window.innerHeight - 250
     }
 
     @action

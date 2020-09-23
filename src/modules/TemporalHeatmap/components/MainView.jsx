@@ -29,40 +29,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
 
     getVisualization() {
         // create  views
-        // let blockView = null,
-        // timelineView = null,
-        // myblockView = null
-        // if (this.props.uiStore.globalTime==='myblock') {
-        //     myblockView = (
-        //         <MyBlockView
-        //             showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-        //             tooltipFunctions={this.props.tooltipFunctions}
-        //             showContextMenu={this.props.showContextMenu}
-        //             openBinningModal={this.props.openBinningModal}
-        //             openSaveVarModal={this.props.openSaveVarModal}
-        //         />
-        //     );
-        // } else if(this.props.uiStore.globalTime==='line') {
-        //     timelineView = (
-        //         <GlobalTimeline
-        //             showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-        //             tooltipFunctions={this.props.tooltipFunctions}
-        //             showContextMenu={this.props.showContextMenu}
-        //             openBinningModal={this.props.openBinningModal}
-        //             openSaveVarModal={this.props.openSaveVarModal}
-        //         />
-        //     ); 
-        // } else{
-        //     blockView = (
-        //         <BlockView
-        //             showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-        //             tooltipFunctions={this.props.tooltipFunctions}
-        //             showContextMenu={this.props.showContextMenu}
-        //             openBinningModal={this.props.openBinningModal}
-        //             openSaveVarModal={this.props.openSaveVarModal}
-        //         />
-        //     );
-        // }
+        
         let stateTransition = <StateTransition
             showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
             tooltipFunctions={this.props.tooltipFunctions}
