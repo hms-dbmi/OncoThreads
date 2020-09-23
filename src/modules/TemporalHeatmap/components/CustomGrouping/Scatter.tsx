@@ -313,7 +313,7 @@ class Scatter extends React.Component<Props> {
 
     render() {
         let { width, height } = this.props
-        return <g className='scatter'>
+        return <g className='scatter' data-intro="the scatter plot">
             <defs>
                 {this.generateGradients()}
             </defs>

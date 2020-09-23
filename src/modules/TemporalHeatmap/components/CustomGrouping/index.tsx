@@ -505,6 +505,7 @@ class CustomGrouping extends React.Component<Props> {
             <Card 
                 title={<span style={{fontSize:"17px"}}>State Identifier <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
                 extra={controllerView} style={{ width: "100%", marginTop: "5px" }}
+                data-intro="<b>modify</b> state identification here"
             >
       
                 <div
@@ -531,7 +532,7 @@ class CustomGrouping extends React.Component<Props> {
                             updateSelected={this.updateSelected}
                             showGlyph={this.showGlyph}
                         />
-                        <g className='stageBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`}>
+                        <g className='stageBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} data-intro="each point is ..">
                             <StageBlock
                                 stageLabels={this.props.stageLabels}
                                 importanceScores={this.importanceScores}

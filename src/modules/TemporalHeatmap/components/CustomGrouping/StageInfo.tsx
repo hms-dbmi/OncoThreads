@@ -44,7 +44,7 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
                 </p>
         })
         
-        return <div className="StageInfo"  style={{height:this.props.height, paddingTop:"5px", borderTop:"#ccc solid 1px"}}>
+        return <div className="StageInfo"  style={{height:this.props.height, paddingTop:"5px", borderTop:"#ccc solid 1px"}} data-intro="text summary of each state and their temporal distribution">
             {/* <Table columns={col} dataSource={data} pagination={false} size="small"/> */}
             <h4 style={{
                     border: "solid #bbb 1px",

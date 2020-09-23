@@ -153,6 +153,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             <div className="blockView" ref={this.ref}>
                 <Card title={<span style={{ fontSize: "17px" }}>State Transition Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
                     extra={controller} style={{ width: (this.overviewWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", float: "left" }}
+                    data-intro="state transition overview"
                 >
 
                     <div className="stateTransition overview" style={{ height: this.height, overflowY: "auto" }}>
@@ -176,6 +177,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 </Card>
                 <Card title={<span style={{ fontSize: "17px" }}>State Transition Details <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
                     extra='' style={{ width: ((1 - this.overviewWidthRatio - 0.01) * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
+                    data-intro="state transition details"
                 >
                     <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
                     <svg
