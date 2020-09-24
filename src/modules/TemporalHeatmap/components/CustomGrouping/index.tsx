@@ -489,7 +489,7 @@ class CustomGrouping extends React.Component<Props> {
 
             <InputNumber size="small" 
                 min={0}
-                max={0.2}
+                max={0.5}
                 step={0.02} 
                 value={this.clusterTHR}
                 onChange={this.onChangeThreshold} 

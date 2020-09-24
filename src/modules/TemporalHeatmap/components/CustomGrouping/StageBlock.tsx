@@ -4,7 +4,7 @@ import { TSelected } from '.'
 import * as d3 from "d3"
 
 import { Point } from 'modules/Type'
-import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getTextWidth, cropText } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { computed, get } from 'mobx';
 
 import { IImportantScore } from './index'
@@ -34,7 +34,7 @@ class StageBlock extends React.Component<Props> {
     strokeW = 4;
     blockHeightRatio = 0.6; // the heigh of block : the height of whole chart 
     // scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
-    // nameColWidth = 40;
+    maxNameColWidth = 40;
     scoreDigits = 2
 
     constructor(props: Props) {
@@ -46,10 +46,12 @@ class StageBlock extends React.Component<Props> {
     }
     @computed
     get nameColWidth(): number {
+        let {width} = this.props
         let scoreWidth = getTextWidth( (0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
         let nameWidth = Math.max(...this.props.importanceScores.map(
             d => getTextWidth(d['name'], this.fontHeight)
         ))
+        nameWidth = Math.min(nameWidth, this.maxNameColWidth)
         // console.info('colwidth', scoreWidth, nameWidth)
         // console.info(Object.keys(this.props.importanceScores))
         return scoreWidth + nameWidth + this.strokeW*2
@@ -296,7 +298,7 @@ class StageBlock extends React.Component<Props> {
             let { score, name } = d
             return <g key={name} transform={`translate(0, ${this.cellHeight * (i + 1)})`}>
                 <text opacity={Math.max(0.3, score)} >
-                    {name} {' '} {score.toFixed(this.scoreDigits)}
+                    {cropText( name, this.fontHeight, 400, this.maxNameColWidth)} {' '} {score.toFixed(this.scoreDigits)}
                 </text>
                 <text
                     x={this.nameColWidth - this.strokeW*2} textAnchor="end" cursor="pointer"
