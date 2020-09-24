@@ -133,10 +133,18 @@ class Scatter extends React.Component<Props> {
             let stageColor = groupIdx > -1 ? getColorByName(Object.keys(selected)[groupIdx]) : 'none'
             // let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID==-1?1: (hoverPointID===normPoint.idx?1:0.5))
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
-            let glyph = <g
+            let glyph = this.drawGlyph(normPoint, stageColor, opacity)
+
+            let circle = <circle
+                cx={this.cellWidth / 2}
+                cy={this.cellHeight * normPoint.value.length / 2}
+                fill={stageColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}
+            />
+
+            return <g
                 transform={`translate(
-                ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
-                ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
+                    ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
+                    ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
                 )`}
                 className='glyph'
                 id={id.toString()}
@@ -144,20 +152,12 @@ class Scatter extends React.Component<Props> {
                 onClick={() => this.toggleSelectID(id)}
                 cursor='pointer'
             >
-                {this.drawGlyph(normPoint, stageColor, opacity)}
-            </g>
-
-            let circle = <g key={id} className="circle glyph" id={id.toString()} onClick={() => this.toggleSelectID(id)} cursor="pointer">
-                <circle                   
-                    cx={xScale(normPoint.pos[0])}
-                    cy={yScale(normPoint.pos[1])}                                     
-                    fill={stageColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}                   
-                />
-            </g>
-            return showGlyph ? glyph :
+                {showGlyph ? glyph :
                 hoverPointID == id ?
-                    glyph
-                    : circle
+                glyph
+                : circle}
+        </g>
+
         })
 
         return <g className='circles'>{circles}</g>

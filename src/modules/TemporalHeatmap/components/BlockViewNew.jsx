@@ -33,6 +33,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
             width:window.innerWidth,
+            height: window.innerHeight-250,
             hasBackground:true,
             panes: {
                 labels: { width: (window.innerWidth - 40) / 10 * 0.5, active: false },
@@ -98,6 +99,8 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         this.props.rootStore.visStore
             .setPlotHeight(window.innerHeight - this.blockView
                 .current.getBoundingClientRect().top);
+
+        this.height = window.innerHeight - 250
     }
 
     /**
@@ -298,7 +301,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
     render() {
         return (
             <div className="blockView" ref={this.ref}>
-                <div className="view" id="block-view">
+                <div className="view" id="block-view" style={{height:this.height, overflowY:"scroll"}}>
                     <Row style={{marginLeft: '0'}}>
                         <Button
                             bsSize="xsmall"

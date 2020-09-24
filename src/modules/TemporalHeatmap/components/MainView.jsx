@@ -77,10 +77,10 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 onSelect={this.handleSwitchView}
                 id="viewTab"
             >
-                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} title="V2 with Overview">
+                {/* <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} title="V2 with Overview">
                     {stateTransition}
-                </Tab>
-                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title="V2">
+                </Tab> */}
+                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title="Block V2">
                     {myblockView}
                 </Tab>
                 <Tab eventKey='block' style={{ paddingTop: 10 }} title="Block View">

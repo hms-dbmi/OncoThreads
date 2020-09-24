@@ -11,6 +11,7 @@ class VisStore {
         this.secondaryHeight = 15;
         this.verticalGap = 1;
         this.partitionGap = 25;
+        this.strokeW = 5;
         this.currentSVGHeight = undefined;
         this.currentVerticalZoomLevel = undefined;
         this.initialVerticalZoomLevel = undefined;
@@ -291,7 +292,7 @@ class VisStore {
                 return d3.scaleLinear()
                     .domain([0, this.rootStore.dataStore.numberOfPatients])
                     .range([0, this.plotWidth - (this.rootStore.dataStore.maxPartitions - 1)
-                    * this.partitionGap - this.rootStore.uiStore.rowOffset * 2]);
+                    * this.partitionGap - this.rootStore.uiStore.rowOffset * 2 - this.strokeW*2] );
             },
             /**
              * gets scale for placement of events and samples on time axis in global timeline
