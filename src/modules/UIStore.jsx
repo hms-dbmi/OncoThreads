@@ -27,8 +27,8 @@ class UIStore {
             setRealTime: action((boolean) => {
                 this.realTime = boolean;
             }),
-            setGlobalTime: action((boolean) => {
-                this.globalTime = boolean;
+            setGlobalTime: action((key) => {
+                this.globalTime = key;
             }),
             setAdvancedSelection: action((boolean) => {
                 this.advancedSelection = boolean;

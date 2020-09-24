@@ -41,7 +41,7 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
                     />
                 </g>,
             );
-            previousXPosition += this.props.visStore.groupScale(d.patients.length) + 10;
+            previousXPosition += this.props.visStore.groupScale(d.patients.length) + this.props.visStore.partitionGap;
         });
         return partitions;
     }

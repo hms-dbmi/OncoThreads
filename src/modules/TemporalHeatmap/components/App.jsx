@@ -15,6 +15,9 @@ import SettingsModal from './Modals/SettingsModal';
 import AboutModal from './Modals/AboutModal';
 import StudySummary from './StudySummary';
 
+import { QuestionCircleOutlined, HomeOutlined } from '@ant-design/icons';
+import * as introJs from 'intro.js';
+
 /**
  * Base Component
  */
@@ -61,16 +64,16 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
                 <NavDropdown key="export" eventKey="dropdown" title="Export View" id="basic-nav-dropdown">
                     <NavItem onClick={this.props.rootStore.svgExport.exportSVG}>
-                            SVG
+                        SVG
                     </NavItem>
                     <NavItem onClick={this.props.rootStore.svgExport.exportSVGandData}>
-                            SVG with metadata
+                        SVG with metadata
                     </NavItem>
                     <NavItem onClick={this.props.rootStore.svgExport.exportPNG}>
-                            PNG
+                        PNG
                     </NavItem>
                     <NavItem onClick={this.props.rootStore.svgExport.exportPDF}>
-                            PDF
+                        PDF
                     </NavItem>
                 </NavDropdown>,
                 <NavItem key="settings" onClick={() => this.openModal('settings')}>Settings</NavItem>,
@@ -78,9 +81,19 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <NavItem key="info" onClick={() => this.openModal('info')}>Study Info</NavItem>,
                 <NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>,
 
-                <NavItem key="home" onClick={() => this.props.rootStore.firstLoad=true}>
-                  <img alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMTYiIGhlaWdodD0iMTYiCnZpZXdCb3g9IjAgMCAxNiAxNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDggMS4zMjAzMTMgTCAwLjY2MDE1NiA4LjEzMjgxMyBMIDEuMzM5ODQ0IDguODY3MTg4IEwgMiA4LjI1MzkwNiBMIDIgMTQgTCA3IDE0IEwgNyA5IEwgOSA5IEwgOSAxNCBMIDE0IDE0IEwgMTQgOC4yNTM5MDYgTCAxNC42NjAxNTYgOC44NjcxODggTCAxNS4zMzk4NDQgOC4xMzI4MTMgWiBNIDggMi42Nzk2ODggTCAxMyA3LjMyODEyNSBMIDEzIDEzIEwgMTAgMTMgTCAxMCA4IEwgNiA4IEwgNiAxMyBMIDMgMTMgTCAzIDcuMzI4MTI1IFoiPjwvcGF0aD48L3N2Zz4="></img> 
-                        </NavItem>,
+                <NavItem key="home" onClick={() => this.props.rootStore.firstLoad = true}>
+                    <HomeOutlined />
+                    {/* <img alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMTYiIGhlaWdodD0iMTYiCnZpZXdCb3g9IjAgMCAxNiAxNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDggMS4zMjAzMTMgTCAwLjY2MDE1NiA4LjEzMjgxMyBMIDEuMzM5ODQ0IDguODY3MTg4IEwgMiA4LjI1MzkwNiBMIDIgMTQgTCA3IDE0IEwgNyA5IEwgOSA5IEwgOSAxNCBMIDE0IDE0IEwgMTQgOC4yNTM5MDYgTCAxNC42NjAxNTYgOC44NjcxODggTCAxNS4zMzk4NDQgOC4xMzI4MTMgWiBNIDggMi42Nzk2ODggTCAxMyA3LjMyODEyNSBMIDEzIDEzIEwgMTAgMTMgTCAxMCA4IEwgNiA4IEwgNiAxMyBMIDMgMTMgTCAzIDcuMzI4MTI1IFoiPjwvcGF0aD48L3N2Zz4="></img>  */}
+                </NavItem>,
+
+                <NavItem key="tutorial" onClick={
+                    () => {
+                        introJs().start()
+                    }
+                }>
+                    Intro <QuestionCircleOutlined style={{color:"green"}}/>
+                </NavItem>,
+
 
             ]
             );

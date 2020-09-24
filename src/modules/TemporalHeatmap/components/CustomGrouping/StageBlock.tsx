@@ -1,13 +1,18 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import { TSelected } from '.'
+import * as d3 from "d3"
 
 import { Point } from 'modules/Type'
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { computed, get } from 'mobx';
+
+import { IImportantScore } from './index'
 
 
 interface Props {
     points: Point[],
+    importanceScores: IImportantScore[],
     stageLabels: { [key: string]: string },
     width: number,
     height: number,
@@ -16,42 +21,107 @@ interface Props {
     colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
+    removeVariable: (name: string) => void
 }
 
 
 @observer
 class StageBlock extends React.Component<Props> {
-    public gap = 20; maxCellHeight = 20;
+    public horizonGap = 15;
+    maxCellHeight = 20;
+    verticalGap = 10;
+    fontHeight = 15;
+    strokeW = 4;
+    blockHeightRatio = 0.6; // the heigh of block : the height of whole chart 
+    // scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
+    // nameColWidth = 40;
+    scoreDigits = 2
+
     constructor(props: Props) {
         super(props)
-        this.drawVIS = this.drawVIS.bind(this)
-        this.drawBlock = this.drawBlock.bind(this)
+        this.drawAllStates = this.drawAllStates.bind(this)
+        this.drawOneState = this.drawOneState.bind(this)
+        this.drawTimeDist = this.drawTimeDist.bind(this)
 
     }
+    @computed
+    get nameColWidth(): number {
+        let scoreWidth = getTextWidth( (0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
+        let nameWidth = Math.max(...this.props.importanceScores.map(
+            d => getTextWidth(d['name'], this.fontHeight)
+        ))
+        // console.info('colwidth', scoreWidth, nameWidth)
+        // console.info(Object.keys(this.props.importanceScores))
+        return scoreWidth + nameWidth + this.strokeW*2
+    }
+    @computed
+    get wholeHorizonGap(): number {
+        let { selected, points } = this.props
+        let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
 
-    drawVIS() {
-        let { points, width, height, selected, stageLabels } = this.props
+        let hasLeftPoints = allSelected.length < points.length
+        // let wholeHorizonGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
+        let wholeHorizonGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * this.horizonGap + 2*this.strokeW
+        return wholeHorizonGap
+    }
+    @computed
+    get cellWidth(): number {
+        let { width, points } = this.props
+        let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap) / points.length
+        // console.info(width, this.wholeHorizonGap, points.length, cellWidth)
+        return cellWidth
+    }
+
+    @computed
+    get attrNum(): number {
+        let { points } = this.props
+        let attrNum = points[0].value.length
+        return attrNum
+    }
+
+    @computed
+    get cellHeight(): number {
+        let { height } = this.props
+        let attrNum = this.attrNum
+        let cellHeight = Math.min(
+            (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum,
+            this.maxCellHeight
+        )
+        return cellHeight
+    }
+
+    @computed
+    get maxTimeIdx(): number {
+        let { points, height } = this.props
+        let maxTimeIdx = Math.max(...points.map(p => p.timeIdx))
+        return maxTimeIdx
+    }
+
+    @computed
+    get timeStepHeight(): number {
+        let { points, height } = this.props
+
+        const timeStepHeight = (height - this.fontHeight - this.verticalGap) * (1 - this.blockHeightRatio) / (this.maxTimeIdx + 1)
+
+        return timeStepHeight
+    }
+
+    drawAllStates() {
+        let { points, selected, stageLabels, height } = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
 
         let stageBlocks: JSX.Element[] = []
-        let allSelected = selected.map(d => d.pointIdx).flat()
+        let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
         let hasLeftPoints = allSelected.length < points.length
-        let wholeGap = (hasLeftPoints ? selected.length : selected.length - 1) * this.gap
-        let cellWidth = (width - wholeGap) / points.length
-        let fontHeight = 15
-        let cellHeight = Math.min(
-            (height - fontHeight) / points[0].value.length,
-            this.maxCellHeight
-        )
 
-        if (selected.length > 0) {
+        let fontHeight = this.fontHeight
+
+        if (Object.keys(selected).length > 0) {
 
 
-            let strokeW = 4
-
-            selected.forEach(g => {
+            Object.values(selected).forEach(g => {
                 let { stageKey, pointIdx } = g
                 let stageColor = getColorByName(stageKey)
                 let stageName = stageLabels[stageKey] || stageKey
@@ -63,26 +133,27 @@ class StageBlock extends React.Component<Props> {
                             width={Math.max(getTextWidth(stageName, 14), 20)} height={fontHeight}
                             rx={3} opacity={0.5}
                             stroke={stageColor}
-                            strokeWidth={strokeW}
+                            strokeWidth={this.strokeW}
                         />
                         <text alignmentBaseline="hanging">{stageName}</text>
 
                         <rect className='stageBox'
                             fill='none'
                             stroke={stageColor}
-                            strokeWidth={strokeW}
-                            y={fontHeight-strokeW/2}
-                            x={-strokeW/2}
-                            width={cellWidth * pointIdx.length + strokeW}
-                            height={cellHeight * points[0].value.length + strokeW}
+                            strokeWidth={this.strokeW}
+                            y={fontHeight - this.strokeW / 2}
+                            x={-this.strokeW / 2}
+                            width={this.cellWidth * pointIdx.length + this.strokeW}
+                            height={this.cellHeight * points[0].value.length + this.strokeW}
                         />
 
-                        <g transform={`translate(0, ${fontHeight})`} className='blockCols' >
-                            {this.drawBlock(pointIdx.map(id => points[id]), cellWidth, cellHeight)}
+                        <g transform={`translate(0, ${fontHeight})`} className='oneState' >
+                            {this.drawOneState(pointIdx.map(id => points[id]), stageKey)}
                         </g>
+
                     </g>)
 
-                offsetX += cellWidth * pointIdx.length + this.gap
+                offsetX += this.cellWidth * pointIdx.length + this.horizonGap
             })
 
 
@@ -93,8 +164,8 @@ class StageBlock extends React.Component<Props> {
                 stageBlocks.push(
                     <g key={'undefined'} className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                         <text alignmentBaseline="hanging">undefined</text>
-                        <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
-                            {this.drawBlock(leftNodes.map(id => points[id]), cellWidth, cellHeight)}
+                        <g transform={`translate(0, ${fontHeight})`} className='oneState'>
+                            {this.drawOneState(leftNodes.map(id => points[id]), 'undefined')}
                         </g>
                     </g>)
             }
@@ -104,17 +175,54 @@ class StageBlock extends React.Component<Props> {
             stageBlocks.push(
                 <g key='undefined' className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                     <text alignmentBaseline="hanging">undefined</text>
-                    <g transform={`translate(0, ${fontHeight})`} className='blockCols'>
-                        {this.drawBlock(points, cellWidth, cellHeight)}
+                    <g transform={`translate(0, ${fontHeight})`} className='onsState'>
+                        {this.drawOneState(points, 'undefined')}
                     </g>
                 </g>
             )
         }
 
-        return stageBlocks
+        let allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth}, 0)`}>
+            {stageBlocks}
+        </g>
+
+        let featureNameRows = this.featureNameRows()
+
+        let timeDistLabel = <g
+            className="timeDistLable"
+            key="timeDistLable"
+            transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * this.cellHeight + this.fontHeight + this.verticalGap + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
+        >
+            <rect
+                width={getTextWidth('temportal Distribution', this.fontHeight) + 10} height={this.fontHeight * 1.2}
+                rx="3"
+                stroke="gray"
+                fill="white"
+            />
+            <text y={this.fontHeight} x={4}>
+                Temporal Distribution
+            </text>
+        </g>
+
+        return [featureNameRows, timeDistLabel, allStates]
     }
 
-    drawBlock(points: Point[], cellWidth: number, cellHeight: number) {
+    // draw the block of one state
+    drawOneState(points: Point[], stageKey:string) {
+        if (points.length == 0) {
+            return []
+        }
+
+
+        let block = this.drawBlock(points)
+
+        let timeDist = this.drawTimeDist(points, stageKey)
+
+        return [block, timeDist]
+
+    }
+
+    drawBlock(points: Point[]) {
         points = this.reorderPoints(points)
         let { setHoverID, resetHoverID } = this.props
         let block = points.map((point, i) => {
@@ -122,8 +230,8 @@ class StageBlock extends React.Component<Props> {
             let pointCol = point.value.map((v, rowIdx) => {
                 let fill = this.props.colorScales[rowIdx](v) || 'gray'
                 return <rect key={rowIdx}
-                    width={cellWidth} height={cellHeight}
-                    x={cellWidth * i} y={rowIdx * cellHeight}
+                    width={this.cellWidth} height={this.cellHeight}
+                    x={this.cellWidth * i} y={rowIdx * this.cellHeight}
                     fill={fill}
                 />
             })
@@ -132,15 +240,87 @@ class StageBlock extends React.Component<Props> {
 
             return <g
                 key={`point_${point.idx}`} className={`point_${point.idx}`} opacity={opacity}
-                onMouseEnter={() => setHoverID(point.idx)}
-                onMouseLeave={() => resetHoverID()}
+            // onMouseEnter={() => setHoverID(point.idx)}
+            // onMouseLeave={() => resetHoverID()}
             >
                 {pointCol}
             </g>
         })
 
-        return block
+        return <g key="block" className="block"> {block} </g>
+    }
 
+    // draw the time dist of one identified state
+    drawTimeDist(points: Point[], stageKey:string) {
+
+        let dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
+        points.forEach(point => {
+            let timeIdx = point.timeIdx
+            dist[timeIdx] += 1
+        })
+
+        // let charPoints = dist.map((d,i)=>`L ${d*this.cellWidth} ${i * this.timeStepHeight}`)
+        // return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
+        //     <path 
+        //         d= {`M 0 0 ${charPoints.join(' ')} L ${0} ${this.maxTimeIdx* this.timeStepHeight} z`}
+        //         fill='lightgray'
+        //         stroke = 'lightgray'
+        //         strokeWidth = '2'
+        //     />
+        // </g>
+
+
+        var lineGene = d3.line().curve(d3.curveMonotoneY);
+        let pathString = lineGene(
+            dist.map(
+                (d, i) => [d * this.cellWidth, i * this.timeStepHeight]
+            )
+        )
+
+        pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
+        let color = getColorByName(stageKey)
+        return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
+            <path
+                d={pathString as string}
+                fill={color}
+                stroke={color}
+                strokeWidth='2'
+            />
+        </g>
+
+    }
+
+    featureNameRows() {
+        let { importanceScores, width } = this.props
+        let rows = importanceScores.map((d, i) => {
+            let { score, name } = d
+            return <g key={name} transform={`translate(0, ${this.cellHeight * (i + 1)})`}>
+                <text opacity={Math.max(0.3, score)} >
+                    {name} {' '} {score.toFixed(this.scoreDigits)}
+                </text>
+                <text
+                    x={this.nameColWidth - this.strokeW*2} textAnchor="end" cursor="pointer"
+                    onClick={() => { this.props.removeVariable(name) }}
+                >
+                    X
+            </text>
+
+            </g>
+        })
+
+        let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
+        return <g className='importanceScores' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`}  >
+
+            <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
+                x={this.nameColWidth / 2 - impLableWidth/2}
+                y={-this.fontHeight}
+                fill="white" stroke="gray"
+            />
+            <text x={this.nameColWidth/2} textAnchor="middle">
+                {impLable}
+            </text>
+            {rows}
+        </g>
     }
 
     reorderPoints(points: Point[]) {
@@ -157,8 +337,8 @@ class StageBlock extends React.Component<Props> {
     }
 
     render() {
-        return <g className='stageBlock'>
-            {this.drawVIS()}
+        return <g className='stateSummary'>
+            {this.drawAllStates()}
         </g>
     }
 }

@@ -313,6 +313,24 @@ class DataStore {
         })
 
     }
+
+    removeVariable(variableID){
+        let sampleVariables = this.variableStores.sample.currentVariables
+        if (sampleVariables.includes(variableID)){
+            this.variableStores['sample'].removeVariable(variableID);
+        }else{
+            this.variableStores['between'].removeVariable(variableID);
+        }
+        // currentVariables() {
+        //     if (this.hasEvent === false) {
+        //         return this.variableStores.sample.currentVariables
+        //     } else {
+        //         return this.variableStores.sample.currentVariables.concat(
+        //             this.variableStores.between.currentVariables
+        //         )
+        //     }
+        // }
+    }
 }
 
 

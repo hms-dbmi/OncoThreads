@@ -10,7 +10,7 @@ class VisStore {
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
         this.verticalGap = 1;
-        this.partitionGap = 10;
+        this.partitionGap = 25;
         this.currentSVGHeight = undefined;
         this.currentVerticalZoomLevel = undefined;
         this.initialVerticalZoomLevel = undefined;

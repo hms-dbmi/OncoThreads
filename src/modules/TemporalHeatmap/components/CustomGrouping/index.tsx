@@ -2,9 +2,13 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
-import { message } from 'antd';
+import { message, InputNumber, Slider, Card, Tooltip } from 'antd';
+import { PCA } from 'ml-pca';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
-import { Point, ReferencedVariables, VariableStore } from 'modules/Type'
+
+
+import { Point, ReferencedVariables, VariableStore, NormPoint } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
@@ -14,6 +18,8 @@ import StageInfo from './StageInfo'
 import { Switch } from 'antd';
 import StageBlock from './StageBlock';
 import Scatter from './Scatter'
+
+import { clusterfck } from "../../UtilityClasses/clusterfck.js";
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -41,15 +47,20 @@ type Count = {
 }
 
 export type TStage = {
-    domains:{
-        [attrName:string]:string[]|number[]|boolean[]
+    domains: {
+        [attrName: string]: string[] | number[] | boolean[]
     },
     points: number[],
-    stageKey:string
+    stageKey: string
+}
+
+export interface IImportantScore {
+    name:string,
+    score:number
 }
 
 
-export type TSelected = { stageKey: string, pointIdx: number[] }[]
+export type TSelected = { [stageKey: string]: { stageKey: string, pointIdx: number[] } }
 
 
 interface Props {
@@ -58,17 +69,19 @@ interface Props {
     referencedVariables: ReferencedVariables,
     dataStore: VariableStore,
     stageLabels: { [stageKey: string]: string },
-    colorScales: Array<(value: string|number|boolean)=>string>,
+    colorScales: Array<(value: string | number | boolean) => string>,
 }
 
 @inject('dataStore')
 @observer
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
-    @observable height: number = window.innerHeight - 140
-    @observable selected: TSelected = []
+    @observable height: number = window.innerHeight - 250
+    @observable selected: TSelected = {}
     @observable hasLink: boolean = false
-    @observable hoverPointID:number = -1
+    @observable hoverPointID: number = -1
+    @observable clusterTHR: number = 0.08
+    @observable showGlyph: boolean = false
     private ref = React.createRef<HTMLDivElement>();
 
     constructor(props: Props) {
@@ -82,6 +95,9 @@ class CustomGrouping extends React.Component<Props> {
         this.resetHoverID = this.resetHoverID.bind(this)
         this.updateSize = this.updateSize.bind(this)
         this.updateSelected = this.updateSelected.bind(this)
+        this.autoGroup = this.autoGroup.bind(this)
+        this.onChangeThreshold = this.onChangeThreshold.bind(this)
+        this.removeVariable = this.removeVariable.bind(this)
 
     }
 
@@ -90,11 +106,11 @@ class CustomGrouping extends React.Component<Props> {
      * return the attribute domain of each stages
      */
     @computed
-    get stages():TStage[] {
+    get stages(): TStage[] {
         let { selected } = this
         let { currentVariables, points } = this.props
 
-        let selectedPoints: Point[][] = selected
+        let selectedPoints: Point[][] = Object.values(selected)
             .map(s => {
                 return points
                     .filter((_, i) => s.pointIdx.includes(i))
@@ -116,14 +132,14 @@ class CustomGrouping extends React.Component<Props> {
 
         let stages = selectedPoints.map((p, stageIdx) => {
             let stage: TStage = {
-                stageKey: selected[stageIdx].stageKey,
+                stageKey: Object.keys(selected)[stageIdx],
                 domains: {},
-                points: p.map(p=>p.idx)
+                points: p.map(p => p.idx)
             }
             currentVariables.forEach((name, valueIdx) => {
                 stage.domains[name] = summarizeDomain(
                     p.map(p => p.value[valueIdx]) as number[] | string[] | boolean[]
-                    )
+                )
             })
 
             return stage
@@ -134,7 +150,94 @@ class CustomGrouping extends React.Component<Props> {
         return stages
     }
 
-    
+    @computed
+    get normValues(): number[][] {
+        let { points, referencedVariables, currentVariables } = this.props
+        if (points.length === 0) return []
+        let normValues = points.map(point => {
+            let normValue = point.value.map((value, i) => {
+                let ref = referencedVariables[currentVariables[i]]
+                if (value === undefined) {
+                    return 0
+                } else if (typeof (value) == "number") {
+                    let domain = ref.domain as number[]
+                    return (value - domain[0]) / (domain[1] - domain[0])
+                } else if (ref.domain.length === 1) {
+                    return 0
+                } else {
+                    let domain: number[] | boolean[] = ref.domain as number[] | boolean[]
+                    return domain.findIndex((d: number | boolean) => d === value) / (domain.length - 1)
+                }
+            })
+            return normValue
+        })
+        return normValues
+    }
+
+    @computed
+    get normPoints(): NormPoint[] {
+        let { normValues } = this
+        if (normValues.length == 0) return []
+        let pca = new PCA(normValues)
+        let norm2dValues: any = []
+
+        if (this.normValues[0].length > 2) {
+            // only calculate pca when dimension is larger than 2
+            norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
+            // console.info('pca points', newPoints)            
+        } else {
+            norm2dValues = normValues
+        }
+
+
+        var normPoints: NormPoint[] = normValues.map((d, i) => {
+            return {
+                ...this.props.points[i],
+                normValue: d,
+                pos: norm2dValues[i]
+            }
+        })
+
+        return normPoints
+    }
+
+    @computed
+    get importanceScores(): IImportantScore[] {
+        if (this.normValues.length == 0) return []
+        let {currentVariables} = this.props
+        let pca = new PCA(this.normValues)
+        let egiVector = pca.getEigenvectors()
+        let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
+        return importanceScores.map((score,i)=>{
+            return {
+                name:currentVariables[i],
+                score
+            }
+        })
+    }
+
+    @action
+    autoGroup() {
+        let normPoints = this.normPoints
+        if (normPoints.length == 0) return
+        let { clusterTHR } = this
+        var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "single", clusterTHR);
+        // console.info(tree)
+
+        this.resetSelected(
+            clusters.map((_: any, i: number) => getUniqueKeyName(i, [])),
+            clusters.map((d: any) => d.itemIdx)
+        )
+        // this.selected = clusters.map((cluster:any,i:number)=>{
+        //     return {
+        //         stageKey: getUniqueKeyName(i, []),
+        //         pointIdx: cluster.itemIdx
+        //     }
+        // })
+
+        // this.applyCustomGroups()
+    }
+
 
     /**
      * summarize the selected group of points
@@ -146,7 +249,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     resetGroup() {
-        this.selected = []
+        this.selected = {}
         this.props.dataStore.resetStageLabel()
 
 
@@ -157,10 +260,10 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    deleteGroup(i: number) {
-        this.selected.splice(i, 1)
+    deleteGroup(stageKey: string) {
+        delete this.selected[stageKey]
 
-        d3.selectAll(`circle.group_${i}`)
+        d3.selectAll(`circle.group_${stageKey}`)
             .attr('fill', 'white')
             .attr('r', 5)
             .attr('class', 'point')
@@ -173,16 +276,18 @@ class CustomGrouping extends React.Component<Props> {
         let { points } = this.props
 
         // check whether has unselected nodes
-        let allSelected = selected.map(d => d.pointIdx).flat()
+        let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
         if (allSelected.length < points.length) {
             let leftNodes = points.map((_, i) => i)
                 .filter(i => !allSelected.includes(i))
 
-            this.selected.push({
-                stageKey: getUniqueKeyName(this.selected.length, this.selected.map(d => d.stageKey)),
+            let newStageKey = getUniqueKeyName(Object.keys(this.selected).length, Object.keys(this.selected))
+
+            this.selected[newStageKey] = {
+                stageKey: newStageKey,
                 pointIdx: leftNodes
-            })
-            message.info('All unselected nodes are grouped as one stage')
+            }
+            // message.info('All unselected nodes are grouped as one stage')
         }
 
 
@@ -198,7 +303,7 @@ class CustomGrouping extends React.Component<Props> {
         })
 
         // push points to corresponding time stage
-        this.selected.forEach((stage) => {
+        Object.values(this.selected).forEach((stage) => {
 
             let stageKey = stage.stageKey
 
@@ -239,14 +344,14 @@ class CustomGrouping extends React.Component<Props> {
                     patients: nextPatients,
                     points: nextPoints,
                 } = nextPartition
-                
+
                 curr.partitions.forEach((currPartition: Partition) => {
                     let {
                         partition: currName,
                         patients: currPatients,
                         points: currPoints
                     } = currPartition
-                    
+
                     let intersection = currPatients.filter(d => nextPatients.includes(d))
                     if (intersection.length > 0) {
                         eventStage.partitions.push({
@@ -275,87 +380,163 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    setHoverID(id:number){
+    setHoverID(id: number) {
         this.hoverPointID = id
     }
 
     @action
-    resetHoverID(){
+    resetHoverID() {
         this.hoverPointID = -1
     }
 
     @action
-    updateSelected(i:number, group:TSelected[number]|undefined){
-        if (group===undefined){
-            this.selected.splice(i,1)
-        }else if(i<this.selected.length){
-            this.selected[i] = group
-        }else {
-            this.selected.push(group)
+    updateSelected(stageKeys: string[], groups: number[][]) {
+
+        for (let i = 0; i < groups.length; i++) {
+            let stageKey = stageKeys[i], group = groups[i]
+
+            if (group.length === 0) {
+                delete this.selected[stageKey]
+            } else {
+                this.selected[stageKey] = {
+                    stageKey,
+                    pointIdx: group
+                }
+            }
+
         }
-        
+        this.applyCustomGroups()
+
+    }
+
+    @action
+    resetSelected(stageKeys: string[], groups: number[][]) {
+        let newSelected:TSelected = {}
+        for (let i = 0; i < stageKeys.length; i++) {
+            let stageKey = stageKeys[i], group = groups[i]
+            newSelected[stageKey] = {
+                stageKey,
+                pointIdx: group
+            }
+        }
+        this.selected = newSelected
+        this.applyCustomGroups()
+
     }
 
     componentDidMount() {
         this.updateSize()
+        this.autoGroup()
         window.addEventListener('resize', this.updateSize);
     }
-    componentWillUnmount(){
+    // componentDidUpdate(){
+    //     this.autoGroup()
+    // }
+    componentWillUnmount() {
         window.removeEventListener('resize', this.updateSize);
     }
-    updateSize(){
+    updateSize() {
         if (this.ref.current) {
             this.width = this.ref.current.getBoundingClientRect().width
         }
+        this.height = window.innerHeight - 250
     }
 
+    @action
+    onChangeThreshold(thr: number|string|undefined) {
+        this.clusterTHR = thr as number
+        this.autoGroup()
+    }
+
+    @action
+    removeVariable(variableName:string){
+
+        this.props.dataStore.removeVariable(variableName);
+    }
 
     render() {
 
         let { points, currentVariables, referencedVariables, colorScales } = this.props
         let { width, height, selected, hasLink } = this
-        let pcpMargin = 25
+        let pcpMargin = 15
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
-
         // used stroe actions
         let toggleHasEvent = this.props.dataStore.toggleHasEvent
 
+        let controllerView =  <div className="controller">
+
+        <Switch size="small"
+            checkedChildren="links" unCheckedChildren="links"
+            onChange={() => {
+                this.hasLink = !this.hasLink
+            }} />
+        <Switch size="small"
+            style={{ marginLeft: '5px' }}
+            checkedChildren="events" unCheckedChildren="events"
+            onChange={toggleHasEvent} />
+        <Switch size="small"
+            style={{ marginLeft: '5px' }}
+            checkedChildren="glyph" unCheckedChildren="circle"
+            onChange={() => {
+                this.showGlyph = !this.showGlyph
+            }} />
+            
+        {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
+        <span className="thrController">
+            <span style={{padding:"0px 0px 0px 5px"}}>
+                cluster thr
+            </span>
+
+            <InputNumber size="small" 
+                min={0}
+                max={0.2}
+                step={0.02} 
+                value={this.clusterTHR}
+                onChange={this.onChangeThreshold} 
+                style={{ width: "70px"}}
+                />
+           
+        </span>
+
+        </div>
+
         return (
-            <div className="container" style={{ width: "100%" }}>
+            // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
+            <Card 
+                title={<span style={{fontSize:"17px"}}>State Identifier <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
+                extra={controllerView} style={{ width: "100%", marginTop: "5px" }}
+                data-intro="<b>modify</b> state identification here"
+            >
+      
                 <div
                     className="customGrouping"
-                    style={{ height: `${height}px`, width: "100%", marginTop: "5px" }}
+                    style={{ height: `${height}px`, width: "100%"}}
                     ref={this.ref}
                 >
-                    <Switch size="small"
-                        checkedChildren="links" unCheckedChildren="links"
-                        onChange={() => {
-                            this.hasLink = !this.hasLink
-                        }} />
-                    <Switch size="small"
-                        style={{ marginLeft: '5px' }}
-                        checkedChildren="events" unCheckedChildren="events"
-                        onChange={toggleHasEvent} />
+                   
 
-                    <svg className='customGrouping' width="100%" height={`${scatterHeight+pcpHeight-35}px`}>
+                    <svg className='customGrouping' width="100%" height={`${scatterHeight + pcpHeight - 35}px`}>
                         <Scatter
-                        points={points}
-                        currentVariables={currentVariables}
-                        referencedVariables= {referencedVariables} 
-                        selected={selected}
-                        width={width}
-                        height={scatterHeight}
-                        hasLink={hasLink}
-                        colorScales={colorScales}
-                        hoverPointID={this.hoverPointID}
-                        setHoverID={this.setHoverID}
-                        resetHoverID={this.resetHoverID}
-                        updateSelected = {this.updateSelected}
+                            points={points}
+                            normPoints={this.normPoints}
+                            currentVariables={currentVariables}
+                            referencedVariables={referencedVariables}
+                            selected={selected}
+                            width={width}
+                            height={scatterHeight}
+                            hasLink={hasLink}
+                            colorScales={colorScales}
+                            hoverPointID={this.hoverPointID}
+                            setHoverID={this.setHoverID}
+                            resetHoverID={this.resetHoverID}
+                            updateSelected={this.updateSelected}
+                            showGlyph={this.showGlyph}
                         />
-                        <g className='stageBlock' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
-                            <StageBlock 
+                        <g className='stageBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} data-intro="each point is ..">
+                            <StageBlock
                                 stageLabels={this.props.stageLabels}
-                                width={width - 2 * pcpMargin}
+                                importanceScores={this.importanceScores}
+                                width={width}
                                 height={pcpHeight - 2 * pcpMargin}
                                 points={points}
                                 selected={this.selected}
@@ -363,6 +544,7 @@ class CustomGrouping extends React.Component<Props> {
                                 hoverPointID={this.hoverPointID}
                                 setHoverID={this.setHoverID}
                                 resetHoverID={this.resetHoverID}
+                                removeVariable = {this.removeVariable}
                             />
                         </g>
 
@@ -389,7 +571,8 @@ class CustomGrouping extends React.Component<Props> {
                         applyCustomGroups={this.applyCustomGroups}
                     />
                 </div>
-            </div>
+            </Card>
+            /* </div> */
         );
     }
 }
