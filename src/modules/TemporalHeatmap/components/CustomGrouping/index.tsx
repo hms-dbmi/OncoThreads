@@ -503,7 +503,7 @@ class CustomGrouping extends React.Component<Props> {
         return (
             // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
             <Card 
-                title={<span style={{fontSize:"17px"}}>State Identifier <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
+                title={<span style={{fontSize:"17px"}}>State Identification <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
                 extra={controllerView} style={{ width: "100%", marginTop: "5px" }}
                 data-intro="<b>modify</b> state identification here"
             >

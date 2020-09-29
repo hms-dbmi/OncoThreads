@@ -7,6 +7,7 @@ import { getColorByName } from '../../UtilityClasses';
 import * as d3 from "d3"
 import { InputNumber, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import './index.css'
 
 
 /**
@@ -18,6 +19,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
     padding = 20;
     partitionGap = 15;
     overviewWidthRatio = 0.35;
+    detailedWidthRatio = 0.64;
     linkMaxWidth = 20;
     constructor(props) {
         super(props);
@@ -63,12 +65,13 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
      * @return {*[]}
      */
     getTimepointAndTransitions() {
+        const paddingW = 5, paddingH = 10
         const timepoints = [];
         const transitions = [];
         let { dataStore } = this.props.rootStore
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
-            .range([0, this.width * this.overviewWidthRatio - (dataStore.maxPartitions - 1) * this.partitionGap]);
+            .range([paddingW, this.width * this.overviewWidthRatio - (dataStore.maxPartitions - 1) * this.partitionGap - 2*paddingW]);
 
         let layoutDict = []
 
@@ -77,10 +80,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             .forEach((d, i) => {
 
                 const transformTP = `translate(
-                    ${0},
-                    ${i * this.timeStepHeight}
+                    ${paddingW},
+                    ${paddingH + i * this.timeStepHeight}
                     )`;
-                let offsetX = 0, gap = this.partitionGap;
+                let offsetX = paddingW, gap = this.partitionGap;
                 let timepoint = []
                 layoutDict.push({})
 
@@ -123,9 +126,9 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                             if (transPatients.length > 0) {
                                 let layoutDict1 = layoutDict[i][partition1], layoutDict2 = layoutDict[i + 1][partition2]
                                 let sourceX = layoutDict1.x + layoutDict1.width / 2,
-                                    sourceY = i * this.timeStepHeight + this.rectHeight,
+                                    sourceY = paddingH + i * this.timeStepHeight + this.rectHeight,
                                     targetX = layoutDict2.x + layoutDict2.width / 2,
-                                    targetY = (i + 1) * this.timeStepHeight
+                                    targetY = paddingH + (i + 1) * this.timeStepHeight
                                 transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}`}
                                     d={linkGene({
                                         source: [sourceX, sourceY], target: [targetX, targetY]
@@ -151,7 +154,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
 
         return (
             <div className="blockView" ref={this.ref}>
-                <Card title={<span style={{ fontSize: "17px" }}>State Transition Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
+                <Card title={<span style={{ fontSize: "17px" }}>State Transition<Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
                     extra={controller} style={{ width: (this.overviewWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", float: "left" }}
                     data-intro="state transition overview"
                 >
@@ -176,7 +179,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
 
                 </Card>
                 <Card title={<span style={{ fontSize: "17px" }}>State Transition Details <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
-                    extra='' style={{ width: ((1 - this.overviewWidthRatio - 0.01) * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
+                    extra='' style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
                     data-intro="state transition details"
                 >
                     <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>

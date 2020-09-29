@@ -6,6 +6,8 @@ import GlobalTimeline from './GlobalTimeline';
 import BlockView from './BlockView';
 import MyBlockView from './BlockViewNew';
 import StateTransition from './StateTransition'
+import { Tooltip } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 /**
  * Component containing the main visualization
@@ -78,16 +80,16 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 id="viewTab"
             >
                
-                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title="Block V2">
+                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {myblockView}
                 </Tab>
-                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} title="V2 with Overview">
+                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} title={<span>Overview V2 <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {stateTransition}
                 </Tab>
-                <Tab eventKey='block' style={{ paddingTop: 10 }} title="Block View">
+                <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {blockView}
                 </Tab>
-                <Tab eventKey='line' style={{ paddingTop: 10 }} title="Timeline">
+                <Tab eventKey='line' style={{ paddingTop: 10 }} title={<span>Timeline <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {timelineView}
                 </Tab>
             </Tabs>
