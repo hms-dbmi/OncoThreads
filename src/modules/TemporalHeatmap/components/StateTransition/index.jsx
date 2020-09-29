@@ -13,7 +13,7 @@ import './index.css'
 /**
  * Component for the Block view
  */
-const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class BlockView extends React.Component {
+const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class StateTransition extends React.Component {
     timeStepHeight = 65;
     rectHeight = 20;
     padding = 20;
@@ -65,13 +65,12 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
      * @return {*[]}
      */
     getTimepointAndTransitions() {
-        const paddingW = 5, paddingH = 10
-        const timepoints = [];
-        const transitions = [];
+        const paddingW = 5, paddingH = 10, annotationWidth = 40
+        let timepoints = [], transitions = [], annotations = [];
         let { dataStore } = this.props.rootStore
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
-            .range([paddingW, this.width * this.overviewWidthRatio - (dataStore.maxPartitions - 1) * this.partitionGap - 2*paddingW]);
+            .range([0, this.width * this.overviewWidthRatio - (dataStore.maxPartitions - 1) * this.partitionGap - 2*paddingW - annotationWidth]);
 
         let layoutDict = []
 
@@ -80,10 +79,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             .forEach((d, i) => {
 
                 const transformTP = `translate(
-                    ${paddingW},
+                    ${0},
                     ${paddingH + i * this.timeStepHeight}
                     )`;
-                let offsetX = paddingW, gap = this.partitionGap;
+                let offsetX = paddingW+annotationWidth, gap = this.partitionGap;
                 let timepoint = []
                 layoutDict.push({})
 
@@ -142,7 +141,35 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                     })
                 }
             })
-        return [transitions, timepoints];
+
+        // draw timepoint icon
+        const iconR = 10
+
+        annotations.push(
+            <line key="timeline" 
+                x1={paddingW + iconR} x2={paddingW + iconR} 
+                y1={paddingH} y2={paddingH + this.timeStepHeight * (this.props.rootStore.dataStore.timepoints.length - 1 )} 
+                stroke="gray"
+            />)
+
+        this.props.rootStore.dataStore.timepoints
+            .forEach((d, i) => {
+
+                const transformTP = `translate(
+                    ${paddingW },
+                    ${paddingH + i * this.timeStepHeight}
+                    )`;
+                
+                annotations.push(
+                    <g key={d.globalIndex} transform={transformTP}>
+                        <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray"/>
+                        <text x={iconR} y={iconR * 1.2} textAnchor="middle">{i}</text>
+                    </g>,
+                )
+            });
+
+
+        return [annotations, transitions, timepoints];
     }
 
 
@@ -154,7 +181,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
 
         return (
             <div className="blockView" ref={this.ref}>
-                <Card title={<span style={{ fontSize: "17px" }}>State Transition<Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
+                <Card title={<span style={{ fontSize: "17px" }}>State Transition <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
                     extra={controller} style={{ width: (this.overviewWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", float: "left" }}
                     data-intro="state transition overview"
                 >
@@ -197,8 +224,8 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         );
     }
 }));
-BlockView.propTypes = {
+StateTransition.propTypes = {
     tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
     showContextMenuHeatmapRow: PropTypes.func.isRequired,
 };
-export default BlockView;
+export default StateTransition;
