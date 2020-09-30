@@ -203,7 +203,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @computed
     get importanceScores(): IImportantScore[] {
-        if (this.normValues.length == 0) return []
+        if (this.normValues.length == 0 || this.normValues[0].length<=1) return []
         let {currentVariables} = this.props
         let pca = new PCA(this.normValues)
         let egiVector = pca.getEigenvectors()
