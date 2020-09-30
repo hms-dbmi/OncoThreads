@@ -70,99 +70,101 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
         let { dataStore } = this.props.rootStore
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
-            .range([0, this.width * this.overviewWidthRatio - (dataStore.maxPartitions - 1) * this.partitionGap - 2*paddingW - annotationWidth]);
+            .range([0, this.width * this.overviewWidthRatio - (dataStore.maxPartitions - 1) * this.partitionGap - 2 * paddingW - annotationWidth]);
 
         let layoutDict = []
+        let samplePoints = this.props.rootStore.dataStore.timepoints
+            .filter(d => d.type === "sample")
 
         // draw timepoints
-        this.props.rootStore.dataStore.timepoints
-            .forEach((d, i) => {
+        samplePoints.forEach((d, i) => {
 
-                const transformTP = `translate(
+            const transformTP = `translate(
                     ${0},
                     ${paddingH + i * this.timeStepHeight}
                     )`;
-                let offsetX = paddingW+annotationWidth, gap = this.partitionGap;
-                let timepoint = []
-                layoutDict.push({})
+            let offsetX = paddingW + annotationWidth, gap = this.partitionGap;
+            let timepoint = []
+            layoutDict.push({})
 
-                d.customGrouped.forEach(d => {
-                    let stageKey = d.partition || ''
-                    let patients = d.patients
-                    let rectWidth = rectWidthScale(patients.length)
-                    timepoint.push(<rect fill={getColorByName(stageKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${i}state${stageKey}`} />)
+            d.customGrouped.forEach(d => {
+                let stageKey = d.partition || ''
+                let patients = d.patients
+                let rectWidth = rectWidthScale(patients.length)
+                timepoint.push(<rect fill={getColorByName(stageKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${i}state${stageKey}`} />)
 
-                    layoutDict[i][stageKey] = {
-                        width: rectWidth,
-                        x: offsetX
-                    }
+                layoutDict[i][stageKey] = {
+                    width: rectWidth,
+                    x: offsetX
+                }
 
-                    offsetX += rectWidth + gap
-                })
-                timepoints.push(
-                    <g key={d.globalIndex} transform={transformTP}>
-                        {timepoint}
-                    </g>,
-                )
-            });
+                offsetX += rectWidth + gap
+            })
+            timepoints.push(
+                <g key={d.globalIndex} transform={transformTP}>
+                    {timepoint}
+                </g>,
+            )
+        });
+
 
 
         // draw transitions
         let linkGene = d3.linkVertical().x(d => d[0]).y(d => d[1])
         let linkWidthScale = d3.scaleLinear().domain([0, dataStore.numberOfPatients]).range([1, this.linkMaxWidth])
-        this.props.rootStore.dataStore.timepoints
-            .forEach((d, i) => {
-                if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
-                    const transformTR = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.connection[i]})`;
-                    let firstTP = d,
-                        secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
-                    let firstGrouped = firstTP.customGrouped,
-                        secondGrouped = secondTP.customGrouped
-                    firstGrouped.forEach((group1, firstIdx) => {
-                        secondGrouped.forEach((group2, secondIdx) => {
-                            let { patients: patients1, partition: partition1 } = group1, { patients: patients2, partition: partition2 } = group2
-                            let transPatients = patients1.filter(d => patients2.includes(d))
-                            if (transPatients.length > 0) {
-                                let layoutDict1 = layoutDict[i][partition1], layoutDict2 = layoutDict[i + 1][partition2]
-                                let sourceX = layoutDict1.x + layoutDict1.width / 2,
-                                    sourceY = paddingH + i * this.timeStepHeight + this.rectHeight,
-                                    targetX = layoutDict2.x + layoutDict2.width / 2,
-                                    targetY = paddingH + (i + 1) * this.timeStepHeight
-                                transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}`}
-                                    d={linkGene({
-                                        source: [sourceX, sourceY], target: [targetX, targetY]
-                                    })}
-                                    fill="none"
-                                    stroke="lightgray"
-                                    strokeWidth={linkWidthScale(transPatients.length)}
-                                />)
-                            }
-                        })
+
+        samplePoints.forEach((d, i) => {
+            if (i !== samplePoints.length - 1) {
+                const transformTR = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.connection[i]})`;
+                let firstTP = d,
+                    secondTP = samplePoints[i + 1];
+                let firstGrouped = firstTP.customGrouped,
+                    secondGrouped = secondTP.customGrouped
+                firstGrouped.forEach((group1, firstIdx) => {
+                    secondGrouped.forEach((group2, secondIdx) => {
+                        let { patients: patients1, partition: partition1 } = group1, { patients: patients2, partition: partition2 } = group2
+                        let transPatients = patients1.filter(d => patients2.includes(d))
+                        if (transPatients.length > 0) {
+                            
+                            let layoutDict1 = layoutDict[i][partition1], layoutDict2 = layoutDict[i + 1][partition2]
+                            let sourceX = layoutDict1.x + layoutDict1.width / 2,
+                                sourceY = paddingH + i * this.timeStepHeight + this.rectHeight,
+                                targetX = layoutDict2.x + layoutDict2.width / 2,
+                                targetY = paddingH + (i + 1) * this.timeStepHeight
+                            transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}`}
+                                d={linkGene({
+                                    source: [sourceX, sourceY], target: [targetX, targetY]
+                                })}
+                                fill="none"
+                                stroke="lightgray"
+                                strokeWidth={linkWidthScale(transPatients.length)}
+                            />)
+                        }
                     })
-                }
-            })
+                })
+            }
+        })
 
         // draw timepoint icon
         const iconR = 10
 
         annotations.push(
-            <line key="timeline" 
-                x1={paddingW + iconR} x2={paddingW + iconR} 
-                y1={paddingH} y2={paddingH + this.timeStepHeight * (this.props.rootStore.dataStore.timepoints.length - 1 )} 
+            <line key="timeline"
+                x1={paddingW + iconR} x2={paddingW + iconR}
+                y1={paddingH} y2={paddingH + this.timeStepHeight * (samplePoints.length - 1)}
                 stroke="gray"
             />)
 
-        this.props.rootStore.dataStore.timepoints
-            .forEach((d, i) => {
+        samplePoints.forEach((d, i) => {
 
                 const transformTP = `translate(
-                    ${paddingW },
+                    ${paddingW},
                     ${paddingH + i * this.timeStepHeight}
                     )`;
-                
+
                 annotations.push(
                     <g key={d.globalIndex} transform={transformTP}>
-                        <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray"/>
+                        <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray" />
                         <text x={iconR} y={iconR * 1.2} textAnchor="middle">{i}</text>
                     </g>,
                 )
@@ -210,13 +212,13 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                     data-intro="state transition details"
                 >
                     <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
-                    <svg
-                        width="100%"
-                        className="stateTransition details"
-                        // height="100%"
-                        // width={this.props.rootStore.visStore.svgWidth}
-                        height={this.props.rootStore.visStore.svgHeight}
-                    ></svg>
+                        <svg
+                            width="100%"
+                            className="stateTransition details"
+                            // height="100%"
+                            // width={this.props.rootStore.visStore.svgWidth}
+                            height={this.props.rootStore.visStore.svgHeight}
+                        ></svg>
                     </div>
 
                 </Card>
