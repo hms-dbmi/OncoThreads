@@ -84,7 +84,7 @@ class Scatter extends React.Component<Props> {
 
         let gradients: JSX.Element[] = []
         for (let i = 0; i < maxTimeIdx; i++) {
-            let grad = <linearGradient id={`grad${i + 1}`}>
+            let grad = <linearGradient id={`grad${i + 1}`} key={`grad${i + 1}`}>
                 <stop offset="0%" style={{ stopColor: "#eee" }} />
                 <stop offset="100%" style={{ stopColor: graySclae((i + 1) / maxTimeIdx) }} />
             </linearGradient>
@@ -160,7 +160,7 @@ class Scatter extends React.Component<Props> {
 
         })
 
-        return <g className='circles'>{circles}</g>
+        return <g className='circles' key="circles">{circles}</g>
     }
 
     drawGlyph(normPoint: NormPoint, stageColor: string, opacity: number) {

@@ -311,7 +311,7 @@ class StageBlock extends React.Component<Props> {
         })
 
         let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
-        return <g className='importanceScores' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`}  >
+        return <g className='importanceScores' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`}  key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
                 x={this.nameColWidth / 2 - impLableWidth/2}
