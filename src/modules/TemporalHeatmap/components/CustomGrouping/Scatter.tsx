@@ -1,6 +1,6 @@
-import { NormPoint, Point, ReferencedVariables } from 'modules/Type'
+import { NormPoint, VariableStore, Point } from 'modules/Type'
 import React from 'react';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { computed, action } from 'mobx';
 
 import * as d3 from 'd3';
@@ -18,30 +18,27 @@ type TPatientDict = {
 
 
 interface Props {
-    points: Point[],
-    normPoints: NormPoint[],
-    currentVariables: string[],
-    referencedVariables: ReferencedVariables,
-    selected: TSelected,
     width: number,
     height: number,
     hoverPointID: number,
     hasLink: boolean,
     showGlyph: boolean,
-    colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
-    updateSelected: (stageKeys: string[], groups: number[][]) => void
+    updateSelected: (stageKeys: string[], groups: number[][]) => void,
+    dataStore: VariableStore,
 }
-
 
 @observer
 class Scatter extends React.Component<Props> {
     public cellWidth = 10;
 
+    constructor(props: Props) {
+        super(props);
+    }
     @computed
     get patientDict() {
-        let { points } = this.props
+        let points:Point[] = this.props.dataStore.points
 
         let patientDict: TPatientDict = {}
         // get points,each points is one patient at one timepoint
@@ -62,13 +59,13 @@ class Scatter extends React.Component<Props> {
 
     @computed
     get maxTimeIdx(): number {
-        let normPoints = this.props.normPoints
+        let normPoints: NormPoint[] = this.props.dataStore.normPoints
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         return maxTimeIdx
     }
     @computed
     get cellHeight(): number {
-        let { normPoints } = this.props
+        let normPoints: NormPoint[] = this.props.dataStore.normPoints
         const cellHeight = Math.min(7, 40 / normPoints[0].value.length)
         return cellHeight
     }
@@ -98,7 +95,8 @@ class Scatter extends React.Component<Props> {
     }
 
     drawScatterPlot(margin: number = 20) {
-        let { width, height, normPoints } = this.props
+        let { width, height} = this.props
+        let normPoints: NormPoint[] = this.props.dataStore.normPoints
         this.addLasso(width, height)
 
 
@@ -120,8 +118,10 @@ class Scatter extends React.Component<Props> {
     }
 
     drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
-        let { normPoints, showGlyph } = this.props
-        let { selected, hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
+        let { showGlyph } = this.props
+        let normPoints: NormPoint[] = this.props.dataStore.normPoints
+        let selected:TSelected = this.props.dataStore.pointGroups
+        let { hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
         const r = 5
 
 
@@ -167,7 +167,7 @@ class Scatter extends React.Component<Props> {
         const strokeW = 2
         let { cellWidth, cellHeight } = this
         let pointCol = normPoint.value.map((v, rowIdx) => {
-            let fill = this.props.colorScales[rowIdx](v) || 'gray'
+            let fill = this.props.dataStore.colorScales[rowIdx](v) || 'gray'
             return <rect key={rowIdx}
                 width={cellWidth} height={cellHeight}
                 y={rowIdx * cellHeight}
@@ -189,7 +189,8 @@ class Scatter extends React.Component<Props> {
 
     drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
 
-        let { hasLink, normPoints } = this.props
+        let { hasLink} = this.props
+        let normPoints: NormPoint[] = this.props.dataStore.normPoints
         if (!hasLink) return <g className="nolines" key='links' />
 
         let curveGenerator = d3.line()
@@ -226,7 +227,8 @@ class Scatter extends React.Component<Props> {
     }
 
     addLasso(width: number, height: number) {
-        let { selected, updateSelected } = this.props
+        let { updateSelected } = this.props
+        let selected:TSelected = this.props.dataStore.pointGroups
         // lasso draw
         d3.selectAll('g.lasso').remove()
         var svg = d3.select('svg.customGrouping')
@@ -271,7 +273,7 @@ class Scatter extends React.Component<Props> {
 
                 Object.keys(selected).forEach((stageKey, i) => {
                     let g = selected[stageKey]
-                    let remainPoints = g.pointIdx.filter(point => !currentSelected.includes(point))
+                    let remainPoints = g.pointIdx.filter((point:number) => !currentSelected.includes(point))
                     stageKeys.push(stageKey)
                     if (remainPoints.length > 0) {
 

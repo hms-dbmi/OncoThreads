@@ -525,6 +525,10 @@ class RootStore {
                         'clinical'));
         })
 
+        //
+        this.dataStore.autoGroup()
+        this.dataStore.applyCustomGroups()
+
         // // add all even variable
         // eventOptions.forEach(d=>{
         //         const variable = new OriginalVariable(d.id, d.name, 'BINARY', `Indicates if event: "${d.name}" has happened between two timepoints`,

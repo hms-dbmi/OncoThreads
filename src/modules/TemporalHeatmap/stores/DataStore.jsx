@@ -1,5 +1,8 @@
 import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
+import { PCA } from 'ml-pca';
+import { clusterfck } from "modules/TemporalHeatmap/UtilityClasses/clusterfck.js";
+import { getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 /*
  stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -18,6 +21,8 @@ class DataStore {
             globalPrimary: '', // global primary for sample timepoints of global timeline
             hasEvent: false, // whether event attributes are included in custom grouping
             stageLabels: {}, // key & label pairs
+            pointGroups: {}, // the group of this.points: pointIdx[][]
+            pointClusterTHR: 0.08, // the initial threshold to group points
 
             /**
              * get the maximum number of currently displayed partitions
@@ -26,10 +31,10 @@ class DataStore {
             get maxPartitions() {
                 let maxPartitions = 0;
                 const groupedTP = this.timepoints.filter(d => d.isGrouped);
-                if (this.rootStore.uiStore.globalTime==='block') {
-                    maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);    
-                }else{
-                    maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);    
+                if (this.rootStore.uiStore.globalTime === 'block') {
+                    maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);
+                } else {
+                    maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);
                 }
                 return maxPartitions;
 
@@ -47,7 +52,7 @@ class DataStore {
             get points() {
                 let samplePoints = this.variableStores.sample.points,
                     eventPoints = this.variableStores.between.points
-                if (this.hasEvent === false || eventPoints.length===0) {
+                if (this.hasEvent === false || eventPoints.length === 0) {
                     return samplePoints
                 } else {
 
@@ -88,6 +93,77 @@ class DataStore {
                     }
                 }
             },
+            // return number[][]
+            get normValues() {
+                let { points, referencedVariables, currentVariables } = this
+                if (points.length === 0) return []
+                let normValues = points.map(point => {
+                    let normValue = point.value.map((value, i) => {
+                        let ref = referencedVariables[currentVariables[i]]
+                        if (value === undefined) {
+                            return 0
+                        } else if (typeof (value) == "number") {
+                            let domain = ref.domain
+                            return (value - domain[0]) / (domain[1] - domain[0])
+                        } else if (ref.domain.length === 1) {
+                            return 0
+                        } else {
+                            let domain = ref.domain
+                            return domain.findIndex((d) => d === value) / (domain.length - 1)
+                        }
+                    })
+                    return normValue
+                })
+                return normValues
+            },
+
+            // normalize points to [0,1]
+            get normPoints() {
+                let { normValues } = this
+                if (normValues.length == 0) return []
+                let pca = new PCA(normValues)
+                let norm2dValues = []
+
+                if (this.normValues[0].length > 2) {
+                    // only calculate pca when dimension is larger than 2
+                    norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
+                    // console.info('pca points', newPoints)            
+                } else {
+                    norm2dValues = normValues
+                }
+
+
+                var normPoints = normValues.map((d, i) => {
+                    return {
+                        ...this.points[i],
+                        normValue: d,
+                        pos: norm2dValues[i]
+                    }
+                })
+
+                return normPoints
+            },
+
+            // the importance score of each feature
+            get importanceScores() {
+                if (this.normValues.length == 0 || this.normValues[0].length <= 1) return []
+                let { currentVariables } = this
+                let pca = new PCA(this.normValues)
+                let egiVector = pca.getEigenvectors()
+                let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
+                return importanceScores.map((score, i) => {
+                    return {
+                        name: currentVariables[i],
+                        score
+                    }
+                })
+            },
+
+            changeClusterTHR: action((thr)=>{
+                this.pointClusterTHR = thr
+                this.autoGroup()
+            }),
+
             toggleHasEvent: action(() => {
                 this.hasEvent = !this.hasEvent
             }),
@@ -253,6 +329,149 @@ class DataStore {
                 if (sampleOn || transOn) {
                     this.rootStore.visStore.resetTransitionSpaces();
                 }
+            }),
+            autoGroup: action(() => {
+                let normPoints = this.normPoints
+                if (normPoints.length == 0) return
+                let { pointClusterTHR } = this
+                var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "single", pointClusterTHR);
+                // console.info(tree)
+                let pointGroups = {}
+                clusters.forEach((d, i) => {
+                    let stageKey = getUniqueKeyName(i, [])
+                    pointGroups[stageKey] = {
+                        stageKey,
+                        pointIdx: d.itemIdx
+                    }
+                })
+                this.pointGroups = pointGroups
+            }),
+
+            updatePointGroups: action((pointGroups) => {
+                
+                this.pointGroups = pointGroups
+                this.applyCustomGroups()
+            }),
+
+            deletePointGroup: action((stageKey)=>{
+                delete this.pointGroups[stageKey]
+            }), 
+
+            applyCustomGroups: action(()=>{
+                let { points, pointGroups } = this
+        
+                // check whether has unselected nodes
+                let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
+                if (allSelected.length < points.length) {
+                    let leftNodes = points.map((_, i) => i)
+                        .filter(i => !allSelected.includes(i))
+        
+                    let newStageKey = getUniqueKeyName(Object.keys(pointGroups).length, Object.keys(pointGroups))
+        
+                    pointGroups[newStageKey] = {
+                        stageKey: newStageKey,
+                        pointIdx: leftNodes
+                    }
+                    // message.info('All unselected nodes are grouped as one stage')
+                }
+        
+        
+        
+                let timeStages = []
+                let uniqueTimeIds = [...new Set(points.map(p => p.timeIdx))]
+        
+                uniqueTimeIds.forEach(timeIdx => {
+                    timeStages.push({
+                        timeIdx,
+                        partitions: []
+                    })
+                })
+        
+                // push points to corresponding time stage
+                Object.values(pointGroups).forEach((stage) => {
+        
+                    let stageKey = stage.stageKey
+        
+                    stage.pointIdx.forEach(id => {
+                        let { patient, timeIdx } = points[id]
+                        // get the timestage is stored
+                        let timeStage = timeStages[timeIdx]
+        
+                        // check whether the partition in the timestage
+                        let partitionIdx = timeStage.partitions.map(d => d.partition).indexOf(stageKey)
+                        if (partitionIdx > -1) {
+        
+                            let partition = timeStage.partitions[partitionIdx],
+                                { points, patients } = partition
+                            points.push(id)
+                            patients.push(patient)
+                        } else {
+                            timeStage.partitions.push({
+                                partition: stageKey,
+                                points: [id],
+                                rows: [],
+                                patients: [patient]
+                            })
+                        }
+                    })
+                })
+        
+                // creat event stages
+                let eventStages = [timeStages[0]]
+                for (let i = 0; i < timeStages.length - 1; i++) {
+                    let eventStage = { timeIdx: i + 1, partitions: [] }
+                    let curr = timeStages[i], next = timeStages[i + 1]
+        
+        
+                    next.partitions.forEach(nextPartition => {
+                        let {
+                            partition: nextName,
+                            patients: nextPatients,
+                            points: nextPoints,
+                        } = nextPartition
+        
+                        curr.partitions.forEach((currPartition) => {
+                            let {
+                                partition: currName,
+                                patients: currPatients,
+                                points: currPoints
+                            } = currPartition
+        
+                            let intersection = currPatients.filter(d => nextPatients.includes(d))
+                            if (intersection.length > 0) {
+                                eventStage.partitions.push({
+                                    partition: `${currName}-${nextName}`,
+                                    patients: intersection,
+                                    points: nextPoints.map(id => points[id])
+                                        .filter(p => intersection.includes(p.patient))
+                                        .map(p => p.idx),
+                                    rows: []
+                                }
+                                )
+                            }
+                        })
+                    })
+                    eventStages.push(eventStage)
+        
+                }
+                eventStages.push(
+                    {
+                        ...timeStages[timeStages.length - 1],
+                        timeIdx: timeStages.length
+                    }
+                )
+        
+                let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
+                    eventTimepoints = this.variableStores.between.childStore.timepoints
+        
+                sampleTimepoints.forEach((TP, i) => {
+                    TP.applyCustomStage(timeStages[i].partitions)
+                })
+        
+                eventTimepoints.forEach((TP, i) => {
+                    TP.applyCustomStage(eventStages[i].partitions)
+                })
+        
             })
         });
         // combines/uncombines timepoints if variables of type "between" are displayed/removed
@@ -299,26 +518,28 @@ class DataStore {
         return allValues;
     }
 
+   
 
-    applyCustomStages(timeStages, eventStages) {
-        let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
-            eventTimepoints = this.variableStores.between.childStore.timepoints
 
-        sampleTimepoints.forEach((TP, i) => {
-            TP.applyCustomStage(timeStages[i].partitions)
-        })
+    // applyCustomStages(timeStages, eventStages) {
+    //     let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
+    //         eventTimepoints = this.variableStores.between.childStore.timepoints
 
-        eventTimepoints.forEach((TP, i) => {
-            TP.applyCustomStage(eventStages[i].partitions)
-        })
+    //     sampleTimepoints.forEach((TP, i) => {
+    //         TP.applyCustomStage(timeStages[i].partitions)
+    //     })
 
-    }
+    //     eventTimepoints.forEach((TP, i) => {
+    //         TP.applyCustomStage(eventStages[i].partitions)
+    //     })
 
-    removeVariable(variableID){
+    // }
+
+    removeVariable(variableID) {
         let sampleVariables = this.variableStores.sample.currentVariables
-        if (sampleVariables.includes(variableID)){
+        if (sampleVariables.includes(variableID)) {
             this.variableStores['sample'].removeVariable(variableID);
-        }else{
+        } else {
             this.variableStores['between'].removeVariable(variableID);
         }
         // currentVariables() {

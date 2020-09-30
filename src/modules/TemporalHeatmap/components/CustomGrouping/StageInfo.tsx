@@ -11,7 +11,7 @@ interface Props {
     stageLabels: {[key:string]:string}
     resetGroup: ()=>void,
     deleteGroup: (stageKey:string)=>void,
-    applyCustomGroups:()=>void,
+    // applyCustomGroups:()=>void,
 }
 
 
@@ -58,7 +58,7 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
             </div>
             <div className='button group' style={{float:'right'}}>
                 <Button size="small" onClick={this.props.resetGroup}>Reset</Button>
-                <Button size="small" onClick={this.props.applyCustomGroups}>Apply</Button>
+                {/* <Button size="small" onClick={this.props.applyCustomGroups}>Apply</Button> */}
             </div>
             </div>
     }}

@@ -1,7 +1,7 @@
 {
   "name": "OncoThreads",
   "version": "0.1.0",
-  "author": "Theresa Harbig, Sabrina Nusrat",
+  "author": "Qianwen Wang, Theresa Harbig, Sabrina Nusrat",
   "description": "Visualization of longitudinal cancer genomics data",
   "private": true,
   "dependencies": {

@@ -1,4 +1,4 @@
-export type {VariableStore} from './Store'
+export type {VariableStore, DataStore} from './Store'
 
 
 export interface Point{
