@@ -91,12 +91,12 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             layoutDict.push({})
 
             d.customGrouped.forEach(d => {
-                let stageKey = d.partition || ''
+                let stateKey = d.partition || ''
                 let patients = d.patients
                 let rectWidth = rectWidthScale(patients.length)
-                timepoint.push(<rect fill={getColorByName(stageKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${i}state${stageKey}`} />)
+                timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${i}state${stateKey}`} />)
 
-                layoutDict[i][stageKey] = {
+                layoutDict[i][stateKey] = {
                     width: rectWidth,
                     x: offsetX
                 }
@@ -197,7 +197,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                                 }
                                 currentVariables={dataStore.currentVariables}
                                 referencedVariables={dataStore.referencedVariables}
-                                stageLabels={dataStore.stageLabels}
+                                stateLabels={dataStore.stateLabels}
                                 colorScales={dataStore.colorScales}
                             />
                             {/* <CustomGrouping/> */}

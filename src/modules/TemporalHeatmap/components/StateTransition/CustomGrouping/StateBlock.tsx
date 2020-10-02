@@ -13,7 +13,7 @@ import { IImportantScore } from './index'
 interface Props {
     points: Point[],
     importanceScores: IImportantScore[],
-    stageLabels: { [key: string]: string },
+    stateLabels: { [key: string]: string },
     width: number,
     height: number,
     hoverPointID: number,
@@ -26,7 +26,7 @@ interface Props {
 
 
 @observer
-class StageBlock extends React.Component<Props> {
+class StateBlock extends React.Component<Props> {
     public horizonGap = 15;
     maxCellHeight = 20;
     verticalGap = 10;
@@ -109,12 +109,12 @@ class StageBlock extends React.Component<Props> {
     }
 
     drawAllStates() {
-        let { points, selected, stageLabels, height } = this.props
+        let { points, selected, stateLabels, height } = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
 
-        let stageBlocks: JSX.Element[] = []
+        let stateBlocks: JSX.Element[] = []
         let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
         let hasLeftPoints = allSelected.length < points.length
 
@@ -124,24 +124,24 @@ class StageBlock extends React.Component<Props> {
 
 
             Object.values(selected).forEach(g => {
-                let { stageKey, pointIdx } = g
-                let stageColor = getColorByName(stageKey)
-                let stageName = stageLabels[stageKey] || stageKey
+                let { stateKey, pointIdx } = g
+                let stateColor = getColorByName(stateKey)
+                let stateName = stateLabels[stateKey] || stateKey
 
-                stageBlocks.push(
-                    <g key={stageKey} className={`stage${stageKey}`} transform={`translate(${offsetX}, 0)`}>
+                stateBlocks.push(
+                    <g key={stateKey} className={`state${stateKey}`} transform={`translate(${offsetX}, 0)`}>
 
-                        <rect fill={stageColor} className='labelBG'
-                            width={Math.max(getTextWidth(stageName, 14), 20)} height={fontHeight}
+                        <rect fill={stateColor} className='labelBG'
+                            width={Math.max(getTextWidth(stateName, 14), 20)} height={fontHeight}
                             rx={3} opacity={0.5}
-                            stroke={stageColor}
+                            stroke={stateColor}
                             strokeWidth={this.strokeW}
                         />
-                        <text alignmentBaseline="hanging">{stageName}</text>
+                        <text alignmentBaseline="hanging">{stateName}</text>
 
-                        <rect className='stageBox'
+                        <rect className='stateBox'
                             fill='none'
-                            stroke={stageColor}
+                            stroke={stateColor}
                             strokeWidth={this.strokeW}
                             y={fontHeight - this.strokeW / 2}
                             x={-this.strokeW / 2}
@@ -150,7 +150,7 @@ class StageBlock extends React.Component<Props> {
                         />
 
                         <g transform={`translate(0, ${fontHeight})`} className='oneState' >
-                            {this.drawOneState(pointIdx.map(id => points[id]), stageKey)}
+                            {this.drawOneState(pointIdx.map(id => points[id]), stateKey)}
                         </g>
 
                     </g>)
@@ -163,7 +163,7 @@ class StageBlock extends React.Component<Props> {
                 let leftNodes = points.map((_, i) => i)
                     .filter(i => !allSelected.includes(i))
 
-                stageBlocks.push(
+                stateBlocks.push(
                     <g key={'undefined'} className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                         <text alignmentBaseline="hanging">undefined</text>
                         <g transform={`translate(0, ${fontHeight})`} className='oneState'>
@@ -173,8 +173,8 @@ class StageBlock extends React.Component<Props> {
             }
 
         } else {
-            //if no selected stages, treat all points at one stage
-            stageBlocks.push(
+            //if no selected states, treat all points at one state
+            stateBlocks.push(
                 <g key='undefined' className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                     <text alignmentBaseline="hanging">undefined</text>
                     <g transform={`translate(0, ${fontHeight})`} className='onsState'>
@@ -185,7 +185,7 @@ class StageBlock extends React.Component<Props> {
         }
 
         let allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth}, 0)`}>
-            {stageBlocks}
+            {stateBlocks}
         </g>
 
         let featureNameRows = this.featureNameRows()
@@ -210,7 +210,7 @@ class StageBlock extends React.Component<Props> {
     }
 
     // draw the block of one state
-    drawOneState(points: Point[], stageKey:string) {
+    drawOneState(points: Point[], stateKey:string) {
         if (points.length == 0) {
             return []
         }
@@ -218,7 +218,7 @@ class StageBlock extends React.Component<Props> {
 
         let block = this.drawBlock(points)
 
-        let timeDist = this.drawTimeDist(points, stageKey)
+        let timeDist = this.drawTimeDist(points, stateKey)
 
         return [block, timeDist]
 
@@ -253,7 +253,7 @@ class StageBlock extends React.Component<Props> {
     }
 
     // draw the time dist of one identified state
-    drawTimeDist(points: Point[], stageKey:string) {
+    drawTimeDist(points: Point[], stateKey:string) {
 
         let dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
         points.forEach(point => {
@@ -280,7 +280,7 @@ class StageBlock extends React.Component<Props> {
         )
 
         pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
-        let color = getColorByName(stageKey)
+        let color = getColorByName(stateKey)
         return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
             <path
                 d={pathString as string}
@@ -347,4 +347,4 @@ class StageBlock extends React.Component<Props> {
 
 
 
-export default StageBlock;
+export default StateBlock;

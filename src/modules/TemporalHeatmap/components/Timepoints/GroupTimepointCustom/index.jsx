@@ -13,7 +13,7 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
         const partitions = [];
         let previousXPosition = 0;
 
-        let stageLabels = this.props.dataStore.stageLabels
+        let stateLabels = this.props.dataStore.stateLabels
 
         this.props.group.forEach((d, i) => {
             const transform = `translate(${previousXPosition},0)`;
@@ -36,7 +36,7 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
                         partitionIndex={i}
                         stroke={stroke}
                         primaryVariableId={this.props.primaryVariableId}
-                        stageLabels={stageLabels}
+                        stateLabels={stateLabels}
                         hasBackground={this.props.hasBackground}
                     />
                 </g>,

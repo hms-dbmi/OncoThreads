@@ -3,7 +3,6 @@ import { observer, inject, Provider } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
 import { message, InputNumber, Slider, Card, Tooltip } from 'antd';
-import { PCA } from 'ml-pca';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
 
@@ -14,9 +13,9 @@ import { Point, ReferencedVariables, VariableStore, NormPoint, DataStore } from 
 import "./CustomGrouping.css"
 
 import { getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
-import StageInfo from './StageInfo'
+import StateInfo from './StateInfo'
 import { Switch } from 'antd';
-import StageBlock from './StageBlock';
+import StateBlock from './StateBlock';
 import Scatter from './Scatter'
 
 import { clusterfck } from "../../../UtilityClasses/clusterfck.js";
@@ -26,13 +25,13 @@ import { clusterfck } from "../../../UtilityClasses/clusterfck.js";
  * Sample Timepoints are displayed as numbers, Between Timepoints are displayed as arrows
  */
 
-type TimeStage = {
+type TimeState = {
     timeIdx: number,
     partitions: Partition[]
 }
-type EventStage = TimeStage
+type EventState = TimeState
 type Partition = {
-    partition: string, //stage name
+    partition: string, //state name
     patients: string[],
     points: number[], // point ids
     rows: Row[]
@@ -46,12 +45,12 @@ type Count = {
     patients: string[]
 }
 
-export type TStage = {
+export type TState = {
     domains: {
         [attrName: string]: string[] | number[] | boolean[]
     },
     points: number[],
-    stageKey: string
+    stateKey: string
 }
 
 export interface IImportantScore {
@@ -60,7 +59,7 @@ export interface IImportantScore {
 }
 
 
-export type TSelected = { [stageKey: string]: { stageKey: string, pointIdx: number[] } }
+export type TSelected = { [stateKey: string]: { stateKey: string, pointIdx: number[] } }
 
 
 interface Props {
@@ -94,10 +93,10 @@ class CustomGrouping extends React.Component<Props> {
 
     /**
      * computed based on selected, points, currentVariables
-     * return the attribute domain of each stages
+     * return the attribute domain of each states
      */
     @computed
-    get stages(): TStage[] {
+    get states(): TState[] {
         let selected:TSelected  = this.props.dataStore.pointGroups
         let { currentVariables, points}: {currentVariables: string[], points: Point[]} = this.props.dataStore
 
@@ -121,24 +120,24 @@ class CustomGrouping extends React.Component<Props> {
             } else return []
         }
 
-        let stages = selectedPoints.map((p, stageIdx) => {
-            let stage: TStage = {
-                stageKey: Object.keys(selected)[stageIdx],
+        let states = selectedPoints.map((p, stateIdx) => {
+            let state: TState = {
+                stateKey: Object.keys(selected)[stateIdx],
                 domains: {},
                 points: p.map(p => p.idx)
             }
             currentVariables.forEach((name, valueIdx) => {
-                stage.domains[name] = summarizeDomain(
+                state.domains[name] = summarizeDomain(
                     p.map(p => p.value[valueIdx]) as number[] | string[] | boolean[]
                 )
             })
 
-            return stage
+            return state
         })
 
 
 
-        return stages
+        return states
     }
 
 
@@ -153,7 +152,7 @@ class CustomGrouping extends React.Component<Props> {
     @action
     resetGroup() {
         this.props.dataStore.updatePointGroups({})
-        this.props.dataStore.resetStageLabel()
+        this.props.dataStore.resetStateLabel()
 
 
         d3.selectAll('circle.point')
@@ -163,10 +162,10 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    deleteGroup(stageKey: string) {
-        this.props.dataStore.deletePointGroup(stageKey)
+    deleteGroup(stateKey: string) {
+        this.props.dataStore.deletePointGroup(stateKey)
 
-        d3.selectAll(`circle.group_${stageKey}`)
+        d3.selectAll(`circle.group_${stateKey}`)
             .attr('fill', 'white')
             .attr('r', 5)
             .attr('class', 'point')
@@ -185,18 +184,18 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    updateSelected(stageKeys: string[], groups: number[][]) {
+    updateSelected(stateKeys: string[], groups: number[][]) {
 
         let pointGroups = {...this.props.dataStore.pointGroups}
 
         for (let i = 0; i < groups.length; i++) {
-            let stageKey = stageKeys[i], group = groups[i]
+            let stateKey = stateKeys[i], group = groups[i]
 
             if (group.length === 0) {
-                delete pointGroups[stageKey]
+                delete pointGroups[stateKey]
             } else {
-                pointGroups[stageKey] = {
-                    stageKey,
+                pointGroups[stateKey] = {
+                    stateKey,
                     pointIdx: group
                 }
             }
@@ -207,12 +206,12 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     @action
-    resetSelected(stageKeys: string[], groups: number[][]) {
+    resetSelected(stateKeys: string[], groups: number[][]) {
         let newSelected:TSelected = {}
-        for (let i = 0; i < stageKeys.length; i++) {
-            let stageKey = stageKeys[i], group = groups[i]
-            newSelected[stageKey] = {
-                stageKey,
+        for (let i = 0; i < stateKeys.length; i++) {
+            let stateKey = stateKeys[i], group = groups[i]
+            newSelected[stateKey] = {
+                stateKey,
                 pointIdx: group
             }
         }
@@ -248,6 +247,7 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     render() {
+        console.info("patient states", this.props.dataStore.patientStates)
 
         let { points} = this.props.dataStore
         let { width, height, hasLink } = this
@@ -322,9 +322,9 @@ class CustomGrouping extends React.Component<Props> {
                             showGlyph={this.showGlyph}
                             dataStore={dataStore}
                         />
-                        <g className='stageBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} data-intro="each point is ..">
-                            <StageBlock
-                                stageLabels={this.props.dataStore.stageLabels}
+                        <g className='stateBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} data-intro="each point is ..">
+                            <StateBlock
+                                stateLabels={this.props.dataStore.stateLabels}
                                 importanceScores={this.props.dataStore.importanceScores}
                                 width={width}
                                 height={pcpHeight - 2 * pcpMargin}
@@ -353,9 +353,9 @@ class CustomGrouping extends React.Component<Props> {
                             />
                         </g> */}
                     </svg>
-                    <StageInfo
-                        stages={this.stages} height={infoHeight}
-                        stageLabels={this.props.dataStore.stageLabels}
+                    <StateInfo
+                        states={this.states} height={infoHeight}
+                        stateLabels={this.props.dataStore.stateLabels}
                         resetGroup={this.resetGroup}
                         deleteGroup={this.deleteGroup}
                     />

@@ -25,7 +25,7 @@ interface Props {
     showGlyph: boolean,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
-    updateSelected: (stageKeys: string[], groups: number[][]) => void,
+    updateSelected: (stateKeys: string[], groups: number[][]) => void,
     dataStore: VariableStore,
 }
 
@@ -130,15 +130,15 @@ class Scatter extends React.Component<Props> {
         var circles = normPoints.map((normPoint) => {
             let id = normPoint.idx
             let groupIdx = Object.values(selected).findIndex(p => p.pointIdx.includes(id))
-            let stageColor = groupIdx > -1 ? getColorByName(Object.keys(selected)[groupIdx]) : 'none'
+            let stateColor = groupIdx > -1 ? getColorByName(Object.keys(selected)[groupIdx]) : 'none'
             // let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID==-1?1: (hoverPointID===normPoint.idx?1:0.5))
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
-            let glyph = this.drawGlyph(normPoint, stageColor, opacity)
+            let glyph = this.drawGlyph(normPoint, stateColor, opacity)
 
             let circle = <circle
                 cx={this.cellWidth / 2}
                 cy={this.cellHeight * normPoint.value.length / 2}
-                fill={stageColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}
+                fill={stateColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}
             />
 
             return <g
@@ -163,7 +163,7 @@ class Scatter extends React.Component<Props> {
         return <g className='circles' key="circles">{circles}</g>
     }
 
-    drawGlyph(normPoint: NormPoint, stageColor: string, opacity: number) {
+    drawGlyph(normPoint: NormPoint, stateColor: string, opacity: number) {
         const strokeW = 2
         let { cellWidth, cellHeight } = this
         let pointCol = normPoint.value.map((v, rowIdx) => {
@@ -178,8 +178,8 @@ class Scatter extends React.Component<Props> {
             />
         })
         let outline = <rect fill='none'
-            key={'stageOutline'}
-            stroke={stageColor} strokeWidth={3}
+            key={'stateOutline'}
+            stroke={stateColor} strokeWidth={3}
             x={-strokeW / 2} y={-strokeW / 2}
             width={cellWidth + strokeW} height={normPoint.value.length * cellHeight + strokeW}
         />
@@ -268,13 +268,13 @@ class Scatter extends React.Component<Props> {
 
 
             if (currentSelected.length > 0) {
-                let stageKeys: string[] = [], groups = [] // groups that need  to be updated
-                // if selected nodes are in previous stages
+                let stateKeys: string[] = [], groups = [] // groups that need  to be updated
+                // if selected nodes are in previous states
 
-                Object.keys(selected).forEach((stageKey, i) => {
-                    let g = selected[stageKey]
+                Object.keys(selected).forEach((stateKey, i) => {
+                    let g = selected[stateKey]
                     let remainPoints = g.pointIdx.filter((point:number) => !currentSelected.includes(point))
-                    stageKeys.push(stageKey)
+                    stateKeys.push(stateKey)
                     if (remainPoints.length > 0) {
 
                         groups.push(remainPoints)
@@ -286,12 +286,12 @@ class Scatter extends React.Component<Props> {
 
 
 
-                let newStageKey = getUniqueKeyName(Object.keys(selected).length, Object.keys(selected))
+                let newStateKey = getUniqueKeyName(Object.keys(selected).length, Object.keys(selected))
 
-                stageKeys.push(newStageKey)
+                stateKeys.push(newStateKey)
                 groups.push(currentSelected)
 
-                updateSelected(stageKeys, groups)
+                updateSelected(stateKeys, groups)
             }
             // this.d3Draw()
 

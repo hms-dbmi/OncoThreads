@@ -20,7 +20,7 @@ class DataStore {
             selectedPatients: [], // currently selected patients
             globalPrimary: '', // global primary for sample timepoints of global timeline
             hasEvent: false, // whether event attributes are included in custom grouping
-            stageLabels: {}, // key & label pairs
+            stateLabels: {}, // key & label pairs
             pointGroups: {}, // the group of this.points: pointIdx[][]
             pointClusterTHR: 0.08, // the initial threshold to group points
 
@@ -170,6 +170,21 @@ class DataStore {
                 })
             },
 
+            get patientStates (){
+                let {points, pointGroups} = this
+                let patients = {}
+                let maxTimeIdx = Math.max(...points.map(d=>d.timeIdx))
+                points.forEach(point=>{
+                    let {idx, patient, timeIdx} = point
+                    let stateKey = Object.values(pointGroups).find(pointGroup=>pointGroup.pointIdx.includes(idx)).stateKey
+                    if (!patients[patient]){
+                        patients[patient] = [...new Array(maxTimeIdx+1).keys()].map(d=>'')
+                    }
+                    patients[patient][timeIdx] = stateKey
+                })
+                return patients
+            },
+
             changeClusterTHR: action((thr)=>{
                 this.pointClusterTHR = thr
                 this.autoGroup()
@@ -179,11 +194,11 @@ class DataStore {
             toggleHasEvent: action(() => {
                 this.hasEvent = !this.hasEvent
             }),
-            setStageLabel: action((stageKey, stageLabel) => {
-                this.stageLabels[stageKey] = stageLabel
+            setStateLabel: action((stateKey, stateLabel) => {
+                this.stateLabels[stateKey] = stateLabel
             }),
-            resetStageLabel: action(() => {
-                this.stageLabels = {}
+            resetStateLabel: action(() => {
+                this.stateLabels = {}
             }),
 
             /**
@@ -350,9 +365,9 @@ class DataStore {
                 // console.info(tree)
                 let pointGroups = {}
                 clusters.forEach((d, i) => {
-                    let stageKey = getUniqueKeyName(i, [])
-                    pointGroups[stageKey] = {
-                        stageKey,
+                    let stateKey = getUniqueKeyName(i, [])
+                    pointGroups[stateKey] = {
+                        stateKey,
                         pointIdx: d.itemIdx
                     }
                 })
@@ -365,8 +380,20 @@ class DataStore {
                 this.applyCustomGroups()
             }),
 
-            deletePointGroup: action((stageKey)=>{
-                delete this.pointGroups[stageKey]
+            deletePointGroup: action((stateKey)=>{
+                if (!this.pointGroups['undefined']){
+                    this.pointGroups['undefined'] = {...this.pointGroups[stateKey], stateKey: "undefined"}
+                    
+                }else{
+                    let pointIdx1 = this.pointGroups[stateKey].pointIdx, pointIdx2 = this.pointGroups['undefined'].pointIdx
+                    this.pointGroups['undefined'] = {
+                        pointIdx: pointIdx1.concat(pointIdx2), 
+                        stateKey: "undefined"
+                    }
+                }
+                delete this.pointGroups[stateKey]
+                
+                this.applyCustomGroups()
             }), 
 
             applyCustomGroups: action(()=>{
@@ -378,48 +405,48 @@ class DataStore {
                     let leftNodes = points.map((_, i) => i)
                         .filter(i => !allSelected.includes(i))
         
-                    let newStageKey = getUniqueKeyName(Object.keys(pointGroups).length, Object.keys(pointGroups))
+                    let newStateKey = getUniqueKeyName(Object.keys(pointGroups).length, Object.keys(pointGroups))
         
-                    pointGroups[newStageKey] = {
-                        stageKey: newStageKey,
+                    pointGroups[newStateKey] = {
+                        stateKey: newStateKey,
                         pointIdx: leftNodes
                     }
-                    // message.info('All unselected nodes are grouped as one stage')
+                    // message.info('All unselected nodes are grouped as one state')
                 }
         
         
         
-                let timeStages = []
+                let timeStates = []
                 let uniqueTimeIds = [...new Set(points.map(p => p.timeIdx))]
         
                 uniqueTimeIds.forEach(timeIdx => {
-                    timeStages.push({
+                    timeStates.push({
                         timeIdx,
                         partitions: []
                     })
                 })
         
-                // push points to corresponding time stage
-                Object.values(pointGroups).forEach((stage) => {
+                // push points to corresponding time state
+                Object.values(pointGroups).forEach((state) => {
         
-                    let stageKey = stage.stageKey
+                    let stateKey = state.stateKey
         
-                    stage.pointIdx.forEach(id => {
+                    state.pointIdx.forEach(id => {
                         let { patient, timeIdx } = points[id]
-                        // get the timestage is stored
-                        let timeStage = timeStages[timeIdx]
+                        // get the timestate is stored
+                        let timeState = timeStates[timeIdx]
         
-                        // check whether the partition in the timestage
-                        let partitionIdx = timeStage.partitions.map(d => d.partition).indexOf(stageKey)
+                        // check whether the partition in the timestate
+                        let partitionIdx = timeState.partitions.map(d => d.partition).indexOf(stateKey)
                         if (partitionIdx > -1) {
         
-                            let partition = timeStage.partitions[partitionIdx],
+                            let partition = timeState.partitions[partitionIdx],
                                 { points, patients } = partition
                             points.push(id)
                             patients.push(patient)
                         } else {
-                            timeStage.partitions.push({
-                                partition: stageKey,
+                            timeState.partitions.push({
+                                partition: stateKey,
                                 points: [id],
                                 rows: [],
                                 patients: [patient]
@@ -428,11 +455,11 @@ class DataStore {
                     })
                 })
         
-                // creat event stages
-                let eventStages = [timeStages[0]]
-                for (let i = 0; i < timeStages.length - 1; i++) {
-                    let eventStage = { timeIdx: i + 1, partitions: [] }
-                    let curr = timeStages[i], next = timeStages[i + 1]
+                // creat event states
+                let eventStates = [timeStates[0]]
+                for (let i = 0; i < timeStates.length - 1; i++) {
+                    let eventState = { timeIdx: i + 1, partitions: [] }
+                    let curr = timeStates[i], next = timeStates[i + 1]
         
         
                     next.partitions.forEach(nextPartition => {
@@ -451,7 +478,7 @@ class DataStore {
         
                             let intersection = currPatients.filter(d => nextPatients.includes(d))
                             if (intersection.length > 0) {
-                                eventStage.partitions.push({
+                                eventState.partitions.push({
                                     partition: `${currName}-${nextName}`,
                                     patients: intersection,
                                     points: nextPoints.map(id => points[id])
@@ -463,13 +490,13 @@ class DataStore {
                             }
                         })
                     })
-                    eventStages.push(eventStage)
+                    eventStates.push(eventState)
         
                 }
-                eventStages.push(
+                eventStates.push(
                     {
-                        ...timeStages[timeStages.length - 1],
-                        timeIdx: timeStages.length
+                        ...timeStates[timeStates.length - 1],
+                        timeIdx: timeStates.length
                     }
                 )
         
@@ -477,11 +504,11 @@ class DataStore {
                     eventTimepoints = this.variableStores.between.childStore.timepoints
         
                 sampleTimepoints.forEach((TP, i) => {
-                    TP.applyCustomStage(timeStages[i].partitions)
+                    TP.applyCustomState(timeStates[i].partitions)
                 })
         
                 eventTimepoints.forEach((TP, i) => {
-                    TP.applyCustomStage(eventStages[i].partitions)
+                    TP.applyCustomState(eventStates[i].partitions)
                 })
         
             })
@@ -533,16 +560,16 @@ class DataStore {
    
 
 
-    // applyCustomStages(timeStages, eventStages) {
+    // applyCustomStates(timeStates, eventStates) {
     //     let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
     //         eventTimepoints = this.variableStores.between.childStore.timepoints
 
     //     sampleTimepoints.forEach((TP, i) => {
-    //         TP.applyCustomStage(timeStages[i].partitions)
+    //         TP.applyCustomState(timeStates[i].partitions)
     //     })
 
     //     eventTimepoints.forEach((TP, i) => {
-    //         TP.applyCustomStage(eventStages[i].partitions)
+    //         TP.applyCustomState(eventStates[i].partitions)
     //     })
 
     // }

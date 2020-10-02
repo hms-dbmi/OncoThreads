@@ -96,56 +96,56 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 
     changeLabel(e) {
         this.props.dataStore
-            .setStageLabel(this.props.partition.partition, e.target.value)
+            .setStateLabel(this.props.partition.partition, e.target.value)
     }
 
 
     render() {
-        let stageInputLabel, stageKey = this.props.partition.partition || '',
-            stageBackground, strokeW = 5
+        let stateInputLabel, stateKey = this.props.partition.partition || '',
+            stateBackground, strokeW = 5
 
         let { rows, totalH, totalW } = this.createPartition()
 
-        // add changable stage label if this is a sample timepoint
+        // add changable state label if this is a sample timepoint
         if (this.props.type === 'sample') {
             const fontWeight = 700,
-                // labelColor = colors[stageKey.charCodeAt(0)-65]||'black',
+                // labelColor = colors[stateKey.charCodeAt(0)-65]||'black',
 
-                stageName = this.props.stageLabels[stageKey] === undefined ?
-                    stageKey : this.props.stageLabels[stageKey],
+                stateName = this.props.stateLabels[stateKey] === undefined ?
+                    stateKey : this.props.stateLabels[stateKey],
 
-                labelColor = getColorByName(stageKey),
+                labelColor = getColorByName(stateKey),
                 labelHeight = this.props.visStore.primaryHeight,
-                labelWidth = Math.max(getTextWidth(stageName, 14, fontWeight) + 25, 40)
+                labelWidth = Math.max(getTextWidth(stateName, 14, fontWeight) + 25, 40)
 
-            stageInputLabel = <foreignObject style={{ width: labelWidth, height: labelHeight }}>
-                <Input value={stageName} style={{ color: labelColor, fontWeight: fontWeight }}
+            stateInputLabel = <foreignObject style={{ width: labelWidth, height: labelHeight }}>
+                <Input value={stateName} style={{ color: labelColor, fontWeight: fontWeight }}
                     onChange={this.changeLabel} />
             </foreignObject>
 
-            stageBackground = <g className='stageBackground'>
+            stateBackground = <g className='stateBackground'>
                 <rect
-                    className='stageBackground'
+                    className='stateBackground'
                     opacity={0.6}
                     width={this.props.hasBackground ? totalW : 0}
                     height={totalH}
                     fill="white" />
                 <rect
-                    className='stageBackground'
+                    className='stateBackground'
                     opacity={0.4}
                     width={this.props.hasBackground ? totalW : 0}
                     height={totalH}
-                    fill={getColorByName(stageKey)} />
+                    fill={getColorByName(stateKey)} />
 
                 <rect
-                    className='stageBackgroundOuter'
+                    className='stateBackgroundOuter'
                     opacity={0.8}
                     width={totalW + strokeW}
                     height={totalH + strokeW}
                     x={-strokeW / 2}
                     y={-strokeW / 2}
                     fill="none"
-                    stroke={getColorByName(stageKey)}
+                    stroke={getColorByName(stateKey)}
                     strokeWidth={strokeW} />
                 {/* <circle 
             r= {4}
@@ -157,10 +157,10 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
             </g>
         }
 
-        return <g className={`partitions ${stageKey}`} ref={this.ref}>
+        return <g className={`partitions ${stateKey}`} ref={this.ref}>
             {rows}
-            {stageBackground}
-            {stageInputLabel}
+            {stateBackground}
+            {stateInputLabel}
         </g>;
     }
 }));
@@ -178,7 +178,7 @@ GroupPartition.propTypes = {
     ])).isRequired,
     stroke: PropTypes.string.isRequired,
     tooltipFunctions: PropTypes.objectOf(PropTypes.func),
-    stageLabels: PropTypes.object.isRequired,
+    stateLabels: PropTypes.object.isRequired,
     hasBackground: PropTypes.bool.isRequired
 };
 export default GroupPartition;

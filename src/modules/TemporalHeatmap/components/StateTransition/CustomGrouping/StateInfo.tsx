@@ -2,28 +2,28 @@ import React from 'react';
 import { observer  } from 'mobx-react';
 import {Button} from 'antd';
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
-import {TStage} from './index'
+import {TState} from './index'
 
 
 interface Props {
-    stages: TStage[],
+    states: TState[],
     height: number,
-    stageLabels: {[key:string]:string}
+    stateLabels: {[key:string]:string}
     resetGroup: ()=>void,
-    deleteGroup: (stageKey:string)=>void,
+    deleteGroup: (stateKey:string)=>void,
     // applyCustomGroups:()=>void,
 }
 
 
 
 
-const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
+const StateInfo = observer(class StateInfo extends React.Component<Props, {}> {
    
     render(){
-        let {stages} = this.props
+        let {states} = this.props
 
-        let content = stages.map((stage,i)=>{
-            let {domains, stageKey} = stage
+        let content = states.map((state,i)=>{
+            let {domains, stateKey} = state
             let values = Object.keys(domains).map(key=>{
                 let range = domains[key]
                 return <span style={{marginRight:'2px'}} key={key}>{
@@ -31,20 +31,20 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
                     }</span>
                 })
 
-            let stageName:string;
-            if (this.props.stageLabels[stageKey]===undefined){
-                stageName=stageKey
-            }else stageName = this.props.stageLabels[stageKey]
+            let stateName:string;
+            if (this.props.stateLabels[stateKey]===undefined){
+                stateName=stateKey
+            }else stateName = this.props.stateLabels[stateKey]
             // if(Object.values(g)){
-                values.unshift(<span key='stageKey'>{stageName}</span>)
+                values.unshift(<span key='stateKey'>{stateName}</span>)
             // }
-            return <p key={`stage_${i}`} style={{color: getColorByName(stageKey)}}>
+            return <p key={`state_${i}`} style={{color: getColorByName(stateKey)}}>
                 {values} 
-                <Button size='small' onClick={()=>this.props.deleteGroup(stageKey)} style={{borderRadius:'3px'}}> delete </Button> 
+                <Button size='small' onClick={()=>this.props.deleteGroup(stateKey)} style={{borderRadius:'3px'}}> delete </Button> 
                 </p>
         })
         
-        return <div className="StageInfo"  style={{height:this.props.height, paddingTop:"5px", borderTop:"#ccc solid 1px"}} data-intro="text summary of each state and their temporal distribution">
+        return <div className="StateInfo"  style={{height:this.props.height, paddingTop:"5px", borderTop:"#ccc solid 1px"}} data-intro="text summary of each state and their temporal distribution">
             {/* <Table columns={col} dataSource={data} pagination={false} size="small"/> */}
             <h4 style={{
                     border: "solid #bbb 1px",
@@ -53,7 +53,7 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
                     display: "inline-block",
                     padding: "3px 15px"
             }}>State Summary</h4>
-            <div className="stage" style={{height:this.props.height-35, overflow:"auto"}}>
+            <div className="state" style={{height:this.props.height-35, overflow:"auto"}}>
                 {content}
             </div>
             <div className='button group' style={{float:'right'}}>
@@ -65,4 +65,4 @@ const StageInfo = observer(class StageInfo extends React.Component<Props, {}> {
     )
 
 
-export default StageInfo
+export default StateInfo

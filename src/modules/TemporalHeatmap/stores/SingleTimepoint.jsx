@@ -67,7 +67,7 @@ class SingleTimepoint {
                 return grouped;
             },
             /**
-             * computes custom grouped layout based on current heatmap, order and time stage
+             * computes custom grouped layout based on current heatmap, order and time state
              * @returns {object[]}
              */
             get customGrouped() {
@@ -345,7 +345,7 @@ class SingleTimepoint {
             /**
              * group based customized grouping in the scatter plot
              */
-            applyCustomStage: action((customPartitions)=>{
+            applyCustomState: action((customPartitions)=>{
                 this.customPartitions = customPartitions
                 
             }),
