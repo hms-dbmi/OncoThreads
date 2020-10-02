@@ -381,14 +381,15 @@ class DataStore {
             }),
 
             deletePointGroup: action((stateKey)=>{
-                if (!this.pointGroups['undefined']){
-                    this.pointGroups['undefined'] = {...this.pointGroups[stateKey], stateKey: "undefined"}
+                const NONAME ="undefined"
+                if (!this.pointGroups[NONAME]){
+                    this.pointGroups[NONAME] = {...this.pointGroups[stateKey], stateKey: NONAME}
                     
                 }else{
-                    let pointIdx1 = this.pointGroups[stateKey].pointIdx, pointIdx2 = this.pointGroups['undefined'].pointIdx
-                    this.pointGroups['undefined'] = {
+                    let pointIdx1 = this.pointGroups[stateKey].pointIdx, pointIdx2 = this.pointGroups[NONAME].pointIdx
+                    this.pointGroups[NONAME] = {
                         pointIdx: pointIdx1.concat(pointIdx2), 
-                        stateKey: "undefined"
+                        stateKey: NONAME
                     }
                 }
                 delete this.pointGroups[stateKey]
