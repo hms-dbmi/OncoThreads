@@ -36,10 +36,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             height: window.innerHeight-250,
             hasBackground:true,
             panes: {
-                labels: { width: (window.innerWidth - 40) / 10 * 0.5, active: false },
-                operators: { width: ((window.innerWidth - 40) / 10) * 1.5, active: false },
+                labels: { width: (window.innerWidth - 40) / 10 * 0.7, active: false },
+                operators: { width: ((window.innerWidth - 40) / 10) * 1.3, active: false },
                 view: { width: ((window.innerWidth - 40) / 10) * 6.5, active: false },
-                legend: { width: (window.innerWidth - 40) / 10 * 1.5, active: false },
+                legend: { width: (window.innerWidth - 40) / 10 * 1.3, active: false },
             },
             ref: React.createRef(),
             active: {

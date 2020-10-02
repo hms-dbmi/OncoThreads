@@ -29,7 +29,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         }
     }
 
-    getVisualization() {
+    getTabbedPanel() {
         // create  views
         
         let stateTransition = <StateTransition
@@ -83,7 +83,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {myblockView}
                 </Tab>
-                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} title={<span>Overview V2 <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} title={<span>State Transitions <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {stateTransition}
                 </Tab>
                 <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="write it later"><InfoCircleOutlined translate='' /></Tooltip></span>}>
@@ -101,7 +101,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
     render() {
         if (this.props.rootStore.dataStore.variableStores.sample.currentVariables.length > 0 ||
             this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0) {
-            return (this.getVisualization())
+            return (this.getTabbedPanel())
         }
         else {
             const noDataText = 'No data currently selected. Use "Add" button or "Feature Manager" to select one or more timepoint features';

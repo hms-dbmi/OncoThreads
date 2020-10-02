@@ -379,39 +379,15 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         </Col>
                     </Row>
                     <Row className='mainVIStab'>
-                        <Col className="selectGroup" 
-                            sm={3}
-                            md={3}>
-                            <Provider dataStore={dataStore}>
-                                <CustomGrouping 
-                                    points={
-                                        dataStore.points
-                                    }
-                                    currentVariables={dataStore.currentVariables}
-                                    referencedVariables = {dataStore.referencedVariables}
-                                    stageLabels={dataStore.stageLabels}
-                                    colorScales={dataStore.colorScales}
-                                />
-                                {/* <CustomGrouping/> */}
-                            </Provider>
-                        </Col>
-                        <Col
-                            sm={9}
-                            md={9}
-                            onMouseEnter={this.hideContextMenu}
-                            style={{ paddingTop: 5 }}
-                        >
-                            {/* <Row> */}
-                                <MainView
-                                    tooltipFunctions={this.tooltipFunctions}
-                                    openBinningModal={this.openBinningModal}
-                                    openSaveVarModal={this.openSaveVarModal}
-                                    showContextMenu={this.showContextMenu}
-                                    hideContextMenu={this.hideContextMenu}
-                                    showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
-                                />
-                            {/* </Row> */}
-                        </Col>
+                        
+                        <MainView
+                            tooltipFunctions={this.tooltipFunctions}
+                            openBinningModal={this.openBinningModal}
+                            openSaveVarModal={this.openSaveVarModal}
+                            showContextMenu={this.showContextMenu}
+                            hideContextMenu={this.hideContextMenu}
+                            showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
+                        />
                     </Row>
                 </Grid>
                 {this.getBinner()}

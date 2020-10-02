@@ -71,7 +71,7 @@ interface Props {
 @observer
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
-    @observable height: number = window.innerHeight - 250
+    @observable height: number = window.innerHeight - 260
     @observable hasLink: boolean = false
     @observable hoverPointID: number = -1
     @observable showGlyph: boolean = false
@@ -233,7 +233,7 @@ class CustomGrouping extends React.Component<Props> {
         if (this.ref.current) {
             this.width = this.ref.current.getBoundingClientRect().width
         }
-        this.height = window.innerHeight - 250
+        this.height = window.innerHeight - 260
     }
 
     @action
@@ -298,7 +298,8 @@ class CustomGrouping extends React.Component<Props> {
             // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
             <Card 
                 title={<span style={{fontSize:"17px"}}>State Identification <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
-                extra={controllerView} style={{ width: "100%", marginTop: "5px" }}
+                extra={controllerView} 
+                style={{width:"98%", padding:"10px"}}
                 data-intro="<b>modify</b> state identification here"
             >
       
