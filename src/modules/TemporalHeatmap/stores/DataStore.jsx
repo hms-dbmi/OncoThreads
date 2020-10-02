@@ -39,6 +39,17 @@ class DataStore {
                 return maxPartitions;
 
             },
+            get maxTPPartitions() {
+                let maxPartitions = 0;
+                const groupedTP = this.timepoints.filter(d => d.isGrouped).filter(d=>d.type=="sample");
+                if (this.rootStore.uiStore.globalTime === 'block') {
+                    maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);
+                } else {
+                    maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);
+                }
+                return maxPartitions;
+
+            },
             /**
              * are variables of type "between" displayed
              * @return {boolean}
@@ -162,6 +173,7 @@ class DataStore {
             changeClusterTHR: action((thr)=>{
                 this.pointClusterTHR = thr
                 this.autoGroup()
+                this.applyCustomGroups()
             }),
 
             toggleHasEvent: action(() => {

@@ -19,8 +19,6 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
     rectHeight = 20;
     padding = 20;
     partitionGap = 15;
-    overviewWidthRatio = 0.35;
-    detailedWidthRatio = 0.64;
     linkMaxWidth = 20;
     constructor(props) {
         super(props);
@@ -32,8 +30,8 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
         extendObservable(this, {
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
-            width: window.innerWidth,
             height: window.innerHeight - 260,
+            width: window.innerWidth - 10,
             hasBackground: true,
             ref: React.createRef(),
 
@@ -57,8 +55,12 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
     }
 
     updateDimensions() {
-        this.width = this.ref.current.getBoundingClientRect().width
         this.height = window.innerHeight - 260
+        this.width = window.innerWidth - 10
+    }
+    
+    get overviewWidth(){
+        return this.width/4*0.98
     }
 
     /**
@@ -71,7 +73,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
         let { dataStore } = this.props.rootStore
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
-            .range([0, this.width * this.overviewWidthRatio - (dataStore.maxPartitions - 1) * this.partitionGap - 2 * paddingW - annotationWidth]);
+            .range([0, this.overviewWidth - (dataStore.maxTPPartitions - 1) * this.partitionGap - 2 * paddingW - annotationWidth]);
 
         let layoutDict = []
         let samplePoints = this.props.rootStore.dataStore.timepoints
@@ -166,7 +168,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             annotations.push(
                 <g key={d.globalIndex} transform={transformTP}>
                     <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray" />
-                    <text x={iconR} y={iconR * 1.2} textAnchor="middle">{i}</text>
+                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{i}</text>
                 </g>,
             )
         });

@@ -33,10 +33,6 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         // create  views
         
         let stateTransition = <StateTransition
-            showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-            tooltipFunctions={this.props.tooltipFunctions}
-            showContextMenu={this.props.showContextMenu}
-            openBinningModal={this.props.openBinningModal}
             openSaveVarModal={this.props.openSaveVarModal}
         />
         let myblockView = (
