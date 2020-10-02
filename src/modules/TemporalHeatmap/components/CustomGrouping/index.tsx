@@ -299,13 +299,13 @@ class CustomGrouping extends React.Component<Props> {
             <Card 
                 title={<span style={{fontSize:"17px"}}>State Identification <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
                 extra={controllerView} 
-                style={{width:"98%", padding:"10px"}}
+                style={{width:"98%"}}
                 data-intro="<b>modify</b> state identification here"
             >
       
                 <div
                     className="customGrouping"
-                    style={{ height: `${height}px`, width: "100%"}}
+                    style={{ height: `${height}px`, width: "98%", margin:"1%"}}
                     ref={this.ref}
                 >
                    
