@@ -9,7 +9,7 @@ import {
 import FontAwesome from 'react-fontawesome';
 import { extendObservable } from 'mobx';
 import MainView from './MainView';
-import CustomGrouping from './CustomGrouping'
+import CustomGrouping from './StateTransition/CustomGrouping'
 import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
 import Tooltip from './Tooltip';
 import QuickAddVariable from './VariableSelector/QuickAddVariable';

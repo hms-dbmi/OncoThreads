@@ -19,7 +19,7 @@ import { Switch } from 'antd';
 import StageBlock from './StageBlock';
 import Scatter from './Scatter'
 
-import { clusterfck } from "../../UtilityClasses/clusterfck.js";
+import { clusterfck } from "../../../UtilityClasses/clusterfck.js";
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view

@@ -9,7 +9,7 @@ import { InputNumber, Card, Tooltip, Row, Col } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import './index.css'
 
-import CustomGrouping from '../CustomGrouping'
+import CustomGrouping from './CustomGrouping'
 
 /**
  * Component for the Block view

@@ -1,4 +1,4 @@
-import { TSelected } from "modules/TemporalHeatmap/components/CustomGrouping";
+import { TSelected } from "modules/TemporalHeatmap/components/StateTransition/CustomGrouping";
 import { Point } from ".";
 
 export interface VariableStore{
