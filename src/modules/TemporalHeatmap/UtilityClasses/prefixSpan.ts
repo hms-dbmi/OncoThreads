@@ -46,12 +46,12 @@ class PrefixSpan{
     }
     frequentPatterns(db: Array<(string|number)[]>, minSupport?:number, minLen?:number){
         this.db = db
-        this.minSupport = minSupport|| Math.floor(db.length * 0.2) // if not given, defined based on db dimension
-        this.minLen = minLen || Math.floor(db[0].length * 0.2)
+        this.minSupport = minSupport|| Math.ceil(db.length * 0.2) // if not given, defined based on db dimension
+        this.minLen = minLen || Math.ceil(db[0].length * 0.2)
         let startMDB = [...Array(this.db.length).keys()].map(d=>[d, -1])
 
         this.recurrentFind([], startMDB)
-        
+
         return this.results
     }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, inject, Provider } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
 import { InputNumber, Slider, Card, Tooltip } from 'antd';

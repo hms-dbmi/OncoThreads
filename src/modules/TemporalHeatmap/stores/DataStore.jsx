@@ -1,8 +1,7 @@
 import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
-import { clusterfck } from "modules/TemporalHeatmap/UtilityClasses/clusterfck.js";
-import { getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getUniqueKeyName, prefixSpan, clusterfck  } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 /*
  stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -183,6 +182,15 @@ class DataStore {
                     patients[patient][timeIdx] = stateKey
                 })
                 return patients
+            },
+
+            get frequentPatterns (){
+                let {patientStates} = this
+                let sequences = Object.values(patientStates)
+                let patients = Object.keys(patientStates)
+                let results = prefixSpan.frequentPatterns(sequences)
+                
+                return results
             },
 
             changeClusterTHR: action((thr)=>{
