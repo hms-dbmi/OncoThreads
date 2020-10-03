@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import { TSelected } from '.'
 import * as d3 from "d3"
 
-import { Point } from 'modules/Type'
+import { IPoint } from 'modules/Type'
 import { getColorByName, getTextWidth, cropText } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { computed, get } from 'mobx';
 
@@ -11,7 +11,7 @@ import { IImportantScore } from './index'
 
 
 interface Props {
-    points: Point[],
+    points: IPoint[],
     importanceScores: IImportantScore[],
     stateLabels: { [key: string]: string },
     width: number,
@@ -210,7 +210,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     // draw the block of one state
-    drawOneState(points: Point[], stateKey:string) {
+    drawOneState(points: IPoint[], stateKey:string) {
         if (points.length == 0) {
             return []
         }
@@ -224,7 +224,7 @@ class StateBlock extends React.Component<Props> {
 
     }
 
-    drawBlock(points: Point[]) {
+    drawBlock(points: IPoint[]) {
         points = this.reorderPoints(points)
         let { setHoverID, resetHoverID } = this.props
         let block = points.map((point, i) => {
@@ -253,7 +253,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     // draw the time dist of one identified state
-    drawTimeDist(points: Point[], stateKey:string) {
+    drawTimeDist(points: IPoint[], stateKey:string) {
 
         let dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
         points.forEach(point => {
@@ -325,7 +325,7 @@ class StateBlock extends React.Component<Props> {
         </g>
     }
 
-    reorderPoints(points: Point[]) {
+    reorderPoints(points: IPoint[]) {
         return [...points].sort((a, b) => {
             let dif = 0
             for (let i = 0; i < a.value.length; i++) {

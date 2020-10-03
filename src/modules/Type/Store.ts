@@ -1,13 +1,14 @@
 import { TSelected } from "modules/TemporalHeatmap/components/StateTransition/CustomGrouping";
-import { Point } from ".";
+import { IPoint, INormPoint } from ".";
 
 export interface VariableStore{
     [key:string]:any
 }
 
-export interface DataStore{
+export interface IDataStore{
     [key:string]:any,
     currentVariables: string[],
     pointGroups: TSelected,
-    points: Point[]
+    points: IPoint[],
+    normPoints: INormPoint[]
 }

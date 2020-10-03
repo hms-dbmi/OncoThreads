@@ -1,7 +1,7 @@
-export type {VariableStore, DataStore} from './Store'
+export type {VariableStore, IDataStore} from './Store'
 
 
-export interface Point{
+export interface IPoint{
     idx:number,
     patient: string,
     timeIdx: number,
@@ -9,7 +9,7 @@ export interface Point{
     [other:string]:any
 }
 
-export interface NormPoint extends Point{
+export interface INormPoint extends IPoint{
     pos: number[]
 }
 

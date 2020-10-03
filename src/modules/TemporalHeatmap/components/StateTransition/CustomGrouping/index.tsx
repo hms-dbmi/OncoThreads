@@ -2,23 +2,19 @@ import React from 'react';
 import { observer, inject, Provider } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
-import { message, InputNumber, Slider, Card, Tooltip } from 'antd';
+import { InputNumber, Slider, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
 
 
-import { Point, ReferencedVariables, VariableStore, NormPoint, DataStore } from 'modules/Type'
+import { IPoint, IDataStore } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
-
-import { getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
 import StateInfo from './StateInfo'
 import { Switch } from 'antd';
 import StateBlock from './StateBlock';
 import Scatter from './Scatter'
-
-import { clusterfck } from "../../../UtilityClasses/clusterfck.js";
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -63,7 +59,7 @@ export type TSelected = { [stateKey: string]: { stateKey: string, pointIdx: numb
 
 
 interface Props {
-    dataStore: DataStore,
+    dataStore: IDataStore,
 }
 
 @inject('dataStore')
@@ -98,9 +94,9 @@ class CustomGrouping extends React.Component<Props> {
     @computed
     get states(): TState[] {
         let selected:TSelected  = this.props.dataStore.pointGroups
-        let { currentVariables, points}: {currentVariables: string[], points: Point[]} = this.props.dataStore
+        let { currentVariables, points}: {currentVariables: string[], points: IPoint[]} = this.props.dataStore
 
-        let selectedPoints: Point[][] = Object.values(selected)
+        let selectedPoints: IPoint[][] = Object.values(selected)
             .map(s => {
                 return points
                     .filter((_, i) => s.pointIdx.includes(i))
@@ -320,7 +316,6 @@ class CustomGrouping extends React.Component<Props> {
                             resetHoverID={this.resetHoverID}
                             updateSelected={this.updateSelected}
                             showGlyph={this.showGlyph}
-                            dataStore={dataStore}
                         />
                         <g className='stateBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} data-intro="each point is ..">
                             <StateBlock
