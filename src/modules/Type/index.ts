@@ -1,17 +1,7 @@
-export type {VariableStore, IDataStore} from './Store'
+export type {VariableStore, IDataStore, IPoint, INormPoint, TPointGroups} from './Store'
 
 
-export interface IPoint{
-    idx:number,
-    patient: string,
-    timeIdx: number,
-    value: (number|string|boolean)[],
-    [other:string]:any
-}
 
-export interface INormPoint extends IPoint{
-    pos: number[]
-}
 
 export interface ReferencedVariables {
     [variableName:string]:{

@@ -4,10 +4,9 @@ import { observer, inject } from 'mobx-react';
 import { computed, action } from 'mobx';
 
 import * as d3 from 'd3';
-import { TSelected } from '.';
 import lasso from './lasso.js'
 
-import { getColorByName, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getUniqueKeyName, prefixSpan } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 type TPatientDict = {
     [patient: string]: {
@@ -317,6 +316,15 @@ class Scatter extends React.Component<Props> {
 
 
     render() {
+        let db = [
+            [0, 1, 2, 3, 4],
+            [1, 1, 1, 3, 4],
+            [2, 1, 2, 2, 0],
+            [1, 1, 1, 2, 2],
+        ]
+
+        let a = prefixSpan.frequentPatterns(db,2,2)
+
         let { width, height } = this.props
         return <g className='scatter' data-intro="the scatter plot">
             <defs>

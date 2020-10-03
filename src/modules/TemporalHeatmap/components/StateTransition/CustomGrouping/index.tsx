@@ -7,7 +7,7 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 
 
 
-import { IPoint, IDataStore } from 'modules/Type'
+import { IPoint, IDataStore, TPointGroups } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
@@ -55,7 +55,6 @@ export interface IImportantScore {
 }
 
 
-export type TSelected = { [stateKey: string]: { stateKey: string, pointIdx: number[] } }
 
 
 interface Props {
@@ -88,15 +87,15 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     /**
-     * computed based on selected, points, currentVariables
+     * computed based on pointGroups, points, currentVariables
      * return the attribute domain of each states
      */
     @computed
     get states(): TState[] {
-        let selected:TSelected  = this.props.dataStore.pointGroups
+        let {pointGroups}  = this.props.dataStore
         let { currentVariables, points}: {currentVariables: string[], points: IPoint[]} = this.props.dataStore
 
-        let selectedPoints: IPoint[][] = Object.values(selected)
+        let selectedPoints: IPoint[][] = Object.values(pointGroups)
             .map(s => {
                 return points
                     .filter((_, i) => s.pointIdx.includes(i))
@@ -118,7 +117,7 @@ class CustomGrouping extends React.Component<Props> {
 
         let states = selectedPoints.map((p, stateIdx) => {
             let state: TState = {
-                stateKey: Object.keys(selected)[stateIdx],
+                stateKey: Object.keys(pointGroups)[stateIdx],
                 domains: {},
                 points: p.map(p => p.idx)
             }
@@ -138,9 +137,9 @@ class CustomGrouping extends React.Component<Props> {
 
 
     /**
-     * summarize the selected group of points
+     * summarize the pointGroups group of points
      * @param {patient:string, value:number[], timeIdx: number}[] points 
-     * @param string[] selected: ids of points
+     * @param string[] pointGroups: ids of points
      * @param string[] currentVariables
      * @return {variableName: domain} group
      */
@@ -203,7 +202,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     resetSelected(stateKeys: string[], groups: number[][]) {
-        let newSelected:TSelected = {}
+        let newSelected:TPointGroups = {}
         for (let i = 0; i < stateKeys.length; i++) {
             let stateKey = stateKeys[i], group = groups[i]
             newSelected[stateKey] = {
@@ -243,7 +242,6 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     render() {
-        console.info("patient states", this.props.dataStore.patientStates)
 
         let { points} = this.props.dataStore
         let { width, height, hasLink } = this
@@ -293,7 +291,7 @@ class CustomGrouping extends React.Component<Props> {
         return (
             // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
             <Card 
-                title={<span style={{fontSize:"17px"}}>State Identification <Tooltip title="identify state based on selected timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
+                title={<span style={{fontSize:"17px"}}>State Identification <Tooltip title="identify state based on pointGroups timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
                 extra={controllerView} 
                 style={{width:"98%"}}
                 data-intro="<b>modify</b> state identification here"
@@ -324,7 +322,7 @@ class CustomGrouping extends React.Component<Props> {
                                 width={width}
                                 height={pcpHeight - 2 * pcpMargin}
                                 points={points}
-                                selected={this.props.dataStore.pointGroups}
+                                pointGroups={this.props.dataStore.pointGroups}
                                 colorScales={this.props.dataStore.colorScales}
                                 hoverPointID={this.hoverPointID}
                                 setHoverID={this.setHoverID}
@@ -344,7 +342,7 @@ class CustomGrouping extends React.Component<Props> {
                                 referencedVariables={this.props.referencedVariables}
                                 width={width - 2 * pcpMargin}
                                 height={pcpHeight - 2 * pcpMargin}
-                                selected={this.selected}
+                                pointGroups={this.pointGroups}
                             />
                         </g> */}
                     </svg>

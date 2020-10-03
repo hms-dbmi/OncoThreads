@@ -397,6 +397,11 @@ class DataStore {
                 this.applyCustomGroups()
             }), 
 
+            groupPatients: action((groupNum)=>{
+                //hierarchically cluster patients based on their sequences in a divisive manner 
+
+            }),
+
             applyCustomGroups: action(()=>{
                 let { points, pointGroups } = this
         

@@ -1,9 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { TSelected } from '.'
 import * as d3 from "d3"
 
-import { IPoint } from 'modules/Type'
+import { IPoint, TPointGroups  } from 'modules/Type'
 import { getColorByName, getTextWidth, cropText } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { computed, get } from 'mobx';
 
@@ -17,7 +16,7 @@ interface Props {
     width: number,
     height: number,
     hoverPointID: number,
-    selected: TSelected,
+    pointGroups: TPointGroups,
     colorScales: Array<(value: string | number | boolean) => string>,
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
@@ -58,12 +57,12 @@ class StateBlock extends React.Component<Props> {
     }
     @computed
     get wholeHorizonGap(): number {
-        let { selected, points } = this.props
-        let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
+        let { pointGroups, points } = this.props
+        let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
 
         let hasLeftPoints = allSelected.length < points.length
-        // let wholeHorizonGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(selected).length : Object.keys(selected).length - 1) * this.horizonGap + 2*this.strokeW
+        // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
+        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2*this.strokeW
         return wholeHorizonGap
     }
     @computed
@@ -109,21 +108,21 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawAllStates() {
-        let { points, selected, stateLabels, height } = this.props
+        let { points, pointGroups, stateLabels, height } = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
 
         let stateBlocks: JSX.Element[] = []
-        let allSelected = Object.values(selected).map(d => d.pointIdx).flat()
+        let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
         let hasLeftPoints = allSelected.length < points.length
 
         let fontHeight = this.fontHeight
 
-        if (Object.keys(selected).length > 0) {
+        if (Object.keys(pointGroups).length > 0) {
 
 
-            Object.values(selected).forEach(g => {
+            Object.values(pointGroups).forEach(g => {
                 let { stateKey, pointIdx } = g
                 let stateColor = getColorByName(stateKey)
                 let stateName = stateLabels[stateKey] || stateKey
@@ -173,7 +172,7 @@ class StateBlock extends React.Component<Props> {
             }
 
         } else {
-            //if no selected states, treat all points at one state
+            //if no pointGroups states, treat all points at one state
             stateBlocks.push(
                 <g key='undefined' className={`undefined`} transform={`translate(${offsetX}, 0)`}>
                     <text alignmentBaseline="hanging">undefined</text>

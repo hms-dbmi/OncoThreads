@@ -1,7 +1,8 @@
 import ColorScales from './ColorScales'
+import prefixSpan from './prefixSpan'
 
 export {getColorByName} from './ColorScales'
-export {ColorScales}
+export {ColorScales, prefixSpan}
 
 export {
     getScientificNotation,
