@@ -1,4 +1,4 @@
-
+import {TPattern} from 'modules/TemporalHeatmap/UtilityClasses/prefixSpan'
 export type TPointGroups = { [stateKey: string]: { stateKey: string, pointIdx: number[] } }
 
 
@@ -51,5 +51,18 @@ export interface IDataStore{
     points: IPoint[],
     normPoints: INormPoint[],
     timepoints: TimePoint[],
+    frequentPatterns: Array<[number, TPattern]>,
+    colorScales: Array<TColorScale>
     
 }
+
+export interface IRootStore{
+    dataStore: IDataStore,
+    [key:string]:any
+}
+
+export type TColorScale =  any
+
+export type TVariable = any
+
+export type TRow = any

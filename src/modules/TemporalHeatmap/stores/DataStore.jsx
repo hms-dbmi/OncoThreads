@@ -172,24 +172,39 @@ class DataStore {
             get patientStates (){
                 let {points, pointGroups} = this
                 let patients = {}
-                let maxTimeIdx = Math.max(...points.map(d=>d.timeIdx))
+                
+                points.sort((a,b)=>a.timeIdx-b.timeIdx)
                 points.forEach(point=>{
                     let {idx, patient, timeIdx} = point
                     let stateKey = Object.values(pointGroups).find(pointGroup=>pointGroup.pointIdx.includes(idx)).stateKey
+                    // if (!patients[patient]){
+                    //     patients[patient] = [...new Array(maxTimeIdx+1).keys()].map(d=>'')
+                    // }
+                    // patients[patient][timeIdx] = stateKey
                     if (!patients[patient]){
-                        patients[patient] = [...new Array(maxTimeIdx+1).keys()].map(d=>'')
+                        patients[patient] = []
                     }
-                    patients[patient][timeIdx] = stateKey
+                    if(patients[patient].length!=timeIdx) console.info('something wrong')
+                    patients[patient].push(stateKey)
+
                 })
+                
                 return patients
+            },
+            get maxTime(){
+                let {points} = this
+                let maxTimeIdx = Math.max(...points.map(d=>d.timeIdx))
+                return maxTimeIdx + 1
             },
 
             get frequentPatterns (){
                 let {patientStates} = this
+                // const minSupport =2, minLen = 2
+
                 let sequences = Object.values(patientStates)
                 let patients = Object.keys(patientStates)
                 let results = prefixSpan.frequentPatterns(sequences)
-                
+
                 return results
             },
 

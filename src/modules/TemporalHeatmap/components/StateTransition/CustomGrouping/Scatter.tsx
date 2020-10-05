@@ -1,4 +1,4 @@
-import { INormPoint, IDataStore , IPoint } from 'modules/Type'
+import { INormPoint, IRootStore , IPoint } from 'modules/Type'
 import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { computed, action } from 'mobx';
@@ -6,7 +6,7 @@ import { computed, action } from 'mobx';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
 
-import { getColorByName, getUniqueKeyName, prefixSpan } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 type TPatientDict = {
     [patient: string]: {
@@ -16,7 +16,7 @@ type TPatientDict = {
 
 
 interface Props {
-    dataStore?: IDataStore,
+    rootStore?: IRootStore,
     width: number,
     height: number,
     hoverPointID: number,
@@ -30,7 +30,7 @@ interface Props {
 // @inject((allStore:any)=>({
 //     dataStore: allStore.rootStore.dataStore as IDataStore
 // }))
-@inject('dataStore')
+@inject('rootStore')
 @observer
 class Scatter extends React.Component<Props> {
     public cellWidth = 10;
@@ -40,7 +40,7 @@ class Scatter extends React.Component<Props> {
     }
     @computed
     get patientDict() {
-        let {points} = this.props.dataStore!
+        let {points} = this.props.rootStore!.dataStore
 
         let patientDict: TPatientDict = {}
         // get points,each points is one patient at one timepoint
@@ -61,13 +61,13 @@ class Scatter extends React.Component<Props> {
 
     @computed
     get maxTimeIdx(): number {
-        let {normPoints} = this.props.dataStore!
+        let {normPoints} = this.props.rootStore!.dataStore
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         return maxTimeIdx
     }
     @computed
     get cellHeight(): number {
-        let {normPoints}= this.props.dataStore!
+        let {normPoints}= this.props.rootStore!.dataStore
         const cellHeight = Math.min(7, 40 / normPoints[0].value.length)
         return cellHeight
     }
@@ -98,7 +98,7 @@ class Scatter extends React.Component<Props> {
 
     drawScatterPlot(margin: number = 20) {
         let { width, height} = this.props
-        let {normPoints} = this.props.dataStore!
+        let {normPoints} = this.props.rootStore!.dataStore
         this.addLasso(width, height)
 
 
@@ -121,8 +121,7 @@ class Scatter extends React.Component<Props> {
 
     drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
         let { showGlyph } = this.props
-        let {normPoints} = this.props.dataStore!
-        let {pointGroups: selected} = this.props.dataStore!
+        let {normPoints, pointGroups} = this.props.rootStore!.dataStore
         let { hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
         const r = 5
 
@@ -131,8 +130,8 @@ class Scatter extends React.Component<Props> {
 
         var circles = normPoints.map((normPoint) => {
             let id = normPoint.idx
-            let groupIdx = Object.values(selected).findIndex(p => p.pointIdx.includes(id))
-            let stateColor = groupIdx > -1 ? getColorByName(Object.keys(selected)[groupIdx]) : 'none'
+            let groupIdx = Object.values(pointGroups).findIndex(p => p.pointIdx.includes(id))
+            let stateColor = groupIdx > -1 ? getColorByName(Object.keys(pointGroups)[groupIdx]) : 'none'
             // let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : (hoverPointID==-1?1: (hoverPointID===normPoint.idx?1:0.5))
             let opacity = hasLink ? 0.1 + normPoint.timeIdx * 0.6 / maxTimeIdx : 0.5
             let glyph = this.drawGlyph(normPoint, stateColor, opacity)
@@ -169,7 +168,7 @@ class Scatter extends React.Component<Props> {
         const strokeW = 2
         let { cellWidth, cellHeight } = this
         let pointCol = normPoint.value.map((v, rowIdx) => {
-            let fill = this.props.dataStore!.colorScales[rowIdx](v) || 'gray'
+            let fill = this.props.rootStore!.dataStore.colorScales[rowIdx](v) || 'gray'
             return <rect key={rowIdx}
                 width={cellWidth} height={cellHeight}
                 y={rowIdx * cellHeight}
@@ -192,7 +191,7 @@ class Scatter extends React.Component<Props> {
     drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
 
         let { hasLink} = this.props
-        let {normPoints} = this.props.dataStore!
+        let {normPoints} = this.props.rootStore!.dataStore
         if (!hasLink) return <g className="nolines" key='links' />
 
         let curveGenerator = d3.line()
@@ -230,7 +229,7 @@ class Scatter extends React.Component<Props> {
 
     addLasso(width: number, height: number) {
         let { updateSelected } = this.props
-        let {selected} = this.props.dataStore!
+        let {selected} = this.props.rootStore!.dataStore
         // lasso draw
         d3.selectAll('g.lasso').remove()
         var svg = d3.select('svg.customGrouping')
@@ -316,15 +315,7 @@ class Scatter extends React.Component<Props> {
 
 
     render() {
-        let db = [
-            [0, 1, 2, 3, 4],
-            [1, 1, 1, 3, 4],
-            [2, 1, 2, 2, 0],
-            [1, 1, 1, 2, 2],
-        ]
-
-        let a = prefixSpan.frequentPatterns(db,2,2)
-
+        
         let { width, height } = this.props
         return <g className='scatter' data-intro="the scatter plot">
             <defs>

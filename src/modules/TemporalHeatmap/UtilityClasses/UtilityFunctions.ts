@@ -53,10 +53,11 @@ const isValidValue = (value:any):boolean=> {
  * @param {number} fontSize
  * @returns {number}
  */
-const getTextWidth=(text:string, fontSize:number, fontWeight:number=400)=>{
+const getTextWidth=(text:string|number, fontSize:number, fontWeight:number=400)=>{
+    if (typeof(text)=='number') text = text.toString()
     const context = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
     context.font = `${fontWeight} ${fontSize}px Arial`;
-    return context.measureText(text).width;
+    return Math.max(context.measureText(text).width, 0);
 }
 
 /**

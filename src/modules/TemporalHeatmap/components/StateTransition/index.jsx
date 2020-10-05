@@ -16,9 +16,6 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
     constructor(props) {
         super(props);
 
-        // this.handleTimeClick = this.handleTimeClick.bind(this);
-        // this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
-        // this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.updateDimensions = this.updateDimensions.bind(this);
         extendObservable(this, {
             highlightedVariable: '', // variableId of currently highlighted variable
@@ -70,18 +67,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             <div className="blockView" ref={this.ref}>
                 <Row>
                     <Col className="customGrouping" md={6} sm={6}>
-                        <Provider dataStore={dataStore}>
-                            <CustomGrouping
-                                points={
-                                    dataStore.points
-                                }
-                                currentVariables={dataStore.currentVariables}
-                                referencedVariables={dataStore.referencedVariables}
-                                stateLabels={dataStore.stateLabels}
-                                colorScales={dataStore.colorScales}
-                            />
-                            {/* <CustomGrouping/> */}
-                        </Provider>
+                            <CustomGrouping/>
                     </Col>
 
                     <Col md={6} sm={6}>

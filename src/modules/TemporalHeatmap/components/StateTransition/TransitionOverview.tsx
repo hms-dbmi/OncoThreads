@@ -1,18 +1,20 @@
 import * as React from "react"
 import * as d3 from "d3"
-import { observer, inject} from 'mobx-react';
-import { IDataStore } from "modules/Type";
-import { getColorByName} from 'modules/TemporalHeatmap/UtilityClasses/'
+import { observer, inject } from 'mobx-react';
+import { IRootStore } from "modules/Type";
+import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
 
-interface Props{
-    rootStore?:any,
-    overviewWidth:number,
+interface Props {
+    rootStore?: IRootStore,
+    overviewWidth: number,
 }
 
-type TypeLayoutDict = Array<{[key:string]:{
-    width:number,
-    x: number,
-}}>
+type TypeLayoutDict = Array<{
+    [key: string]: {
+        width: number,
+        x: number,
+    }
+}>
 
 @inject('rootStore')
 @observer
@@ -24,8 +26,8 @@ class TransitionOverview extends React.Component<Props> {
     linkMaxWidth = 20;
     paddingW = 5; paddingH = 10; annotationWidth = 40;
     stateOverview() {
-        let timepoints: Array<JSX.Element>= [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
-        let dataStore  = this.props.rootStore!.dataStore as IDataStore
+        let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
+        let { dataStore } = this.props.rootStore!
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
             .range([0, this.props.overviewWidth - (dataStore.maxTPPartitions - 1) * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
@@ -131,8 +133,34 @@ class TransitionOverview extends React.Component<Props> {
         return [annotations, transitions, timepoints];
     }
 
-    render(){
-        return this.stateOverview()
+    getFrequentPatterns() {
+        let { dataStore } = this.props.rootStore!
+        let { frequentPatterns } = dataStore
+        let patterns = frequentPatterns.map((pattern, patternIdx) => {
+            let [support, subseq] = pattern
+            return <g key={`pattern_${patternIdx}`}>
+                <text x = {patternIdx * 17}>{support}</text>
+                {subseq.map((stateKey, i) => {
+                    return <rect key={i} 
+                        fill={getColorByName(stateKey)} 
+                        width={10} height={10} 
+                        x={patternIdx * 17}
+                        y={7+i*12}
+                    />
+                })}
+            </g>
+        })
+
+        return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.timeStepHeight*dataStore.maxTime})`}>
+            {patterns}
+        </g>
+    }
+
+    render() {
+        return <g className="transitionOverview" key="transitionOverview">
+            {this.stateOverview()}
+            {this.getFrequentPatterns()}
+        </g>
     }
 }
 

@@ -7,7 +7,7 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 
 
 
-import { IPoint, IDataStore, TPointGroups } from 'modules/Type'
+import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
@@ -58,10 +58,10 @@ export interface IImportantScore {
 
 
 interface Props {
-    dataStore: IDataStore,
+    rootStore?: IRootStore,
 }
 
-@inject('dataStore')
+@inject('rootStore')
 @observer
 class CustomGrouping extends React.Component<Props> {
     @observable width: number = window.innerWidth / 2
@@ -92,8 +92,7 @@ class CustomGrouping extends React.Component<Props> {
      */
     @computed
     get states(): TState[] {
-        let {pointGroups}  = this.props.dataStore
-        let { currentVariables, points}: {currentVariables: string[], points: IPoint[]} = this.props.dataStore
+        let {pointGroups, currentVariables, points}  = this.props.rootStore!.dataStore
 
         let selectedPoints: IPoint[][] = Object.values(pointGroups)
             .map(s => {
@@ -146,8 +145,9 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     resetGroup() {
-        this.props.dataStore.updatePointGroups({})
-        this.props.dataStore.resetStateLabel()
+        let {dataStore} = this.props.rootStore!
+        dataStore.updatePointGroups({})
+        dataStore.resetStateLabel()
 
 
         d3.selectAll('circle.point')
@@ -158,7 +158,8 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     deleteGroup(stateKey: string) {
-        this.props.dataStore.deletePointGroup(stateKey)
+        let {dataStore} = this.props.rootStore!
+        dataStore.deletePointGroup(stateKey)
 
         d3.selectAll(`circle.group_${stateKey}`)
             .attr('fill', 'white')
@@ -180,8 +181,9 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     updateSelected(stateKeys: string[], groups: number[][]) {
+        let {dataStore} = this.props.rootStore!
 
-        let pointGroups = {...this.props.dataStore.pointGroups}
+        let {pointGroups} = dataStore
 
         for (let i = 0; i < groups.length; i++) {
             let stateKey = stateKeys[i], group = groups[i]
@@ -195,13 +197,14 @@ class CustomGrouping extends React.Component<Props> {
                 }
             }
         }
-        this.props.dataStore.updatePointGroups(pointGroups)
-        this.props.dataStore.applyCustomGroups()
+        dataStore.updatePointGroups(pointGroups)
+        dataStore.applyCustomGroups()
 
     }
 
     @action
     resetSelected(stateKeys: string[], groups: number[][]) {
+
         let newSelected:TPointGroups = {}
         for (let i = 0; i < stateKeys.length; i++) {
             let stateKey = stateKeys[i], group = groups[i]
@@ -210,8 +213,11 @@ class CustomGrouping extends React.Component<Props> {
                 pointIdx: group
             }
         }
-        this.props.dataStore.updatePointGroups(newSelected)
-        this.props.dataStore.applyCustomGroups()
+
+        let {dataStore} = this.props.rootStore!
+
+        dataStore.updatePointGroups(newSelected)
+        dataStore.applyCustomGroups()
 
     }
 
@@ -232,23 +238,22 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     onChangeThreshold(thr: number|string|undefined) {
-        this.props.dataStore.changeClusterTHR(thr)
+        this.props.rootStore!.dataStore.changeClusterTHR(thr)
     }
 
     @action
     removeVariable(variableName:string){
 
-        this.props.dataStore.removeVariable(variableName);
+        this.props.rootStore!.dataStore.removeVariable(variableName);
     }
 
     render() {
-
-        let { points} = this.props.dataStore
+        let {dataStore} = this.props.rootStore!
+        let { points, toggleHasEvent} = dataStore
         let { width, height, hasLink } = this
         let pcpMargin = 15
         let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
-        // used stroe actions
-        let toggleHasEvent = this.props.dataStore.toggleHasEvent
+        
 
         let controllerView =  <div className="controller">
 
@@ -278,7 +283,7 @@ class CustomGrouping extends React.Component<Props> {
                 min={0}
                 max={0.5}
                 step={0.02} 
-                value={this.props.dataStore.pointClusterTHR}
+                value={dataStore.pointClusterTHR}
                 onChange={this.onChangeThreshold} 
                 style={{ width: "70px"}}
                 />
@@ -287,7 +292,6 @@ class CustomGrouping extends React.Component<Props> {
 
         </div>
 
-        let {dataStore} = this.props
         return (
             // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
             <Card 
@@ -317,13 +321,13 @@ class CustomGrouping extends React.Component<Props> {
                         />
                         <g className='stateBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} data-intro="each point is ..">
                             <StateBlock
-                                stateLabels={this.props.dataStore.stateLabels}
-                                importanceScores={this.props.dataStore.importanceScores}
+                                stateLabels={dataStore.stateLabels}
+                                importanceScores={dataStore.importanceScores}
                                 width={width}
                                 height={pcpHeight - 2 * pcpMargin}
                                 points={points}
-                                pointGroups={this.props.dataStore.pointGroups}
-                                colorScales={this.props.dataStore.colorScales}
+                                pointGroups={dataStore.pointGroups}
+                                colorScales={dataStore.colorScales}
                                 hoverPointID={this.hoverPointID}
                                 setHoverID={this.setHoverID}
                                 resetHoverID={this.resetHoverID}
@@ -348,7 +352,7 @@ class CustomGrouping extends React.Component<Props> {
                     </svg>
                     <StateInfo
                         states={this.states} height={infoHeight}
-                        stateLabels={this.props.dataStore.stateLabels}
+                        stateLabels={dataStore.stateLabels}
                         resetGroup={this.resetGroup}
                         deleteGroup={this.deleteGroup}
                     />

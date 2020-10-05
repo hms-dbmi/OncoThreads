@@ -1,5 +1,5 @@
 
-type TPattern = (number|string)[]
+export type TPattern = (number|string)[]
 type TPatternResults = Array<[number, TPattern]>
 type TMDB = any
 type TOccur = any
@@ -51,6 +51,10 @@ class PrefixSpan{
         let startMDB = [...Array(this.db.length).keys()].map(d=>[d, -1])
 
         this.recurrentFind([], startMDB)
+
+        this.results
+        .sort((a,b)=>-a[0]+b[0])
+        .sort((a,b)=>-a[1].length+b[1].length)
 
         return this.results
     }
