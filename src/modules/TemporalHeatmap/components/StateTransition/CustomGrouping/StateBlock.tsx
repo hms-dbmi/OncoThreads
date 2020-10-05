@@ -2,12 +2,14 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import * as d3 from "d3"
 
-import { IPoint, TPointGroups  } from 'modules/Type'
+import { IPoint, TPointGroups } from 'modules/Type'
 import { getColorByName, getTextWidth, cropText } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { computed, get } from 'mobx';
 import FeatureLegend from './FeatureLegend'
 
 import { IImportantScore } from './index'
+
+import { Popover } from 'antd'
 
 
 interface Props {
@@ -35,7 +37,8 @@ class StateBlock extends React.Component<Props> {
     blockHeightRatio = 0.6; // the heigh of block : the height of whole chart 
     // scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
     maxNameColWidth = 40;
-    scoreDigits = 2
+    scoreDigits = 2;
+    rightMargin = 25;
 
     constructor(props: Props) {
         super(props)
@@ -46,15 +49,15 @@ class StateBlock extends React.Component<Props> {
     }
     @computed
     get nameColWidth(): number {
-        let {width} = this.props
-        let scoreWidth = getTextWidth( (0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
+        let { width } = this.props
+        let scoreWidth = getTextWidth((0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
         let nameWidth = Math.max(...this.props.importanceScores.map(
             d => getTextWidth(d['name'], this.fontHeight)
         ))
         nameWidth = Math.min(nameWidth, this.maxNameColWidth)
         // console.info('colwidth', scoreWidth, nameWidth)
         // console.info(Object.keys(this.props.importanceScores))
-        return scoreWidth + nameWidth + this.strokeW*2
+        return scoreWidth + nameWidth + this.strokeW * 2
     }
     @computed
     get wholeHorizonGap(): number {
@@ -63,13 +66,13 @@ class StateBlock extends React.Component<Props> {
 
         let hasLeftPoints = allSelected.length < points.length
         // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2*this.strokeW
+        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.strokeW
         return wholeHorizonGap
     }
     @computed
     get cellWidth(): number {
         let { width, points } = this.props
-        let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap) / points.length
+        let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin) / points.length
         // console.info(width, this.wholeHorizonGap, points.length, cellWidth)
         return cellWidth
     }
@@ -210,7 +213,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     // draw the block of one state
-    drawOneState(points: IPoint[], stateKey:string) {
+    drawOneState(points: IPoint[], stateKey: string) {
         if (points.length == 0) {
             return []
         }
@@ -253,7 +256,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     // draw the time dist of one identified state
-    drawTimeDist(points: IPoint[], stateKey:string) {
+    drawTimeDist(points: IPoint[], stateKey: string) {
 
         let dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
         points.forEach(point => {
@@ -298,10 +301,10 @@ class StateBlock extends React.Component<Props> {
             let { score, name } = d
             return <g key={name} transform={`translate(0, ${this.cellHeight * (i + 1)})`}>
                 <text opacity={Math.max(0.3, score)} >
-                    {cropText( name, this.fontHeight, 400, this.maxNameColWidth)} {' '} {score.toFixed(this.scoreDigits)}
+                    {cropText(name, this.fontHeight, 400, this.maxNameColWidth)} {' '} {score.toFixed(this.scoreDigits)}
                 </text>
                 <text
-                    x={this.nameColWidth - this.strokeW*2} textAnchor="end" cursor="pointer"
+                    x={this.nameColWidth - this.strokeW * 2} textAnchor="end" cursor="pointer"
                     onClick={() => { this.props.removeVariable(name) }}
                 >
                     X
@@ -311,14 +314,14 @@ class StateBlock extends React.Component<Props> {
         })
 
         let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
-        return <g className='importanceScores' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`}  key='importanceScores'>
+        return <g className='importanceScores' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`} key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
-                x={this.nameColWidth / 2 - impLableWidth/2}
+                x={this.nameColWidth / 2 - impLableWidth / 2}
                 y={-this.fontHeight}
                 fill="white" stroke="gray"
             />
-            <text x={this.nameColWidth/2} textAnchor="middle">
+            <text x={this.nameColWidth / 2} textAnchor="middle">
                 {impLable}
             </text>
             {rows}
@@ -339,9 +342,13 @@ class StateBlock extends React.Component<Props> {
     }
 
     render() {
-        return <g className='stateSummary'>
+        let legendLabelTransform = `translate(${this.props.width - this.rightMargin*0.5}, ${this.cellHeight * this.attrNum/2 + this.fontHeight}) rotate(-90, 0, 0) `
+        return <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
-            <FeatureLegend />
+
+            <Popover placement="right" content={<FeatureLegend cellHeight={this.cellHeight} />} trigger="click">
+                <text transform={legendLabelTransform} cursor="pointer" textAnchor="middle">legend</text>
+            </Popover>
         </g>
     }
 }

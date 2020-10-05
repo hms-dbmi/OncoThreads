@@ -10,6 +10,7 @@ import { TColorScale, TRow, TVariable } from "modules/Type/Store";
 
 interface Props {
     rootStore?: IRootStore,
+    cellHeight: number
 }
 
 @inject('rootStore', 'uiStore')
@@ -36,7 +37,7 @@ class FeatureLegend extends React.Component<Props> {
      * @param {function} color
      * @returns {(g|null)}
      */
-    getContinuousLegend(opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
+    getContinuousLegend(variableName:string, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
         const min = color.domain()[0];
         const max = color.domain()[color.domain().length - 1];
         if (min !== Number.NEGATIVE_INFINITY && max !== Number.POSITIVE_INFINITY) {
@@ -96,18 +97,17 @@ class FeatureLegend extends React.Component<Props> {
                     </text>,
                 );
             }
-            const randomId = uuidv4();
             this.updateMaxWidth(this.defaultWidth);
             return (
-                <g>
+                <g  key={variableName}>
                     <defs>
-                        <linearGradient id={randomId} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <linearGradient id={`gradient_${variableName}`} x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style={{ stopColor: color(min) }} />
                             {intermediateStop}
                             <stop offset="100%" style={{ stopColor: color(max) }} />
                         </linearGradient>
                     </defs>
-                    <rect opacity={opacity} x="0" y="0" width={this.defaultWidth} height={lineheight} fill={`url(#${randomId})`} />
+                    <rect opacity={opacity} x="0" y="0" width={this.defaultWidth} height={lineheight} fill={`url(#gradient_${variableName})`} />
                     {text}
                 </g>
             );
@@ -215,9 +215,9 @@ class FeatureLegend extends React.Component<Props> {
         let opacity = 0.5;
 
         return dataStore.currentVariables
-            .map((key:string,i) => {
-                let variable = dataStore.referencedVariables[key]
-                let colorScale = dataStore.colorScales[i]
+            .map((variableName:string,variableIdx) => {
+                let variable = dataStore.referencedVariables[variableName]
+                let colorScale = dataStore.colorScales[variableIdx]
                 let legendEntries: JSX.Element[] = [];
 
                 if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
@@ -226,11 +226,12 @@ class FeatureLegend extends React.Component<Props> {
                     legendEntries = this.getBinaryLegend(opacity, adaptedFontSize,
                         lineheight, colorScale);
                 } else {
-                    legendEntries = [this.getContinuousLegend(opacity, adaptedFontSize,
+                    legendEntries = [this.getContinuousLegend(variableName, opacity, adaptedFontSize,
                         lineheight, colorScale)];
                 }
+                let leTransform = `translate(0,${variableIdx*this.props.cellHeight})`;
 
-                return <g className="featureLegend" transform={''}>
+                return <g className="featureLegend" transform={leTransform} key={`${variableName}_${variableIdx}`}>
                     {legendEntries}
                 </g>
             })
@@ -239,7 +240,11 @@ class FeatureLegend extends React.Component<Props> {
     }
 
     render(){
-        return this.getLegend()
+        let { dataStore } = this.props.rootStore!
+        let height = this.props.cellHeight * dataStore.currentVariables.length
+        return <svg width={this.maxWidth} height={height} className="featureLegend">
+            {this.getLegend()}
+        </svg>
     }
 }
 
