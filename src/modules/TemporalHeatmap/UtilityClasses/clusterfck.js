@@ -330,10 +330,11 @@ require.define("/clusterfck.js", function (require, module, exports, __dirname, 
 require.define("/hcluster.js", function (require, module, exports, __dirname, __filename) {
     var distances = require("./distance");
 
-var HierarchicalClustering = function(distance, linkage, threshold) {
+var HierarchicalClustering = function(distance, linkage, threshold, maxClusterNum) {
    this.distance = distance;
    this.linkage = linkage;
    this.threshold = threshold == undefined ? Infinity : threshold;
+   this.maxClusterNum = maxClusterNum == undefined ? 2 : maxClusterNum;
 }
 
 HierarchicalClustering.prototype = {
@@ -399,8 +400,14 @@ HierarchicalClustering.prototype = {
             min = dist;
          }
       }
-      if (min >= this.threshold) {
+      if (min > this.threshold) {
+         console.info('a', min, this.threshold)
          return false;         
+      }
+
+      if (this.clusters.length<=this.maxClusterNum){
+         console.info('b', this.clusters, this.maxClusterNum)
+         return false
       }
 
       var c1 = this.index[minKey],
@@ -474,17 +481,17 @@ HierarchicalClustering.prototype = {
    }
 }
 
-var hcluster = function(items, distance, linkage, threshold, snapshot, snapshotCallback) {
+var hcluster = function(items, distance, linkage, threshold, maxClusterNum, snapshot, snapshotCallback) {
    distance = distance || "euclidean";
    linkage = linkage || "average";
 
    if (typeof distance == "string") {
      distance = distances[distance];
    }
-   var clusters = (new HierarchicalClustering(distance, linkage, threshold))
+   var clusters = (new HierarchicalClustering(distance, linkage, threshold, maxClusterNum))
                   .cluster(items, snapshot, snapshotCallback);
       
-   if (threshold === undefined) {
+   if (threshold === undefined ) {
       return clusters[0]; // all clustered into one
    }
    return clusters;
