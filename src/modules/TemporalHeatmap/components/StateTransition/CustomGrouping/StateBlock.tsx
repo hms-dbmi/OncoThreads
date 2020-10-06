@@ -347,7 +347,7 @@ class StateBlock extends React.Component<Props> {
             {this.drawAllStates()}
 
             <Popover placement="right" content={<FeatureLegend cellHeight={this.cellHeight} />} trigger="click">
-                <text transform={legendLabelTransform} cursor="pointer" textAnchor="middle">legend</text>
+                <text transform={legendLabelTransform} cursor="pointer" textAnchor="middle">legend V</text>
             </Popover>
         </g>
     }

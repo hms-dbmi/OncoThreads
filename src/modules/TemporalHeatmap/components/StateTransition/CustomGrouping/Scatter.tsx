@@ -317,7 +317,7 @@ class Scatter extends React.Component<Props> {
     render() {
         
         let { width, height } = this.props
-        return <g className='scatter' data-intro="the scatter plot">
+        return <g className='scatter' data-intro="Each point is a patient's feature values at a certain timepoint. A cluster of points indicates one state.">
             <defs>
                 {this.generateGradients()}
             </defs>

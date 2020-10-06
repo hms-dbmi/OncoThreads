@@ -99,7 +99,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                     </Col>
 
                     <Col md={12} sm={12}>
-                        <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
+                        <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined translate='' /></Tooltip></span>}
                             extra='' 
                             style={{width:"98%"}}
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
