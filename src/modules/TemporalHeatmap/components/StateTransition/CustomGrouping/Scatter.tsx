@@ -229,7 +229,7 @@ class Scatter extends React.Component<Props> {
 
     addLasso(width: number, height: number) {
         let { updateSelected } = this.props
-        let {selected} = this.props.rootStore!.dataStore
+        let {pointGroups} = this.props.rootStore!.dataStore
         // lasso draw
         d3.selectAll('g.lasso').remove()
         var svg = d3.select('svg.customGrouping')
@@ -272,8 +272,8 @@ class Scatter extends React.Component<Props> {
                 let stateKeys: string[] = [], groups = [] // groups that need  to be updated
                 // if selected nodes are in previous states
 
-                Object.keys(selected).forEach((stateKey, i) => {
-                    let g = selected[stateKey]
+                Object.keys(pointGroups).forEach((stateKey, i) => {
+                    let g = pointGroups[stateKey]
                     let remainPoints = g.pointIdx.filter((point:number) => !currentSelected.includes(point))
                     stateKeys.push(stateKey)
                     if (remainPoints.length > 0) {
@@ -287,7 +287,7 @@ class Scatter extends React.Component<Props> {
 
 
 
-                let newStateKey = getUniqueKeyName(Object.keys(selected).length, Object.keys(selected))
+                let newStateKey = getUniqueKeyName(Object.keys(pointGroups).length, Object.keys(pointGroups))
 
                 stateKeys.push(newStateKey)
                 groups.push(currentSelected)
