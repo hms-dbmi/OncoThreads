@@ -150,22 +150,30 @@ class TransitionOverview extends React.Component<Props> {
 
     getFrequentPatterns() {
         let { dataStore } = this.props.rootStore!
-        let { frequentPatterns } = dataStore
+        let { frequentPatterns, patientGroups } = dataStore
 
-        let patterns = frequentPatterns.map((pattern, patternIdx) => {
-            let [supportIdxs, subseq] = pattern
-            return <g key={`pattern_${patternIdx}`}>
-                <text x = {patternIdx * 17}>{supportIdxs.length}</text>
-                {subseq.map((stateKey, i) => {
-                    return <rect key={i} 
-                        fill={getColorByName(stateKey)} 
-                        width={10} height={10} 
-                        x={patternIdx * 17}
-                        y={7+i*12}
-                    />
-                })}
-            </g>
+        let offsetX = 0, gapX = 17
+        let patterns = patientGroups.map((patientGroup, groupIdx)=>{
+            offsetX += groupIdx==0?0:gapX
+            return frequentPatterns.map((pattern, patternIdx) => {
+                let [supportIdxs, subseq] = pattern
+                supportIdxs = supportIdxs.filter(p=>patientGroup.includes(p))
+                if (supportIdxs.length==0) return <g key={`group_${groupIdx}_pattern_${patternIdx}`} />
+                offsetX += patternIdx==0?0:gapX
+                return <g key={`group_${groupIdx}_pattern_${patternIdx}`}>
+                    <text x = {offsetX }>{supportIdxs.length}</text>
+                    {subseq.map((stateKey, i) => {
+                        return <rect key={i} 
+                            fill={getColorByName(stateKey)} 
+                            width={10} height={10} 
+                            x={offsetX}
+                            y={7+i*12}
+                        />
+                    })}
+                </g>
+            })
         })
+        
 
         return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.timeStepHeight*dataStore.maxTime})`}>
             {patterns}

@@ -52,8 +52,8 @@ export interface IDataStore{
     normPoints: INormPoint[],
     timepoints: TimePoint[],
     frequentPatterns: Array<[string[],TPattern]>,
-    colorScales: Array<TColorScale>
-    
+    colorScales: Array<TColorScale>,
+    patientGroups:string[][],
 }
 
 export interface IRootStore{
