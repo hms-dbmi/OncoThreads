@@ -1,7 +1,7 @@
 import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
-import { getUniqueKeyName, prefixSpan, clusterfck  } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getUniqueKeyName, PrefixSpan, clusterfck  } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 /*
  stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -22,6 +22,7 @@ class DataStore {
             stateLabels: {}, // key & label pairs
             pointGroups: {}, // the group of this.points: pointIdx[][]
             pointClusterTHR: 0.08, // the initial threshold to group points
+            patientGroupNum: 1,
 
             /**
              * get the maximum number of currently displayed partitions
@@ -169,6 +170,10 @@ class DataStore {
                 })
             },
 
+             /**
+             * the state sequence of each patient
+             * @return {[patient:string]: string[]}
+             */
             get patientStates (){
                 let {points, pointGroups} = this
                 let patients = {}
@@ -184,34 +189,85 @@ class DataStore {
                     if (!patients[patient]){
                         patients[patient] = []
                     }
-                    if(patients[patient].length!=timeIdx) console.info('something wrong')
                     patients[patient].push(stateKey)
 
                 })
                 
                 return patients
             },
+
+            
+
             get maxTime(){
                 let {points} = this
                 let maxTimeIdx = Math.max(...points.map(d=>d.timeIdx))
                 return maxTimeIdx + 1
             },
 
+            /**
+             * each patient is encoded by whether they have the frequent patterns
+             * @return {Array<[patientName[], stateKey[]]>}
+             */
             get frequentPatterns (){
                 let {patientStates} = this
-                // const minSupport =2, minLen = 2
+                
 
                 let sequences = Object.values(patientStates)
                 let patients = Object.keys(patientStates)
-                let results = prefixSpan.frequentPatterns(sequences)
+                const minSupport = patients.length*0.15, minLen = Math.max(this.maxTime*0.3, 2)
+                let prefixSpan = new PrefixSpan()
+                let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen)
+                results = results.map(d=>[d[0].map(i=>patients[i]), d[1]])
 
                 return results
             },
+            /**
+             * each patient is encoded by whether they have the frequent patterns
+             * @return {string[][]}
+             */
+            get patientGroups (){
+                let {frequentPatterns, patientStates, patientGroupNum} = this
+                let patients = Object.keys(patientStates)
+
+                if(patientGroupNum==1){
+                    return [patients]
+                }
+
+                let patientEncoding = patients.map(p=>{
+                    return {patient: p, encoding: []}
+                })
+
+                frequentPatterns.forEach(d=>{
+                    let [patients, pattern] = d
+                    patientEncoding.forEach(d=>{
+                        let {patient, encoding} = d
+                        if (patients.includes(patient)){
+                            encoding.push(1)
+                        }else{
+                            encoding.push(0)
+                        }
+                    })
+                })
+
+                let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "single", Infinity, patientGroupNum)
+
+                // console.info(patientEncoding, patientClusters)
+
+                return patientClusters.map(d=>d.itemIdx.map(i=>patients[i]))
+            },
+
+            changePatientGroupNum: action((num)=>{
+                this.patientGroupNum = num
+            }),
 
             changeClusterTHR: action((thr)=>{
                 this.pointClusterTHR = thr
                 this.autoGroup()
                 this.applyCustomGroups()
+            }),
+
+            groupSequence: action((groupNum)=>{
+                
             }),
 
             toggleHasEvent: action(() => {
@@ -419,11 +475,6 @@ class DataStore {
                 
                 this.applyCustomGroups()
             }), 
-
-            groupPatients: action((groupNum)=>{
-                //hierarchically cluster patients based on their sequences in a divisive manner 
-
-            }),
 
             applyCustomGroups: action(()=>{
                 let { points, pointGroups } = this

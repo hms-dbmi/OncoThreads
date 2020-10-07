@@ -401,12 +401,10 @@ HierarchicalClustering.prototype = {
          }
       }
       if (min > this.threshold) {
-         console.info('a', min, this.threshold)
          return false;         
       }
 
       if (this.clusters.length<=this.maxClusterNum){
-         console.info('b', this.clusters, this.maxClusterNum)
          return false
       }
 

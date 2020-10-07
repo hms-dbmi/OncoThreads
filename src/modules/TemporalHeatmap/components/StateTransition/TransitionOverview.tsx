@@ -9,12 +9,12 @@ interface Props {
     overviewWidth: number,
 }
 
-type TypeLayoutDict = Array<{
+type TypeLayoutDict = {
     [key: string]: {
         width: number,
         x: number,
     }
-}>
+}[][]
 
 @inject('rootStore')
 @observer
@@ -37,29 +37,41 @@ class TransitionOverview extends React.Component<Props> {
             .filter(d => d.type === "sample")
 
         // draw timepoints
-        samplePoints.forEach((d, i) => {
+        samplePoints.forEach((d, timeIdx) => {
 
             const transformTP = `translate(
                     ${0},
-                    ${this.paddingH + i * this.timeStepHeight}
+                    ${this.paddingH + timeIdx * this.timeStepHeight}
                     )`;
             let offsetX = this.paddingW + this.annotationWidth, gap = this.partitionGap;
             let timepoint: Array<JSX.Element> = []
-            layoutDict.push({})
+            layoutDict.push([])
 
-            d.customGrouped.forEach(d => {
-                let stateKey = d.partition || ''
-                let patients = d.patients
-                let rectWidth = rectWidthScale(patients.length)
-                timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${i}state${stateKey}`} />)
-
-                layoutDict[i][stateKey] = {
-                    width: rectWidth,
-                    x: offsetX
+            dataStore.patientGroups.forEach((patientGroup:string[], groupIdx:number)=>{
+                layoutDict[timeIdx].push({})
+                if (timeIdx>=1){
+                    offsetX = Math.max(offsetX, Math.min(...Object.values(layoutDict[timeIdx-1][groupIdx]).map(d=>d.x)))
                 }
 
-                offsetX += rectWidth + gap
+                d.customGrouped.forEach(d => {
+                    let stateKey = d.partition || ''
+                    
+                    let patients = d.patients.filter(p=>patientGroup.includes(p))
+                    if (patients.length==0) return
+                    let rectWidth = rectWidthScale(patients.length)
+                    timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
+    
+                    layoutDict[timeIdx][groupIdx][stateKey] = {
+                        width: rectWidth,
+                        x: offsetX
+                    }
+    
+                    offsetX += rectWidth + gap
+                })
             })
+
+            
+
             timepoints.push(
                 <g key={d.globalIndex} transform={transformTP}>
                     {timepoint}
@@ -81,16 +93,17 @@ class TransitionOverview extends React.Component<Props> {
                     secondGrouped = secondTP.customGrouped
                 firstGrouped.forEach((group1) => {
                     secondGrouped.forEach((group2) => {
+                        dataStore.patientGroups.forEach((patientGroup:string[], groupIdx:number)=>{
                         let { patients: patients1, partition: partition1 } = group1, { patients: patients2, partition: partition2 } = group2
-                        let transPatients = patients1.filter(d => patients2.includes(d))
+                        let transPatients = patients1.filter(d => patients2.includes(d)).filter(p=>patientGroup.includes(p))
                         if (transPatients.length > 0) {
 
-                            let layoutDict1 = layoutDict[i][partition1], layoutDict2 = layoutDict[i + 1][partition2]
+                            let layoutDict1 = layoutDict[i][groupIdx][partition1], layoutDict2 = layoutDict[i + 1][groupIdx][partition2]
                             let sourceX = layoutDict1.x + layoutDict1.width / 2,
                                 sourceY = this.paddingH + i * this.timeStepHeight + this.rectHeight,
                                 targetX = layoutDict2.x + layoutDict2.width / 2,
                                 targetY = this.paddingH + (i + 1) * this.timeStepHeight
-                            transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}`}
+                            transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}_group${groupIdx}`}
                                 d={linkGene({
                                     source: [sourceX, sourceY], target: [targetX, targetY]
                                 })!}
@@ -99,6 +112,8 @@ class TransitionOverview extends React.Component<Props> {
                                 strokeWidth={linkWidthScale(transPatients.length)}
                             />)
                         }
+                    })
+
                     })
                 })
             }
@@ -136,10 +151,11 @@ class TransitionOverview extends React.Component<Props> {
     getFrequentPatterns() {
         let { dataStore } = this.props.rootStore!
         let { frequentPatterns } = dataStore
+
         let patterns = frequentPatterns.map((pattern, patternIdx) => {
-            let [support, subseq] = pattern
+            let [supportIdxs, subseq] = pattern
             return <g key={`pattern_${patternIdx}`}>
-                <text x = {patternIdx * 17}>{support}</text>
+                <text x = {patternIdx * 17}>{supportIdxs.length}</text>
                 {subseq.map((stateKey, i) => {
                     return <rect key={i} 
                         fill={getColorByName(stateKey)} 
@@ -157,6 +173,7 @@ class TransitionOverview extends React.Component<Props> {
     }
 
     render() {
+        let a = this.props.rootStore!.dataStore.patientSequenceEncoding
         return <g className="transitionOverview" key="transitionOverview">
             {this.stateOverview()}
             {this.getFrequentPatterns()}

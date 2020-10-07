@@ -51,7 +51,7 @@ export interface IDataStore{
     points: IPoint[],
     normPoints: INormPoint[],
     timepoints: TimePoint[],
-    frequentPatterns: Array<[number, TPattern]>,
+    frequentPatterns: Array<[string[],TPattern]>,
     colorScales: Array<TColorScale>
     
 }

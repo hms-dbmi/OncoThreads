@@ -1,9 +1,9 @@
 import ColorScales from './ColorScales'
-import prefixSpan from './prefixSpan'
+import PrefixSpan from './prefixSpan'
 
 export {getColorByName} from './ColorScales'
 export { clusterfck } from "./clusterfck.js";
-export {ColorScales, prefixSpan}
+export {ColorScales, PrefixSpan}
 
 export {
     getScientificNotation,

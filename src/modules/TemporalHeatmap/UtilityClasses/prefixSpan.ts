@@ -1,7 +1,7 @@
 
 export type TPattern = (number|string)[]
-type TPatternResults = Array<[number, TPattern]>
-type TMDB = any
+export type TPatternResults = Array<[number[], TPattern]>
+type TMDB = Array<[number, number]>
 type TOccur = any
 
 class PrefixSpan{
@@ -18,7 +18,7 @@ class PrefixSpan{
     recurrentFind(patt:TPattern, mdb:TMDB){
 
         if (patt.length>=this.minLen){
-            this.results.push([mdb.length, patt])
+            this.results.push([mdb.map(d=>d[0]), patt])
         }
 
         let occurs:TOccur = {}
@@ -48,12 +48,12 @@ class PrefixSpan{
         this.db = db
         this.minSupport = minSupport|| Math.ceil(db.length * 0.2) // if not given, defined based on db dimension
         this.minLen = minLen || Math.ceil(db[0].length * 0.2)
-        let startMDB = [...Array(this.db.length).keys()].map(d=>[d, -1])
+        let startMDB = [...Array(this.db.length).keys()].map(d=>[d, -1]) as TMDB
 
         this.recurrentFind([], startMDB)
 
         this.results
-        .sort((a,b)=>-a[0]+b[0])
+        .sort((a,b)=>-a.length+b.length)
         .sort((a,b)=>-a[1].length+b[1].length)
 
         return this.results
@@ -61,5 +61,5 @@ class PrefixSpan{
 
 } 
 
-const prefixSpan = new PrefixSpan()
-export default prefixSpan 
+
+export default PrefixSpan

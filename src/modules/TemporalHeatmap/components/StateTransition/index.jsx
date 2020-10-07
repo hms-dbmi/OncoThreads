@@ -56,12 +56,14 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
 
 
     render() {
+        let { dataStore } = this.props.rootStore
+
         let controller = <span>
-            Sequence Grouping THR
-        <InputNumber min={0} max={2} step={0.1} value={0.2} size="small" />
+            Num of Sequence Groups
+            <InputNumber min={0} max={5} step={1} value={dataStore.patientGroupNum} size="small" onChange={dataStore.changePatientGroupNum}/>
         </span>
 
-        let { dataStore } = this.props.rootStore
+        
 
         return (
             <div className="blockView" ref={this.ref}>
