@@ -39,15 +39,22 @@ class DataStore {
                 return maxPartitions;
 
             },
-            get maxTPPartitions() {
-                let maxPartitions = 0;
+            get maxTPPartitionWithGroup() {
+                let {patientGroups} = this
                 const groupedTP = this.timepoints.filter(d => d.isGrouped).filter(d=>d.type=="sample");
-                if (this.rootStore.uiStore.globalTime === 'block') {
-                    maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);
-                } else {
-                    maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);
-                }
-                return maxPartitions;
+                
+                let partitions = groupedTP.map(d => {
+                    let count = 0
+                    d.customGrouped.forEach((customGroup, i)=>{
+                        
+                        patientGroups.forEach((patientGroup)=>{
+                            if (customGroup.patients.filter(p=>patientGroup.includes(p)).length>0) count += 1
+                        })
+                    })
+                    return count
+                })
+                
+                return Math.max(...partitions)
 
             },
             /**

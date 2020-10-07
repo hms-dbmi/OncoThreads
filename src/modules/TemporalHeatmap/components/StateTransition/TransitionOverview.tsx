@@ -30,7 +30,7 @@ class TransitionOverview extends React.Component<Props> {
         let { dataStore } = this.props.rootStore!
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
-            .range([0, this.props.overviewWidth - (dataStore.maxTPPartitions - 1)* dataStore.patientGroups.length * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
+            .range([0, this.props.overviewWidth - (dataStore.maxTPPartitionWithGroup - 1) * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
 
         let layoutDict: TypeLayoutDict = []
         let samplePoints = dataStore.timepoints
