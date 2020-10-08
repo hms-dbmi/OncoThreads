@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import FontAwesome from 'react-fontawesome';
 import { extendObservable, reaction } from 'mobx';
-import { Button, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'antd';
 import { Pane, SortablePane } from 'react-sortable-pane';
 import {Switch} from 'antd'
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
@@ -14,6 +14,7 @@ import GroupTimepoint from './Timepoints/GroupTimepointCustom';
 import TimepointLabels from './PlotLabeling/TimepointLabels';
 import RowOperators from './RowOperatorsNew/';
 import Legend from './Legend';
+import CustomGrouping from './StateTransition/CustomGrouping';
 
 
 /**
@@ -23,6 +24,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
     constructor(props) {
         super(props);
         this.padding = 20;
+        this.blockWidthRatio = 0.75
         this.blockView = React.createRef();
 
         this.handleTimeClick = this.handleTimeClick.bind(this);
@@ -36,10 +38,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             height: window.innerHeight-250,
             hasBackground:true,
             panes: {
-                labels: { width: (window.innerWidth - 40) / 10 * 0.7, active: false },
-                operators: { width: ((window.innerWidth - 40) / 10) * 1.3, active: false },
-                view: { width: ((window.innerWidth - 40) / 10) * 6.5, active: false },
-                legend: { width: (window.innerWidth - 40) / 10 * 1.3, active: false },
+                labels: { width: (window.innerWidth - 40) * this.blockWidthRatio / 10 * 0.7, active: false },
+                operators: { width: ((window.innerWidth - 40) *this.blockWidthRatio / 10) * 1.3, active: false },
+                view: { width: ((window.innerWidth - 40) * this.blockWidthRatio / 10) * 6.5, active: false },
+                legend: { width: (window.innerWidth - 40) * this.blockWidthRatio / 10 * 1.3, active: false },
             },
             ref: React.createRef(),
             active: {
@@ -84,16 +86,16 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         const prevWidth = Object.values(this.panes).map(d => d.width).reduce((a, b) => a + b);
         this.panes = {
             labels: {
-                width: (this.width - 40) / (prevWidth / this.panes.labels.width),
+                width: (this.width - 40)* this.blockWidthRatio / (prevWidth / this.panes.labels.width),
             },
             operators: {
-                width: (this.width - 40) / (prevWidth / this.panes.operators.width),
+                width: (this.width - 40) * this.blockWidthRatio/ (prevWidth / this.panes.operators.width),
             },
             view: {
-                width: (this.width- 40) / (prevWidth / this.panes.view.width),
+                width: (this.width- 40) * this.blockWidthRatio / (prevWidth / this.panes.view.width),
             },
             legend: {
-                width: (this.width - 40) / (prevWidth / this.panes.legend.width),
+                width: (this.width - 40) * this.blockWidthRatio / (prevWidth / this.panes.legend.width),
             },
         };
         this.props.rootStore.visStore
@@ -319,6 +321,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                         </Button>
                     </Row>
                     <Row>
+                        <Col span={6}>
+                            <CustomGrouping/>
+                        </Col>
+                        <Col span={18}>
                         <SortablePane
                             direction="horizontal"
                             margin={10}
@@ -414,6 +420,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 />
                             </Pane>
                         </SortablePane>
+                        </Col>
                     </Row>
                 </div>
                 <form id="svgform" method="post">

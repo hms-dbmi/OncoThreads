@@ -21,7 +21,7 @@ class DataStore {
             hasEvent: false, // whether event attributes are included in custom grouping
             stateLabels: {}, // key & label pairs
             pointGroups: {}, // the group of this.points: pointIdx[][]
-            pointClusterTHR: 0.08, // the initial threshold to group points
+            numofStates: 3, // the initial threshold to group points
             patientGroupNum: 1,
 
             /**
@@ -240,6 +240,12 @@ class DataStore {
                     return [patients]
                 }
 
+                // don't group without frequent patterns
+                if(frequentPatterns.length==0){
+                    this.patientGroupNum = 1 
+                    return [patients]
+                }
+
                 let patientEncoding = patients.map(p=>{
                     return {patient: p, encoding: []}
                 })
@@ -268,13 +274,9 @@ class DataStore {
             }),
 
             changeClusterTHR: action((thr)=>{
-                this.pointClusterTHR = thr
+                this.numofStates = thr
                 this.autoGroup()
                 this.applyCustomGroups()
-            }),
-
-            groupSequence: action((groupNum)=>{
-                
             }),
 
             toggleHasEvent: action(() => {
@@ -446,8 +448,8 @@ class DataStore {
             autoGroup: action(() => {
                 let normPoints = this.normPoints
                 if (normPoints.length == 0) return
-                let { pointClusterTHR } = this
-                var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "single", pointClusterTHR);
+                let { numofStates } = this
+                var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "single", Infinity, numofStates);
                 // console.info(tree)
                 let pointGroups = {}
                 clusters.forEach((d, i) => {

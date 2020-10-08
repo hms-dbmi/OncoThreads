@@ -276,14 +276,14 @@ class CustomGrouping extends React.Component<Props> {
         {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
         <span className="thrController">
             <span style={{padding:"0px 0px 0px 5px"}}>
-                cluster thr
+                Num of States
             </span>
 
             <InputNumber size="small" 
                 min={0}
-                max={0.5}
-                step={0.02} 
-                value={dataStore.pointClusterTHR}
+                max={8}
+                step={1} 
+                value={dataStore.numofStates}
                 onChange={this.onChangeThreshold} 
                 style={{ width: "70px"}}
                 />

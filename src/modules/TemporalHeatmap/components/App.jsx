@@ -18,6 +18,7 @@ import StudySummary from './StudySummary';
 import { QuestionCircleOutlined, HomeOutlined } from '@ant-design/icons';
 import * as introJs from 'intro.js';
 
+import './App.css'
 /**
  * Base Component
  */
