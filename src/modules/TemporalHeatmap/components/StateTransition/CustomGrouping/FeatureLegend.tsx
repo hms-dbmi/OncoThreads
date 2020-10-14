@@ -242,8 +242,9 @@ class FeatureLegend extends React.Component<Props> {
     render(){
         let { dataStore } = this.props.rootStore!
         let height = this.props.cellHeight * dataStore.currentVariables.length
+        let content = this.getLegend()
         return <svg width={this.maxWidth} height={height} className="featureLegend">
-            {this.getLegend()}
+            {content}
         </svg>
     }
 }
