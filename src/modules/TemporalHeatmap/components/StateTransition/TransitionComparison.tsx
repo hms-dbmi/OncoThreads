@@ -19,9 +19,9 @@ interface Props {
 class TransitionComparison extends React.Component<Props> {
     @observable hasBackground: boolean = false
     plotRatio: number = 0.9
-    paddingH:number =6
-    paddingW:number = 6
-    groupLabelHeight:number = 40
+    paddingH: number = 6
+    paddingW: number = 6
+    groupLabelHeight: number = 40
 
     updateDimension() {
         let { visStore } = this.props.rootStore!
@@ -68,29 +68,37 @@ class TransitionComparison extends React.Component<Props> {
 
     getTransitionComparison() {
 
-        let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [], groupLabels: Array<JSX.Element> = []
+        let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [], groupLabels: Array<JSX.Element> = [], groups: Array<JSX.Element> = []
         let { dataStore, uiStore, visStore } = this.props.rootStore!
 
         let { selectedPatientGroupIdx } = uiStore
 
         selectedPatientGroupIdx = selectedPatientGroupIdx.sort()
 
-        dataStore.timepoints.forEach((d, timeIdx) => {
+        let groupOffsetX = 0, groupWidth = 0
 
-            const transformTP = `translate(
+        selectedPatientGroupIdx.forEach((groupIdx: number, i: number) => {
+            if (groupIdx === -1) return
+            let patientGroup = dataStore.patientGroups[groupIdx]
+            if (patientGroup === undefined) return
+            // if(timeIdx ===0) 
+            // groupLabels.push(<text key={`label_group${groupIdx}`} y={this.groupLabelHeight - 12} x={groupOffsetX + this.props.width * (1 - this.plotRatio)}> group_{groupIdx} </text>)
+
+
+
+
+
+            dataStore.timepoints.forEach((d, timeIdx) => {
+
+                const transformTP = `translate(
                     ${visStore.strokeW},
                     ${visStore.newTimepointPositions.timepoint[timeIdx] + visStore.strokeW + this.groupLabelHeight}
                     )`;
 
-            let offsetX = 0;
-            let timepoint: Array<JSX.Element> = []
+                let offsetX = 0;
+                let timepoint: Array<JSX.Element> = []
 
-            selectedPatientGroupIdx.forEach((groupIdx: number) => {
-                if (groupIdx === -1) return
-                let patientGroup = dataStore.patientGroups[groupIdx]
-                if (patientGroup===undefined) return
-                if(timeIdx ===0) groupLabels.push(<text key={`label_group${groupIdx}`} y={this.groupLabelHeight-12} x={offsetX + this.props.width * (1-this.plotRatio)}> group_{groupIdx} </text>)
-                
+
 
                 // draw transitions
                 if (timeIdx !== dataStore.timepoints.length - 1) {
@@ -98,9 +106,9 @@ class TransitionComparison extends React.Component<Props> {
 
 
                     const firstTP = d
-                    const firstGrouped = firstTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g=>g.patients.length>0);
+                    const firstGrouped = firstTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g => g.patients.length > 0);
                     const secondTP = dataStore.timepoints[timeIdx + 1];
-                    const secondGrouped = secondTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g=>g.patients.length>0);
+                    const secondGrouped = secondTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g => g.patients.length > 0);
                     // if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
                     //     secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
                     // }
@@ -178,20 +186,31 @@ class TransitionComparison extends React.Component<Props> {
 
                     offsetX += visStore.groupScale(partition.patients.length) + visStore.partitionGap;
                 })
+
+                groupWidth = Math.max(groupWidth, offsetX)
+
+                timepoints.push(
+                    <g key={d.globalIndex} transform={transformTP} className={`time_${timeIdx}`}>
+                        {timepoint}
+                    </g>,
+                )
             })
 
+            groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.props.width * (1 - this.plotRatio)}, ${0})`}>
+                <text y={this.groupLabelHeight-12}>group_{groupIdx} </text>
+                {timepoints}
+                {transitions}
+            </g>)
+            timepoints = []
+            transitions = []
+            groupOffsetX = groupWidth
 
 
-            timepoints.push(
-                <g key={d.globalIndex} transform={transformTP} className={`time_${timeIdx}`}>
-                    {timepoint}
-                </g>,
-            )
 
 
         });
 
-        
+
 
 
 
@@ -201,12 +220,12 @@ class TransitionComparison extends React.Component<Props> {
         annotations.push(
             <line key="timeline"
                 x1={this.paddingW + iconR} x2={this.paddingW + iconR}
-                y1={this.paddingH + this.groupLabelHeight} y2={this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[dataStore.timepoints.length-1]}
+                y1={this.paddingH + this.groupLabelHeight} y2={this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[dataStore.timepoints.length - 1]}
                 stroke="gray"
             />)
 
         dataStore.timepoints.forEach((d, i) => {
-            if (d.type==='between') return
+            if (d.type === 'between') return
 
             const transformTP = `translate(
                     ${this.paddingW},
@@ -221,26 +240,10 @@ class TransitionComparison extends React.Component<Props> {
             )
         });
 
-        // let groupLables = dataStore.patientGroups.map((group, groupIdx)=>{
-        //     let offsetX = Object.values(layoutDict[0][groupIdx])[0].x
-        //     let transform = `translate(${offsetX}, ${this.paddingH})`
-        //     let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
-        //     return <g key={`group_${groupIdx}`} transform={transform} style={{fontWeight: isSelected?'bold':'normal', fill:isSelected?'#1890ff':'black'}} onClick={uiStore.selectPatientGroup(groupIdx)}>
-        //             <text y={this.groupLabelHeight/2}>{`group_${groupIdx}`}</text>
-        //             {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}
-        //         </g>
-        //     })
-
 
         return [
-            <g key="groupLabels" className="groupLabels">{groupLabels}</g>,
-            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>, 
-            <g key="transitions" className="transitions" transform={`translate(${this.props.width * (1 - this.plotRatio)}, 0)`}>
-                {transitions}
-            </g>,
-            <g key="timepoints" className="timepoints" transform={`translate(${this.props.width * (1 - this.plotRatio)}, 0)`}>
-                {timepoints}
-            </g>,
+            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>,
+            ...groups
         ];
     }
     render() {
