@@ -9,7 +9,7 @@ import FeatureLegend from './FeatureLegend'
 
 import { IImportantScore } from './index'
 
-import { Popover } from 'antd'
+import { Popover, Tooltip } from 'antd'
 
 
 interface Props {
@@ -299,10 +299,19 @@ class StateBlock extends React.Component<Props> {
         let { importanceScores, width } = this.props
         let rows = importanceScores.map((d, i) => {
             let { score, name } = d
-            return <g key={name} transform={`translate(0, ${this.cellHeight * (i + 1)})`}>
-                <text opacity={Math.max(0.3, score)} >
-                    {cropText(name, this.fontHeight, 400, this.maxNameColWidth)} {' '} {score.toFixed(this.scoreDigits)}
+            let cropName = cropText(name, this.fontHeight, 400, this.maxNameColWidth)
+            let featureNameComponent = cropName.length === name.length ?
+                <text opacity={Math.max(0.3, score)} cursor="pointer">
+                    {cropName} {' '} {score.toFixed(this.scoreDigits)}
                 </text>
+                : <Tooltip title={name}>
+                    <text opacity={Math.max(0.3, score)} cursor="pointer">
+                        {cropName} {' '} {score.toFixed(this.scoreDigits)}
+                    </text>
+                </Tooltip>
+                
+            return <g key={name} transform={`translate(0, ${this.cellHeight * (i + 1)})`}>
+                {featureNameComponent}
                 <text
                     x={this.nameColWidth - this.strokeW * 2} textAnchor="end" cursor="pointer"
                     onClick={() => { this.props.removeVariable(name) }}
@@ -342,7 +351,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     render() {
-        let legendLabelTransform = `translate(${this.props.width - this.rightMargin*0.5}, ${this.cellHeight * this.attrNum/2 + this.fontHeight}) rotate(-90, 0, 0) `
+        let legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
         return <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
 

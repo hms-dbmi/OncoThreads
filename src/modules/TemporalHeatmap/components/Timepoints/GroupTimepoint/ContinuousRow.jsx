@@ -408,8 +408,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
             .computeBoxPlotValues(values.map(element => element.value));
         if (this.props.uiStore.continuousRepresentation === 'gradient') {
             const selectedPartitionPatients = this.props.row.map(d => d.patients[0])
-                .filter(patientId => this.props.dataStore.selectedPatients
-                    .indexOf(patientId) !== -1);
+                .filter(patientId => this.props.dataStore.selectedPatients.includes(patientId));
             return (
                 this.createGradientRow(this.props.row.map(element => ({
                     patient: element.patients[0],

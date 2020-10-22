@@ -2,11 +2,11 @@ import * as React from "react"
 import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 interface Props {
     rootStore?: IRootStore,
-    overviewWidth: number,
+    width: number,
 }
 
 type TypeLayoutDict = {
@@ -25,12 +25,14 @@ class TransitionOverview extends React.Component<Props> {
     partitionGap = 15;
     linkMaxWidth = 20;
     paddingW = 5; paddingH = 10; annotationWidth = 40;
+    groupLabelHeight = 40;
+
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
-        let { dataStore } = this.props.rootStore!
+        let { dataStore, uiStore } = this.props.rootStore!
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
-            .range([0, this.props.overviewWidth - (dataStore.maxTPPartitionWithGroup - 1) * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
+            .range([0, this.props.width - (dataStore.maxTPPartitionWithGroup ) * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
 
         let layoutDict: TypeLayoutDict = []
         let samplePoints = dataStore.timepoints
@@ -41,7 +43,7 @@ class TransitionOverview extends React.Component<Props> {
 
             const transformTP = `translate(
                     ${0},
-                    ${this.paddingH + timeIdx * this.timeStepHeight}
+                    ${this.paddingH + this.groupLabelHeight + timeIdx * this.timeStepHeight}
                     )`;
             let offsetX = this.paddingW + this.annotationWidth, gap = this.partitionGap;
             let timepoint: Array<JSX.Element> = []
@@ -100,9 +102,9 @@ class TransitionOverview extends React.Component<Props> {
 
                             let layoutDict1 = layoutDict[i][groupIdx][partition1], layoutDict2 = layoutDict[i + 1][groupIdx][partition2]
                             let sourceX = layoutDict1.x + layoutDict1.width / 2,
-                                sourceY = this.paddingH + i * this.timeStepHeight + this.rectHeight,
+                                sourceY = this.paddingH + this.groupLabelHeight + i * this.timeStepHeight + this.rectHeight,
                                 targetX = layoutDict2.x + layoutDict2.width / 2,
-                                targetY = this.paddingH + (i + 1) * this.timeStepHeight
+                                targetY = this.paddingH + this.groupLabelHeight + (i + 1) * this.timeStepHeight
                             transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}_group${groupIdx}`}
                                 d={linkGene({
                                     source: [sourceX, sourceY], target: [targetX, targetY]
@@ -125,7 +127,7 @@ class TransitionOverview extends React.Component<Props> {
         annotations.push(
             <line key="timeline"
                 x1={this.paddingW + iconR} x2={this.paddingW + iconR}
-                y1={this.paddingH} y2={this.paddingH + this.timeStepHeight * (samplePoints.length - 1)}
+                y1={this.paddingH + this.groupLabelHeight} y2={this.paddingH + this.groupLabelHeight + this.timeStepHeight * (samplePoints.length - 1)}
                 stroke="gray"
             />)
 
@@ -133,7 +135,7 @@ class TransitionOverview extends React.Component<Props> {
 
             const transformTP = `translate(
                     ${this.paddingW},
-                    ${this.paddingH + i * this.timeStepHeight}
+                    ${this.paddingH + this.groupLabelHeight + i * this.timeStepHeight}
                     )`;
 
             annotations.push(
@@ -144,9 +146,25 @@ class TransitionOverview extends React.Component<Props> {
             )
         });
 
+        let groupLables = dataStore.patientGroups.map((group, groupIdx)=>{
+            let offsetX = Object.values(layoutDict[0][groupIdx])[0].x
+            let transform = `translate(${offsetX}, ${this.paddingH})`
+            let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
+            return <g key={`group_${groupIdx}`} transform={transform} style={{fontWeight: isSelected?'bold':'normal', fill:isSelected?'#1890ff':'black'}} >
+                    <text y={this.groupLabelHeight/2} cursor="pointer" onClick={()=>uiStore.selectPatientGroup(groupIdx)}>{`group_${groupIdx}`}</text>
+                    {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}
+                </g>
+            })
 
-        return [annotations, transitions, timepoints];
+
+        return [
+            <g key="groupLabels" className="groupLabels">{groupLables}</g>,
+            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>, 
+            <g key="transitions" className="transitions">{transitions}</g>, 
+            <g key="timepoints" className="timepoints">{timepoints}</g>,          
+        ];
     }
+
 
     getFrequentPatterns() {
         let { dataStore } = this.props.rootStore!
@@ -175,7 +193,7 @@ class TransitionOverview extends React.Component<Props> {
         })
         
 
-        return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.timeStepHeight*dataStore.maxTime})`}>
+        return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight*dataStore.maxTime})`}>
             {patterns}
         </g>
     }

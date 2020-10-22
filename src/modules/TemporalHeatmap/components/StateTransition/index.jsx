@@ -9,6 +9,8 @@ import './index.css'
 
 import CustomGrouping from './CustomGrouping'
 import TransitionOverview from './TransitionOverview'
+import TransitionComparison from './TransitionComparison'
+
 /**
  * Component for the Block view
  */
@@ -47,10 +49,15 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
     updateDimensions() {
         this.height = window.innerHeight - 260
         this.width = window.innerWidth - 10
+        
     }
     
     get overviewWidth(){
         return this.width/4*0.98
+    }
+
+    get comparisonWidth(){
+        return this.width/2*0.95
     }
 
 
@@ -89,7 +96,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                                     // width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
-                                    <TransitionOverview overviewWidth = {this.overviewWidth}/>
+                                    <TransitionOverview width = {this.overviewWidth}/>
                                 </svg>
                             </div>
 
@@ -114,7 +121,9 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                                     // height="100%"
                                     // width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
-                                ></svg>
+                                >
+                                    <TransitionComparison width = {this.comparisonWidth} tooltipFunctions={this.props.tooltipFunctions}/>
+                                </svg>
                             </div>
 
                         </Card>

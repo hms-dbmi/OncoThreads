@@ -10,7 +10,7 @@ class UIStore {
             cBioInstance: 'hack', // hack, portal, own
             continuousRepresentation: 'gradient', // gradient, boxplot, medium
             realTime: false, // show realtime lines in block view
-            globalTime: false, // show global timeline
+            globalTime: 'block', // show global timeline
             advancedSelection: true, // advanced selection enables
             showUndefined: true, // show rows with only undefined values
             slantedLines: 'none', // altWithin, altAcross, none, random
@@ -18,6 +18,7 @@ class UIStore {
             rowOffset: 0,
             horizontalStacking: false,
             horizontalGap: 1,
+            selectedPatientGroupIdx: [-1, 0],
             setCBioInstance: action((instance) => {
                 this.cBioInstance = instance;
             }),
@@ -51,6 +52,9 @@ class UIStore {
             setHorizontalGap: action((horizontalGap) => {
                 this.horizontalGap = Number(horizontalGap);
             }),
+            selectPatientGroup: action((groupIdx)=>{
+                this.selectedPatientGroupIdx = [this.selectedPatientGroupIdx[1], groupIdx]
+            })
         });
     }
 }

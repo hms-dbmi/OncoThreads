@@ -34,6 +34,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         
         let stateTransition = <StateTransition
             openSaveVarModal={this.props.openSaveVarModal}
+            tooltipFunctions={this.props.tooltipFunctions}
         />
         let myblockView = (
             <MyBlockView
