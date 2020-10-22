@@ -87,8 +87,10 @@ class TransitionComparison extends React.Component<Props> {
 
             selectedPatientGroupIdx.forEach((groupIdx: number) => {
                 if (groupIdx === -1) return
-                if(timeIdx ===0) groupLabels.push(<text key={`label_group${groupIdx}`} y={this.groupLabelHeight-12} x={offsetX + this.props.width * (1-this.plotRatio)}> group_{groupIdx} </text>)
                 let patientGroup = dataStore.patientGroups[groupIdx]
+                if (patientGroup===undefined) return
+                if(timeIdx ===0) groupLabels.push(<text key={`label_group${groupIdx}`} y={this.groupLabelHeight-12} x={offsetX + this.props.width * (1-this.plotRatio)}> group_{groupIdx} </text>)
+                
 
                 // draw transitions
                 if (timeIdx !== dataStore.timepoints.length - 1) {
@@ -96,9 +98,9 @@ class TransitionComparison extends React.Component<Props> {
 
 
                     const firstTP = d
-                    const firstGrouped = firstTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup));
+                    const firstGrouped = firstTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g=>g.patients.length>0);
                     const secondTP = dataStore.timepoints[timeIdx + 1];
-                    const secondGrouped = secondTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup));
+                    const secondGrouped = secondTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g=>g.patients.length>0);
                     // if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
                     //     secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
                     // }
