@@ -38,6 +38,8 @@ class TransitionComparison extends React.Component<Props> {
     getGroupedPartition(group: any, patientGroup: string[]) {
         // filter the partition at each timepoint with the user selected groups
         let { dataStore } = this.props.rootStore!
+       
+
         if (group.points) return {
             ...group,
             patients: group.patients.filter((p: string) => patientGroup.includes(p)),
@@ -80,15 +82,7 @@ class TransitionComparison extends React.Component<Props> {
         let groupOffsetX = 0, groupWidth = 0
 
         selectedPatientGroupIdx.forEach((groupIdx: number, i: number) => {
-            if (groupIdx === -1) return
             let patientGroup = dataStore.patientGroups[groupIdx]
-            if (patientGroup === undefined) return
-            // if(timeIdx ===0) 
-            // groupLabels.push(<text key={`label_group${groupIdx}`} y={this.groupLabelHeight - 12} x={groupOffsetX + this.props.width * (1 - this.plotRatio)}> group_{groupIdx} </text>)
-
-
-
-
 
             dataStore.timepoints.forEach((d, timeIdx) => {
 
@@ -117,7 +111,7 @@ class TransitionComparison extends React.Component<Props> {
                     if (firstTP.customPartitions.length > 0) {
                         if (secondTP.customPartitions.length > 0) {
                             transitions.push(
-                                <g className={`time${timeIdx}_group${groupIdx}`} key={`time${timeIdx}_group${groupIdx}`} transform={transformTR}>
+                                <g className={`time${timeIdx}_group${groupIdx} transitions`} key={`time${timeIdx}_group${groupIdx}`} transform={transformTR}>
                                     <Provider
                                         dataStore={dataStore}
                                         visStore={visStore}
@@ -146,22 +140,18 @@ class TransitionComparison extends React.Component<Props> {
                 d.customGrouped.forEach((group, partitionIdx) => {
                     let stateKey = d.partition || ''
 
-                    let patients = d.patients.filter((p: string) => patientGroup.includes(p))
-                    if (patients.length == 0) return
-                    // timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
-
                     let transform = `translate(${offsetX}, ${0})`
                     let heatmap = d.heatmap.map(v => {
                         return { ...v, data: v.data.filter(p => patientGroup.includes(p.patient)) }
                     })
 
                     let partition = this.getGroupedPartition(group, patientGroup)
-
+                    
                     if (partition.patients.length === 0) return
 
                     timepoint.push(<g
                         key={`group${groupIdx}_state${group.partition}`}
-                        className={`group${groupIdx}_state${group.partition}`}
+                        className={`group${groupIdx}_state${group.partition} timepoint`}
                         style={{ backgroundColor: 'darkgray' }}
                         transform={transform}
                     >
