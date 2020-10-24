@@ -4,6 +4,7 @@ import { observable } from 'mobx';
 import { IRootStore } from "modules/Type";
 import GroupPartition from '../Timepoints/GroupTimepointCustom/GroupPartition';
 import SankeyTransition from '../Transitions/SankeyTransition/SankeyTransition';
+import EventLegend from './EventLegend'
 
 interface Props {
     rootStore?: IRootStore,
@@ -249,6 +250,9 @@ class TransitionComparison extends React.Component<Props> {
     render() {
         return <g className="transitionComparison">
             {this.getTransitionComparison()}
+            <g className='eventLegend' transform={`translate(${this.props.width}, ${0})`}>
+            <EventLegend />
+            </g>
         </g>
     }
 }

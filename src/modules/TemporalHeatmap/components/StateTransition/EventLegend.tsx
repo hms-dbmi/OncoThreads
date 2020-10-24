@@ -1,6 +1,5 @@
 import React from "react"
 import { observer, inject } from 'mobx-react';
-import {v4 as uuidv4} from 'uuid';
 
 import { IRootStore } from 'modules/Type'
 import { observable } from "mobx";
@@ -10,7 +9,6 @@ import { TColorScale, TRow, TVariable } from "modules/Type/Store";
 
 interface Props {
     rootStore?: IRootStore,
-    cellHeight: number
 }
 
 @inject('rootStore', 'uiStore')
@@ -99,7 +97,7 @@ class FeatureLegend extends React.Component<Props> {
             }
             this.updateMaxWidth(this.defaultWidth);
             return (
-                <g  key={variableName}>
+                <g  key={variableName} className='continousLegend'>
                     <defs>
                         <linearGradient id={`gradient_${variableName}`} x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style={{ stopColor: color(min) }} />
@@ -151,7 +149,7 @@ class FeatureLegend extends React.Component<Props> {
             }
         });
         this.updateMaxWidth(currX);
-        return legendEntries;
+        return <g className='categoricalLegend'>{legendEntries}</g>;
     }
 
     /**
@@ -167,7 +165,7 @@ class FeatureLegend extends React.Component<Props> {
         legendEntries = legendEntries.concat(this.getLegendEntry('true', opacity, getTextWidth('true', fontSize) + 4, fontSize, 0, lineheight, color(true), 'black'));
         legendEntries = legendEntries.concat(this.getLegendEntry('false', opacity, getTextWidth('false', fontSize) + 4, fontSize, getTextWidth('true', fontSize) + 6, lineheight, color(false), 'black'));
         this.updateMaxWidth(74);
-        return legendEntries;
+        return <g className='binaryLegend'>{legendEntries}</g>;
     }
 
     /**
@@ -215,25 +213,32 @@ class FeatureLegend extends React.Component<Props> {
         let opacity = 0.5;
 
         // return dataStore.currentVariables
-        return dataStore.variableStores.sample.currentVariables
+        const maxVarWidth = Math.max(...dataStore.variableStores.between.currentVariables
+            .map((varName:string)=>getTextWidth(varName, adaptedFontSize)))
+
+        return dataStore.variableStores.between.currentVariables
             .map((variableName:string, variableIdx:number) => {
-                let variable = dataStore.referencedVariables[variableName]
-                let colorScale = dataStore.colorScales[variableIdx]
+                let variable = dataStore.variableStores.between.referencedVariables[variableName]
+
+                let colorScale = variable.colorScale
                 let legendEntries: JSX.Element[] = [];
 
                 if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
-                    legendEntries = this.getCategoricalLegend(variable, variable.domain, opacity, adaptedFontSize, lineheight);
+                    legendEntries = [this.getCategoricalLegend(variable, variable.domain, opacity, adaptedFontSize, lineheight)];
                 } else if (variable.datatype === 'BINARY') {
-                    legendEntries = this.getBinaryLegend(opacity, adaptedFontSize,
-                        lineheight, colorScale);
+                    legendEntries = [this.getBinaryLegend(opacity, adaptedFontSize, lineheight, colorScale)];
                 } else {
                     legendEntries = [this.getContinuousLegend(variableName, opacity, adaptedFontSize,
                         lineheight, colorScale)];
                 }
-                let leTransform = `translate(0,${variableIdx*this.props.cellHeight})`;
+                
+                let leTransform = `translate(${ -this.maxWidth - maxVarWidth},${variableIdx*lineheight})`;
 
-                return <g className="featureLegend" transform={leTransform} key={`${variableName}_${variableIdx}`}>
-                    {legendEntries}
+                return <g className="eventLegend" transform={leTransform} key={`${variableName}_${variableIdx}`}>
+                   <text  y={lineheight} fontSize={adaptedFontSize}> {variableName}</text>
+                   <g transform={`translate(${maxVarWidth}, 0)`}>
+                   {legendEntries}
+                   </g>
                 </g>
             })
 
@@ -242,11 +247,11 @@ class FeatureLegend extends React.Component<Props> {
 
     render(){
         let { dataStore } = this.props.rootStore!
-        let height = this.props.cellHeight * dataStore.currentVariables.length
+        // let height = this.props.cellHeight * dataStore.currentVariables.length, width = this.maxWidth
         let content = this.getLegend()
-        return <svg width={this.maxWidth} height={height} className="featureLegend">
+        return <g className="eventLegend">
             {content}
-        </svg>
+        </g>
     }
 }
 
