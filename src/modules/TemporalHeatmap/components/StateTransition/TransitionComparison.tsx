@@ -9,6 +9,7 @@ import EventLegend from './EventLegend'
 interface Props {
     rootStore?: IRootStore,
     width: number,
+    hasBackground:boolean,
     tooltipFunctions: {
         showTooltip: (event: any, line1: string, line2: string) => void,
         hideTooltip: () => void
@@ -18,7 +19,7 @@ interface Props {
 @inject('rootStore')
 @observer
 class TransitionComparison extends React.Component<Props> {
-    @observable hasBackground: boolean = false
+
     plotRatio: number = 0.9
     paddingH: number = 6
     paddingW: number = 6
@@ -177,7 +178,7 @@ class TransitionComparison extends React.Component<Props> {
                                 partitionIndex={partitionIdx}
                                 stroke='none'
                                 stateLabels={dataStore.stateLabels}
-                                hasBackground={this.hasBackground}
+                                hasBackground={this.props.hasBackground}
                                 tooltipFunctions={this.props.tooltipFunctions}
                             />
                         </Provider>
@@ -199,8 +200,8 @@ class TransitionComparison extends React.Component<Props> {
 
             groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.props.width * (1 - this.plotRatio)}, ${0})`}>
                 <text y={this.groupLabelHeight-12}>group_{groupIdx} </text>
-                {timepoints}
                 {transitions}
+                {timepoints}
             </g>)
             timepoints = []
             transitions = []

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import { extendObservable, } from 'mobx';
 
-import { InputNumber, Card, Tooltip, Row, Col } from 'antd';
+import { InputNumber, Card, Tooltip, Row, Col, Switch } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import './index.css'
 
@@ -70,6 +70,14 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             <InputNumber min={0} step={1} value={dataStore.patientGroupNum} size="small" onChange={dataStore.changePatientGroupNum}/>
         </span>
 
+        let bgController = <span>
+            <Switch size="small"
+            checkedChildren="detailed" unCheckedChildren= "only state"
+            onChange={() => {
+                this.hasBackground = !this.hasBackground
+            }} />
+        </span>
+
         
 
         return (
@@ -109,7 +117,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
 
                     <Col md={12} sm={12}>
                         <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined translate='' /></Tooltip></span>}
-                            extra='' 
+                            extra={bgController} 
                             style={{width:"98%"}}
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
                             data-intro="state transition details"
@@ -122,7 +130,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                                     // width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
-                                    <TransitionComparison width = {this.comparisonWidth} tooltipFunctions={this.props.tooltipFunctions}/>
+                                    <TransitionComparison width = {this.comparisonWidth} tooltipFunctions={this.props.tooltipFunctions} hasBackground={this.hasBackground}/>
                                 </svg>
                             </div>
 
