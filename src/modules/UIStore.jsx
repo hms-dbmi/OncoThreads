@@ -18,7 +18,7 @@ class UIStore {
             rowOffset: 0,
             horizontalStacking: false,
             horizontalGap: 1,
-            selectedPatientGroupIdx: [-1, 0],
+            selectedPatientGroupIdx: [0],
             setCBioInstance: action((instance) => {
                 this.cBioInstance = instance;
             }),
@@ -53,7 +53,13 @@ class UIStore {
                 this.horizontalGap = Number(horizontalGap);
             }),
             selectPatientGroup: action((groupIdx)=>{
-                this.selectedPatientGroupIdx = [this.selectedPatientGroupIdx[1], groupIdx]
+                let idx = this.selectedPatientGroupIdx.indexOf(groupIdx)
+                if (idx==-1){
+                    this.selectedPatientGroupIdx.push(groupIdx)
+                }else{
+                    this.selectedPatientGroupIdx.splice(idx, 1)
+                }
+                // this.selectedPatientGroupIdx = [this.selectedPatientGroupIdx[1], groupIdx]
             })
         });
     }
