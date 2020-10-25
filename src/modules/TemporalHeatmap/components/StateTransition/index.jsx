@@ -67,7 +67,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
 
         let controller = <span>
             Num of Sequence Groups
-            <InputNumber min={0} step={1} value={dataStore.patientGroupNum} size="small" onChange={dataStore.changePatientGroupNum}/>
+            <InputNumber min={1} step={1} value={dataStore.patientGroupNum} size="small" onChange={dataStore.changePatientGroupNum}/>
         </span>
 
         let bgController = <span>
