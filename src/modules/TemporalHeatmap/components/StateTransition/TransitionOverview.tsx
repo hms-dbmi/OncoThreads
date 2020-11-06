@@ -30,55 +30,81 @@ class TransitionOverview extends React.Component<Props> {
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
         let { dataStore, uiStore } = this.props.rootStore!
-        let rectWidthScale = d3.scaleLinear()
-            .domain([0, dataStore.numberOfPatients])
-            .range([0, this.props.width - (dataStore.maxTPPartitionWithGroup ) * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
+        
 
-        let layoutDict: TypeLayoutDict = []
+        
         let samplePoints = dataStore.timepoints
             .filter(d => d.type === "sample")
+        let layoutDict: TypeLayoutDict = [...Array(samplePoints.length)].map(_=>[])
+
+        let numPartitions = 0
+        dataStore.patientGroups.forEach(patientGroup=>{
+            let groupMax = Math.max(...samplePoints.map(TP=>{
+                let count = 0
+                TP.customGrouped.forEach(d=>{
+                    let patients = d.patients.filter(p => patientGroup.includes(p))
+                    if (patients.length>0){
+                        count += 1
+                    }
+                })
+                return count
+            }))
+
+            numPartitions += groupMax 
+        })
+
+        let rectWidthScale = d3.scaleLinear()
+            .domain([0, dataStore.numberOfPatients])
+            .range([0, this.props.width - numPartitions * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
+
+        let groupOffset = 0
 
         // draw timepoints
-        samplePoints.forEach((d, timeIdx) => {
+        dataStore.patientGroups.forEach((patientGroup: string[], groupIdx: number) => {
+            let groupWidth = 0
 
-            const transformTP = `translate(
-                    ${0},
+            samplePoints.forEach((TP, timeIdx) => {
+
+                const transformTP = `translate(
+                    ${groupOffset},
                     ${this.paddingH + this.groupLabelHeight + timeIdx * this.timeStepHeight}
                     )`;
-            let offsetX = this.paddingW + this.annotationWidth, gap = this.partitionGap;
-            let timepoint: Array<JSX.Element> = []
-            layoutDict.push([])
+                let offsetX = 0
+                let timepoint: Array<JSX.Element> = []
 
-            dataStore.patientGroups.forEach((patientGroup:string[], groupIdx:number)=>{
+
                 layoutDict[timeIdx].push({})
-                if (timeIdx>=1){
-                    offsetX = Math.max(offsetX, Math.min(...Object.values(layoutDict[timeIdx-1][groupIdx]).map(d=>d.x)))
-                }
+                // if (timeIdx >= 1) {
+                //     offsetX = Math.max(offsetX, Math.min(...Object.values(layoutDict[timeIdx - 1][groupIdx]).map(d => d.x)))
+                // }
 
-                d.customGrouped.forEach(d => {
+                TP.customGrouped.forEach(d => {
                     let stateKey = d.partition || ''
-                    
-                    let patients = d.patients.filter(p=>patientGroup.includes(p))
-                    if (patients.length==0) return
+
+                    let patients = d.patients.filter(p => patientGroup.includes(p))
+                    if (patients.length == 0) return
                     let rectWidth = rectWidthScale(patients.length)
-                    timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
-    
+                    timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX +this.paddingW + this.annotationWidth} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
+
                     layoutDict[timeIdx][groupIdx][stateKey] = {
                         width: rectWidth,
-                        x: offsetX
+                        x: offsetX +this.paddingW + this.annotationWidth + groupOffset
                     }
-    
-                    offsetX += rectWidth + gap
+
+                    offsetX += rectWidth + this.partitionGap;
                 })
+
+                groupWidth = Math.max(offsetX - this.partitionGap, groupWidth)
+
+                timepoints.push(
+                    <g key={`group${groupIdx}_time${timeIdx}`} transform={transformTP}>
+                        {timepoint}
+                    </g>,
+                )
             })
 
+            groupOffset += groupWidth + this.partitionGap;
             
-
-            timepoints.push(
-                <g key={d.globalIndex} transform={transformTP}>
-                    {timepoint}
-                </g>,
-            )
         });
 
 
@@ -95,26 +121,26 @@ class TransitionOverview extends React.Component<Props> {
                     secondGrouped = secondTP.customGrouped
                 firstGrouped.forEach((group1) => {
                     secondGrouped.forEach((group2) => {
-                        dataStore.patientGroups.forEach((patientGroup:string[], groupIdx:number)=>{
-                        let { patients: patients1, partition: partition1 } = group1, { patients: patients2, partition: partition2 } = group2
-                        let transPatients = patients1.filter(d => patients2.includes(d)).filter(p=>patientGroup.includes(p))
-                        if (transPatients.length > 0) {
+                        dataStore.patientGroups.forEach((patientGroup: string[], groupIdx: number) => {
+                            let { patients: patients1, partition: partition1 } = group1, { patients: patients2, partition: partition2 } = group2
+                            let transPatients = patients1.filter(d => patients2.includes(d)).filter(p => patientGroup.includes(p))
+                            if (transPatients.length > 0) {
 
-                            let layoutDict1 = layoutDict[i][groupIdx][partition1], layoutDict2 = layoutDict[i + 1][groupIdx][partition2]
-                            let sourceX = layoutDict1.x + layoutDict1.width / 2,
-                                sourceY = this.paddingH + this.groupLabelHeight + i * this.timeStepHeight + this.rectHeight,
-                                targetX = layoutDict2.x + layoutDict2.width / 2,
-                                targetY = this.paddingH + this.groupLabelHeight + (i + 1) * this.timeStepHeight
-                            transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}_group${groupIdx}`}
-                                d={linkGene({
-                                    source: [sourceX, sourceY], target: [targetX, targetY]
-                                })!}
-                                fill="none"
-                                stroke="lightgray"
-                                strokeWidth={linkWidthScale(transPatients.length)}
-                            />)
-                        }
-                    })
+                                let layoutDict1 = layoutDict[i][groupIdx][partition1], layoutDict2 = layoutDict[i + 1][groupIdx][partition2]
+                                let sourceX = layoutDict1.x + layoutDict1.width / 2,
+                                    sourceY = this.paddingH + this.groupLabelHeight + i * this.timeStepHeight + this.rectHeight,
+                                    targetX = layoutDict2.x + layoutDict2.width / 2,
+                                    targetY = this.paddingH + this.groupLabelHeight + (i + 1) * this.timeStepHeight
+                                transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}_group${groupIdx}`}
+                                    d={linkGene({
+                                        source: [sourceX, sourceY], target: [targetX, targetY]
+                                    })!}
+                                    fill="none"
+                                    stroke="lightgray"
+                                    strokeWidth={linkWidthScale(transPatients.length)}
+                                />)
+                            }
+                        })
 
                     })
                 })
@@ -146,22 +172,22 @@ class TransitionOverview extends React.Component<Props> {
             )
         });
 
-        let groupLables = dataStore.patientGroups.map((group, groupIdx)=>{
+        let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
             let offsetX = Object.values(layoutDict[0][groupIdx])[0].x
             let transform = `translate(${offsetX}, ${this.paddingH})`
             let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
-            return <g key={`group_${groupIdx}`} transform={transform} style={{fontWeight: isSelected?'bold':'normal', fill:isSelected?'#1890ff':'black'}} >
-                    <text y={this.groupLabelHeight/2} cursor="pointer" onClick={()=>uiStore.selectPatientGroup(groupIdx)}>{`group_${groupIdx}`}</text>
-                    {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}
-                </g>
-            })
+            return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }} >
+                <text y={this.groupLabelHeight / 2} cursor="pointer" onClick={() => uiStore.selectPatientGroup(groupIdx)}>{`group_${groupIdx}`}</text>
+                {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}
+            </g>
+        })
 
 
         return [
             <g key="groupLabels" className="groupLabels">{groupLables}</g>,
-            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>, 
-            <g key="transitions" className="transitions">{transitions}</g>, 
-            <g key="timepoints" className="timepoints">{timepoints}</g>,          
+            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>,
+            <g key="transitions" className="transitions">{transitions}</g>,
+            <g key="timepoints" className="timepoints">{timepoints}</g>,
         ];
     }
 
@@ -171,29 +197,29 @@ class TransitionOverview extends React.Component<Props> {
         let { frequentPatterns, patientGroups } = dataStore
 
         let offsetX = 0, gapX = 17
-        let patterns = patientGroups.map((patientGroup, groupIdx)=>{
-            offsetX += groupIdx==0?0:gapX
+        let patterns = patientGroups.map((patientGroup, groupIdx) => {
+            offsetX += groupIdx == 0 ? 0 : gapX
             return frequentPatterns.map((pattern, patternIdx) => {
                 let [supportIdxs, subseq] = pattern
-                supportIdxs = supportIdxs.filter(p=>patientGroup.includes(p))
-                if (supportIdxs.length==0) return <g key={`group_${groupIdx}_pattern_${patternIdx}`} />
-                offsetX += patternIdx==0?0:gapX
+                supportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
+                if (supportIdxs.length == 0) return <g key={`group_${groupIdx}_pattern_${patternIdx}`} />
+                offsetX += patternIdx == 0 ? 0 : gapX
                 return <g key={`group_${groupIdx}_pattern_${patternIdx}`}>
-                    <text x = {offsetX }>{supportIdxs.length}</text>
+                    <text x={offsetX}>{supportIdxs.length}</text>
                     {subseq.map((stateKey, i) => {
-                        return <rect key={i} 
-                            fill={getColorByName(stateKey)} 
-                            width={10} height={10} 
+                        return <rect key={i}
+                            fill={getColorByName(stateKey)}
+                            width={10} height={10}
                             x={offsetX}
-                            y={7+i*12}
+                            y={7 + i * 12}
                         />
                     })}
                 </g>
             })
         })
-        
 
-        return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight*dataStore.maxTime})`}>
+
+        return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight * dataStore.maxTime})`}>
             {patterns}
         </g>
     }

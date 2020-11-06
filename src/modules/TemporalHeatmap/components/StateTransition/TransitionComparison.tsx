@@ -179,7 +179,7 @@ class TransitionComparison extends React.Component<Props> {
                     offsetX += visStore.groupScale(partition.patients.length) + visStore.partitionGap;
                 })
 
-                groupWidth = Math.max(groupWidth+ visStore.partitionGap, offsetX)
+                groupWidth = Math.max(groupWidth, offsetX)
 
                 timepoints.push(
                     <g key={d.globalIndex} transform={transformTP} className={`time_${timeIdx}`}>
@@ -196,7 +196,7 @@ class TransitionComparison extends React.Component<Props> {
             timepoints = []
             transitions = []
 
-            groupOffsetX += groupWidth
+            groupOffsetX += groupWidth + visStore.partitionGap
 
 
 
