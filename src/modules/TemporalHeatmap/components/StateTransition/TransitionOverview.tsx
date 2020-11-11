@@ -2,7 +2,7 @@ import * as React from "react"
 import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { cropText, getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 
 interface Props {
     rootStore?: IRootStore,
@@ -10,11 +10,13 @@ interface Props {
 }
 
 type TypeLayoutDict = {
+    width?: number,
+    [timeID:number]:{
     [key: string]: {
         width: number,
         x: number,
     }
-}[][]
+}}[]
 
 @inject('rootStore')
 @observer
@@ -29,33 +31,34 @@ class TransitionOverview extends React.Component<Props> {
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
-        let { dataStore, uiStore } = this.props.rootStore!
+        let { dataStore, uiStore, visStore } = this.props.rootStore!
         
 
         
         let samplePoints = dataStore.timepoints
             .filter(d => d.type === "sample")
-        let layoutDict: TypeLayoutDict = [...Array(samplePoints.length)].map(_=>[])
+        let layoutDict: TypeLayoutDict = [...Array(dataStore.patientGroups.length)]
+            .map(_=>{return {}})
 
-        let numPartitions = 0
+        let partitionGap = 0
         dataStore.patientGroups.forEach(patientGroup=>{
-            let groupMax = Math.max(...samplePoints.map(TP=>{
-                let count = 0
+            let groupMaxGap = Math.max(...samplePoints.map(TP=>{
+                let gap = 0
                 TP.customGrouped.forEach(d=>{
                     let patients = d.patients.filter(p => patientGroup.includes(p))
                     if (patients.length>0){
-                        count += 1
+                        gap += this.partitionGap
                     }
                 })
-                return count
+                return gap
             }))
 
-            numPartitions += groupMax 
+            partitionGap += groupMaxGap + this.partitionGap
         })
 
         let rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
-            .range([0, this.props.width - numPartitions * this.partitionGap - 2 * this.paddingW - this.annotationWidth]);
+            .range([0, this.props.width - partitionGap - 2 * this.paddingW - this.annotationWidth]);
 
         let groupOffset = 0
 
@@ -64,6 +67,7 @@ class TransitionOverview extends React.Component<Props> {
             let groupWidth = 0
 
             samplePoints.forEach((TP, timeIdx) => {
+                layoutDict[groupIdx][timeIdx] = {}
 
                 const transformTP = `translate(
                     ${groupOffset},
@@ -72,8 +76,6 @@ class TransitionOverview extends React.Component<Props> {
                 let offsetX = 0
                 let timepoint: Array<JSX.Element> = []
 
-
-                layoutDict[timeIdx].push({})
                 // if (timeIdx >= 1) {
                 //     offsetX = Math.max(offsetX, Math.min(...Object.values(layoutDict[timeIdx - 1][groupIdx]).map(d => d.x)))
                 // }
@@ -86,7 +88,7 @@ class TransitionOverview extends React.Component<Props> {
                     let rectWidth = rectWidthScale(patients.length)
                     timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX +this.paddingW + this.annotationWidth} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
 
-                    layoutDict[timeIdx][groupIdx][stateKey] = {
+                    layoutDict[groupIdx][timeIdx][stateKey] = {
                         width: rectWidth,
                         x: offsetX +this.paddingW + this.annotationWidth + groupOffset
                     }
@@ -103,7 +105,9 @@ class TransitionOverview extends React.Component<Props> {
                 )
             })
 
-            groupOffset += groupWidth + this.partitionGap;
+            layoutDict[groupIdx]['width']=groupWidth
+
+            groupOffset += groupWidth + 2*this.partitionGap;
             
         });
 
@@ -126,7 +130,7 @@ class TransitionOverview extends React.Component<Props> {
                             let transPatients = patients1.filter(d => patients2.includes(d)).filter(p => patientGroup.includes(p))
                             if (transPatients.length > 0) {
 
-                                let layoutDict1 = layoutDict[i][groupIdx][partition1], layoutDict2 = layoutDict[i + 1][groupIdx][partition2]
+                                let layoutDict1 = layoutDict[groupIdx][i][partition1], layoutDict2 = layoutDict[groupIdx][i + 1][partition2]
                                 let sourceX = layoutDict1.x + layoutDict1.width / 2,
                                     sourceY = this.paddingH + this.groupLabelHeight + i * this.timeStepHeight + this.rectHeight,
                                     targetX = layoutDict2.x + layoutDict2.width / 2,
@@ -173,11 +177,15 @@ class TransitionOverview extends React.Component<Props> {
         });
 
         let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
-            let offsetX = Object.values(layoutDict[0][groupIdx])[0].x
+            let offsetX = Object.values(layoutDict[groupIdx][0])[0].x
             let transform = `translate(${offsetX}, ${this.paddingH})`
             let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
+            let groupLabel = getTextWidth(`group${groupIdx}`, 14) > this.partitionGap + layoutDict[groupIdx]['width']!?
+                `..${groupIdx}`:`group${groupIdx}`
             return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }} >
-                <text y={this.groupLabelHeight / 2} cursor="pointer" onClick={() => uiStore.selectPatientGroup(groupIdx)}>{`group_${groupIdx}`}</text>
+                <text y={this.groupLabelHeight / 2} cursor="pointer" onClick={() => uiStore.selectPatientGroup(groupIdx)} xlinkTitle={`group_${groupIdx}`}>
+                    {groupLabel}
+                </text>
                 {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}
             </g>
         })

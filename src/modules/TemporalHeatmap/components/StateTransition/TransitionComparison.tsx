@@ -189,7 +189,7 @@ class TransitionComparison extends React.Component<Props> {
             })
 
             groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.props.width * (1 - this.plotRatio)}, ${0})`}>
-                <text y={this.groupLabelHeight-12}>group_{groupIdx} </text>
+                <text y={this.groupLabelHeight-12}>group{groupIdx} </text>
                 {transitions}
                 {timepoints}
             </g>)
