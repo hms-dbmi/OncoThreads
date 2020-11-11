@@ -404,7 +404,7 @@ HierarchicalClustering.prototype = {
          return false;         
       }
 
-      if (this.clusters.length<=this.maxClusterNum){
+      if (this.clusters.length<=this.maxClusterNum && min>0){
          return false
       }
 

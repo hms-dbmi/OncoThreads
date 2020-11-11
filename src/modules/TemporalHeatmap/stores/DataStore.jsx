@@ -2,6 +2,7 @@ import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
 import { getUniqueKeyName, PrefixSpan, clusterfck  } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { message } from 'antd';
 
 /*
  stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -22,7 +23,7 @@ class DataStore {
             stateLabels: {}, // key & label pairs
             pointGroups: {}, // the group of this.points: pointIdx[][]
             numofStates: 3, // the initial threshold to group points
-            patientGroupNum: 1,
+            patientGroups: [[...rootStore.patients]],
 
             /**
              * get the maximum number of currently displayed partitions
@@ -38,6 +39,9 @@ class DataStore {
                 }
                 return maxPartitions;
 
+            },
+            get patientGroupNum(){
+                return this.patientGroups.length
             },
             get maxTPPartitionWithGroup() {
                 let {patientGroups} = this
@@ -228,22 +232,16 @@ class DataStore {
 
                 return results
             },
-            /**
-             * each patient is encoded by whether they have the frequent patterns
-             * @return {string[][]}
-             */
-            get patientGroups (){
-                let {frequentPatterns, patientStates, patientGroupNum} = this
-                let patients = Object.keys(patientStates)
+            
 
-                if(patientGroupNum==1){
-                    return [patients]
-                }
+            changePatientGroupNum: action((num)=>{
+                let {frequentPatterns} = this
+                let {patients} = this.rootStore
 
                 // don't group without frequent patterns
                 if(frequentPatterns.length==0){
                     this.patientGroupNum = 1 
-                    return [patients]
+                    message.error('Cannot group patients without frequent patterns!');
                 }
 
                 let patientEncoding = patients.map(p=>{
@@ -262,15 +260,15 @@ class DataStore {
                     })
                 })
 
-                let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "single", Infinity, patientGroupNum)
+                let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "single", Infinity, num)
 
-                // console.info(patientEncoding, patientClusters)
+                if (patientClusters.length < num){
+                    message.error('Cannot further divide patients!')
+                }
 
-                return patientClusters.map(d=>d.itemIdx.map(i=>patients[i]))
-            },
+                this.patientGroups = patientClusters.map(d=>d.itemIdx.map(i=>patients[i]))
 
-            changePatientGroupNum: action((num)=>{
-                this.patientGroupNum = num
+                
             }),
 
             changeClusterTHR: action((thr)=>{
@@ -409,7 +407,8 @@ class DataStore {
                 this.variableStores.between.update(this.rootStore.eventBlockStructure,
                     this.rootStore.patients);
                 this.combineTimepoints(true, false);
-                this.rootStore.visStore.resetTransitionSpaces();
+                this.rootStore.visStore.resetTransitionSpaces(); 
+                this.patientGroups =  [ this.rootStore.patients ]
             }),
 
             /**

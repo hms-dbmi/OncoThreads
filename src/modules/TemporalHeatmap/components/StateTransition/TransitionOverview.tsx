@@ -37,7 +37,7 @@ class TransitionOverview extends React.Component<Props> {
         
         let samplePoints = dataStore.timepoints
             .filter(d => d.type === "sample")
-        let layoutDict: TypeLayoutDict = [...Array(dataStore.patientGroups.length)]
+        let layoutDict: TypeLayoutDict = [...Array(dataStore.patientGroupNum)]
             .map(_=>{return {}})
 
         let partitionGap = 0
@@ -110,6 +110,8 @@ class TransitionOverview extends React.Component<Props> {
             groupOffset += groupWidth + 2*this.partitionGap;
             
         });
+
+        console.info(dataStore.patientGroups)
 
 
 
