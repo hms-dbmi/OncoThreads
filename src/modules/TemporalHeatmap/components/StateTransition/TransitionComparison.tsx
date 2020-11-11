@@ -195,7 +195,8 @@ class TransitionComparison extends React.Component<Props> {
             </g>)
             timepoints = []
             transitions = []
-            groupOffsetX = groupWidth
+
+            groupOffsetX += groupWidth + visStore.partitionGap
 
 
 
