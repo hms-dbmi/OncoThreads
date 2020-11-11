@@ -150,7 +150,7 @@ class FeatureLegend extends React.Component<Props> {
                 }
             }
         });
-        this.updateMaxWidth(currX);
+        this.updateMaxWidth(currX + getTextWidth(variable.name, fontSize));
         return legendEntries;
     }
 
@@ -214,6 +214,9 @@ class FeatureLegend extends React.Component<Props> {
         let adaptedFontSize = 10;
         let opacity = 0.5;
 
+        let varWidth = Math.max(...dataStore.variableStores.sample.currentVariables
+            .map((varName:string)=>getTextWidth(varName, adaptedFontSize)))
+
         // return dataStore.currentVariables
         return dataStore.variableStores.sample.currentVariables
             .map((variableName:string, variableIdx:number) => {
@@ -230,10 +233,13 @@ class FeatureLegend extends React.Component<Props> {
                     legendEntries = [this.getContinuousLegend(variableName, opacity, adaptedFontSize,
                         lineheight, colorScale)];
                 }
-                let leTransform = `translate(0,${variableIdx*this.props.cellHeight})`;
+                let leTransform = `translate(0,${variableIdx*this.props.cellHeight})`
 
                 return <g className="featureLegend" transform={leTransform} key={`${variableName}_${variableIdx}`}>
+                    <text className="feature name" fontSize={adaptedFontSize} y={adaptedFontSize}>{variableName}</text>
+                    <g className='feature colorMap' transform={`translate(${varWidth+5}, 0)`}>
                     {legendEntries}
+                    </g>
                 </g>
             })
 
