@@ -111,9 +111,6 @@ class TransitionOverview extends React.Component<Props> {
             
         });
 
-        console.info(dataStore.patientGroups)
-
-
 
         // draw transitions
         let linkGene = d3.linkVertical().x(d => d[0]).y(d => d[1])
