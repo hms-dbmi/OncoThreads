@@ -233,7 +233,7 @@ class CustomGrouping extends React.Component<Props> {
         if (this.ref.current) {
             this.width = this.ref.current.getBoundingClientRect().width
         }
-        this.height = window.innerHeight - 260
+        this.height = window.innerHeight - 300
     }
 
     @action

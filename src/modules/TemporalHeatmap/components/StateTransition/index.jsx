@@ -11,6 +11,8 @@ import CustomGrouping from './CustomGrouping'
 import TransitionOverview from './TransitionOverview'
 import TransitionComparison from './TransitionComparison'
 
+import EventLegend from './EventLegend'
+
 /**
  * Component for the Block view
  */
@@ -22,7 +24,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
         extendObservable(this, {
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
-            height: window.innerHeight - 260,
+            height: window.innerHeight - 360,
             width: window.innerWidth - 10,
             hasBackground: true,
             ref: React.createRef(),
@@ -47,17 +49,17 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
     }
 
     updateDimensions() {
-        this.height = window.innerHeight - 260
+        this.height = window.innerHeight - 300
         this.width = window.innerWidth - 10
-        
-    }
-    
-    get overviewWidth(){
-        return this.width/4*0.98
+
     }
 
-    get comparisonWidth(){
-        return this.width/2*0.95
+    get overviewWidth() {
+        return this.width / 4 * 0.98
+    }
+
+    get comparisonWidth() {
+        return this.width / 2 * 0.95
     }
 
 
@@ -67,30 +69,30 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
 
         let controller = <span>
             Num of Sequence Groups
-            <InputNumber min={1} step={1} value={dataStore.patientGroupNum} size="small" onChange={dataStore.changePatientGroupNum}/>
+            <InputNumber min={1} step={1} value={dataStore.patientGroupNum} size="small" onChange={dataStore.changePatientGroupNum} />
         </span>
 
         let bgController = <span>
             <Switch size="small"
-            checkedChildren="detailed" unCheckedChildren= "only state"
-            onChange={() => {
-                this.hasBackground = !this.hasBackground
-            }} />
+                checkedChildren="detailed" unCheckedChildren="only state"
+                onChange={() => {
+                    this.hasBackground = !this.hasBackground
+                }} />
         </span>
 
-        
+
 
         return (
             <div className="blockView" ref={this.ref}>
                 <Row>
                     <Col className="customGrouping" md={6} sm={6}>
-                            <CustomGrouping/>
+                        <CustomGrouping />
                     </Col>
 
                     <Col md={6} sm={6}>
                         <Card title={<span style={{ fontSize: "17px" }}>Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
-                            extra={controller} 
-                            style={{width:"98%"}}
+                            extra={controller}
+                            style={{ width: "98%" }}
                             // style={{ width: (this.overviewWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", float: "left" }}
                             data-intro="state transition overview"
                         >
@@ -104,7 +106,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                                     // width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
-                                    <TransitionOverview width = {this.overviewWidth}/>
+                                    <TransitionOverview width={this.overviewWidth} />
                                 </svg>
                             </div>
 
@@ -117,8 +119,8 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
 
                     <Col md={12} sm={12}>
                         <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined translate='' /></Tooltip></span>}
-                            extra={bgController} 
-                            style={{width:"98%"}}
+                            extra={bgController}
+                            style={{ width: "98%" }}
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
                             data-intro="state transition details"
                         >
@@ -130,8 +132,11 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                                     // width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
-                                    <TransitionComparison width = {this.comparisonWidth} tooltipFunctions={this.props.tooltipFunctions} hasBackground={this.hasBackground}/>
+                                    <TransitionComparison width={this.comparisonWidth} height={this.height} tooltipFunctions={this.props.tooltipFunctions} hasBackground={this.hasBackground} />
                                 </svg>
+                                <div className="event legend" style={{position:"absolute", right:'20px', bottom:'10px'}}>
+                                    <EventLegend />
+                                </div>
                             </div>
 
                         </Card>
@@ -141,5 +146,5 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
         );
     }
 }));
- 
+
 export default StateTransition;
