@@ -235,7 +235,7 @@ class TransitionOverview extends React.Component<Props> {
         let a = this.props.rootStore!.dataStore.patientSequenceEncoding
         return <g className="transitionOverview" key="transitionOverview">
             {this.stateOverview()}
-            {this.getFrequentPatterns()}
+            {/* {this.getFrequentPatterns()} */}
         </g>
     }
 }

@@ -26,6 +26,10 @@ class TransitionComparison extends React.Component<Props> {
     paddingW: number = 6
     groupLabelHeight: number = 40
 
+    get annotationWidth(){
+        return this.props.width * (1 - this.plotRatio)
+    }
+
     updateDimension() {
         let { visStore } = this.props.rootStore!
         visStore.setPlotWidth(this.props.width * this.plotRatio - 10)
@@ -191,7 +195,7 @@ class TransitionComparison extends React.Component<Props> {
                 )
             })
 
-            groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.props.width * (1 - this.plotRatio)}, ${0})`}>
+            groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.annotationWidth}, ${0})`}>
                 <text y={this.groupLabelHeight-12}>group{groupIdx} </text>
                 {transitions}
                 {timepoints}
@@ -216,7 +220,7 @@ class TransitionComparison extends React.Component<Props> {
 
         annotations.push(
             <line key="timeline"
-                x1={this.paddingW + iconR} x2={this.paddingW + iconR}
+                x1={this.paddingW + this.annotationWidth/2 } x2={this.paddingW + this.annotationWidth/2 }
                 y1={this.paddingH + this.groupLabelHeight} y2={this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[dataStore.timepoints.length - 1]}
                 stroke="gray"
             />)
@@ -225,7 +229,7 @@ class TransitionComparison extends React.Component<Props> {
             if (d.type === 'between') return
 
             const transformTP = `translate(
-                    ${this.paddingW},
+                    ${this.paddingW+ this.annotationWidth/2 -iconR},
                     ${this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[i] - visStore.secondaryHeight * dataStore.variableStores['sample'].fullCurrentVariables.length} 
                     )`;
 
