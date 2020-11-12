@@ -170,8 +170,9 @@ GroupPartition.propTypes = {
         rows: PropTypes.array,
         patients: PropTypes.array,
     }),
-    heatmap: MobxPropTypes.observableArrayOf(PropTypes.object).isRequired,
-    primaryVariableId: PropTypes.string.isRequired,
+    heatmap: PropTypes.arrayOf(PropTypes.object).isRequired,
+    // heatmap: MobxPropTypes.observableArrayOf(PropTypes.object).isRequired,
+    // primaryVariableId: PropTypes.string.isRequired,
     currentVariables: PropTypes.arrayOf(PropTypes.oneOfType([
         PropTypes.instanceOf(DerivedVariable),
         PropTypes.instanceOf(OriginalVariable),

@@ -97,7 +97,7 @@ class FeatureLegend extends React.Component<Props> {
             }
             this.updateMaxWidth(this.defaultWidth);
             return (
-                <g  key={variableName} className='continousLegend'>
+                <g  key={variableName} className='continousLegend' >
                     <defs>
                         <linearGradient id={`gradient_${variableName}`} x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style={{ stopColor: color(min) }} />
@@ -149,7 +149,7 @@ class FeatureLegend extends React.Component<Props> {
             }
         });
         this.updateMaxWidth(currX);
-        return <g className='categoricalLegend'>{legendEntries}</g>;
+        return <g className='categoricalLegend' key='categoricalLegend'>{legendEntries}</g>;
     }
 
     /**
@@ -165,7 +165,7 @@ class FeatureLegend extends React.Component<Props> {
         legendEntries = legendEntries.concat(this.getLegendEntry('true', opacity, getTextWidth('true', fontSize) + 4, fontSize, 0, lineheight, color(true), 'black'));
         legendEntries = legendEntries.concat(this.getLegendEntry('false', opacity, getTextWidth('false', fontSize) + 4, fontSize, getTextWidth('true', fontSize) + 6, lineheight, color(false), 'black'));
         this.updateMaxWidth(74);
-        return <g className='binaryLegend'>{legendEntries}</g>;
+        return <g className='binaryLegend' key={'binaryLegend'}>{legendEntries}</g>;
     }
 
     /**

@@ -148,6 +148,8 @@ class TransitionComparison extends React.Component<Props> {
                     let partition = this.getGroupedPartition(group, patientGroup)
                     
                     if (partition.patients.length === 0) return
+                    let currentVariables = dataStore
+                    .variableStores[d.type].fullCurrentVariables
 
                     timepoint.push(<g
                         key={`group${groupIdx}_state${group.partition}`}

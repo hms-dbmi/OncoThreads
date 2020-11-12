@@ -289,17 +289,20 @@ class VisStore {
              * @return {d3.scaleLinear}
              */
             get groupScale() {
+                let {dataStore, uiStore} = this.rootStore
+                
                 if (this.rootStore.uiStore.globalTime==='stateTransition'){
+                    
                     return d3.scaleLinear()
-                    .domain([0, this.rootStore.dataStore.numberOfPatients])
-                    .range([0, this.plotWidth - this.rootStore.dataStore.maxTPPartitionWithGroup 
-                    * this.partitionGap - this.rootStore.uiStore.rowOffset * 2 - this.strokeW*2] );
+                    .domain([0, dataStore.numberOfPatients])
+                    .range([0, this.plotWidth - dataStore.maxTPPartitionWithGroup 
+                    * this.partitionGap - (dataStore.patientGroupNum-1) * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
 
                 }else{
                     return d3.scaleLinear()
-                    .domain([0, this.rootStore.dataStore.numberOfPatients])
-                    .range([0, this.plotWidth - (this.rootStore.dataStore.maxPartitions - 1)
-                    * this.partitionGap - this.rootStore.uiStore.rowOffset * 2 - this.strokeW*2] );
+                    .domain([0, dataStore.numberOfPatients])
+                    .range([0, this.plotWidth - (dataStore.maxPartitions - 1)
+                    * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
                 }
                 
             },

@@ -240,7 +240,6 @@ class DataStore {
 
                 // don't group without frequent patterns
                 if(frequentPatterns.length==0){
-                    this.patientGroupNum = 1 
                     message.error('Cannot group patients without frequent patterns!');
                 }
 
