@@ -1,3 +1,12 @@
 .blockView .ant-card-body{
     padding: 0px;
 }
+
+.stateSummary .labelButton rect{
+    stroke: rgb(204, 204, 204);
+    color: rgb(40, 40, 40)
+}
+
+.stateSummary .labelButton text{
+    fill: rgb(80, 80, 80)
+}

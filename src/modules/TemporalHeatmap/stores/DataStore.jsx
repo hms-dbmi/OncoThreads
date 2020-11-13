@@ -225,7 +225,7 @@ class DataStore {
 
                 let sequences = Object.values(patientStates)
                 let patients = Object.keys(patientStates)
-                const minSupport = patients.length*0.05, minLen = Math.max(this.maxTime*0.3, 2)
+                const minSupport = patients.length*0.03, minLen = Math.max(this.maxTime*0.3, 2)
                 let prefixSpan = new PrefixSpan()
                 let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen)
                 results = results.map(d=>[d[0].map(i=>patients[i]), d[1]])
@@ -463,6 +463,7 @@ class DataStore {
             updatePointGroups: action((pointGroups) => {
                 
                 this.pointGroups = pointGroups
+                this.numofStates = Object.keys(pointGroups).length
                 this.applyCustomGroups()
             }),
 

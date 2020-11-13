@@ -198,7 +198,6 @@ class CustomGrouping extends React.Component<Props> {
             }
         }
         dataStore.updatePointGroups(pointGroups)
-        dataStore.applyCustomGroups()
 
     }
 
@@ -217,7 +216,6 @@ class CustomGrouping extends React.Component<Props> {
         let {dataStore} = this.props.rootStore!
 
         dataStore.updatePointGroups(newSelected)
-        dataStore.applyCustomGroups()
 
     }
 

@@ -192,20 +192,24 @@ class StateBlock extends React.Component<Props> {
         </g>
 
         let featureNameRows = this.featureNameRows()
+        let timeDistLabelWidth = getTextWidth('Distribution', this.fontHeight) + 10
 
         let timeDistLabel = <g
-            className="timeDistLable"
+            className="timeDistLable labelButton"
             key="timeDistLable"
             transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * this.cellHeight + this.fontHeight + this.verticalGap + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
         >
             <rect
-                width={getTextWidth('temportal Distribution', this.fontHeight) + 10} height={this.fontHeight * 1.2}
+                width={timeDistLabelWidth} height={this.fontHeight * 2.2}
                 rx="3"
                 stroke="gray"
                 fill="white"
             />
-            <text y={this.fontHeight} x={4}>
-                Temporal Distribution
+            <text y={this.fontHeight} textAnchor="middle" x={timeDistLabelWidth/2}>
+                Temporal 
+            </text>
+            <text y={2*this.fontHeight} textAnchor="middle" x={timeDistLabelWidth/2}>
+                Distribution 
             </text>
         </g>
 
@@ -323,7 +327,7 @@ class StateBlock extends React.Component<Props> {
         })
 
         let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
-        return <g className='importanceScores' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`} key='importanceScores'>
+        return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`} key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
                 x={this.nameColWidth / 2 - impLableWidth / 2}
@@ -352,12 +356,21 @@ class StateBlock extends React.Component<Props> {
 
     render() {
         let legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
+        let legendLabelWidth = getTextWidth('legend V', this.fontHeight)+20, legendLabelHeight = this.fontHeight * 1.3
         return <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
+            <g className="featureLegend labelButton" transform={legendLabelTransform} >
+                <rect className="legendLabelBackground" width={legendLabelWidth} height={legendLabelHeight} 
+                    x={-0.5 * legendLabelWidth} y={-0.9*this.fontHeight}
+                    fill="white"
+                    stroke="gray"
+                    rx="2"
+                    />
 
-            <Popover placement="right" content={<FeatureLegend cellHeight={this.cellHeight} />} trigger="click">
-                <text transform={legendLabelTransform} cursor="pointer" textAnchor="middle">legend V</text>
-            </Popover>
+                <Popover placement="right" content={<FeatureLegend cellHeight={this.cellHeight} />} trigger="click">
+                    <text cursor="pointer" textAnchor="middle">legend v</text>
+                </Popover>
+            </g>
         </g>
     }
 }
