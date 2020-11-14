@@ -233,29 +233,27 @@ class DataStore {
                 let patients = Object.keys(patientStates)
                 const minSupport = patients.length*0.03, 
                     minLen = Math.max(this.maxTime*0.3, 2),
-                    maxLen = this.medTime
+                    maxLen = Math.min(this.medTime, 4)
+                    // maxLen = 3
                 let prefixSpan = new PrefixSpan()
                 let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen, maxLen)
                 results = results.map(d=>[d[0].map(i=>patients[i]), d[1]])
 
                 return results
             },
-            
 
-            changePatientGroupNum: action((num)=>{
-                if (typeof(num)!='number') return
-                if (num===0) return
-                let {frequentPatterns} = this
+            get patientEncoding(){
                 let {patients} = this.rootStore
+                let patientEncoding = patients.map(p=>{
+                    return {patient: p, encoding: []}
+                })
 
+                // encoding patients based on frequent patterns
+                let {frequentPatterns} = this
                 // don't group without frequent patterns
                 if(frequentPatterns.length==0){
                     message.error('Cannot group patients without frequent patterns!');
                 }
-
-                let patientEncoding = patients.map(p=>{
-                    return {patient: p, encoding: []}
-                })
 
                 frequentPatterns.forEach(d=>{
                     let [patients, pattern] = d
@@ -269,15 +267,41 @@ class DataStore {
                     })
                 })
 
-                console.info('patient encodings', patientEncoding)
+                // //encoding patients based on state order
+                // let {patientStates, pointGroups, maxTime} = this
+                // let allStates = Object.keys(pointGroups)
+                // for (let i=0;i<patients.length;i++){
+                //     let {patient, encoding} = patientEncoding[i]
+                //     encoding = patientStates[patient].map(state=>allStates.indexOf(state))
+                //     while (encoding.length<maxTime){
+                //         encoding.push(-1)
+                //     }
+                //     patientEncoding[i]['encoding'] = encoding
+                // }
+                // console.info(patientEncoding)
 
+                return patientEncoding
+            },
+            
+
+            changePatientGroupNum: action((num)=>{
+                if (typeof(num)!='number') return
+                if (num===0) return
+                if (num===this.patientGroups.length) return
+                if (num==1){
+                    this.patientGroups = [[...this.rootStore.patients]]
+                    return
+                }
+
+                let {patientEncoding} = this
                 let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "single", Infinity, num)
 
                 if (patientClusters.length < num){
                     message.error('Cannot further divide patients!')
+                    return
                 }
 
-                this.patientGroups = patientClusters.map(d=>d.itemIdx.map(i=>patients[i]))
+                this.patientGroups = patientClusters.map(d=>d.itemIdx.map(i=>this.rootStore.patients[i]))
 
                 
             }),
