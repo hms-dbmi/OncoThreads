@@ -392,12 +392,28 @@ HierarchicalClustering.prototype = {
    mergeClosest: function() {
       // find two closest clusters from cached mins
       var minKey = 0, min = Infinity;
+
+      const getMergeSize = (key)=>{
+         var c1 = this.index[key],
+          c2 = this.index[this.mins[key]];
+
+         return this.clusters[c1.index].size + this.clusters[c2.index].size
+      }
       for (var i = 0; i < this.clusters.length; i++) {
          var key = this.clusters[i].key,
              dist = this.dists[key][this.mins[key]];
          if (dist < min) {
             minKey = key;
             min = dist;
+         }
+         // merge small clusters first when dist are the same
+         if (dist = min){
+            // console.info(this.clusters)
+            
+            if(getMergeSize(minKey) > getMergeSize(key)){
+               minKey = key
+            }
+
          }
       }
       if (min > this.threshold) {

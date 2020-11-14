@@ -43,8 +43,6 @@ class TransitionComparison extends React.Component<Props> {
     getGroupedPartition(group: any, patientGroup: string[]) {
         // filter the partition at each timepoint with the user selected groups
         let { dataStore } = this.props.rootStore!
-        console.info(group)
-       
 
         if (group.points) return {
             ...group,

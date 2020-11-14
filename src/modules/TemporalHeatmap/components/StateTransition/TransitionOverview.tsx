@@ -236,6 +236,8 @@ class TransitionOverview extends React.Component<Props> {
         let { dataStore } = this.props.rootStore!
         let { frequentPatterns, patientGroups } = dataStore
 
+        console.info(frequentPatterns)
+
         let offsetX = 0, gapX = 17
         let patterns = patientGroups.map((patientGroup, groupIdx) => {
             offsetX += groupIdx == 0 ? 0 : gapX
@@ -268,7 +270,7 @@ class TransitionOverview extends React.Component<Props> {
         let a = this.props.rootStore!.dataStore.patientSequenceEncoding
         return <g className="transitionOverview" key="transitionOverview">
             {this.stateOverview()}
-            {/* {this.getFrequentPatterns()} */}
+            {this.getFrequentPatterns()}
         </g>
     }
 }

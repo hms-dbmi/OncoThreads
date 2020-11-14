@@ -9,17 +9,20 @@ class PrefixSpan{
     db: Array<(string|number)[]>; 
     minSupport:number; 
     minLen:number;
+    maxLen:number;
     constructor(){
         this.results = []
         this.db = []
         this.minSupport = 0
         this.minLen = 0
+        this.maxLen = Infinity
     }
     recurrentFind(patt:TPattern, mdb:TMDB){
 
-        if (patt.length>=this.minLen){
+        if (patt.length>=this.minLen && patt.length<=this.maxLen){
             this.results.push([mdb.map(d=>d[0]), patt])
         }
+        if (patt.length>this.maxLen) return
 
         let occurs:TOccur = {}
         for (let idx=0; idx<mdb.length;idx++){
@@ -44,10 +47,11 @@ class PrefixSpan{
        })
 
     }
-    frequentPatterns(db: Array<(string|number)[]>, minSupport?:number, minLen?:number){
+    frequentPatterns(db: Array<(string|number)[]>, minSupport?:number, minLen?:number, maxLen?:number){
         this.db = db
         this.minSupport = minSupport|| Math.ceil(db.length * 0.2) // if not given, defined based on db dimension
         this.minLen = minLen || Math.ceil(db[0].length * 0.2)
+        this.maxLen = maxLen || Infinity
         let startMDB = [...Array(this.db.length).keys()].map(d=>[d, -1]) as TMDB
 
         this.recurrentFind([], startMDB)

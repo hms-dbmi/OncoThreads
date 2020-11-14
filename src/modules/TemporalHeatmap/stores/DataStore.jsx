@@ -215,6 +215,12 @@ class DataStore {
                 return maxTimeIdx + 1
             },
 
+            get medTime(){
+                let {points} = this
+                let midIdx = Math.floor(points.length/2)
+                return  points.map(d=>d.timeIdx+1).sort()[midIdx]
+            },
+
             /**
              * each patient is encoded by whether they have the frequent patterns
              * @return {Array<[patientName[], stateKey[]]>}
@@ -225,9 +231,11 @@ class DataStore {
 
                 let sequences = Object.values(patientStates)
                 let patients = Object.keys(patientStates)
-                const minSupport = patients.length*0.03, minLen = Math.max(this.maxTime*0.3, 2)
+                const minSupport = patients.length*0.03, 
+                    minLen = Math.max(this.maxTime*0.3, 2),
+                    maxLen = this.medTime
                 let prefixSpan = new PrefixSpan()
-                let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen)
+                let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen, maxLen)
                 results = results.map(d=>[d[0].map(i=>patients[i]), d[1]])
 
                 return results
@@ -235,6 +243,8 @@ class DataStore {
             
 
             changePatientGroupNum: action((num)=>{
+                if (typeof(num)!='number') return
+                if (num===0) return
                 let {frequentPatterns} = this
                 let {patients} = this.rootStore
 
@@ -258,6 +268,8 @@ class DataStore {
                         }
                     })
                 })
+
+                console.info('patient encodings', patientEncoding)
 
                 let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "single", Infinity, num)
 
