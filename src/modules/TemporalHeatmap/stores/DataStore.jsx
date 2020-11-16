@@ -294,7 +294,7 @@ class DataStore {
                 }
 
                 let {patientEncoding} = this
-                let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "single", Infinity, num)
+                let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "average", Infinity, num)
 
                 if (patientClusters.length < num){
                     message.error('Cannot further divide patients!')

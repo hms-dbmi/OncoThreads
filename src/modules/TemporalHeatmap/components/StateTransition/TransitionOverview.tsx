@@ -11,14 +11,19 @@ interface Props {
 
 type TypeLayoutDict = {
     width?: number,
-    [timeID:number]:{
-        shiftX:number,
-        [key: string]: {
-            width: number,
-            x: number,
-        }|number,
+    [timeID:number]: TypeTimeLayout
     
-}}[]
+}[]
+
+type TypeTimeLayout = {shiftX:number} 
+    &
+    {
+        [key in Exclude<string, "shiftX">]: {
+        width: number,
+        x: number,
+        }
+    }
+
 
 @inject('rootStore')
 @observer
@@ -88,7 +93,7 @@ class TransitionOverview extends React.Component<Props> {
             groupTimeWidths.forEach((groupTimeWidth, timeIdx)=>{
                 layoutDict[groupIdx][timeIdx] ={
                     shiftX:(groupWidth-groupTimeWidth)/2
-                } 
+                } as TypeTimeLayout
             })
 
             samplePoints.forEach((TP, timeIdx) => {
