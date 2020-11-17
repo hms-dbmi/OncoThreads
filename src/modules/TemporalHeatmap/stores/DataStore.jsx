@@ -233,7 +233,7 @@ class DataStore {
                 let patients = Object.keys(patientStates)
                 const minSupport = patients.length*0.03, 
                     minLen = Math.max(this.maxTime*0.3, 2),
-                    maxLen = Math.min(this.medTime, 4)
+                    maxLen = Math.min(this.medTime, 3)
                     // maxLen = 3
                 let prefixSpan = new PrefixSpan()
                 let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen, maxLen)
@@ -242,9 +242,9 @@ class DataStore {
                 return results
             },
 
-            get patientEncoding(){
+            get patientEncodings(){
                 let {patients} = this.rootStore
-                let patientEncoding = patients.map(p=>{
+                let patientEncodings = patients.map(p=>{
                     return {patient: p, encoding: []}
                 })
 
@@ -257,7 +257,7 @@ class DataStore {
 
                 frequentPatterns.forEach(d=>{
                     let [patients, pattern] = d
-                    patientEncoding.forEach(d=>{
+                    patientEncodings.forEach(d=>{
                         let {patient, encoding} = d
                         if (patients.includes(patient)){
                             encoding.push(1)
@@ -267,20 +267,21 @@ class DataStore {
                     })
                 })
 
-                // //encoding patients based on state order
-                // let {patientStates, pointGroups, maxTime} = this
-                // let allStates = Object.keys(pointGroups)
-                // for (let i=0;i<patients.length;i++){
-                //     let {patient, encoding} = patientEncoding[i]
-                //     encoding = patientStates[patient].map(state=>allStates.indexOf(state))
-                //     while (encoding.length<maxTime){
-                //         encoding.push(-1)
-                //     }
-                //     patientEncoding[i]['encoding'] = encoding
-                // }
-                // console.info(patientEncoding)
+                // //encoding patients based on state 
+                let {patientStates, pointGroups} = this
+                let allStates = Object.keys(pointGroups)
+                patientEncodings.forEach((patientEncoding, i)=>{
+                    let {patient} = patientEncoding
+                    allStates.forEach(state=>{
+                        if (patientStates[patient].includes(state)){
+                            patientEncodings[i].encoding.push(1)
+                        }else{
+                            patientEncodings[i].encoding.push(0)
+                        }
+                    })
+                })
 
-                return patientEncoding
+                return patientEncodings
             },
             
 
@@ -293,8 +294,10 @@ class DataStore {
                     return
                 }
 
-                let {patientEncoding} = this
-                let patientClusters =  clusterfck.hcluster(patientEncoding.map(d=>d.encoding), "euclidean", "average", Infinity, num)
+                let {patientEncodings} = this
+                
+
+                let patientClusters =  clusterfck.hcluster(patientEncodings.map(d=>d.encoding), "euclidean", "complete", Infinity, num)
 
                 if (patientClusters.length < num){
                     message.error('Cannot further divide patients!')
@@ -306,8 +309,9 @@ class DataStore {
                 
             }),
 
-            changeClusterTHR: action((thr)=>{
-                this.numofStates = thr
+            changeClusterNum: action((num)=>{
+                if (typeof(num)!=="number") return
+                this.numofStates = num
                 this.autoGroup()
                 this.applyCustomGroups()
             }),
@@ -483,7 +487,7 @@ class DataStore {
                 let normPoints = this.normPoints
                 if (normPoints.length == 0) return
                 let { numofStates } = this
-                var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "single", Infinity, numofStates);
+                var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "average", Infinity, numofStates);
                 // console.info(tree)
                 let pointGroups = {}
                 clusters.forEach((d, i) => {

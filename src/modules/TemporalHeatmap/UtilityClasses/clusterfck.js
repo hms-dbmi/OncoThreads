@@ -343,6 +343,7 @@ HierarchicalClustering.prototype = {
       this.dists = [];  // distances between each pair of clusters
       this.mins = []; // closest cluster for each cluster
       this.index = []; // keep a hash of all clusters by key
+      this.items = items
       
       for (var i = 0; i < items.length; i++) {
          var cluster = {
@@ -407,7 +408,7 @@ HierarchicalClustering.prototype = {
             min = dist;
          }
          // merge small clusters first when dist are the same
-         if (dist = min){
+         if (dist === min){
             // console.info(this.clusters)
             
             if(getMergeSize(minKey) > getMergeSize(key)){
@@ -464,7 +465,9 @@ HierarchicalClustering.prototype = {
                    + this.dists[c2.key][ci.key] * c2.size) / (c1.size + c2.size);
          }
          else {
-            dist = this.distance(ci.value, c1.value);            
+            let clusteri = ci.itemIdx.map(idx=>this.items[idx]),
+            cluster1 = c1.itemIdx.map(idx=>this.items[idx])
+            dist = this.distance(clusteri, cluster1);            
          }
 
          this.dists[c1.key][ci.key] = this.dists[ci.key][c1.key] = dist;

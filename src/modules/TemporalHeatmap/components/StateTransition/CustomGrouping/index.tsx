@@ -236,7 +236,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     onChangeThreshold(thr: number|string|undefined) {
-        this.props.rootStore!.dataStore.changeClusterTHR(thr)
+        this.props.rootStore!.dataStore.changeClusterNum(thr)
     }
 
     @action
