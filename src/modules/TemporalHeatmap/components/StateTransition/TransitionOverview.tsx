@@ -112,7 +112,7 @@ class TransitionOverview extends React.Component<Props> {
 
                     let patients = d.patients.filter(p => patientGroup.includes(p))
                     if (patients.length == 0) return
-                    let rectWidth = rectWidthScale(patients.length)
+                    let rectWidth = Math.max(rectWidthScale(patients.length), 5)
                     timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX +this.paddingW + this.annotationWidth} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
 
                     layoutDict[groupIdx][timeIdx][stateKey] = {
@@ -147,7 +147,7 @@ class TransitionOverview extends React.Component<Props> {
 
         // draw transitions
         let linkGene = d3.linkVertical().x(d => d[0]).y(d => d[1])
-        let linkWidthScale = d3.scaleLinear().domain([0, dataStore.numberOfPatients]).range([1, this.linkMaxWidth])
+        let linkWidthScale = d3.scaleLinear().domain([0, dataStore.numberOfPatients]).range([2, this.linkMaxWidth])
 
         samplePoints.forEach((d, i) => {
             if (i !== samplePoints.length - 1) {
@@ -240,28 +240,61 @@ class TransitionOverview extends React.Component<Props> {
     getFrequentPatterns() {
         let { dataStore } = this.props.rootStore!
         let { frequentPatterns, patientGroups } = dataStore
+        let rectH = 10, rectW=10, gap = 10
 
-        let offsetX = 0, gapX = 17
-        let patterns = patientGroups.map((patientGroup, groupIdx) => {
-            offsetX += groupIdx == 0 ? 0 : gapX
-            return frequentPatterns.map((pattern, patternIdx) => {
-                let [supportIdxs, subseq] = pattern
-                supportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
-                if (supportIdxs.length == 0) return <g key={`group_${groupIdx}_pattern_${patternIdx}`} />
-                offsetX += patternIdx == 0 ? 0 : gapX
-                return <g key={`group_${groupIdx}_pattern_${patternIdx}`}>
-                    <text x={offsetX}>{supportIdxs.length}</text>
-                    {subseq.map((stateKey, i) => {
-                        return <rect key={i}
-                            fill={getColorByName(stateKey)}
-                            width={10} height={10}
-                            x={offsetX}
-                            y={7 + i * 12}
-                        />
-                    })}
-                </g>
+        let patterns = frequentPatterns.map((pattern, patternIdx)=>{
+            let [supportIdxs, subseq] = pattern
+            let patternHeight = (rectH+1) * subseq.length
+
+            let patternSeq = subseq.map((stateKey, i) => {
+                return <rect key={i}
+                    fill={getColorByName(stateKey)}
+                    width={rectW} height={rectH}
+                    x={0}
+                    y={i*(rectH+1)}
+                />
             })
+            let textOffsetX = rectW + gap
+            let nums =patientGroups.map((patientGroup, groupIdx)=>{
+                let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
+                return <text 
+                textAnchor="middle"
+                x={textOffsetX + groupIdx*20 + gap} 
+                y={patternHeight/2+5}
+                key={groupIdx}>
+                    {groupSupportIdxs.length}
+                </text>
+            })
+
+            
+
+            return <g transform={`translate(${0}, ${(patternHeight+gap) * patternIdx})`} key={patternIdx}>
+                {patternSeq}
+                {nums}
+            </g>
         })
+
+        // let offsetX = 0, gapX = 17
+        // let patterns = patientGroups.map((patientGroup, groupIdx) => {
+        //     offsetX += groupIdx == 0 ? 0 : gapX
+        //     return frequentPatterns.map((pattern, patternIdx) => {
+        //         let [supportIdxs, subseq] = pattern
+        //         supportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
+        //         if (supportIdxs.length == 0) return <g key={`group_${groupIdx}_pattern_${patternIdx}`} />
+        //         offsetX += patternIdx == 0 ? 0 : gapX
+        //         return <g key={`group_${groupIdx}_pattern_${patternIdx}`}>
+        //             <text x={offsetX}>{supportIdxs.length}</text>
+        //             {subseq.map((stateKey, i) => {
+        //                 return <rect key={i}
+        //                     fill={getColorByName(stateKey)}
+        //                     width={10} height={10}
+        //                     x={offsetX}
+        //                     y={7 + i * 12}
+        //                 />
+        //             })}
+        //         </g>
+        //     })
+        // })
 
 
         return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight * dataStore.maxTime})`}>
