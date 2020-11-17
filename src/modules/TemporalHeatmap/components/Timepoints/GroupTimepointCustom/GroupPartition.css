@@ -1,3 +1,7 @@
 rect.stageBackground{
     transition: width 1s;
 }
+
+input.stateLabel:focus{
+        outline: none;
+}

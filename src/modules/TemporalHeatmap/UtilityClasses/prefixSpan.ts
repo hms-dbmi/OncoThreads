@@ -1,7 +1,7 @@
 
 export type TPattern = (number|string)[]
 export type TPatternResults = Array<[number[], TPattern]>
-type TMDB = Array<[number, number]>
+type TMDB = Array<[number, number]> //Array<[sequenceIdx, startIdx in this sequence]>
 type TOccur = any
 
 class PrefixSpan{
@@ -26,23 +26,23 @@ class PrefixSpan{
 
         let occurs:TOccur = {}
         for (let idx=0; idx<mdb.length;idx++){
-            let [i, startpos] = mdb[idx]
-            let seq = this.db[i]
-            for (let j=startpos+1; j<seq.length; j++){
-                let l = occurs[seq[j]]
+            let [seqIdx, pos] = mdb[idx]
+            let seq = this.db[seqIdx]
+            for (let newPos=pos+1; newPos<seq.length; newPos++){
+                let l = occurs[seq[newPos]]
                 if (l==undefined ){
-                    occurs[seq[j]] = [[i, j]]
-                }else if (l[l.length-1][0]!= i){
-                    occurs[seq[j]].push([i, j])
+                    occurs[seq[newPos]] = [[seqIdx, newPos]]
+                }else if (l[l.length-1][0]!= seqIdx){
+                    occurs[seq[newPos]].push([seqIdx, newPos])
                 }
             }
         }
 
 
-       Object.keys(occurs).forEach(c=>{
-           let newmdb = occurs[c]
+       Object.keys(occurs).forEach(item=>{
+           let newmdb = occurs[item]
            if (newmdb.length>=this.minSupport ){
-               this.recurrentFind(patt.concat(c), newmdb)
+               this.recurrentFind(patt.concat(item), newmdb)
            }
        })
 

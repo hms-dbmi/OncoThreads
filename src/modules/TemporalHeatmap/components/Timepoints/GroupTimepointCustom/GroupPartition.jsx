@@ -118,10 +118,14 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 labelHeight = this.props.visStore.primaryHeight,
                 labelWidth = Math.max(getTextWidth(stateName, 14, fontWeight) + 25, 40)
 
-            stateInputLabel = <foreignObject style={{ width: labelWidth, height: labelHeight }}>
-                <Input value={stateName} style={{ color: labelColor, fontWeight: fontWeight }}
+            stateInputLabel = <foreignObject width={labelWidth} height={labelHeight}>
+                <input value={stateName} style={{ fontWeight: fontWeight, border:"none", backgroundColor:"transparent"}}
+                    type="text" className="stateLabel"
                     onChange={this.changeLabel} />
             </foreignObject>
+            // stateInputLabel = <text style={{ color: labelColor, fontWeight: fontWeight }} className="stateLabel" y={14}>
+            //     {stateName}
+            // </text>
 
             stateBackground = <g className='stateBackground'>
                 <rect
