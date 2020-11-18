@@ -257,12 +257,13 @@ class TransitionOverview extends React.Component<Props> {
             let textOffsetX = rectW + gap
             let nums =patientGroups.map((patientGroup, groupIdx)=>{
                 let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
+                let percentage = groupSupportIdxs.length==0?0:(groupSupportIdxs.length/patientGroup.length).toFixed(2)
                 return <text 
                 textAnchor="middle"
-                x={textOffsetX + groupIdx*20 + gap} 
+                x={textOffsetX+gap + groupIdx*(getTextWidth("0.000", 14) + gap) } 
                 y={patternHeight/2+5}
                 key={groupIdx}>
-                    {groupSupportIdxs.length}
+                    {percentage}
                 </text>
             })
 
