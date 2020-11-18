@@ -231,10 +231,10 @@ class DataStore {
 
                 let sequences = Object.values(patientStates)
                 let patients = Object.keys(patientStates)
-                const minSupport = patients.length*0.03, 
-                    minLen = Math.max(this.maxTime*0.3, 2),
-                    maxLen = Math.min(this.medTime, 3)
-                    // maxLen = 3
+                const minSupport = Math.max(patients.length*0.1, 2), 
+                    // minLen = Math.max(this.maxTime*0.3, 2),
+                    // maxLen = Math.min(this.medTime, 3)
+                    maxLen = 3, minLen=2
                 let prefixSpan = new PrefixSpan()
                 let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen, maxLen)
                 results = results.map(d=>[d[0].map(i=>patients[i]), d[1]])

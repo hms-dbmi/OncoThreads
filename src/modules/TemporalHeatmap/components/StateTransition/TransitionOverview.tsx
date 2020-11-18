@@ -242,9 +242,12 @@ class TransitionOverview extends React.Component<Props> {
         let { frequentPatterns, patientGroups } = dataStore
         let rectH = 10, rectW=10, gap = 10
 
+        let offsetY=0
+
         let patterns = frequentPatterns.map((pattern, patternIdx)=>{
             let [supportIdxs, subseq] = pattern
             let patternHeight = (rectH+1) * subseq.length
+            offsetY += (patternHeight + gap)
 
             let patternSeq = subseq.map((stateKey, i) => {
                 return <rect key={i}
@@ -269,33 +272,11 @@ class TransitionOverview extends React.Component<Props> {
 
             
 
-            return <g transform={`translate(${0}, ${(patternHeight+gap) * patternIdx})`} key={patternIdx}>
+            return <g transform={`translate(${0}, ${offsetY - (patternHeight + gap)} )`} key={patternIdx}>
                 {patternSeq}
                 {nums}
             </g>
         })
-
-        // let offsetX = 0, gapX = 17
-        // let patterns = patientGroups.map((patientGroup, groupIdx) => {
-        //     offsetX += groupIdx == 0 ? 0 : gapX
-        //     return frequentPatterns.map((pattern, patternIdx) => {
-        //         let [supportIdxs, subseq] = pattern
-        //         supportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
-        //         if (supportIdxs.length == 0) return <g key={`group_${groupIdx}_pattern_${patternIdx}`} />
-        //         offsetX += patternIdx == 0 ? 0 : gapX
-        //         return <g key={`group_${groupIdx}_pattern_${patternIdx}`}>
-        //             <text x={offsetX}>{supportIdxs.length}</text>
-        //             {subseq.map((stateKey, i) => {
-        //                 return <rect key={i}
-        //                     fill={getColorByName(stateKey)}
-        //                     width={10} height={10}
-        //                     x={offsetX}
-        //                     y={7 + i * 12}
-        //                 />
-        //             })}
-        //         </g>
-        //     })
-        // })
 
 
         return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight * dataStore.maxTime})`}>
