@@ -35,6 +35,7 @@ class TransitionOverview extends React.Component<Props> {
     linkMaxWidth = 20;
     paddingW = 5; paddingH = 10; annotationWidth = 40;
     groupLabelHeight = 40;
+    groupLabelOffsetX: number[] = []
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
@@ -208,13 +209,17 @@ class TransitionOverview extends React.Component<Props> {
             )
         });
 
-        let labelOffsetX = 0
+        let groupLabelOffsetX:number[] = []
+
         let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
             let offsetX = Object.values(layoutDict[groupIdx][0])[1].x
             let transform = `translate(${offsetX}, ${this.paddingH})`
             let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
             let groupLabel = getTextWidth(`group${groupIdx}`, 14) > this.partitionGap + layoutDict[groupIdx]['width']!?
                 `..${groupIdx}`:`group${groupIdx}`
+
+            groupLabelOffsetX.push(offsetX + layoutDict[groupIdx]['width']!/2)
+
             return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }} >
                 <text 
                     x={layoutDict[groupIdx]['width']!/2}
@@ -227,6 +232,7 @@ class TransitionOverview extends React.Component<Props> {
             </g>
         })
 
+        this.groupLabelOffsetX = groupLabelOffsetX
 
         return [
             <g key="groupLabels" className="groupLabels">{groupLables}</g>,
@@ -257,13 +263,12 @@ class TransitionOverview extends React.Component<Props> {
                     y={i*(rectH+1)}
                 />
             })
-            let textOffsetX = rectW + gap
             let nums =patientGroups.map((patientGroup, groupIdx)=>{
                 let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
                 let percentage = groupSupportIdxs.length==0?0:(groupSupportIdxs.length/patientGroup.length).toFixed(2)
                 return <text 
                 textAnchor="middle"
-                x={textOffsetX+gap + groupIdx*(getTextWidth("0.000", 14) + gap) } 
+                x={this.groupLabelOffsetX[groupIdx] } 
                 y={patternHeight/2+5}
                 key={groupIdx}>
                     {percentage}
@@ -279,7 +284,7 @@ class TransitionOverview extends React.Component<Props> {
         })
 
 
-        return <g className="pattern" transform={`translate(${this.paddingW + this.annotationWidth}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight * dataStore.maxTime})`}>
+        return <g className="pattern" transform={`translate(${this.paddingW}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight * dataStore.maxTime})`}>
             {patterns}
         </g>
     }
