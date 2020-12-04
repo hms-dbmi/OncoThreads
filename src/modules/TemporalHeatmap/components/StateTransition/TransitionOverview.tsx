@@ -245,7 +245,11 @@ class TransitionOverview extends React.Component<Props> {
 
     getFrequentPatterns() {
         let { dataStore } = this.props.rootStore!
-        let { frequentPatterns, patientGroups } = dataStore
+
+        let { ngramResults, frequentPatterns, patientGroups } = dataStore
+        if (dataStore.encodingMetric === "ngram"){
+            frequentPatterns = ngramResults
+        }
         let rectH = 10, rectW=10, gap = 10
 
         let offsetY=0

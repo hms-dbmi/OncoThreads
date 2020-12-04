@@ -1,8 +1,10 @@
 import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
-import { getUniqueKeyName, PrefixSpan, clusterfck  } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getUniqueKeyName, PrefixSpan, clusterfck, NGgram  } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { message } from 'antd';
+import { object } from 'prop-types';
+import NGram from '../UtilityClasses/ngram';
 
 /*
  stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
@@ -11,6 +13,8 @@ class DataStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.numberOfPatients = 300; // default number of patients
+        this.encodingMetric = 'ngram' // ngram or prefix
+        this.ngram = new NGram([], [], 1)
         this.variableStores = { // one store for the two different type of blocks (sample/between)
             sample: new VariableStore(rootStore, 'sample'),
             between: new VariableStore(rootStore, 'between'),
@@ -187,7 +191,7 @@ class DataStore {
              */
             get patientStates (){
                 let {points, pointGroups} = this
-                let patients = {}
+                let patientStates = {}
                 
                 points.sort((a,b)=>a.timeIdx-b.timeIdx)
                 points.forEach(point=>{
@@ -197,14 +201,16 @@ class DataStore {
                     //     patients[patient] = [...new Array(maxTimeIdx+1).keys()].map(d=>'')
                     // }
                     // patients[patient][timeIdx] = stateKey
-                    if (!patients[patient]){
-                        patients[patient] = []
+                    if (!patientStates[patient]){
+                        patientStates[patient] = []
                     }
-                    patients[patient].push(stateKey)
+                    patientStates[patient].push(stateKey)
 
                 })
+
+               
                 
-                return patients
+                return patientStates
             },
 
             
@@ -231,10 +237,10 @@ class DataStore {
 
                 let sequences = Object.values(patientStates)
                 let patients = Object.keys(patientStates)
-                const minSupport = Math.max(patients.length*0.1, 2), 
+                const minSupport = Math.max(patients.length*0.2, 2), 
                     // minLen = Math.max(this.maxTime*0.3, 2),
                     // maxLen = Math.min(this.medTime, 3)
-                    maxLen = 3, minLen=2
+                    maxLen = 2, minLen=2
                 let prefixSpan = new PrefixSpan()
                 let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen, maxLen)
                 results = results.map(d=>[d[0].map(i=>patients[i]), d[1]])
@@ -242,44 +248,82 @@ class DataStore {
                 return results
             },
 
+            get ngramResults (){
+                let {patientStates} = this
+                let {patients} = this.rootStore
+                console.info(this.patients)
+                let ngram = new NGram(
+                    patients.map(p=>patientStates[p]), 
+                    [2, 3], 
+                    patients.length*0.03
+                )
+                return ngram.getNGram().map(d=>{
+                    return [patients.filter((_,i)=>d.seqCounts[i]>0), d.ngram]
+                })
+            },
+
             get patientEncodings(){
                 let {patients} = this.rootStore
-                let patientEncodings = patients.map(p=>{
-                    return {patient: p, encoding: []}
-                })
+                let patientEncodings
 
+                // *** 
                 // encoding patients based on frequent patterns
-                let {frequentPatterns} = this
-                // don't group without frequent patterns
-                if(frequentPatterns.length==0){
-                    message.error('Cannot group patients without frequent patterns!');
+                // **** */
+                if (this.encodingMetric=="prefix"){
+                    patientEncodings = patients.map(p=>{
+                        return {patient: p, encoding: []}
+                    })
+                    let {frequentPatterns} = this
+                    // don't group without frequent patterns
+                    if(frequentPatterns.length==0){
+                        message.error('Cannot group patients without frequent patterns!');
+                    }
+    
+                    frequentPatterns.forEach(d=>{
+                        let [patients, pattern] = d
+                        patientEncodings.forEach(d=>{
+                            let {patient, encoding} = d
+                            if (patients.includes(patient)){
+                                encoding.push(1)
+                            }else{
+                                encoding.push(0)
+                            }
+                        })
+                    })
                 }
+              
 
-                frequentPatterns.forEach(d=>{
-                    let [patients, pattern] = d
-                    patientEncodings.forEach(d=>{
-                        let {patient, encoding} = d
-                        if (patients.includes(patient)){
-                            encoding.push(1)
-                        }else{
-                            encoding.push(0)
-                        }
-                    })
-                })
+                // // //encoding patients based on state 
+                // let {patientStates, pointGroups} = this
+                // let allStates = Object.keys(pointGroups)
+                // patientEncodings.forEach((patientEncoding, i)=>{
+                //     let {patient} = patientEncoding
+                //     allStates.forEach(state=>{
+                //         if (patientStates[patient].includes(state)){
+                //             patientEncodings[i].encoding.push(1)
+                //         }else{
+                //             patientEncodings[i].encoding.push(0)
+                //         }
+                //     })
+                // })
 
-                // //encoding patients based on state 
-                let {patientStates, pointGroups} = this
-                let allStates = Object.keys(pointGroups)
-                patientEncodings.forEach((patientEncoding, i)=>{
-                    let {patient} = patientEncoding
-                    allStates.forEach(state=>{
-                        if (patientStates[patient].includes(state)){
-                            patientEncodings[i].encoding.push(1)
-                        }else{
-                            patientEncodings[i].encoding.push(0)
-                        }
+                if (this.encodingMetric=="ngram"){
+                    let {patientStates} = this
+                    let ngram = new NGram(
+                        patients.map(p=>patientStates[p]), 
+                        [2, 3], 
+                        patients.length*0.03
+                    )
+
+                    this.ngram = ngram
+    
+                    patientEncodings = patients.map((p, i)=>{
+                        return {patient: p, encoding: ngram.arrEncodings[i]}
                     })
-                })
+    
+                }
+              
+
 
                 return patientEncodings
             },
