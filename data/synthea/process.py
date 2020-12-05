@@ -179,10 +179,15 @@ save file
 # samples.to_csv('covid_{}_samples.txt'.format(sample_size), index=False, sep='\t')
 timeline_specimen.to_csv('covid_{}_timeline_samples.txt'.format(sample_size), index=False, sep='\t')
 
+# covert type to the format used in oncoThreads
+type_dict ={
+    'numeric': 'NUMBER'
+}
+
 sample_header = [
-    "#" + '\t'.join(['Patient_Identifier', 'Sample_Identifier'] + [key for key in observation_code]) +'\n',
-    "#" + '\t'.join(['Patient_Identifier', 'Sample_Identifier'] + [key for key in observation_code]) +'\n',
-    "#" + '\t'.join(['STRING', 'STRING'] + [observation_code[key]['type'] for key in observation_code]) +'\n',
+    "#" + '\t'.join(['Patient_Identifier', 'Sample_Identifier'] + [observation_code[key]['name'] for key in observation_code]) +'\n',
+    "#" + '\t'.join(['Patient_Identifier', 'Sample_Identifier'] + [observation_code[key]['name'] for key in observation_code]) +'\n',
+    "#" + '\t'.join(['STRING', 'STRING'] + [type_dict[observation_code[key]['type']] for key in observation_code]) +'\n',
     "#" + '\t'.join(['1' for _ in range(2 + len(observation_code) )])+'\n',
 ]
 
@@ -190,4 +195,21 @@ with open('covid_{}_samples.txt'.format(sample_size), 'w') as txt_file:
     for line in sample_header:
         txt_file.write(line)
     samples.to_csv(txt_file, index=False, sep='\t', na_rep= ' ')
+# %%
+'''
+plot
+'''
+loinc_to_display = {'CODE_y = 48065-7': 'D-dimer', 'CODE_y = 2276-4': 'Serum Ferritin',
+                    'CODE_y = 89579-7': 'High Sensitivity Cardiac Troponin I',
+                    'CODE_y = 26881-3': 'IL-6', 'CODE_y = 731-0': 'Lymphocytes',
+                    'CODE_y = 14804-9': 'Lactate dehydrogenase'}
+catplt = sns.catplot(x="days", y="VALUE", hue="survivor", kind="box", col='CODE_y', 
+            col_wrap=2, sharey=False, sharex=False, data=covid_patients_obs, palette=["C1", "C0"])
+
+for axis in catplt.fig.axes:
+    axis.xaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
+    axis.xaxis.set_major_locator(ticker.MultipleLocator(base=4))
+    axis.set_title(loinc_to_display[axis.title.get_text()])
+        
+plt.show()
 # %%
