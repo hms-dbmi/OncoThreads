@@ -57,3 +57,6 @@ typings/
 # # dotenv environment variables file
 # .env
 build/
+
+data/synthea/originalData
+data/synthea/processedData
