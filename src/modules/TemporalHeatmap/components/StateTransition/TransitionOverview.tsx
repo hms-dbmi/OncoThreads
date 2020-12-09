@@ -5,13 +5,15 @@ import { IRootStore } from "modules/Type";
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { Table, Input, Button, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import {ColumnsType} from 'antd/lib/table'
+import { ColumnsType } from 'antd/lib/table'
 import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
+
+import GridLayout from 'react-grid-layout';
 
 interface Props {
     rootStore?: IRootStore,
     width: number,
-    height:number
+    height: number
 }
 
 type TypeLayoutDict = {
@@ -29,7 +31,7 @@ type TypeTimeLayout = { shiftX: number }
         }
     }
 
-type RowRecordType = {key:string, pattern:TPattern, [key:string]:any} 
+type RowRecordType = { key: string, pattern: TPattern, [key: string]: any }
 
 
 @inject('rootStore')
@@ -43,7 +45,7 @@ class TransitionOverview extends React.Component<Props> {
     paddingW = 5; paddingH = 10; annotationWidth = 40;
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
-    searchInput: Input|null = null;
+    searchInput: Input | null = null;
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
@@ -261,57 +263,57 @@ class TransitionOverview extends React.Component<Props> {
         }
         let rectW = 10
 
-        const handleSearch = (selectedKeys:string[], confirm: ()=>void, dataIndex:string) => {
+        const handleSearch = (selectedKeys: string[], confirm: () => void, dataIndex: string) => {
             confirm();
             this.setState({
-              searchText: selectedKeys[0],
-              searchedColumn: dataIndex,
+                searchText: selectedKeys[0],
+                searchedColumn: dataIndex,
             });
-          };
-        
-         const handleReset = (clearFilters: ()=>void) => {
+        };
+
+        const handleReset = (clearFilters: () => void) => {
             clearFilters()
             this.setState({ searchText: '' });
-          };
+        };
 
-        const getColumnSearchProps = (dataIndex:string) => ({
-            filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: {setSelectedKeys:any, selectedKeys:string[], confirm: ()=>void, clearFilters:()=>void}) => (
-              <div style={{ padding: 8 }}>
-                <Input
-                  ref={node => {
-                    this.searchInput = node;
-                  }}
-                  placeholder={`Search ${dataIndex}`}
-                  value={selectedKeys[0]}
-                  onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-                  onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                  style={{ width: 188, marginBottom: 8, display: 'block' }}
-                />
-                <Space>
-                  <Button
-                    type="primary"
-                    onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                    icon={<SearchOutlined translate/>}
-                    size="small"
-                    style={{ width: 90 }}
-                  >
-                    Search
+        const getColumnSearchProps = (dataIndex: string) => ({
+            filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: { setSelectedKeys: any, selectedKeys: string[], confirm: () => void, clearFilters: () => void }) => (
+                <div style={{ padding: 8 }}>
+                    <Input
+                        ref={node => {
+                            this.searchInput = node;
+                        }}
+                        placeholder={`Search ${dataIndex}`}
+                        value={selectedKeys[0]}
+                        onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                        onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                        style={{ width: 188, marginBottom: 8, display: 'block' }}
+                    />
+                    <Space>
+                        <Button
+                            type="primary"
+                            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                            icon={<SearchOutlined translate />}
+                            size="small"
+                            style={{ width: 90 }}
+                        >
+                            Search
                   </Button>
-                  <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-                    Reset
+                        <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+                            Reset
                   </Button>
-                </Space>
-              </div>
+                    </Space>
+                </div>
             ),
-            filterIcon: (filtered:boolean) => <SearchOutlined translate style={{ color: filtered ? '#1890ff' : undefined }} />,
-            onFilter: (value:string|number|boolean, record: RowRecordType):boolean =>
-              record[dataIndex]
-                ? record[dataIndex].toString().toLowerCase().includes(value.toString().toLowerCase())
-                : false,
-            onFilterDropdownVisibleChange: (visible:boolean) => {
-              if (visible) {
-                setTimeout(() => this.searchInput!.select(), 100);
-              }
+            filterIcon: (filtered: boolean) => <SearchOutlined translate style={{ color: filtered ? '#1890ff' : undefined }} />,
+            onFilter: (value: string | number | boolean, record: RowRecordType): boolean =>
+                record[dataIndex]
+                    ? record[dataIndex].toString().toLowerCase().includes(value.toString().toLowerCase())
+                    : false,
+            onFilterDropdownVisibleChange: (visible: boolean) => {
+                if (visible) {
+                    setTimeout(() => this.searchInput!.select(), 100);
+                }
             },
             // render: text =>(
             //     <Highlighter
@@ -321,8 +323,8 @@ class TransitionOverview extends React.Component<Props> {
             //       textToHighlight={text ? text.toString() : ''}
             //     />
             //   ) 
-          });
-       
+        });
+
 
         let data = frequentPatterns.map((pattern, patternIdx) => {
             let [supportIdxs, subseq] = pattern
@@ -341,12 +343,12 @@ class TransitionOverview extends React.Component<Props> {
             return rowData
         })
 
-        let columns: ColumnsType< RowRecordType > = patientGroups.map((_, groupIdx) => {
+        let columns: ColumnsType<RowRecordType> = patientGroups.map((_, groupIdx) => {
             return {
                 title: `group_${groupIdx}`,
                 dataIndex: `group_${groupIdx}`,
                 key: `group_${groupIdx}`,
-                sorter: (a,b)=>a[`group_${groupIdx}`] - b[`group_${groupIdx}`],
+                sorter: (a, b) => a[`group_${groupIdx}`] - b[`group_${groupIdx}`],
                 align: 'center',
                 // width: groupIdx>0?this.groupLabelOffsetX[groupIdx] - this.groupLabelOffsetX[groupIdx-1] : this.groupLabelOffsetX[groupIdx]
             }
@@ -358,22 +360,27 @@ class TransitionOverview extends React.Component<Props> {
             key: 'pattern',
             render: (states: string[]) => {
                 return states.map(state => {
-                    return <div key={state} style={{ width: rectW, height: rectW, margin:2, backgroundColor: getColorByName(state) }} />
+                    return <div key={state} style={{ width: rectW, height: rectW, margin: 2, backgroundColor: getColorByName(state) }} />
                 })
             },
             ...getColumnSearchProps('pattern'),
             align: 'center',
-            width: this.annotationWidth+this.paddingW
+            width: this.annotationWidth + this.paddingW
         })
 
 
-        return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height*0.3 }} />
+        return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height * 0.3 }} />
     }
 
     render() {
         let overviewHeight = this.paddingH + this.groupLabelHeight + this.props.rootStore!.dataStore.timepoints.filter(d => d.type === "sample").length * this.timeStepHeight + this.rectHeight
-        return <div className="stateTransition overview" style={{ height: this.props.height, overflowY: "auto" }}>
-            <div style={{ height: this.props.height*0.7, overflowY: "auto" }}>
+        const layout = [
+            { i: 'overview', x: 0, y: 0, w: 12, h: 3, minW:12, maxW:12 },
+            { i: 'table', x: 0, y: 3, w: 12, h: 2, minW:12, maxW:12 },
+        ];
+
+        return <GridLayout className="stateTransition overview" rowHeight={this.props.height/5} layout={layout} width={this.props.width}>
+            <div style={{ height: this.props.height * 0.7, overflowY: "auto", width:this.props.width }} key='overview'>
                 <svg
                     width="100%"
                     className="stateTransition overview"
@@ -386,8 +393,27 @@ class TransitionOverview extends React.Component<Props> {
                     </g>
                 </svg>
             </div>
+            <div key='table'>
             {this.frequentPatternTable()}
-        </div>
+            </div> 
+        </GridLayout>
+
+        // return <div className="stateTransition overview" style={{ height: this.props.height, overflowY: "auto" }}>
+        //     <div style={{ height: this.props.height*0.7, overflowY: "auto" }}>
+        //         <svg
+        //             width="100%"
+        //             className="stateTransition overview"
+        //             // height="100%"
+        //             // width={this.props.rootStore.visStore.svgWidth}
+        //             height={overviewHeight}
+        //         >
+        //             <g className="transitionOverview" key="transitionOverview">
+        //                 {this.stateOverview()}
+        //             </g>
+        //         </svg>
+        //     </div>
+        //     {this.frequentPatternTable()}
+        // </div>
     }
 }
 

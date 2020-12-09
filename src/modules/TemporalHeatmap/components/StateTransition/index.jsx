@@ -13,6 +13,8 @@ import TransitionComparison from './TransitionComparison'
 
 import EventLegend from './EventLegend'
 
+import GridLayout from 'react-grid-layout';
+
 /**
  * Component for the Block view
  */
@@ -80,10 +82,9 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                 }} />
         </span>
 
-
-
         return (
-            <div className="blockView" ref={this.ref}>
+            <div className="stateTransition" ref={this.ref}>
+
                 <Row>
                     <Col className="customGrouping" md={6} sm={6}>
                         <CustomGrouping />
@@ -95,23 +96,22 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             style={{ width: "98%" }}
                             // style={{ width: (this.overviewWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", float: "left" }}
                             data-intro="state transition overview"
+                            bodyStyle={{padding:'0px'}}
                         >
-                              
+
                             <TransitionOverview width={this.overviewWidth} height={this.height}/>
 
-                            <form id="svgform" method="post">
-                                <input type="hidden" id="output_format" name="output_format" value="" />
-                                <input type="hidden" id="data" name="data" value="" />
-                            </form>
+                           
                         </Card>
                     </Col>
 
-                    <Col md={12} sm={12}>
+                    <Col md={12} sm={12} >
                         <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined translate='' /></Tooltip></span>}
                             extra={bgController}
-                            style={{ width: "98%" }}
+                            style={{ width: "98%"}}
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
                             data-intro="state transition details"
+                            
                         >
                             <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
                                 <svg

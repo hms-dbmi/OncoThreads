@@ -7,6 +7,8 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'mobx-react';
 import 'antd/dist/antd.css';
 import 'intro.js/minified/introjs.min.css';
+import "react-grid-layout/css/styles.css"
+import "react-resizable/css/styles.css"
 
 import App from './modules/TemporalHeatmap/components/App.jsx';
 import RootStore from './modules/RootStore';
