@@ -2,13 +2,15 @@ import * as React from "react"
 import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import { cropText, getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { Table } from 'antd';
-import { StringCellRenderer } from "lineupjs";
+import {ColumnsType} from 'antd/lib/table'
+import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
 
 interface Props {
     rootStore?: IRootStore,
     width: number,
+    height:number
 }
 
 type TypeLayoutDict = {
@@ -26,13 +28,6 @@ type TypeTimeLayout = { shiftX: number }
         }
     }
 
-interface Column {
-    title: string,
-    dataIndex: string,
-    key: string,
-    render?: (input: string[]) => any
-}
-
 
 @inject('rootStore')
 @observer
@@ -44,7 +39,7 @@ class TransitionOverview extends React.Component<Props> {
     linkMaxWidth = 20;
     paddingW = 5; paddingH = 10; annotationWidth = 40;
     groupLabelHeight = 40;
-    groupLabelOffsetX: number[] = []
+    groupLabelOffsetX: number[] = [];
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
@@ -252,55 +247,6 @@ class TransitionOverview extends React.Component<Props> {
     }
 
 
-    getFrequentPatterns() {
-        let { dataStore } = this.props.rootStore!
-
-        let { ngramResults, frequentPatterns, patientGroups } = dataStore
-        if (dataStore.encodingMetric === "ngram") {
-            frequentPatterns = ngramResults
-        }
-        let rectH = 10, rectW = 10, gap = 10
-
-        let offsetY = 0
-
-        let patterns = frequentPatterns.map((pattern, patternIdx) => {
-            let [supportIdxs, subseq] = pattern
-            let patternHeight = (rectH + 1) * subseq.length
-            offsetY += (patternHeight + gap)
-
-            let patternSeq = subseq.map((stateKey, i) => {
-                return <rect key={i}
-                    fill={getColorByName(stateKey)}
-                    width={rectW} height={rectH}
-                    x={0}
-                    y={i * (rectH + 1)}
-                />
-            })
-            let nums = patientGroups.map((patientGroup, groupIdx) => {
-                let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
-                let percentage = groupSupportIdxs.length == 0 ? 0 : (groupSupportIdxs.length / patientGroup.length).toFixed(2)
-                return <text
-                    textAnchor="middle"
-                    x={this.groupLabelOffsetX[groupIdx]}
-                    y={patternHeight / 2 + 5}
-                    key={groupIdx}>
-                    {percentage}
-                </text>
-            })
-
-
-
-            return <g transform={`translate(${0}, ${offsetY - (patternHeight + gap)} )`} key={patternIdx}>
-                {patternSeq}
-                {nums}
-            </g>
-        })
-
-
-        return <g className="pattern" transform={`translate(${this.paddingW}, ${this.paddingH + this.groupLabelHeight + this.timeStepHeight * dataStore.maxTime})`}>
-            {patterns}
-        </g>
-    }
 
     frequentPatternTable() {
         let { dataStore } = this.props.rootStore!
@@ -311,29 +257,12 @@ class TransitionOverview extends React.Component<Props> {
         }
         let rectW = 10
 
-        let columns: Column[] = patientGroups.map((_, groupIdx) => {
-            return {
-                title: `group_${groupIdx}`,
-                dataIndex: `group_${groupIdx}`,
-                key: `group_${groupIdx}`,
-            }
-        })
-
-        columns.unshift({
-            title: 'pattern',
-            dataIndex: 'pattern',
-            key: 'pattern',
-            render: (states: string[]) => {
-                return states.map(state => {
-                    return <div key={state} style={{ width: rectW, backgroundColor: getColorByName(state) }} />
-                })
-            }
-        })
+       
 
         let data = frequentPatterns.map((pattern, patternIdx) => {
             let [supportIdxs, subseq] = pattern
 
-            let rowData: any = {
+            let rowData: {key:string, pattern:TPattern, [key:string]:any} = {
                 key: `${patternIdx + 1}`,
                 pattern: subseq,
             }
@@ -347,25 +276,49 @@ class TransitionOverview extends React.Component<Props> {
             return rowData
         })
 
+        let columns: ColumnsType< typeof data[0] > = patientGroups.map((_, groupIdx) => {
+            return {
+                title: `group_${groupIdx}`,
+                dataIndex: `group_${groupIdx}`,
+                key: `group_${groupIdx}`,
+                sorter: (a,b)=>a[`group_${groupIdx}`] - b[`group_${groupIdx}`]
+            }
+        })
+
+        columns.unshift({
+            title: 'pattern',
+            dataIndex: 'pattern',
+            key: 'pattern',
+            render: (states: string[]) => {
+                return states.map(state => {
+                    return <div key={state} style={{ width: rectW, height: rectW, margin:2, backgroundColor: getColorByName(state) }} />
+                })
+            }
+        })
+
 
         return <Table columns={columns} dataSource={data} pagination={false}/>
     }
 
     render() {
-        return <div>
-            <svg
-                width="100%"
-                className="stateTransition overview"
-                // height="100%"
-                // width={this.props.rootStore.visStore.svgWidth}
-                height={this.props.rootStore!.visStore.svgHeight}
-            >
-                <g className="transitionOverview" key="transitionOverview">
-                    {this.stateOverview()}
-                    {this.getFrequentPatterns()}
-                </g>
-            </svg>
-            {this.frequentPatternTable()}
+        let overviewHeight = this.paddingH + this.groupLabelHeight + this.props.rootStore!.dataStore.timepoints.filter(d => d.type === "sample").length * this.timeStepHeight + this.rectHeight
+        return <div className="stateTransition overview" style={{ height: this.props.height, overflowY: "auto" }}>
+            <div style={{ height: this.props.height*0.7, overflowY: "auto" }}>
+                <svg
+                    width="100%"
+                    className="stateTransition overview"
+                    // height="100%"
+                    // width={this.props.rootStore.visStore.svgWidth}
+                    height={overviewHeight}
+                >
+                    <g className="transitionOverview" key="transitionOverview">
+                        {this.stateOverview()}
+                    </g>
+                </svg>
+            </div>
+            <div style={{ height: this.props.height*0.3, overflowY: "auto" }}>
+                {this.frequentPatternTable()}
+            </div>
         </div>
     }
 }
