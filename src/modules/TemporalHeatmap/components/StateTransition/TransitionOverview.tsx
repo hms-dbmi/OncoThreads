@@ -3,6 +3,8 @@ import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { cropText, getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { Table } from 'antd';
+import { StringCellRenderer } from "lineupjs";
 
 interface Props {
     rootStore?: IRootStore,
@@ -11,18 +13,25 @@ interface Props {
 
 type TypeLayoutDict = {
     width?: number,
-    [timeID:number]: TypeTimeLayout
-    
+    [timeID: number]: TypeTimeLayout
+
 }[]
 
-type TypeTimeLayout = {shiftX:number} 
+type TypeTimeLayout = { shiftX: number }
     &
     {
         [key in Exclude<string, "shiftX">]: {
-        width: number,
-        x: number,
+            width: number,
+            x: number,
         }
     }
+
+interface Column {
+    title: string,
+    dataIndex: string,
+    key: string,
+    render?: (input: string[]) => any
+}
 
 
 @inject('rootStore')
@@ -40,21 +49,21 @@ class TransitionOverview extends React.Component<Props> {
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
         let { dataStore, uiStore, visStore } = this.props.rootStore!
-        
 
-        
+
+
         let samplePoints = dataStore.timepoints
             .filter(d => d.type === "sample")
         let layoutDict: TypeLayoutDict = [...Array(dataStore.patientGroupNum)]
-            .map(_=>{return {}})
+            .map(_ => { return {} })
 
         let partitionGap = 0
-        dataStore.patientGroups.forEach(patientGroup=>{
-            let groupMaxGap = Math.max(...samplePoints.map(TP=>{
+        dataStore.patientGroups.forEach(patientGroup => {
+            let groupMaxGap = Math.max(...samplePoints.map(TP => {
                 let gap = 0
-                TP.customGrouped.forEach(d=>{
+                TP.customGrouped.forEach(d => {
                     let patients = d.patients.filter(p => patientGroup.includes(p))
-                    if (patients.length>0){
+                    if (patients.length > 0) {
                         gap += this.partitionGap
                     }
                 })
@@ -74,33 +83,33 @@ class TransitionOverview extends React.Component<Props> {
         dataStore.patientGroups.forEach((patientGroup: string[], groupIdx: number) => {
 
             //calculate groupwidth 
-            let groupTimeWidths:number[] = []
-            samplePoints.forEach((TP, timeIdx)=>{
+            let groupTimeWidths: number[] = []
+            samplePoints.forEach((TP, timeIdx) => {
                 let groupTimeWidth = 0
                 TP.customGrouped.forEach(d => {
                     let patients = d.patients.filter(p => patientGroup.includes(p))
-                    if (patients.length>0){
+                    if (patients.length > 0) {
                         groupTimeWidth += rectWidthScale(patients.length) + this.partitionGap
                     }
                 })
                 groupTimeWidth -= this.partitionGap
-                
+
                 groupTimeWidths.push(groupTimeWidth)
-                
+
             })
             let groupWidth = Math.max(...groupTimeWidths)
 
             layoutDict[groupIdx]['width'] = groupWidth
-            groupTimeWidths.forEach((groupTimeWidth, timeIdx)=>{
-                layoutDict[groupIdx][timeIdx] ={
-                    shiftX:(groupWidth-groupTimeWidth)/2
+            groupTimeWidths.forEach((groupTimeWidth, timeIdx) => {
+                layoutDict[groupIdx][timeIdx] = {
+                    shiftX: (groupWidth - groupTimeWidth) / 2
                 } as TypeTimeLayout
             })
 
             samplePoints.forEach((TP, timeIdx) => {
-                
 
-                
+
+
                 let offsetX = 0
                 let timepoint: Array<JSX.Element> = []
 
@@ -114,17 +123,17 @@ class TransitionOverview extends React.Component<Props> {
                     let patients = d.patients.filter(p => patientGroup.includes(p))
                     if (patients.length == 0) return
                     let rectWidth = Math.max(rectWidthScale(patients.length), 5)
-                    timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX +this.paddingW + this.annotationWidth} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
+                    timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX + this.paddingW + this.annotationWidth} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
 
                     layoutDict[groupIdx][timeIdx][stateKey] = {
                         width: rectWidth,
-                        x: offsetX +this.paddingW + this.annotationWidth + groupOffset + layoutDict[groupIdx][timeIdx]['shiftX']
+                        x: offsetX + this.paddingW + this.annotationWidth + groupOffset + layoutDict[groupIdx][timeIdx]['shiftX']
                     }
 
                     offsetX += rectWidth + this.partitionGap;
                 })
 
-               
+
 
 
                 const transformTP = `translate(
@@ -139,10 +148,10 @@ class TransitionOverview extends React.Component<Props> {
                 )
             })
 
-            
 
-            groupOffset += groupWidth + 2*this.partitionGap;
-            
+
+            groupOffset += groupWidth + 2 * this.partitionGap;
+
         });
 
 
@@ -209,22 +218,22 @@ class TransitionOverview extends React.Component<Props> {
             )
         });
 
-        let groupLabelOffsetX:number[] = []
+        let groupLabelOffsetX: number[] = []
 
         let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
             let offsetX = Object.values(layoutDict[groupIdx][0])[1].x
             let transform = `translate(${offsetX}, ${this.paddingH})`
             let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
-            let groupLabel = getTextWidth(`group${groupIdx}`, 14) > this.partitionGap + layoutDict[groupIdx]['width']!?
-                `..${groupIdx}`:`group${groupIdx}`
+            let groupLabel = getTextWidth(`group${groupIdx}`, 14) > this.partitionGap + layoutDict[groupIdx]['width']! ?
+                `..${groupIdx}` : `group${groupIdx}`
 
-            groupLabelOffsetX.push(offsetX + layoutDict[groupIdx]['width']!/2)
+            groupLabelOffsetX.push(offsetX + layoutDict[groupIdx]['width']! / 2)
 
             return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }} >
-                <text 
-                    x={layoutDict[groupIdx]['width']!/2}
+                <text
+                    x={layoutDict[groupIdx]['width']! / 2}
                     textAnchor="middle"
-                    y={this.groupLabelHeight / 2} 
+                    y={this.groupLabelHeight / 2}
                     cursor="pointer" onClick={() => uiStore.selectPatientGroup(groupIdx)} xlinkTitle={`group_${groupIdx}`}>
                     {groupLabel}
                 </text>
@@ -247,16 +256,16 @@ class TransitionOverview extends React.Component<Props> {
         let { dataStore } = this.props.rootStore!
 
         let { ngramResults, frequentPatterns, patientGroups } = dataStore
-        if (dataStore.encodingMetric === "ngram"){
+        if (dataStore.encodingMetric === "ngram") {
             frequentPatterns = ngramResults
         }
-        let rectH = 10, rectW=10, gap = 10
+        let rectH = 10, rectW = 10, gap = 10
 
-        let offsetY=0
+        let offsetY = 0
 
-        let patterns = frequentPatterns.map((pattern, patternIdx)=>{
+        let patterns = frequentPatterns.map((pattern, patternIdx) => {
             let [supportIdxs, subseq] = pattern
-            let patternHeight = (rectH+1) * subseq.length
+            let patternHeight = (rectH + 1) * subseq.length
             offsetY += (patternHeight + gap)
 
             let patternSeq = subseq.map((stateKey, i) => {
@@ -264,22 +273,22 @@ class TransitionOverview extends React.Component<Props> {
                     fill={getColorByName(stateKey)}
                     width={rectW} height={rectH}
                     x={0}
-                    y={i*(rectH+1)}
+                    y={i * (rectH + 1)}
                 />
             })
-            let nums =patientGroups.map((patientGroup, groupIdx)=>{
+            let nums = patientGroups.map((patientGroup, groupIdx) => {
                 let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
-                let percentage = groupSupportIdxs.length==0?0:(groupSupportIdxs.length/patientGroup.length).toFixed(2)
-                return <text 
-                textAnchor="middle"
-                x={this.groupLabelOffsetX[groupIdx] } 
-                y={patternHeight/2+5}
-                key={groupIdx}>
+                let percentage = groupSupportIdxs.length == 0 ? 0 : (groupSupportIdxs.length / patientGroup.length).toFixed(2)
+                return <text
+                    textAnchor="middle"
+                    x={this.groupLabelOffsetX[groupIdx]}
+                    y={patternHeight / 2 + 5}
+                    key={groupIdx}>
                     {percentage}
                 </text>
             })
 
-            
+
 
             return <g transform={`translate(${0}, ${offsetY - (patternHeight + gap)} )`} key={patternIdx}>
                 {patternSeq}
@@ -293,12 +302,71 @@ class TransitionOverview extends React.Component<Props> {
         </g>
     }
 
+    frequentPatternTable() {
+        let { dataStore } = this.props.rootStore!
+
+        let { ngramResults, frequentPatterns, patientGroups } = dataStore
+        if (dataStore.encodingMetric === "ngram") {
+            frequentPatterns = ngramResults
+        }
+        let rectW = 10
+
+        let columns: Column[] = patientGroups.map((_, groupIdx) => {
+            return {
+                title: `group_${groupIdx}`,
+                dataIndex: `group_${groupIdx}`,
+                key: `group_${groupIdx}`,
+            }
+        })
+
+        columns.unshift({
+            title: 'pattern',
+            dataIndex: 'pattern',
+            key: 'pattern',
+            render: (states: string[]) => {
+                return states.map(state => {
+                    return <div key={state} style={{ width: rectW, backgroundColor: getColorByName(state) }} />
+                })
+            }
+        })
+
+        let data = frequentPatterns.map((pattern, patternIdx) => {
+            let [supportIdxs, subseq] = pattern
+
+            let rowData: any = {
+                key: `${patternIdx + 1}`,
+                pattern: subseq,
+            }
+
+            patientGroups.forEach((patientGroup, groupIdx) => {
+                let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
+                let percentage = groupSupportIdxs.length == 0 ? 0 : (groupSupportIdxs.length / patientGroup.length).toFixed(2)
+                rowData[`group_${groupIdx}`] = percentage
+            })
+
+            return rowData
+        })
+
+
+        return <Table columns={columns} dataSource={data} pagination={false}/>
+    }
+
     render() {
-        let a = this.props.rootStore!.dataStore.patientSequenceEncoding
-        return <g className="transitionOverview" key="transitionOverview">
-            {this.stateOverview()}
-            {this.getFrequentPatterns()}
-        </g>
+        return <div>
+            <svg
+                width="100%"
+                className="stateTransition overview"
+                // height="100%"
+                // width={this.props.rootStore.visStore.svgWidth}
+                height={this.props.rootStore!.visStore.svgHeight}
+            >
+                <g className="transitionOverview" key="transitionOverview">
+                    {this.stateOverview()}
+                    {this.getFrequentPatterns()}
+                </g>
+            </svg>
+            {this.frequentPatternTable()}
+        </div>
     }
 }
 

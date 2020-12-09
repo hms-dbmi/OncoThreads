@@ -99,15 +99,8 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
 
                             <div className="stateTransition overview" style={{ height: this.height, overflowY: "auto" }}>
 
-                                <svg
-                                    width="100%"
-                                    className="stateTransition overview"
-                                    // height="100%"
-                                    // width={this.props.rootStore.visStore.svgWidth}
-                                    height={this.props.rootStore.visStore.svgHeight}
-                                >
+                              
                                     <TransitionOverview width={this.overviewWidth} />
-                                </svg>
                             </div>
 
                             <form id="svgform" method="post">
