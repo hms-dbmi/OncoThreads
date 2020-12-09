@@ -43,7 +43,7 @@ class TransitionOverview extends React.Component<Props> {
     paddingW = 5; paddingH = 10; annotationWidth = 40;
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
-    searchInput: Input|null = null
+    searchInput: Input|null = null;
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
@@ -346,12 +346,14 @@ class TransitionOverview extends React.Component<Props> {
                 title: `group_${groupIdx}`,
                 dataIndex: `group_${groupIdx}`,
                 key: `group_${groupIdx}`,
-                sorter: (a,b)=>a[`group_${groupIdx}`] - b[`group_${groupIdx}`]
+                sorter: (a,b)=>a[`group_${groupIdx}`] - b[`group_${groupIdx}`],
+                align: 'center',
+                // width: groupIdx>0?this.groupLabelOffsetX[groupIdx] - this.groupLabelOffsetX[groupIdx-1] : this.groupLabelOffsetX[groupIdx]
             }
         })
 
         columns.unshift({
-            title: 'pattern',
+            title: '',
             dataIndex: 'pattern',
             key: 'pattern',
             render: (states: string[]) => {
@@ -359,7 +361,9 @@ class TransitionOverview extends React.Component<Props> {
                     return <div key={state} style={{ width: rectW, height: rectW, margin:2, backgroundColor: getColorByName(state) }} />
                 })
             },
-            ...getColumnSearchProps('pattern')
+            ...getColumnSearchProps('pattern'),
+            align: 'center',
+            width: this.annotationWidth+this.paddingW
         })
 
 
