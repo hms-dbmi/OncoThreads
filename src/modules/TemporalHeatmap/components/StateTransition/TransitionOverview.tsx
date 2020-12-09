@@ -3,7 +3,8 @@ import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { Table } from 'antd';
+import { Table, Input, Button, Space } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import {ColumnsType} from 'antd/lib/table'
 import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
 
@@ -28,6 +29,8 @@ type TypeTimeLayout = { shiftX: number }
         }
     }
 
+type RowRecordType = {key:string, pattern:TPattern, [key:string]:any} 
+
 
 @inject('rootStore')
 @observer
@@ -40,6 +43,7 @@ class TransitionOverview extends React.Component<Props> {
     paddingW = 5; paddingH = 10; annotationWidth = 40;
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
+    searchInput: Input|null = null
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
@@ -257,12 +261,73 @@ class TransitionOverview extends React.Component<Props> {
         }
         let rectW = 10
 
+        const handleSearch = (selectedKeys:string[], confirm: ()=>void, dataIndex:string) => {
+            confirm();
+            this.setState({
+              searchText: selectedKeys[0],
+              searchedColumn: dataIndex,
+            });
+          };
+        
+         const handleReset = (clearFilters: ()=>void) => {
+            clearFilters()
+            this.setState({ searchText: '' });
+          };
+
+        const getColumnSearchProps = (dataIndex:string) => ({
+            filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: {setSelectedKeys:any, selectedKeys:string[], confirm: ()=>void, clearFilters:()=>void}) => (
+              <div style={{ padding: 8 }}>
+                <Input
+                  ref={node => {
+                    this.searchInput = node;
+                  }}
+                  placeholder={`Search ${dataIndex}`}
+                  value={selectedKeys[0]}
+                  onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                  onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  style={{ width: 188, marginBottom: 8, display: 'block' }}
+                />
+                <Space>
+                  <Button
+                    type="primary"
+                    onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                    icon={<SearchOutlined translate/>}
+                    size="small"
+                    style={{ width: 90 }}
+                  >
+                    Search
+                  </Button>
+                  <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+                    Reset
+                  </Button>
+                </Space>
+              </div>
+            ),
+            filterIcon: (filtered:boolean) => <SearchOutlined translate style={{ color: filtered ? '#1890ff' : undefined }} />,
+            onFilter: (value:string|number|boolean, record: RowRecordType):boolean =>
+              record[dataIndex]
+                ? record[dataIndex].toString().toLowerCase().includes(value.toString().toLowerCase())
+                : false,
+            onFilterDropdownVisibleChange: (visible:boolean) => {
+              if (visible) {
+                setTimeout(() => this.searchInput!.select(), 100);
+              }
+            },
+            // render: text =>(
+            //     <Highlighter
+            //       highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            //       searchWords={[this.state.searchText]}
+            //       autoEscape
+            //       textToHighlight={text ? text.toString() : ''}
+            //     />
+            //   ) 
+          });
        
 
         let data = frequentPatterns.map((pattern, patternIdx) => {
             let [supportIdxs, subseq] = pattern
 
-            let rowData: {key:string, pattern:TPattern, [key:string]:any} = {
+            let rowData: RowRecordType = {
                 key: `${patternIdx + 1}`,
                 pattern: subseq,
             }
@@ -276,7 +341,7 @@ class TransitionOverview extends React.Component<Props> {
             return rowData
         })
 
-        let columns: ColumnsType< typeof data[0] > = patientGroups.map((_, groupIdx) => {
+        let columns: ColumnsType< RowRecordType > = patientGroups.map((_, groupIdx) => {
             return {
                 title: `group_${groupIdx}`,
                 dataIndex: `group_${groupIdx}`,
@@ -293,11 +358,12 @@ class TransitionOverview extends React.Component<Props> {
                 return states.map(state => {
                     return <div key={state} style={{ width: rectW, height: rectW, margin:2, backgroundColor: getColorByName(state) }} />
                 })
-            }
+            },
+            ...getColumnSearchProps('pattern')
         })
 
 
-        return <Table columns={columns} dataSource={data} pagination={false}/>
+        return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height*0.3 }} />
     }
 
     render() {
@@ -316,9 +382,7 @@ class TransitionOverview extends React.Component<Props> {
                     </g>
                 </svg>
             </div>
-            <div style={{ height: this.props.height*0.3, overflowY: "auto" }}>
-                {this.frequentPatternTable()}
-            </div>
+            {this.frequentPatternTable()}
         </div>
     }
 }
