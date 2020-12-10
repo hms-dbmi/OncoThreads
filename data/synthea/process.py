@@ -11,6 +11,21 @@ import datetime
 loading data
 '''
 
+SAMPLE_SIZE = 100 # number of sampled inpatients
+observation_code = {
+    '48065-7': 
+    {'name':'D-dimer', 'type': ''}, #
+    '2276-4': 
+    {'name':'Serum Ferritin', 'type':''},#
+    '89579-7': 
+    {'name': 'High Sensitivity Cardiac Troponin I', 'type':''},#
+    # '731-0': 
+    # {'name':'Lymphocytes', 'type': ''}, #
+    '14804-9': 
+    {'name':'Lactate dehydrogenase', 'type': ''}#
+}
+TIMEPOINT_ATTR_CODES = [key for key in observation_code]
+
 conditions = pd.read_csv(os.path.join('./originalData/10k_synthea_covid19_csv',"conditions.csv"))
 patients = pd.read_csv(os.path.join('./originalData/10k_synthea_covid19_csv',"patients.csv"))
 observations = pd.read_csv(os.path.join('./originalData/10k_synthea_covid19_csv',"observations.csv"))
@@ -23,7 +38,7 @@ medications = pd.read_csv(os.path.join('./originalData/10k_synthea_covid19_csv',
 
 
 
-
+#%%
 pd.set_option("max_rows", None) 
 print([col for col in observations.columns])
 #  ['DATE', 'PATIENT', 'ENCOUNTER', 'CODE', 'DESCRIPTION', 'VALUE', 'UNITS', 'TYPE']
@@ -48,9 +63,7 @@ print([col for col in encounters.columns])
 '''
 get patient ids
 '''
-sample_size = 500
-sampled_patients = patients.sample(n = sample_size)
-sampled_patient_ids = sampled_patients.Id
+
 
 covid_patient_ids = conditions[conditions.CODE == 840539006].PATIENT.unique()
 
@@ -67,7 +80,8 @@ survivor_ids = np.union1d(completed_isolation_patients, negative_covid_patient_i
 #  Grab IDs for patients with admission due to COVID-19
 inpatient_ids = encounters[(encounters.REASONCODE == 840539006) & (encounters.CODE == 1505002)].PATIENT
 
-sampled_inpatient_ids = np.intersect1d(inpatient_ids, sampled_patient_ids)
+
+sampled_inpatient_ids = inpatient_ids.sample(n = SAMPLE_SIZE)
 
 print('number of inpatient', sampled_inpatient_ids.shape[0])
 print('num of inpatient survivors', np.intersect1d( sampled_inpatient_ids, survivor_ids).shape[0])
@@ -83,11 +97,7 @@ Lab values for COVID-19 patients
 
 #%%
 # 
-lab_obs = observations[(observations.CODE == '48065-7') | (observations.CODE == '26881-3') | 
-                          (observations.CODE == '2276-4') | (observations.CODE == '89579-7') |
-                          (observations.CODE == '2532-0') | (observations.CODE == '731-0') |
-                          (observations.CODE == '14804-9')
-                      ]
+lab_obs = observations[observations['CODE'].isin(TIMEPOINT_ATTR_CODES)]
 
 # Select COVID-19 conditions out of all conditions in the simulation
 covid_conditions = conditions[conditions.CODE == 840539006]
@@ -118,18 +128,7 @@ timeline_specimen['SAMPLE_ID'] = ['sample_'+str(i) for i in range(len(timeline_s
 
 
 #%%
-observation_code = {
-    '48065-7': 
-    {'name':'D-dimer', 'type': ''}, #
-    '2276-4': 
-    {'name':'Serum Ferritin', 'type':''},#
-    '89579-7': 
-    {'name': 'High Sensitivity Cardiac Troponin I', 'type':''},#
-    '731-0': 
-    {'name':'Lymphocytes', 'type': ''}, #
-    '14804-9': 
-    {'name':'Lactate dehydrogenase', 'type': ''}#
-}
+
 
 samples = pd.DataFrame(
     columns=['PATIENT_ID', 'SAMPLE_ID']+[observation_code[key]['name'] for key in observation_code]
@@ -169,15 +168,15 @@ samples = samples.append(specimen, ignore_index=True)
 
 
 # %%
-# np.savetxt('covid_{}_samples.txt'.format(sample_size), samples)
-# np.savetxt('covid_{}_timeline_samples.txt'.format(sample_size), timeline_specimen)
+# np.savetxt('covid_{}_samples.txt'.format(SAMPLE_SIZE), samples)
+# np.savetxt('covid_{}_timeline_samples.txt'.format(SAMPLE_SIZE), timeline_specimen)
 
 '''
 save file
 '''
 # 
-# samples.to_csv('covid_{}_samples.txt'.format(sample_size), index=False, sep='\t')
-timeline_specimen.to_csv('covid_{}_timeline_samples.txt'.format(sample_size), index=False, sep='\t')
+# samples.to_csv('covid_{}_samples.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
+timeline_specimen.to_csv('processedData/covid_{}_timeline_samples.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
 
 # covert type to the format used in oncoThreads
 type_dict ={
@@ -191,7 +190,7 @@ sample_header = [
     "#" + '\t'.join(['1' for _ in range(2 + len(observation_code) )])+'\n',
 ]
 
-with open('covid_{}_samples.txt'.format(sample_size), 'w') as txt_file:
+with open('processedData/covid_{}_samples.txt'.format(SAMPLE_SIZE), 'w') as txt_file:
     for line in sample_header:
         txt_file.write(line)
     samples.to_csv(txt_file, index=False, sep='\t', na_rep= ' ')

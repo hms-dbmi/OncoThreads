@@ -94,16 +94,19 @@ class CustomGrouping extends React.Component<Props> {
     get states(): TState[] {
         let {pointGroups, currentVariables, points}  = this.props.rootStore!.dataStore
 
-        let selectedPoints: IPoint[][] = Object.values(pointGroups)
-            .map(s => {
+        let groupedPoints: IPoint[][] = Object.values(pointGroups)
+            .map(group => {
                 return points
-                    .filter((_, i) => s.pointIdx.includes(i))
+                    .filter((_, i) => group.pointIdx.includes(i))
             })
-
+        
         const summarizeDomain = (values: string[] | number[] | boolean[]) => {
+
             if (typeof (values[0]) == "number") {
                 let v = values as number[] // stupid typescropt
+                
                 let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
+                console.info(v, range)
                 return range
             } else if (typeof (values[0]) == "string") {
                 let v = values as string[]
@@ -114,7 +117,7 @@ class CustomGrouping extends React.Component<Props> {
             } else return []
         }
 
-        let states = selectedPoints.map((p, stateIdx) => {
+        let states = groupedPoints.map((p, stateIdx) => {
             let state: TState = {
                 stateKey: Object.keys(pointGroups)[stateIdx],
                 domains: {},
@@ -122,14 +125,12 @@ class CustomGrouping extends React.Component<Props> {
             }
             currentVariables.forEach((name, valueIdx) => {
                 state.domains[name] = summarizeDomain(
-                    p.map(p => p.value[valueIdx]) as number[] | string[] | boolean[]
+                    p.map(p => p.value[valueIdx]).filter(v=>v!==undefined) as number[] | string[] | boolean[]
                 )
             })
 
             return state
         })
-
-
 
         return states
     }

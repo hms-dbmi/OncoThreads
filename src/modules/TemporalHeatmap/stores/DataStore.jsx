@@ -251,7 +251,6 @@ class DataStore {
             get ngramResults (){
                 let {patientStates} = this
                 let {patients} = this.rootStore
-                console.info(this.patients)
                 let ngram = new NGram(
                     patients.map(p=>patientStates[p]), 
                     [2, 3], 
@@ -529,6 +528,8 @@ class DataStore {
             }),
             autoGroup: action(() => {
                 let normPoints = this.normPoints
+                
+
                 if (normPoints.length == 0) return
                 let { numofStates } = this
                 var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "average", Infinity, numofStates);

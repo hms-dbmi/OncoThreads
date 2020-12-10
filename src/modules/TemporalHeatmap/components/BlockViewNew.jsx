@@ -145,7 +145,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                
             // create timepoints
             if (d.heatmap) {
-                if (d.isGrouped) {
+                
                     const transformTP = `translate(
                         ${this.props.rootStore.visStore.getTpXTransform(i)},
                         ${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]}
@@ -171,27 +171,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                             </Provider>
                         </g>,
                     );
-                } else {
-                    const transformTP = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]})`;
-                    timepoints.push(
-                        <g key={d.globalIndex} transform={transformTP}>
-                            <Provider
-                                dataStore={this.props.rootStore.dataStore}
-                                visStore={this.props.rootStore.visStore}
-                            >
-                                <HeatmapTimepoint
-                                    tooltipFunctions={this.props.tooltipFunctions}
-                                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                                    xOffset={(this.props.rootStore.visStore
-                                        .sampleRectWidth - rectWidth) / 2}
-                                    timepoint={d}
-                                    rectWidth={rectWidth}
-                                    heatmapScale={this.props.rootStore.visStore.heatmapScales[i]}
-                                />
-                            </Provider>
-                        </g>,
-                    );
-                }
+                
             }
             // create transitions
             // if(d.type=='between') return
