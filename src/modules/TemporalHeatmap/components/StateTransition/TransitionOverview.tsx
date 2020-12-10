@@ -16,6 +16,10 @@ interface Props {
     height: number
 }
 
+interface State{
+    searchedPatternLengths:number[] 
+}
+
 type TypeLayoutDict = {
     width?: number,
     [timeID: number]: TypeTimeLayout
@@ -36,7 +40,7 @@ type RowRecordType = { key: string, pattern: TPattern, [key: string]: any }
 
 @inject('rootStore')
 @observer
-class TransitionOverview extends React.Component<Props> {
+class TransitionOverview extends React.Component<Props, State> {
     timeStepHeight = 65;
     rectHeight = 20;
     padding = 20;
@@ -46,7 +50,15 @@ class TransitionOverview extends React.Component<Props> {
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
     searchInput: Input | null = null;
+    
     fontSize = 14;
+
+    constructor(props: Props){
+        super(props)
+        this.state={
+            searchedPatternLengths: [2,3]
+        }
+    }
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
@@ -273,21 +285,29 @@ class TransitionOverview extends React.Component<Props> {
 
         const handleSearch = (selectedKeys: string[], confirm: () => void, dataIndex: string) => {
             confirm();
-            this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-            });
+           
         };
 
         const handleReset = (clearFilters: () => void) => {
             clearFilters()
-            this.setState({ searchText: '' });
         };
+
+        const changePatternLength= (len:number)=>{
+            let {searchedPatternLengths} = this.state
+            let idx = searchedPatternLengths.indexOf(len)
+            if (idx>-1){
+                searchedPatternLengths.splice(idx, 1)
+            }else{
+                searchedPatternLengths.push(len)
+            }
+
+            this.setState({searchedPatternLengths})
+        }
 
         const getColumnSearchProps = (dataIndex: string) => ({
             filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: { setSelectedKeys: any, selectedKeys: string[], confirm: () => void, clearFilters: () => void }) => (
                 <div style={{ padding: 8 }}>
-                    <Input
+                    contains: <Input
                         ref={node => {
                             this.searchInput = node;
                         }}
@@ -297,6 +317,10 @@ class TransitionOverview extends React.Component<Props> {
                         onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
                         style={{ width: 188, marginBottom: 8, display: 'block' }}
                     />
+                    <Checkbox checked={this.state.searchedPatternLengths.includes(2)} onChange={()=>changePatternLength(2)}/> two-state pattern 
+                    <br/>
+                    <Checkbox checked={this.state.searchedPatternLengths.includes(3)} onChange={()=>changePatternLength(3)}/> three-state pattern 
+                    <br/>
                     <Space>
                         <Button
                             type="primary"
@@ -316,7 +340,9 @@ class TransitionOverview extends React.Component<Props> {
             filterIcon: (filtered: boolean) => <SearchOutlined translate='(0,0)' style={{ color: filtered ? '#1890ff' : undefined }} />,
             onFilter: (value: string | number | boolean, record: RowRecordType): boolean =>
                 record[dataIndex]
-                    ? record[dataIndex].join('').toLowerCase().includes(value.toString().replace(/\s|,/g, '').toLowerCase())
+                    ? record[dataIndex].join('').toLowerCase().includes(value.toString().replace(/\s|,/g, '').toLowerCase()) 
+                    &&
+                    this.state.searchedPatternLengths.includes(record[dataIndex].length)
                     : false,
             onFilterDropdownVisibleChange: (visible: boolean) => {
                 if (visible) {
@@ -368,7 +394,7 @@ class TransitionOverview extends React.Component<Props> {
             key: 'pattern',
             render: (states: string[]) => {
                 return states.map((state, stateIdx) => {
-                    return <div key={`${states}+${stateIdx}+${state}`} style={{ width: rectW, height: rectW, margin: 2, backgroundColor: getColorByName(state) }} />
+                return <div key={`${states}+${stateIdx}+${state}`} style={{ width:rectW, margin: 2, backgroundColor: getColorByName(state), fontSize: rectW, color:"white" }} >{state}</div>
                 })
             },
             ...getColumnSearchProps('pattern'),
