@@ -293,7 +293,7 @@ class TransitionOverview extends React.Component<Props> {
                         <Button
                             type="primary"
                             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                            icon={<SearchOutlined translate />}
+                            icon={<SearchOutlined translate='(0,0)'/>}
                             size="small"
                             style={{ width: 90 }}
                         >
@@ -305,10 +305,10 @@ class TransitionOverview extends React.Component<Props> {
                     </Space>
                 </div>
             ),
-            filterIcon: (filtered: boolean) => <SearchOutlined translate style={{ color: filtered ? '#1890ff' : undefined }} />,
+            filterIcon: (filtered: boolean) => <SearchOutlined translate='(0,0)' style={{ color: filtered ? '#1890ff' : undefined }} />,
             onFilter: (value: string | number | boolean, record: RowRecordType): boolean =>
                 record[dataIndex]
-                    ? record[dataIndex].toString().toLowerCase().includes(value.toString().toLowerCase())
+                    ? record[dataIndex].join('').toLowerCase().includes(value.toString().replace(/\s|,/g, '').toLowerCase())
                     : false,
             onFilterDropdownVisibleChange: (visible: boolean) => {
                 if (visible) {
@@ -359,8 +359,8 @@ class TransitionOverview extends React.Component<Props> {
             dataIndex: 'pattern',
             key: 'pattern',
             render: (states: string[]) => {
-                return states.map(state => {
-                    return <div key={state} style={{ width: rectW, height: rectW, margin: 2, backgroundColor: getColorByName(state) }} />
+                return states.map((state, stateIdx) => {
+                    return <div key={`${states}+${stateIdx}+${state}`} style={{ width: rectW, height: rectW, margin: 2, backgroundColor: getColorByName(state) }} />
                 })
             },
             ...getColumnSearchProps('pattern'),
