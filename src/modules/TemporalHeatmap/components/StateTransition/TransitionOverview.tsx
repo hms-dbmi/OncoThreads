@@ -3,7 +3,7 @@ import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { Table, Input, Button, Space } from 'antd';
+import { Table, Input, Button, Space, Checkbox } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/lib/table'
 import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
@@ -46,6 +46,7 @@ class TransitionOverview extends React.Component<Props> {
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
     searchInput: Input | null = null;
+    fontSize = 14;
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
@@ -223,19 +224,26 @@ class TransitionOverview extends React.Component<Props> {
 
         let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
             let offsetX = Object.values(layoutDict[groupIdx][0])[1].x
-            let transform = `translate(${offsetX}, ${this.paddingH})`
+            let transform = `translate(${offsetX }, ${this.paddingH })`
             let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
-            let groupLabel = getTextWidth(`group${groupIdx}`, 14) > this.partitionGap + layoutDict[groupIdx]['width']! ?
-                `..${groupIdx}` : `group${groupIdx}`
+            let labelWidth = getTextWidth(`group${groupIdx}`, this.fontSize) 
+            let groupLabel = `group${groupIdx}`
+            if (labelWidth>this.partitionGap + layoutDict[groupIdx]['width']!){
+                groupLabel = `..${groupIdx}`
+                labelWidth = getTextWidth(groupLabel, this.fontSize) 
+            }
 
             groupLabelOffsetX.push(offsetX + layoutDict[groupIdx]['width']! / 2)
 
-            return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }} >
+            return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }}  onClick={() => uiStore.selectPatientGroup(groupIdx)}>
+                <foreignObject width={this.groupLabelHeight} height={this.groupLabelHeight} x={layoutDict[groupIdx]['width']! / 2 - labelWidth/2 - this.fontSize -5 } y={this.fontSize}>
+                    <Checkbox checked={isSelected}/>
+                    </foreignObject>
                 <text
-                    x={layoutDict[groupIdx]['width']! / 2}
+                    x= {layoutDict[groupIdx]['width']! / 2}
+                    y={(this.groupLabelHeight + this.fontSize) / 2}
                     textAnchor="middle"
-                    y={this.groupLabelHeight / 2}
-                    cursor="pointer" onClick={() => uiStore.selectPatientGroup(groupIdx)} xlinkTitle={`group_${groupIdx}`}>
+                    cursor="pointer"  xlinkTitle={`group_${groupIdx}`}>
                     {groupLabel}
                 </text>
                 {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}

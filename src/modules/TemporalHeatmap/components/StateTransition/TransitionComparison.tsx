@@ -237,11 +237,20 @@ class TransitionComparison extends React.Component<Props> {
             )
         });
 
-
-        return [
-            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>,
-            ...groups
-        ];
+        if (groups.length>0){
+            return [
+                <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>,
+                ...groups
+            ];
+        }else{
+            return [
+                <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>,
+                <text transform={`translate( ${this.props.width/2}, ${this.props.height/2})`} textAnchor="middle" style={{fontSize:'20px', fill:'gray'}}>
+                    please select patient groups in the overview panel
+                </text>
+            ];
+        }
+        
     }
     render() {
         return <g className="transitionComparison">
