@@ -10,3 +10,13 @@
 .stateSummary .labelButton text{
     fill: rgb(80, 80, 80)
 }
+
+
+.stateTransition.overview .ant-table-filter-trigger-container {
+    left: 0;
+}
+
+.stateTransition.overview .ant-table-tbody>tr>td {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}

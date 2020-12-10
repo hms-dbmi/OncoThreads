@@ -3,8 +3,8 @@ import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { Table, Input, Button, Space, Checkbox } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Table, Input, Button, Space, Checkbox, Tooltip } from 'antd';
+import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/lib/table'
 import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
 
@@ -394,7 +394,7 @@ class TransitionOverview extends React.Component<Props, State> {
             key: 'pattern',
             render: (states: string[]) => {
                 return states.map((state, stateIdx) => {
-                return <div key={`${states}+${stateIdx}+${state}`} style={{ width:rectW, margin: 2, backgroundColor: getColorByName(state), fontSize: rectW, color:"white" }} >{state}</div>
+                return <div key={`${states}+${stateIdx}+${state}`} style={{ width:rectW, margin: 1, backgroundColor: getColorByName(state), fontSize: rectW, color:"white" }} >{state}</div>
                 })
             },
             ...getColumnSearchProps('pattern'),
@@ -403,7 +403,10 @@ class TransitionOverview extends React.Component<Props, State> {
         })
 
 
-        return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height * 0.3 }} />
+    let tableHeader = <span>Frequent Patterns {' '}<Tooltip title="frequent state transition patterns and their distribution of each patient group"><InfoCircleOutlined translate='' />
+        </Tooltip>
+        </span>
+    return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height * 0.3 }} title={()=>tableHeader}/>
     }
 
     render() {
