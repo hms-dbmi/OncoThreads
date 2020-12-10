@@ -336,8 +336,8 @@ class TransitionOverview extends React.Component<Props> {
 
             patientGroups.forEach((patientGroup, groupIdx) => {
                 let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
-                let percentage = groupSupportIdxs.length == 0 ? 0 : (groupSupportIdxs.length / patientGroup.length).toFixed(2)
-                rowData[`group_${groupIdx}`] = percentage
+                let percentage = groupSupportIdxs.length == 0 ? '0%' : Math.floor(groupSupportIdxs.length / patientGroup.length*100).toString()+'%'
+                rowData[`group_${groupIdx}`] = percentage 
             })
 
             return rowData
@@ -348,7 +348,7 @@ class TransitionOverview extends React.Component<Props> {
                 title: `group_${groupIdx}`,
                 dataIndex: `group_${groupIdx}`,
                 key: `group_${groupIdx}`,
-                sorter: (a, b) => a[`group_${groupIdx}`] - b[`group_${groupIdx}`],
+                sorter: (a, b) => parseInt(a[`group_${groupIdx}`].replace('%', '')) - parseInt(b[`group_${groupIdx}`].replace('%', '')),
                 align: 'center',
                 // width: groupIdx>0?this.groupLabelOffsetX[groupIdx] - this.groupLabelOffsetX[groupIdx-1] : this.groupLabelOffsetX[groupIdx]
             }
