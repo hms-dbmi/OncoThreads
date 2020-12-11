@@ -148,13 +148,13 @@ for idx, row in covid_patients_obs.iterrows():
     day = row['days']
 
     if not ((patient_id == prev_patient) and (day == prev_day)):
+        specimen_idx += 1
 
         samples = samples.append(specimen, ignore_index=True)
         specimen = {
             'PATIENT_ID': patient_id,
             'SAMPLE_ID': 'sample_'+str(specimen_idx)
         }
-        specimen_idx += 1
 
     attr = observation_code[row['CODE_y']]['name']
     if observation_code[row['CODE_y']]['type']=='':

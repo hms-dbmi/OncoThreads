@@ -401,9 +401,26 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
     }
 
     render() {
-        const values = this.props.row.filter(d => d.key !== undefined)
-            .map(element => ({ patient: element.patients[0], value: element.key }))
-            .sort((a, b) => (a.value - b.value));
+        // const values = this.props.row.filter(d => d.key !== undefined)
+        //     .map(element => ({ patient: element.patients[0], value: element.key }))
+        //     .sort((a, b) => (a.value - b.value));
+        
+        /***
+         * a very stupid workaround due to some design in oncoThread v1
+         * will improve it later
+         */
+        let values = []
+        this.props.row.filter(d => d.key !== undefined)
+            .forEach(element=>{
+                element.patients.forEach(p=>{
+                    values.push({
+                        patient:p, 
+                        value: element.key
+                    })
+                })
+            })
+        values.sort((a, b) => (a.value - b.value));
+
         const boxPlotValues = ContinuousRow
             .computeBoxPlotValues(values.map(element => element.value));
         if (this.props.uiStore.continuousRepresentation === 'gradient') {
@@ -411,10 +428,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
                 .filter(patientId => this.props.dataStore.selectedPatients
                     .indexOf(patientId) !== -1);
             return (
-                this.createGradientRow(this.props.row.map(element => ({
-                    patient: element.patients[0],
-                    value: element.key,
-                })), boxPlotValues, selectedPartitionPatients)
+                this.createGradientRow(values, boxPlotValues, selectedPartitionPatients)
             );
         }
         else if (this.props.uiStore.continuousRepresentation === 'boxplot') {

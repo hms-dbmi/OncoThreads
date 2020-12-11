@@ -571,7 +571,7 @@ class DataStore {
 
             applyCustomGroups: action(()=>{
                 let { points, pointGroups } = this
-        
+                
                 // check whether has unselected nodes
                 let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
                 if (allSelected.length < points.length) {

@@ -106,7 +106,6 @@ class CustomGrouping extends React.Component<Props> {
                 let v = values as number[] // stupid typescropt
                 
                 let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-                console.info(v, range)
                 return range
             } else if (typeof (values[0]) == "string") {
                 let v = values as string[]

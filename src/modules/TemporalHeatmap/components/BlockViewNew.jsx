@@ -9,7 +9,6 @@ import {Switch} from 'antd'
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
-import HeatmapTimepoint from './Timepoints/Heatmap';
 import GroupTimepoint from './Timepoints/GroupTimepointCustom';
 import TimepointLabels from './PlotLabeling/TimepointLabels';
 import RowOperators from './RowOperatorsNew/';
