@@ -7,6 +7,7 @@ import * as d3 from 'd3';
 import lasso from './lasso.js'
 
 import { getColorByName, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { Tooltip } from 'antd';
 
 type TPatientDict = {
     [patient: string]: {
@@ -142,7 +143,20 @@ class Scatter extends React.Component<Props> {
                 fill={stateColor} r={r} stroke="white" strokeWidth="1" opacity={opacity}
             />
 
-            return <g
+            let tooltipTitle = <div>
+                <span>patient: <b>{normPoint.patient}</b></span>
+                <br/>
+                <span>timepoint: {normPoint.timeIdx}</span>
+                <br/>
+                {normPoint.value.map((v, i)=>{
+                    return <span key={i}>
+                        {this.props.rootStore!.dataStore.currentVariables[i]}: <b>{v}</b>
+                        <br/>
+                    </span>
+            })}
+            </div>
+
+            return <Tooltip title={tooltipTitle} trigger='click'><g
                 transform={`translate(
                     ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
                     ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
@@ -157,7 +171,7 @@ class Scatter extends React.Component<Props> {
                 hoverPointID == id ?
                 glyph
                 : circle}
-        </g>
+        </g></Tooltip>
 
         })
 

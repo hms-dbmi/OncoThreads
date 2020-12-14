@@ -349,7 +349,9 @@ class CustomGrouping extends React.Component<Props> {
                         </g> */}
                     </svg>
                     <StateInfo
-                        states={this.states} height={infoHeight}
+                        states={this.states} 
+                        width={width}
+                        height={infoHeight}
                         stateLabels={dataStore.stateLabels}
                         resetGroup={this.resetGroup}
                         deleteGroup={this.deleteGroup}

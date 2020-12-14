@@ -406,7 +406,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
         //     .sort((a, b) => (a.value - b.value));
         
         /***
-         * a very stupid workaround due to some design in oncoThread v1
+         * a very stupid workaround due to some designs in oncoThread v1
          * will improve it later
          */
         let values = []
@@ -423,6 +423,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
 
         const boxPlotValues = ContinuousRow
             .computeBoxPlotValues(values.map(element => element.value));
+            
         if (this.props.uiStore.continuousRepresentation === 'gradient') {
             const selectedPartitionPatients = this.props.row.map(d => d.patients[0])
                 .filter(patientId => this.props.dataStore.selectedPatients

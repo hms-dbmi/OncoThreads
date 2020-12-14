@@ -59,6 +59,7 @@ print([col for col in encounters.columns])
 # 'DESCRIPTION', 'BASE_ENCOUNTER_COST', 'TOTAL_CLAIM_COST', 'PAYER_COVERAGE', 'REASONCODE', 
 # 'REASONDESCRIPTION']
 
+print([col for col in medications.columns])
 #%%
 '''
 get patient ids
@@ -126,7 +127,31 @@ timeline_specimen['START_DATE'] = timeline_specimen['START_DATE'].astype('int')
 timeline_specimen['EVENT_TYPE'] = "SPECIMEN"
 timeline_specimen['SAMPLE_ID'] = ['sample_'+str(i) for i in range(len(timeline_specimen))]
 
+#%%
+medications = medications[medications['PATIENT'].isin(sampled_inpatient_ids)]
 
+# covid_med = medications[pd.to_datetime(medications.START) > pd.to_datetime('2020-01-20')]
+
+inpatient_dates = covid_patients_obs[['START', 'PATIENT', 'DATE']].groupby(['PATIENT']).max().rename(columns={'START': 'INPATIENT_START', 'DATE': 'INPATIENT_END'})
+
+covid_med = medications.merge(inpatient_dates, on='PATIENT')
+covid_med['STOP'].fillna(covid_med['INPATIENT_END'])
+covid_med['START'] = pd.to_datetime(covid_med['START'])
+covid_med['STOP'] = pd.to_datetime(covid_med['STOP'])
+covid_med['STOP'] = covid_med[['STOP', 'INPATIENT_END']].max(axis=1)
+
+covid_med = covid_med[ covid_med['START']>=covid_med['INPATIENT_START']]
+covid_med = covid_med[covid_med['START']<=covid_med['INPATIENT_END']]
+
+covid_med['START_DATE'] = (covid_med['START'] - covid_med['INPATIENT_START']) / np.timedelta64(1, 'D')
+covid_med['STOP_DATE'] = (covid_med['STOP'] - covid_med['INPATIENT_START']) / np.timedelta64(1, 'D')
+covid_med['EVENT_TYPE'] ='MEDICATION'
+covid_med['MED'] = covid_med['DESCRIPTION'] 
+
+covid_med = covid_med[['PATIENT', 'START_DATE', 'STOP_DATE', 'EVENT_TYPE', 'MED']].rename(columns={"PATIENT": "PATIENT_ID"})
+
+
+# covid_med['']
 #%%
 
 
@@ -177,7 +202,8 @@ save file
 # 
 # samples.to_csv('covid_{}_samples.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
 timeline_specimen.to_csv('processedData/covid_{}_timeline_samples.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
-
+covid_patients_obs.to_csv('processedData/covid_{}_all.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
+covid_med.to_csv('processedData/covid_{}_timeline_med.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
 # covert type to the format used in oncoThreads
 type_dict ={
     'numeric': 'NUMBER'
