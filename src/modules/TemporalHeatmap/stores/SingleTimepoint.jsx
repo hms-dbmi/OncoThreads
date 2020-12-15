@@ -71,7 +71,8 @@ class SingleTimepoint {
              * @returns {object[]}
              */
             get customGrouped() {
-                let {currentVariables, points} = this.rootStore.dataStore.variableStores[this.type]
+                let {currentVariables} = this.rootStore.dataStore.variableStores[this.type]
+                let {points} = this.rootStore.dataStore
                 let result = this.customPartitions.map(partition => {
                     let partitionPoints = partition.points.map(idx => points[idx])
                     let partitionRows = {...partition}
@@ -101,6 +102,7 @@ class SingleTimepoint {
                     
                     return partitionRows
                 })
+
 
                 return result
             },

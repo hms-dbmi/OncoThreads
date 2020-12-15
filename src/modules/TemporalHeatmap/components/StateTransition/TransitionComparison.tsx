@@ -44,30 +44,31 @@ class TransitionComparison extends React.Component<Props> {
         // filter the partition at each timepoint with the user selected groups
         let { dataStore } = this.props.rootStore!
 
+        let filteredPatients = group.patients.filter((p: string) => patientGroup.includes(p))
+        group.patients.filter((p: string) => patientGroup.includes(p))
+
         if (group.points) return {
             ...group,
-            patients: group.patients.filter((p: string) => patientGroup.includes(p)),
+            patients: filteredPatients,
             points: group.points.filter((id: number) => patientGroup.includes(dataStore.points[id].patient)),
             rows: group.rows.map((row: any) => {
                 return {
                     ...row,
                     counts: row.counts.map((count: any) => {
-                        return { ...count, patients: count.patients.filter((p: string) => patientGroup.includes(p)) }
-                    })
-                        .filter((count: any) => count.patients.length > 0)
+                        return { key: count.key, patients: count.patients.filter((p: string) => filteredPatients.includes(p)) }
+                    }).filter((count: any) => count.patients.length > 0)
                 }
             })
         }
         else return {
             ...group,
-            patients: group.patients.filter((p: string) => patientGroup.includes(p)),
+            patients: filteredPatients,
             rows: group.rows.map((row: any) => {
                 return {
                     ...row,
                     counts: row.counts.map((count: any) => {
-                        return { ...count, patients: count.patients.filter((p: string) => patientGroup.includes(p)) }
-                    })
-                        .filter((count: any) => count.patients.length > 0)
+                        return { key: count.key, patients: count.patients.filter((p: string) => filteredPatients.includes(p)) }
+                    }).filter((count: any) => count.patients.length > 0)
                 }
             })
         }
@@ -143,7 +144,6 @@ class TransitionComparison extends React.Component<Props> {
 
                 // draw time points
                 d.customGrouped.forEach((group, partitionIdx) => {
-                    let stateKey = d.partition || ''
 
                     let transform = `translate(${offsetX}, ${0})`
                     let heatmap = d.heatmap.map(v => {
@@ -151,11 +151,9 @@ class TransitionComparison extends React.Component<Props> {
                     })
 
                     let partition = this.getGroupedPartition(group, patientGroup)
-                    
-                    if (partition.patients.length === 0) return
-                    let currentVariables = dataStore
-                    .variableStores[d.type].fullCurrentVariables
 
+                    if (partition.patients.length === 0) return
+                   
                     timepoint.push(<g
                         key={`group${groupIdx}_state${group.partition}`}
                         className={`group${groupIdx}_state${group.partition} timepoint`}
