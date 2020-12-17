@@ -8,8 +8,8 @@ import { Pane, SortablePane } from 'react-sortable-pane';
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
-import HeatmapTimepoint from './Timepoints/Heatmap/HeatmapTimepoint';
-import GroupTimepoint from './Timepoints/Group/GroupTimepoint';
+import HeatmapTimepoint from './Timepoints/Heatmap';
+import GroupTimepoint from './Timepoints/GroupTimepoint/';
 import TimepointLabels from './PlotLabeling/TimepointLabels';
 import RowOperators from './RowOperators/RowOperators';
 import Legend from './Legend';
@@ -31,12 +31,18 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         extendObservable(this, {
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
+            width:window.innerWidth,
             panes: {
-                labels: { width: (window.innerWidth - 40) / 10, active: false },
+                labels: { width: (window.innerWidth - 40) / 10 * 0.5, active: false },
                 operators: { width: ((window.innerWidth - 40) / 10) * 1.5, active: false },
                 view: { width: ((window.innerWidth - 40) / 10) * 6.5, active: false },
-                legend: { width: (window.innerWidth - 40) / 10, active: false },
+                legend: { width: (window.innerWidth - 40) / 10 * 1.5, active: false },
+                // labels: { width: (this.width - 40) / 10, active: false },
+                // operators: { width: ((this.width - 40) / 10) * 1.5, active: false },
+                // view: { width: ((this.width - 40) / 10) * 6.5, active: false },
+                // legend: { width: (this.width - 40) / 10, active: false },
             },
+            ref: React.createRef(),
             active: {
                 labels: false,
                 operators: false,
@@ -53,11 +59,16 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
      * Add event listener
      */
     componentDidMount() {
+
+        this.width = this.ref.current.getBoundingClientRect().width
+        this.updateDimensions()
+
         this.props.rootStore.visStore.setPlotWidth(this.panes.view.width - 10);
         this.props.rootStore.visStore
             .setPlotHeight(window.innerHeight - this.blockView
                 .current.getBoundingClientRect().top);
         window.addEventListener('resize', this.updateDimensions);
+
     }
 
     /**
@@ -74,16 +85,16 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         const prevWidth = Object.values(this.panes).map(d => d.width).reduce((a, b) => a + b);
         this.panes = {
             labels: {
-                width: (window.innerWidth - 40) / (prevWidth / this.panes.labels.width),
+                width: (this.width - 40) / (prevWidth / this.panes.labels.width),
             },
             operators: {
-                width: (window.innerWidth - 40) / (prevWidth / this.panes.operators.width),
+                width: (this.width - 40) / (prevWidth / this.panes.operators.width),
             },
             view: {
-                width: (window.innerWidth - 40) / (prevWidth / this.panes.view.width),
+                width: (this.width- 40) / (prevWidth / this.panes.view.width),
             },
             legend: {
-                width: (window.innerWidth - 40) / (prevWidth / this.panes.legend.width),
+                width: (this.width - 40) / (prevWidth / this.panes.legend.width),
             },
         };
         this.props.rootStore.visStore
@@ -278,15 +289,16 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         return [timepoints, transitions];
     }
 
+
     render() {
         return (
-            <div>
+            <div className="blockView" ref={this.ref}>
                 <div className="view" id="block-view">
                     <Row style={{marginLeft: '0'}}>
                         <Button
                             bsSize="xsmall"
                             onClick={this.handleTimeClick}
-                            disabled={this.props.uiStore.globalTime
+                            disabled={this.props.uiStore.globalTime==='line'
                             || this.props.rootStore.dataStore.variableStores
                                 .between.currentVariables.length > 0}
                             key="actualTimeline"
@@ -327,7 +339,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                             }}
                         >
                             <Pane
-                                className={this.active.labels ? 'pane-active' : 'pane-inactive'}
+                                className={`${this.active.labels ? 'pane-active' : 'pane-inactive'} timepointLabel`}
                                 key="labels"
                                 size={{ width: this.panes.labels.width }}
                             >
@@ -342,7 +354,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 </Provider>
                             </Pane>
                             <Pane
-                                className={this.active.operators ? 'pane-active' : 'pane-inactive'}
+                                className={`${this.active.operators ? 'pane-active' : 'pane-inactive'} variableOperator`}
                                 key="operators"
                                 size={{ width: this.panes.operators.width }}
                                 style={{ paddingTop: this.padding }}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { PropTypes } from 'prop-types';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import UtilityFunctions from '../../../UtilityClasses/UtilityFunctions';
+import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
 
 /**
  * Component for creating a row of a heatmap (ungrouped) timepoint
@@ -41,13 +41,14 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
             let str;
 
             if (variable.datatype === 'NUMBER') {
-                str = UtilityFunctions.getScientificNotation(d.value);
+                str = getScientificNotation(d.value);
             } else if (variable.derived && variable.datatype === 'ORDINAL' && variable.modification.type === 'continuousTransform') {
-                str = `${d.value} (${UtilityFunctions.getScientificNotation(this.props.dataStore.variableStores[this.props.timepointType].getById(variable.originalIds[0]).mapper[d.sample])})`;
+                str = `${d.value} (${getScientificNotation(this.props.dataStore.variableStores[this.props.timepointType].getById(variable.originalIds[0]).mapper[d.sample])})`;
             } else {
                 str = d.value;
             }
             rects.push(<rect
+                className={`heatmap ind ${d.patient}`}
                 stroke={stroke}
                 onMouseEnter={e => this.handleMouseEnter(e, d.patient, str)}
                 onMouseLeave={this.handleMouseLeave}
@@ -64,6 +65,7 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
             />);
             if (d.value === undefined) {
                 rects.push(<line
+                    className='heatmap ind undefined'
                     stroke={stroke}
                     key={`${d.patient}UNDEFINED`}
                     height={this.props.height}

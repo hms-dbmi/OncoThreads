@@ -55,6 +55,9 @@ build/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
+# # dotenv environment variables file
+# .env
+build/
 
+data/synthea/originalData
+data/synthea/processedData

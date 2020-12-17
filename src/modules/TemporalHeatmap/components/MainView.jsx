@@ -1,9 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import { Grid, Tab, Tabs } from 'react-bootstrap';
+import { Tab, Tabs } from 'react-bootstrap';
 import GlobalTimeline from './GlobalTimeline';
 import BlockView from './BlockView';
+import MyBlockView from './BlockViewNew';
+import StateTransition from './StateTransition'
+import { Tooltip } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import * as introJs from 'intro.js'
 
 /**
  * Component containing the main visualization
@@ -25,63 +30,98 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         }
     }
 
-    getVisualization(){
+    getTabbedPanel() {
         // create  views
-        let blockView = null;
-        let timelineView = null;
-        if (!this.props.uiStore.globalTime) {
-            blockView = (
-                <BlockView
-                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                    tooltipFunctions={this.props.tooltipFunctions}
-                    showContextMenu={this.props.showContextMenu}
-                    openBinningModal={this.props.openBinningModal}
-                    openSaveVarModal={this.props.openSaveVarModal}
-                />
-            );
-        } else {
-            timelineView = (
-                <GlobalTimeline
-                    showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-                    tooltipFunctions={this.props.tooltipFunctions}
-                    showContextMenu={this.props.showContextMenu}
-                    openBinningModal={this.props.openBinningModal}
-                    openSaveVarModal={this.props.openSaveVarModal}
-                />
-            );
-        }
+        
+        let stateTransition = <StateTransition
+            openSaveVarModal={this.props.openSaveVarModal}
+            tooltipFunctions={this.props.tooltipFunctions}
+        />
+        let myblockView = (
+            <MyBlockView
+                showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                tooltipFunctions={this.props.tooltipFunctions}
+                showContextMenu={this.props.showContextMenu}
+                openBinningModal={this.props.openBinningModal}
+                openSaveVarModal={this.props.openSaveVarModal}
+            />
+        );
+        let timelineView = (
+            <GlobalTimeline
+                showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                tooltipFunctions={this.props.tooltipFunctions}
+                showContextMenu={this.props.showContextMenu}
+                openBinningModal={this.props.openBinningModal}
+                openSaveVarModal={this.props.openSaveVarModal}
+            />
+        );
+        let blockView = (
+            <BlockView
+                showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
+                tooltipFunctions={this.props.tooltipFunctions}
+                showContextMenu={this.props.showContextMenu}
+                openBinningModal={this.props.openBinningModal}
+                openSaveVarModal={this.props.openSaveVarModal}
+            />
+        );
+
 
         return (
-            <Grid fluid>
-                <Tabs
-                    mountOnEnter
-                    unmountOnExit
-                    animation={false}
-                    activeKey={this.props.uiStore.globalTime}
-                    onSelect={this.handleSwitchView}
-                    id="viewTab"
-                >
-                    <Tab eventKey={false} style={{ paddingTop: 10 }} title="Block View">
-                        {blockView}
-                    </Tab>
-                    <Tab eventKey style={{ paddingTop: 10 }} title="Timeline">
-                        {timelineView}
-                    </Tab>
-                </Tabs>
-            </Grid>
+            // <Grid fluid className="tabContent">
+            <Tabs
+                style={{ width: "100%" }}
+                mountOnEnter
+                unmountOnExit
+                animation={false}
+                activeKey={this.props.uiStore.globalTime}
+                onSelect={
+                    this.handleSwitchView
+                }
+                id="viewTab"
+
+                data-intro="different views to support more advanced analysis"
+                data-step='1'
+            >
+               <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="Patients are grouped at each timepoint by their attribute values"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                    {blockView}
+                </Tab>
+                
+                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="Patients are grouped at each timepoint by the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                    {myblockView}
+                </Tab>
+                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} 
+                    title={<span>State Transitions <Tooltip title="States are identified and the transition among states are presented"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                    {stateTransition}
+                </Tab>
+                
+                <Tab eventKey='line' style={{ paddingTop: 10 }} title={<span>Timeline <Tooltip title="The timelines of individual patients"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                    {timelineView}
+                </Tab>
+            </Tabs>
+            // </Grid>
         );
     }
 
+    componentDidUpdate(){
+        let {uiStore} = this.props
+        if(uiStore.globalTime=='stateTransition' && uiStore.introTutorial!== undefined){
+            
+            uiStore.setTutorialMode(false) // close current tutorial
+            uiStore.setTutorialMode(true) // start a new intro to refresh the intro in the newly-opened tab panel
+        }
+    }
+
+
 
     render() {
-        if(this.props.rootStore.dataStore.variableStores.sample.currentVariables.length > 0 ||
-            this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0){
-            return(this.getVisualization())
+        if (this.props.rootStore.dataStore.variableStores.sample.currentVariables.length > 0 ||
+            this.props.rootStore.dataStore.variableStores.between.currentVariables.length > 0) {
+            return (this.getTabbedPanel())
         }
-        else{
+        else {
             const noDataText = 'No data currently selected. Use "Add" button or "Feature Manager" to select one or more timepoint features';
-            return(
-                <div style={{height:this.props.rootStore.visStore.plotHeight}}>
+            return (
+                <div style={{ height: this.props.rootStore.visStore.plotHeight }}>
                     <div className='centeredText'>
                         {noDataText}
                     </div>

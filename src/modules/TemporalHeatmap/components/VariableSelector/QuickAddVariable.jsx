@@ -6,7 +6,7 @@ import {
 import Select from 'react-select';
 import { extendObservable } from 'mobx';
 import OriginalVariable from '../../stores/OriginalVariable';
-import UtilityFunctions from '../../UtilityClasses/UtilityFunctions';
+import {toTitleCase} from '../../UtilityClasses/UtilityFunctions';
 import MutationSelector from '../Modals/MutationSelector';
 
 /**
@@ -136,7 +136,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                             object: d,
                         }));
 
-                    options.push({ label: UtilityFunctions.toTitleCase(key), options: subOptions });
+                    options.push({ label: toTitleCase(key), options: subOptions });
                 });
         } else {
             options.push({
@@ -210,10 +210,10 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * @returns {Object[]}
      */
     createOptions() {
-        if (this.category !== 'clinical') {
-            return this.createEventOptions();
+        if (this.category === 'clinical') {
+            return this.createTimepointOptions();
         }
-        return this.createTimepointOptions();
+        return this.createEventOptions();
     }
 
     /**
@@ -299,7 +299,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
         }
 
         return (
-            <Form horizontal>
+            <Form horizontal >
                 <FormGroup style={{ margin: 0 }}>
                     <Col sm={2} style={{ paddingRight: '0', paddingLeft: '0' }}>
                         <FormControl
@@ -317,7 +317,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                                         value={d}
                                         key={d}
                                     >
-                                        {UtilityFunctions.toTitleCase(d)}
+                                        {toTitleCase(d)}
                                     </option>
                                 ))}
                                 <option value="computed" key="computed">Computed features</option>

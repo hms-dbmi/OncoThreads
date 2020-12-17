@@ -1,0 +1,24 @@
+.introjs-helperNumberLayer{
+    background: orange;
+    text-shadow: '';
+}
+
+.introjs-tooltip {
+    border: white 1px solid;
+    font-size: 16px;
+}
+
+.introjs-overlay {
+    opacity: 0.9;
+    background-color: #555;
+}
+
+.introjs-hint-dot{
+    background: orange;
+}
+
+.introjs-hint-pulse{
+    background: orange;
+    width: 20px;
+    height: 20px;
+}

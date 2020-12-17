@@ -4,8 +4,8 @@ import uuidv4 from 'uuid/v4';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 import { extendObservable } from 'mobx';
-import UtilityFunctions from '../../../UtilityClasses/UtilityFunctions';
-import ColorScales from '../../../UtilityClasses/ColorScales';
+import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
 
 /**
  * Component representing a row of a categorical variable in a grouped partition of a timepoint
@@ -203,7 +203,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
                         fill={`url(#${randomId})`}
                         opacity={this.props.opacity}
                         onMouseMove={e => this.ongoingDragging(e, definedValues)}
-                        onMouseEnter={e => this.props.showTooltip(e, `${definedValues.length} patients: Minimum ${UtilityFunctions.getScientificNotation(boxPlotValues[0])}, Median ${UtilityFunctions.getScientificNotation(boxPlotValues[2])}, Maximum ${UtilityFunctions.getScientificNotation(boxPlotValues[4])}`)}
+                        onMouseEnter={e => this.props.showTooltip(e, `${definedValues.length} patients: Minimum ${getScientificNotation(boxPlotValues[0])}, Median ${getScientificNotation(boxPlotValues[2])}, Maximum ${getScientificNotation(boxPlotValues[4])}`)}
                         onMouseLeave={this.props.hideTooltip}
                     />
                     {selectedLines}
@@ -236,7 +236,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
                         width={this.props.visStore.groupScale(1)}
                         fill={this.props.color(definedValues[0].value)}
                         opacity={this.props.opacity}
-                        onMouseEnter={e => this.props.showTooltip(e, `${definedValues.length} patients: Minimum ${UtilityFunctions.getScientificNotation(boxPlotValues[0])}, Median ${UtilityFunctions.getScientificNotation(boxPlotValues[2])}, Maximum ${UtilityFunctions.getScientificNotation(boxPlotValues[4])}`)}
+                        onMouseEnter={e => this.props.showTooltip(e, `${definedValues.length} patients: Minimum ${getScientificNotation(boxPlotValues[0])}, Median ${getScientificNotation(boxPlotValues[2])}, Maximum ${getScientificNotation(boxPlotValues[4])}`)}
                         onMouseLeave={this.props.hideTooltip}
                     />
                     {selectedLine}
@@ -297,7 +297,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
                         fill={`url(#${randomId})`}
                         stroke="lightgray"
                         opacity={this.props.opacity}
-                        onMouseEnter={e => this.props.showTooltip(e, `Minimum: ${UtilityFunctions.getScientificNotation(boxPlotValues[0])}, Median: ${UtilityFunctions.getScientificNotation(boxPlotValues[2])}, Maximum: ${UtilityFunctions.getScientificNotation(boxPlotValues[4])}`)}
+                        onMouseEnter={e => this.props.showTooltip(e, `Minimum: ${getScientificNotation(boxPlotValues[0])}, Median: ${getScientificNotation(boxPlotValues[2])}, Maximum: ${getScientificNotation(boxPlotValues[4])}`)}
                         onMouseLeave={this.props.hideTooltip}
                     />
                     <line
@@ -377,7 +377,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
                     width={this.props.visStore.groupScale(numValues)}
                     fill={this.props.color(boxPlotValues[2])}
                     opacity={this.props.opacity}
-                    onMouseEnter={e => this.props.showTooltip(e, `${numValues} patients: Minimum ${UtilityFunctions.getScientificNotation(boxPlotValues[0])}, Median ${UtilityFunctions.getScientificNotation(boxPlotValues[2])}, Maximum ${UtilityFunctions.getScientificNotation(boxPlotValues[4])}`)}
+                    onMouseEnter={e => this.props.showTooltip(e, `${numValues} patients: Minimum ${getScientificNotation(boxPlotValues[0])}, Median ${getScientificNotation(boxPlotValues[2])}, Maximum ${getScientificNotation(boxPlotValues[4])}`)}
                     onMouseLeave={this.props.hideTooltip}
                 />
                 <rect
@@ -408,8 +408,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
             .computeBoxPlotValues(values.map(element => element.value));
         if (this.props.uiStore.continuousRepresentation === 'gradient') {
             const selectedPartitionPatients = this.props.row.map(d => d.patients[0])
-                .filter(element => this.props.dataStore.selectedPatients
-                    .indexOf(element) !== -1);
+                .filter(patientId => this.props.dataStore.selectedPatients.includes(patientId));
             return (
                 this.createGradientRow(this.props.row.map(element => ({
                     patient: element.patients[0],
@@ -417,13 +416,14 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
                 })), boxPlotValues, selectedPartitionPatients)
             );
         }
-        if (this.props.uiStore.continuousRepresentation === 'boxplot') {
+        else if (this.props.uiStore.continuousRepresentation === 'boxplot') {
             return (
                 this.createBoxPlot(boxPlotValues, values.length)
             );
+        } else{
+            return (this.createMedianValue(boxPlotValues, values.length));
         }
-
-        return (this.createMedianValue(boxPlotValues, values.length));
+        
     }
 }));
 ContinuousRow.propTypes = {

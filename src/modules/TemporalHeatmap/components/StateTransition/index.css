@@ -1,0 +1,22 @@
+.blockView .ant-card-body{
+    padding: 0px;
+}
+
+.stateSummary .labelButton rect{
+    stroke: rgb(204, 204, 204);
+    color: rgb(40, 40, 40)
+}
+
+.stateSummary .labelButton text{
+    fill: rgb(80, 80, 80)
+}
+
+
+.stateTransition.overview .ant-table-filter-trigger-container {
+    left: 0;
+}
+
+.stateTransition.overview .ant-table-tbody>tr>td {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
-import UtilityFunctions from '../UtilityClasses/UtilityFunctions';
+import {getTextWidth, getScientificNotation} from '../UtilityClasses/UtilityFunctions';
 import ColorScales from '../UtilityClasses/ColorScales';
 
 /**
@@ -43,7 +43,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
     getLegendEntry(value, opacity, rectWidth, fontSize, currX,
         lineheight, rectColor, textColor, tooltipText) {
 
-        if(this.props.rootStore.uiStore.globalTime===false){
+        if(this.props.rootStore.uiStore.globalTime.includes('block')){
    
             return (
                 <g
@@ -115,7 +115,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
      * @returns {number}
      */
     static getTextWidth(min, text, fontSize) {
-        const width = UtilityFunctions.getTextWidth(text, fontSize);
+        const width = getTextWidth(text, fontSize);
         if (width > min) {
             return width;
         }
@@ -146,7 +146,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         x={0}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(min)}
+                        {getScientificNotation(min)}
                     </text>,
                     <text
                         key="text med"
@@ -162,10 +162,10 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         fill={ColorScales.getHighContrastColor(color(max))}
                         style={{ fontSize }}
                         x={this.defaultWidth - Legend.getTextWidth(0,
-                            UtilityFunctions.getScientificNotation(max), fontSize)}
+                            getScientificNotation(max), fontSize)}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(max)}
+                        {getScientificNotation(max)}
                     </text>,
                 );
             } else {
@@ -177,17 +177,17 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         x={0}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(min)}
+                        {getScientificNotation(min)}
                     </text>,
                     <text
                         key="text max"
                         fill={ColorScales.getHighContrastColor(color(max))}
                         style={{ fontSize }}
                         x={this.defaultWidth - Legend.getTextWidth(0,
-                            UtilityFunctions.getScientificNotation(max), fontSize)}
+                            getScientificNotation(max), fontSize)}
                         y={lineheight / 2 + fontSize / 2}
                     >
-                        {UtilityFunctions.getScientificNotation(max)}
+                        {getScientificNotation(max)}
                     </text>,
                 );
             }
@@ -229,14 +229,14 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             if (variable.datatype === 'ORDINAL' || row.includes(d)) {
                 let tooltipText;
                 if (variable.derived && variable.datatype === 'ORDINAL' && variable.modification.type === 'continuousTransform' && variable.modification.binning.binNames[i].modified) {
-                    tooltipText = `${d}: ${UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i])} to ${UtilityFunctions.getScientificNotation(variable.modification.binning.bins[i + 1])}`;
+                    tooltipText = `${d}: ${getScientificNotation(variable.modification.binning.bins[i])} to ${getScientificNotation(variable.modification.binning.bins[i + 1])}`;
                 } else {
                     tooltipText = d;
                 }
                 const rectWidth = Legend.getTextWidth(this.minCatWidth, d, fontSize) + 4;
                 if (d !== undefined) {
 
-                    if(this.props.rootStore.uiStore.globalTime===false){
+                    if(this.props.rootStore.uiStore.globalTime.includes('block')){
                         legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
                             fontSize, currX, lineheight, variable.colorScale(d),
                             ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
@@ -301,7 +301,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 let lineheight;
                 let adaptedFontSize = fontSize;
                 let opacity = 1;
-                if (primary === d.id) {
+                if (primary === d.id && this.props.uiStore.globalTime!=='myblock') {
                     lineheight = this.props.rootStore.visStore.primaryHeight;
                 } else {
                     lineheight = this.props.rootStore.visStore.secondaryHeight;
@@ -415,15 +415,20 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
         const textHeight = 10;
 
         // draggable line for resizing
-        if (!this.props.uiStore.globalTime) {
+        if (this.props.uiStore.globalTime.includes('block')) {
             const lines = [];
             const legends = [];
             this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
+                let transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`
+                if (this.props.uiStore.globalTime==='myblock'){
+                    transform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i + 1]})`
+                
+                }
                 if (i < this.props.rootStore.dataStore.timepoints.length - 1) {
                     lines.push(
                         <g
                             key={d.globalIndex}
-                            transform={`translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`}
+                            transform={transform}
                         >
                             <line
                                 className="dragLine"
@@ -439,13 +444,16 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         </g>,
                     );
                 }
-                const transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
+                let leTransform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
+                if (this.props.uiStore.globalTime==='myblock'){
+                    leTransform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]})`
+                }
                 const lg = this.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight,
                     this.props.rootStore.dataStore.variableStores[d.type].fullCurrentVariables);
                 legends.push(
                     <g
                         key={d.globalIndex}
-                        transform={transform}
+                        transform={leTransform}
                     >
                         {lg}
                     </g>,

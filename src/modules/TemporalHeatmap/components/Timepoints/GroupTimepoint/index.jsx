@@ -12,6 +12,9 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
     getPartitions() {
         const partitions = [];
         let previousXPosition = 0;
+
+        let stateLabels = this.props.dataStore.stateLabels
+
         this.props.group.forEach((d, i) => {
             const transform = `translate(${previousXPosition},0)`;
             let stroke = 'none';
@@ -32,10 +35,11 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
                         partitionIndex={i}
                         stroke={stroke}
                         primaryVariableId={this.props.primaryVariableId}
+                        stateLabels={stateLabels}
                     />
                 </g>,
             );
-            previousXPosition += this.props.visStore.groupScale(d.patients.length) + 10;
+            previousXPosition += this.props.visStore.groupScale(d.patients.length) + this.props.visStore.partitionGap;
         });
         return partitions;
     }

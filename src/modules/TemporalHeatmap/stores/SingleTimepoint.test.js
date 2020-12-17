@@ -8,7 +8,8 @@ describe('SingleTimepoint', () => {
     let variableStore;
     let sortOrder;
     beforeAll(() => {
-        const rootStore = new RootStore(new UIStore());
+        const uiStore = new UIStore()
+        const rootStore = new RootStore(uiStore);
         rootStore.patients = ['a', 'b', 'c', 'd', 'e'];
         const timepointStructure = [];
         sortOrder = [];
@@ -37,7 +38,9 @@ describe('SingleTimepoint', () => {
         rootStore.timepointStructure.replace(timepointStructure);
         rootStore.dataStore.initialize();
         timepoint = rootStore.dataStore.timepoints[0];
+        timepoint.setIsGrouped(false)
         variableStore = rootStore.dataStore.variableStores.sample;
+
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable('id1', 'name1', 'NUMBER', 'description1', [], [], mapper1, '', ''));
         rootStore.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable('id2', 'name2', 'STRING', 'description1', [], [], mapper2, '', ''));
     });

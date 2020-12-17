@@ -10,7 +10,8 @@ class VisStore {
         this.primaryHeight = 30;
         this.secondaryHeight = 15;
         this.verticalGap = 1;
-        this.partitionGap = 10;
+        this.partitionGap = 25;
+        this.strokeW = 5;
         this.currentSVGHeight = undefined;
         this.currentVerticalZoomLevel = undefined;
         this.initialVerticalZoomLevel = undefined;
@@ -82,7 +83,7 @@ class VisStore {
                     }
                     return transitionSpace;
                 }));
-                if(this.rootStore.uiStore.globalTime === true) {
+                if(this.rootStore.uiStore.globalTime === 'line') {
                     this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
                     this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                 }
@@ -127,7 +128,7 @@ class VisStore {
                 } else {
                     val = value;
                 }
-                if(this.rootStore.uiStore.globalTime === true) {
+                if(this.rootStore.uiStore.globalTime === 'line') {
                     this.currentVerticalZoomLevel = val;
                 }
                 this.transitionSpaces.replace(Array(this.transitionSpaces.length)
@@ -164,7 +165,7 @@ class VisStore {
             get svgHeight() {
                 const h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
-                if(this.rootStore.uiStore.globalTime === true) {
+                if(this.rootStore.uiStore.globalTime === 'line') {
                     this.currentSVGHeight = window.innerHeight - 200;
                     if(this.currentVerticalZoomLevel === undefined) {
                         //this.currentSVGHeight = window.innerHeight - 200;
@@ -251,6 +252,29 @@ class VisStore {
                 });
                 return timepointPositions;
             },
+
+            // encode event data in flow
+            get newTimepointPositions() {
+                const timepointPositions = { timepoint: [], connection: [] };
+                let prevY = 0;
+                this.rootStore.dataStore.timepoints.forEach((timepoint, i) => {
+                    const tpHeight = this.getNewTPHeight(timepoint);
+                    timepointPositions.timepoint.push(prevY);
+                    
+                    timepointPositions.connection.push(prevY + tpHeight);
+                    
+                    if (i < this.rootStore.dataStore.timepoints.length - 1) {
+                        prevY += this.transitionSpaces[timepoint.globalIndex] + tpHeight;
+                        // if(timepoint.type=='sample'){
+                        //     prevY += this.transitionSpaces[timepoint.globalIndex] + tpHeight;
+                        // }else{
+                        //     prevY += tpHeight;
+                        // }
+                        
+                    }
+                });
+                return timepointPositions;
+            },
             /**
              * gets scales for placement of heatmap rectangles
              * @return {d3.scalePoint[]}
@@ -265,10 +289,22 @@ class VisStore {
              * @return {d3.scaleLinear}
              */
             get groupScale() {
-                return d3.scaleLinear()
-                    .domain([0, this.rootStore.dataStore.numberOfPatients])
-                    .range([0, this.plotWidth - (this.rootStore.dataStore.maxPartitions - 1)
-                    * this.partitionGap - this.rootStore.uiStore.rowOffset * 2]);
+                let {dataStore, uiStore} = this.rootStore
+                
+                if (this.rootStore.uiStore.globalTime==='stateTransition'){
+                    
+                    return d3.scaleLinear()
+                    .domain([0, dataStore.numberOfPatients])
+                    .range([0, this.plotWidth - dataStore.maxTPPartitionWithGroup 
+                    * this.partitionGap - (dataStore.patientGroupNum-1) * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
+
+                }else{
+                    return d3.scaleLinear()
+                    .domain([0, dataStore.numberOfPatients])
+                    .range([0, this.plotWidth - (dataStore.maxPartitions - 1)
+                    * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
+                }
+                
             },
             /**
              * gets scale for placement of events and samples on time axis in global timeline
@@ -303,6 +339,27 @@ class VisStore {
                     } else {
                         height += this.secondaryHeight;
                     }
+                }
+            });
+    
+        return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
+    }
+
+    /**
+     * gets height of a timepoint
+     * @param timepoint
+     * @returns {number}
+     */
+    getNewTPHeight(timepoint) {
+        let height = 0;
+        let varCount = 0;
+        this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
+            .forEach((variableId, i) => {
+                if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
+                    || variableId === timepoint.primaryVariableId) {
+                    
+                    varCount += 1;
+                    height += this.secondaryHeight;            
                 }
             });
     

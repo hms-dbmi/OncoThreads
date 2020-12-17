@@ -1,4 +1,5 @@
 import { action, extendObservable } from 'mobx';
+import * as introJs from 'intro.js'
 
 /**
  * store for storing the UI state
@@ -7,10 +8,11 @@ import { action, extendObservable } from 'mobx';
 class UIStore {
     constructor() {
         extendObservable(this, {
+            introTutorial: undefined, // whether is in the tutorial mode
             cBioInstance: 'hack', // hack, portal, own
             continuousRepresentation: 'gradient', // gradient, boxplot, medium
             realTime: false, // show realtime lines in block view
-            globalTime: false, // show global timeline
+            globalTime: 'block', // show global timeline
             advancedSelection: true, // advanced selection enables
             showUndefined: true, // show rows with only undefined values
             slantedLines: 'none', // altWithin, altAcross, none, random
@@ -18,6 +20,7 @@ class UIStore {
             rowOffset: 0,
             horizontalStacking: false,
             horizontalGap: 1,
+            selectedPatientGroupIdx: [0],
             setCBioInstance: action((instance) => {
                 this.cBioInstance = instance;
             }),
@@ -27,8 +30,8 @@ class UIStore {
             setRealTime: action((boolean) => {
                 this.realTime = boolean;
             }),
-            setGlobalTime: action((boolean) => {
-                this.globalTime = boolean;
+            setGlobalTime: action((key) => {
+                this.globalTime = key;
             }),
             setAdvancedSelection: action((boolean) => {
                 this.advancedSelection = boolean;
@@ -51,6 +54,27 @@ class UIStore {
             setHorizontalGap: action((horizontalGap) => {
                 this.horizontalGap = Number(horizontalGap);
             }),
+            selectPatientGroup: action((groupIdx)=>{
+                let idx = this.selectedPatientGroupIdx.indexOf(groupIdx)
+                if (idx==-1){
+                    this.selectedPatientGroupIdx.push(groupIdx)
+                }else{
+                    this.selectedPatientGroupIdx.splice(idx, 1)
+                }
+                // this.selectedPatientGroupIdx = [this.selectedPatientGroupIdx[1], groupIdx]
+            }),
+            setTutorialMode:action((isIn)=>{
+                if(isIn && this.introTutorial===undefined){
+                    
+                    this.introTutorial = introJs()
+                    this.introTutorial.start()
+                }
+
+                if (isIn==false && this.introTutorial != undefined){
+                    this.introTutorial.exit()
+                    this.introTutorial = undefined
+                }
+            })
         });
     }
 }

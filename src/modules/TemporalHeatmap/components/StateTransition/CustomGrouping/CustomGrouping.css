@@ -1,0 +1,52 @@
+.lasso path {
+    stroke: rgb(80,80,80);
+    stroke-width:2px;
+  }
+  
+  .lasso .drawn {
+    fill-opacity:.05 ;
+  }
+  
+  .lasso .loop_close {
+    fill:none;
+    stroke-dasharray: 4,4;
+  }
+  
+  .lasso .origin {
+    fill:#3399FF;
+    fill-opacity:.5;
+  }
+  
+  .not_possible {
+    fill:rgb(200,200,200);
+  }
+  
+  .possible {
+    fill:#EC888C;
+  }
+
+  /* div.customGrouping{
+    box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28) 
+    border: 0.5px solid #ccc
+  } */
+
+  g.glyph{
+    transition: all 400ms ease-in-out;
+  }
+
+  path.pcpLine, line.axis {
+    transition: width 400ms ease-in-out;
+  }
+  
+
+  path.link {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: dash 1s linear forwards;
+  }
+  
+  @keyframes dash {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }

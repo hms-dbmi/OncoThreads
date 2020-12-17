@@ -143,7 +143,7 @@ class RootStore {
                 this.hasClinical = false;
                 this.dataParsed = false;
                 this.timelineParsed = false;
-                this.uiStore.globalTime = false;
+                this.uiStore.globalTime = 'block';
                 this.api.getPatients((patients) => {
                     this.patients = patients;
                     this.api.getEvents(patients, (events) => {
@@ -483,10 +483,66 @@ class RootStore {
 
     /**
      * adds variable in the beginning or after reset
+     * add all sample variable in the beginning
      */
+    
     addInitialVariable() {
-        this.dataStore.variableStores.sample.addVariableToBeDisplayed(new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
-        this.dataStore.globalPrimary = this.initialVariable.id;
+
+        let sampleOptions = this.clinicalSampleCategories
+            .filter(category => !this.dataStore
+                .variableStores.sample.fullCurrentVariables
+                .map(d => d.id).includes(category.id))
+
+        // let patientOptions = this.clinicalPatientCategories
+        //     .filter(category => !this.dataStore
+        //         .variableStores.sample.fullCurrentVariables
+        //         .map(d => d.id).includes(category.id))
+        
+        
+        let eventOptions = [];
+        Object.keys(this.eventAttributes).filter(d => d !== 'SPECIMEN') //
+        .forEach(cate=>{
+            Object.keys(this.eventAttributes[cate])
+            .forEach((key) => {
+                const subOptions = this.eventAttributes[cate][key]
+                    .map(d => ({
+                        ...d,
+                        category: cate,
+                        profile: `event`
+                    }));
+
+                eventOptions = eventOptions.concat(subOptions)
+            });
+        })
+
+        // add all sample variable
+        sampleOptions.forEach(d=>{
+            // this.dataStore.variableStores.sample.addVariableToBeDisplayed(option)
+            this.dataStore.variableStores.sample
+                    .addVariableToBeDisplayed(new OriginalVariable(d.id, d.variable,
+                        d.datatype, d.description, [], [],
+                        this.staticMappers[d.id], d.source,
+                        'clinical'));
+        })
+
+        //
+        this.dataStore.autoGroup()
+        this.dataStore.applyCustomGroups()
+
+        // // add all even variable
+        // eventOptions.forEach(d=>{
+        //         const variable = new OriginalVariable(d.id, d.name, 'BINARY', `Indicates if event: "${d.name}" has happened between two timepoints`,
+        //             [], [], this.eventMappers[d.id], d.category, 'event');
+        //         this.dataStore.variableStores
+        //             .between.addVariableToBeDisplayed(variable);   
+        // })
+        
+           
+        
+        // this.dataStore.variableStores.sample.addVariableToBeDisplayed(
+            // new OriginalVariable(this.initialVariable.id, this.initialVariable.variable, 
+            // this.initialVariable.datatype, this.initialVariable.description, [], [], this.staticMappers[this.initialVariable.id], this.initialVariable.source, 'clinical'));
+        // this.dataStore.globalPrimary = this.initialVariable.id;
     }
 
     /**

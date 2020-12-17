@@ -1,15 +1,21 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
+
 import PropTypes from 'prop-types';
 import CategoricalRow from './CategoricalRow';
 import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
+
+
+
+
 /**
  * Component for a partition in a grouped timepiint
  */
 const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class GroupPartition extends React.Component {
+    
     createPartition() {
         let previousYposition = 0;
         const rows = [];
@@ -71,9 +77,10 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     }
 
     render() {
-        return (
-            this.createPartition()
-        );
+
+        return  <g className={`partitions`}>
+            {this.createPartition()}   
+        </g>;
     }
 }));
 GroupPartition.propTypes = {
@@ -89,6 +96,6 @@ GroupPartition.propTypes = {
         PropTypes.instanceOf(OriginalVariable),
     ])).isRequired,
     stroke: PropTypes.string.isRequired,
-    tooltipFunctions: PropTypes.objectOf(PropTypes.func),
+    tooltipFunctions: PropTypes.objectOf(PropTypes.func)
 };
 export default GroupPartition;

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
-import TimelineTimepoint from './Timepoints/GlobalTimeline/TimelineTimepoint';
+import TimelineTimepoint from './Timepoints/TimelinePoints';
 import GlobalTransition from './Transitions/GlobalTransition';
 import { Button, Col, Row } from 'react-bootstrap';
 import GlobalRowOperators from './RowOperators/GlobalRowOperators';
@@ -9,7 +9,7 @@ import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
 import GlobalBands from './PlotLabeling/GlobalBands';
-import UtilityFunctions from '../UtilityClasses/UtilityFunctions';
+import {cropText} from '../UtilityClasses/UtilityFunctions';
 import DerivedMapperFunctions from '../UtilityClasses/DeriveMapperFunctions';
 
 
@@ -273,7 +273,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
             let fontSize=10;
             let fontWeight = 'bold';
             return  <div>
-                <h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize,
+                <h5>{`${cropText(globalPrimaryName, fontSize,
                 fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
                 <Legend {...this.props.tooltipFunctions} />
             </div>
@@ -363,4 +363,4 @@ export default GlobalTimeline;
 
 //<h5>{`${globalPrimaryName} Legend`}</h5>
 
-//<h5>{`${UtilityFunctions.cropText(globalPrimaryName, fontSize, fontWeight, 40)} Legend`}</h5>
+//<h5>{`${cropText(globalPrimaryName, fontSize, fontWeight, 40)} Legend`}</h5>

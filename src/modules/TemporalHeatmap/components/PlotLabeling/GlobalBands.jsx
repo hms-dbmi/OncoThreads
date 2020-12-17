@@ -149,7 +149,7 @@ const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React
         //.style("fill", "#ADD8E6")
             .style("fill", "#C2DFFF")
             .style('fill-opacity', function (d, i) {
-                //if (i == 0) {
+                //if (i===0) {
                 //return 0;
                 //}
 

@@ -16,9 +16,51 @@ class VariableStore {
             currentVariables: [],
             // Variables that are referenced (displayed or used to create a derived variable)
             referencedVariables: {},
+            // stateLabels:{}, // key & label pairs
+
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
+            /**
+             * each point is one patient at one time point
+             */
+            get points() {
+            
+                let points = []
+                this.childStore
+                .timepoints
+                .forEach((timepoint, timeIdx) => {
+                    var heatmap = timepoint.heatmap
+        
+                    if (heatmap[0]) {
+                        heatmap[0].data.forEach((d, i) => {
+                            let {patient} = d
+                            let value = heatmap.map(d => d.data[i].value)
+                            var point = {
+                                idx:points.length,
+                                patient,
+                                value,
+                                timeIdx
+                            }
+                            points.push(point)
+                        })
+                    }
+                })
+
+                return points
+                
+                
+            },
+            
+            // setStateLabel: action((stateKey, stateLabel)=>{
+                
+            //     this.stateLabels[stateKey] = stateLabel
+            // }),
+            // resetStateLabel: action(()=>{
+                
+            //     this.stateLabels = {}
+            // }),
+
             resetVariables: action(() => {
                 this.referencedVariables = {};
                 this.currentVariables.clear();
@@ -81,7 +123,7 @@ class VariableStore {
             replaceAll: action((referencedVariables, currentVariables, primaryVariables) => {
                 this.replaceVariables(referencedVariables, currentVariables);
                 this.childStore.timepoints.forEach((d, i) => {
-                    if (primaryVariables[i] !== '') {
+                    if (primaryVariables[i] !== undefined) {
                         if (referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
                             d.setIsGrouped(false);
                         }
@@ -108,6 +150,7 @@ class VariableStore {
         });
         // Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
+
             if (change.type === 'splice') {
                 if (change.removedCount > 0) {
                     change.removed.forEach((d) => {
@@ -316,6 +359,13 @@ class VariableStore {
 
         return false;
     }
+
+    // applyCustomStates(timeStates){
+    //     this.childStore.timepoints.forEach((TP, i) => {
+    //         TP.applyCustomState(timeStates[i].partitions)
+    //     })
+        
+    // }
 }
 
 export default VariableStore;

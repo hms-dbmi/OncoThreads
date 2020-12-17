@@ -9,6 +9,7 @@ import {
 import FontAwesome from 'react-fontawesome';
 import { extendObservable } from 'mobx';
 import MainView from './MainView';
+import CustomGrouping from './StateTransition/CustomGrouping'
 import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
 import Tooltip from './Tooltip';
 import QuickAddVariable from './VariableSelector/QuickAddVariable';
@@ -18,6 +19,7 @@ import ContextMenuHeatmapRow from './ContextMenuHeatmapRow';
 import VariableManager from './VariableModals/VariableManager';
 import ContextMenu from './RowOperators/ContextMenu';
 import SaveVariableDialog from './Modals/SaveVariableDialog';
+
 
 /**
  * Component containing the view and controls
@@ -57,6 +59,11 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
         this.handleResetSelection = this.handleResetSelection.bind(this);
 
         this.showContextMenuHeatmapRow = this.showContextMenuHeatmapRow.bind(this);
+
+        this.tooltipFunctions = {
+            showTooltip: this.showTooltip,
+            hideTooltip: this.hideTooltip,
+        };
     }
 
     /**
@@ -268,14 +275,18 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
-        const tooltipFunctions = {
-            showTooltip: this.showTooltip,
-            hideTooltip: this.hideTooltip,
-        };
+        // let sampleStore = this.props.rootStore.dataStore.variableStores.sample
+        let {dataStore, study} = this.props.rootStore
+        let studyName = study?study.name:'example'
+              
         return (
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
-                    <Row>
+                <h4>{studyName}</h4>
+                    <Row className='controlPane' 
+                        data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  (ง •_•)ง Have Fun with your exploration! ' 
+                        data-step='6'
+                    >
                         <Col smOffset={0} xsOffset={0} md={7} xs={7}>
                             <QuickAddVariable />
                         </Col>
@@ -370,24 +381,16 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                             </ButtonToolbar>
                         </Col>
                     </Row>
-                    <Row>
-                        <Col
-                            sm={12}
-                            md={12}
-                            onMouseEnter={this.hideContextMenu}
-                            style={{ paddingTop: 5 }}
-                        >
-                            <Row>
-                                <MainView
-                                    tooltipFunctions={tooltipFunctions}
-                                    openBinningModal={this.openBinningModal}
-                                    openSaveVarModal={this.openSaveVarModal}
-                                    showContextMenu={this.showContextMenu}
-                                    hideContextMenu={this.hideContextMenu}
-                                    showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
-                                />
-                            </Row>
-                        </Col>
+                    <Row className='mainVIStab'>
+                        
+                        <MainView
+                            tooltipFunctions={this.tooltipFunctions}
+                            openBinningModal={this.openBinningModal}
+                            openSaveVarModal={this.openSaveVarModal}
+                            showContextMenu={this.showContextMenu}
+                            hideContextMenu={this.hideContextMenu}
+                            showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
+                        />
                     </Row>
                 </Grid>
                 {this.getBinner()}

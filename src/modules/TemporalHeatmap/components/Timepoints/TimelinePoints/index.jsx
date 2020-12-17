@@ -2,10 +2,10 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import TimelineRow from './TimelineRow';
-import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
-import OriginalVariable from '../../../stores/OriginalVariable';
-import DerivedVariable from '../../../stores/DerivedVariable';
-import SingleTimepoint from '../../../stores/SingleTimepoint';
+import DerivedMapperFunctions from 'modules/TemporalHeatmap/UtilityClasses/DeriveMapperFunctions';
+import OriginalVariable from 'modules/TemporalHeatmap/stores/OriginalVariable';
+import DerivedVariable from 'modules/TemporalHeatmap/stores/DerivedVariable';
+import SingleTimepoint from 'modules/TemporalHeatmap/stores/SingleTimepoint';
 
 /**
  * component for a timepoint in the global timeline
