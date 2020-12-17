@@ -95,7 +95,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             extra={controller}
                             style={{ width: "98%" }}
                             // style={{ width: (this.overviewWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", float: "left" }}
-                            data-intro="state transition overview"
+                            // data-intro="state transition overview"
                             bodyStyle={{padding:'0px'}}
                         >
 
@@ -110,7 +110,8 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             extra={bgController}
                             style={{ width: "98%"}}
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
-                            data-intro="state transition details"
+                            data-intro="Step 3: selected interested patient groups and observe the state transition details"
+                            data-step='5'
                             
                         >
                             <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
@@ -120,6 +121,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                                     // height="100%"
                                     // width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}
+                                   
                                 >
                                     <TransitionComparison width={this.comparisonWidth} height={this.height} tooltipFunctions={this.props.tooltipFunctions} hasBackground={this.hasBackground} />
                                 </svg>

@@ -8,6 +8,7 @@ import MyBlockView from './BlockViewNew';
 import StateTransition from './StateTransition'
 import { Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import * as introJs from 'intro.js'
 
 /**
  * Component containing the main visualization
@@ -73,8 +74,13 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 unmountOnExit
                 animation={false}
                 activeKey={this.props.uiStore.globalTime}
-                onSelect={this.handleSwitchView}
+                onSelect={
+                    this.handleSwitchView
+                }
                 id="viewTab"
+
+                data-intro="different views to support more advanced analysis"
+                data-step='1'
             >
                <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="Patients are grouped at each timepoint by their attribute values"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {blockView}
@@ -83,7 +89,8 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="Patients are grouped at each timepoint by the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {myblockView}
                 </Tab>
-                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} title={<span>State Transitions <Tooltip title="States are identified and the transition among states are presented"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} 
+                    title={<span>State Transitions <Tooltip title="States are identified and the transition among states are presented"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {stateTransition}
                 </Tab>
                 
@@ -94,6 +101,16 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
             // </Grid>
         );
     }
+
+    componentDidUpdate(){
+        let {uiStore} = this.props
+        if(uiStore.globalTime=='stateTransition' && uiStore.introTutorial!== undefined){
+            
+            uiStore.setTutorialMode(false) // close current tutorial
+            uiStore.setTutorialMode(true) // start a new intro to refresh the intro in the newly-opened tab panel
+        }
+    }
+
 
 
     render() {

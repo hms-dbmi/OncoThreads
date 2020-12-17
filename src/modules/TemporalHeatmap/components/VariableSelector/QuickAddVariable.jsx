@@ -299,7 +299,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
         }
 
         return (
-            <Form horizontal>
+            <Form horizontal >
                 <FormGroup style={{ margin: 0 }}>
                     <Col sm={2} style={{ paddingRight: '0', paddingLeft: '0' }}>
                         <FormControl

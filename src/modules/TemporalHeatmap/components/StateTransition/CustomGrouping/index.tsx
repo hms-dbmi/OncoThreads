@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import { InputNumber, Slider, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-
+import introJs from 'intro.js'
 
 import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
 
@@ -293,10 +293,17 @@ class CustomGrouping extends React.Component<Props> {
         return (
             // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
             <Card 
-                title={<span style={{fontSize:"17px"}}>State Identification <Tooltip title="identify state based on pointGroups timepoint features"><InfoCircleOutlined translate=''/></Tooltip></span>} 
+                title={
+                    <span style={{fontSize:"17px"}}>
+                        State Identification 
+                        <Tooltip title="identify state based on pointGroups timepoint features">
+                            <InfoCircleOutlined translate=''/>
+                        </Tooltip>
+                    </span>} 
                 extra={controllerView} 
                 style={{width:"98%"}}
                 data-intro="<b>modify</b> state identification here"
+                data-step='2'
             >
       
                 <div
@@ -317,7 +324,9 @@ class CustomGrouping extends React.Component<Props> {
                             updateSelected={this.updateSelected}
                             showGlyph={this.showGlyph}
                         />
-                        <g className='stateBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} data-intro="each point is ..">
+                        <g className='stateBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} 
+                            // data-intro="each point is .."
+                         >
                             <StateBlock
                                 stateLabels={dataStore.stateLabels}
                                 importanceScores={dataStore.importanceScores}

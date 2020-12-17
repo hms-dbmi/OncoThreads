@@ -33,6 +33,8 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
+
+        
     }
 
     /**
@@ -89,10 +91,11 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
 
                 <NavItem key="tutorial" onClick={
                     () => {
-                        introJs().start()
+                        this.props.uiStore.setTutorialMode(true)
                     }
                 }>
-                    Intro <QuestionCircleOutlined style={{color:"green"}}/>
+                    Intro <QuestionCircleOutlined style={{color:"green"}} 
+                    data-hint='<h4 style="color:white">Click me to start a walk-through tutorial <br/> ✧( ु•⌄• )◞◟( •⌄• ू )✧</h4>'/>
                 </NavItem>,
 
 
@@ -138,8 +141,24 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         });
     }
 
+    componentDidMount(){
+        
+        introJs().addHints();
+    }
+
+    componentDidUpdate(){
+        let introHint = introJs()
+        
+        introHint.onhintclose(() => { 
+            this.props.uiStore.setTutorialMode(true)
+          });
+
+        introHint.addHints();
+    }
 
     render() {
+        let navBarContent = this.getNavbarContent()
+        
         return (
             <div>
                 <Navbar fluid style={{ marginBottom: 10 }}>
@@ -150,7 +169,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                         <Navbar.Toggle />
                     </Navbar.Header>
                     <Nav>
-                        {this.getNavbarContent()}
+                        {navBarContent}
                     </Nav>
                 </Navbar>
                 {this.getMainContent()}

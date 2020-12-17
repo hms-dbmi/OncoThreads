@@ -417,7 +417,10 @@ class TransitionOverview extends React.Component<Props, State> {
         ];
 
         return <GridLayout className="stateTransition overview" rowHeight={this.props.height/5} layout={layout} width={this.props.width}>
-            <div style={{ height: this.props.height * 0.7, overflowY: "auto", width:this.props.width }} key='overview'>
+            <div style={{ height: this.props.height * 0.7, overflowY: "auto", width:this.props.width }} key='overview'
+              data-intro="Step 2: analyze the state transition among all patients"
+              data-step = "3"
+            >
                 <svg
                     width="100%"
                     className="stateTransition overview"
@@ -430,7 +433,9 @@ class TransitionOverview extends React.Component<Props, State> {
                     </g>
                 </svg>
             </div>
-            <div key='table'>
+            <div key='table'  
+                data-intro="Step 2: define the number of patient groups and automatically grouping patient sequences"
+                data-step='4'>
             {this.frequentPatternTable()}
             </div> 
         </GridLayout>
