@@ -72,33 +72,66 @@ class SingleTimepoint {
              */
             get customGrouped() {
                 let {currentVariables} = this.rootStore.dataStore.variableStores[this.type]
-                let {points} = this.rootStore.dataStore
+                let heatmap = this.heatmap
+
                 let result = this.customPartitions.map(partition => {
-                    let partitionPoints = partition.points.map(idx => points[idx])
-                    let partitionRows = {...partition}
-    
-                    partitionRows.rows = currentVariables.map((variable, variableIdx) => {
+                    
+                    let {patients} = partition
+
+                    let rows = heatmap.map(row=>{
                         let counts = []
-                        partitionPoints.forEach(point => {
-                            let key = point.value[variableIdx]
+                        let {variable} = row
+
+                        row.data.filter(d=>patients.includes(d.patient))
+                        .forEach(d=>{
+                            let {value:key, patient} = d
                             let keyIdx = counts.map(d => d.key).indexOf(key)
-                            if (keyIdx === -1) {
+
+                            if (keyIdx === -1){
                                 counts.push({
                                     key,
-                                    patients: [point.patient]
+                                    patients: [patient]
                                 })
-                            } else {
-                                if (!(counts[keyIdx].patients.includes(point.patient))) {
-                                    counts[keyIdx].patients.push(point.patient)
-                                }
+                            }else{
+                                counts[keyIdx].patients.push(patient)
                             }
                         })
-                        
+
                         return {
                             variable,
                             counts
                         }
                     })
+
+                    let partitionRows = {...partition, rows}
+    
+                    // partitionRows.rows = currentVariables.map((variable, variableIdx) => {
+                    //     let counts = []
+                    //     patients.forEach(patient=>{
+                            
+                    //     })
+
+                    //     partitionPoints.forEach(point => {
+                    //         let key = points.value[variableIdx]
+                    //         let keyIdx = counts.map(d => d.key).indexOf(key)
+                    //         let patient = point.patient
+                    //         if (keyIdx === -1) {
+                    //             counts.push({
+                    //                 key,
+                    //                 patients: [patient]
+                    //             })
+                    //         } else {
+                    //             if (!(counts[keyIdx].patients.includes(patient))) {
+                    //                 counts[keyIdx].patients.push(patient)
+                    //             }
+                    //         }
+                    //     })
+                        
+                    //     return {
+                    //         variable,
+                    //         counts
+                    //     }
+                    // })
                     
                     return partitionRows
                 })

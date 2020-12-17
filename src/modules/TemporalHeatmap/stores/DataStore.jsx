@@ -1,7 +1,7 @@
 import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
-import { getUniqueKeyName, PrefixSpan, clusterfck, NGgram  } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getUniqueKeyName, PrefixSpan, clusterfck, NGgram } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { message } from 'antd';
 import { object } from 'prop-types';
 import NGram from '../UtilityClasses/ngram';
@@ -44,24 +44,24 @@ class DataStore {
                 return maxPartitions;
 
             },
-            get patientGroupNum(){
+            get patientGroupNum() {
                 return this.patientGroups.length
             },
             get maxTPPartitionWithGroup() {
-                let {patientGroups} = this
-                const groupedTP = this.timepoints.filter(d => d.isGrouped).filter(d=>d.type=="sample");
-                
+                let { patientGroups } = this
+                const groupedTP = this.timepoints.filter(d => d.isGrouped).filter(d => d.type == "sample");
+
                 let partitions = groupedTP.map(d => {
                     let count = 0
-                    d.customGrouped.forEach((customGroup, i)=>{
-                        
-                        patientGroups.forEach((patientGroup)=>{
-                            if (customGroup.patients.filter(p=>patientGroup.includes(p)).length>0) count += 1
+                    d.customGrouped.forEach((customGroup, i) => {
+
+                        patientGroups.forEach((patientGroup) => {
+                            if (customGroup.patients.filter(p => patientGroup.includes(p)).length > 0) count += 1
                         })
                     })
                     return count
                 })
-                
+
                 return Math.max(...partitions)
 
             },
@@ -185,112 +185,112 @@ class DataStore {
                 })
             },
 
-             /**
-             * the state sequence of each patient
-             * @return {[patient:string]: string[]}
-             */
-            get patientStates (){
-                let {points, pointGroups} = this
+            /**
+            * the state sequence of each patient
+            * @return {[patient:string]: string[]}
+            */
+            get patientStates() {
+                let { points, pointGroups } = this
                 let patientStates = {}
-                
-                points.sort((a,b)=>a.timeIdx-b.timeIdx)
-                points.forEach(point=>{
-                    let {idx, patient, timeIdx} = point
-                    let stateKey = Object.values(pointGroups).find(pointGroup=>pointGroup.pointIdx.includes(idx)).stateKey
+
+                points.sort((a, b) => a.timeIdx - b.timeIdx)
+                points.forEach(point => {
+                    let { idx, patient, timeIdx } = point
+                    let stateKey = Object.values(pointGroups).find(pointGroup => pointGroup.pointIdx.includes(idx)).stateKey
                     // if (!patients[patient]){
                     //     patients[patient] = [...new Array(maxTimeIdx+1).keys()].map(d=>'')
                     // }
                     // patients[patient][timeIdx] = stateKey
-                    if (!patientStates[patient]){
+                    if (!patientStates[patient]) {
                         patientStates[patient] = []
                     }
                     patientStates[patient].push(stateKey)
 
                 })
 
-               
-                
+
+
                 return patientStates
             },
 
-            
 
-            get maxTime(){
-                let {points} = this
-                let maxTimeIdx = Math.max(...points.map(d=>d.timeIdx))
+
+            get maxTime() {
+                let { points } = this
+                let maxTimeIdx = Math.max(...points.map(d => d.timeIdx))
                 return maxTimeIdx + 1
             },
 
-            get medTime(){
-                let {points} = this
-                let midIdx = Math.floor(points.length/2)
-                return  points.map(d=>d.timeIdx+1).sort()[midIdx]
+            get medTime() {
+                let { points } = this
+                let midIdx = Math.floor(points.length / 2)
+                return points.map(d => d.timeIdx + 1).sort()[midIdx]
             },
 
             /**
              * each patient is encoded by whether they have the frequent patterns
              * @return {Array<[patientName[], stateKey[]]>}
              */
-            get frequentPatterns (){
-                let {patientStates} = this
-                
+            get frequentPatterns() {
+                let { patientStates } = this
+
 
                 let sequences = Object.values(patientStates)
                 let patients = Object.keys(patientStates)
-                const minSupport = Math.max(patients.length*0.2, 2), 
+                const minSupport = Math.max(patients.length * 0.2, 2),
                     // minLen = Math.max(this.maxTime*0.3, 2),
                     // maxLen = Math.min(this.medTime, 3)
-                    maxLen = 2, minLen=2
+                    maxLen = 2, minLen = 2
                 let prefixSpan = new PrefixSpan()
                 let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen, maxLen)
-                results = results.map(d=>[d[0].map(i=>patients[i]), d[1]])
+                results = results.map(d => [d[0].map(i => patients[i]), d[1]])
 
                 return results
             },
 
-            get ngramResults (){
-                let {patientStates} = this
-                let {patients} = this.rootStore
+            get ngramResults() {
+                let { patientStates } = this
+                let { patients } = this.rootStore
                 let ngram = new NGram(
-                    patients.map(p=>patientStates[p]), 
-                    [2, 3], 
-                    patients.length*0.03
+                    patients.map(p => patientStates[p]),
+                    [2, 3],
+                    patients.length * 0.03
                 )
-                return ngram.getNGram().map(d=>{
-                    return [patients.filter((_,i)=>d.seqCounts[i]>0), d.ngram]
+                return ngram.getNGram().map(d => {
+                    return [patients.filter((_, i) => d.seqCounts[i] > 0), d.ngram]
                 })
             },
 
-            get patientEncodings(){
-                let {patients} = this.rootStore
+            get patientEncodings() {
+                let { patients } = this.rootStore
                 let patientEncodings
 
                 // *** 
                 // encoding patients based on frequent patterns
                 // **** */
-                if (this.encodingMetric=="prefix"){
-                    patientEncodings = patients.map(p=>{
-                        return {patient: p, encoding: []}
+                if (this.encodingMetric == "prefix") {
+                    patientEncodings = patients.map(p => {
+                        return { patient: p, encoding: [] }
                     })
-                    let {frequentPatterns} = this
+                    let { frequentPatterns } = this
                     // don't group without frequent patterns
-                    if(frequentPatterns.length==0){
+                    if (frequentPatterns.length == 0) {
                         message.error('Cannot group patients without frequent patterns!');
                     }
-    
-                    frequentPatterns.forEach(d=>{
+
+                    frequentPatterns.forEach(d => {
                         let [patients, pattern] = d
-                        patientEncodings.forEach(d=>{
-                            let {patient, encoding} = d
-                            if (patients.includes(patient)){
+                        patientEncodings.forEach(d => {
+                            let { patient, encoding } = d
+                            if (patients.includes(patient)) {
                                 encoding.push(1)
-                            }else{
+                            } else {
                                 encoding.push(0)
                             }
                         })
                     })
                 }
-              
+
 
                 // // //encoding patients based on state 
                 // let {patientStates, pointGroups} = this
@@ -306,54 +306,54 @@ class DataStore {
                 //     })
                 // })
 
-                if (this.encodingMetric=="ngram"){
-                    let {patientStates} = this
+                if (this.encodingMetric == "ngram") {
+                    let { patientStates } = this
                     let ngram = new NGram(
-                        patients.map(p=>patientStates[p]), 
-                        [2, 3], 
-                        patients.length*0.03
+                        patients.map(p => patientStates[p]),
+                        [2, 3],
+                        patients.length * 0.03
                     )
 
                     this.ngram = ngram
-    
-                    patientEncodings = patients.map((p, i)=>{
-                        return {patient: p, encoding: ngram.arrEncodings[i]}
+
+                    patientEncodings = patients.map((p, i) => {
+                        return { patient: p, encoding: ngram.arrEncodings[i] }
                     })
-    
+
                 }
-              
+
 
 
                 return patientEncodings
             },
-            
 
-            changePatientGroupNum: action((num)=>{
-                if (typeof(num)!='number') return
-                if (num===0) return
-                if (num===this.patientGroups.length) return
-                if (num==1){
+
+            changePatientGroupNum: action((num) => {
+                if (typeof (num) != 'number') return
+                if (num === 0) return
+                if (num === this.patientGroups.length) return
+                if (num == 1) {
                     this.patientGroups = [[...this.rootStore.patients]]
                     return
                 }
 
-                let {patientEncodings} = this
-                
+                let { patientEncodings } = this
 
-                let patientClusters =  clusterfck.hcluster(patientEncodings.map(d=>d.encoding), "euclidean", "complete", Infinity, num)
 
-                if (patientClusters.length < num){
+                let patientClusters = clusterfck.hcluster(patientEncodings.map(d => d.encoding), "euclidean", "complete", Infinity, num)
+
+                if (patientClusters.length < num) {
                     message.error('Cannot further divide patients!')
                     return
                 }
 
-                this.patientGroups = patientClusters.map(d=>d.itemIdx.map(i=>this.rootStore.patients[i]))
+                this.patientGroups = patientClusters.map(d => d.itemIdx.map(i => this.rootStore.patients[i]))
 
-                
+
             }),
 
-            changeClusterNum: action((num)=>{
-                if (typeof(num)!=="number") return
+            changeClusterNum: action((num) => {
+                if (typeof (num) !== "number") return
                 this.numofStates = num
                 this.autoGroup()
                 this.applyCustomGroups()
@@ -489,8 +489,8 @@ class DataStore {
                 this.variableStores.between.update(this.rootStore.eventBlockStructure,
                     this.rootStore.patients);
                 this.combineTimepoints(true, false);
-                this.rootStore.visStore.resetTransitionSpaces(); 
-                this.patientGroups =  [ this.rootStore.patients ]
+                this.rootStore.visStore.resetTransitionSpaces();
+                this.patientGroups = [this.rootStore.patients]
             }),
 
             /**
@@ -528,7 +528,7 @@ class DataStore {
             }),
             autoGroup: action(() => {
                 let normPoints = this.normPoints
-                
+
 
                 if (normPoints.length == 0) return
                 let { numofStates } = this
@@ -546,144 +546,157 @@ class DataStore {
             }),
 
             updatePointGroups: action((pointGroups) => {
-                
+
                 this.pointGroups = pointGroups
                 this.numofStates = Object.keys(pointGroups).length
                 this.applyCustomGroups()
             }),
 
-            deletePointGroup: action((stateKey)=>{
-                const NONAME ="undefined"
-                if (!this.pointGroups[NONAME]){
-                    this.pointGroups[NONAME] = {...this.pointGroups[stateKey], stateKey: NONAME}
-                    
-                }else{
+            deletePointGroup: action((stateKey) => {
+                const NONAME = "undefined"
+                if (!this.pointGroups[NONAME]) {
+                    this.pointGroups[NONAME] = { ...this.pointGroups[stateKey], stateKey: NONAME }
+
+                } else {
                     let pointIdx1 = this.pointGroups[stateKey].pointIdx, pointIdx2 = this.pointGroups[NONAME].pointIdx
                     this.pointGroups[NONAME] = {
-                        pointIdx: pointIdx1.concat(pointIdx2), 
+                        pointIdx: pointIdx1.concat(pointIdx2),
                         stateKey: NONAME
                     }
                 }
                 delete this.pointGroups[stateKey]
-                
-                this.applyCustomGroups()
-            }), 
 
-            applyCustomGroups: action(()=>{
+                this.applyCustomGroups()
+            }),
+
+            applyCustomGroups: action(() => {
                 let { points, pointGroups } = this
-                
+
                 // check whether has unselected nodes
                 let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
                 if (allSelected.length < points.length) {
                     let leftNodes = points.map((_, i) => i)
                         .filter(i => !allSelected.includes(i))
-        
+
                     let newStateKey = getUniqueKeyName(Object.keys(pointGroups).length, Object.keys(pointGroups))
-        
+
                     pointGroups[newStateKey] = {
                         stateKey: newStateKey,
                         pointIdx: leftNodes
                     }
                     // message.info('All unselected nodes are grouped as one state')
                 }
-        
-        
-        
+
+
+
                 let timeStates = []
                 let uniqueTimeIds = [...new Set(points.map(p => p.timeIdx))]
-        
+
                 uniqueTimeIds.forEach(timeIdx => {
                     timeStates.push({
                         timeIdx,
                         partitions: []
                     })
                 })
-        
+
                 // push points to corresponding time state
                 Object.values(pointGroups).forEach((state) => {
-        
+
                     let stateKey = state.stateKey
-        
+
                     state.pointIdx.forEach(id => {
                         let { patient, timeIdx } = points[id]
                         // get the timestate is stored
                         let timeState = timeStates[timeIdx]
-        
+
                         // check whether the partition in the timestate
                         let partitionIdx = timeState.partitions.map(d => d.partition).indexOf(stateKey)
                         if (partitionIdx > -1) {
-        
+
                             let partition = timeState.partitions[partitionIdx],
-                                { points, patients } = partition
-                            points.push(id)
+                                { patients } = partition
+                            // points.push(id)
                             patients.push(patient)
                         } else {
                             timeState.partitions.push({
                                 partition: stateKey,
-                                points: [id],
-                                rows: [],
+                                // points: [id],
+                                // rows: [],
                                 patients: [patient]
                             })
                         }
                     })
                 })
-        
+
                 // creat event states
-                let eventStates = [timeStates[0]]
+                let eventStates = [timeStates[0]] // the first event have the same partition as the first timepoint
                 for (let i = 0; i < timeStates.length - 1; i++) {
                     let eventState = { timeIdx: i + 1, partitions: [] }
                     let curr = timeStates[i], next = timeStates[i + 1]
-        
-        
-                    next.partitions.forEach(nextPartition => {
+
+                    curr.partitions.forEach((currPartition) => {
                         let {
-                            partition: nextName,
-                            patients: nextPatients,
-                            points: nextPoints,
-                        } = nextPartition
-        
-                        curr.partitions.forEach((currPartition) => {
+                            partition: currName,
+                            patients: currPatients
+                        } = currPartition
+
+                        let remainPatients = currPatients
+
+                        next.partitions.forEach(nextPartition => {
                             let {
-                                partition: currName,
-                                patients: currPatients,
-                                points: currPoints
-                            } = currPartition
-        
+                                partition: nextName,
+                                patients: nextPatients
+                            } = nextPartition
+
+
+
                             let intersection = currPatients.filter(d => nextPatients.includes(d))
+                            remainPatients = remainPatients.filter(d => !intersection.includes(d))
                             if (intersection.length > 0) {
                                 eventState.partitions.push({
                                     partition: `${currName}-${nextName}`,
                                     patients: intersection,
-                                    points: nextPoints.map(id => points[id])
-                                        .filter(p => intersection.includes(p.patient))
-                                        .map(p => p.idx),
-                                    rows: []
+                                    // points: nextPoints.map(id => points[id])
+                                    //     .filter(p => intersection.includes(p.patient))
+                                    //     .map(p => p.idx),
+                                    // rows: []
                                 }
                                 )
                             }
                         })
+
+                        if (remainPatients.length > 0) {
+                            eventState.partitions.push({
+                                partition: `${currName}->none`,
+                                patients: remainPatients
+                            })
+                        }
                     })
+
+
                     eventStates.push(eventState)
-        
+
                 }
+
+                // the last event has the same partition as the last timepoint
                 eventStates.push(
                     {
                         ...timeStates[timeStates.length - 1],
                         timeIdx: timeStates.length
                     }
                 )
-        
+
                 let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
                     eventTimepoints = this.variableStores.between.childStore.timepoints
-        
+
                 sampleTimepoints.forEach((TP, i) => {
                     TP.applyCustomState(timeStates[i].partitions)
                 })
-        
+
                 eventTimepoints.forEach((TP, i) => {
                     TP.applyCustomState(eventStates[i].partitions)
                 })
-        
+
             })
         });
         // combines/uncombines timepoints if variables of type "between" are displayed/removed
@@ -730,7 +743,7 @@ class DataStore {
         return allValues;
     }
 
-   
+
 
 
     // applyCustomStates(timeStates, eventStates) {

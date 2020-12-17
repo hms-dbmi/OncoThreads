@@ -27,14 +27,14 @@ class VariableStore {
             get points() {
             
                 let points = []
-                this.rootStore.dataStore
-                .timepoints.filter(timepoint=>timepoint.type===this.type)
+                this.childStore
+                .timepoints
                 .forEach((timepoint, timeIdx) => {
                     var heatmap = timepoint.heatmap
         
                     if (heatmap[0]) {
-                        heatmap[0].data.forEach((_, i) => {
-                            let patient = timepoint.heatmapOrder[i]
+                        heatmap[0].data.forEach((d, i) => {
+                            let {patient} = d
                             let value = heatmap.map(d => d.data[i].value)
                             var point = {
                                 idx:points.length,
