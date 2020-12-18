@@ -284,7 +284,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                 <Grid fluid style={{ paddingLeft: 20 }}>
                 <h4>{studyName}</h4>
                     <Row className='controlPane' 
-                        data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  (ง •_•)ง Have Fun with your exploration! ' 
+                        data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Having Fun with your exploration!</h4> ' 
                         data-step='6'
                     >
                         <Col smOffset={0} xsOffset={0} md={7} xs={7}>

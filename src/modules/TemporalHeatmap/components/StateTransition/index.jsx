@@ -110,7 +110,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             extra={bgController}
                             style={{ width: "98%"}}
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
-                            data-intro="Step 3: selected interested patient groups and observe the state transition details"
+                            data-intro="<h4>Step 3: Detailed Analysis</h4> You can select interested patient groups and observe the state transition details."
                             data-step='5'
                             
                         >

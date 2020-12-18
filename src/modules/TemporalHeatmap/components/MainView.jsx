@@ -65,6 +65,11 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
             />
         );
 
+        let dataIntro = '<h4>To start with, select different views to analyze the clinical sequences from different aspects.</h4>\
+        <b>Block View</b> groups patients at each tiempoint based on their values of one selected feature.<br/><br/>\
+        <b>State Transition</b>  provides a more advanced analysis and enables state identification using timepoint features.<br/><br/> \
+        <b>Timeline View</b> shows the individual clinical sequence of each patient.'
+        // let dataIntro = 'Select different views to analyze the clinical sequences from different aspects.'
 
         return (
             // <Grid fluid className="tabContent">
@@ -79,8 +84,9 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 }
                 id="viewTab"
 
-                data-intro="different views to support more advanced analysis"
+                data-intro={dataIntro}
                 data-step='1'
+                data-position='right'
             >
                <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="Patients are grouped at each timepoint by their attribute values"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {blockView}
@@ -104,6 +110,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
 
     componentDidUpdate(){
         let {uiStore} = this.props
+
         if(uiStore.globalTime=='stateTransition' && uiStore.introTutorial!== undefined){
             
             uiStore.setTutorialMode(false) // close current tutorial

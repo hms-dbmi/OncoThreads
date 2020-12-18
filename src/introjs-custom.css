@@ -1,11 +1,16 @@
 .introjs-helperNumberLayer{
     background: orange;
-    text-shadow: '';
+    text-shadow: none;
+    left: 0px;
 }
 
 .introjs-tooltip {
     border: white 1px solid;
     font-size: 16px;
+}
+
+.introjs-tooltiptext h4{
+    color:orange
 }
 
 .introjs-overlay {
