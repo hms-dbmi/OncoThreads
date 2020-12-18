@@ -290,6 +290,10 @@ class CustomGrouping extends React.Component<Props> {
 
         </div>
 
+        let dataIntro = '<h4>Step 1: State Identification </h4> \
+        In the <b>Scatter Plot</b>, each point indicates the feature values of one patient at one timepoint. Different color indicates different states.\
+        You can draw a lasso to modify the identified states or directly change the number of states in the top left input box.'
+
         return (
             // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
             <Card 
@@ -302,7 +306,7 @@ class CustomGrouping extends React.Component<Props> {
                     </span>} 
                 extra={controllerView} 
                 style={{width:"98%"}}
-                data-intro="<b>modify</b> state identification here"
+                data-intro={dataIntro}
                 data-step='2'
             >
       

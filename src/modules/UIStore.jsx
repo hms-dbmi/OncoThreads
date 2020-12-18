@@ -64,9 +64,19 @@ class UIStore {
                 // this.selectedPatientGroupIdx = [this.selectedPatientGroupIdx[1], groupIdx]
             }),
             setTutorialMode:action((isIn)=>{
-                if(isIn && this.introTutorial===undefined){
+                if(isIn ){
+                    if (this.introTutorial===undefined){
+                        this.introTutorial = introJs()
+                        this.introTutorial.oncomplete(()=>{
+                            this.introTutorial = undefined
+                        })
+                        this.introTutorial.onexit(()=>{
+                            this.introTutorial = undefined
+                        })
+
+                        this.introTutorial.setOption('showStepNumbers', false)
+                    }
                     
-                    this.introTutorial = introJs()
                     this.introTutorial.start()
                 }
 
