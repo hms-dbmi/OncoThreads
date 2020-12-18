@@ -141,10 +141,6 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         });
     }
 
-    componentDidMount(){
-        
-        introJs().addHints();
-    }
 
     componentDidUpdate(){
         let introHint = introJs()
