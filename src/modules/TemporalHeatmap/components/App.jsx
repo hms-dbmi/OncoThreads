@@ -19,6 +19,7 @@ import { QuestionCircleOutlined, HomeOutlined } from '@ant-design/icons';
 import * as introJs from 'intro.js';
 
 import './App.css'
+import { Tooltip } from 'antd';
 /**
  * Base Component
  */
@@ -94,8 +95,10 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                         this.props.uiStore.setTutorialMode(true)
                     }
                 }>
-                    Intro <QuestionCircleOutlined style={{color:"green"}} 
-                    data-hint='<h4 style="color:white">Click me to start a walk-through tutorial <br/> ✧( ु•⌄• )◞◟( •⌄• ू )✧</h4>'/>
+                    <Tooltip defaultVisible={true} trigger='hover' 
+                        title={<span>Click me to start a walk-through tutorial <br/> \n ✧( ु•⌄• )◞◟( •⌄• ू )✧'</span>}>
+                    Intro <QuestionCircleOutlined style={{color:"green"}} />
+                    </Tooltip>
                 </NavItem>,
 
 
@@ -142,15 +145,15 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
     }
 
 
-    componentDidUpdate(){
-        let introHint = introJs()
+    // componentDidUpdate(){
+    //     let introHint = introJs()
         
-        introHint.onhintclose(() => { 
-            this.props.uiStore.setTutorialMode(true)
-          });
+    //     introHint.onhintclose(() => { 
+    //         this.props.uiStore.setTutorialMode(true)
+    //       });
 
-        introHint.addHints();
-    }
+    //     introHint.addHints();
+    // }
 
     render() {
         let navBarContent = this.getNavbarContent()
