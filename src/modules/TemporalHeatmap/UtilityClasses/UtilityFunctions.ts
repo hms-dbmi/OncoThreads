@@ -1,3 +1,4 @@
+import UndoRedoStore from "modules/UndoRedoStore";
 
 /**
  * returns scientific notation for high values
@@ -69,6 +70,8 @@ const getTextWidth=(text:string|number, fontSize:number, fontWeight:number=400)=
  * @returns {string}
  */
 const cropText = (text:string, fontSize:number, fontWeight:number, maxWidth:number):string=> {
+    // remove unnecessary 0 after decunak separator. e.g., 12.000=>12
+    text = text.replace(/.(0*)$/, '')
     let returnText = text;
     const context = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
     context.font = `${fontWeight} ${fontSize}px Arial`;
@@ -101,7 +104,7 @@ const getUniqueKeyName = (num: number, existingNames: string[]): string => {
     } else return name
 }
 
-const  summarizeDomain = (values: string[] | number[] | boolean[]) => {
+const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
 
     if (typeof (values[0]) == "number") {
         let v = values as number[] // stupid typescropt
@@ -113,7 +116,7 @@ const  summarizeDomain = (values: string[] | number[] | boolean[]) => {
         return [...new Set(v)]
     } else if (typeof (values[0]) == "boolean") {
         let v = values as boolean[]
-        return [...new Set(v)]
+        return [...new Set(v)].map(d=>d.toString())
     } else return []
 }
 

@@ -84,54 +84,6 @@ class CustomGrouping extends React.Component<Props> {
 
     }
 
-    // /**
-    //  * computed based on pointGroups, points, currentVariables
-    //  * return the attribute domain of each states
-    //  */
-    // @computed
-    // get states(): TState[] {
-    //     let {pointGroups, currentVariables, points}  = this.props.rootStore!.dataStore
-
-    //     let groupedPoints: IPoint[][] = Object.values(pointGroups)
-    //         .map(group => {
-    //             return points
-    //                 .filter((_, i) => group.pointIdx.includes(i))
-    //         })
-        
-    //     const summarizeDomain = (values: string[] | number[] | boolean[]) => {
-
-    //         if (typeof (values[0]) == "number") {
-    //             let v = values as number[] // stupid typescropt
-                
-    //             let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-    //             return range
-    //         } else if (typeof (values[0]) == "string") {
-    //             let v = values as string[]
-    //             return [...new Set(v)]
-    //         } else if (typeof (values[0]) == "boolean") {
-    //             let v = values as boolean[]
-    //             return [...new Set(v)]
-    //         } else return []
-    //     }
-
-    //     let states = groupedPoints.map((p, stateIdx) => {
-    //         let state: TState = {
-    //             stateKey: Object.keys(pointGroups)[stateIdx],
-    //             domains: {},
-    //             points: p.map(p => p.idx)
-    //         }
-    //         currentVariables.forEach((name, valueIdx) => {
-    //             state.domains[name] = summarizeDomain(
-    //                 p.map(p => p.value[valueIdx]).filter(v=>v!==undefined) as number[] | string[] | boolean[]
-    //             )
-    //         })
-
-    //         return state
-    //     })
-
-    //     return states
-    // }
-
 
     /**
      * summarize the pointGroups group of points
@@ -248,7 +200,7 @@ class CustomGrouping extends React.Component<Props> {
         let { points, toggleHasEvent} = dataStore
         let { width, height, hasLink } = this
         let pcpMargin = 15
-        let scatterHeight = height * 0.35, summaryHeight = height * 0.45, infoHeight = height * 0.2
+        let scatterHeight = height * 0.35, summaryHeight = height * 0.65, infoHeight = height * 0.2
         
 
         let controllerView =  <div className="controller">

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import * as d3 from "d3"
 
 import { IPoint, TPointGroups } from 'modules/Type'
-import { getColorByName, getTextWidth, cropText } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getTextWidth, cropText, summarizeDomain } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { computed, get } from 'mobx';
 import FeatureLegend from './FeatureLegend'
 
@@ -36,7 +36,8 @@ class StateBlock extends React.Component<Props> {
     verticalGap = 10;
     fontHeight = 15;
     strokeW = 4;
-    blockHeightRatio = 0.6; // the heigh of block : the height of whole chart 
+    cellVerticalGap = 25;
+    blockHeightRatio = 0.5; // the heigh of block : the height of whole chart 
     // scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
     maxNameColWidth = 40;
     scoreDigits = 2;
@@ -59,7 +60,7 @@ class StateBlock extends React.Component<Props> {
         nameWidth = Math.min(nameWidth, this.maxNameColWidth)
         // console.info('colwidth', scoreWidth, nameWidth)
         // console.info(Object.keys(this.props.importanceScores))
-        return scoreWidth + nameWidth + this.strokeW * 2
+        return scoreWidth + nameWidth + this.cellVerticalGap * 2
     }
     @computed
     get wholeHorizonGap(): number {
@@ -67,15 +68,14 @@ class StateBlock extends React.Component<Props> {
         let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
 
         let hasLeftPoints = allSelected.length < points.length
-        // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.strokeW
+        // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.cellVerticalGap)  + 2*this.cellVerticalGap
+        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.cellVerticalGap
         return wholeHorizonGap
     }
     @computed
     get cellWidth(): number {
         let { width, points } = this.props
         let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin) / points.length
-        // console.info(width, this.wholeHorizonGap, points.length, cellWidth)
         return cellWidth
     }
 
@@ -90,7 +90,7 @@ class StateBlock extends React.Component<Props> {
     get cellHeight(): number {
         let { height } = this.props
         let attrNum = this.attrNum
-        let cellHeight = (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum
+        let cellHeight = (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum - this.strokeW - this.cellVerticalGap
 
         return cellHeight
     }
@@ -136,21 +136,12 @@ class StateBlock extends React.Component<Props> {
 
                         <rect fill={stateColor} className='labelBG'
                             width={Math.max(getTextWidth(stateName, 14), 20)} height={fontHeight}
-                            rx={3} opacity={0.5}
+                            opacity={0.5}
                             stroke={stateColor}
-                            strokeWidth={this.strokeW}
                         />
                         <text alignmentBaseline="hanging">{stateName}</text>
 
-                        {/* <rect className='stateBox'
-                            fill='none'
-                            stroke={stateColor}
-                            strokeWidth={this.strokeW}
-                            y={fontHeight - this.strokeW / 2}
-                            x={-this.strokeW / 2}
-                            width={this.cellWidth * pointIdx.length + this.strokeW}
-                            height={this.cellHeight * points[0].value.length + this.strokeW}
-                        /> */}
+                        
 
                         <g transform={`translate(0, ${fontHeight})`} className='oneState' >
                             {this.drawOneState(pointIdx.map(id => points[id]), stateKey)}
@@ -197,7 +188,7 @@ class StateBlock extends React.Component<Props> {
         let timeDistLabel = <g
             className="timeDistLable labelButton"
             key="timeDistLable"
-            transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * this.cellHeight + this.fontHeight + this.verticalGap + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
+            transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * (this.cellHeight + this.cellVerticalGap) + this.fontHeight + this.verticalGap + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
         >
             <rect
                 width={timeDistLabelWidth} height={this.fontHeight * 2.2}
@@ -238,63 +229,53 @@ class StateBlock extends React.Component<Props> {
         if (points.length==0) return <g key="block" className="block" />
         let rows = featureDomains.map((domain,rowIdx)=>{
             let values = points.map(p=>p.value[rowIdx])
-            let getRectHeight = (domain:any[], value:any):number=>0, getRectY = (domain:any[], value:any):number=>0
-            if (typeof (domain[0]) =='number' ){
+            let getRectHeight : (domain:any[], value:any)=>number, getRectY : (domain:any[], value:any)=>number, 
+                domainTextArr = summarizeDomain(values.filter(v=>v!==undefined) as number[]|string[]|boolean[]),
+                cellText:string
+
+            //crop domain text
+            domainTextArr = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.cellWidth*points.length/domainTextArr.length))
+
+            if (typeof (domain[0]) ==='number' ){
                 getRectHeight = (domain:any[], value:any):number=>(value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
                 getRectY = (domain:any[], value:any):number=>this.cellHeight - (value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
+                cellText = domainTextArr.join('~')
                 
             }else{
                 getRectHeight = (domain:any[], value:any):number=>1/domain.length*this.cellHeight
                 getRectY = (domain:any[], value:any):number=>domain.indexOf(value)/domain.length*this.cellHeight
+                cellText = domainTextArr.join(', ')
             }
 
             let row = values.map((v, pointIdx)=>{
-
+                if (v==undefined) return 
                 return <rect key={`point_${pointIdx}`} 
                     width={this.cellWidth} 
                     height={getRectHeight(domain, v)}
-                    x={this.cellWidth * pointIdx} y={rowIdx*this.cellHeight + getRectY(domain, v)}
+                    x={this.cellWidth * pointIdx} y={rowIdx* (this.cellHeight+this.cellVerticalGap) + getRectY(domain, v)}
                     fill = {stateColor}
                 />
             })
+
             return <g key={`row_${rowIdx}`} className={`row_${rowIdx}`}>
-                 <rect className='rowBG'
+                 <line className='rowBG'
                             fill='none'
                             stroke='gray'
                             strokeWidth={this.strokeW}
-                            y={this.cellHeight*rowIdx}
-                            width={this.cellWidth * points.length + this.strokeW}
-                            height={this.cellHeight  + this.strokeW}
+                            y1={ (this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW/2} 
+                            y2={ (this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW/2} 
+                            x1={0}
+                            x2={this.cellWidth * points.length + this.horizonGap}
                         />
                 {row}
+                <text y={(this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
+                    {cellText}
+                </text>
             </g>
         })
 
         return <g key="block" className="block"> {rows} </g>
 
-        let block = points.map((point, i) => {
-
-            let pointCol = point.value.map((v, rowIdx) => {
-                let fill = this.props.colorScales[rowIdx](v) || 'gray'
-                return <rect key={rowIdx}
-                    width={this.cellWidth} height={this.cellHeight}
-                    x={this.cellWidth * i} y={rowIdx * this.cellHeight}
-                    fill={fill}
-                />
-            })
-
-            let opacity = (this.props.hoverPointID === point.idx) ? 1 : 0.5
-
-            return <g
-                key={`point_${point.idx}`} className={`point_${point.idx}`} opacity={opacity}
-            // onMouseEnter={() => setHoverID(point.idx)}
-            // onMouseLeave={() => resetHoverID()}
-            >
-                {pointCol}
-            </g>
-        })
-
-        return <g key="block" className="block"> {block} </g>
     }
 
     // draw the time dist of one identified state
@@ -326,7 +307,7 @@ class StateBlock extends React.Component<Props> {
 
         pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
         let color = getColorByName(stateKey)
-        return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
+        return <g className='timeDist' key="timeDist" transform={`translate(0, ${ (this.cellHeight + this.cellVerticalGap) * this.attrNum + this.verticalGap})`}>
             <path
                 d={pathString as string}
                 fill={color}
@@ -352,10 +333,10 @@ class StateBlock extends React.Component<Props> {
                     </text>
                 </Tooltip>
                 
-            return <g key={name} transform={`translate(0, ${this.cellHeight * (i + 0.8)})`}>
+            return <g key={name} transform={`translate(0, ${ (this.cellHeight+this.cellVerticalGap) * (i + 0.8)})`}>
                 {featureNameComponent}
                 <text
-                    x={this.nameColWidth - this.strokeW * 2} textAnchor="end" cursor="pointer"
+                    x={this.nameColWidth - this.cellVerticalGap * 2} textAnchor="end" cursor="pointer"
                     onClick={() => { this.props.removeVariable(name) }}
                 >
                     X
@@ -365,7 +346,7 @@ class StateBlock extends React.Component<Props> {
         })
 
         let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
-        return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`} key='importanceScores'>
+        return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.cellVerticalGap})`} key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
                 x={this.nameColWidth / 2 - impLableWidth / 2}
@@ -393,8 +374,8 @@ class StateBlock extends React.Component<Props> {
     }
 
     render() {
-        let legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
-        let legendLabelWidth = getTextWidth('legend V', this.fontHeight)+20, legendLabelHeight = this.fontHeight * 1.3
+        // let legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
+        // let legendLabelWidth = getTextWidth('legend V', this.fontHeight)+20, legendLabelHeight = this.fontHeight * 1.3
         return <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
         </g>
