@@ -100,6 +100,16 @@ class DataStore {
                     return sampleScales.concat(eventScales)
                 }
             },
+            get featureDomains() {
+                let sampleDomains = this.variableStores.sample.fullCurrentVariables.map(d => d.domain),
+                    eventDomains = this.variableStores.between.fullCurrentVariables.map(d => d.domain)
+
+                if (this.hasEvent === false) {
+                    return sampleDomains
+                } else {
+                    return sampleDomains.concat(eventDomains)
+                }
+            },
             get currentVariables() {
                 if (this.hasEvent === false) {
                     return this.variableStores.sample.currentVariables

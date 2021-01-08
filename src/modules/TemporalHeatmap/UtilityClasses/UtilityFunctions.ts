@@ -101,6 +101,22 @@ const getUniqueKeyName = (num: number, existingNames: string[]): string => {
     } else return name
 }
 
+const  summarizeDomain = (values: string[] | number[] | boolean[]) => {
+
+    if (typeof (values[0]) == "number") {
+        let v = values as number[] // stupid typescropt
+        
+        let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
+        return range
+    } else if (typeof (values[0]) == "string") {
+        let v = values as string[]
+        return [...new Set(v)]
+    } else if (typeof (values[0]) == "boolean") {
+        let v = values as boolean[]
+        return [...new Set(v)]
+    } else return []
+}
+
 
 export {
     getScientificNotation,
@@ -109,5 +125,6 @@ export {
     getTextWidth,
     cropText,
     num2letter,
-    getUniqueKeyName
+    getUniqueKeyName,
+    summarizeDomain
 }

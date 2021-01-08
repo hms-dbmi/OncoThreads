@@ -5,15 +5,13 @@ import * as d3 from 'd3';
 import { InputNumber, Slider, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-import introJs from 'intro.js'
-
 import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
 import StateInfo from './StateInfo'
 import { Switch } from 'antd';
-import StateBlock from './StateBlock';
+import StateBlock from './StateBlock_O3';
 import Scatter from './Scatter'
 
 /*
@@ -86,53 +84,53 @@ class CustomGrouping extends React.Component<Props> {
 
     }
 
-    /**
-     * computed based on pointGroups, points, currentVariables
-     * return the attribute domain of each states
-     */
-    @computed
-    get states(): TState[] {
-        let {pointGroups, currentVariables, points}  = this.props.rootStore!.dataStore
+    // /**
+    //  * computed based on pointGroups, points, currentVariables
+    //  * return the attribute domain of each states
+    //  */
+    // @computed
+    // get states(): TState[] {
+    //     let {pointGroups, currentVariables, points}  = this.props.rootStore!.dataStore
 
-        let groupedPoints: IPoint[][] = Object.values(pointGroups)
-            .map(group => {
-                return points
-                    .filter((_, i) => group.pointIdx.includes(i))
-            })
+    //     let groupedPoints: IPoint[][] = Object.values(pointGroups)
+    //         .map(group => {
+    //             return points
+    //                 .filter((_, i) => group.pointIdx.includes(i))
+    //         })
         
-        const summarizeDomain = (values: string[] | number[] | boolean[]) => {
+    //     const summarizeDomain = (values: string[] | number[] | boolean[]) => {
 
-            if (typeof (values[0]) == "number") {
-                let v = values as number[] // stupid typescropt
+    //         if (typeof (values[0]) == "number") {
+    //             let v = values as number[] // stupid typescropt
                 
-                let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-                return range
-            } else if (typeof (values[0]) == "string") {
-                let v = values as string[]
-                return [...new Set(v)]
-            } else if (typeof (values[0]) == "boolean") {
-                let v = values as boolean[]
-                return [...new Set(v)]
-            } else return []
-        }
+    //             let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
+    //             return range
+    //         } else if (typeof (values[0]) == "string") {
+    //             let v = values as string[]
+    //             return [...new Set(v)]
+    //         } else if (typeof (values[0]) == "boolean") {
+    //             let v = values as boolean[]
+    //             return [...new Set(v)]
+    //         } else return []
+    //     }
 
-        let states = groupedPoints.map((p, stateIdx) => {
-            let state: TState = {
-                stateKey: Object.keys(pointGroups)[stateIdx],
-                domains: {},
-                points: p.map(p => p.idx)
-            }
-            currentVariables.forEach((name, valueIdx) => {
-                state.domains[name] = summarizeDomain(
-                    p.map(p => p.value[valueIdx]).filter(v=>v!==undefined) as number[] | string[] | boolean[]
-                )
-            })
+    //     let states = groupedPoints.map((p, stateIdx) => {
+    //         let state: TState = {
+    //             stateKey: Object.keys(pointGroups)[stateIdx],
+    //             domains: {},
+    //             points: p.map(p => p.idx)
+    //         }
+    //         currentVariables.forEach((name, valueIdx) => {
+    //             state.domains[name] = summarizeDomain(
+    //                 p.map(p => p.value[valueIdx]).filter(v=>v!==undefined) as number[] | string[] | boolean[]
+    //             )
+    //         })
 
-            return state
-        })
+    //         return state
+    //     })
 
-        return states
-    }
+    //     return states
+    // }
 
 
     /**
@@ -250,7 +248,7 @@ class CustomGrouping extends React.Component<Props> {
         let { points, toggleHasEvent} = dataStore
         let { width, height, hasLink } = this
         let pcpMargin = 15
-        let scatterHeight = height * 0.35, pcpHeight = height * 0.45, infoHeight = height * 0.2
+        let scatterHeight = height * 0.35, summaryHeight = height * 0.45, infoHeight = height * 0.2
         
 
         let controllerView =  <div className="controller">
@@ -270,8 +268,7 @@ class CustomGrouping extends React.Component<Props> {
             onChange={() => {
                 this.showGlyph = !this.showGlyph
             }} />
-            
-        {/* <InputNumber size="small" min={0} max={1} defaultValue={0.2} onChange={this.onChangeThreshold} /> */}
+
         <span className="thrController">
             <span style={{padding:"0px 0px 0px 5px"}}>
                 Num of States
@@ -317,7 +314,7 @@ class CustomGrouping extends React.Component<Props> {
                 >
                    
 
-                    <svg className='customGrouping' width="100%" height={`${scatterHeight + pcpHeight - 35}px`}>
+                    <svg className='customGrouping' width="100%" height={`${scatterHeight + summaryHeight - 35}px`}>
                         <Scatter
                             width={width}
                             height={scatterHeight}
@@ -335,40 +332,18 @@ class CustomGrouping extends React.Component<Props> {
                                 stateLabels={dataStore.stateLabels}
                                 importanceScores={dataStore.importanceScores}
                                 width={width}
-                                height={pcpHeight - 2 * pcpMargin}
+                                height={summaryHeight - 2 * pcpMargin}
                                 points={points}
                                 pointGroups={dataStore.pointGroups}
                                 colorScales={dataStore.colorScales}
+                                featureDomains={dataStore.featureDomains}
                                 hoverPointID={this.hoverPointID}
                                 setHoverID={this.setHoverID}
                                 resetHoverID={this.resetHoverID}
                                 removeVariable = {this.removeVariable}
                             />
                         </g>
-
-                        {/* <g className='PCP' transform={`translate(${pcpMargin}, ${pcpMargin + scatterHeight})`}>
-                            <Parset parsetData={this.parsetData}
-                                width={width - 2 * pcpMargin}
-                                height={pcpHeight - 2 * pcpMargin}
-                                points={points}
-                            /> 
-                            <ParallelSet points={points}
-                                currentVariables={this.props.currentVariables}
-                                referencedVariables={this.props.referencedVariables}
-                                width={width - 2 * pcpMargin}
-                                height={pcpHeight - 2 * pcpMargin}
-                                pointGroups={this.pointGroups}
-                            />
-                        </g> */}
                     </svg>
-                    <StateInfo
-                        states={this.states} 
-                        width={width}
-                        height={infoHeight}
-                        stateLabels={dataStore.stateLabels}
-                        resetGroup={this.resetGroup}
-                        deleteGroup={this.deleteGroup}
-                    />
                 </div>
             </Card>
             /* </div> */
