@@ -71,7 +71,7 @@ const getTextWidth=(text:string|number, fontSize:number, fontWeight:number=400)=
  */
 const cropText = (text:string, fontSize:number, fontWeight:number, maxWidth:number):string=> {
     // remove unnecessary 0 after decunak separator. e.g., 12.000=>12
-    text = text.replace(/.(0*)$/, '')
+    text = text.replace(/\.(0*)$/, '')
     let returnText = text;
     const context = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
     context.font = `${fontWeight} ${fontSize}px Arial`;

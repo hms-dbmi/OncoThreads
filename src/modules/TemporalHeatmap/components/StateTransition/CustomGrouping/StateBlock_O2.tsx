@@ -119,30 +119,64 @@ class StateBlock extends React.Component<Props> {
 
     @computed
     get cellYScale(){
-        let {featureDomains, points} = this.props
+        let {featureDomains, points, pointGroups} = this.props
 
         let scales:d3.ScaleLinear<number, number>[] = []
         featureDomains.forEach((featureDomain, rowIdx)=>{
-            let scale = d3.scaleLinear().range([0, this.cellHeight])
+            let scale = d3.scaleLinear()
             let values = points.map(p=>p.value[rowIdx])
-            let valueMax = 0
+            let valueMax = -Infinity,valueMin = Infinity
             if (typeof(values[0]) == 'number'){
-                 let valueGap = (featureDomain[1] as number) - (featureDomain[0] as number)
+                 let valueGap = ((featureDomain[1] as number) - (featureDomain[0] as number))/this.binNum
+
                  for (let i=0;i<this.binNum;i++){
-                     let binValue =points.map(p=>p.value[rowIdx]).filter(d=>{
-                         return (featureDomain[0] as number)<=d && d<(featureDomain[0] as number+valueGap*i)
-                        }).length
+                     
+
+                    Object.keys(pointGroups).forEach(statekey=>{
+                        let {pointIdx} = pointGroups[statekey]
+                        let binValue = pointIdx.map(idx=>points[idx].value[rowIdx])
+                        .filter(d=>{
+                            if (i==this.binNum-1){
+                                return (featureDomain[0] as number +valueGap*i)<=d && d<=(featureDomain[0] as number + valueGap*(i+1) )
+                            } else return (featureDomain[0] as number +valueGap*i)<=d && d<(featureDomain[0] as number + valueGap*(i+1) )
+                        })
+                        .length
+                        
+                        valueMax = Math.max(binValue, valueMax)
+                        if (binValue>0) {
+                            valueMin = Math.min(binValue, valueMin)
+                        }
+                    })
                     
-                    valueMax = Math.max(binValue, valueMax)
+                    
                  }
             }else {
+
                 for (let i=0;i<featureDomain.length;i++){
-                    let binValue =points.map(p=>p.value[rowIdx]).filter(d=>d==featureDomain[i]).length
+                    Object.keys(pointGroups).forEach(statekey=>{
+                        let {pointIdx} = pointGroups[statekey]
+                        let binValue =pointIdx
+                            .map(idx=>points[idx].value[rowIdx])
+                            .filter(d=>d==featureDomain[i])
+                            .length
                    
-                   valueMax = Math.max(binValue, valueMax)
+                        valueMax = Math.max(binValue, valueMax)
+                        
+                        valueMin = Math.min(binValue, valueMin)
+                        
+                    })
                 }
             }
-            scale.domain([0, valueMax])
+
+            if (valueMax > 20*valueMin){
+                // so that the bin with min value will not be too short
+                scale.range([this.cellHeight*0.1, this.cellHeight])
+                scale.domain([valueMin, valueMax])
+            }else{
+                scale.range([0, this.cellHeight])
+                scale.domain([0, valueMax])
+            }
+            
 
             scales.push(scale)
         })
@@ -264,13 +298,17 @@ class StateBlock extends React.Component<Props> {
         let {featureDomains} = this.props
         let featureDomain = featureDomains[rowIdx], yScale = this.cellYScale[rowIdx]
         if (typeof (values[0])=='number'){
-            let valueGap = (featureDomain[1] as number) - (featureDomain[0] as number)
+            let valueGap = ((featureDomain[1] as number) - (featureDomain[0] as number))/this.binNum
             let binHeights:number[] = []
             for (let i=0;i<this.binNum;i++){
                 let binValue =(values as number[]).filter(d=>{
-                    return (featureDomain[0] as number)<=d && d<(featureDomain[0] as number+valueGap*i)
+                    return (featureDomain[0] as number +valueGap*i)<=d && d<(featureDomain[0] as number+valueGap* (i+1))
                 }).length
-                binHeights.push(yScale(binValue))
+                if (binValue==0){
+                    binHeights.push(0)
+                }else{
+                    binHeights.push(yScale(binValue))
+                }
             }
             let binWidth=this.blockWidth/this.binNum
 
@@ -292,8 +330,12 @@ class StateBlock extends React.Component<Props> {
             })
             let binWidth = this.blockWidth/featureDomain.length
 
+            if(barCounts.length==1 ){
+                console.info(barCounts[0], yScale(barCounts[0]), yScale.range(), yScale.domain())
+            }
+
             return barCounts.map((barCount, binIdx)=>{
-                let binHeight = yScale(barCount)
+                let binHeight = barCount==0? 0: yScale(barCount)
                 return <rect 
                     key={`bin_${featureDomain[binIdx]}`}
                     width={binWidth} 
