@@ -4,13 +4,11 @@ import * as d3 from "d3"
 
 import { IPoint, TPointGroups } from 'modules/Type'
 import { getColorByName, getTextWidth, cropText, summarizeDomain } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { computed, get } from 'mobx';
-import FeatureLegend from './FeatureLegend'
+import { computed } from 'mobx';
 
 import { IImportantScore } from './index'
 
-import { Popover, Tooltip } from 'antd'
-import { number } from 'prop-types';
+import { Tooltip } from 'antd'
 
 
 interface Props {
