@@ -9,9 +9,8 @@ import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
-import StateInfo from './StateInfo'
 import { Switch } from 'antd';
-import StateBlock from './StateBlock_O2';
+import StateBlock from './StateBlock_O3';
 import Scatter from './Scatter'
 
 /*

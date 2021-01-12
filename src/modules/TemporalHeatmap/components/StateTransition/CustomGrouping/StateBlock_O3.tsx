@@ -33,7 +33,7 @@ class StateBlock extends React.Component<Props> {
     maxCellHeight = 20;
     verticalGap = 10;
     fontHeight = 15;
-    strokeW = 4;
+    strokeW = 1;
     cellVerticalGap = 25;
     blockHeightRatio = 0.5; // the heigh of block : the height of whole chart 
     // scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
@@ -222,7 +222,7 @@ class StateBlock extends React.Component<Props> {
 
     drawBlock(points: IPoint[], stateKey: string) {
         let stateColor = getColorByName(stateKey)
-        points = this.reorderPoints(points)
+        // points = this.reorderPoints(points)
         let { setHoverID, resetHoverID, featureDomains } = this.props
         if (points.length==0) return <g key="block" className="block" />
         let rows = featureDomains.map((domain,rowIdx)=>{
@@ -244,8 +244,8 @@ class StateBlock extends React.Component<Props> {
                 getRectY = (domain:any[], value:any):number=>domain.indexOf(value)/domain.length*this.cellHeight
                 cellText = domainTextArr.join(', ')
             }
-
-            let row = values.map((v, pointIdx)=>{
+            
+            let row = this.reorderRowValues(values).map((v, pointIdx)=>{
                 if (v==undefined) return 
                 return <rect key={`point_${pointIdx}`} 
                     width={this.cellWidth} 
@@ -263,7 +263,7 @@ class StateBlock extends React.Component<Props> {
                             y1={ (this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW/2} 
                             y2={ (this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW/2} 
                             x1={0}
-                            x2={this.cellWidth * points.length + this.horizonGap}
+                            x2={this.cellWidth * points.length }
                         />
                 {row}
                 <text y={(this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
@@ -366,6 +366,16 @@ class StateBlock extends React.Component<Props> {
                     dif = a.value[i] > b.value[i] ? 1 : -1
                     break
                 }
+            }
+            return dif
+        })
+    }
+
+    reorderRowValues(values: (string|number|boolean)[]){
+        return values.sort((a:string|number|boolean,b:string|number|boolean)=>{
+            let dif = 0
+            if (a!== b) {
+                dif = a > b ? 1 : -1
             }
             return dif
         })

@@ -33,7 +33,7 @@ class StateBlock extends React.Component<Props> {
     maxCellHeight = 20;
     verticalGap = 10;
     fontHeight = 15;
-    strokeW = 4;
+    strokeW = 1;
     cellVerticalGap = 25;
     blockHeightRatio = 0.5; // the heigh of block : the height of whole chart 
     // scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
@@ -313,8 +313,9 @@ class StateBlock extends React.Component<Props> {
             let binWidth=this.blockWidth/this.binNum
 
             return binHeights.map((binHeight, binIdx)=>{
+
                 return <rect 
-                    key={`bin_${featureDomain[binIdx]}`}
+                    key={`bin_${binIdx}`}
                     width={binWidth} 
                     height={binHeight}
                     x={binWidth*binIdx}
@@ -330,14 +331,13 @@ class StateBlock extends React.Component<Props> {
             })
             let binWidth = this.blockWidth/featureDomain.length
 
-            if(barCounts.length==1 ){
-                console.info(barCounts[0], yScale(barCounts[0]), yScale.range(), yScale.domain())
-            }
-
             return barCounts.map((barCount, binIdx)=>{
-                let binHeight = barCount==0? 0: yScale(barCount)
+                let binHeight = yScale(barCount)
+                if (barCount=0) {
+                    binHeight = 0
+                }
                 return <rect 
-                    key={`bin_${featureDomain[binIdx]}`}
+                    key={`bin_${binIdx}_${featureDomain[binIdx]}`}
                     width={binWidth} 
                     height={binHeight}
                     x={binWidth*binIdx}
@@ -360,6 +360,7 @@ class StateBlock extends React.Component<Props> {
                 cellText:string
 
             //crop domain text
+            
             domainTextArr = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.blockWidth/domainTextArr.length))
 
             if (typeof (domain[0]) ==='number' ){

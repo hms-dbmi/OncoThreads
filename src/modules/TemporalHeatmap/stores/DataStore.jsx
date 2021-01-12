@@ -153,7 +153,7 @@ class DataStore {
                 return normValues
             },
 
-            // normalize points to [0,1]
+            // points with normalized values and dimension redication pos
             get normPoints() {
                 let { normValues } = this
                 if (normValues.length == 0) return []
