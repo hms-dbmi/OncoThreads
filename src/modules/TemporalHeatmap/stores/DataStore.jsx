@@ -1,6 +1,9 @@
 import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
+import { UMAP } from 'umap-js';
+import TSNE from 'tsne-js';
+
 import { getUniqueKeyName, PrefixSpan, clusterfck, NGgram } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { message } from 'antd';
 import { object } from 'prop-types';
@@ -14,6 +17,7 @@ class DataStore {
         this.rootStore = rootStore;
         this.numberOfPatients = 300; // default number of patients
         this.encodingMetric = 'ngram' // ngram or prefix
+        this.DRMethod = 'tsne' // 'pca', 'umap', 'tsne'
         this.ngram = new NGram([], [], 1)
         this.variableStores = { // one store for the two different type of blocks (sample/between)
             sample: new VariableStore(rootStore, 'sample'),
@@ -157,13 +161,48 @@ class DataStore {
             get normPoints() {
                 let { normValues } = this
                 if (normValues.length == 0) return []
-                let pca = new PCA(normValues)
                 let norm2dValues = []
 
                 if (this.normValues[0].length > 2) {
                     // only calculate pca when dimension is larger than 2
-                    norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
-                    // console.info('pca points', newPoints)            
+
+                    if (this.DRMethod=='pca'){
+                        let pca = new PCA(normValues)
+                        norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
+                    }else if (this.DRMethod=='umap'){
+                        let umap = new UMAP({
+                            nComponents: 2,
+                            nEpochs: 400,
+                            nNeighbors: 15,
+                          });
+                        
+                        norm2dValues = umap.fit(normValues);
+                    }else if (this.DRMethod=="tsne"){
+                        let tsne = new TSNE({
+                            dim: 2,
+                            perplexity: 10,
+                            earlyExaggeration: 4.0,
+                            learningRate: 100.0,
+                            nIter: 2000,
+                            metric: 'euclidean'
+                          });
+                          
+                          // inputData is a nested array which can be converted into an ndarray
+                          // alternatively, it can be an array of coordinates (second argument should be specified as 'sparse')
+                          tsne.init({
+                            data: normValues,
+                            type: 'dense'
+                          });
+                          
+                          
+                          let [error, iter] = tsne.run();
+                          
+                          
+                          // `outputScaled` is `output` scaled to a range of [-1, 1]
+                          norm2dValues = tsne.getOutputScaled();
+                          console.info("norm 2d values", norm2dValues)
+                    }
+
                 } else {
                     norm2dValues = normValues
                 }
@@ -180,18 +219,25 @@ class DataStore {
                 return normPoints
             },
 
-            // the importance score of each feature
-            get importanceScores() {
-                if (this.normValues.length == 0 || this.normValues[0].length <= 1) return []
+            // // the importance score of each feature
+            // get importancePCAScores() {
+            //     if (this.normValues.length == 0 || this.normValues[0].length <= 1) return []
+            //     let { currentVariables } = this
+            //     let pca = new PCA(this.normValues)
+            //     let egiVector = pca.getEigenvectors()
+            //     let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
+            //     return importanceScores.map((score, i) => {
+            //         return {
+            //             name: currentVariables[i],
+            //             score
+            //         }
+            //     })
+            // },
+
+            get importanceScores(){
                 let { currentVariables } = this
-                let pca = new PCA(this.normValues)
-                let egiVector = pca.getEigenvectors()
-                let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
-                return importanceScores.map((score, i) => {
-                    return {
-                        name: currentVariables[i],
-                        score
-                    }
+                return currentVariables.map(name=>{
+                    return {name, score:0.5}
                 })
             },
 
