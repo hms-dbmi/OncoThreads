@@ -10,7 +10,7 @@ import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
 
 import "./CustomGrouping.css"
 import { Switch } from 'antd';
-import StateBlock from './StateBlock_O3';
+import StateBlock from './StateBlock_O2';
 import Scatter from './Scatter'
 
 /*
@@ -254,6 +254,7 @@ class CustomGrouping extends React.Component<Props> {
                     </span>} 
                 extra={controllerView} 
                 style={{width:"98%"}}
+                bodyStyle={{padding: "5px"}}
                 data-intro={dataIntro}
                 data-step='2'
             >

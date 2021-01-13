@@ -17,7 +17,7 @@ class DataStore {
         this.rootStore = rootStore;
         this.numberOfPatients = 300; // default number of patients
         this.encodingMetric = 'ngram' // ngram or prefix
-        this.DRMethod = 'tsne' // 'pca', 'umap', 'tsne'
+        this.DRMethod = 'pca' // 'pca', 'umap', 'tsne'
         this.ngram = new NGram([], [], 1)
         this.variableStores = { // one store for the two different type of blocks (sample/between)
             sample: new VariableStore(rootStore, 'sample'),
@@ -183,7 +183,7 @@ class DataStore {
                             perplexity: 10,
                             earlyExaggeration: 4.0,
                             learningRate: 100.0,
-                            nIter: 2000,
+                            nIter: 500,
                             metric: 'euclidean'
                           });
                           

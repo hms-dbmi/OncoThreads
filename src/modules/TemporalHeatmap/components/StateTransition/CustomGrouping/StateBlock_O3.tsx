@@ -36,8 +36,8 @@ class StateBlock extends React.Component<Props> {
     strokeW = 1;
     cellVerticalGap = 25;
     blockHeightRatio = 0.5; // the heigh of block : the height of whole chart 
-    // scoreRatio = 0.1 // the width of importance score col : the width of the whole chart
-    maxNameColWidth = 40;
+    maxNameColRatio = 0.15; // the max width of feature name col / the width of the state identification panel
+    nameChartGap = 20; // the horizontal distance between feature name col and state charts
     scoreDigits = 2;
     rightMargin = 5;
 
@@ -49,16 +49,20 @@ class StateBlock extends React.Component<Props> {
 
     }
     @computed
+    get maxNameColWidth(){
+        return this.props.width * this.maxNameColRatio
+    }
+    @computed
     get nameColWidth(): number {
-        let { width } = this.props
-        let scoreWidth = getTextWidth((0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
+
+        // let scoreWidth = getTextWidth((0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
+        let scoreWidth = getTextWidth('  X', this.fontHeight)
         let nameWidth = Math.max(...this.props.importanceScores.map(
             d => getTextWidth(d['name'], this.fontHeight)
         ))
         nameWidth = Math.min(nameWidth, this.maxNameColWidth)
-        // console.info('colwidth', scoreWidth, nameWidth)
-        // console.info(Object.keys(this.props.importanceScores))
-        return scoreWidth + nameWidth + this.cellVerticalGap * 2
+
+        return scoreWidth + nameWidth 
     }
     @computed
     get wholeHorizonGap(): number {
@@ -67,7 +71,7 @@ class StateBlock extends React.Component<Props> {
 
         let hasLeftPoints = allSelected.length < points.length
         // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.cellVerticalGap)  + 2*this.cellVerticalGap
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.cellVerticalGap
+        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap 
         return wholeHorizonGap
     }
     @computed
@@ -176,7 +180,7 @@ class StateBlock extends React.Component<Props> {
             )
         }
 
-        let allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth}, 0)`}>
+        let allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth + this.nameChartGap}, 0)`}>
             {stateBlocks}
         </g>
 
@@ -229,20 +233,22 @@ class StateBlock extends React.Component<Props> {
             let values = points.map(p=>p.value[rowIdx])
             let getRectHeight : (domain:any[], value:any)=>number, getRectY : (domain:any[], value:any)=>number, 
                 domainTextArr = summarizeDomain(values.filter(v=>v!==undefined) as number[]|string[]|boolean[]),
-                cellText:string
+                cellText:string, cellTextFull:string
 
             //crop domain text
-            domainTextArr = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.cellWidth*points.length/domainTextArr.length))
+            let domainTextArrCroped = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.cellWidth*points.length/domainTextArr.length))
 
             if (typeof (domain[0]) ==='number' ){
                 getRectHeight = (domain:any[], value:any):number=>(value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
                 getRectY = (domain:any[], value:any):number=>this.cellHeight - (value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
-                cellText = domainTextArr.join('~')
+                cellText = domainTextArrCroped.join('~')
+                cellTextFull = domainTextArr.join('~')
                 
             }else{
                 getRectHeight = (domain:any[], value:any):number=>1/domain.length*this.cellHeight
                 getRectY = (domain:any[], value:any):number=>domain.indexOf(value)/domain.length*this.cellHeight
-                cellText = domainTextArr.join(', ')
+                cellText = domainTextArrCroped.join(', ')
+                cellTextFull = domainTextArr.join(',')
             }
             
             let row = this.reorderRowValues(values).map((v, pointIdx)=>{
@@ -255,7 +261,10 @@ class StateBlock extends React.Component<Props> {
                 />
             })
 
-            return <g key={`row_${rowIdx}`} className={`row_${rowIdx}`}>
+
+
+            return <Tooltip title={cellTextFull} key={`row_${rowIdx}`} destroyTooltipOnHide>
+                <g className={`row_${rowIdx}`}>
                  <line className='rowBG'
                             fill='none'
                             stroke='gray'
@@ -270,6 +279,7 @@ class StateBlock extends React.Component<Props> {
                     {cellText}
                 </text>
             </g>
+            </Tooltip>
         })
 
         return <g key="block" className="block"> {rows} </g>
@@ -320,21 +330,27 @@ class StateBlock extends React.Component<Props> {
         let { importanceScores, width } = this.props
         let rows = importanceScores.map((d, i) => {
             let { score, name } = d
-            let cropName = cropText(name, this.fontHeight, 400, this.maxNameColWidth)
+            let cropName = cropText(name, 12, 400, this.maxNameColWidth)
             let featureNameComponent = cropName.length === name.length ?
-                <text opacity={Math.max(0.3, score)} cursor="pointer">
-                    {cropName} {' '} {score.toFixed(this.scoreDigits)}
-                </text>
-                : <Tooltip title={name}>
-                    <text opacity={Math.max(0.3, score)} cursor="pointer">
-                        {cropName} {' '} {score.toFixed(this.scoreDigits)}
+                <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
+                    <text >
+                        {cropName} 
                     </text>
+                    <text y={12}>{score.toFixed(this.scoreDigits)}</text>
+                </g>
+                : <Tooltip title={name}>
+                    <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
+                    <text >
+                        {cropName} 
+                    </text>
+                    <text y={12}>{score.toFixed(this.scoreDigits)}</text>
+                </g>
                 </Tooltip>
                 
             return <g key={name} transform={`translate(0, ${ (this.cellHeight+this.cellVerticalGap) * (i + 0.8)})`}>
                 {featureNameComponent}
                 <text
-                    x={this.nameColWidth - this.cellVerticalGap * 2} textAnchor="end" cursor="pointer"
+                    x={this.nameColWidth } textAnchor="end" cursor="pointer"
                     onClick={() => { this.props.removeVariable(name) }}
                 >
                     X
