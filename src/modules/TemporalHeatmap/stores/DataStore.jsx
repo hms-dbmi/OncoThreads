@@ -24,7 +24,7 @@ class DataStore {
         };
         extendObservable(this, {
 
-            DRMethod:'umap', // 'pca', 'umap', 'tsne'
+            DRMethod:'pca', // 'pca', 'umap', 'tsne'
             timepoints: [], // all timepoints
             selectedPatients: [], // currently selected patients
             globalPrimary: '', // global primary for sample timepoints of global timeline

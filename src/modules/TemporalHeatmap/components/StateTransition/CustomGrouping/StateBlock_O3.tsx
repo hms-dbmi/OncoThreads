@@ -224,6 +224,22 @@ class StateBlock extends React.Component<Props> {
 
     }
 
+    drawCellDist(values: (string|boolean|number)[], stateColor:string, rowIdx: number, getRectHeight:(domain:any[], value:any)=>number, getRectY:(domain:any[], value:any)=>number){
+        let domain = this.props.featureDomains[rowIdx]
+        let maxHeight = 0
+        let row = this.reorderRowValues(values).map((v, pointIdx)=>{
+            if (v==undefined) return 
+            maxHeight = Math.max(maxHeight, getRectHeight(domain, v))
+            return <rect key={`point_${pointIdx}`} 
+                width={this.cellWidth} 
+                height={getRectHeight(domain, v)}
+                x={this.cellWidth * pointIdx} y={ getRectY(domain, v)}
+                fill = {stateColor}
+            />
+        })
+        return {row, maxHeight}
+    }
+
     drawBlock(points: IPoint[], stateKey: string) {
         let stateColor = getColorByName(stateKey)
         // points = this.reorderPoints(points)
@@ -251,20 +267,22 @@ class StateBlock extends React.Component<Props> {
                 cellTextFull = domainTextArr.join(',')
             }
             
-            let row = this.reorderRowValues(values).map((v, pointIdx)=>{
-                if (v==undefined) return 
-                return <rect key={`point_${pointIdx}`} 
-                    width={this.cellWidth} 
-                    height={getRectHeight(domain, v)}
-                    x={this.cellWidth * pointIdx} y={rowIdx* (this.cellHeight+this.cellVerticalGap) + getRectY(domain, v)}
-                    fill = {stateColor}
-                />
-            })
+            let {row, maxHeight} = this.drawCellDist(values, stateColor, rowIdx, getRectHeight, getRectY)
+
+            let cellTooltip: JSX.Element = <div> {cellTextFull}</div>
+
+            if (maxHeight < 0.2*this.cellHeight){
+                cellTooltip = <svg width={this.cellWidth*points.length} height={this.cellHeight+15}>
+                    <g className="scaledChart" transform={`scale(${1}, ${this.cellHeight/maxHeight}) translate(${0}, ${-1 * (this.cellHeight-maxHeight)})`}> 
+                        {row} 
+                    </g>
+                    <text fill="white" y={this.cellHeight+this.fontHeight}>{cellTextFull}</text>
+                </svg>
+            }
 
 
-
-            return <Tooltip title={cellTextFull} key={`row_${rowIdx}`} destroyTooltipOnHide>
-                <g className={`row_${rowIdx}`}>
+            return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} >
+                <g className={`row_${rowIdx}`} cursor="pointer">
                  <line className='rowBG'
                             fill='none'
                             stroke='gray'
@@ -274,7 +292,9 @@ class StateBlock extends React.Component<Props> {
                             x1={0}
                             x2={this.cellWidth * points.length }
                         />
-                {row}
+                <g transform={`translate(${0}, ${rowIdx* (this.cellHeight+this.cellVerticalGap)})`}>
+                    {row}
+                </g>
                 <text y={(this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
                     {cellText}
                 </text>
