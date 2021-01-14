@@ -17,7 +17,7 @@ class DataStore {
         this.rootStore = rootStore;
         this.numberOfPatients = 300; // default number of patients
         this.encodingMetric = 'ngram' // ngram or prefix
-        this.DRMethod = 'pca' // 'pca', 'umap', 'tsne'
+        this.DRMethod = 'umap' // 'pca', 'umap', 'tsne'
         this.ngram = new NGram([], [], 1)
         this.variableStores = { // one store for the two different type of blocks (sample/between)
             sample: new VariableStore(rootStore, 'sample'),
@@ -220,21 +220,23 @@ class DataStore {
             },
 
             // // the importance score of each feature
-            // get importancePCAScores() {
-            //     if (this.normValues.length == 0 || this.normValues[0].length <= 1) return []
-            //     let { currentVariables } = this
-            //     let pca = new PCA(this.normValues)
-            //     let egiVector = pca.getEigenvectors()
-            //     let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
-            //     return importanceScores.map((score, i) => {
-            //         return {
-            //             name: currentVariables[i],
-            //             score
-            //         }
-            //     })
-            // },
+            get importancePCAScores() {
+                if (this.normValues.length == 0 || this.normValues[0].length <= 1) return []
+                let { currentVariables } = this
+                let pca = new PCA(this.normValues)
+                let egiVector = pca.getEigenvectors()
+                let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
+                return importanceScores.map((score, i) => {
+                    return {
+                        name: currentVariables[i],
+                        score
+                    }
+                })
+            },
 
             get importanceScores(){
+                if (this.DRMethod=='pca') return this.importancePCAScores
+
                 let { currentVariables } = this
                 return currentVariables.map(name=>{
                     return {name, score:0.5}
@@ -413,6 +415,13 @@ class DataStore {
                 this.numofStates = num
                 this.autoGroup()
                 this.applyCustomGroups()
+            }),
+
+            changeDRMethod: action((methodName)=>{
+                if (methodName!=this.DRMethod){
+                    this.DRMethod = methodName
+                }
+                
             }),
 
             toggleHasEvent: action(() => {
