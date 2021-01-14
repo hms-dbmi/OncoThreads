@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { observable, action, computed } from 'mobx';
 import * as d3 from 'd3';
-import { InputNumber, Slider, Card, Tooltip } from 'antd';
+import { InputNumber, Select, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
 import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
@@ -12,6 +12,8 @@ import "./CustomGrouping.css"
 import { Switch } from 'antd';
 import StateBlock from './StateBlock_O3';
 import Scatter from './Scatter'
+
+const {Option} = Select
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -209,16 +211,7 @@ class CustomGrouping extends React.Component<Props> {
             onChange={() => {
                 this.hasLink = !this.hasLink
             }} />
-        <Switch size="small"
-            style={{ marginLeft: '5px' }}
-            checkedChildren="events" unCheckedChildren="events"
-            onChange={toggleHasEvent} />
-        <Switch size="small"
-            style={{ marginLeft: '5px' }}
-            checkedChildren="glyph" unCheckedChildren="circle"
-            onChange={() => {
-                this.showGlyph = !this.showGlyph
-            }} />
+       
 
         <span className="thrController">
             <span style={{padding:"0px 0px 0px 5px"}}>
@@ -235,6 +228,23 @@ class CustomGrouping extends React.Component<Props> {
                 />
            
         </span>
+
+        <br/>
+        <Switch size="small"
+            style={{ marginLeft: '5px' }}
+            checkedChildren="events" unCheckedChildren="events"
+            onChange={toggleHasEvent} />
+        {/* <Switch size="small"
+            style={{ marginLeft: '5px' }}
+            checkedChildren="glyph" unCheckedChildren="circle"
+            onChange={() => {
+                this.showGlyph = !this.showGlyph
+            }} /> */}
+
+        <span> DR method:</span>
+        <Select value={dataStore.DRMethod} onChange={(value)=>dataStore.changeDRMethod(value)} size="small">
+            {['umap', 'tsne', 'pca'].map((name)=>{return <Option value={name} key={name}>{name}</Option>})}
+        </Select>
 
         </div>
 

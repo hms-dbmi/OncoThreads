@@ -17,13 +17,14 @@ class DataStore {
         this.rootStore = rootStore;
         this.numberOfPatients = 300; // default number of patients
         this.encodingMetric = 'ngram' // ngram or prefix
-        this.DRMethod = 'umap' // 'pca', 'umap', 'tsne'
         this.ngram = new NGram([], [], 1)
         this.variableStores = { // one store for the two different type of blocks (sample/between)
             sample: new VariableStore(rootStore, 'sample'),
             between: new VariableStore(rootStore, 'between'),
         };
         extendObservable(this, {
+
+            DRMethod:'umap', // 'pca', 'umap', 'tsne'
             timepoints: [], // all timepoints
             selectedPatients: [], // currently selected patients
             globalPrimary: '', // global primary for sample timepoints of global timeline
@@ -200,7 +201,6 @@ class DataStore {
                           
                           // `outputScaled` is `output` scaled to a range of [-1, 1]
                           norm2dValues = tsne.getOutputScaled();
-                          console.info("norm 2d values", norm2dValues)
                     }
 
                 } else {
