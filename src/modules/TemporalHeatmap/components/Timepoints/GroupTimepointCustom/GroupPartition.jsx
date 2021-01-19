@@ -4,8 +4,8 @@ import { extendObservable } from 'mobx';
 import { Input } from 'antd'
 
 import PropTypes from 'prop-types';
-import CategoricalRow from './CategoricalRow';
-import ContinuousRow from './ContinuousRow';
+import CategoricalRow from './CategoricalRow_o3';
+import ContinuousRow from './ContinuousRow_o3';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
@@ -81,6 +81,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                                 color={color}
                                 stroke={stroke}
                                 isEven={i % 2 === 0}
+                                variableDomain={this.props.currentVariables[i].domain}
                                 {...this.props.tooltipFunctions}
                             />
                         </g>,
