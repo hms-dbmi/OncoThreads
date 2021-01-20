@@ -230,7 +230,7 @@ class TransitionComparison extends React.Component<Props> {
             annotations.push(
                 <g key={d.globalIndex} transform={transformTP}>
                     <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray" />
-                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{annotations.length - 1}</text>
+                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{annotations.length }</text>
                 </g>,
             )
         });

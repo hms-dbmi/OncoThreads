@@ -227,7 +227,7 @@ class TransitionOverview extends React.Component<Props, State> {
             annotations.push(
                 <g key={d.globalIndex} transform={transformTP}>
                     <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray" />
-                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{i}</text>
+                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{i+1}</text>
                 </g>,
             )
         });

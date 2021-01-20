@@ -6,12 +6,13 @@ import PropTypes from 'prop-types';
 import { extendObservable } from 'mobx';
 import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
 import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
+import { Tooltip } from 'antd';
 
 /**
  * Component representing a row of a categorical variable in a grouped partition of a timepoint
  */
 const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class ContinuousRow extends React.Component {
-   
+   strokeW = 4;
 
     constructor() {
         super();
@@ -19,8 +20,9 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
     }
 
     drawRowDist(){
-        let {variableDomain, height, row} = this.props
-        let getBinHeight = (value) => (value-variableDomain[0])/(variableDomain[1]-variableDomain[0]) * height 
+        
+        let {variableDomain, height, row, variable} = this.props
+        let getBinHeight = (value) => (value-variableDomain[0])/(variableDomain[1]-variableDomain[0]) * (height-this.strokeW) 
         
 
         let pathString = `M 0, ${height}`, currentPos = [0,0] 
@@ -31,24 +33,30 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
             currentPos = [binWidth+currentPos[0], -1*binHeight]
         })
         pathString += `l 0 ${-1*currentPos[1]} z`
-        return <path d={pathString} fill='lightgray'/>
+
+        let tooltipTitle = `${variable}: ${Math.min(...row.map(d=>d.key))}~${Math.max(...row.map(d=>d.key))}`
+        return <Tooltip title={tooltipTitle}>
+            <g className="continupusRow">
+                <rect className="background" key="background" width={currentPos[0]} height={height} fill="white"/>
+                <path d={pathString} fill='lightgray' />
+                <line x1={0} x2={currentPos[0]} strokeWidth={this.strokeW} stroke={this.props.stateColor} strokeWidth={this.strokeW} stroke={this.props.stateColor} y1={height-0.5*this.strokeW} y2={height-0.5*this.strokeW}/>
+            </g>
+        </Tooltip>
     }
 
 
 
     render() {
-        return <g className="continupusRow">
-            {this.drawRowDist()}
-            </g>
+        return this.drawRowDist()
     }
 }));
 ContinuousRow.propTypes = {
+    variable: PropTypes.string,
     row: PropTypes.arrayOf(PropTypes.object).isRequired,
     height: PropTypes.number.isRequired,
     opacity: PropTypes.number.isRequired,
-    color: PropTypes.func.isRequired,
-    variableDomain: MobxPropTypes.observableArrayOf(PropTypes.number).isRequired,
-    showTooltip: PropTypes.func.isRequired,
-    hideTooltip: PropTypes.func.isRequired,
+    // color: PropTypes.func.isRequired,
+    stateColor: PropTypes.string.isRequired,
+    variableDomain: MobxPropTypes.observableArrayOf(PropTypes.number).isRequired
 };
 export default ContinuousRow;
