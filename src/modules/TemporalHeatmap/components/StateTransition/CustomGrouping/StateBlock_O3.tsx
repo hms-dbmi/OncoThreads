@@ -276,12 +276,12 @@ class StateBlock extends React.Component<Props> {
                     <g className="scaledChart" transform={`scale(${1}, ${this.cellHeight/maxHeight}) translate(${0}, ${-1 * (this.cellHeight-maxHeight)})`}> 
                         {row} 
                     </g>
-                    <text fill="white" y={this.cellHeight+this.fontHeight}>{cellTextFull}</text>
+                    {/* <text fill="white" y={this.cellHeight+this.fontHeight}>{cellTextFull}</text> */}
                 </svg>
             }
 
 
-            return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} >
+            return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} overlayStyle={{width: "auto", maxWidth: "none"}}>
                 <g className={`row_${rowIdx}`} cursor="pointer">
                  <line className='rowBG'
                             fill='none'
