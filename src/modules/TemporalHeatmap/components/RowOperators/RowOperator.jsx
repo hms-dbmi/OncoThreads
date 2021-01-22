@@ -210,7 +210,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                     }
                     const transform = `translate(${this.iconDimensions},${pos})`;
                     pos += lineHeight + this.props.rootStore.uiStore.horizontalGap;
-                    let fontSize = 10;
+                    let fontSize = 12;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }

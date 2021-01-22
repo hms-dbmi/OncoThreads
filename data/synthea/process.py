@@ -18,11 +18,25 @@ observation_code = {
     '2276-4': 
     {'name':'Serum Ferritin', 'type':''},#
     '89579-7': 
-    {'name': 'High Sensitivity Cardiac Troponin I', 'type':''},#
-    # '731-0': 
-    # {'name':'Lymphocytes', 'type': ''}, #
+    {'name': 'High Sensitivity Cardiac Troponin I', 'type':''},
     '14804-9': 
-    {'name':'Lactate dehydrogenase', 'type': ''}#
+    {'name':'Lactate dehydrogenase', 'type': ''},#
+    '9279-1':
+    {'name': 'Respiratory rate', 'type': ''},
+    # '38483-4':
+    # {'name': 'Creatinine', 'type': ''},
+    # '26464-8':
+    # {'name':'white blood cell', 'type': ''},
+    # '26453-1':
+    # {'name':'red blood cell', 'type':''},
+    '1988-5':
+    {'name': 'C reactive protein', 'type': ''},
+    # '42719-5':
+    # {'name': 'Total Bilirubin', 'type': ''},
+    '8867-4':
+    {'name': 'heart rate', 'type': ''},
+    '8310-5':
+    {'name': 'body temperature', 'type': ''}
 }
 TIMEPOINT_ATTR_CODES = [key for key in observation_code]
 
@@ -39,27 +53,30 @@ medications = pd.read_csv(os.path.join('./originalData/10k_synthea_covid19_csv',
 
 
 #%%
-pd.set_option("max_rows", None) 
-print([col for col in observations.columns])
-#  ['DATE', 'PATIENT', 'ENCOUNTER', 'CODE', 'DESCRIPTION', 'VALUE', 'UNITS', 'TYPE']
-print(observations.drop_duplicates('CODE')[['CODE', 'DESCRIPTION']].reset_index(drop=True))
+# pd.set_option("max_rows", None) 
+# print([col for col in observations.columns])
+# #  ['DATE', 'PATIENT', 'ENCOUNTER', 'CODE', 'DESCRIPTION', 'VALUE', 'UNITS', 'TYPE']
+# print(observations.drop_duplicates('CODE')\
+#     [pd.to_datetime(observations.DATE) > pd.to_datetime('2020-01-20')]\
+#     [['CODE', 'DESCRIPTION']].reset_index(drop=True)\
+#     )
 
 
-print([col for col in conditions.columns])
-print(conditions.drop_duplicates('CODE')[['CODE', 'DESCRIPTION']].reset_index(drop=True))
-# ['START', 'STOP', 'PATIENT', 'ENCOUNTER', 'CODE', 'DESCRIPTION']
+# print([col for col in conditions.columns])
+# print(conditions.drop_duplicates('CODE')[['CODE', 'DESCRIPTION']].reset_index(drop=True))
+# # ['START', 'STOP', 'PATIENT', 'ENCOUNTER', 'CODE', 'DESCRIPTION']
 
-print([col for col in patients.columns])
-# ['Id', 'BIRTHDATE', 'DEATHDATE', 'SSN', 'DRIVERS', 'PASSPORT', 'PREFIX', 'FIRST', 'LAST', 
-# 'SUFFIX', 'MAIDEN', 'MARITAL', 'RACE', 'ETHNICITY', 'GENDER', 'BIRTHPLACE', 'ADDRESS', 
-# 'CITY', 'STATE', 'COUNTY', 'ZIP', 'LAT', 'LON', 'HEALTHCARE_EXPENSES', 'HEALTHCARE_COVERAGE']
+# print([col for col in patients.columns])
+# # ['Id', 'BIRTHDATE', 'DEATHDATE', 'SSN', 'DRIVERS', 'PASSPORT', 'PREFIX', 'FIRST', 'LAST', 
+# # 'SUFFIX', 'MAIDEN', 'MARITAL', 'RACE', 'ETHNICITY', 'GENDER', 'BIRTHPLACE', 'ADDRESS', 
+# # 'CITY', 'STATE', 'COUNTY', 'ZIP', 'LAT', 'LON', 'HEALTHCARE_EXPENSES', 'HEALTHCARE_COVERAGE']
 
-print([col for col in encounters.columns])
-# ['Id', 'START', 'STOP', 'PATIENT', 'ORGANIZATION', 'PROVIDER', 'PAYER', 'ENCOUNTERCLASS', 'CODE', 
-# 'DESCRIPTION', 'BASE_ENCOUNTER_COST', 'TOTAL_CLAIM_COST', 'PAYER_COVERAGE', 'REASONCODE', 
-# 'REASONDESCRIPTION']
+# print([col for col in encounters.columns])
+# # ['Id', 'START', 'STOP', 'PATIENT', 'ORGANIZATION', 'PROVIDER', 'PAYER', 'ENCOUNTERCLASS', 'CODE', 
+# # 'DESCRIPTION', 'BASE_ENCOUNTER_COST', 'TOTAL_CLAIM_COST', 'PAYER_COVERAGE', 'REASONCODE', 
+# # 'REASONDESCRIPTION']
 
-print([col for col in medications.columns])
+# print([col for col in medications.columns])
 #%%
 '''
 get patient ids
@@ -82,11 +99,16 @@ survivor_ids = np.union1d(completed_isolation_patients, negative_covid_patient_i
 inpatient_ids = encounters[(encounters.REASONCODE == 840539006) & (encounters.CODE == 1505002)].PATIENT
 
 
-sampled_inpatient_ids = inpatient_ids.sample(n = SAMPLE_SIZE)
+# # sample inpatinets
+sampled_patient_ids = inpatient_ids.sample(n = SAMPLE_SIZE)
+# sampled_patient_ids = pd.DataFrame(np.intersect1d( inpatient_ids, deceased_patients)).sample(n = SAMPLE_SIZE)
 
-print('number of inpatient', sampled_inpatient_ids.shape[0])
-print('num of inpatient survivors', np.intersect1d( sampled_inpatient_ids, survivor_ids).shape[0])
-print("number of inpatient non-survivors", np.intersect1d( sampled_inpatient_ids, deceased_patients).shape[0])
+# print('number of inpatient', sampled_patient_ids.shape[0])
+# print('num of inpatient survivors', np.intersect1d( sampled_patient_ids, survivor_ids).shape[0])
+# print("number of inpatient non-survivors", np.intersect1d( sampled_patient_ids, deceased_patients).shape[0])
+
+# sample deceased patients
+
 
 
 
@@ -102,10 +124,10 @@ lab_obs = observations[observations['CODE'].isin(TIMEPOINT_ATTR_CODES)]
 
 # Select COVID-19 conditions out of all conditions in the simulation
 covid_conditions = conditions[conditions.CODE == 840539006]
-covid_conditions = covid_conditions[covid_conditions['PATIENT'].isin(sampled_inpatient_ids)]
+covid_conditions = covid_conditions[covid_conditions['PATIENT'].isin(sampled_patient_ids)]
 
 #Merge the COVID-19 conditions with the patients
-sampled_inpatients = patients[patients['Id'].isin(sampled_inpatient_ids)]
+sampled_inpatients = patients[patients['Id'].isin(sampled_patient_ids)]
 covid_patients = covid_conditions.merge(sampled_inpatients, how='left', left_on='PATIENT', right_on='Id')
 
 # Add an attribute to the DataFrame indicating whether this is a survivor or not.
@@ -118,6 +140,7 @@ covid_patients_obs['START'] = pd.to_datetime(covid_patients_obs.START)
 covid_patients_obs['DATE'] = pd.to_datetime(covid_patients_obs.DATE)
 covid_patients_obs['lab_days'] = covid_patients_obs.DATE - covid_patients_obs.START
 covid_patients_obs['days'] = covid_patients_obs.lab_days / np.timedelta64(1, 'D')
+covid_patients_obs = covid_patients_obs[covid_patients_obs.days >= 0].reset_index(drop=True)
 covid_patients_obs['VALUE'] = pd.to_numeric(covid_patients_obs['VALUE'], errors='coerce')
 
 # Reduce the columns on the DataFrame to ones needed
@@ -128,7 +151,7 @@ timeline_specimen['EVENT_TYPE'] = "SPECIMEN"
 timeline_specimen['SAMPLE_ID'] = ['sample_'+str(i) for i in range(len(timeline_specimen))]
 
 #%%
-medications = medications[medications['PATIENT'].isin(sampled_inpatient_ids)]
+medications = medications[medications['PATIENT'].isin(sampled_patient_ids)]
 
 # covid_med = medications[pd.to_datetime(medications.START) > pd.to_datetime('2020-01-20')]
 
@@ -175,6 +198,7 @@ for idx, row in covid_patients_obs.iterrows():
     if not ((patient_id == prev_patient) and (day == prev_day)):
         specimen_idx += 1
 
+        
         samples = samples.append(specimen, ignore_index=True)
         specimen = {
             'PATIENT_ID': patient_id,
@@ -199,6 +223,10 @@ samples = samples.append(specimen, ignore_index=True)
 '''
 save file
 '''
+
+# remove incomplete samples
+samples.dropna(inplace = True)
+timeline_specimen = timeline_specimen[timeline_specimen.SAMPLE_ID.isin(samples.SAMPLE_ID)]
 # 
 # samples.to_csv('covid_{}_samples.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
 timeline_specimen.to_csv('processedData/covid_{}_timeline_samples.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
@@ -224,17 +252,17 @@ with open('processedData/covid_{}_samples.txt'.format(SAMPLE_SIZE), 'w') as txt_
 '''
 plot
 '''
-loinc_to_display = {'CODE_y = 48065-7': 'D-dimer', 'CODE_y = 2276-4': 'Serum Ferritin',
-                    'CODE_y = 89579-7': 'High Sensitivity Cardiac Troponin I',
-                    'CODE_y = 26881-3': 'IL-6', 'CODE_y = 731-0': 'Lymphocytes',
-                    'CODE_y = 14804-9': 'Lactate dehydrogenase'}
+# loinc_to_display = {'CODE_y = 48065-7': 'D-dimer', 'CODE_y = 2276-4': 'Serum Ferritin',
+#                     'CODE_y = 89579-7': 'High Sensitivity Cardiac Troponin I',
+#                     'CODE_y = 26881-3': 'IL-6', 'CODE_y = 731-0': 'Lymphocytes',
+#                     'CODE_y = 14804-9': 'Lactate dehydrogenase'}
 catplt = sns.catplot(x="days", y="VALUE", hue="survivor", kind="box", col='CODE_y', 
             col_wrap=2, sharey=False, sharex=False, data=covid_patients_obs, palette=["C1", "C0"])
 
 for axis in catplt.fig.axes:
     axis.xaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
     axis.xaxis.set_major_locator(ticker.MultipleLocator(base=4))
-    axis.set_title(loinc_to_display[axis.title.get_text()])
+    axis.set_title(observation_code[axis.title.get_text().replace('CODE_y = ', '')]['name'])
         
 plt.show()
 # %%

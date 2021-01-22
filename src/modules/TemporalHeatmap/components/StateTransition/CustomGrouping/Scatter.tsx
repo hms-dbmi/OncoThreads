@@ -156,22 +156,24 @@ class Scatter extends React.Component<Props> {
             })}
             </div>
 
-            return <Tooltip title={tooltipTitle} trigger='click'><g
-                transform={`translate(
-                    ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
-                    ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
-                )`}
-                className='glyph'
-                id={id.toString()}
-                key={id}
-                onClick={() => this.toggleSelectID(id)}
-                cursor='pointer'
-            >
+            return <Tooltip title={tooltipTitle} trigger='click' destroyTooltipOnHide>
+                <g
+                    transform={`translate(
+                        ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
+                        ${yScale(normPoint.pos[1]) - this.cellHeight * normPoint.value.length / 2}
+                    )`}
+                    className='glyph'
+                    id={id.toString()}
+                    key={id}
+                    onClick={() => this.toggleSelectID(id)}
+                    cursor='pointer'
+                >
                 {showGlyph ? glyph :
                 hoverPointID == id ?
                 glyph
                 : circle}
-        </g></Tooltip>
+            </g>
+        </Tooltip>
 
         })
 

@@ -1,6 +1,9 @@
 import { action, extendObservable, observe } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
+import { UMAP } from 'umap-js';
+import TSNE from 'tsne-js';
+
 import { getUniqueKeyName, PrefixSpan, clusterfck, NGgram } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { message } from 'antd';
 import { object } from 'prop-types';
@@ -20,6 +23,8 @@ class DataStore {
             between: new VariableStore(rootStore, 'between'),
         };
         extendObservable(this, {
+
+            DRMethod:'pca', // 'pca', 'umap', 'tsne'
             timepoints: [], // all timepoints
             selectedPatients: [], // currently selected patients
             globalPrimary: '', // global primary for sample timepoints of global timeline
@@ -100,6 +105,16 @@ class DataStore {
                     return sampleScales.concat(eventScales)
                 }
             },
+            get featureDomains() {
+                let sampleDomains = this.variableStores.sample.fullCurrentVariables.map(d => d.domain),
+                    eventDomains = this.variableStores.between.fullCurrentVariables.map(d => d.domain)
+
+                if (this.hasEvent === false) {
+                    return sampleDomains
+                } else {
+                    return sampleDomains.concat(eventDomains)
+                }
+            },
             get currentVariables() {
                 if (this.hasEvent === false) {
                     return this.variableStores.sample.currentVariables
@@ -143,17 +158,51 @@ class DataStore {
                 return normValues
             },
 
-            // normalize points to [0,1]
+            // points with normalized values and dimension redication pos
             get normPoints() {
                 let { normValues } = this
                 if (normValues.length == 0) return []
-                let pca = new PCA(normValues)
                 let norm2dValues = []
 
                 if (this.normValues[0].length > 2) {
                     // only calculate pca when dimension is larger than 2
-                    norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
-                    // console.info('pca points', newPoints)            
+
+                    if (this.DRMethod=='pca'){
+                        let pca = new PCA(normValues)
+                        norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
+                    }else if (this.DRMethod=='umap'){
+                        let umap = new UMAP({
+                            nComponents: 2,
+                            nEpochs: 400,
+                            nNeighbors: 15,
+                          });
+                        
+                        norm2dValues = umap.fit(normValues);
+                    }else if (this.DRMethod=="tsne"){
+                        let tsne = new TSNE({
+                            dim: 2,
+                            perplexity: 10,
+                            earlyExaggeration: 4.0,
+                            learningRate: 100.0,
+                            nIter: 500,
+                            metric: 'euclidean'
+                          });
+                          
+                          // inputData is a nested array which can be converted into an ndarray
+                          // alternatively, it can be an array of coordinates (second argument should be specified as 'sparse')
+                          tsne.init({
+                            data: normValues,
+                            type: 'dense'
+                          });
+                          
+                          
+                          let [error, iter] = tsne.run();
+                          
+                          
+                          // `outputScaled` is `output` scaled to a range of [-1, 1]
+                          norm2dValues = tsne.getOutputScaled();
+                    }
+
                 } else {
                     norm2dValues = normValues
                 }
@@ -170,8 +219,8 @@ class DataStore {
                 return normPoints
             },
 
-            // the importance score of each feature
-            get importanceScores() {
+            // // the importance score of each feature
+            get importancePCAScores() {
                 if (this.normValues.length == 0 || this.normValues[0].length <= 1) return []
                 let { currentVariables } = this
                 let pca = new PCA(this.normValues)
@@ -182,6 +231,15 @@ class DataStore {
                         name: currentVariables[i],
                         score
                     }
+                })
+            },
+
+            get importanceScores(){
+                if (this.DRMethod=='pca') return this.importancePCAScores
+
+                let { currentVariables } = this
+                return currentVariables.map(name=>{
+                    return {name, score:0.5}
                 })
             },
 
@@ -357,6 +415,13 @@ class DataStore {
                 this.numofStates = num
                 this.autoGroup()
                 this.applyCustomGroups()
+            }),
+
+            changeDRMethod: action((methodName)=>{
+                if (methodName!=this.DRMethod){
+                    this.DRMethod = methodName
+                }
+                
             }),
 
             toggleHasEvent: action(() => {

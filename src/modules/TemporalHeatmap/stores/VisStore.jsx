@@ -8,7 +8,7 @@ class VisStore {
     constructor(rootStore) {
         this.rootStore = rootStore;
         this.primaryHeight = 30;
-        this.secondaryHeight = 5;
+        this.secondaryHeight = 20;
         this.verticalGap = 1;
         this.partitionGap = 25;
         this.strokeW = 5;

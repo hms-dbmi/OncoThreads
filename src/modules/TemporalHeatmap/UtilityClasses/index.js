@@ -14,4 +14,7 @@ export {
     cropText,
     num2letter,
     getUniqueKeyName,
+    summarizeDomain
 } from './UtilityFunctions'
+
+

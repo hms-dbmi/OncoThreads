@@ -4,8 +4,8 @@ import { extendObservable } from 'mobx';
 import { Input } from 'antd'
 
 import PropTypes from 'prop-types';
-import CategoricalRow from './CategoricalRow';
-import ContinuousRow from './ContinuousRow';
+import CategoricalRow from './CategoricalRow_o3';
+import ContinuousRow from './ContinuousRow_o3';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
@@ -28,6 +28,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     }
     createPartition() {
         let previousYposition = 0;
+        let stateKey = this.props.partition.partition || ''
         const rows = [];
         let totalH = 0
         this.props.partition.rows.forEach((d, i) => {
@@ -60,13 +61,13 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     rows.push(
                         <g key={d.variable} transform={transform}>
                             <ContinuousRow
+                                variable = {d.variable}
                                 row={d.counts}
                                 height={height}
                                 opacity={opacity}
-                                color={color}
-                                stroke={stroke}
+                                // color={color}
+                                stateColor = {getColorByName(stateKey)}
                                 variableDomain={this.props.currentVariables[i].domain}
-                                {...this.props.tooltipFunctions}
                             />
                         </g>,
                     );
@@ -74,19 +75,18 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     rows.push(
                         <g key={d.variable} transform={transform}>
                             <CategoricalRow
+                                variable = {d.variable}
                                 row={d.counts}
-                                patients={this.props.partition.patients}
                                 height={height}
                                 opacity={opacity}
-                                color={color}
-                                stroke={stroke}
-                                isEven={i % 2 === 0}
-                                {...this.props.tooltipFunctions}
+                                // color={color}
+                                stateColor = {getColorByName(stateKey)}
+                                variableDomain={this.props.currentVariables[i].domain}
                             />
                         </g>,
                     );
                 }
-                previousYposition += height + this.props.uiStore.horizontalGap;
+                previousYposition += height ;
             }
         });
 
@@ -141,7 +141,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     height={totalH}
                     fill={getColorByName(stateKey)} />
 
-                <rect
+                {/* <rect
                     className='stateBackgroundOuter'
                     opacity={0.8}
                     width={totalW + strokeW}
@@ -150,7 +150,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     y={-strokeW / 2}
                     fill="none"
                     stroke={getColorByName(stateKey)}
-                    strokeWidth={strokeW} />
+                    strokeWidth={strokeW} /> */}
                 {/* <circle 
             r= {4}
             cx={totalW-2}
