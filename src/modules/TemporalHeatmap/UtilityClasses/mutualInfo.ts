@@ -17,11 +17,36 @@ n_neighbors : int, default=3
     could introduce a bias. 
  */
 
-const estimateMI =(X:number[][], y:number[], xDiscrete: boolean, yDiscrete:boolean, numNeighbors:number):number[]=>{
-    // let mi = [computeMI(x, y, )]
-    // return co
-    return [0]
+const estimateMI =(X:number[][], y:number[], XDiscrete: boolean[], yDiscrete:boolean, numNeighbors:number):number[]=>{
+    let mi = X.map((x,i)=>{
+        return computeMI(x, y, XDiscrete[i], yDiscrete, numNeighbors)
+    })
+    return mi
 }
-const computeMI = ()=>0
+const computeMI = (x:number[], y:number[], xDiscrete: boolean, yDiscrete:boolean, numNeighbors:number):number=>{
+    if (xDiscrete && yDiscrete){
+        return mutualInfoScore(x, y)
+    }else if (xDiscrete && !yDiscrete){
+        return computeMIcd(y, x, numNeighbors)
+    }else if (!xDiscrete && yDiscrete){
+        return computeMIcc(y, x, numNeighbors)
+    }
+    return mutualInfoScore(x, y)
+}
 
+const mutualInfoScore = (x:number[], y:number[]):number=>{
+    return 0
+}
+
+const computeMIcd = (x:number[], y:number[], numNeighbors:number):number=>{
+    return 0
+}
+
+const computeMIcc = (x:number[], y:number[], numNeighbors:number):number=>{
+    return 0
+}
+
+const contingencyMatrix = (x:number[], y:number[])=>{
+    
+}
 export {estimateMI}
