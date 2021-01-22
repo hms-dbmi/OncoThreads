@@ -412,7 +412,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
 
 
     render() {
-        const textHeight = 10;
+        const textHeight = 12;
 
         // draggable line for resizing
         if (this.props.uiStore.globalTime.includes('block')) {

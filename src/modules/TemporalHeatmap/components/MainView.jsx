@@ -92,9 +92,9 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                     {blockView}
                 </Tab>
                 
-                {/* <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="Patients are grouped at each timepoint by the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="Patients are grouped at each timepoint by the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {myblockView}
-                </Tab> */}
+                </Tab>
                 <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} 
                     title={<span>State Transitions <Tooltip title="States are identified and the transition among states are presented"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {stateTransition}
