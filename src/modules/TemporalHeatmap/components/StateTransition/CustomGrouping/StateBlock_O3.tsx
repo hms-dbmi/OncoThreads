@@ -31,10 +31,10 @@ interface Props {
 class StateBlock extends React.Component<Props> {
     public horizonGap = 15;
     maxCellHeight = 20;
-    verticalGap = 10;
+    verticalGap = 15;
     fontHeight = 15;
-    strokeW = 1;
-    cellVerticalGap = 25;
+    strokeW = 4;
+    cellVerticalGap = 35;
     blockHeightRatio = 0.5; // the heigh of block : the height of whole chart 
     maxNameColRatio = 0.15; // the max width of feature name col / the width of the state identification panel
     nameChartGap = 20; // the horizontal distance between feature name col and state charts
@@ -224,21 +224,87 @@ class StateBlock extends React.Component<Props> {
 
     }
 
-    drawCellDist(values: (string|boolean|number)[], stateColor:string, rowIdx: number, getRectHeight:(domain:any[], value:any)=>number, getRectY:(domain:any[], value:any)=>number){
+    drawCellDistContinues(values: (string|boolean|number)[], stateColor:string, rowIdx: number, getRectHeight:(domain:any[], value:any)=>number, getRectY:(domain:any[], value:any)=>number){
         let domain = this.props.featureDomains[rowIdx]
         let maxHeight = 0
-        let row = this.reorderRowValues(values).map((v, pointIdx)=>{
-            if (v==undefined) return 
-            maxHeight = Math.max(maxHeight, getRectHeight(domain, v))
-            return <rect key={`point_${pointIdx}`} 
-                width={this.cellWidth} 
-                height={getRectHeight(domain, v)}
-                x={this.cellWidth * pointIdx} y={ getRectY(domain, v)}
-                fill = {stateColor}
-            />
+        // let row = this.reorderRowValues(values).map((v, pointIdx)=>{
+        //     if (v==undefined) return 
+        //     maxHeight = Math.max(maxHeight, getRectHeight(domain, v))
+        //     return <rect key={`point_${pointIdx}`} 
+        //         width={this.cellWidth} 
+        //         height={getRectHeight(domain, v)}
+        //         x={this.cellWidth * pointIdx} y={ getRectY(domain, v)}
+        //         fill = {stateColor}
+        //     />
+        // })
+
+        let keyList: (boolean|string|number)[] = []
+        let valueGroups:{key:boolean|string|number, patientNum: number}[] = []
+        this.reorderRowValues(values).forEach(value=>{
+            let idx = keyList.indexOf(value)
+            if (idx>-1){
+                valueGroups[idx]['patientNum'] += 1
+            }else {
+                keyList.push(value)
+                valueGroups.push({
+                    key: value,
+                    patientNum: 1
+                })
+            }
         })
+
+        let pathString = `M 0, ${this.cellHeight}`, currentPos = [0,0] 
+
+        valueGroups.forEach(d=>{
+            let {key, patientNum} = d
+            let binWidth = this.cellWidth*patientNum, binHeight = getRectHeight(domain, key)
+            maxHeight = Math.max(maxHeight, binHeight)
+            pathString += `l${0},${-binHeight-currentPos[1]} l ${binWidth}, ${0}`
+            currentPos = [binWidth+currentPos[0], -1*binHeight]
+        })
+        pathString += `l 0 ${-1*currentPos[1]} z`
+
+        let row = <path d={pathString} fill='lightgray' />
+
         return {row, maxHeight}
     }
+
+    drawCellDistCate(values: (string|boolean|number)[], stateColor:string, rowIdx: number, getRectHeight:(domain:any[], value:any)=>number, getRectY:(domain:any[], value:any)=>number){
+        let domain = this.props.featureDomains[rowIdx]
+        let maxHeight = 0
+
+        let keyList: (boolean|string|number)[] = []
+        let valueGroups:{key:boolean|string|number, patientNum: number}[] = []
+        this.reorderRowValues(values).forEach(value=>{
+            let idx = keyList.indexOf(value)
+            if (idx>-1){
+                valueGroups[idx]['patientNum'] += 1
+            }else {
+                keyList.push(value)
+                valueGroups.push({
+                    key: value,
+                    patientNum: 1
+                })
+            }
+        })
+
+        let rowBars:JSX.Element[] = [], currentX = 0
+
+        valueGroups.forEach(d=>{
+            let {key, patientNum} = d
+            let binWidth = this.cellWidth*patientNum, binHeight = getRectHeight(domain, key),offsetY = getRectY(domain, key)
+            maxHeight = Math.max(maxHeight, binHeight)
+            let oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray"/>
+            rowBars.push(oneCate)
+            currentX += binWidth
+        })
+        
+        let row = <g className="rowBars">{rowBars}</g>
+
+        return {row, maxHeight}
+    }
+
+   
 
     drawBlock(points: IPoint[], stateKey: string) {
         let stateColor = getColorByName(stateKey)
@@ -246,28 +312,34 @@ class StateBlock extends React.Component<Props> {
         let { setHoverID, resetHoverID, featureDomains } = this.props
         if (points.length==0) return <g key="block" className="block" />
         let rows = featureDomains.map((domain,rowIdx)=>{
-            let values = points.map(p=>p.value[rowIdx])
+            let values = points.map(p=>p.value[rowIdx]).filter(v=>v!==undefined)
             let getRectHeight : (domain:any[], value:any)=>number, getRectY : (domain:any[], value:any)=>number, 
                 domainTextArr = summarizeDomain(values.filter(v=>v!==undefined) as number[]|string[]|boolean[]),
                 cellText:string, cellTextFull:string
 
             //crop domain text
-            let domainTextArrCroped = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.cellWidth*points.length/domainTextArr.length))
+            let domainTextArrCroped = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.cellWidth*points.length/domainTextArr.length)),
+            row:JSX.Element, maxHeight = this.cellHeight
 
             if (typeof (domain[0]) ==='number' ){
                 getRectHeight = (domain:any[], value:any):number=>(value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
                 getRectY = (domain:any[], value:any):number=>this.cellHeight - (value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
                 cellText = domainTextArrCroped.join('~')
                 cellTextFull = domainTextArr.join('~')
+
+                let r = this.drawCellDistContinues(values, stateColor, rowIdx, getRectHeight, getRectY)
+                row = r['row']
+                maxHeight = r['maxHeight']
                 
             }else{
                 getRectHeight = (domain:any[], value:any):number=>1/domain.length*this.cellHeight
                 getRectY = (domain:any[], value:any):number=>domain.indexOf(value)/domain.length*this.cellHeight
                 cellText = domainTextArrCroped.join(', ')
                 cellTextFull = domainTextArr.join(',')
+                row = this.drawCellDistCate(values, stateColor, rowIdx, getRectHeight, getRectY)['row']
             }
             
-            let {row, maxHeight} = this.drawCellDist(values, stateColor, rowIdx, getRectHeight, getRectY)
+            
 
             let cellTooltip: JSX.Element = <div> {cellTextFull}</div>
 
@@ -276,7 +348,7 @@ class StateBlock extends React.Component<Props> {
                     <g className="scaledChart" transform={`scale(${1}, ${this.cellHeight/maxHeight}) translate(${0}, ${-1 * (this.cellHeight-maxHeight)})`}> 
                         {row} 
                     </g>
-                    {/* <text fill="white" y={this.cellHeight+this.fontHeight}>{cellTextFull}</text> */}
+                    <text fill="white" y={this.cellHeight+this.fontHeight}>{cellTextFull}</text>
                 </svg>
             }
 
@@ -285,7 +357,8 @@ class StateBlock extends React.Component<Props> {
                 <g className={`row_${rowIdx}`} cursor="pointer">
                  <line className='rowBG'
                             fill='none'
-                            stroke='gray'
+                            // stroke='gray'
+                            stroke={stateColor}
                             strokeWidth={this.strokeW}
                             y1={ (this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW/2} 
                             y2={ (this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW/2} 
