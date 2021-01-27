@@ -110,7 +110,16 @@ const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
         let v = values as number[] // stupid typescropt
         
         let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-        range=range.map(text => text.replace(/(?<=\.([1-9]*))(0*$)/, ''))
+        // range=range.map(text => text.replace(/(?<=\.([1-9]*))(0*$)/, ''))
+        // safari doesn't support lookbehind regex, below is a workaround
+        range=range.map(text => {
+            if (text.includes('.')){
+                let [before, after] = text.split('.')
+                after = after.replace(/0*$/, '')
+                return `${before}${after.length>0?'.'+after:''}`
+            }
+            return text
+        })
         return range
     } else if (typeof (values[0]) == "string") {
         let v = values as string[]
