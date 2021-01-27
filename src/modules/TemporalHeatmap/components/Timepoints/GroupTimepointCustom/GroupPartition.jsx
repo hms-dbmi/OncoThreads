@@ -4,8 +4,10 @@ import { extendObservable } from 'mobx';
 import { Input } from 'antd'
 
 import PropTypes from 'prop-types';
-import CategoricalRow from './CategoricalRow_o3';
-import ContinuousRow from './ContinuousRow_o3';
+import CategoricalRowO3 from './CategoricalRow_o3';
+import ContinuousRowO3 from './ContinuousRow_o3';
+import CategoricalRow from './CategoricalRow';
+import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
@@ -58,35 +60,67 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 // }
                 // create different types of rows depending on the variables datatype
                 if (this.props.currentVariables[i].datatype === 'NUMBER') {
-                    rows.push(
-                        <g key={d.variable} transform={transform}>
-                            <ContinuousRow
-                                variable = {d.variable}
-                                row={d.counts}
-                                height={height}
-                                opacity={opacity}
-                                // color={color}
-                                stateColor = {getColorByName(stateKey)}
-                                variableDomain={this.props.currentVariables[i].domain}
-                            />
-                        </g>,
-                    );
+                    if (this.props.type === "sample") {
+                        rows.push(
+                            <g key={d.variable} transform={transform}>
+                                <ContinuousRowO3
+                                    variable={d.variable}
+                                    row={d.counts}
+                                    height={height}
+                                    opacity={opacity}
+                                    // color={color}
+                                    stateColor={getColorByName(stateKey)}
+                                    variableDomain={this.props.currentVariables[i].domain}
+                                />
+                            </g>,
+                        );
+                    } else {
+                        rows.push(
+                            <g key={d.variable} transform={transform}>
+                                <ContinuousRow
+                                    variable={d.variable}
+                                    row={d.counts}
+                                    height={height}
+                                    opacity={opacity}
+                                    color={color}
+                                    variableDomain={this.props.currentVariables[i].domain}
+                                />
+                            </g>,
+                        );
+                    }
+
                 } else {
-                    rows.push(
-                        <g key={d.variable} transform={transform}>
-                            <CategoricalRow
-                                variable = {d.variable}
-                                row={d.counts}
-                                height={height}
-                                opacity={opacity}
-                                // color={color}
-                                stateColor = {getColorByName(stateKey)}
-                                variableDomain={this.props.currentVariables[i].domain}
-                            />
-                        </g>,
-                    );
+                    if (this.props.type === "sample") {
+                        rows.push(
+                            <g key={d.variable} transform={transform}>
+                                <CategoricalRowO3
+                                    variable={d.variable}
+                                    row={d.counts}
+                                    height={height}
+                                    opacity={opacity}
+                                    // color={color}
+                                    stateColor={getColorByName(stateKey)}
+                                    variableDomain={this.props.currentVariables[i].domain}
+                                />
+                            </g>,
+                        );
+                    } else {
+                        rows.push(
+                            <g key={d.variable} transform={transform}>
+                                <CategoricalRow
+                                    variable={d.variable}
+                                    row={d.counts}
+                                    height={height}
+                                    opacity={opacity}
+                                    color={color}
+                                    variableDomain={this.props.currentVariables[i].domain}
+                                />
+                            </g>,
+                        );
+                    }
+
                 }
-                previousYposition += height ;
+                previousYposition += height;
             }
         });
 
@@ -119,7 +153,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 labelWidth = Math.max(getTextWidth(stateName, 14, fontWeight) + 25, 40)
 
             stateInputLabel = <foreignObject width={labelWidth} height={labelHeight}>
-                <input value={stateName} style={{ fontWeight: fontWeight, border:"none", backgroundColor:"transparent"}}
+                <input value={stateName} style={{ fontWeight: fontWeight, border: "none", backgroundColor: "transparent" }}
                     type="text" className="stateLabel"
                     onChange={this.changeLabel} />
             </foreignObject>

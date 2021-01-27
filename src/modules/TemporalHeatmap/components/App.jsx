@@ -16,7 +16,6 @@ import AboutModal from './Modals/AboutModal';
 import StudySummary from './StudySummary';
 
 import { QuestionCircleOutlined, HomeOutlined } from '@ant-design/icons';
-import * as introJs from 'intro.js';
 
 import './App.css'
 import { Tooltip } from 'antd';
@@ -143,17 +142,6 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
             studyInfoModalIsOpen: false,
         });
     }
-
-
-    // componentDidUpdate(){
-    //     let introHint = introJs()
-        
-    //     introHint.onhintclose(() => { 
-    //         this.props.uiStore.setTutorialMode(true)
-    //       });
-
-    //     introHint.addHints();
-    // }
 
     render() {
         let navBarContent = this.getNavbarContent()

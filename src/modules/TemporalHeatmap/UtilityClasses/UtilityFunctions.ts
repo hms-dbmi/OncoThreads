@@ -1,4 +1,3 @@
-import UndoRedoStore from "modules/UndoRedoStore";
 
 /**
  * returns scientific notation for high values
@@ -106,12 +105,14 @@ const getUniqueKeyName = (num: number, existingNames: string[]): string => {
 
 const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
 
-    if (typeof (values[0]) == "number") {
+    if (typeof (values[0]) === "number") {
         let v = values as number[] // stupid typescropt
         
         let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
+
+        // remove unnecessary 0, e.g., 2.000 => 2
         // range=range.map(text => text.replace(/(?<=\.([1-9]*))(0*$)/, ''))
-        // safari doesn't support lookbehind regex, below is a workaround
+        // but safari doesn't support lookbehind regex, below is a workaround
         range=range.map(text => {
             if (text.includes('.')){
                 let [before, after] = text.split('.')
@@ -121,10 +122,10 @@ const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
             return text
         })
         return range
-    } else if (typeof (values[0]) == "string") {
+    } else if (typeof (values[0])=== "string") {
         let v = values as string[]
         return [...new Set(v)]
-    } else if (typeof (values[0]) == "boolean") {
+    } else if (typeof (values[0])=== "boolean") {
         let v = values as boolean[]
         return [...new Set(v)].map(d=>d.toString())
     } else return []

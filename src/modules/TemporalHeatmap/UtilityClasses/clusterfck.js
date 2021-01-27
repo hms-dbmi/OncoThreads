@@ -200,7 +200,7 @@ function normalizeArray(parts, allowAboveRoot) {
   var up = 0;
   for (var i = parts.length; i >= 0; i--) {
     var last = parts[i];
-    if (last == '.') {
+    if (last === '.') {
       parts.splice(i, 1);
     } else if (last === '..') {
       parts.splice(i, 1);
@@ -237,7 +237,7 @@ for (var i = arguments.length; i >= -1 && !resolvedAbsolute; i--) {
       : process.cwd();
 
   // Skip empty and invalid entries
-  if (typeof path !== 'string' || !path) {
+  if (typeof path !==   'string' || !path) {
     continue;
   }
 
@@ -333,8 +333,8 @@ require.define("/hcluster.js", function (require, module, exports, __dirname, __
 var HierarchicalClustering = function(distance, linkage, threshold, maxClusterNum) {
    this.distance = distance;
    this.linkage = linkage;
-   this.threshold = threshold == undefined ? Infinity : threshold;
-   this.maxClusterNum = maxClusterNum == undefined ? 2 : maxClusterNum;
+   this.threshold = threshold === undefined ? Infinity : threshold;
+   this.maxClusterNum = maxClusterNum === undefined ? 2 : maxClusterNum;
 }
 
 HierarchicalClustering.prototype = {
@@ -361,7 +361,7 @@ HierarchicalClustering.prototype = {
 
       for (var i = 0; i < this.clusters.length; i++) {
          for (var j = 0; j <= i; j++) {
-            var dist = (i == j) ? Infinity : 
+            var dist = (i === j) ? Infinity : 
                this.distance(this.clusters[i].value, this.clusters[j].value);
             this.dists[i][j] = dist;
             this.dists[j][i] = dist;
@@ -375,7 +375,7 @@ HierarchicalClustering.prototype = {
       var merged = this.mergeClosest();
       var i = 0;
       while (merged) {
-        if (snapshotCb && (i++ % snapshotPeriod) == 0) {
+        if (snapshotCb && (i++ % snapshotPeriod) === 0) {
            snapshotCb(this.clusters);           
         }
         merged = this.mergeClosest();
@@ -445,22 +445,22 @@ HierarchicalClustering.prototype = {
       for (var i = 0; i < this.clusters.length; i++) {
          var ci = this.clusters[i];
          var dist;
-         if (c1.key == ci.key) {
+         if (c1.key === ci.key) {
             dist = Infinity;            
          }
-         else if (this.linkage == "single") {
+         else if (this.linkage === "single") {
             dist = this.dists[c1.key][ci.key];
             if (this.dists[c1.key][ci.key] > this.dists[c2.key][ci.key]) {
                dist = this.dists[c2.key][ci.key];
             }
          }
-         else if (this.linkage == "complete") {
+         else if (this.linkage === "complete") {
             dist = this.dists[c1.key][ci.key];
             if (this.dists[c1.key][ci.key] < this.dists[c2.key][ci.key]) {
                dist = this.dists[c2.key][ci.key];              
             }
          }
-         else if (this.linkage == "average") {
+         else if (this.linkage === "average") {
             dist = (this.dists[c1.key][ci.key] * c1.size
                    + this.dists[c2.key][ci.key] * c2.size) / (c1.size + c2.size);
          }
@@ -477,7 +477,7 @@ HierarchicalClustering.prototype = {
       // update cached mins
       for (var i = 0; i < this.clusters.length; i++) {
          var key1 = this.clusters[i].key;        
-         if (this.mins[key1] == c1.key || this.mins[key1] == c2.key) {
+         if (this.mins[key1] === c1.key || this.mins[key1] === c2.key) {
             var min = key1;
             for (var j = 0; j < this.clusters.length; j++) {
                var key2 = this.clusters[j].key;
@@ -502,7 +502,7 @@ var hcluster = function(items, distance, linkage, threshold, maxClusterNum, snap
    distance = distance || "euclidean";
    linkage = linkage || "average";
 
-   if (typeof distance == "string") {
+   if (typeof distance === "string") {
      distance = distances[distance];
    }
    var clusters = (new HierarchicalClustering(distance, linkage, threshold, maxClusterNum))
@@ -570,7 +570,7 @@ function closestCentroid(point, centroids, distance) {
 
 function kmeans(points, k, distance, snapshotPeriod, snapshotCb) {
    distance = distance || "euclidean";
-   if (typeof distance == "string") {
+   if (typeof distance === "string") {
       distance = distances[distance];
    }
    
@@ -591,7 +591,7 @@ function kmeans(points, k, distance, snapshotPeriod, snapshotCb) {
       for (var j = 0; j < k; j++) {
          var assigned = [];
          assignment.forEach(function(centroid, index) {
-            if (centroid == j) {
+            if (centroid === j) {
                assigned.push(points[index]);
             }
          });
@@ -609,7 +609,7 @@ function kmeans(points, k, distance, snapshotPeriod, snapshotCb) {
             }
             newCentroid[g] = sum / assigned.length;
             
-            if (newCentroid[g] != centroid[g]) {
+            if (newCentroid[g] !== centroid[g]) {
                movement = true;
             }
          }
@@ -617,7 +617,7 @@ function kmeans(points, k, distance, snapshotPeriod, snapshotCb) {
          clusters[j] = assigned;
       }
       
-      if (snapshotCb && (iterations++ % snapshotPeriod == 0)) {
+      if (snapshotCb && (iterations++ % snapshotPeriod === 0)) {
          snapshotCb(clusters);
       }
    }

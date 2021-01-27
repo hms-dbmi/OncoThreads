@@ -56,7 +56,7 @@ class UIStore {
             }),
             selectPatientGroup: action((groupIdx)=>{
                 let idx = this.selectedPatientGroupIdx.indexOf(groupIdx)
-                if (idx==-1){
+                if (idx===-1){
                     this.selectedPatientGroupIdx.push(groupIdx)
                 }else{
                     this.selectedPatientGroupIdx.splice(idx, 1)
@@ -80,7 +80,7 @@ class UIStore {
                     this.introTutorial.start()
                 }
 
-                if (isIn==false && this.introTutorial != undefined){
+                if (isIn===false && this.introTutorial !== undefined){
                     this.introTutorial.exit()
                     this.introTutorial = undefined
                 }

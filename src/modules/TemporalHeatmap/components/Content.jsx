@@ -9,7 +9,6 @@ import {
 import FontAwesome from 'react-fontawesome';
 import { extendObservable } from 'mobx';
 import MainView from './MainView';
-import CustomGrouping from './StateTransition/CustomGrouping'
 import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
 import Tooltip from './Tooltip';
 import QuickAddVariable from './VariableSelector/QuickAddVariable';
@@ -275,16 +274,15 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
-        // let sampleStore = this.props.rootStore.dataStore.variableStores.sample
-        let {dataStore, study} = this.props.rootStore
-        let studyName = study?study.name:'example'
-              
+        let { study } = this.props.rootStore
+        let studyName = study ? study.name : 'example'
+
         return (
             <div>
                 <Grid fluid style={{ paddingLeft: 20 }}>
-                <h4>{studyName}</h4>
-                    <Row className='controlPane' 
-                        data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Having Fun with your exploration!</h4> ' 
+                    <h4>{studyName}</h4>
+                    <Row className='controlPane'
+                        data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Having Fun with your exploration!</h4> '
                         data-step='6'
                     >
                         <Col smOffset={0} xsOffset={0} md={7} xs={7}>
@@ -382,7 +380,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         </Col>
                     </Row>
                     <Row className='mainVIStab'>
-                        
+
                         <MainView
                             tooltipFunctions={this.tooltipFunctions}
                             openBinningModal={this.openBinningModal}

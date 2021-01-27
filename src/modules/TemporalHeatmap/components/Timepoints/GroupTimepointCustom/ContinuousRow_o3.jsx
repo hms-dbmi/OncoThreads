@@ -1,11 +1,6 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import uuidv4 from 'uuid/v4';
-import * as d3 from 'd3';
 import PropTypes from 'prop-types';
-import { extendObservable } from 'mobx';
-import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
 import { Tooltip } from 'antd';
 
 /**
@@ -13,12 +8,6 @@ import { Tooltip } from 'antd';
  */
 const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class ContinuousRow extends React.Component {
    strokeW = 4;
-
-    constructor() {
-        super();
-        
-    }
-
     drawRowDist(){
         
         let {variableDomain, height, row, variable} = this.props
@@ -39,7 +28,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
             <g className="continupusRow">
                 <rect className="background" key="background" width={currentPos[0]} height={height} fill="white"/>
                 <path d={pathString} fill='lightgray' />
-                <line x1={0} x2={currentPos[0]} strokeWidth={this.strokeW} stroke={this.props.stateColor} strokeWidth={this.strokeW} stroke={this.props.stateColor} y1={height-0.5*this.strokeW} y2={height-0.5*this.strokeW}/>
+                <line x1={0} x2={currentPos[0]} strokeWidth={this.strokeW} stroke={this.props.stateColor} y1={height-0.5*this.strokeW} y2={height-0.5*this.strokeW}/>
             </g>
         </Tooltip>
     }

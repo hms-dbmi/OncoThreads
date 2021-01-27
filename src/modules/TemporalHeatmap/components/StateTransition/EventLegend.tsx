@@ -126,11 +126,10 @@ class FeatureLegend extends React.Component<Props> {
     getCategoricalLegend(variable: TVariable, row: TRow, opacity: number, fontSize: number, lineheight: number) {
         let currX = 0;
         const legendEntries: JSX.Element[] = [];
-        let legend_y = lineheight;
 
         variable.domain.forEach((d: string, i: number) => {
             if (variable.datatype === 'ORDINAL' || row.includes(d)) {
-                let tooltipText;
+                let tooltipText='';
                 if (variable.derived && variable.datatype === 'ORDINAL' && variable.modification.type === 'continuousTransform' && variable.modification.binning.binNames[i].modified) {
                     tooltipText = `${d}: ${getScientificNotation(variable.modification.binning.bins[i])} to ${getScientificNotation(variable.modification.binning.bins[i + 1])}`;
                 } else {

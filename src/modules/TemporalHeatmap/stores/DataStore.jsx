@@ -4,9 +4,8 @@ import { PCA } from 'ml-pca';
 import { UMAP } from 'umap-js';
 import TSNE from 'tsne-js';
 
-import { getUniqueKeyName, PrefixSpan, clusterfck, NGgram } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getUniqueKeyName, PrefixSpan, clusterfck } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { message } from 'antd';
-import { object } from 'prop-types';
 import NGram from '../UtilityClasses/ngram';
 
 /*
@@ -24,7 +23,7 @@ class DataStore {
         };
         extendObservable(this, {
 
-            DRMethod:'pca', // 'pca', 'umap', 'tsne'
+            DRMethod: 'pca', // 'pca', 'umap', 'tsne'
             timepoints: [], // all timepoints
             selectedPatients: [], // currently selected patients
             globalPrimary: '', // global primary for sample timepoints of global timeline
@@ -54,7 +53,7 @@ class DataStore {
             },
             get maxTPPartitionWithGroup() {
                 let { patientGroups } = this
-                const groupedTP = this.timepoints.filter(d => d.isGrouped).filter(d => d.type == "sample");
+                const groupedTP = this.timepoints.filter(d => d.isGrouped).filter(d => d.type === "sample");
 
                 let partitions = groupedTP.map(d => {
                     let count = 0
@@ -143,7 +142,7 @@ class DataStore {
                         let ref = referencedVariables[currentVariables[i]]
                         if (value === undefined) {
                             return 0
-                        } else if (typeof (value) == "number") {
+                        } else if (typeof (value) === "number") {
                             let domain = ref.domain
                             return (value - domain[0]) / (domain[1] - domain[0])
                         } else if (ref.domain.length === 1) {
@@ -161,24 +160,24 @@ class DataStore {
             // points with normalized values and dimension redication pos
             get normPoints() {
                 let { normValues } = this
-                if (normValues.length == 0) return []
+                if (normValues.length === 0) return []
                 let norm2dValues = []
 
                 if (this.normValues[0].length > 2) {
                     // only calculate pca when dimension is larger than 2
 
-                    if (this.DRMethod=='pca'){
+                    if (this.DRMethod === 'pca') {
                         let pca = new PCA(normValues)
                         norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
-                    }else if (this.DRMethod=='umap'){
+                    } else if (this.DRMethod === 'umap') {
                         let umap = new UMAP({
                             nComponents: 2,
                             nEpochs: 400,
                             nNeighbors: 15,
-                          });
-                        
+                        });
+
                         norm2dValues = umap.fit(normValues);
-                    }else if (this.DRMethod=="tsne"){
+                    } else if (this.DRMethod === "tsne") {
                         let tsne = new TSNE({
                             dim: 2,
                             perplexity: 10,
@@ -186,21 +185,21 @@ class DataStore {
                             learningRate: 100.0,
                             nIter: 500,
                             metric: 'euclidean'
-                          });
-                          
-                          // inputData is a nested array which can be converted into an ndarray
-                          // alternatively, it can be an array of coordinates (second argument should be specified as 'sparse')
-                          tsne.init({
+                        });
+
+                        // inputData is a nested array which can be converted into an ndarray
+                        // alternatively, it can be an array of coordinates (second argument should be specified as 'sparse')
+                        tsne.init({
                             data: normValues,
                             type: 'dense'
-                          });
-                          
-                          
-                          let [error, iter] = tsne.run();
-                          
-                          
-                          // `outputScaled` is `output` scaled to a range of [-1, 1]
-                          norm2dValues = tsne.getOutputScaled();
+                        });
+
+
+                        tsne.run();
+
+
+                        // `outputScaled` is `output` scaled to a range of [-1, 1]
+                        norm2dValues = tsne.getOutputScaled();
                     }
 
                 } else {
@@ -221,7 +220,7 @@ class DataStore {
 
             // // the importance score of each feature
             get importancePCAScores() {
-                if (this.normValues.length == 0 || this.normValues[0].length <= 1) return []
+                if (this.normValues.length === 0 || this.normValues[0].length <= 1) return []
                 let { currentVariables } = this
                 let pca = new PCA(this.normValues)
                 let egiVector = pca.getEigenvectors()
@@ -234,12 +233,12 @@ class DataStore {
                 })
             },
 
-            get importanceScores(){
-                if (this.DRMethod=='pca') return this.importancePCAScores
+            get importanceScores() {
+                if (this.DRMethod === 'pca') return this.importancePCAScores
 
                 let { currentVariables } = this
-                return currentVariables.map(name=>{
-                    return {name, score:0.5}
+                return currentVariables.map(name => {
+                    return { name, score: 0.5 }
                 })
             },
 
@@ -253,7 +252,7 @@ class DataStore {
 
                 points.sort((a, b) => a.timeIdx - b.timeIdx)
                 points.forEach(point => {
-                    let { idx, patient, timeIdx } = point
+                    let { idx, patient } = point
                     let stateKey = Object.values(pointGroups).find(pointGroup => pointGroup.pointIdx.includes(idx)).stateKey
                     // if (!patients[patient]){
                     //     patients[patient] = [...new Array(maxTimeIdx+1).keys()].map(d=>'')
@@ -326,18 +325,18 @@ class DataStore {
                 // *** 
                 // encoding patients based on frequent patterns
                 // **** */
-                if (this.encodingMetric == "prefix") {
+                if (this.encodingMetric === "prefix") {
                     patientEncodings = patients.map(p => {
                         return { patient: p, encoding: [] }
                     })
                     let { frequentPatterns } = this
                     // don't group without frequent patterns
-                    if (frequentPatterns.length == 0) {
+                    if (frequentPatterns.length === 0) {
                         message.error('Cannot group patients without frequent patterns!');
                     }
 
                     frequentPatterns.forEach(d => {
-                        let [patients, pattern] = d
+                        let [patients] = d
                         patientEncodings.forEach(d => {
                             let { patient, encoding } = d
                             if (patients.includes(patient)) {
@@ -364,7 +363,7 @@ class DataStore {
                 //     })
                 // })
 
-                if (this.encodingMetric == "ngram") {
+                if (this.encodingMetric === "ngram") {
                     let { patientStates } = this
                     let ngram = new NGram(
                         patients.map(p => patientStates[p]),
@@ -387,10 +386,10 @@ class DataStore {
 
 
             changePatientGroupNum: action((num) => {
-                if (typeof (num) != 'number') return
+                if (typeof (num) !== 'number') return
                 if (num === 0) return
                 if (num === this.patientGroups.length) return
-                if (num == 1) {
+                if (num === 1) {
                     this.patientGroups = [[...this.rootStore.patients]]
                     return
                 }
@@ -417,11 +416,11 @@ class DataStore {
                 this.applyCustomGroups()
             }),
 
-            changeDRMethod: action((methodName)=>{
-                if (methodName!=this.DRMethod){
+            changeDRMethod: action((methodName) => {
+                if (methodName !== this.DRMethod) {
                     this.DRMethod = methodName
                 }
-                
+
             }),
 
             toggleHasEvent: action(() => {
@@ -595,7 +594,7 @@ class DataStore {
                 let normPoints = this.normPoints
 
 
-                if (normPoints.length == 0) return
+                if (normPoints.length === 0) return
                 let { numofStates } = this
                 var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "average", Infinity, numofStates);
                 // console.info(tree)

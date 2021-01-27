@@ -20,7 +20,7 @@ interface Props {
     hoverPointID: number,
     pointGroups: TPointGroups,
     colorScales: Array<(value: string | number | boolean) => string>,
-    featureDomains: (string|number|boolean)[][],
+    featureDomains: (string | number | boolean)[][],
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
     removeVariable: (name: string) => void,
@@ -49,7 +49,7 @@ class StateBlock extends React.Component<Props> {
 
     }
     @computed
-    get maxNameColWidth(){
+    get maxNameColWidth() {
         return this.props.width * this.maxNameColRatio
     }
     @computed
@@ -62,7 +62,7 @@ class StateBlock extends React.Component<Props> {
         ))
         nameWidth = Math.min(nameWidth, this.maxNameColWidth)
 
-        return scoreWidth + nameWidth 
+        return scoreWidth + nameWidth
     }
     @computed
     get wholeHorizonGap(): number {
@@ -71,7 +71,7 @@ class StateBlock extends React.Component<Props> {
 
         let hasLeftPoints = allSelected.length < points.length
         // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.cellVerticalGap)  + 2*this.cellVerticalGap
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap 
+        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap
         return wholeHorizonGap
     }
     @computed
@@ -99,14 +99,14 @@ class StateBlock extends React.Component<Props> {
 
     @computed
     get maxTimeIdx(): number {
-        let { points, height } = this.props
+        let { points } = this.props
         let maxTimeIdx = Math.max(...points.map(p => p.timeIdx))
         return maxTimeIdx
     }
 
     @computed
     get timeStepHeight(): number {
-        let { points, height } = this.props
+        let { height } = this.props
 
         const timeStepHeight = (height - this.fontHeight - this.verticalGap) * (1 - this.blockHeightRatio) / (this.maxTimeIdx + 1)
 
@@ -114,7 +114,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawAllStates() {
-        let { points, pointGroups, stateLabels, height } = this.props
+        let { points, pointGroups, stateLabels } = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
@@ -143,7 +143,7 @@ class StateBlock extends React.Component<Props> {
                         />
                         <text alignmentBaseline="hanging">{stateName}</text>
 
-                        
+
 
                         <g transform={`translate(0, ${fontHeight})`} className='oneState' >
                             {this.drawOneState(pointIdx.map(id => points[id]), stateKey)}
@@ -198,11 +198,11 @@ class StateBlock extends React.Component<Props> {
                 stroke="gray"
                 fill="white"
             />
-            <text y={this.fontHeight} textAnchor="middle" x={timeDistLabelWidth/2}>
-                Temporal 
+            <text y={this.fontHeight} textAnchor="middle" x={timeDistLabelWidth / 2}>
+                Temporal
             </text>
-            <text y={2*this.fontHeight} textAnchor="middle" x={timeDistLabelWidth/2}>
-                Distribution 
+            <text y={2 * this.fontHeight} textAnchor="middle" x={timeDistLabelWidth / 2}>
+                Distribution
             </text>
         </g>
 
@@ -211,7 +211,7 @@ class StateBlock extends React.Component<Props> {
 
     // draw the block of one state
     drawOneState(points: IPoint[], stateKey: string) {
-        if (points.length == 0) {
+        if (points.length === 0) {
             return []
         }
 
@@ -224,7 +224,7 @@ class StateBlock extends React.Component<Props> {
 
     }
 
-    drawCellDistContinues(values: (string|boolean|number)[], stateColor:string, rowIdx: number, getRectHeight:(domain:any[], value:any)=>number, getRectY:(domain:any[], value:any)=>number){
+    drawCellDistContinues(values: (string | boolean | number)[], stateColor: string, rowIdx: number, getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number) {
         let domain = this.props.featureDomains[rowIdx]
         let maxHeight = 0
         // let row = this.reorderRowValues(values).map((v, pointIdx)=>{
@@ -238,13 +238,13 @@ class StateBlock extends React.Component<Props> {
         //     />
         // })
 
-        let keyList: (boolean|string|number)[] = []
-        let valueGroups:{key:boolean|string|number, patientNum: number}[] = []
-        this.reorderRowValues(values).forEach(value=>{
+        let keyList: (boolean | string | number)[] = []
+        let valueGroups: { key: boolean | string | number, patientNum: number }[] = []
+        this.reorderRowValues(values).forEach(value => {
             let idx = keyList.indexOf(value)
-            if (idx>-1){
+            if (idx > -1) {
                 valueGroups[idx]['patientNum'] += 1
-            }else {
+            } else {
                 keyList.push(value)
                 valueGroups.push({
                     key: value,
@@ -253,33 +253,33 @@ class StateBlock extends React.Component<Props> {
             }
         })
 
-        let pathString = `M 0, ${this.cellHeight}`, currentPos = [0,0] 
+        let pathString = `M 0, ${this.cellHeight}`, currentPos = [0, 0]
 
-        valueGroups.forEach(d=>{
-            let {key, patientNum} = d
-            let binWidth = this.cellWidth*patientNum, binHeight = getRectHeight(domain, key)
+        valueGroups.forEach(d => {
+            let { key, patientNum } = d
+            let binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key)
             maxHeight = Math.max(maxHeight, binHeight)
-            pathString += `l${0},${-binHeight-currentPos[1]} l ${binWidth}, ${0}`
-            currentPos = [binWidth+currentPos[0], -1*binHeight]
+            pathString += `l${0},${-binHeight - currentPos[1]} l ${binWidth}, ${0}`
+            currentPos = [binWidth + currentPos[0], -1 * binHeight]
         })
-        pathString += `l 0 ${-1*currentPos[1]} z`
+        pathString += `l 0 ${-1 * currentPos[1]} z`
 
         let row = <path d={pathString} fill='lightgray' />
 
-        return {row, maxHeight}
+        return { row, maxHeight }
     }
 
-    drawCellDistCate(values: (string|boolean|number)[], stateColor:string, rowIdx: number, getRectHeight:(domain:any[], value:any)=>number, getRectY:(domain:any[], value:any)=>number){
+    drawCellDistCate(values: (string | boolean | number)[], stateColor: string, rowIdx: number, getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number) {
         let domain = this.props.featureDomains[rowIdx]
         let maxHeight = 0
 
-        let keyList: (boolean|string|number)[] = []
-        let valueGroups:{key:boolean|string|number, patientNum: number}[] = []
-        this.reorderRowValues(values).forEach(value=>{
+        let keyList: (boolean | string | number)[] = []
+        let valueGroups: { key: boolean | string | number, patientNum: number }[] = []
+        this.reorderRowValues(values).forEach(value => {
             let idx = keyList.indexOf(value)
-            if (idx>-1){
+            if (idx > -1) {
                 valueGroups[idx]['patientNum'] += 1
-            }else {
+            } else {
                 keyList.push(value)
                 valueGroups.push({
                     key: value,
@@ -288,90 +288,90 @@ class StateBlock extends React.Component<Props> {
             }
         })
 
-        let rowBars:JSX.Element[] = [], currentX = 0
+        let rowBars: JSX.Element[] = [], currentX = 0
 
-        valueGroups.forEach(d=>{
-            let {key, patientNum} = d
-            let binWidth = this.cellWidth*patientNum, binHeight = getRectHeight(domain, key),offsetY = getRectY(domain, key)
+        valueGroups.forEach(d => {
+            let { key, patientNum } = d
+            let binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key), offsetY = getRectY(domain, key)
             maxHeight = Math.max(maxHeight, binHeight)
-            let oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray"/>
+            let oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
             rowBars.push(oneCate)
             currentX += binWidth
         })
-        
+
         let row = <g className="rowBars">{rowBars}</g>
 
-        return {row, maxHeight}
+        return { row, maxHeight }
     }
 
-   
+
 
     drawBlock(points: IPoint[], stateKey: string) {
         let stateColor = getColorByName(stateKey)
         // points = this.reorderPoints(points)
         let { setHoverID, resetHoverID, featureDomains } = this.props
-        if (points.length==0) return <g key="block" className="block" />
-        let rows = featureDomains.map((domain,rowIdx)=>{
-            let values = points.map(p=>p.value[rowIdx]).filter(v=>v!==undefined)
-            let getRectHeight : (domain:any[], value:any)=>number, getRectY : (domain:any[], value:any)=>number, 
-                domainTextArr = summarizeDomain(values.filter(v=>v!==undefined) as number[]|string[]|boolean[]),
-                cellText:string, cellTextFull:string
+        if (points.length === 0) return <g key="block" className="block" />
+        let rows = featureDomains.map((domain, rowIdx) => {
+            let values = points.map(p => p.value[rowIdx]).filter(v => v !== undefined)
+            let getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number,
+                domainTextArr = summarizeDomain(values.filter(v => v !== undefined) as number[] | string[] | boolean[]),
+                cellText: string, cellTextFull: string
 
             //crop domain text
-            let domainTextArrCroped = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.cellWidth*points.length/domainTextArr.length)),
-            row:JSX.Element, maxHeight = this.cellHeight
+            let domainTextArrCroped = domainTextArr.map(d => cropText(d, this.fontHeight, 700, this.cellWidth * points.length / domainTextArr.length)),
+                row: JSX.Element, maxHeight = this.cellHeight
 
-            if (typeof (domain[0]) ==='number' ){
-                getRectHeight = (domain:any[], value:any):number=>(value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
-                getRectY = (domain:any[], value:any):number=>this.cellHeight - (value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
+            if (typeof (domain[0]) === 'number') {
+                getRectHeight = (domain: any[], value: any): number => (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
+                getRectY = (domain: any[], value: any): number => this.cellHeight - (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
                 cellText = domainTextArrCroped.join('~')
                 cellTextFull = domainTextArr.join('~')
 
                 let r = this.drawCellDistContinues(values, stateColor, rowIdx, getRectHeight, getRectY)
                 row = r['row']
                 maxHeight = r['maxHeight']
-                
-            }else{
-                getRectHeight = (domain:any[], value:any):number=>1/domain.length*this.cellHeight
-                getRectY = (domain:any[], value:any):number=>domain.indexOf(value)/domain.length*this.cellHeight
+
+            } else {
+                getRectHeight = (domain: any[], value: any): number => 1 / domain.length * this.cellHeight
+                getRectY = (domain: any[], value: any): number => domain.indexOf(value) / domain.length * this.cellHeight
                 cellText = domainTextArrCroped.join(', ')
                 cellTextFull = domainTextArr.join(',')
                 row = this.drawCellDistCate(values, stateColor, rowIdx, getRectHeight, getRectY)['row']
             }
-            
-            
+
+
 
             let cellTooltip: JSX.Element = <div> {cellTextFull}</div>
 
-            if (maxHeight < 0.2*this.cellHeight){
-                cellTooltip = <svg width={this.cellWidth*points.length} height={this.cellHeight+15}>
-                    <g className="scaledChart" transform={`scale(${1}, ${this.cellHeight/maxHeight}) translate(${0}, ${-1 * (this.cellHeight-maxHeight)})`}> 
-                        {row} 
+            if (maxHeight < 0.2 * this.cellHeight) {
+                cellTooltip = <svg width={this.cellWidth * points.length} height={this.cellHeight + 15}>
+                    <g className="scaledChart" transform={`scale(${1}, ${this.cellHeight / maxHeight}) translate(${0}, ${-1 * (this.cellHeight - maxHeight)})`}>
+                        {row}
                     </g>
-                    <text fill="white" y={this.cellHeight+this.fontHeight}>{cellTextFull}</text>
+                    <text fill="white" y={this.cellHeight + this.fontHeight}>{cellTextFull}</text>
                 </svg>
             }
 
 
-            return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} overlayStyle={{width: "auto", maxWidth: "none"}}>
+            return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} overlayStyle={{ width: "auto", maxWidth: "none" }}>
                 <g className={`row_${rowIdx}`} cursor="pointer">
-                 <line className='rowBG'
-                            fill='none'
-                            // stroke='gray'
-                            stroke={stateColor}
-                            strokeWidth={this.strokeW}
-                            y1={ (this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW/2} 
-                            y2={ (this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW/2} 
-                            x1={0}
-                            x2={this.cellWidth * points.length }
-                        />
-                <g transform={`translate(${0}, ${rowIdx* (this.cellHeight+this.cellVerticalGap)})`}>
-                    {row}
+                    <line className='rowBG'
+                        fill='none'
+                        // stroke='gray'
+                        stroke={stateColor}
+                        strokeWidth={this.strokeW}
+                        y1={(this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
+                        y2={(this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
+                        x1={0}
+                        x2={this.cellWidth * points.length}
+                    />
+                    <g transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.cellVerticalGap)})`}>
+                        {row}
+                    </g>
+                    <text y={(this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
+                        {cellText}
+                    </text>
                 </g>
-                <text y={(this.cellHeight + this.cellVerticalGap)* rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
-                    {cellText}
-                </text>
-            </g>
             </Tooltip>
         })
 
@@ -408,7 +408,7 @@ class StateBlock extends React.Component<Props> {
 
         pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
         let color = getColorByName(stateKey)
-        return <g className='timeDist' key="timeDist" transform={`translate(0, ${ (this.cellHeight + this.cellVerticalGap) * this.attrNum + this.verticalGap})`}>
+        return <g className='timeDist' key="timeDist" transform={`translate(0, ${(this.cellHeight + this.cellVerticalGap) * this.attrNum + this.verticalGap})`}>
             <path
                 d={pathString as string}
                 fill={color}
@@ -427,23 +427,23 @@ class StateBlock extends React.Component<Props> {
             let featureNameComponent = cropName.length === name.length ?
                 <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
                     <text >
-                        {cropName} 
+                        {cropName}
                     </text>
                     <text y={12}>{score.toFixed(this.scoreDigits)}</text>
                 </g>
                 : <Tooltip title={name}>
                     <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
-                    <text >
-                        {cropName} 
-                    </text>
-                    <text y={12}>{score.toFixed(this.scoreDigits)}</text>
-                </g>
+                        <text >
+                            {cropName}
+                        </text>
+                        <text y={12}>{score.toFixed(this.scoreDigits)}</text>
+                    </g>
                 </Tooltip>
-                
-            return <g key={name} transform={`translate(0, ${ (this.cellHeight+this.cellVerticalGap) * (i + 0.8)})`}>
+
+            return <g key={name} transform={`translate(0, ${(this.cellHeight + this.cellVerticalGap) * (i + 0.8)})`}>
                 {featureNameComponent}
                 <text
-                    x={this.nameColWidth } textAnchor="end" cursor="pointer"
+                    x={this.nameColWidth} textAnchor="end" cursor="pointer"
                     onClick={() => { this.props.removeVariable(name) }}
                 >
                     X
@@ -480,10 +480,10 @@ class StateBlock extends React.Component<Props> {
         })
     }
 
-    reorderRowValues(values: (string|number|boolean)[]){
-        return values.sort((a:string|number|boolean,b:string|number|boolean)=>{
+    reorderRowValues(values: (string | number | boolean)[]) {
+        return values.sort((a: string | number | boolean, b: string | number | boolean) => {
             let dif = 0
-            if (a!== b) {
+            if (a !== b) {
                 dif = a > b ? 1 : -1
             }
             return dif

@@ -1,11 +1,11 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import { observable, action, computed } from 'mobx';
+import { observable, action } from 'mobx';
 import * as d3 from 'd3';
 import { InputNumber, Select, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
+import { TPointGroups, IRootStore  } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
