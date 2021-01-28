@@ -35,7 +35,7 @@ class FeatureLegend extends React.Component<Props> {
      * @param {function} color
      * @returns {(g|null)}
      */
-    getContinuousLegend(variableName: string, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
+    getContinuousLegend(variableID: string, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
         const min = color.domain()[0];
         const max = color.domain()[color.domain().length - 1];
         if (min !== Number.NEGATIVE_INFINITY && max !== Number.POSITIVE_INFINITY) {
@@ -97,15 +97,15 @@ class FeatureLegend extends React.Component<Props> {
             }
             this.updateMaxWidth(this.defaultWidth);
             return (
-                <g key={variableName} className='continousLegend' >
+                <g key={variableID} className='continousLegend' >
                     <defs>
-                        <linearGradient id={`gradient_${variableName}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <linearGradient id={`gradient_${variableID}`} x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style={{ stopColor: color(min) }} />
                             {intermediateStop}
                             <stop offset="100%" style={{ stopColor: color(max) }} />
                         </linearGradient>
                     </defs>
-                    <rect opacity={opacity} x="0" y="0" width={this.defaultWidth} height={lineheight} fill={`url(#gradient_${variableName})`} />
+                    <rect opacity={opacity} x="0" y="0" width={this.defaultWidth} height={lineheight} fill={`url(#gradient_${variableID})`} />
                     {text}
                 </g>
             );
@@ -159,11 +159,11 @@ class FeatureLegend extends React.Component<Props> {
      * @param {function} color
      * @returns {Array}
      */
-    getBinaryLegend(variableName:string, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
+    getBinaryLegend(variableID:string, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
         let legendEntries: any[] = [];
         legendEntries = legendEntries.concat(this.getLegendEntry('true', opacity, getTextWidth('true', fontSize) + 4, fontSize, 0, lineheight, color(true), 'black'));
         legendEntries = legendEntries.concat(this.getLegendEntry('false', opacity, getTextWidth('false', fontSize) + 4, fontSize, getTextWidth('true', fontSize) + 6, lineheight, color(false), 'black'));
-        this.updateMaxWidth(74 + getTextWidth(variableName, fontSize));
+        this.updateMaxWidth(74 + getTextWidth(variableID, fontSize));
         return <g className='binaryLegend' key={'binaryLegend'}>{legendEntries}</g>;
     }
 
@@ -216,8 +216,8 @@ class FeatureLegend extends React.Component<Props> {
             .map((varName: string) => getTextWidth(varName, adaptedFontSize)))
 
         return dataStore.variableStores.between.currentVariables
-            .map((variableName: string, variableIdx: number) => {
-                let variable = dataStore.variableStores.between.referencedVariables[variableName]
+            .map((variableID: string, variableIdx: number) => {
+                let variable = dataStore.variableStores.between.referencedVariables[variableID]
 
                 let colorScale = variable.colorScale
                 let legendEntries: JSX.Element[] = [];
@@ -225,16 +225,17 @@ class FeatureLegend extends React.Component<Props> {
                 if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
                     legendEntries = [this.getCategoricalLegend(variable, variable.domain, opacity, adaptedFontSize, lineheight)];
                 } else if (variable.datatype === 'BINARY') {
-                    legendEntries = [this.getBinaryLegend(variableName, opacity, adaptedFontSize, lineheight, colorScale)];
+                    legendEntries = [this.getBinaryLegend(variableID, opacity, adaptedFontSize, lineheight, colorScale)];
                 } else {
-                    legendEntries = [this.getContinuousLegend(variableName, opacity, adaptedFontSize,
+                    legendEntries = [this.getContinuousLegend(variableID, opacity, adaptedFontSize,
                         lineheight, colorScale)];
                 }
 
                 let leTransform = `translate(0,${variableIdx * lineheight})`;
 
-                return <g className="eventLegend" transform={leTransform} key={`${variableName}_${variableIdx}`}>
-                    <text y={lineheight} fontSize={adaptedFontSize}> {variableName}</text>
+
+                return <g className="eventLegend" transform={leTransform} key={`${variableID}_${variableIdx}`}>
+                    <text y={lineheight} fontSize={adaptedFontSize}> {variable.name}</text>
                     <g transform={`translate(${maxVarWidth}, 0)`}>
                         {legendEntries}
                     </g>
