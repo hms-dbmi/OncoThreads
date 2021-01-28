@@ -138,11 +138,31 @@ class DataStore {
                 let { points, referencedVariables, currentVariables } = this
                 if (points.length === 0) return []
                 let normValues = points.map(point => {
+                    let {patient, timeIdx} = point
                     let normValue = point.value.map((value, i) => {
                         let ref = referencedVariables[currentVariables[i]]
+
                         if (value === undefined) {
-                            return 0
-                        } else if (typeof (value) === "number") {
+                            // replace missing value with the nearest non-missing value of the same patient
+
+                            let samePatientPoints = points
+                                .filter(p=>p.patient === patient)
+                                .filter(d=>d.value[i] !== undefined)
+
+                            let replacePoint = {timeIdx: Infinity} 
+                            if (samePatientPoints.length>0){
+                                samePatientPoints.forEach(p=>{
+                                    let gapDif = Math.abs(p.timeIdx - timeIdx) - Math.abs(replacePoint.timeIdx - timeIdx)
+                                    if ( gapDif < 0
+                                        || ( gapDif === 0 && p.timeIdx < replacePoint.timeIdx)
+                                    ){replacePoint = p}
+                                })
+                                value = replacePoint.value[i]
+                            } else return 0
+
+                        } 
+                        
+                        if (typeof (value) === "number") {
                             let domain = ref.domain
                             return (value - domain[0]) / (domain[1] - domain[0])
                         } else if (ref.domain.length === 1) {
