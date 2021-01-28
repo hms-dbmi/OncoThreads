@@ -1,7 +1,7 @@
 import React from "react"
 import { observer, inject } from 'mobx-react';
 
-import { IRootStore } from 'modules/Type'
+import { IRootStore, IUndoRedoStore } from 'modules/Type'
 import { observable } from "mobx";
 
 import { getTextWidth, getScientificNotation, ColorScales } from 'modules/TemporalHeatmap/UtilityClasses/'
@@ -9,12 +9,14 @@ import { TColorScale, TRow, TVariable } from "modules/Type/Store";
 
 interface Props {
     rootStore?: IRootStore,
+    undoRedoStore?: IUndoRedoStore
 }
 
-@inject('rootStore', 'uiStore')
+@inject('rootStore', 'uiStore', 'undoRedoStore')
 @observer
 class FeatureLegend extends React.Component<Props> {
     maxWidth: number = 100;
+    horizontalGap: number = 5;
     @observable defaultWidth = 100;
     @observable minCatWidth = 30;
     /**
@@ -205,15 +207,21 @@ class FeatureLegend extends React.Component<Props> {
 
     }
 
+    removeVariable(id:string, name:string){
+        const { dataStore } = this.props.rootStore!;
+        const {undoRedoStore} = this.props
+        dataStore.variableStores['between'].removeVariable(id);
+        this.props.undoRedoStore?.saveVariableHistory('REMOVE', name, true);
+    }
+
     getLegend() {
         let { dataStore } = this.props.rootStore!
         let lineheight: number = this.props.rootStore!.visStore.secondaryHeight;
-        let adaptedFontSize = 10;
+        let adaptedFontSize = 12;
         let opacity = 0.5;
 
-        // return dataStore.currentVariables
         const maxVarWidth = Math.max(...dataStore.variableStores.between.currentVariables
-            .map((varName: string) => getTextWidth(varName, adaptedFontSize)))
+            .map((varID: string) => getTextWidth(dataStore.variableStores.between.referencedVariables[varID].name, adaptedFontSize)))
 
         return dataStore.variableStores.between.currentVariables
             .map((variableID: string, variableIdx: number) => {
@@ -225,9 +233,9 @@ class FeatureLegend extends React.Component<Props> {
                 if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
                     legendEntries = [this.getCategoricalLegend(variable, variable.domain, opacity, adaptedFontSize, lineheight)];
                 } else if (variable.datatype === 'BINARY') {
-                    legendEntries = [this.getBinaryLegend(variableID, opacity, adaptedFontSize, lineheight, colorScale)];
+                    legendEntries = [this.getBinaryLegend(variable.name, opacity, adaptedFontSize, lineheight, colorScale)];
                 } else {
-                    legendEntries = [this.getContinuousLegend(variableID, opacity, adaptedFontSize,
+                    legendEntries = [this.getContinuousLegend(variable.name, opacity, adaptedFontSize,
                         lineheight, colorScale)];
                 }
 
@@ -235,8 +243,15 @@ class FeatureLegend extends React.Component<Props> {
 
 
                 return <g className="eventLegend" transform={leTransform} key={`${variableID}_${variableIdx}`}>
-                    <text y={lineheight} fontSize={adaptedFontSize}> {variable.name}</text>
-                    <g transform={`translate(${maxVarWidth}, 0)`}>
+                    <text y={(lineheight+ adaptedFontSize)/2} fontSize={adaptedFontSize}> 
+                        {variable.name}
+                    </text>
+                    <text x= {maxVarWidth + this.horizontalGap} y={(lineheight+ adaptedFontSize)/2} 
+                        fontSize={adaptedFontSize} onClick={()=>this.removeVariable(variable.id, variable.name)}
+                        cursor="default">
+                        X
+                    </text>
+                    <g transform={`translate(${maxVarWidth + getTextWidth(' X ', adaptedFontSize) + 2*this.horizontalGap}, 0)`}>
                         {legendEntries}
                     </g>
                 </g>
