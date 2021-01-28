@@ -84,6 +84,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                                     opacity={opacity}
                                     color={color}
                                     variableDomain={this.props.currentVariables[i].domain}
+                                    {...this.props.tooltipFunctions}
                                 />
                             </g>,
                         );
@@ -114,6 +115,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                                     opacity={opacity}
                                     color={color}
                                     variableDomain={this.props.currentVariables[i].domain}
+                                    {...this.props.tooltipFunctions}
                                 />
                             </g>,
                         );

@@ -30,7 +30,7 @@ interface Props {
 @observer
 class StateBlock extends React.Component<Props> {
     public horizonGap = 15;
-    maxCellHeight = 20;
+    minCellHeight = 20;
     verticalGap = 15;
     fontHeight = 15;
     strokeW = 4;
@@ -92,7 +92,10 @@ class StateBlock extends React.Component<Props> {
     get cellHeight(): number {
         let { height } = this.props
         let attrNum = this.attrNum
-        let cellHeight = (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum - this.strokeW - this.cellVerticalGap
+        let cellHeight = Math.max(
+            (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum - this.strokeW - this.cellVerticalGap,
+            this.minCellHeight
+        )
 
         return cellHeight
     }
