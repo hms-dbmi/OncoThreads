@@ -15,106 +15,22 @@ interface Props {
 @inject('rootStore', 'uiStore', 'undoRedoStore')
 @observer
 class FeatureLegend extends React.Component<Props> {
-    maxWidth: number = 100;
+    rowWidths: {[id:string]:number} = {};
     horizontalGap: number = 5;
     @observable defaultWidth = 100;
     @observable minCatWidth = 30;
+    @observable svgWidth = 100
     /**
      * updates maximum legend wid th
     */
-    updateMaxWidth(width: number) {
-        if (width > this.maxWidth) {
-            this.maxWidth = width;
+    updateRowWidths(op:'add'|'delete', id:string, width?: number) {
+        if (op==='add' && typeof width === 'number'){
+            this.rowWidths[id] = width
+        } else if (op==='delete'){
+            delete this.rowWidths[id]
         }
     }
 
-
-    /**
-     * gets a legend (i.e., one row) for a continuous variable
-     * @param {number} opacity
-     * @param {number} fontSize
-     * @param {number} lineheight
-     * @param {function} color
-     * @returns {(g|null)}
-     */
-    getContinuousLegend(variableID: string, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
-        const min = color.domain()[0];
-        const max = color.domain()[color.domain().length - 1];
-        if (min !== Number.NEGATIVE_INFINITY && max !== Number.POSITIVE_INFINITY) {
-            let intermediateStop = null;
-            const text = [];
-            if (color.domain().length === 3) {
-                intermediateStop = <stop offset="50%" style={{ stopColor: color(color.domain()[1]) }} />;
-                text.push(
-                    <text
-                        key="text min"
-                        fill={ColorScales.getHighContrastColor(color(min))}
-                        style={{ fontSize }}
-                        x={0}
-                        y={lineheight / 2 + fontSize / 2}
-                    >
-                        {getScientificNotation(min)}
-                    </text>,
-                    <text
-                        key="text med"
-                        fill={ColorScales.getHighContrastColor(color(0))}
-                        style={{ fontSize }}
-                        x={this.defaultWidth / 2 - getTextWidth(0, fontSize) / 2}
-                        y={lineheight / 2 + fontSize / 2}
-                    >
-                        {0}
-                    </text>,
-                    <text
-                        key="text max"
-                        fill={ColorScales.getHighContrastColor(color(max))}
-                        style={{ fontSize }}
-                        x={this.defaultWidth - getTextWidth(
-                            getScientificNotation(max)!, fontSize)}
-                        y={lineheight / 2 + fontSize / 2}
-                    >
-                        {getScientificNotation(max)}
-                    </text>,
-                );
-            } else {
-                text.push(
-                    <text
-                        key="text min"
-                        fill={ColorScales.getHighContrastColor(color(min))}
-                        style={{ fontSize }}
-                        x={0}
-                        y={lineheight / 2 + fontSize / 2}
-                    >
-                        {getScientificNotation(min)}
-                    </text>,
-                    <text
-                        key="text max"
-                        fill={ColorScales.getHighContrastColor(color(max))}
-                        style={{ fontSize }}
-                        x={this.defaultWidth - getTextWidth(getScientificNotation(max)!, fontSize)}
-                        y={lineheight / 2 + fontSize / 2}
-                    >
-                        {getScientificNotation(max)}
-                    </text>,
-                );
-            }
-            this.updateMaxWidth(this.defaultWidth);
-            return (
-                <g key={variableID} className='continousLegend' >
-                    <defs>
-                        <linearGradient id={`gradient_${variableID}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style={{ stopColor: color(min) }} />
-                            {intermediateStop}
-                            <stop offset="100%" style={{ stopColor: color(max) }} />
-                        </linearGradient>
-                    </defs>
-                    <rect opacity={opacity} x="0" y="0" width={this.defaultWidth} height={lineheight} fill={`url(#gradient_${variableID})`} />
-                    {text}
-                </g>
-            );
-        }
-
-        return <g />;
-    }
 
     /**
      * gets a legend (one row) for a categorical variable
@@ -149,7 +65,7 @@ class FeatureLegend extends React.Component<Props> {
                 }
             }
         });
-        this.updateMaxWidth(currX);
+        this.updateRowWidths('add', variable.id, currX);
         return <g className='categoricalLegend' key='categoricalLegend'>{legendEntries}</g>;
     }
 
@@ -161,11 +77,13 @@ class FeatureLegend extends React.Component<Props> {
      * @param {function} color
      * @returns {Array}
      */
-    getBinaryLegend(variableID:string, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
+    getBinaryLegend(variable:TVariable, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
         let legendEntries: any[] = [];
         legendEntries = legendEntries.concat(this.getLegendEntry('true', opacity, getTextWidth('true', fontSize) + 4, fontSize, 0, lineheight, color(true), 'black'));
         legendEntries = legendEntries.concat(this.getLegendEntry('false', opacity, getTextWidth('false', fontSize) + 4, fontSize, getTextWidth('true', fontSize) + 6, lineheight, color(false), 'black'));
-        this.updateMaxWidth(74 + getTextWidth(variableID, fontSize));
+        
+        this.updateRowWidths('add', variable.id,74 + getTextWidth(variable.name, fontSize));
+        
         return <g className='binaryLegend' key={'binaryLegend'}>{legendEntries}</g>;
     }
 
@@ -211,7 +129,8 @@ class FeatureLegend extends React.Component<Props> {
         const { dataStore } = this.props.rootStore!;
         const {undoRedoStore} = this.props
         dataStore.variableStores['between'].removeVariable(id);
-        this.props.undoRedoStore?.saveVariableHistory('REMOVE', name, true);
+        undoRedoStore?.saveVariableHistory('REMOVE', name, true);
+        this.updateRowWidths('delete', id)
     }
 
     getLegend() {
@@ -233,12 +152,8 @@ class FeatureLegend extends React.Component<Props> {
                 if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
                     legendEntries = [this.getCategoricalLegend(variable, variable.domain, opacity, adaptedFontSize, lineheight)];
                 } else if (variable.datatype === 'BINARY') {
-                    legendEntries = [this.getBinaryLegend(variable.name, opacity, adaptedFontSize, lineheight, colorScale)];
-                } else {
-                    legendEntries = [this.getContinuousLegend(variable.name, opacity, adaptedFontSize,
-                        lineheight, colorScale)];
-                }
-
+                    legendEntries = [this.getBinaryLegend(variable, opacity, adaptedFontSize, lineheight, colorScale)];
+                } 
                 let leTransform = `translate(0,${variableIdx * lineheight})`;
 
 
@@ -260,6 +175,14 @@ class FeatureLegend extends React.Component<Props> {
 
     }
 
+    componentDidMount(){
+        this.svgWidth = Math.max(...Object.values(this.rowWidths))
+    }
+
+    componentDidUpdate(){
+        this.svgWidth = Math.max(...Object.values(this.rowWidths))
+    }
+
     render() {
         let { dataStore } = this.props.rootStore!
         
@@ -267,7 +190,7 @@ class FeatureLegend extends React.Component<Props> {
         let content = this.getLegend()
         let lineheight: number = this.props.rootStore!.visStore.secondaryHeight,
             height = lineheight * dataStore.variableStores.between.currentVariables.length,
-            width = this.maxWidth
+            width = this.svgWidth
 
         return <svg width={width} height={height}>
             <rect width={width} height={height} fill='white'/>
