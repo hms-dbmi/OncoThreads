@@ -25,17 +25,61 @@ class VariableStore {
              * each point is one patient at one time point
              */
             get points() {
+                let {timepoints} = this.childStore
+
+                const findNearestReplace = (patient, timeIdx, rowIdx)=>{
+                    let beforeTime = timeIdx-1, afterTime = timeIdx+1,
+                        v = timepoints[timeIdx].heatmap[rowIdx].data
+                        .find(d=>d.patient===patient)
+                        .value
+
+                    while( v === undefined ){
+                        let beforeV, afterV
+                        
+                        if (afterTime < timepoints.length){
+                            let afterSample = timepoints[afterTime].heatmap[rowIdx].data
+                            .find(d=>d.patient===patient)
+
+                            afterV = afterSample?afterSample.value: undefined
+                            afterTime += 1
+                        }
+
+                        if (beforeTime >= 0){
+                            let beforeSample = timepoints[beforeTime].heatmap[rowIdx].data
+                            .find(d=>d.patient===patient)
+
+                            beforeV = beforeSample?beforeSample.value: undefined
+                            beforeTime -= 1
+                        }
+                        v = beforeV ?? afterV
+                        if ( beforeTime < 0 && afterTime >= timepoints.length) break
+
+                        
+                    }
+
+                    // cannot find a non missing value of the same attribute in the same patient
+                    if (v===undefined){
+                        let otherValues = timepoints[timeIdx].heatmap[rowIdx].data.map(d=>d.value)
+                        v = otherValues.filter(v=>v!==undefined).reduce((a,b)=>a+b, 0)/otherValues.length
+                    }
+                    return v
+                }
             
                 let points = []
-                this.childStore
-                .timepoints
+                timepoints
                 .forEach((timepoint, timeIdx) => {
                     var heatmap = timepoint.heatmap
         
                     if (heatmap[0]) {
-                        heatmap[0].data.forEach((d, i) => {
+                        heatmap[0].data.forEach((d, patientIdx) => {
                             let {patient} = d
-                            let value = heatmap.map(d => d.data[i].value)
+                            let value = heatmap.map((row, rowIdx) => {
+                                let v = row.data[patientIdx].value
+                                if (v===undefined){
+                                    v = findNearestReplace(patient, timeIdx, rowIdx)
+                                }
+                                return v
+                            })
                             var point = {
                                 idx:points.length,
                                 patient,
