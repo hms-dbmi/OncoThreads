@@ -104,8 +104,12 @@ class DataStore {
                     return sampleScales.concat(eventScales)
                 }
             },
-            get featureDomains() {
-                let sampleDomains = this.variableStores.sample.fullCurrentVariables.map(d => d.domain),
+            get sampleFeatureDomains() {
+                let sampleDomains = this.currentSampleVariables
+                    .map(id=>{
+                        return this.variableStores.sample.referencedVariables[id].domain
+                    }),
+                
                     eventDomains = this.variableStores.between.fullCurrentVariables.map(d => d.domain)
 
                 if (this.hasEvent === false) {
@@ -123,6 +127,12 @@ class DataStore {
                     )
                 }
             },
+            get currentSampleVariables (){
+                let patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
+                return this.currentVariables.filter(
+                    id=>!patientVars.includes(id)
+                )
+            },
             get referencedVariables() {
                 if (this.hasEvent === false) {
                     return this.variableStores.sample.referencedVariables
@@ -135,12 +145,12 @@ class DataStore {
             },
             // return number[][]
             get normValues() {
-                let { points, referencedVariables, currentVariables } = this
+                let { points, referencedVariables, currentSampleVariables } = this
                 if (points.length === 0) return []
                 let normValues = points.map(point => {
                     let {patient, timeIdx} = point
                     let normValue = point.value.map((value, i) => {
-                        let ref = referencedVariables[currentVariables[i]]
+                        let ref = referencedVariables[currentSampleVariables[i]]
                         
                         if (typeof (value) === "number") {
                             let domain = ref.domain
@@ -221,13 +231,15 @@ class DataStore {
             // // the importance score of each feature
             get importancePCAScores() {
                 if (this.normValues.length === 0 || this.normValues[0].length <= 1) return []
-                let { currentVariables } = this
+                let { currentSampleVariables } = this
                 let pca = new PCA(this.normValues)
                 let egiVector = pca.getEigenvectors()
                 let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
                 return importanceScores.map((score, i) => {
+                    let id = currentSampleVariables[i]
+                    let {name} = this.referencedVariables[id]
                     return {
-                        name: currentVariables[i],
+                        name,
                         score
                     }
                 })
@@ -235,9 +247,12 @@ class DataStore {
 
             get importanceScores() {
                 if (this.DRMethod === 'pca') return this.importancePCAScores
+                let clinicalFeatures 
 
-                let { currentVariables } = this
-                return currentVariables.map(name => {
+                let { currentSampleVariables } = this
+                return currentSampleVariables
+                .map(id => {
+                    let {name} = this.referencedVariables[id]
                     return { name, score: 0.5 }
                 })
             },
@@ -807,23 +822,6 @@ class DataStore {
         return allValues;
     }
 
-
-
-
-    // applyCustomStates(timeStates, eventStates) {
-    //     let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
-    //         eventTimepoints = this.variableStores.between.childStore.timepoints
-
-    //     sampleTimepoints.forEach((TP, i) => {
-    //         TP.applyCustomState(timeStates[i].partitions)
-    //     })
-
-    //     eventTimepoints.forEach((TP, i) => {
-    //         TP.applyCustomState(eventStates[i].partitions)
-    //     })
-
-    // }
-
     removeVariable(variableID) {
         let sampleVariables = this.variableStores.sample.currentVariables
         if (sampleVariables.includes(variableID)) {
@@ -831,15 +829,6 @@ class DataStore {
         } else {
             this.variableStores['between'].removeVariable(variableID);
         }
-        // currentVariables() {
-        //     if (this.hasEvent === false) {
-        //         return this.variableStores.sample.currentVariables
-        //     } else {
-        //         return this.variableStores.sample.currentVariables.concat(
-        //             this.variableStores.between.currentVariables
-        //         )
-        //     }
-        // }
     }
 }
 

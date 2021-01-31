@@ -1,6 +1,5 @@
 import React from "react"
 import { observer, inject, Provider } from 'mobx-react';
-import { observable } from 'mobx';
 import { IRootStore } from "modules/Type";
 import GroupPartition from '../Timepoints/GroupTimepointCustom/GroupPartition';
 import SankeyTransition from '../Transitions/SankeyTransition/SankeyTransition';
@@ -51,7 +50,8 @@ class TransitionComparison extends React.Component<Props> {
             ...group,
             patients: filteredPatients,
             points: group.points.filter((id: number) => patientGroup.includes(dataStore.points[id].patient)),
-            rows: group.rows.map((row: any) => {
+            rows: group.rows
+            .map((row: any) => {
                 return {
                     ...row,
                     counts: row.counts.map((count: any) => {
@@ -63,7 +63,8 @@ class TransitionComparison extends React.Component<Props> {
         else return {
             ...group,
             patients: filteredPatients,
-            rows: group.rows.map((row: any) => {
+            rows: group.rows
+            .map((row: any) => {
                 return {
                     ...row,
                     counts: row.counts.map((count: any) => {
@@ -224,7 +225,9 @@ class TransitionComparison extends React.Component<Props> {
 
             const transformTP = `translate(
                     ${this.paddingW+ this.annotationWidth/2 -iconR},
-                    ${this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[i] - visStore.secondaryHeight * dataStore.variableStores['sample'].fullCurrentVariables.length} 
+                    ${ this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[i] 
+                        - visStore.secondaryHeight * dataStore.variableStores['sample'].currentSampleVariables.length
+                    } 
                     )`;
 
             annotations.push(

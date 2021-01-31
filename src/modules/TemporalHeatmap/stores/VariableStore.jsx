@@ -21,6 +21,12 @@ class VariableStore {
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
+            get currentSampleVariables(){
+                let patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
+                return this.currentVariables.filter(
+                    id=>!patientVars.includes(id)
+                )
+            },
             /**
              * each point is one patient at one time point
              */
@@ -65,7 +71,7 @@ class VariableStore {
                     return v
                 }
             
-                let points = []
+                let points = [], clinicalFeatures = this.rootStore.clinicalPatientCategories.map(d=>d.id)
                 timepoints
                 .forEach((timepoint, timeIdx) => {
                     var heatmap = timepoint.heatmap
@@ -73,7 +79,9 @@ class VariableStore {
                     if (heatmap[0]) {
                         heatmap[0].data.forEach((d, patientIdx) => {
                             let {patient} = d
-                            let value = heatmap.map((row, rowIdx) => {
+                            let value = heatmap
+                            .filter(row=>!clinicalFeatures.includes(row.variable))
+                            .map((row, rowIdx) => {
                                 let v = row.data[patientIdx].value
                                 if (v===undefined){
                                     v = findNearestReplace(patient, timeIdx, rowIdx)

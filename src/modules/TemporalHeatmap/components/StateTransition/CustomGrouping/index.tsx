@@ -298,7 +298,7 @@ class CustomGrouping extends React.Component<Props> {
                                 points={points}
                                 pointGroups={dataStore.pointGroups}
                                 colorScales={dataStore.colorScales}
-                                featureDomains={dataStore.featureDomains}
+                                sampleFeatureDomains={dataStore.sampleFeatureDomains}
                                 hoverPointID={this.hoverPointID}
                                 setHoverID={this.setHoverID}
                                 resetHoverID={this.resetHoverID}

@@ -20,7 +20,7 @@ interface Props {
     hoverPointID: number,
     pointGroups: TPointGroups,
     colorScales: Array<(value: string | number | boolean) => string>,
-    featureDomains: (string | number | boolean)[][],
+    sampleFeatureDomains: (string | number | boolean)[][],
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
     removeVariable: (name: string) => void,
@@ -228,7 +228,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawCellDistContinues(values: (string | boolean | number)[], stateColor: string, rowIdx: number, getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number) {
-        let domain = this.props.featureDomains[rowIdx]
+        let domain = this.props.sampleFeatureDomains[rowIdx]
         let maxHeight = 0
         // let row = this.reorderRowValues(values).map((v, pointIdx)=>{
         //     if (v==undefined) return 
@@ -273,7 +273,7 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawCellDistCate(values: (string | boolean | number)[], stateColor: string, rowIdx: number, getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number) {
-        let domain = this.props.featureDomains[rowIdx]
+        let domain = this.props.sampleFeatureDomains[rowIdx]
         let maxHeight = 0
 
         let keyList: (boolean | string | number)[] = []
@@ -312,9 +312,9 @@ class StateBlock extends React.Component<Props> {
     drawBlock(points: IPoint[], stateKey: string) {
         let stateColor = getColorByName(stateKey)
         // points = this.reorderPoints(points)
-        let { setHoverID, resetHoverID, featureDomains } = this.props
+        let { setHoverID, resetHoverID, sampleFeatureDomains } = this.props
         if (points.length === 0) return <g key="block" className="block" />
-        let rows = featureDomains.map((domain, rowIdx) => {
+        let rows = sampleFeatureDomains.map((domain, rowIdx) => {
             let values = points.map(p => p.value[rowIdx]).filter(v => v !== undefined)
             let getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number,
                 domainTextArr = summarizeDomain(values.filter(v => v !== undefined) as number[] | string[] | boolean[]),
@@ -423,7 +423,8 @@ class StateBlock extends React.Component<Props> {
     }
 
     featureNameRows() {
-        let { importanceScores, width } = this.props
+        let { importanceScores } = this.props
+
         let rows = importanceScores.map((d, i) => {
             let { score, name } = d
             let cropName = cropText(name, 12, 400, this.maxNameColWidth)
@@ -434,7 +435,7 @@ class StateBlock extends React.Component<Props> {
                     </text>
                     <text y={12}>{score.toFixed(this.scoreDigits)}</text>
                 </g>
-                : <Tooltip title={name}>
+                : <Tooltip title={name} destroyTooltipOnHide>
                     <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
                         <text >
                             {cropName}

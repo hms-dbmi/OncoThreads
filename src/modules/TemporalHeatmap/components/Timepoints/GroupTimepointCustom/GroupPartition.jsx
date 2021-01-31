@@ -33,7 +33,9 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         let stateKey = this.props.partition.partition || ''
         const rows = [];
         let totalH = 0
-        this.props.partition.rows.forEach((d, i) => {
+        this.props.partition.rows
+        .filter( row => this.props.dataStore.currentSampleVariables.includes(row.variable)) // don't show patient features in v2
+        .forEach((d, i) => {
             if (!this.props.heatmap[i].isUndef
                 || this.props.uiStore.showUndefined
                 || d.variable === this.props.primaryVariableId) {
@@ -48,16 +50,9 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     shiftOffset = this.props.uiStore.rowOffset;
                 }
                 const transform = `translate(${shiftOffset},${previousYposition})`;
-                // if (this.props.primaryVariableId === d.variable) {
-                //     height = this.props.visStore.primaryHeight;
-                //     stroke = this.props.stroke;
-                // } 
 
                 totalH += height
-                // else {
-                //     height = this.props.visStore.secondaryHeight;
-                //     opacity = 0.5;
-                // }
+                
                 // create different types of rows depending on the variables datatype
                 if (this.props.currentVariables[i].datatype === 'NUMBER') {
                     if (this.props.type === "sample") {
@@ -176,24 +171,6 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     width={this.props.hasBackground ? totalW : 0}
                     height={totalH}
                     fill={getColorByName(stateKey)} />
-
-                {/* <rect
-                    className='stateBackgroundOuter'
-                    opacity={0.8}
-                    width={totalW + strokeW}
-                    height={totalH + strokeW}
-                    x={-strokeW / 2}
-                    y={-strokeW / 2}
-                    fill="none"
-                    stroke={getColorByName(stateKey)}
-                    strokeWidth={strokeW} /> */}
-                {/* <circle 
-            r= {4}
-            cx={totalW-2}
-            cy={totalH-2}
-            stroke='lightgray'
-            onClick={()=>{this.hasBackground=!this.hasBackground}}
-            /> */}
             </g>
         }
 
@@ -211,8 +188,6 @@ GroupPartition.propTypes = {
         patients: PropTypes.array,
     }),
     heatmap: PropTypes.arrayOf(PropTypes.object).isRequired,
-    // heatmap: MobxPropTypes.observableArrayOf(PropTypes.object).isRequired,
-    // primaryVariableId: PropTypes.string.isRequired,
     currentVariables: PropTypes.arrayOf(PropTypes.oneOfType([
         PropTypes.instanceOf(DerivedVariable),
         PropTypes.instanceOf(OriginalVariable),
