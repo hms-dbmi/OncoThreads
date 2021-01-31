@@ -21,7 +21,7 @@ class VariableStore {
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
-            get currentSampleVariables(){
+            get currentNonPatientVariables(){
                 let patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
                 return this.currentVariables.filter(
                     id=>!patientVars.includes(id)

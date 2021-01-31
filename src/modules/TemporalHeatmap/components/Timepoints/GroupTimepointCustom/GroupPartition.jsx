@@ -33,8 +33,9 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         let stateKey = this.props.partition.partition || ''
         const rows = [];
         let totalH = 0
+
         this.props.partition.rows
-        .filter( row => this.props.dataStore.currentSampleVariables.includes(row.variable)) // don't show patient features in v2
+        .filter( row => this.props.dataStore.variableStores[this.props.type].currentNonPatientVariables.includes(row.variable)) // don't show patient features in v2
         .forEach((d, i) => {
             if (!this.props.heatmap[i].isUndef
                 || this.props.uiStore.showUndefined
@@ -52,7 +53,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 const transform = `translate(${shiftOffset},${previousYposition})`;
 
                 totalH += height
-                
+
                 // create different types of rows depending on the variables datatype
                 if (this.props.currentVariables[i].datatype === 'NUMBER') {
                     if (this.props.type === "sample") {

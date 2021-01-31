@@ -287,7 +287,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                         <Button
                             bsSize="xsmall"
                             onClick={this.handleTimeClick}
-                            disabled={this.props.uiStore.globalTime==='line'
+                            disabled={this.props.uiStore.selectedTab==='line'
                             || this.props.rootStore.dataStore.variableStores
                                 .between.currentVariables.length > 0}
                             key="actualTimeline"

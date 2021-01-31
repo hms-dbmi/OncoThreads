@@ -23,9 +23,9 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
      * @param {boolean} key - global timeline (true) or block view (false)
      */
     handleSwitchView(key) {
-        if (key !== this.props.uiStore.globalTime) {
-            this.props.uiStore.setGlobalTime(key);
-            this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.globalTime);
+        if (key !== this.props.uiStore.selectedTab) {
+            this.props.uiStore.selectTab(key);
+            this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.selectedTab);
         }
     }
 
@@ -77,7 +77,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 mountOnEnter
                 unmountOnExit
                 animation={false}
-                activeKey={this.props.uiStore.globalTime}
+                activeKey={this.props.uiStore.selectedTab}
                 onSelect={
                     this.handleSwitchView
                 }
@@ -110,7 +110,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
     componentDidUpdate() {
         let { uiStore } = this.props
 
-        if (uiStore.globalTime === 'stateTransition' && uiStore.introTutorial !== undefined) {
+        if (uiStore.selectedTab === 'stateTransition' && uiStore.introTutorial !== undefined) {
 
             uiStore.setTutorialMode(false) // close current tutorial
             uiStore.setTutorialMode(true) // start a new intro to refresh the intro in the newly-opened tab panel

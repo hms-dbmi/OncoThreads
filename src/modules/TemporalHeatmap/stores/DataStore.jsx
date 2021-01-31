@@ -40,7 +40,7 @@ class DataStore {
             get maxPartitions() {
                 let maxPartitions = 0;
                 const groupedTP = this.timepoints.filter(d => d.isGrouped);
-                if (this.rootStore.uiStore.globalTime === 'block') {
+                if (this.rootStore.uiStore.selectedTab === 'block') {
                     maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);
                 } else {
                     maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);
@@ -105,7 +105,7 @@ class DataStore {
                 }
             },
             get sampleFeatureDomains() {
-                let sampleDomains = this.currentSampleVariables
+                let sampleDomains = this.currentNonPatientVariables
                     .map(id=>{
                         return this.variableStores.sample.referencedVariables[id].domain
                     }),
@@ -127,7 +127,7 @@ class DataStore {
                     )
                 }
             },
-            get currentSampleVariables (){
+            get currentNonPatientVariables (){
                 let patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
                 return this.currentVariables.filter(
                     id=>!patientVars.includes(id)
@@ -145,12 +145,12 @@ class DataStore {
             },
             // return number[][]
             get normValues() {
-                let { points, referencedVariables, currentSampleVariables } = this
+                let { points, referencedVariables, currentNonPatientVariables } = this
                 if (points.length === 0) return []
                 let normValues = points.map(point => {
                     let {patient, timeIdx} = point
                     let normValue = point.value.map((value, i) => {
-                        let ref = referencedVariables[currentSampleVariables[i]]
+                        let ref = referencedVariables[currentNonPatientVariables[i]]
                         
                         if (typeof (value) === "number") {
                             let domain = ref.domain
@@ -231,12 +231,12 @@ class DataStore {
             // // the importance score of each feature
             get importancePCAScores() {
                 if (this.normValues.length === 0 || this.normValues[0].length <= 1) return []
-                let { currentSampleVariables } = this
+                let { currentNonPatientVariables } = this
                 let pca = new PCA(this.normValues)
                 let egiVector = pca.getEigenvectors()
                 let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
                 return importanceScores.map((score, i) => {
-                    let id = currentSampleVariables[i]
+                    let id = currentNonPatientVariables[i]
                     let {name} = this.referencedVariables[id]
                     return {
                         name,
@@ -249,8 +249,8 @@ class DataStore {
                 if (this.DRMethod === 'pca') return this.importancePCAScores
                 let clinicalFeatures 
 
-                let { currentSampleVariables } = this
-                return currentSampleVariables
+                let { currentNonPatientVariables } = this
+                return currentNonPatientVariables
                 .map(id => {
                     let {name} = this.referencedVariables[id]
                     return { name, score: 0.5 }
@@ -462,13 +462,6 @@ class DataStore {
                 this.realTime = !this.realTime;
             }),
             /**
-             * changes display global timeline
-             * @param {boolean} globalTime
-             */
-            setGlobalTime: action((globalTime) => {
-                this.globalTime = globalTime;
-            }),
-            /**
              * handles selecting/removing a patient
              * @param {string} patient
              */
@@ -511,14 +504,6 @@ class DataStore {
              */
             resetSelection: action(() => {
                 this.selectedPatients.clear();
-            }),
-            /**
-             * resets variables
-             */
-            reset: action(() => {
-                this.globalTime = false;
-                this.realTime = false;
-                this.selectedPatients = [];
             }),
             /**
              * combines the two sets of timepoints (samples, events)

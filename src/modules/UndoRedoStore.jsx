@@ -164,7 +164,7 @@ class UndoRedoStore {
         this.deserializeTimepoints(index);
         this.rootStore.visStore.transitionSpaces
             .replace(this.stateStack[index].state.transitionSpaces);
-        this.uiStore.globalTime = this.stateStack[index].state.globalTime;
+        this.uiStore.selectedTab = this.stateStack[index].state.selectedTab;
         this.uiStore.realTime = this.stateStack[index].state.realTime;
     }
 
@@ -291,7 +291,7 @@ class UndoRedoStore {
                 allBetweenVar: UndoRedoStore
                     .serializeVariables(store.rootStore.dataStore.variableStores
                         .between.referencedVariables),
-                globalTime: store.uiStore.globalTime,
+                selectedTab: store.uiStore.selectedTab,
                 realTime: store.uiStore.realTime,
                 globalPrimary: store.rootStore.dataStore.globalPrimary,
                 timepointStructure: toJS(store.rootStore.timepointStructure),

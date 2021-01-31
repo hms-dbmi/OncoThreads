@@ -12,7 +12,7 @@ class UIStore {
             cBioInstance: 'hack', // hack, portal, own
             continuousRepresentation: 'gradient', // gradient, boxplot, medium
             realTime: false, // show realtime lines in block view
-            globalTime: 'block', // show global timeline
+            selectedTab: 'block', // show global timeline
             advancedSelection: true, // advanced selection enables
             showUndefined: true, // show rows with only undefined values
             slantedLines: 'none', // altWithin, altAcross, none, random
@@ -30,8 +30,8 @@ class UIStore {
             setRealTime: action((boolean) => {
                 this.realTime = boolean;
             }),
-            setGlobalTime: action((key) => {
-                this.globalTime = key;
+            selectTab: action((key) => {
+                this.selectedTab = key;
             }),
             setAdvancedSelection: action((boolean) => {
                 this.advancedSelection = boolean;

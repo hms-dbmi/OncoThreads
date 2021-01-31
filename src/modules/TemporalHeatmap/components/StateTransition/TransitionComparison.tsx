@@ -226,7 +226,7 @@ class TransitionComparison extends React.Component<Props> {
             const transformTP = `translate(
                     ${this.paddingW+ this.annotationWidth/2 -iconR},
                     ${ this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[i] 
-                        - visStore.secondaryHeight * dataStore.variableStores['sample'].currentSampleVariables.length
+                        - visStore.secondaryHeight * dataStore.variableStores['sample'].currentNonPatientVariables.length
                     } 
                     )`;
 

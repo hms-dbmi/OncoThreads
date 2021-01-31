@@ -143,7 +143,7 @@ class RootStore {
                 this.hasClinical = false;
                 this.dataParsed = false;
                 this.timelineParsed = false;
-                this.uiStore.globalTime = 'block';
+                this.uiStore.selectedTab = 'block';
                 this.api.getPatients((patients) => {
                     this.patients = patients;
                     this.api.getEvents(patients, (events) => {
