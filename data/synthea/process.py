@@ -263,7 +263,7 @@ patient_header = [
 
 saved_patients = sampled_inpatients[['Id', 'GENDER', 'BIRTHDATE', 'DEATHDATE']]
 saved_patients['SURVIVE'] = saved_patients['DEATHDATE'].isnull()
-saved_patients['AGE'] = (pd.to_datetime('2020-10-10') - pd.to_datetime( saved_patients['BIRTHDATE'] ))/ np.timedelta64(1, 'Y')
+saved_patients['AGE'] = np.floor((pd.to_datetime('2020-10-10') - pd.to_datetime( saved_patients['BIRTHDATE'] ))/ np.timedelta64(1, 'Y'))
 saved_patients = saved_patients.rename(columns={"Id": "PATIENT_ID"})
 
 with open('processedData/covid_{}_patients.txt'.format(SAMPLE_SIZE), 'w') as txt_file:
