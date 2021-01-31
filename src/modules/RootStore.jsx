@@ -31,6 +31,7 @@ class RootStore {
         this.sampleTimelineMap = {}; // map of sample ids to dates of sample collection
         this.eventTimelineMap = {}; // map of sample ids to dates of events
         this.staticMappers = {}; // mappers of sample id to pre-loaded variables
+        this.patientMappers = {}; // mappers of patient id to patient variables
         this.eventMappers = {}; // maps event ids to event dates
 
         this.sampleStructure = {}; // structure of samples per patient
@@ -209,6 +210,7 @@ class RootStore {
              */
             createClinicalSampleMapping: action((data) => {
                 data.forEach((d) => {
+
                     if (this.patients.includes(d.patientId)) {
                         if (!(d.clinicalAttributeId in this.staticMappers)) {
                             this.clinicalSampleCategories.push({
@@ -249,6 +251,11 @@ class RootStore {
                             });
                             this.staticMappers[d.clinicalAttributeId] = {};
                         }
+
+                        if( this.patientMappers[d.clinicalAttributeId] === undefined){
+                            this.patientMappers[d.clinicalAttributeId] = {}
+                        }
+                        this.patientMappers[d.clinicalAttributeId][d.patientId] = parseFloat(d.value)||d.value
                     }
                     this.sampleStructure[d.patientId].forEach((f) => {
                         if (d.clinicalAttribute.datatype !== 'NUMBER') {

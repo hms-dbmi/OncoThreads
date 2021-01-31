@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { Table, Input, Button, Space, Checkbox, Tooltip } from 'antd';
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/lib/table'
 import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
 
@@ -149,14 +149,7 @@ class PatternTable extends React.Component <Props, State> {
             align: 'center',
             width: this.props.annotationWidth + this.props.paddingW
         })
-
-
-        let tableHeader = <span>Frequent Patterns {' '}
-            <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyTooltipOnHide>
-                <InfoCircleOutlined translate='' />
-            </Tooltip>
-        </span>
-        return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height }} title={() => tableHeader} />
+        return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height }} />
     }
     render(){
         return this.frequentPatternTable()

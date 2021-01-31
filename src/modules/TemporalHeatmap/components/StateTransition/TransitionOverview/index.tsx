@@ -3,10 +3,14 @@ import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { Input, Checkbox} from 'antd';
+import { Input, Checkbox, Tabs, Tooltip } from 'antd';
 import GridLayout from 'react-grid-layout';
 import PatternTable from './PatternTable'
+import PatientTable from './PatientTable'
 
+import { InfoCircleOutlined } from '@ant-design/icons';
+
+const { TabPane } = Tabs;
 interface Props {
     rootStore?: IRootStore,
     width: number,
@@ -275,13 +279,25 @@ class TransitionOverview extends React.Component<Props, State> {
             { i: 'overview', x: 0, y: 0, w: 12, h: 3, minW: 12, maxW: 12 },
             { i: 'table', x: 0, y: 3, w: 12, h: 2, minW: 12, maxW: 12 },
         ];
-        let dataIntro1 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
+        const dataIntro1 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
         The y-axis presents the timeline and the colored rectangle indicates patients of the same state.\
         You can group patients based on their state transitions by changing the number in the top left input box.'
 
-        let dataIntro2 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
+        const dataIntro2 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
         This table summarizes the frequent state transition patterns.\
         You can sort the rows or search frequent patterns by clicking the icons in the table header.'
+
+        const patternHeader = <span>Frequent Patterns {' '}
+            <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyTooltipOnHide>
+                <InfoCircleOutlined translate='' />
+            </Tooltip>
+        </span>
+
+        const patientHeader = <span>Patient Features {' '}
+            <Tooltip title="summarize patient attributes of each patient group" destroyTooltipOnHide>
+                <InfoCircleOutlined translate='' />
+            </Tooltip>
+        </span>
 
         return <GridLayout className="stateTransition overview" rowHeight={this.props.height / 5} layout={layout} width={this.props.width}>
             <div style={{ height: this.props.height * 0.7, overflowY: "auto", width: this.props.width }} key='overview'
@@ -303,7 +319,21 @@ class TransitionOverview extends React.Component<Props, State> {
             <div key='table'
                 data-intro={dataIntro2}
                 data-step='4'>
-                <PatternTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height*0.3}/>
+                <Tabs defaultActiveKey="pattern">
+                    <TabPane
+                        tab={ patternHeader }
+                        key="pattern"
+                    >
+                        <PatternTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} />
+                    </TabPane>
+                    <TabPane
+                        tab={ patientHeader }
+                        key="patient"
+                    >
+                        <PatientTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} />
+                    </TabPane>
+                </Tabs>,
+                
             </div>
         </GridLayout>
     }
