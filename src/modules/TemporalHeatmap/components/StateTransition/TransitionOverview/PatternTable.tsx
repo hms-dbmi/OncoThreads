@@ -151,8 +151,10 @@ class PatternTable extends React.Component <Props, State> {
         })
 
 
-        let tableHeader = <span>Frequent Patterns {' '}<Tooltip title="frequent state transition patterns and their distribution of each patient group"><InfoCircleOutlined translate='' />
-        </Tooltip>
+        let tableHeader = <span>Frequent Patterns {' '}
+            <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyTooltipOnHide>
+                <InfoCircleOutlined translate='' />
+            </Tooltip>
         </span>
         return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height }} title={() => tableHeader} />
     }

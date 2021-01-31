@@ -4,8 +4,6 @@ import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { Input, Checkbox} from 'antd';
-import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
-
 import GridLayout from 'react-grid-layout';
 import PatternTable from './PatternTable'
 
@@ -33,8 +31,6 @@ type TypeTimeLayout = { shiftX: number }
             x: number,
         }
     }
-
-type RowRecordType = { key: string, pattern: TPattern, [key: string]: any }
 
 
 @inject('rootStore')
@@ -310,23 +306,6 @@ class TransitionOverview extends React.Component<Props, State> {
                 <PatternTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height*0.3}/>
             </div>
         </GridLayout>
-
-        // return <div className="stateTransition overview" style={{ height: this.props.height, overflowY: "auto" }}>
-        //     <div style={{ height: this.props.height*0.7, overflowY: "auto" }}>
-        //         <svg
-        //             width="100%"
-        //             className="stateTransition overview"
-        //             // height="100%"
-        //             // width={this.props.rootStore.visStore.svgWidth}
-        //             height={overviewHeight}
-        //         >
-        //             <g className="transitionOverview" key="transitionOverview">
-        //                 {this.stateOverview()}
-        //             </g>
-        //         </svg>
-        //     </div>
-        //     {this.frequentPatternTable()}
-        // </div>
     }
 }
 
