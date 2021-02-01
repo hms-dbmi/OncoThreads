@@ -349,14 +349,6 @@ class StateBlock extends React.Component<Props> {
             if (getTextWidth(cellText, this.fontHeight) >  this.cellWidth*points.length){
                 cellText = '..'
             }
-
-            if (stateKey == 'C'){
-                console.info(domainTextArr, domainTextArrCroped, stateKey)
-                domainTextArr.map(d => {
-                    console.info('max width', this.cellWidth * points.length / domainTextArr.length, getTextWidth(d, this.fontHeight))
-                    return cropText(d, this.fontHeight, 700, this.cellWidth * points.length / domainTextArr.length)
-                })
-            }
             
             let cellTooltip: JSX.Element = <div> {cellTextFull}</div>
 

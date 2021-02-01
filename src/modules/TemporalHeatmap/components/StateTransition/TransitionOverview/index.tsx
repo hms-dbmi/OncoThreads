@@ -2,7 +2,7 @@ import * as React from "react"
 import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { cropText, getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
 import { Input, Checkbox, Tabs, Tooltip } from 'antd';
 import GridLayout from 'react-grid-layout';
 import PatternTable from './PatternTable'
@@ -120,23 +120,22 @@ class TransitionOverview extends React.Component<Props, State> {
             })
 
             samplePoints.forEach((TP, timeIdx) => {
-
-
-
                 let offsetX = 0
                 let timepoint: Array<JSX.Element> = []
-
-                // if (timeIdx >= 1) {
-                //     offsetX = Math.max(offsetX, Math.min(...Object.values(layoutDict[timeIdx - 1][groupIdx]).map(d => d.x)))
-                // }
 
                 TP.customGrouped.forEach(d => {
                     let stateKey = d.partition || ''
 
                     let patients = d.patients.filter(p => patientGroup.includes(p))
                     if (patients.length === 0) return
-                    let rectWidth = Math.max(rectWidthScale(patients.length), 5)
-                    timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX + this.paddingW + this.annotationWidth} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
+                    const rectWidth = Math.max(rectWidthScale(patients.length), 5)
+                    const stateName = cropText(dataStore.stateLabels[stateKey]||stateKey, this.fontSize, 700, rectWidth)
+                    timepoint.push(<g transform={`translate(${offsetX + this.paddingW + this.annotationWidth}, 0)`}>
+                        <rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight}  key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />
+                        <text fill="white" x={rectWidth/2} y={(this.rectHeight+this.fontSize)/2} textAnchor="middle">
+                            {stateName}
+                        </text>
+                    </g>)
 
                     layoutDict[groupIdx][timeIdx][stateKey] = {
                         width: rectWidth,
