@@ -12,7 +12,7 @@ import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
+import { cropText, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
 
 import './GroupPartition.css'
 
@@ -140,24 +140,15 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 
         // add changable state label if this is a sample timepoint
         if (this.props.type === 'sample') {
-            const fontWeight = 700,
-                // labelColor = colors[stateKey.charCodeAt(0)-65]||'black',
-
-                stateName = this.props.stateLabels[stateKey] === undefined ?
-                    stateKey : this.props.stateLabels[stateKey],
-
-                labelColor = getColorByName(stateKey),
+            const fontWeight = 700, 
+                stateName = this.props.stateLabels[stateKey] || stateKey,
                 labelHeight = this.props.visStore.primaryHeight,
-                labelWidth = Math.max(getTextWidth(stateName, 14, fontWeight) + 25, 40)
 
-            stateInputLabel = <foreignObject width={labelWidth} height={labelHeight}>
+            stateInputLabel = <foreignObject width={totalW} height={labelHeight}>
                 <input value={stateName} style={{ fontWeight: fontWeight, border: "none", backgroundColor: "transparent" }}
                     type="text" className="stateLabel"
                     onChange={this.changeLabel} />
             </foreignObject>
-            // stateInputLabel = <text style={{ color: labelColor, fontWeight: fontWeight }} className="stateLabel" y={14}>
-            //     {stateName}
-            // </text>
 
             stateBackground = <g className='stateBackground'>
                 <rect

@@ -134,7 +134,7 @@ class StateBlock extends React.Component<Props> {
             Object.values(pointGroups).forEach(g => {
                 let { stateKey, pointIdx } = g
                 let stateColor = getColorByName(stateKey)
-                let stateName = stateLabels[stateKey] || stateKey
+                let stateName = cropText(stateLabels[stateKey] || stateKey, fontHeight, 700, g.pointIdx.length*this.cellWidth)
 
                 stateBlocks.push(
                     <g key={stateKey} className={`state${stateKey}`} transform={`translate(${offsetX}, 0)`}>
