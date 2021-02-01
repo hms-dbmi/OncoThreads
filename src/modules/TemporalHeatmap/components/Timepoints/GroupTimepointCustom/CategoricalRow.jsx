@@ -302,9 +302,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
 }));
 CategoricalRow.propTypes = {
     height: PropTypes.number.isRequired,
-    isEven: PropTypes.bool.isRequired,
     color: PropTypes.func.isRequired,
-    stroke: PropTypes.string.isRequired,
     opacity: PropTypes.number.isRequired,
     row: PropTypes.arrayOf(PropTypes.object),
     showTooltip: PropTypes.func.isRequired,

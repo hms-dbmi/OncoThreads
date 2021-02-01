@@ -130,8 +130,8 @@ class TransitionOverview extends React.Component<Props, State> {
                     if (patients.length === 0) return
                     const rectWidth = Math.max(rectWidthScale(patients.length), 5)
                     const stateName = cropText(dataStore.stateLabels[stateKey]||stateKey, this.fontSize, 700, rectWidth)
-                    timepoint.push(<g transform={`translate(${offsetX + this.paddingW + this.annotationWidth}, 0)`}>
-                        <rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight}  key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />
+                    timepoint.push(<g transform={`translate(${offsetX + this.paddingW + this.annotationWidth}, 0)`}  key={`time${timeIdx}_group${groupIdx}_state${stateKey}`}>
+                        <rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight}  />
                         <text fill="white" x={rectWidth/2} y={(this.rectHeight+this.fontSize)/2} textAnchor="middle">
                             {stateName}
                         </text>

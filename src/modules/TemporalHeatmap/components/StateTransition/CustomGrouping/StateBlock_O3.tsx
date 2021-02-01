@@ -230,16 +230,6 @@ class StateBlock extends React.Component<Props> {
     drawCellDistContinues(values: (string | boolean | number)[], stateColor: string, rowIdx: number, getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number) {
         let domain = this.props.sampleFeatureDomains[rowIdx]
         let maxHeight = 0
-        // let row = this.reorderRowValues(values).map((v, pointIdx)=>{
-        //     if (v==undefined) return 
-        //     maxHeight = Math.max(maxHeight, getRectHeight(domain, v))
-        //     return <rect key={`point_${pointIdx}`} 
-        //         width={this.cellWidth} 
-        //         height={getRectHeight(domain, v)}
-        //         x={this.cellWidth * pointIdx} y={ getRectY(domain, v)}
-        //         fill = {stateColor}
-        //     />
-        // })
 
         let keyList: (boolean | string | number)[] = []
         let valueGroups: { key: boolean | string | number, patientNum: number }[] = []
@@ -259,8 +249,11 @@ class StateBlock extends React.Component<Props> {
         let pathString = `M 0, ${this.cellHeight}`, currentPos = [0, 0]
 
         valueGroups.forEach(d => {
-            let { key, patientNum } = d
-            let binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key)
+            const { key, patientNum } = d
+            const binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key)
+
+            if (!binHeight) {console.info('bin height error', d, rowIdx, stateColor)}
+
             maxHeight = Math.max(maxHeight, binHeight)
             pathString += `l${0},${-binHeight - currentPos[1]} l ${binWidth}, ${0}`
             currentPos = [binWidth + currentPos[0], -1 * binHeight]
@@ -294,15 +287,18 @@ class StateBlock extends React.Component<Props> {
         let rowBars: JSX.Element[] = [], currentX = 0
 
         valueGroups.forEach(d => {
-            let { key, patientNum } = d
-            let binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key), offsetY = getRectY(domain, key)
+            const { key, patientNum } = d
+            const binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key), offsetY = getRectY(domain, key)
             maxHeight = Math.max(maxHeight, binHeight)
-            let oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
+
+            if (!binWidth || !isFinite(binWidth)) {console.info('bin height error', d, rowIdx, stateColor)}
+
+            const oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
             rowBars.push(oneCate)
             currentX += binWidth
         })
 
-        let row = <g className="rowBars">{rowBars}</g>
+        const row = <g className="rowBars">{rowBars}</g>
 
         return { row, maxHeight }
     }
