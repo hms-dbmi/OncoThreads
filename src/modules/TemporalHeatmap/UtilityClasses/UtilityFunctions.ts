@@ -77,12 +77,17 @@ const cropText = (text:string, fontSize:number, fontWeight:number, maxWidth:numb
     const width = context.measureText(text).width;
     if (width > maxWidth) {
         for (let i = 1; i < text.length; i += 1) {
-            const prevText = text.substr(0, i - 1).concat('...');
-            const currText = text.substr(0, i).concat('...');
+            const prevText = text.substr(0, i - 1).concat('..');
+            const currText = text.substr(0, i).concat('..');
             const prevWidth = context.measureText(prevText).width;
             const currWidth = context.measureText(currText).width;
-            if (currWidth > maxWidth && prevWidth < maxWidth) {
+            if (currWidth > maxWidth && prevWidth <= maxWidth) {
                 returnText = prevText;
+                break;
+            }
+            // maxwidth is too small, even the first prevtext is wide than it
+            if (currWidth > maxWidth && prevWidth > maxWidth) {
+                returnText = '..';
                 break;
             }
         }

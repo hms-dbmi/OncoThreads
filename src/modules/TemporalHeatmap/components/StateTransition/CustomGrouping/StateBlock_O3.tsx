@@ -321,7 +321,11 @@ class StateBlock extends React.Component<Props> {
                 cellText: string, cellTextFull: string
 
             //crop domain text
-            let domainTextArrCroped = domainTextArr.map(d => cropText(d, this.fontHeight, 700, this.cellWidth * points.length / domainTextArr.length)),
+            let domainTextArrCroped = domainTextArr
+                .map(d => cropText(
+                    d, this.fontHeight, 700, 
+                    (this.cellWidth * points.length - getTextWidth('~', this.fontHeight) * (domainTextArr.length-1)) / domainTextArr.length
+                )),
                 row: JSX.Element, maxHeight = this.cellHeight
 
             if (typeof (domain[0]) === 'number') {
@@ -342,8 +346,18 @@ class StateBlock extends React.Component<Props> {
                 row = this.drawCellDistCate(values, stateColor, rowIdx, getRectHeight, getRectY)['row']
             }
 
+            if (getTextWidth(cellText, this.fontHeight) >  this.cellWidth*points.length){
+                cellText = '..'
+            }
 
-
+            if (stateKey == 'C'){
+                console.info(domainTextArr, domainTextArrCroped, stateKey)
+                domainTextArr.map(d => {
+                    console.info('max width', this.cellWidth * points.length / domainTextArr.length, getTextWidth(d, this.fontHeight))
+                    return cropText(d, this.fontHeight, 700, this.cellWidth * points.length / domainTextArr.length)
+                })
+            }
+            
             let cellTooltip: JSX.Element = <div> {cellTextFull}</div>
 
             if (maxHeight < 0.2 * this.cellHeight) {
@@ -358,6 +372,9 @@ class StateBlock extends React.Component<Props> {
 
             return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} overlayStyle={{ width: "auto", maxWidth: "none" }}>
                 <g className={`row_${rowIdx}`} cursor="pointer">
+                    <g transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.cellVerticalGap)})`}>
+                        {row}
+                    </g>
                     <line className='rowBG'
                         fill='none'
                         // stroke='gray'
@@ -368,9 +385,6 @@ class StateBlock extends React.Component<Props> {
                         x1={0}
                         x2={this.cellWidth * points.length}
                     />
-                    <g transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.cellVerticalGap)})`}>
-                        {row}
-                    </g>
                     <text y={(this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
                         {cellText}
                     </text>
