@@ -142,7 +142,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         if (this.props.type === 'sample') {
             const fontWeight = 700, 
                 stateName = this.props.stateLabels[stateKey] || stateKey,
-                labelHeight = this.props.visStore.primaryHeight,
+                labelHeight = this.props.visStore.primaryHeight
 
             stateInputLabel = <foreignObject width={totalW} height={labelHeight}>
                 <input value={stateName} style={{ fontWeight: fontWeight, border: "none", backgroundColor: "transparent" }}

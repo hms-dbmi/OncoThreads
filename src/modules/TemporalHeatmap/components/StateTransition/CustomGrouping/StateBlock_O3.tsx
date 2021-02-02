@@ -251,9 +251,6 @@ class StateBlock extends React.Component<Props> {
         valueGroups.forEach(d => {
             const { key, patientNum } = d
             const binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key)
-
-            if (!binHeight) {console.info('bin height error', d, rowIdx, stateColor)}
-
             maxHeight = Math.max(maxHeight, binHeight)
             pathString += `l${0},${-binHeight - currentPos[1]} l ${binWidth}, ${0}`
             currentPos = [binWidth + currentPos[0], -1 * binHeight]
@@ -291,7 +288,7 @@ class StateBlock extends React.Component<Props> {
             const binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key), offsetY = getRectY(domain, key)
             maxHeight = Math.max(maxHeight, binHeight)
 
-            if (!binWidth || !isFinite(binWidth)) {console.info('bin height error', d, rowIdx, stateColor)}
+            if (!binWidth || !isFinite(binWidth)) {console.info('bar width error', d, rowIdx, stateColor)}
 
             const oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
             rowBars.push(oneCate)
@@ -325,8 +322,17 @@ class StateBlock extends React.Component<Props> {
                 row: JSX.Element, maxHeight = this.cellHeight
 
             if (typeof (domain[0]) === 'number') {
-                getRectHeight = (domain: any[], value: any): number => (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
-                getRectY = (domain: any[], value: any): number => this.cellHeight - (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
+                getRectHeight = (domain: any[], value: any): number => {
+                    if (domain[0]===domain[1]){
+                        return this.cellHeight
+                    } else return (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
+                }
+
+                getRectY = (domain: any[], value: any): number => {
+                    if (domain[0]===domain[1]){
+                        return 0
+                    } else return this.cellHeight - (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
+                }
                 cellText = domainTextArrCroped.join('~')
                 cellTextFull = domainTextArr.join('~')
 
@@ -335,8 +341,19 @@ class StateBlock extends React.Component<Props> {
                 maxHeight = r['maxHeight']
 
             } else {
-                getRectHeight = (domain: any[], value: any): number => 1 / domain.length * this.cellHeight
-                getRectY = (domain: any[], value: any): number => domain.indexOf(value) / domain.length * this.cellHeight
+                getRectHeight = (domain: any[], value: any): number => {
+                    if (domain.length===0) {
+                        console.error('domain length cannot be 0')
+                        return this.cellHeight
+                    }
+                    return 1 / domain.length * this.cellHeight
+                }
+                getRectY = (domain: any[], value: any): number => {
+                    if (domain.indexOf(value)===-1) {
+                        console.error(`value ${value} is not in domain ${domain}`)
+                        return 0
+                    }else return domain.indexOf(value) / domain.length * this.cellHeight
+                }
                 cellText = domainTextArrCroped.join(', ')
                 cellTextFull = domainTextArr.join(',')
                 row = this.drawCellDistCate(values, stateColor, rowIdx, getRectHeight, getRectY)['row']

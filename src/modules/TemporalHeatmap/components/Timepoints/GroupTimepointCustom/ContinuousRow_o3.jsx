@@ -17,7 +17,8 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
         let pathString = `M 0, ${height}`, currentPos = [0,0] 
         row.sort((a,b)=>a.key-b.key).forEach(d=>{
             let {key, patients} = d
-            let binWidth = this.props.visStore.groupScale(patients.length), binHeight = getBinHeight(key)
+            
+            let binWidth = this.props.visStore.groupScale(patients.length), binHeight = key === undefined? 0:getBinHeight(key)
             pathString += `l${0},${-binHeight-currentPos[1]} l ${binWidth}, ${0}`
             currentPos = [binWidth+currentPos[0], -1*binHeight]
         })

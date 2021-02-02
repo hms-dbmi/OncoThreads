@@ -33,43 +33,7 @@ class VariableStore {
             get points() {
                 let {timepoints} = this.childStore
 
-                const findNearestReplace = (patient, timeIdx, rowIdx)=>{
-                    let beforeTime = timeIdx-1, afterTime = timeIdx+1,
-                        v = timepoints[timeIdx].heatmap[rowIdx].data
-                        .find(d=>d.patient===patient)
-                        .value
-
-                    while( v === undefined ){
-                        let beforeV, afterV
-                        
-                        if (afterTime < timepoints.length){
-                            let afterSample = timepoints[afterTime].heatmap[rowIdx].data
-                            .find(d=>d.patient===patient)
-
-                            afterV = afterSample?afterSample.value: undefined
-                            afterTime += 1
-                        }
-
-                        if (beforeTime >= 0){
-                            let beforeSample = timepoints[beforeTime].heatmap[rowIdx].data
-                            .find(d=>d.patient===patient)
-
-                            beforeV = beforeSample?beforeSample.value: undefined
-                            beforeTime -= 1
-                        }
-                        v = beforeV ?? afterV
-                        if ( beforeTime < 0 && afterTime >= timepoints.length) break
-
-                        
-                    }
-
-                    // cannot find a non missing value of the same attribute in the same patient
-                    if (v===undefined){
-                        let otherValues = timepoints[timeIdx].heatmap[rowIdx].data.map(d=>d.value)
-                        v = otherValues.filter(v=>v!==undefined).reduce((a,b)=>a+b, 0)/otherValues.length
-                    }
-                    return v
-                }
+                
             
                 let points = [], clinicalFeatures = this.rootStore.clinicalPatientCategories.map(d=>d.id)
                 timepoints
@@ -84,7 +48,7 @@ class VariableStore {
                             .map((row, rowIdx) => {
                                 let v = row.data[patientIdx].value
                                 if (v===undefined){
-                                    v = findNearestReplace(patient, timeIdx, rowIdx)
+                                    v = this.findNearestReplace(patient, timeIdx, rowIdx)
                                 }
                                 return v
                             })
@@ -104,14 +68,6 @@ class VariableStore {
                 
             },
             
-            // setStateLabel: action((stateKey, stateLabel)=>{
-                
-            //     this.stateLabels[stateKey] = stateLabel
-            // }),
-            // resetStateLabel: action(()=>{
-                
-            //     this.stateLabels = {}
-            // }),
 
             resetVariables: action(() => {
                 this.referencedVariables = {};
@@ -237,6 +193,45 @@ class VariableStore {
             this.updateReferences();
             this.updateVariableRanges();
         });
+    }
+
+    findNearestReplace (patient, timeIdx, rowIdx){
+        let {timepoints} = this.childStore
+        let beforeTime = timeIdx-1, afterTime = timeIdx+1,
+            v = timepoints[timeIdx].heatmap[rowIdx].data
+            .find(d=>d.patient===patient)
+            .value
+
+        while( v === undefined ){
+            let beforeV, afterV
+            
+            if (afterTime < timepoints.length){
+                let afterSample = timepoints[afterTime].heatmap[rowIdx].data
+                .find(d=>d.patient===patient)
+
+                afterV = afterSample?afterSample.value: undefined
+                afterTime += 1
+            }
+
+            if (beforeTime >= 0){
+                let beforeSample = timepoints[beforeTime].heatmap[rowIdx].data
+                .find(d=>d.patient===patient)
+
+                beforeV = beforeSample?beforeSample.value: undefined
+                beforeTime -= 1
+            }
+            v = beforeV ?? afterV
+            if ( beforeTime < 0 && afterTime >= timepoints.length) break
+
+            
+        }
+
+        // cannot find a non missing value of the same attribute in the same patient
+        if (v===undefined){
+            let otherValues = timepoints[timeIdx].heatmap[rowIdx].data.map(d=>d.value)
+            v = otherValues.filter(v=>v!==undefined).reduce((a,b)=>a+b, 0)/otherValues.length
+        }
+        return v
     }
 
     /**

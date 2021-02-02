@@ -19,7 +19,7 @@ class FeatureLegend extends React.Component<Props> {
     horizontalGap: number = 5;
     @observable defaultWidth = 100;
     @observable minCatWidth = 30;
-    @observable svgWidth = 100
+    @observable svgWidth = 1
     /**
      * updates maximum legend wid th
     */
@@ -176,11 +176,11 @@ class FeatureLegend extends React.Component<Props> {
     }
 
     componentDidMount(){
-        this.svgWidth = Math.max(...Object.values(this.rowWidths))
+        this.svgWidth = Math.max(...Object.values(this.rowWidths), this.svgWidth)
     }
 
     componentDidUpdate(){
-        this.svgWidth = Math.max(...Object.values(this.rowWidths))
+        this.svgWidth = Math.max(...Object.values(this.rowWidths), this.svgWidth)
     }
 
     render() {
