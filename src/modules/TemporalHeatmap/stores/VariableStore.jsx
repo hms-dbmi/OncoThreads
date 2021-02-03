@@ -16,7 +16,6 @@ class VariableStore {
             currentVariables: [],
             // Variables that are referenced (displayed or used to create a derived variable)
             referencedVariables: {},
-            // stateLabels:{}, // key & label pairs
 
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
@@ -26,6 +25,9 @@ class VariableStore {
                 return this.currentVariables.filter(
                     id=>!patientVars.includes(id)
                 )
+            },
+            get fullNonPatientCurrentVariables() {
+                return this.currentNonPatientVariables.map(d => this.referencedVariables[d]);
             },
             /**
              * each point is one patient at one time point
@@ -64,8 +66,6 @@ class VariableStore {
                 })
 
                 return points
-                
-                
             },
             
 

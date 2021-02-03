@@ -239,6 +239,7 @@ class DataStore {
                     let id = currentNonPatientVariables[i]
                     let {name} = this.referencedVariables[id]
                     return {
+                        id,
                         name,
                         score
                     }
@@ -253,7 +254,7 @@ class DataStore {
                 return currentNonPatientVariables
                 .map(id => {
                     let {name} = this.referencedVariables[id]
-                    return { name, score: 0.5 }
+                    return { name, score: 0.5, id }
                 })
             },
 

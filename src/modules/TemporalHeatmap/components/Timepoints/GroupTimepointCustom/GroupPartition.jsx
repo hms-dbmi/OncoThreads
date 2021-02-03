@@ -12,7 +12,6 @@ import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
 import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { cropText, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions'
 
 import './GroupPartition.css'
 
@@ -35,92 +34,96 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         let totalH = 0
 
         this.props.partition.rows
-        .filter( row => this.props.dataStore.variableStores[this.props.type].currentNonPatientVariables.includes(row.variable)) // don't show patient features in v2
-        .forEach((d, i) => {
-            if (!this.props.heatmap[i].isUndef
-                || this.props.uiStore.showUndefined
-                || d.variable === this.props.primaryVariableId) {
-                const color = this.props.currentVariables[i].colorScale;
-                // let height = 0;
-                // let opacity = 1;
-                let height = this.props.visStore.secondaryHeight;
-                let opacity = 0.5;
-                let stroke = 'none';
-                let shiftOffset = 0;
-                if (i % 2 !== 0) {
-                    shiftOffset = this.props.uiStore.rowOffset;
-                }
-                const transform = `translate(${shiftOffset},${previousYposition})`;
+            .forEach((d, i) => {
 
-                totalH += height
+                // don't show patient features in v2
+                if (!this.props.dataStore.variableStores[this.props.type].currentNonPatientVariables.includes(d.variable)) return
 
-                // create different types of rows depending on the variables datatype
-                if (this.props.currentVariables[i].datatype === 'NUMBER') {
-                    if (this.props.type === "sample") {
-                        rows.push(
-                            <g key={d.variable} transform={transform}>
-                                <ContinuousRowO3
-                                    variable={d.variable}
-                                    row={d.counts}
-                                    height={height}
-                                    opacity={opacity}
-                                    // color={color}
-                                    stateColor={getColorByName(stateKey)}
-                                    variableDomain={this.props.currentVariables[i].domain}
-                                />
-                            </g>,
-                        );
-                    } else {
-                        rows.push(
-                            <g key={d.variable} transform={transform}>
-                                <ContinuousRow
-                                    variable={d.variable}
-                                    row={d.counts}
-                                    height={height}
-                                    opacity={opacity}
-                                    color={color}
-                                    variableDomain={this.props.currentVariables[i].domain}
-                                    {...this.props.tooltipFunctions}
-                                />
-                            </g>,
-                        );
+
+                if (!this.props.heatmap[i].isUndef
+                    || this.props.uiStore.showUndefined
+                    || d.variable === this.props.primaryVariableId) {
+                    const color = this.props.currentVariables[i].colorScale;
+                    // let height = 0;
+                    // let opacity = 1;
+                    let height = this.props.visStore.secondaryHeight;
+                    let opacity = 0.5;
+                    let stroke = 'none';
+                    let shiftOffset = 0;
+                    if (i % 2 !== 0) {
+                        shiftOffset = this.props.uiStore.rowOffset;
                     }
+                    const transform = `translate(${shiftOffset},${previousYposition})`;
 
-                } else {
-                    if (this.props.type === "sample") {
-                        rows.push(
-                            <g key={d.variable} transform={transform}>
-                                <CategoricalRowO3
-                                    variable={d.variable}
-                                    row={d.counts}
-                                    height={height}
-                                    opacity={opacity}
-                                    // color={color}
-                                    stateColor={getColorByName(stateKey)}
-                                    variableDomain={this.props.currentVariables[i].domain}
-                                />
-                            </g>,
-                        );
+                    totalH += height
+
+                    // create different types of rows depending on the variables datatype
+                    if (this.props.currentVariables[i].datatype === 'NUMBER') {
+                        if (this.props.type === "sample") {
+                            rows.push(
+                                <g key={d.variable} transform={transform}>
+                                    <ContinuousRowO3
+                                        variable={d.variable}
+                                        row={d.counts}
+                                        height={height}
+                                        opacity={opacity}
+                                        // color={color}
+                                        stateColor={getColorByName(stateKey)}
+                                        variableDomain={this.props.currentVariables[i].domain}
+                                    />
+                                </g>,
+                            );
+                        } else {
+                            rows.push(
+                                <g key={d.variable} transform={transform}>
+                                    <ContinuousRow
+                                        variable={d.variable}
+                                        row={d.counts}
+                                        height={height}
+                                        opacity={opacity}
+                                        color={color}
+                                        variableDomain={this.props.currentVariables[i].domain}
+                                        {...this.props.tooltipFunctions}
+                                    />
+                                </g>,
+                            );
+                        }
+
                     } else {
-                        rows.push(
-                            <g key={d.variable} transform={transform}>
-                                <CategoricalRow
-                                    variable={d.variable}
-                                    row={d.counts}
-                                    height={height}
-                                    opacity={opacity}
-                                    color={color}
-                                    variableDomain={this.props.currentVariables[i].domain}
-                                    {...this.props.tooltipFunctions}
-                                />
-                            </g>,
-                        );
-                    }
+                        if (this.props.type === "sample") {
+                            rows.push(
+                                <g key={d.variable} transform={transform}>
+                                    <CategoricalRowO3
+                                        variable={d.variable}
+                                        row={d.counts}
+                                        height={height}
+                                        opacity={opacity}
+                                        // color={color}
+                                        stateColor={getColorByName(stateKey)}
+                                        variableDomain={this.props.currentVariables[i].domain}
+                                    />
+                                </g>,
+                            );
+                        } else {
+                            rows.push(
+                                <g key={d.variable} transform={transform}>
+                                    <CategoricalRow
+                                        variable={d.variable}
+                                        row={d.counts}
+                                        height={height}
+                                        opacity={opacity}
+                                        color={color}
+                                        variableDomain={this.props.currentVariables[i].domain}
+                                        {...this.props.tooltipFunctions}
+                                    />
+                                </g>,
+                            );
+                        }
 
+                    }
+                    previousYposition += height;
                 }
-                previousYposition += height;
-            }
-        });
+            });
 
         let totalW = this.props.visStore.groupScale(this.props.partition.patients.length)
         return { totalH, totalW, rows };
@@ -140,7 +143,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
 
         // add changable state label if this is a sample timepoint
         if (this.props.type === 'sample') {
-            const fontWeight = 700, 
+            const fontWeight = 700,
                 stateName = this.props.stateLabels[stateKey] || stateKey,
                 labelHeight = this.props.visStore.primaryHeight
 

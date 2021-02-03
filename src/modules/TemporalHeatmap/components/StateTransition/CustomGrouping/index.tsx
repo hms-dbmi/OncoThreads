@@ -50,6 +50,7 @@ export type TState = {
 
 export interface IImportantScore {
     name:string,
+    id: string,
     score:number
 }
 

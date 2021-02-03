@@ -23,7 +23,7 @@ interface Props {
     sampleFeatureDomains: (string | number | boolean)[][],
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
-    removeVariable: (name: string) => void,
+    removeVariable: (id: string) => void,
 }
 
 
@@ -445,7 +445,7 @@ class StateBlock extends React.Component<Props> {
         let { importanceScores } = this.props
 
         let rows = importanceScores.map((d, i) => {
-            let { score, name } = d
+            let { score, name, id } = d
             let cropName = cropText(name, 12, 400, this.maxNameColWidth)
             let featureNameComponent = cropName.length === name.length ?
                 <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
@@ -467,7 +467,7 @@ class StateBlock extends React.Component<Props> {
                 {featureNameComponent}
                 <text
                     x={this.nameColWidth} textAnchor="end" cursor="pointer"
-                    onClick={() => { this.props.removeVariable(name) }}
+                    onClick={() => { this.props.removeVariable(id) }}
                 >
                     X
             </text>
