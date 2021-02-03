@@ -131,7 +131,7 @@ class VariableStore {
                 this.replaceVariables(referencedVariables, currentVariables);
                 this.childStore.timepoints.forEach((d, i) => {
                     if (primaryVariables[i] !== undefined) {
-                        if (referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
+                        if (this.rootStore.uiStore.selectedTab === 'block' && referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
                             d.setIsGrouped(false);
                         }
                     }
