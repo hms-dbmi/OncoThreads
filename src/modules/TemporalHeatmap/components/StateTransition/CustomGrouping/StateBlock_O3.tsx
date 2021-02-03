@@ -288,8 +288,6 @@ class StateBlock extends React.Component<Props> {
             const binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key), offsetY = getRectY(domain, key)
             maxHeight = Math.max(maxHeight, binHeight)
 
-            if (!binWidth || !isFinite(binWidth)) {console.info('bar width error', d, rowIdx, stateColor)}
-
             const oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
             rowBars.push(oneCate)
             currentX += binWidth
@@ -308,7 +306,7 @@ class StateBlock extends React.Component<Props> {
         let { setHoverID, resetHoverID, sampleFeatureDomains } = this.props
         if (points.length === 0) return <g key="block" className="block" />
         let rows = sampleFeatureDomains.map((domain, rowIdx) => {
-            let values = points.map(p => p.value[rowIdx]).filter(v => v !== undefined)
+            let values = points.map(p => p.value[rowIdx])
             let getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number,
                 domainTextArr = summarizeDomain(values.filter(v => v !== undefined) as number[] | string[] | boolean[]),
                 cellText: string, cellTextFull: string
