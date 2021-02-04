@@ -1,4 +1,4 @@
-import { INormPoint, IRootStore , IPoint } from 'modules/Type'
+import { INormPoint, IRootStore, IPoint } from 'modules/Type'
 import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { computed, action } from 'mobx';
@@ -35,13 +35,10 @@ interface Props {
 @observer
 class Scatter extends React.Component<Props> {
     public cellWidth = 10;
-
-    constructor(props: Props) {
-        super(props);
-    }
+    
     @computed
     get patientDict() {
-        let {points} = this.props.rootStore!.dataStore
+        let { points } = this.props.rootStore!.dataStore
 
         let patientDict: TPatientDict = {}
         // get points,each points is one patient at one timepoint
@@ -62,13 +59,13 @@ class Scatter extends React.Component<Props> {
 
     @computed
     get maxTimeIdx(): number {
-        let {normPoints} = this.props.rootStore!.dataStore
+        let { normPoints } = this.props.rootStore!.dataStore
         const maxTimeIdx = Math.max(...normPoints.map(p => p.timeIdx))
         return maxTimeIdx
     }
     @computed
     get cellHeight(): number {
-        let {normPoints}= this.props.rootStore!.dataStore
+        let { normPoints } = this.props.rootStore!.dataStore
         const cellHeight = Math.min(7, 40 / normPoints[0].value.length)
         return cellHeight
     }
@@ -76,7 +73,7 @@ class Scatter extends React.Component<Props> {
     @action
     toggleSelectID(id: number) {
         let { resetHoverID, setHoverID, hoverPointID } = this.props
-        if (id == hoverPointID) resetHoverID()
+        if (id === hoverPointID) resetHoverID()
         else setHoverID(id)
     }
 
@@ -98,8 +95,8 @@ class Scatter extends React.Component<Props> {
     }
 
     drawScatterPlot(margin: number = 20) {
-        let { width, height} = this.props
-        let {normPoints} = this.props.rootStore!.dataStore
+        let { width, height } = this.props
+        let { normPoints } = this.props.rootStore!.dataStore
         this.addLasso(width, height)
 
 
@@ -122,7 +119,7 @@ class Scatter extends React.Component<Props> {
 
     drawPoints(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
         let { showGlyph } = this.props
-        let {normPoints, pointGroups} = this.props.rootStore!.dataStore
+        let { normPoints, pointGroups } = this.props.rootStore!.dataStore
         let { hasLink, resetHoverID, setHoverID, hoverPointID } = this.props
         const r = 5
 
@@ -145,18 +142,18 @@ class Scatter extends React.Component<Props> {
 
             let tooltipTitle = <div>
                 <span>patient: <b>{normPoint.patient}</b></span>
-                <br/>
+                <br />
                 <span>timepoint: {normPoint.timeIdx}</span>
-                <br/>
-                {normPoint.value.map((v, i)=>{
+                <br />
+                {normPoint.value.map((v, i) => {
                     return <span key={i}>
                         {this.props.rootStore!.dataStore.currentVariables[i]}: <b>{v}</b>
-                        <br/>
+                        <br />
                     </span>
-            })}
+                })}
             </div>
 
-            return <Tooltip title={tooltipTitle} trigger='click' destroyTooltipOnHide>
+            return <Tooltip title={tooltipTitle} trigger='click' destroyTooltipOnHide key={id}>
                 <g
                     transform={`translate(
                         ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 
@@ -168,12 +165,12 @@ class Scatter extends React.Component<Props> {
                     onClick={() => this.toggleSelectID(id)}
                     cursor='pointer'
                 >
-                {showGlyph ? glyph :
-                hoverPointID == id ?
-                glyph
-                : circle}
-            </g>
-        </Tooltip>
+                    {showGlyph ? glyph :
+                        hoverPointID === id ?
+                            glyph
+                            : circle}
+                </g>
+            </Tooltip>
 
         })
 
@@ -206,8 +203,8 @@ class Scatter extends React.Component<Props> {
 
     drawLinks(xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>) {
 
-        let { hasLink} = this.props
-        let {normPoints} = this.props.rootStore!.dataStore
+        let { hasLink } = this.props
+        let { normPoints } = this.props.rootStore!.dataStore
         if (!hasLink) return <g className="nolines" key='links' />
 
         let curveGenerator = d3.line()
@@ -245,7 +242,7 @@ class Scatter extends React.Component<Props> {
 
     addLasso(width: number, height: number) {
         let { updateSelected } = this.props
-        let {pointGroups} = this.props.rootStore!.dataStore
+        let { pointGroups } = this.props.rootStore!.dataStore
         // lasso draw
         d3.selectAll('g.lasso').remove()
         var svg = d3.select('svg.customGrouping')
@@ -290,7 +287,7 @@ class Scatter extends React.Component<Props> {
 
                 Object.keys(pointGroups).forEach((stateKey, i) => {
                     let g = pointGroups[stateKey]
-                    let remainPoints = g.pointIdx.filter((point:number) => !currentSelected.includes(point))
+                    let remainPoints = g.pointIdx.filter((point: number) => !currentSelected.includes(point))
                     stateKeys.push(stateKey)
                     if (remainPoints.length > 0) {
 
@@ -331,10 +328,10 @@ class Scatter extends React.Component<Props> {
 
 
     render() {
-        
+
         let { width, height } = this.props
-        return <g className='scatter' 
-            // data-intro="Each point is a patient's feature values at a certain timepoint. A cluster of points indicates one state."
+        return <g className='scatter'
+        // data-intro="Each point is a patient's feature values at a certain timepoint. A cluster of points indicates one state."
         >
             <defs>
                 {this.generateGradients()}

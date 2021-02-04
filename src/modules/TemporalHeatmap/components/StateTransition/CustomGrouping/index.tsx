@@ -1,11 +1,11 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import { observable, action, computed } from 'mobx';
+import { observable, action } from 'mobx';
 import * as d3 from 'd3';
 import { InputNumber, Select, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-import { IPoint, TPointGroups, IRootStore  } from 'modules/Type'
+import { TPointGroups, IRootStore  } from 'modules/Type'
 
 
 import "./CustomGrouping.css"
@@ -50,6 +50,7 @@ export type TState = {
 
 export interface IImportantScore {
     name:string,
+    id: string,
     score:number
 }
 
@@ -298,7 +299,7 @@ class CustomGrouping extends React.Component<Props> {
                                 points={points}
                                 pointGroups={dataStore.pointGroups}
                                 colorScales={dataStore.colorScales}
-                                featureDomains={dataStore.featureDomains}
+                                sampleFeatureDomains={dataStore.sampleFeatureDomains}
                                 hoverPointID={this.hoverPointID}
                                 setHoverID={this.setHoverID}
                                 resetHoverID={this.resetHoverID}

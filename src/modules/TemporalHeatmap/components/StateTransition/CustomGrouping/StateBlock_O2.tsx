@@ -20,7 +20,7 @@ interface Props {
     hoverPointID: number,
     pointGroups: TPointGroups,
     colorScales: Array<(value: string | number | boolean) => string>,
-    featureDomains: (string|number|boolean)[][],
+    sampleFeatureDomains: (string|number|boolean)[][],
     setHoverID: (id: number) => void,
     resetHoverID: () => void,
     removeVariable: (name: string) => void,
@@ -125,10 +125,10 @@ class StateBlock extends React.Component<Props> {
 
     @computed
     get cellYScale(){
-        let {featureDomains, points, pointGroups} = this.props
+        let {sampleFeatureDomains, points, pointGroups} = this.props
 
         let scales:d3.ScaleLinear<number, number>[] = []
-        featureDomains.forEach((featureDomain, rowIdx)=>{
+        sampleFeatureDomains.forEach((featureDomain, rowIdx)=>{
             let scale = d3.scaleLinear()
             let values = points.map(p=>p.value[rowIdx])
             let valueMax = -Infinity,valueMin = Infinity
@@ -301,8 +301,8 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawCellDist(values: string[]|number[]|boolean[], rowIdx:number, color:string){
-        let {featureDomains} = this.props
-        let featureDomain = featureDomains[rowIdx], yScale = this.cellYScale[rowIdx]
+        let {sampleFeatureDomains} = this.props
+        let featureDomain = sampleFeatureDomains[rowIdx], yScale = this.cellYScale[rowIdx]
         if (typeof (values[0])=='number'){
             let valueGap = ((featureDomain[1] as number) - (featureDomain[0] as number))/this.binNum
             let binHeights:number[] = []
@@ -357,9 +357,9 @@ class StateBlock extends React.Component<Props> {
     drawBlock(points: IPoint[], stateKey: string) {
         let stateColor = getColorByName(stateKey)
         points = this.reorderPoints(points)
-        let { setHoverID, resetHoverID, featureDomains } = this.props
+        let { setHoverID, resetHoverID, sampleFeatureDomains } = this.props
         if (points.length==0) return <g key="block" className="block" />
-        let rows = featureDomains.map((domain,rowIdx)=>{
+        let rows = sampleFeatureDomains.map((domain,rowIdx)=>{
             let values = points.map(p=>p.value[rowIdx])
             let getRectHeight : (domain:any[], value:any)=>number, getRectY : (domain:any[], value:any)=>number, 
                 domainTextArr = summarizeDomain(values.filter(v=>v!==undefined) as number[]|string[]|boolean[]),

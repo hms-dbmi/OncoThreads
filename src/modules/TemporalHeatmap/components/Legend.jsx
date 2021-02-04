@@ -43,7 +43,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
     getLegendEntry(value, opacity, rectWidth, fontSize, currX,
         lineheight, rectColor, textColor, tooltipText) {
 
-        if(this.props.rootStore.uiStore.globalTime.includes('block')){
+        if(this.props.rootStore.uiStore.selectedTab.includes('block')){
    
             return (
                 <g
@@ -236,7 +236,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 const rectWidth = Legend.getTextWidth(this.minCatWidth, d, fontSize) + 4;
                 if (d !== undefined) {
 
-                    if(this.props.rootStore.uiStore.globalTime.includes('block')){
+                    if(this.props.rootStore.uiStore.selectedTab.includes('block')){
                         legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
                             fontSize, currX, lineheight, variable.colorScale(d),
                             ColorScales.getHighContrastColor(variable.colorScale(d)), tooltipText));
@@ -301,7 +301,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                 let lineheight;
                 let adaptedFontSize = fontSize;
                 let opacity = 1;
-                if (primary === d.id && this.props.uiStore.globalTime!=='myblock') {
+                if (primary === d.id && this.props.uiStore.selectedTab!=='myblock') {
                     lineheight = this.props.rootStore.visStore.primaryHeight;
                 } else {
                     lineheight = this.props.rootStore.visStore.secondaryHeight;
@@ -415,12 +415,12 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
         const textHeight = 12;
 
         // draggable line for resizing
-        if (this.props.uiStore.globalTime.includes('block')) {
+        if (this.props.uiStore.selectedTab.includes('block')) {
             const lines = [];
             const legends = [];
             this.props.rootStore.dataStore.timepoints.forEach((d, i) => {
                 let transform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i + 1]})`
-                if (this.props.uiStore.globalTime==='myblock'){
+                if (this.props.uiStore.selectedTab==='myblock'){
                     transform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i + 1]})`
                 
                 }
@@ -445,7 +445,7 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                     );
                 }
                 let leTransform = `translate(0,${this.props.rootStore.visStore.timepointPositions.timepoint[i]})`;
-                if (this.props.uiStore.globalTime==='myblock'){
+                if (this.props.uiStore.selectedTab==='myblock'){
                     leTransform = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.timepoint[i]})`
                 }
                 const lg = this.getBlockLegend(d.heatmap, d.primaryVariableId, textHeight,

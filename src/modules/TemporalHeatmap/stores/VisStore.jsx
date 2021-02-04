@@ -83,7 +83,7 @@ class VisStore {
                     }
                     return transitionSpace;
                 }));
-                if(this.rootStore.uiStore.globalTime === 'line') {
+                if(this.rootStore.uiStore.selectedTab === 'line') {
                     this.currentVerticalZoomLevel = Math.max(...this.transitionSpaces);
                     this.initialVerticalZoomLevel = this.currentVerticalZoomLevel;
                 }
@@ -128,7 +128,7 @@ class VisStore {
                 } else {
                     val = value;
                 }
-                if(this.rootStore.uiStore.globalTime === 'line') {
+                if(this.rootStore.uiStore.selectedTab === 'line') {
                     this.currentVerticalZoomLevel = val;
                 }
                 this.transitionSpaces.replace(Array(this.transitionSpaces.length)
@@ -165,7 +165,7 @@ class VisStore {
             get svgHeight() {
                 const h = this.timepointPositions.connection[this.timepointPositions.connection.length - 1]
                     + this.getTPHeight(this.rootStore.dataStore.timepoints[this.rootStore.dataStore.timepoints.length - 1]);
-                if(this.rootStore.uiStore.globalTime === 'line') {
+                if(this.rootStore.uiStore.selectedTab === 'line') {
                     this.currentSVGHeight = window.innerHeight - 200;
                     if(this.currentVerticalZoomLevel === undefined) {
                         //this.currentSVGHeight = window.innerHeight - 200;
@@ -291,7 +291,7 @@ class VisStore {
             get groupScale() {
                 let {dataStore, uiStore} = this.rootStore
                 
-                if (this.rootStore.uiStore.globalTime==='stateTransition'){
+                if (this.rootStore.uiStore.selectedTab==='stateTransition'){
                     
                     return d3.scaleLinear()
                     .domain([0, dataStore.numberOfPatients])
@@ -353,7 +353,8 @@ class VisStore {
     getNewTPHeight(timepoint) {
         let height = 0;
         let varCount = 0;
-        this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
+        if (this.rootStore.uiStore.selectedTab === 'block'){
+            this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
             .forEach((variableId, i) => {
                 if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
                     || variableId === timepoint.primaryVariableId) {
@@ -362,6 +363,21 @@ class VisStore {
                     height += this.secondaryHeight;            
                 }
             });
+        }else {
+            let patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
+
+            this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
+            .filter(id=>!patientVars.includes(id))
+            .forEach((variableId, i) => {
+                if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
+                    || variableId === timepoint.primaryVariableId) {
+                    
+                    varCount += 1;
+                    height += this.secondaryHeight;            
+                }
+            });
+        }
+        
     
         return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }

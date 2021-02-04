@@ -62,6 +62,10 @@ export interface IRootStore{
     [key:string]:any
 }
 
+export interface IUndoRedoStore{
+    [key:string]:any
+}
+
 export type TColorScale =  any
 
 export type TVariable = any

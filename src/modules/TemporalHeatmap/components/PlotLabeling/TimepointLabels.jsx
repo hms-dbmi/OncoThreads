@@ -30,7 +30,7 @@ const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(clas
         const labels = this.props.dataStore.timepoints.map((d, i) => {
             let pos = this.props.padding + this.props.visStore.timepointPositions.timepoint[i]
                 + (this.props.visStore.getNewTPHeight(d) - this.textFieldHeight) / 2;
-            if (this.props.uiStore.globalTime==='myblock'){
+            if (this.props.uiStore.selectedTab==='myblock'){
                 pos = this.props.padding + this.props.visStore.newTimepointPositions.timepoint[i]
                 + (this.props.visStore.getNewTPHeight(d) - this.textFieldHeight) / 2;
             }
@@ -58,7 +58,7 @@ const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(clas
             + this.props.visStore.getTPHeight(this.props.dataStore
                 .timepoints[this.props.dataStore.timepoints.length - 1]) / 2;
 
-        if (this.props.uiStore.globalTime==='myblock'){
+        if (this.props.uiStore.selectedTab==='myblock'){
             firstPos = this.props.padding + this.props.visStore.newTimepointPositions.timepoint[0]
             + this.props.visStore.getNewTPHeight(this.props.dataStore.timepoints[0]) / 2;
 

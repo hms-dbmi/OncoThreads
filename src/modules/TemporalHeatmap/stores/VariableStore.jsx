@@ -16,50 +16,57 @@ class VariableStore {
             currentVariables: [],
             // Variables that are referenced (displayed or used to create a derived variable)
             referencedVariables: {},
-            // stateLabels:{}, // key & label pairs
 
             get fullCurrentVariables() {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
+            },
+            get currentNonPatientVariables() {
+                let patientVars = this.rootStore.clinicalPatientCategories.map(d => d.id)
+                return this.currentVariables.filter(
+                    id => !patientVars.includes(id)
+                )
+            },
+            get fullNonPatientCurrentVariables() {
+                return this.currentNonPatientVariables.map(d => this.referencedVariables[d]);
             },
             /**
              * each point is one patient at one time point
              */
             get points() {
-            
-                let points = []
-                this.childStore
-                .timepoints
-                .forEach((timepoint, timeIdx) => {
-                    var heatmap = timepoint.heatmap
-        
-                    if (heatmap[0]) {
-                        heatmap[0].data.forEach((d, i) => {
-                            let {patient} = d
-                            let value = heatmap.map(d => d.data[i].value)
-                            var point = {
-                                idx:points.length,
-                                patient,
-                                value,
-                                timeIdx
-                            }
-                            points.push(point)
-                        })
-                    }
-                })
+                let { timepoints } = this.childStore
+
+                let points = [], clinicalFeatures = this.rootStore.clinicalPatientCategories.map(d => d.id)
+                timepoints
+                    .forEach((timepoint, timeIdx) => {
+                        var heatmap = timepoint.heatmap
+
+                        if (heatmap[0]) {
+                            heatmap[0].data.forEach((d, patientIdx) => {
+                                const { patient } = d
+                                let value = []
+                                heatmap.forEach((row, rowIdx) => {
+                                    if (clinicalFeatures.includes(row.variable)) return
+
+                                    let v = row.data[patientIdx].value
+                                    if (v === undefined) {
+                                        v = this.findNearestReplace(patient, timeIdx, rowIdx)
+                                    }
+                                    value.push(v)
+                                })
+                                var point = {
+                                    idx: points.length,
+                                    patient,
+                                    value,
+                                    timeIdx
+                                }
+                                points.push(point)
+                            })
+                        }
+                    })
 
                 return points
-                
-                
             },
-            
-            // setStateLabel: action((stateKey, stateLabel)=>{
-                
-            //     this.stateLabels[stateKey] = stateLabel
-            // }),
-            // resetStateLabel: action(()=>{
-                
-            //     this.stateLabels = {}
-            // }),
+
 
             resetVariables: action(() => {
                 this.referencedVariables = {};
@@ -124,7 +131,7 @@ class VariableStore {
                 this.replaceVariables(referencedVariables, currentVariables);
                 this.childStore.timepoints.forEach((d, i) => {
                     if (primaryVariables[i] !== undefined) {
-                        if (referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
+                        if (this.rootStore.uiStore.selectedTab === 'block' && referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
                             d.setIsGrouped(false);
                         }
                     }
@@ -172,7 +179,7 @@ class VariableStore {
                         this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
                     }
                 }
-                if(this.type === 'sample' && this.currentVariables.length === change.addedCount - change.removedCount){
+                if (this.type === 'sample' && this.currentVariables.length === change.addedCount - change.removedCount) {
                     this.rootStore.dataStore.setGlobalPrimary(this.currentVariables[0]);
                 }
                 if (change.addedCount > change.removedCount) {
@@ -185,6 +192,45 @@ class VariableStore {
             this.updateReferences();
             this.updateVariableRanges();
         });
+    }
+
+    findNearestReplace(patient, timeIdx, rowIdx) {
+        let { timepoints } = this.childStore
+        let beforeTime = timeIdx - 1, afterTime = timeIdx + 1,
+            v = timepoints[timeIdx].heatmap[rowIdx].data
+                .find(d => d.patient === patient)
+                .value
+
+        while (v === undefined) {
+            let beforeV, afterV
+
+            if (afterTime < timepoints.length) {
+                let afterSample = timepoints[afterTime].heatmap[rowIdx].data
+                    .find(d => d.patient === patient)
+
+                afterV = afterSample ? afterSample.value : undefined
+                afterTime += 1
+            }
+
+            if (beforeTime >= 0) {
+                let beforeSample = timepoints[beforeTime].heatmap[rowIdx].data
+                    .find(d => d.patient === patient)
+
+                beforeV = beforeSample ? beforeSample.value : undefined
+                beforeTime -= 1
+            }
+            v = beforeV ?? afterV
+            if (beforeTime < 0 && afterTime >= timepoints.length) break
+
+
+        }
+
+        // cannot find a non missing value of the same attribute in the same patient
+        if (v === undefined) {
+            let otherValues = timepoints[timeIdx].heatmap[rowIdx].data.map(d => d.value)
+            v = otherValues.filter(v => v !== undefined).reduce((a, b) => a + b, 0) / otherValues.length
+        }
+        return v
     }
 
     /**
@@ -364,7 +410,7 @@ class VariableStore {
     //     this.childStore.timepoints.forEach((TP, i) => {
     //         TP.applyCustomState(timeStates[i].partitions)
     //     })
-        
+
     // }
 }
 

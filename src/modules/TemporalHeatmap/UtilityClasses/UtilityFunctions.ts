@@ -1,4 +1,3 @@
-import UndoRedoStore from "modules/UndoRedoStore";
 
 /**
  * returns scientific notation for high values
@@ -78,12 +77,17 @@ const cropText = (text:string, fontSize:number, fontWeight:number, maxWidth:numb
     const width = context.measureText(text).width;
     if (width > maxWidth) {
         for (let i = 1; i < text.length; i += 1) {
-            const prevText = text.substr(0, i - 1).concat('...');
-            const currText = text.substr(0, i).concat('...');
+            const prevText = text.substr(0, i - 1).concat('..');
+            const currText = text.substr(0, i).concat('..');
             const prevWidth = context.measureText(prevText).width;
             const currWidth = context.measureText(currText).width;
-            if (currWidth > maxWidth && prevWidth < maxWidth) {
+            if (currWidth > maxWidth && prevWidth <= maxWidth) {
                 returnText = prevText;
+                break;
+            }
+            // maxwidth is too small, even the first prevtext is wide than it
+            if (currWidth > maxWidth && prevWidth > maxWidth) {
+                returnText = '..';
                 break;
             }
         }
@@ -106,16 +110,27 @@ const getUniqueKeyName = (num: number, existingNames: string[]): string => {
 
 const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
 
-    if (typeof (values[0]) == "number") {
+    if (typeof (values[0]) === "number") {
         let v = values as number[] // stupid typescropt
         
         let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
-        range=range.map(text => text.replace(/(?<=\.([1-9]*))(0*$)/, ''))
+
+        // remove unnecessary 0, e.g., 2.000 => 2
+        // range=range.map(text => text.replace(/(?<=\.([1-9]*))(0*$)/, ''))
+        // but safari doesn't support lookbehind regex, below is a workaround
+        range=range.map(text => {
+            if (text.includes('.')){
+                let [before, after] = text.split('.')
+                after = after.replace(/0*$/, '')
+                return `${before}${after.length>0?'.'+after:''}`
+            }
+            return text
+        })
         return range
-    } else if (typeof (values[0]) == "string") {
+    } else if (typeof (values[0])=== "string") {
         let v = values as string[]
         return [...new Set(v)]
-    } else if (typeof (values[0]) == "boolean") {
+    } else if (typeof (values[0])=== "boolean") {
         let v = values as boolean[]
         return [...new Set(v)].map(d=>d.toString())
     } else return []

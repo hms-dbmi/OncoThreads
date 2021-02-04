@@ -1,4 +1,4 @@
-import { action, extendObservable} from 'mobx';
+import { action, extendObservable } from 'mobx';
 
 /*
  stores information about a single timepoint
@@ -18,14 +18,14 @@ class SingleTimepoint {
             isGrouped: true,
             primaryVariableId: undefined,
             name: localIndex,
-            customPartitions:[],
+            customPartitions: [],
             /**
              * computes grouped layout based on current heatmap and order.
              * @returns {object[]}
              */
             get grouped() {
                 const grouped = [];
-                
+
                 let variableDomain = this.rootStore.dataStore.variableStores[this.type]
                     .getById(this.primaryVariableId).domain.concat(undefined);
                 if (this.groupSortDir === -1) {
@@ -71,31 +71,30 @@ class SingleTimepoint {
              * @returns {object[]}
              */
             get customGrouped() {
-                let {currentVariables} = this.rootStore.dataStore.variableStores[this.type]
                 let heatmap = this.heatmap
 
                 let result = this.customPartitions.map(partition => {
-                    
-                    let {patients} = partition
 
-                    let rows = heatmap.map(row=>{
+                    let { patients } = partition
+
+                    let rows = heatmap.map(row => {
                         let counts = []
-                        let {variable} = row
+                        let { variable } = row
 
-                        row.data.filter(d=>patients.includes(d.patient))
-                        .forEach(d=>{
-                            let {value:key, patient} = d
-                            let keyIdx = counts.map(d => d.key).indexOf(key)
+                        row.data.filter(d => patients.includes(d.patient))
+                            .forEach(d => {
+                                let { value: key, patient } = d
+                                let keyIdx = counts.map(d => d.key).indexOf(key)
 
-                            if (keyIdx === -1){
-                                counts.push({
-                                    key,
-                                    patients: [patient]
-                                })
-                            }else{
-                                counts[keyIdx].patients.push(patient)
-                            }
-                        })
+                                if (keyIdx === -1) {
+                                    counts.push({
+                                        key,
+                                        patients: [patient]
+                                    })
+                                } else {
+                                    counts[keyIdx].patients.push(patient)
+                                }
+                            })
 
                         return {
                             variable,
@@ -103,12 +102,12 @@ class SingleTimepoint {
                         }
                     })
 
-                    let partitionRows = {...partition, rows}
-    
+                    let partitionRows = { ...partition, rows }
+
                     // partitionRows.rows = currentVariables.map((variable, variableIdx) => {
                     //     let counts = []
                     //     patients.forEach(patient=>{
-                            
+
                     //     })
 
                     //     partitionPoints.forEach(point => {
@@ -126,13 +125,13 @@ class SingleTimepoint {
                     //             }
                     //         }
                     //     })
-                        
+
                     //     return {
                     //         variable,
                     //         counts
                     //     }
                     // })
-                    
+
                     return partitionRows
                 })
 
@@ -212,7 +211,7 @@ class SingleTimepoint {
                 this.heatmap.splice(deleteIndex, 1);
                 if (this.heatmap.length < 1) {
                     this.primaryVariableId = undefined;
-                } else if (this.customPartitions.length==0 && variableId === this.primaryVariableId) {
+                } else if (this.customPartitions.length === 0 && variableId === this.primaryVariableId) {
                     const primaryIndex = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables.map(d => d.datatype === 'NUMBER').indexOf(false);
                     if (this.isGrouped && primaryIndex !== -1) {
                         this.setPrimaryVariable(this.heatmap[primaryIndex].variable);
@@ -383,9 +382,9 @@ class SingleTimepoint {
             /**
              * group based customized grouping in the scatter plot
              */
-            applyCustomState: action((customPartitions)=>{
+            applyCustomState: action((customPartitions) => {
                 this.customPartitions = customPartitions
-                
+
             }),
         });
     }

@@ -23,16 +23,16 @@ observation_code = {
     {'name':'Lactate dehydrogenase', 'type': ''},#
     '9279-1':
     {'name': 'Respiratory rate', 'type': ''},
-    # '38483-4':
-    # {'name': 'Creatinine', 'type': ''},
-    # '26464-8':
-    # {'name':'white blood cell', 'type': ''},
+    '38483-4':
+    {'name': 'Creatinine', 'type': ''},
+    '26464-8':
+    {'name':'white blood cell', 'type': ''},
     # '26453-1':
     # {'name':'red blood cell', 'type':''},
     '1988-5':
     {'name': 'C reactive protein', 'type': ''},
-    # '42719-5':
-    # {'name': 'Total Bilirubin', 'type': ''},
+    '42719-5':
+    {'name': 'Total Bilirubin', 'type': ''},
     '8867-4':
     {'name': 'heart rate', 'type': ''},
     '8310-5':
@@ -225,7 +225,7 @@ save file
 '''
 
 # remove incomplete samples
-samples.dropna(inplace = True)
+# samples.dropna(inplace = True)
 timeline_specimen = timeline_specimen[timeline_specimen.SAMPLE_ID.isin(samples.SAMPLE_ID)]
 # 
 # samples.to_csv('covid_{}_samples.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
@@ -234,7 +234,8 @@ covid_patients_obs.to_csv('processedData/covid_{}_all.txt'.format(SAMPLE_SIZE), 
 covid_med.to_csv('processedData/covid_{}_timeline_med.txt'.format(SAMPLE_SIZE), index=False, sep='\t')
 # covert type to the format used in oncoThreads
 type_dict ={
-    'numeric': 'NUMBER'
+    'numeric': 'NUMBER',
+    '': 'NUMBER'
 }
 
 sample_header = [
@@ -248,6 +249,31 @@ with open('processedData/covid_{}_samples.txt'.format(SAMPLE_SIZE), 'w') as txt_
     for line in sample_header:
         txt_file.write(line)
     samples.to_csv(txt_file, index=False, sep='\t', na_rep= ' ')
+
+
+#%%
+patient_features = ['GENDER', 'AGE', 'SURVIVE']
+
+patient_header = [
+     "#" + '\t'.join(['Patient_Identifier'] + patient_features ) +'\n',
+    "#" + '\t'.join(['Patient_Identifier'] + patient_features ) +'\n',
+    "#" + '\t'.join(['STRING', 'STRING', 'NUMBER', 'STRING']) +'\n',
+    "#" + '\t'.join(['1' for _ in range( 1+len(patient_features) )])+'\n',
+]
+
+saved_patients = sampled_inpatients[['Id', 'GENDER', 'BIRTHDATE', 'DEATHDATE']]
+saved_patients['SURVIVE'] = saved_patients['DEATHDATE'].isnull()
+saved_patients['AGE'] = np.floor((pd.to_datetime('2020-10-10') - pd.to_datetime( saved_patients['BIRTHDATE'] ))/ np.timedelta64(1, 'Y'))
+saved_patients = saved_patients.rename(columns={"Id": "PATIENT_ID"})
+
+with open('processedData/covid_{}_patients.txt'.format(SAMPLE_SIZE), 'w') as txt_file:
+    for line in patient_header:
+        txt_file.write(line)
+    
+    saved_patients[["PATIENT_ID"]+patient_features].to_csv(txt_file, index=False, sep='\t', na_rep= ' ')
+
+
+
 # %%
 '''
 plot

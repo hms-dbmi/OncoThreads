@@ -8,7 +8,6 @@ import MyBlockView from './BlockViewNew';
 import StateTransition from './StateTransition'
 import { Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import * as introJs from 'intro.js'
 
 /**
  * Component containing the main visualization
@@ -24,15 +23,15 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
      * @param {boolean} key - global timeline (true) or block view (false)
      */
     handleSwitchView(key) {
-        if (key !== this.props.uiStore.globalTime) {
-            this.props.uiStore.setGlobalTime(key);
-            this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.globalTime);
+        if (key !== this.props.uiStore.selectedTab) {
+            this.props.uiStore.selectTab(key);
+            this.props.undoRedoStore.saveSwitchHistory(this.props.uiStore.selectedTab);
         }
     }
 
     getTabbedPanel() {
         // create  views
-        
+
         let stateTransition = <StateTransition
             openSaveVarModal={this.props.openSaveVarModal}
             tooltipFunctions={this.props.tooltipFunctions}
@@ -78,7 +77,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 mountOnEnter
                 unmountOnExit
                 animation={false}
-                activeKey={this.props.uiStore.globalTime}
+                activeKey={this.props.uiStore.selectedTab}
                 onSelect={
                     this.handleSwitchView
                 }
@@ -88,18 +87,18 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 data-step='1'
                 data-position='right'
             >
-               <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="Patients are grouped at each timepoint by their attribute values"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="Patients are grouped at each timepoint by their attribute values"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {blockView}
                 </Tab>
-                
+
                 <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="Patients are grouped at each timepoint by the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {myblockView}
                 </Tab>
-                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }} 
+                <Tab eventKey='stateTransition' style={{ paddingTop: 10 }}
                     title={<span>State Transitions <Tooltip title="States are identified and the transition among states are presented"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {stateTransition}
                 </Tab>
-                
+
                 <Tab eventKey='line' style={{ paddingTop: 10 }} title={<span>Timeline <Tooltip title="The timelines of individual patients"><InfoCircleOutlined translate='' /></Tooltip></span>}>
                     {timelineView}
                 </Tab>
@@ -108,11 +107,11 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
         );
     }
 
-    componentDidUpdate(){
-        let {uiStore} = this.props
+    componentDidUpdate() {
+        let { uiStore } = this.props
 
-        if(uiStore.globalTime=='stateTransition' && uiStore.introTutorial!== undefined){
-            
+        if (uiStore.selectedTab === 'stateTransition' && uiStore.introTutorial !== undefined) {
+
             uiStore.setTutorialMode(false) // close current tutorial
             uiStore.setTutorialMode(true) // start a new intro to refresh the intro in the newly-opened tab panel
         }

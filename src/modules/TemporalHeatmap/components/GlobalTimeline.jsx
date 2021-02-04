@@ -21,7 +21,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
     constructor() {
         super();
         this.state = { rowOperatorsWidth: 100 };
-        this.globalTime = React.createRef();
+        this.selectedTab = React.createRef();
         this.globalRowOperators = React.createRef();
         this.updateDimensions = this.updateDimensions.bind(this);
     }
@@ -255,9 +255,9 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
 
     updateDimensions() {
         this.props.rootStore.visStore
-            .setPlotWidth(this.globalTime.current.getBoundingClientRect().width);
+            .setPlotWidth(this.selectedTab.current.getBoundingClientRect().width);
         this.props.rootStore.visStore
-            .setPlotHeight(window.innerHeight - this.globalTime
+            .setPlotHeight(window.innerHeight - this.selectedTab
                 .current.getBoundingClientRect().top);
         this.setState({
             rowOperatorsWidth: this.globalRowOperators.current.rowOperators.current.parentNode.clientWidth,
@@ -333,7 +333,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                         </Col>
                         <Col xs={9} md={9} style={{ padding: 0, overflow: 'hidden' }}>
                             <GlobalBands timeValue={this.props.rootStore.timeValue}/>
-                            <div ref={this.globalTime} className="scrollableX">
+                            <div ref={this.selectedTab} className="scrollableX">
                                 <svg
                                     width={this.props.rootStore.visStore.svgWidth}
                                     height={this.props.rootStore.visStore.svgHeight}

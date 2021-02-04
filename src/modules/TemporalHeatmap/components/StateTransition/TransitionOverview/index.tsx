@@ -2,22 +2,23 @@ import * as React from "react"
 import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
-import { Table, Input, Button, Space, Checkbox, Tooltip } from 'antd';
-import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { ColumnsType } from 'antd/lib/table'
-import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
-
+import { cropText, getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { Input, Checkbox, Tabs, Tooltip } from 'antd';
 import GridLayout from 'react-grid-layout';
+import PatternTable from './PatternTable'
+import PatientTable from './PatientTable'
 
+import { InfoCircleOutlined } from '@ant-design/icons';
+
+const { TabPane } = Tabs;
 interface Props {
     rootStore?: IRootStore,
     width: number,
     height: number
 }
 
-interface State{
-    searchedPatternLengths:number[] 
+interface State {
+    searchedPatternLengths: number[]
 }
 
 type TypeLayoutDict = {
@@ -35,8 +36,6 @@ type TypeTimeLayout = { shiftX: number }
         }
     }
 
-type RowRecordType = { key: string, pattern: TPattern, [key: string]: any }
-
 
 @inject('rootStore')
 @observer
@@ -50,19 +49,19 @@ class TransitionOverview extends React.Component<Props, State> {
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
     searchInput: Input | null = null;
-    
+
     fontSize = 14;
 
-    constructor(props: Props){
+    constructor(props: Props) {
         super(props)
-        this.state={
-            searchedPatternLengths: [2,3]
+        this.state = {
+            searchedPatternLengths: [2, 3]
         }
     }
 
     stateOverview() {
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
-        let { dataStore, uiStore, visStore } = this.props.rootStore!
+        let { dataStore, uiStore } = this.props.rootStore!
 
 
 
@@ -121,23 +120,22 @@ class TransitionOverview extends React.Component<Props, State> {
             })
 
             samplePoints.forEach((TP, timeIdx) => {
-
-
-
                 let offsetX = 0
                 let timepoint: Array<JSX.Element> = []
-
-                // if (timeIdx >= 1) {
-                //     offsetX = Math.max(offsetX, Math.min(...Object.values(layoutDict[timeIdx - 1][groupIdx]).map(d => d.x)))
-                // }
 
                 TP.customGrouped.forEach(d => {
                     let stateKey = d.partition || ''
 
                     let patients = d.patients.filter(p => patientGroup.includes(p))
-                    if (patients.length == 0) return
-                    let rectWidth = Math.max(rectWidthScale(patients.length), 5)
-                    timepoint.push(<rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight} x={offsetX + this.paddingW + this.annotationWidth} key={`time${timeIdx}_group${groupIdx}_state${stateKey}`} />)
+                    if (patients.length === 0) return
+                    const rectWidth = Math.max(rectWidthScale(patients.length), 5)
+                    const stateName = cropText(dataStore.stateLabels[stateKey]||stateKey, this.fontSize, 700, rectWidth)
+                    timepoint.push(<g transform={`translate(${offsetX + this.paddingW + this.annotationWidth}, 0)`}  key={`time${timeIdx}_group${groupIdx}_state${stateKey}`}>
+                        <rect fill={getColorByName(stateKey)} width={rectWidth} height={this.rectHeight}  />
+                        <text fill="white" x={rectWidth/2} y={(this.rectHeight+this.fontSize)/2} textAnchor="middle">
+                            {stateName}
+                        </text>
+                    </g>)
 
                     layoutDict[groupIdx][timeIdx][stateKey] = {
                         width: rectWidth,
@@ -227,7 +225,7 @@ class TransitionOverview extends React.Component<Props, State> {
             annotations.push(
                 <g key={d.globalIndex} transform={transformTP}>
                     <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray" />
-                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{i+1}</text>
+                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{i + 1}</text>
                 </g>,
             )
         });
@@ -236,26 +234,26 @@ class TransitionOverview extends React.Component<Props, State> {
 
         let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
             let offsetX = Object.values(layoutDict[groupIdx][0])[1].x
-            let transform = `translate(${offsetX }, ${this.paddingH })`
+            let transform = `translate(${offsetX}, ${this.paddingH})`
             let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
-            let labelWidth = getTextWidth(`group${groupIdx}`, this.fontSize) 
+            let labelWidth = getTextWidth(`group${groupIdx}`, this.fontSize)
             let groupLabel = `group${groupIdx}`
-            if (labelWidth>this.partitionGap + layoutDict[groupIdx]['width']!){
+            if (labelWidth > this.partitionGap + layoutDict[groupIdx]['width']!) {
                 groupLabel = `..${groupIdx}`
-                labelWidth = getTextWidth(groupLabel, this.fontSize) 
+                labelWidth = getTextWidth(groupLabel, this.fontSize)
             }
 
             groupLabelOffsetX.push(offsetX + layoutDict[groupIdx]['width']! / 2)
 
-            return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }}  onClick={() => uiStore.selectPatientGroup(groupIdx)}>
-                <foreignObject width={this.groupLabelHeight} height={this.groupLabelHeight} x={layoutDict[groupIdx]['width']! / 2 - labelWidth/2 - this.fontSize -5 } y={this.fontSize}>
-                    <Checkbox checked={isSelected}/>
-                    </foreignObject>
+            return <g key={`group_${groupIdx}`} transform={transform} style={{ fontWeight: isSelected ? 'bold' : 'normal', fill: isSelected ? '#1890ff' : 'black' }} onClick={() => uiStore.selectPatientGroup(groupIdx)}>
+                <foreignObject width={this.groupLabelHeight} height={this.groupLabelHeight} x={layoutDict[groupIdx]['width']! / 2 - labelWidth / 2 - this.fontSize - 5} y={this.fontSize}>
+                    <Checkbox checked={isSelected} />
+                </foreignObject>
                 <text
-                    x= {layoutDict[groupIdx]['width']! / 2}
+                    x={layoutDict[groupIdx]['width']! / 2}
                     y={(this.groupLabelHeight + this.fontSize) / 2}
                     textAnchor="middle"
-                    cursor="pointer"  xlinkTitle={`group_${groupIdx}`}>
+                    cursor="pointer" xlinkTitle={`group_${groupIdx}`}>
                     {groupLabel}
                 </text>
                 {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}
@@ -274,159 +272,36 @@ class TransitionOverview extends React.Component<Props, State> {
 
 
 
-    frequentPatternTable() {
-        let { dataStore } = this.props.rootStore!
-
-        let { ngramResults, frequentPatterns, patientGroups } = dataStore
-        if (dataStore.encodingMetric === "ngram") {
-            frequentPatterns = ngramResults
-        }
-        let rectW = 10
-
-        const handleSearch = (selectedKeys: string[], confirm: () => void, dataIndex: string) => {
-            confirm();
-           
-        };
-
-        const handleReset = (clearFilters: () => void) => {
-            clearFilters()
-        };
-
-        const changePatternLength= (len:number)=>{
-            let {searchedPatternLengths} = this.state
-            let idx = searchedPatternLengths.indexOf(len)
-            if (idx>-1){
-                searchedPatternLengths.splice(idx, 1)
-            }else{
-                searchedPatternLengths.push(len)
-            }
-
-            this.setState({searchedPatternLengths})
-        }
-
-        const getColumnSearchProps = (dataIndex: string) => ({
-            filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: { setSelectedKeys: any, selectedKeys: string[], confirm: () => void, clearFilters: () => void }) => (
-                <div style={{ padding: 8 }}>
-                    contains: <Input
-                        ref={node => {
-                            this.searchInput = node;
-                        }}
-                        placeholder={`Search ${dataIndex}`}
-                        value={selectedKeys[0]}
-                        onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-                        onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                        style={{ width: 188, marginBottom: 8, display: 'block' }}
-                    />
-                    <Checkbox checked={this.state.searchedPatternLengths.includes(2)} onChange={()=>changePatternLength(2)}/> two-state pattern 
-                    <br/>
-                    <Checkbox checked={this.state.searchedPatternLengths.includes(3)} onChange={()=>changePatternLength(3)}/> three-state pattern 
-                    <br/>
-                    <Space>
-                        <Button
-                            type="primary"
-                            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                            icon={<SearchOutlined translate='(0,0)'/>}
-                            size="small"
-                            style={{ width: 90 }}
-                        >
-                            Search
-                  </Button>
-                        <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-                            Reset
-                  </Button>
-                    </Space>
-                </div>
-            ),
-            filterIcon: (filtered: boolean) => <SearchOutlined translate='(0,0)' style={{ color: filtered ? '#1890ff' : undefined }} />,
-            onFilter: (value: string | number | boolean, record: RowRecordType): boolean =>
-                record[dataIndex]
-                    ? record[dataIndex].join('').toLowerCase().includes(value.toString().replace(/\s|,/g, '').toLowerCase()) 
-                    &&
-                    this.state.searchedPatternLengths.includes(record[dataIndex].length)
-                    : false,
-            onFilterDropdownVisibleChange: (visible: boolean) => {
-                if (visible) {
-                    setTimeout(() => this.searchInput!.select(), 100);
-                }
-            },
-            // render: text =>(
-            //     <Highlighter
-            //       highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            //       searchWords={[this.state.searchText]}
-            //       autoEscape
-            //       textToHighlight={text ? text.toString() : ''}
-            //     />
-            //   ) 
-        });
-
-
-        let data = frequentPatterns.map((pattern, patternIdx) => {
-            let [supportIdxs, subseq] = pattern
-
-            let rowData: RowRecordType = {
-                key: `${patternIdx + 1}`,
-                pattern: subseq,
-            }
-
-            patientGroups.forEach((patientGroup, groupIdx) => {
-                let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
-                let percentage = groupSupportIdxs.length == 0 ? '0%' : Math.floor(groupSupportIdxs.length / patientGroup.length*100).toString()+'%'
-                rowData[`group_${groupIdx}`] = percentage 
-            })
-
-            return rowData
-        })
-
-        let columns: ColumnsType<RowRecordType> = patientGroups.map((_, groupIdx) => {
-            return {
-                title: `group_${groupIdx}`,
-                dataIndex: `group_${groupIdx}`,
-                key: `group_${groupIdx}`,
-                sorter: (a, b) => parseInt(a[`group_${groupIdx}`].replace('%', '')) - parseInt(b[`group_${groupIdx}`].replace('%', '')),
-                align: 'center',
-                // width: groupIdx>0?this.groupLabelOffsetX[groupIdx] - this.groupLabelOffsetX[groupIdx-1] : this.groupLabelOffsetX[groupIdx]
-            }
-        })
-
-        columns.unshift({
-            title: '',
-            dataIndex: 'pattern',
-            key: 'pattern',
-            render: (states: string[]) => {
-                return states.map((state, stateIdx) => {
-                return <div key={`${states}+${stateIdx}+${state}`} style={{ width:rectW, margin: 1, backgroundColor: getColorByName(state), fontSize: rectW, color:"white" }} >{state}</div>
-                })
-            },
-            ...getColumnSearchProps('pattern'),
-            align: 'center',
-            width: this.annotationWidth + this.paddingW
-        })
-
-
-    let tableHeader = <span>Frequent Patterns {' '}<Tooltip title="frequent state transition patterns and their distribution of each patient group"><InfoCircleOutlined translate='' />
-        </Tooltip>
-        </span>
-    return <Table columns={columns} dataSource={data} pagination={false} scroll={{ y: this.props.height * 0.3 }} title={()=>tableHeader}/>
-    }
-
     render() {
         let overviewHeight = this.paddingH + this.groupLabelHeight + this.props.rootStore!.dataStore.timepoints.filter(d => d.type === "sample").length * this.timeStepHeight + this.rectHeight
         const layout = [
-            { i: 'overview', x: 0, y: 0, w: 12, h: 3, minW:12, maxW:12 },
-            { i: 'table', x: 0, y: 3, w: 12, h: 2, minW:12, maxW:12 },
+            { i: 'overview', x: 0, y: 0, w: 12, h: 3, minW: 12, maxW: 12 },
+            { i: 'table', x: 0, y: 3, w: 12, h: 2, minW: 12, maxW: 12 },
         ];
-        let dataIntro1 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
+        const dataIntro1 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
         The y-axis presents the timeline and the colored rectangle indicates patients of the same state.\
         You can group patients based on their state transitions by changing the number in the top left input box.'
 
-        let dataIntro2 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
+        const dataIntro2 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
         This table summarizes the frequent state transition patterns.\
         You can sort the rows or search frequent patterns by clicking the icons in the table header.'
 
-        return <GridLayout className="stateTransition overview" rowHeight={this.props.height/5} layout={layout} width={this.props.width}>
-            <div style={{ height: this.props.height * 0.7, overflowY: "auto", width:this.props.width }} key='overview'
-              data-intro={dataIntro1}
-              data-step = "3"
+        const patternHeader = <span>Frequent Patterns {' '}
+            <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyTooltipOnHide>
+                <InfoCircleOutlined translate='' />
+            </Tooltip>
+        </span>
+
+        const patientHeader = <span>Patient Features {' '}
+            <Tooltip title="summarize patient attributes of each patient group" destroyTooltipOnHide>
+                <InfoCircleOutlined translate='' />
+            </Tooltip>
+        </span>
+
+        return <GridLayout className="stateTransition overview" rowHeight={this.props.height / 5} layout={layout} width={this.props.width}>
+            <div style={{ height: this.props.height * 0.7, overflowY: "auto", width: this.props.width }} key='overview'
+                data-intro={dataIntro1}
+                data-step="3"
             >
                 <svg
                     width="100%"
@@ -440,29 +315,26 @@ class TransitionOverview extends React.Component<Props, State> {
                     </g>
                 </svg>
             </div>
-            <div key='table'  
+            <div key='table'
                 data-intro={dataIntro2}
                 data-step='4'>
-            {this.frequentPatternTable()}
-            </div> 
+                <Tabs defaultActiveKey="pattern">
+                    <TabPane
+                        tab={ patternHeader }
+                        key="pattern"
+                    >
+                        <PatternTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} />
+                    </TabPane>
+                    <TabPane
+                        tab={ patientHeader }
+                        key="patient"
+                    >
+                        <PatientTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} />
+                    </TabPane>
+                </Tabs>,
+                
+            </div>
         </GridLayout>
-
-        // return <div className="stateTransition overview" style={{ height: this.props.height, overflowY: "auto" }}>
-        //     <div style={{ height: this.props.height*0.7, overflowY: "auto" }}>
-        //         <svg
-        //             width="100%"
-        //             className="stateTransition overview"
-        //             // height="100%"
-        //             // width={this.props.rootStore.visStore.svgWidth}
-        //             height={overviewHeight}
-        //         >
-        //             <g className="transitionOverview" key="transitionOverview">
-        //                 {this.stateOverview()}
-        //             </g>
-        //         </svg>
-        //     </div>
-        //     {this.frequentPatternTable()}
-        // </div>
     }
 }
 

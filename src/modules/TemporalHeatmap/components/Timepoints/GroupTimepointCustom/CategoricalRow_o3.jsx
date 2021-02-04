@@ -21,10 +21,13 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
 
         let currentX = 0
         let rowDist= [] 
-        row.sort((a,b)=>a.key-b.key).forEach(d=>{
+        row.sort((a,b)=>a.key-b.key).forEach((d,i)=>{
             let {key, patients} = d
-            let binWidth = this.props.visStore.groupScale(patients.length), binHeight = 1/variableDomain.length*(height-this.strokeW), offsetY = getRectY(key)
-            let oneCate = <rect className={key} key={key} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray"/>
+            let binWidth = this.props.visStore.groupScale(patients.length), 
+                binHeight = key===undefined? 0: 1/variableDomain.length*(height-this.strokeW), 
+                offsetY = key===undefined? 0: getRectY(key)
+
+            let oneCate = <rect className={key} key={i} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray"/>
             rowDist.push(oneCate)
             currentX += binWidth
         })
@@ -35,7 +38,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
                 />
         )
 
-        rowDist.unshift(<rect key="background" className="background" fill="white" width={currentX} height={height}/>)
+        rowDist.unshift(<rect key="background" className="background" fill="white" width={currentX} height={height} key="bg"/>)
 
         
         
@@ -55,10 +58,8 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
 CategoricalRow.propTypes = {
     variable: PropTypes.string,
     height: PropTypes.number.isRequired,
-    isEven: PropTypes.bool.isRequired,
     // color: PropTypes.func.isRequired,
     stateColor: PropTypes.string.isRequired,
-    stroke: PropTypes.string.isRequired,
     row: PropTypes.arrayOf(PropTypes.object)
 };
 export default CategoricalRow;
