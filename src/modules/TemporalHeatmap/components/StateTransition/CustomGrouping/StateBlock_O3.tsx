@@ -136,7 +136,7 @@ class StateBlock extends React.Component<Props> {
             Object.values(pointGroups).forEach(g => {
                 let { stateKey, pointIdx } = g
                 let stateColor = getColorByName(stateKey)
-                let stateName = cropText(stateLabels[stateKey] || stateKey, fontHeight, 700, g.pointIdx.length*this.cellWidth)
+                let stateName = cropText(stateLabels[stateKey] || stateKey, fontHeight, 700, g.pointIdx.length * this.cellWidth)
 
                 stateBlocks.push(
                     <g key={stateKey} className={`state${stateKey}`} transform={`translate(${offsetX}, 0)`}>
@@ -316,20 +316,20 @@ class StateBlock extends React.Component<Props> {
             //crop domain text
             let domainTextArrCroped = domainTextArr
                 .map(d => cropText(
-                    d, this.fontHeight, 700, 
-                    (this.cellWidth * points.length - getTextWidth('~', this.fontHeight) * (domainTextArr.length-1)) / domainTextArr.length
+                    d, this.fontHeight, 700,
+                    (this.cellWidth * points.length - getTextWidth('~', this.fontHeight) * (domainTextArr.length - 1)) / domainTextArr.length
                 )),
                 row: JSX.Element, maxHeight = this.cellHeight
 
             if (typeof (domain[0]) === 'number') {
                 getRectHeight = (domain: any[], value: any): number => {
-                    if (domain[0]===domain[1]){
+                    if (domain[0] === domain[1]) {
                         return this.cellHeight
                     } else return (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
                 }
 
                 getRectY = (domain: any[], value: any): number => {
-                    if (domain[0]===domain[1]){
+                    if (domain[0] === domain[1]) {
                         return 0
                     } else return this.cellHeight - (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
                 }
@@ -342,27 +342,27 @@ class StateBlock extends React.Component<Props> {
 
             } else {
                 getRectHeight = (domain: any[], value: any): number => {
-                    if (domain.length===0) {
+                    if (domain.length === 0) {
                         console.error('domain length cannot be 0')
                         return this.cellHeight
                     }
                     return 1 / domain.length * this.cellHeight
                 }
                 getRectY = (domain: any[], value: any): number => {
-                    if (domain.indexOf(value)===-1) {
+                    if (domain.indexOf(value) === -1) {
                         console.error(`value ${value} is not in domain ${domain}`)
                         return 0
-                    }else return domain.indexOf(value) / domain.length * this.cellHeight
+                    } else return domain.indexOf(value) / domain.length * this.cellHeight
                 }
                 cellText = domainTextArrCroped.join(', ')
                 cellTextFull = domainTextArr.join(',')
                 row = this.drawCellDistCate(values, stateColor, rowIdx, getRectHeight, getRectY)['row']
             }
 
-            if (getTextWidth(cellText, this.fontHeight) >  this.cellWidth*points.length){
+            if (getTextWidth(cellText, this.fontHeight) > this.cellWidth * points.length) {
                 cellText = '..'
             }
-            
+
             let cellTooltip: JSX.Element = <div> {cellTextFull}</div>
 
             if (maxHeight < 0.2 * this.cellHeight) {
@@ -490,31 +490,31 @@ class StateBlock extends React.Component<Props> {
         </g>
     }
 
-    drawYAxis(){
+    drawYAxis() {
         const tickWidth = 3
-        const {sampleFeatureDomains, width} = this.props, offsetX = width - this.axisWidth, offsetY = this.fontHeight
-        let axes = sampleFeatureDomains.map((domain, featurenIdx)=>{
-            const tickGap = this.cellHeight/ domain.length, labelHeight = Math.min(this.fontHeight, tickGap)
+        const { sampleFeatureDomains, width } = this.props, offsetX = width - this.axisWidth, offsetY = this.fontHeight
+        let axes = sampleFeatureDomains.map((domain, featurenIdx) => {
+            const tickGap = this.cellHeight / domain.length, labelHeight = Math.min(this.fontHeight, tickGap)
 
-            if (typeof domain[0] === "number"){
-                return <g key={featurenIdx} className="y_axis" transform={`translate(0, ${featurenIdx* (this.cellHeight+this.rowVerticalGap)})`}>
-                    <line x1={0} y1={0} x2={0} y2={this.cellHeight+this.strokeW} className="axis" stroke="black"/>
-                    <line x1={0} y1={0} x2={tickWidth} y2={0} className="tick" stroke="black"/>
-                    <line x1={0} y1={this.cellHeight} x2={tickWidth} y2={this.cellHeight} className="tick" stroke="black"/>
-                    <text x={tickWidth*2} y={labelHeight}>{domain[1]}</text>
-                    <text x={tickWidth*2} y={this.cellHeight + this.strokeW}>{domain[0]}</text>
+            if (typeof domain[0] === "number") {
+                return <g key={featurenIdx} className="y_axis" transform={`translate(0, ${featurenIdx * (this.cellHeight + this.rowVerticalGap)})`}>
+                    <line x1={0} y1={0} x2={0} y2={this.cellHeight + this.strokeW/2} className="axis" stroke="black" />
+                    <line x1={0} y1={0} x2={tickWidth} y2={0} className="tick" stroke="black" />
+                    <line x1={0} y1={this.cellHeight + this.strokeW/2} x2={tickWidth} y2={this.cellHeight + this.strokeW/2} className="tick" stroke="black" />
+                    <text x={tickWidth * 2} y={labelHeight}>{domain[1]}</text>
+                    <text x={tickWidth * 2} y={this.cellHeight + this.strokeW/2}>{domain[0]}</text>
                 </g>
-            }else{
-                const axisLabel = domain.map((d, i)=>{
-                    return <g key={`${d}_${i}`} transform={`translate(${0}, ${i* tickGap})`}>
-                        <line x1={0} y1={0} x2={tickWidth} y2={0} className="tick" stroke="black"/>
-                        <text x= {tickWidth*2} y={ (labelHeight+tickGap)/2} fontSize={labelHeight} >{d}</text>
+            } else {
+                const axisLabel = domain.map((d, i) => {
+                    return <g key={`${d}_${i}`} transform={`translate(${0}, ${i * tickGap})`}>
+                        <line x1={0} y1={0} x2={tickWidth} y2={0} className="tick" stroke="black" />
+                        <text x={tickWidth * 2} y={(labelHeight + tickGap) / 2} fontSize={labelHeight} >{d}</text>
                     </g>
-                }) 
-                return <g key={featurenIdx} className="y_axis" transform={`translate(0, ${featurenIdx* (this.cellHeight+this.rowVerticalGap)})`}>
-                    <line x1={0} y1={0} x2={0} y2={this.cellHeight+this.strokeW} className="axis" stroke="black"/>
+                })
+                return <g key={featurenIdx} className="y_axis" transform={`translate(0, ${featurenIdx * (this.cellHeight + this.rowVerticalGap)})`}>
+                    <line x1={0} y1={0} x2={0} y2={this.cellHeight + this.strokeW/2} className="axis" stroke="black" />
                     {axisLabel}
-                    <line x1={0} y1={this.cellHeight} x2={tickWidth} y2={this.cellHeight+this.strokeW} className="tick" stroke="black"/>
+                    <line x1={0} y1={this.cellHeight + this.strokeW/2} x2={tickWidth} y2={this.cellHeight + this.strokeW/2} className="tick" stroke="black" />
                 </g>
             }
         })
