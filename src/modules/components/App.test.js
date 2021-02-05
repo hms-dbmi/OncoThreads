@@ -5,7 +5,7 @@ import App from './App';
 import RootStore from '../stores/RootStore';
 import UndoRedoStore from '../stores/UndoRedoStore';
 import UIStore from '../stores/UIStore';
-import StudyAPI from '../../studyAPI';
+import StudyAPI from '../../API/studyAPI';
 
 it('renders without crashing', () => {
     const uiStore = new UIStore();

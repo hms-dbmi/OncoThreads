@@ -6,10 +6,10 @@ import VisStore from './VisStore';
 import OriginalVariable from './OriginalVariable';
 import MolProfileMapping from '../MolProfileMapping';
 import SvgExport from '../SvgExport';
-import CBioAPI from '../../CBioAPI';
-import FileAPI from '../../FileAPI';
+import CBioAPI from '../../API/CBioAPI';
+import FileAPI from '../../API/FileAPI';
 import LocalFileLoader from '../../LocalFileLoader';
-import GeneNamesLocalAPI from '../../GeneNamesLocalAPI';
+import GeneNamesLocalAPI from '../../API/GeneNamesLocalAPI';
 import ScoreStore from './ScoreStore';
 
 /*

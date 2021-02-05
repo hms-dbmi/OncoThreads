@@ -17,7 +17,7 @@ import App from './modules/components/App.jsx';
 import RootStore from './modules/stores/RootStore';
 import UIStore from './modules/stores/UIStore';
 import UndoRedoStore from './modules/stores/UndoRedoStore';
-import StudyAPI from './studyAPI';
+import StudyAPI from './API/studyAPI';
 
 const uiStore = new UIStore();
 const studyAPI = new StudyAPI(uiStore);

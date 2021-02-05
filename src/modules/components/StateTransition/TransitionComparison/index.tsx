@@ -1,8 +1,8 @@
 import React from "react"
 import { observer, inject, Provider } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import GroupPartition from '../Timepoints/GroupTimepointCustom/GroupPartition';
-import SankeyTransition from '../Transitions/SankeyTransition/SankeyTransition';
+import GroupPartition from '../../Timepoints/GroupTimepointCustom/GroupPartition';
+import SankeyTransition from '../../Transitions/SankeyTransition/SankeyTransition';
 
 
 interface Props {
