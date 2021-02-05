@@ -1,4 +1,4 @@
-import OriginalVariable from './TemporalHeatmap/stores/OriginalVariable';
+import OriginalVariable from './stores/OriginalVariable';
 import ColorScales from './UtilityClasses/ColorScales';
 
 /*

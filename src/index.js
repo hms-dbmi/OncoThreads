@@ -13,10 +13,10 @@ import 'introjs-custom.css'
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 
-import App from './modules/TemporalHeatmap/components/App.jsx';
-import RootStore from './modules/RootStore';
-import UIStore from './modules/UIStore';
-import UndoRedoStore from './modules/UndoRedoStore';
+import App from './modules/components/App.jsx';
+import RootStore from './modules/stores/RootStore';
+import UIStore from './modules/stores/UIStore';
+import UndoRedoStore from './modules/stores/UndoRedoStore';
 import StudyAPI from './studyAPI';
 
 const uiStore = new UIStore();
