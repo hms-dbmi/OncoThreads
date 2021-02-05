@@ -237,7 +237,7 @@ class TransitionOverview extends React.Component<Props, State> {
             let transform = `translate(${offsetX}, ${this.paddingH})`
             let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
             let labelWidth = getTextWidth(`group${groupIdx}`, this.fontSize)
-            let groupLabel = `group${groupIdx}`
+            let groupLabel = `group${groupIdx + 1}`
             if (labelWidth > this.partitionGap + layoutDict[groupIdx]['width']!) {
                 groupLabel = `..${groupIdx}`
                 labelWidth = getTextWidth(groupLabel, this.fontSize)

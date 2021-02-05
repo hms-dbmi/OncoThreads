@@ -118,7 +118,7 @@ class TransitionComparison extends React.Component<Props> {
                     if (firstTP.customPartitions.length > 0) {
                         if (secondTP.customPartitions.length > 0) {
                             transitions.push(
-                                <g className={`time${timeIdx}_group${groupIdx} transitions`} key={`time${timeIdx}_group${groupIdx}`} transform={transformTR}>
+                                <g className={`time${timeIdx}_group${groupIdx+1} transitions`} key={`time${timeIdx}_group${groupIdx+1}`} transform={transformTR}>
                                     <Provider
                                         dataStore={dataStore}
                                         visStore={visStore}
@@ -156,8 +156,8 @@ class TransitionComparison extends React.Component<Props> {
                     if (partition.patients.length === 0) return
                    
                     timepoint.push(<g
-                        key={`group${groupIdx}_state${group.partition}`}
-                        className={`group${groupIdx}_state${group.partition} timepoint`}
+                        key={`group${groupIdx+1}_state${group.partition}`}
+                        className={`group${groupIdx+1}_state${group.partition} timepoint`}
                         style={{ backgroundColor: 'darkgray' }}
                         transform={transform}
                     >
@@ -195,7 +195,7 @@ class TransitionComparison extends React.Component<Props> {
             })
 
             groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.annotationWidth}, ${0})`}>
-                <text y={this.groupLabelHeight-12} fontWeight="bold" fill="#1890ff">group{groupIdx} </text>
+                <text y={this.groupLabelHeight-12} fontWeight="bold" fill="#1890ff">group{groupIdx+1} </text>
                 {transitions}
                 {timepoints}
             </g>)
