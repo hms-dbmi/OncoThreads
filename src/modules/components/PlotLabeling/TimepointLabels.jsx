@@ -40,7 +40,7 @@ const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(clas
                     <BlockTextField
                         width={this.props.width > 0 ? this.props.width : 2}
                         height={this.textFieldHeight}
-                        timepoint={d+1}
+                        timepoint={d}
                     />
                 );
             }
