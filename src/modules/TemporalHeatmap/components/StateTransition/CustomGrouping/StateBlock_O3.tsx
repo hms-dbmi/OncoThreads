@@ -30,14 +30,15 @@ interface Props {
 @observer
 class StateBlock extends React.Component<Props> {
     public horizonGap = 15;
-    minCellHeight = 20;
-    verticalGap = 15;
+    minCellHeight = 35;
+    topMargin = 15;
     fontHeight = 15;
     strokeW = 4;
-    cellVerticalGap = 35;
+    rowVerticalGap = 35; // 
     blockHeightRatio = 0.5; // the heigh of block : the height of whole chart 
     maxNameColRatio = 0.15; // the max width of feature name col / the width of the state identification panel
     nameChartGap = 20; // the horizontal distance between feature name col and state charts
+    axisWidth = 50;      // width of the right-most y axis label 
     scoreDigits = 2;
     rightMargin = 5;
 
@@ -46,6 +47,7 @@ class StateBlock extends React.Component<Props> {
         this.drawAllStates = this.drawAllStates.bind(this)
         this.drawOneState = this.drawOneState.bind(this)
         this.drawTimeDist = this.drawTimeDist.bind(this)
+        this.drawYAxis = this.drawYAxis.bind(this)
 
     }
     @computed
@@ -70,14 +72,14 @@ class StateBlock extends React.Component<Props> {
         let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
 
         let hasLeftPoints = allSelected.length < points.length
-        // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.cellVerticalGap)  + 2*this.cellVerticalGap
+        // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.rowVerticalGap)  + 2*this.rowVerticalGap
         let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap
         return wholeHorizonGap
     }
     @computed
     get cellWidth(): number {
         let { width, points } = this.props
-        let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin - this.nameChartGap) / points.length
+        let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin - this.nameChartGap - this.axisWidth) / points.length
         return cellWidth
     }
 
@@ -93,7 +95,7 @@ class StateBlock extends React.Component<Props> {
         let { height } = this.props
         let attrNum = this.attrNum
         let cellHeight = Math.max(
-            (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum - this.strokeW - this.cellVerticalGap,
+            (height - this.fontHeight - this.topMargin) * this.blockHeightRatio / attrNum - this.strokeW - this.rowVerticalGap,
             this.minCellHeight
         )
 
@@ -111,7 +113,7 @@ class StateBlock extends React.Component<Props> {
     get timeStepHeight(): number {
         let { height } = this.props
 
-        const timeStepHeight = (height - this.fontHeight - this.verticalGap) * (1 - this.blockHeightRatio) / (this.maxTimeIdx + 1)
+        const timeStepHeight = (height - this.fontHeight - this.topMargin) * (1 - this.blockHeightRatio) / (this.maxTimeIdx + 1)
 
         return timeStepHeight
     }
@@ -193,7 +195,7 @@ class StateBlock extends React.Component<Props> {
         let timeDistLabel = <g
             className="timeDistLable labelButton"
             key="timeDistLable"
-            transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * (this.cellHeight + this.cellVerticalGap) + this.fontHeight + this.verticalGap + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
+            transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * (this.cellHeight + this.rowVerticalGap) + this.fontHeight + this.topMargin + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
         >
             <rect
                 width={timeDistLabelWidth} height={this.fontHeight * 2.2}
@@ -375,7 +377,7 @@ class StateBlock extends React.Component<Props> {
 
             return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} overlayStyle={{ width: "auto", maxWidth: "none" }}>
                 <g className={`row_${rowIdx}`} cursor="pointer">
-                    <g transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.cellVerticalGap)})`}>
+                    <g transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.rowVerticalGap)})`}>
                         {row}
                     </g>
                     <line className='rowBG'
@@ -383,12 +385,12 @@ class StateBlock extends React.Component<Props> {
                         // stroke='gray'
                         stroke={stateColor}
                         strokeWidth={this.strokeW}
-                        y1={(this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
-                        y2={(this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
+                        y1={(this.cellHeight + this.rowVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
+                        y2={(this.cellHeight + this.rowVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
                         x1={0}
                         x2={this.cellWidth * points.length}
                     />
-                    <text y={(this.cellHeight + this.cellVerticalGap) * rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
+                    <text y={(this.cellHeight + this.rowVerticalGap) * rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
                         {cellText}
                     </text>
                 </g>
@@ -409,7 +411,7 @@ class StateBlock extends React.Component<Props> {
         })
 
         // let charPoints = dist.map((d,i)=>`L ${d*this.cellWidth} ${i * this.timeStepHeight}`)
-        // return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
+        // return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.topMargin})`}>
         //     <path 
         //         d= {`M 0 0 ${charPoints.join(' ')} L ${0} ${this.maxTimeIdx* this.timeStepHeight} z`}
         //         fill='lightgray'
@@ -428,7 +430,7 @@ class StateBlock extends React.Component<Props> {
 
         pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
         let color = getColorByName(stateKey)
-        return <g className='timeDist' key="timeDist" transform={`translate(0, ${(this.cellHeight + this.cellVerticalGap) * this.attrNum + this.verticalGap})`}>
+        return <g className='timeDist' key="timeDist" transform={`translate(0, ${(this.cellHeight + this.rowVerticalGap) * this.attrNum + this.topMargin})`}>
             <path
                 d={pathString as string}
                 fill={color}
@@ -461,7 +463,7 @@ class StateBlock extends React.Component<Props> {
                     </g>
                 </Tooltip>
 
-            return <g key={name} transform={`translate(0, ${(this.cellHeight + this.cellVerticalGap) * (i + 0.8)})`}>
+            return <g key={name} transform={`translate(0, ${(this.cellHeight + this.rowVerticalGap) * (i + 0.8)})`}>
                 {featureNameComponent}
                 <text
                     x={this.nameColWidth} textAnchor="end" cursor="pointer"
@@ -474,7 +476,7 @@ class StateBlock extends React.Component<Props> {
         })
 
         let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
-        return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.cellVerticalGap})`} key='importanceScores'>
+        return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.rowVerticalGap})`} key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
                 x={this.nameColWidth / 2 - impLableWidth / 2}
@@ -485,6 +487,39 @@ class StateBlock extends React.Component<Props> {
                 {impLable}
             </text>
             {rows}
+        </g>
+    }
+
+    drawYAxis(){
+        const tickWidth = 3
+        const {sampleFeatureDomains, width} = this.props, offsetX = width - this.axisWidth, offsetY = this.fontHeight
+        let axes = sampleFeatureDomains.map((domain, featurenIdx)=>{
+            const tickGap = this.cellHeight/ domain.length, labelHeight = Math.min(this.fontHeight, tickGap)
+
+            if (typeof domain[0] === "number"){
+                return <g key={featurenIdx} className="y_axis" transform={`translate(0, ${featurenIdx* (this.cellHeight+this.rowVerticalGap)})`}>
+                    <line x1={0} y1={0} x2={0} y2={this.cellHeight+this.strokeW} className="axis" stroke="black"/>
+                    <line x1={0} y1={0} x2={tickWidth} y2={0} className="tick" stroke="black"/>
+                    <line x1={0} y1={this.cellHeight} x2={tickWidth} y2={this.cellHeight} className="tick" stroke="black"/>
+                    <text x={tickWidth*2} y={labelHeight}>{domain[1]}</text>
+                    <text x={tickWidth*2} y={this.cellHeight + this.strokeW}>{domain[0]}</text>
+                </g>
+            }else{
+                const axisLabel = domain.map((d, i)=>{
+                    return <g key={`${d}_${i}`} transform={`translate(${0}, ${i* tickGap})`}>
+                        <line x1={0} y1={0} x2={tickWidth} y2={0} className="tick" stroke="black"/>
+                        <text x= {tickWidth*2} y={ (labelHeight+tickGap)/2} fontSize={labelHeight} >{d}</text>
+                    </g>
+                }) 
+                return <g key={featurenIdx} className="y_axis" transform={`translate(0, ${featurenIdx* (this.cellHeight+this.rowVerticalGap)})`}>
+                    <line x1={0} y1={0} x2={0} y2={this.cellHeight+this.strokeW} className="axis" stroke="black"/>
+                    {axisLabel}
+                    <line x1={0} y1={this.cellHeight} x2={tickWidth} y2={this.cellHeight+this.strokeW} className="tick" stroke="black"/>
+                </g>
+            }
+        })
+        return <g className="axes" transform={`translate(${offsetX}, ${offsetY})`}>
+            {axes}
         </g>
     }
 
@@ -512,10 +547,9 @@ class StateBlock extends React.Component<Props> {
     }
 
     render() {
-        // let legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
-        // let legendLabelWidth = getTextWidth('legend V', this.fontHeight)+20, legendLabelHeight = this.fontHeight * 1.3
         return <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
+            {this.drawYAxis()}
         </g>
     }
 }

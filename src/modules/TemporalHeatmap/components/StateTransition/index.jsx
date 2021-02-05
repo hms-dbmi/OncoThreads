@@ -86,7 +86,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             <div className="stateTransition" ref={this.ref}>
 
                 <Row>
-                    <Col className="customGrouping" md={6} sm={6}>
+                    <Col className="customGrouping" md={7} sm={7}>
                         <CustomGrouping />
                     </Col>
 
@@ -105,7 +105,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                         </Card>
                     </Col>
 
-                    <Col md={12} sm={12} >
+                    <Col md={11} sm={11} >
                         <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined translate='' /></Tooltip></span>}
                             extra={bgController}
                             style={{ width: "98%"}}
