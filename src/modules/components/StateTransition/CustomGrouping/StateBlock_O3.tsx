@@ -195,7 +195,7 @@ class StateBlock extends React.Component<Props> {
         let timeDistLabel = <g
             className="timeDistLable labelButton"
             key="timeDistLable"
-            transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * (this.cellHeight + this.rowVerticalGap) + this.fontHeight + this.topMargin + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
+            transform={`translate(${ (this.nameColWidth - timeDistLabelWidth) / 2}, ${this.attrNum * (this.cellHeight + this.rowVerticalGap) + this.fontHeight + this.topMargin}) `}
         >
             <rect
                 width={timeDistLabelWidth} height={this.fontHeight * 2.2}
@@ -463,7 +463,7 @@ class StateBlock extends React.Component<Props> {
                     </g>
                 </Tooltip>
 
-            return <g key={name} transform={`translate(0, ${(this.cellHeight + this.rowVerticalGap) * (i + 0.8)})`}>
+            return <g key={name} transform={`translate(0, ${(this.cellHeight + this.rowVerticalGap) * i + this.cellHeight/2})`}>
                 {featureNameComponent}
                 <text
                     x={this.nameColWidth} textAnchor="end" cursor="pointer"
@@ -475,8 +475,8 @@ class StateBlock extends React.Component<Props> {
             </g>
         })
 
-        let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
-        return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.rowVerticalGap})`} key='importanceScores'>
+        let impLable = 'Features', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
+        return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight})`} key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
                 x={this.nameColWidth / 2 - impLableWidth / 2}
