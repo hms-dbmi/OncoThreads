@@ -60,3 +60,4 @@ build/
 
 data/synthea/originalData
 data/synthea/processedData
+.vscode/
