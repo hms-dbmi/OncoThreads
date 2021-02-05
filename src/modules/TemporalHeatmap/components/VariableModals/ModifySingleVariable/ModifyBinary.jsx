@@ -5,7 +5,7 @@ import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootst
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
-import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
+import DerivedMapperFunctions from '../../../../UtilityClasses/DeriveMapperFunctions';
 import BinaryTable from '../VariableTables/BinaryTable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 

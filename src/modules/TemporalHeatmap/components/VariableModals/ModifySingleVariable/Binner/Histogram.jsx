@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react';
 import * as d3 from 'd3';
 import Axis from './Axis';
-import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import {getScientificNotation} from 'modules/UtilityClasses/UtilityFunctions';
 
 /**
  * Component for displaying a histogram of the distribution of the values of a variable

@@ -1,5 +1,5 @@
 import { action, extendObservable } from 'mobx';
-import ColorScales from '../UtilityClasses/ColorScales';
+import ColorScales from '../../UtilityClasses/ColorScales';
 
 /**
  * a derived variable is derived of one or multiple other variables

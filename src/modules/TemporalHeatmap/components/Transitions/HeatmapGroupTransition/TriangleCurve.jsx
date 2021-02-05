@@ -2,7 +2,7 @@ import React from 'react';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 import { observer, inject } from 'mobx-react';
-import ColorScales from '../../../UtilityClasses/ColorScales';
+import ColorScales from '../../../../UtilityClasses/ColorScales';
 
 /**
  * Component for the creation of a "TriangleCurve" for the heatmap group transition

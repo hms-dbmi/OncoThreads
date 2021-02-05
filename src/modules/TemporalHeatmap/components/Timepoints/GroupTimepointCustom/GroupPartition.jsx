@@ -11,7 +11,7 @@ import ContinuousRow from './ContinuousRow';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import OriginalVariable from '../../../stores/OriginalVariable';
 
-import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName } from 'modules/UtilityClasses'
 
 import './GroupPartition.css'
 

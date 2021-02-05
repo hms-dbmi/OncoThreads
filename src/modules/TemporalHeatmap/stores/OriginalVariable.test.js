@@ -1,5 +1,5 @@
 import OriginalVariable from './OriginalVariable';
-import ColorScales from '../UtilityClasses/ColorScales';
+import ColorScales from '../../UtilityClasses/ColorScales';
 
 describe('OriginalVariable', () => {
     // check if the color scale setup works

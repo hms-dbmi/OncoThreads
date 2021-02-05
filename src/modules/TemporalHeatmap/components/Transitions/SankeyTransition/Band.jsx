@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import OriginalVariable from '../../../stores/OriginalVariable';
 import DerivedVariable from '../../../stores/DerivedVariable';
-import ColorScales from '../../../UtilityClasses/ColorScales';
+import ColorScales from '../../../../UtilityClasses/ColorScales';
 /*
  implements a Band for Sankey Transition
  */

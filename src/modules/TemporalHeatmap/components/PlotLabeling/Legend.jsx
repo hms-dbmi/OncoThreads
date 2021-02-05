@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
-import {getTextWidth, getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
+import {getTextWidth, getScientificNotation} from 'modules/UtilityClasses/UtilityFunctions';
+import ColorScales from 'modules/UtilityClasses/ColorScales';
 
 /**
  * Legend Component

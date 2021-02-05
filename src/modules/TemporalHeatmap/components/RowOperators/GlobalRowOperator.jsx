@@ -1,6 +1,6 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
-import {cropText} from '../../UtilityClasses/UtilityFunctions';
+import {cropText} from '../../../UtilityClasses/UtilityFunctions';
 
 /**
  * Component for a a row operators of a timepont type in the Global timeline

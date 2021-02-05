@@ -3,7 +3,7 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import * as d3 from 'd3';
 import ReactDOM from 'react-dom';
-import {getTextWidth} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import {getTextWidth} from 'modules/UtilityClasses/UtilityFunctions';
 
 
 /**

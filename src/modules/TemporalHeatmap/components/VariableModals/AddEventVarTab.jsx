@@ -2,7 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import EventVariableSelector from './EventVariableSelector';
 import VariableTable from './VariableTable';
-import {toTitleCase} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import {toTitleCase} from 'modules/UtilityClasses/UtilityFunctions';
 
 /**
  * Component for managing event variables

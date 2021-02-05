@@ -17,9 +17,9 @@ import * as d3 from 'd3';
 import { extendObservable } from 'mobx';
 import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
-import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
+import DerivedMapperFunctions from '../../../../UtilityClasses/DeriveMapperFunctions';
 import ModifyContinuous from '../ModifySingleVariable/ModifyContinuous';
-import ColorScales from '../../../UtilityClasses/ColorScales';
+import ColorScales from '../../../../UtilityClasses/ColorScales';
 import Histogram from '../ModifySingleVariable/Binner/Histogram';
 
 /**

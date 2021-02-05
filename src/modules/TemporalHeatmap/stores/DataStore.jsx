@@ -4,9 +4,9 @@ import { PCA } from 'ml-pca';
 import { UMAP } from 'umap-js';
 import TSNE from 'tsne-js';
 
-import { getUniqueKeyName, PrefixSpan, clusterfck } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getUniqueKeyName, PrefixSpan, clusterfck } from 'modules/UtilityClasses'
 import { message } from 'antd';
-import NGram from '../UtilityClasses/ngram';
+import NGram from '../../UtilityClasses/ngram';
 
 /*
  stores information about timepoints. Combines betweenTimepoints and sampleTimepoints

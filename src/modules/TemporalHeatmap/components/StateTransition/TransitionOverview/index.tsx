@@ -2,7 +2,7 @@ import * as React from "react"
 import * as d3 from "d3"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import { cropText, getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { cropText, getColorByName, getTextWidth } from 'modules/UtilityClasses'
 import { Input, Checkbox, Tabs, Tooltip } from 'antd';
 import GridLayout from 'react-grid-layout';
 import PatternTable from './PatternTable'

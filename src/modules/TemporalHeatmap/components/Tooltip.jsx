@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import {getTextWidth} from '../UtilityClasses/UtilityFunctions';
+import {getTextWidth} from '../../UtilityClasses/UtilityFunctions';
 
 /**
  * Basic tooltip component

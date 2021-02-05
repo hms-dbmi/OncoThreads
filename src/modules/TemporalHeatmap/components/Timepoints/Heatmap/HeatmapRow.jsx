@@ -1,7 +1,7 @@
 import React from 'react';
 import { PropTypes } from 'prop-types';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import {getScientificNotation} from 'modules/UtilityClasses/UtilityFunctions';
 
 /**
  * Component for creating a row of a heatmap (ungrouped) timepoint

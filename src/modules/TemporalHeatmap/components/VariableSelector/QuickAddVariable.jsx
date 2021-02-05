@@ -6,7 +6,7 @@ import {
 import Select from 'react-select';
 import { extendObservable } from 'mobx';
 import OriginalVariable from '../../stores/OriginalVariable';
-import {toTitleCase} from '../../UtilityClasses/UtilityFunctions';
+import {toTitleCase} from '../../../UtilityClasses/UtilityFunctions';
 import MutationSelector from '../Modals/MutationSelector';
 
 /**

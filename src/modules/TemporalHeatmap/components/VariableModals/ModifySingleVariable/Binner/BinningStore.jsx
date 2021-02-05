@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { action, extendObservable, reaction } from 'mobx';
-import {getScientificNotation, isValidValue} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import {getScientificNotation, isValidValue} from 'modules/UtilityClasses/UtilityFunctions';
 
 
 class BinningStore {

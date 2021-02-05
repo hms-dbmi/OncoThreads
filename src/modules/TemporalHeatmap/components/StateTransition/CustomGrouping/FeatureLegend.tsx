@@ -5,7 +5,7 @@ import {v4 as uuidv4} from 'uuid';
 import { IRootStore } from 'modules/Type'
 import { observable } from "mobx";
 
-import { getTextWidth, getScientificNotation, ColorScales } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getTextWidth, getScientificNotation, ColorScales } from 'modules/UtilityClasses'
 import { TColorScale, TRow, TVariable } from "modules/Type/Store";
 
 interface Props {

@@ -5,8 +5,8 @@ import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } 
 import uuidv4 from 'uuid/v4';
 import { extendObservable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
-import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
-import ColorScales from '../../../UtilityClasses/ColorScales';
+import DerivedMapperFunctions from '../../../../UtilityClasses/DeriveMapperFunctions';
+import ColorScales from '../../../../UtilityClasses/ColorScales';
 import CategoryStore from '../VariableTables/CategoryStore';
 import CategoricalTable from '../VariableTables/CategoricalTable';
 import BinaryTable from '../VariableTables/BinaryTable';

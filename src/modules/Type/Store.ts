@@ -1,4 +1,4 @@
-import {TPattern} from 'modules/TemporalHeatmap/UtilityClasses/prefixSpan'
+import {TPattern} from 'modules/UtilityClasses/prefixSpan'
 export type TPointGroups = { [stateKey: string]: { stateKey: string, pointIdx: number[] } }
 
 

@@ -2,7 +2,7 @@ import { action, extendObservable, observe } from 'mobx';
 import uuidv4 from 'uuid/v4';
 import UndoRedoStore from '../../../UndoRedoStore';
 import DerivedVariable from '../../stores/DerivedVariable';
-import DerivedMapperFunctions from '../../UtilityClasses/DeriveMapperFunctions';
+import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 
 /**
  * store containing variables in variable manager

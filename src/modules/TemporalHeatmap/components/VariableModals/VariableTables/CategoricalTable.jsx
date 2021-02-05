@@ -17,7 +17,7 @@ import { SketchPicker } from 'react-color';
 import FontAwesome from 'react-fontawesome';
 import * as d3 from 'd3';
 import { extendObservable } from 'mobx';
-import ColorScales from '../../../UtilityClasses/ColorScales';
+import ColorScales from '../../../../UtilityClasses/ColorScales';
 
 /**
  * Component for displaying and editing categories of a categorical or ordinal variable

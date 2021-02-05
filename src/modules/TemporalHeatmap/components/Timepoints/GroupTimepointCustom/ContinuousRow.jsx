@@ -4,8 +4,8 @@ import uuidv4 from 'uuid/v4';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 import { extendObservable } from 'mobx';
-import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
+import {getScientificNotation} from 'modules/UtilityClasses/UtilityFunctions';
+import ColorScales from 'modules/UtilityClasses/ColorScales';
 
 /**
  * Component representing a row of a categorical variable in a grouped partition of a timepoint

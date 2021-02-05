@@ -6,7 +6,7 @@ import { computed, action } from 'mobx';
 import * as d3 from 'd3';
 import lasso from './lasso.js'
 
-import { getColorByName, getUniqueKeyName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getUniqueKeyName } from 'modules/UtilityClasses'
 import { Tooltip } from 'antd';
 
 type TPatientDict = {

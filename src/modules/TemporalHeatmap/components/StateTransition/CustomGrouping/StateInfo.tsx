@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer  } from 'mobx-react';
 import {Button, Table, Space} from 'antd';
-import { getColorByName, getTextWidth } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getTextWidth } from 'modules/UtilityClasses'
 import {TState} from './index'
 import { ColumnsType } from 'antd/lib/table'
 

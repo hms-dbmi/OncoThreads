@@ -9,8 +9,8 @@ import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
 import GlobalBands from './PlotLabeling/GlobalBands';
-import {cropText} from '../UtilityClasses/UtilityFunctions';
-import DerivedMapperFunctions from '../UtilityClasses/DeriveMapperFunctions';
+import {cropText} from '../../UtilityClasses/UtilityFunctions';
+import DerivedMapperFunctions from '../../UtilityClasses/DeriveMapperFunctions';
 
 
 

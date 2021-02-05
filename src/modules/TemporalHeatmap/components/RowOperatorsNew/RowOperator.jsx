@@ -2,7 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import SingleTimepoint from '../../stores/SingleTimepoint';
-import {cropText} from '../../UtilityClasses/UtilityFunctions';
+import {cropText} from '../../../UtilityClasses/UtilityFunctions';
 
 
 /**

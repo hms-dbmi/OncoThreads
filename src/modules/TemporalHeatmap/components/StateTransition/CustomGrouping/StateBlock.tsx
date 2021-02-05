@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import * as d3 from "d3"
 
 import { IPoint, TPointGroups } from 'modules/Type'
-import { getColorByName, getTextWidth, cropText } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName, getTextWidth, cropText } from 'modules/UtilityClasses'
 import { computed, get } from 'mobx';
 import FeatureLegend from './FeatureLegend'
 

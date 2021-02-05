@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { ColumnsType } from 'antd/lib/table'
 import { Table } from 'antd';
-import {summarizeDomain} from 'modules/TemporalHeatmap/UtilityClasses/'
+import {summarizeDomain} from 'modules/UtilityClasses'
 
 interface Props {
     rootStore?: IRootStore,

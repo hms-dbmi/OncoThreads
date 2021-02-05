@@ -19,9 +19,9 @@ import { PropTypes } from 'prop-types';
 import Binner from './Binner/Binner';
 import Histogram from './Binner/Histogram';
 import DerivedVariable from 'modules/TemporalHeatmap/stores/DerivedVariable';
-import DerivedMapperFunctions from 'modules/TemporalHeatmap/UtilityClasses/DeriveMapperFunctions';
-import ColorScales from 'modules/TemporalHeatmap/UtilityClasses/ColorScales';
-import {getScientificNotation} from 'modules/TemporalHeatmap/UtilityClasses/UtilityFunctions';
+import DerivedMapperFunctions from 'modules/UtilityClasses/DeriveMapperFunctions';
+import ColorScales from 'modules/UtilityClasses/ColorScales';
+import {getScientificNotation} from 'modules/UtilityClasses/UtilityFunctions';
 import BinningStore from './Binner/BinningStore';
 import OriginalVariable from 'modules/TemporalHeatmap/stores/OriginalVariable';
 

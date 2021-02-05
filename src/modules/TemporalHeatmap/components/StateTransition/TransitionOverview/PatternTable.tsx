@@ -2,10 +2,10 @@ import React from "react"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { Table, Input, Button, Space, Checkbox, Tooltip } from 'antd';
-import { getColorByName } from 'modules/TemporalHeatmap/UtilityClasses/'
+import { getColorByName } from 'modules/UtilityClasses'
 import { SearchOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/lib/table'
-import { TPattern } from "modules/TemporalHeatmap/UtilityClasses/prefixSpan";
+import { TPattern } from "modules/UtilityClasses/prefixSpan";
 
 type RowRecordType = { key: string, pattern: TPattern, [key: string]: any }
 

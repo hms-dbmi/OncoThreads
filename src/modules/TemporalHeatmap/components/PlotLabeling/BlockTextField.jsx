@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import PropTypes from 'prop-types';
-import {getTextWidth} from '../../UtilityClasses/UtilityFunctions';
+import {getTextWidth} from '../../../UtilityClasses/UtilityFunctions';
 import SingleTimepoint from '../../stores/SingleTimepoint';
 
 

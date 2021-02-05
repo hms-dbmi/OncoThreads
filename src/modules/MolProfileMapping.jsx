@@ -1,5 +1,5 @@
 import OriginalVariable from './TemporalHeatmap/stores/OriginalVariable';
-import ColorScales from './TemporalHeatmap/UtilityClasses/ColorScales';
+import ColorScales from './UtilityClasses/ColorScales';
 
 /*
  gets mutation and molecular data on demand and transforms the data to variables
