@@ -36,8 +36,8 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         this.props.partition.rows
             .forEach((d, i) => {
 
-                // don't show patient features in v2
-                if (!this.props.dataStore.variableStores[this.props.type].currentNonPatientVariables.includes(d.variable)) return
+                // // don't show patient features in v2
+                // if (!this.props.dataStore.variableStores[this.props.type].currentNonPatientVariables.includes(d.variable)) return
 
 
                 if (!this.props.heatmap[i].isUndef

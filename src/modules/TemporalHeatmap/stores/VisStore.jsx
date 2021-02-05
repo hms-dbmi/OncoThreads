@@ -353,32 +353,16 @@ class VisStore {
     getNewTPHeight(timepoint) {
         let height = 0;
         let varCount = 0;
-        if (this.rootStore.uiStore.selectedTab === 'block'){
-            this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
-            .forEach((variableId, i) => {
-                if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
-                    || variableId === timepoint.primaryVariableId) {
-                    
-                    varCount += 1;
-                    height += this.secondaryHeight;            
-                }
-            });
-        }else {
-            let patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
+        this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
+        .forEach((variableId, i) => {
+            if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
+                || variableId === timepoint.primaryVariableId) {
+                
+                varCount += 1;
+                height += this.secondaryHeight;            
+            }
+        });
 
-            this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
-            .filter(id=>!patientVars.includes(id))
-            .forEach((variableId, i) => {
-                if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
-                    || variableId === timepoint.primaryVariableId) {
-                    
-                    varCount += 1;
-                    height += this.secondaryHeight;            
-                }
-            });
-        }
-        
-    
         return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }
 
