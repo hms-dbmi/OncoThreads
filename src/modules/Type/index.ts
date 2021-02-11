@@ -7,7 +7,8 @@ export type {
     ReferencedVariables, 
     TimePoint, 
     IRootStore, 
-    IUndoRedoStore
+    IUndoRedoStore,
+    Domain
 } from './Store'
 
 

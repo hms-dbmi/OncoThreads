@@ -31,11 +31,13 @@ export interface TimePoint {
 export interface ReferencedVariables {
     [variableName:string]:{
         datatype:"BINARY"|"NUMBER"|"STRING",
-        domain:string[]|number[]|boolean[],
+        domain:Domain,
         [other:string]: any
     }
 }
 
+
+export type Domain = string[]|number[]|boolean[]
 
 export interface HeatMap{
     data: {patient:string, sample:string, value:string}[],

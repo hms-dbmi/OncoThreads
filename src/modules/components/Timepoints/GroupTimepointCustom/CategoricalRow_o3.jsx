@@ -38,7 +38,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
                 />
         )
 
-        rowDist.unshift(<rect key="background" className="background" fill="white" width={currentX} height={height} key="bg"/>)
+        rowDist.unshift(<rect key="background" className="background" fill="white" width={currentX} height={height}/>)
 
         
         

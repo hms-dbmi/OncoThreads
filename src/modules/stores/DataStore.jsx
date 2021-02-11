@@ -118,6 +118,16 @@ class DataStore {
                     return sampleDomains.concat(eventDomains)
                 }
             },
+            get patientDomains(){
+                const patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
+                const domains = this.currentVariables.filter(
+                    id=>patientVars.includes(id)
+                ).map(id=>{
+                    const {domain} = this.variableStores.sample.referencedVariables[id]
+                    return domain
+                })
+                return domains
+            },
             get currentVariables() {
                 if (this.hasEvent === false) {
                     return this.variableStores.sample.currentVariables
@@ -128,7 +138,7 @@ class DataStore {
                 }
             },
             get currentNonPatientVariables (){
-                let patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
+                const patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
                 return this.currentVariables.filter(
                     id=>!patientVars.includes(id)
                 )
@@ -148,7 +158,6 @@ class DataStore {
                 let { points, referencedVariables, currentNonPatientVariables } = this
                 if (points.length === 0) return []
                 let normValues = points.map(point => {
-                    let {patient, timeIdx} = point
                     let normValue = point.value.map((value, i) => {
                         let ref = referencedVariables[currentNonPatientVariables[i]]
                         
@@ -248,7 +257,6 @@ class DataStore {
 
             get importanceScores() {
                 if (this.DRMethod === 'pca') return this.importancePCAScores
-                let clinicalFeatures 
 
                 let { currentNonPatientVariables } = this
                 return currentNonPatientVariables

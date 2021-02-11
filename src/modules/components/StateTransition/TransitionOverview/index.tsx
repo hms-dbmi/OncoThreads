@@ -48,6 +48,7 @@ class TransitionOverview extends React.Component<Props, State> {
     paddingW = 5; paddingH = 10; annotationWidth = 40;
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
+    rectWidthScale: d3.ScaleLinear<number, number> = d3.scaleLinear()
     searchInput: Input | null = null;
 
     fontSize = 14;
@@ -171,10 +172,10 @@ class TransitionOverview extends React.Component<Props, State> {
         let linkGene = d3.linkVertical().x(d => d[0]).y(d => d[1])
         let linkWidthScale = d3.scaleLinear().domain([0, dataStore.numberOfPatients]).range([2, this.linkMaxWidth])
 
-        samplePoints.forEach((d, i) => {
-            if (i !== samplePoints.length - 1) {
+        samplePoints.forEach((d, timeIdx) => {
+            if (timeIdx !== samplePoints.length - 1) {
                 let firstTP = d,
-                    secondTP = samplePoints[i + 1];
+                    secondTP = samplePoints[timeIdx + 1];
                 let firstGrouped = firstTP.customGrouped,
                     secondGrouped = secondTP.customGrouped
                 firstGrouped.forEach((group1) => {
@@ -184,12 +185,12 @@ class TransitionOverview extends React.Component<Props, State> {
                             let transPatients = patients1.filter(d => patients2.includes(d)).filter(p => patientGroup.includes(p))
                             if (transPatients.length > 0) {
 
-                                let layoutDict1 = layoutDict[groupIdx][i][partition1], layoutDict2 = layoutDict[groupIdx][i + 1][partition2]
+                                let layoutDict1 = layoutDict[groupIdx][timeIdx][partition1], layoutDict2 = layoutDict[groupIdx][timeIdx + 1][partition2]
                                 let sourceX = layoutDict1.x + layoutDict1.width / 2,
-                                    sourceY = this.paddingH + this.groupLabelHeight + i * this.timeStepHeight + this.rectHeight,
+                                    sourceY = this.paddingH + this.groupLabelHeight + timeIdx * this.timeStepHeight + this.rectHeight,
                                     targetX = layoutDict2.x + layoutDict2.width / 2,
-                                    targetY = this.paddingH + this.groupLabelHeight + (i + 1) * this.timeStepHeight
-                                transitions.push(<path key={`time_${i}to${i + 1}_trans_${partition1}_${partition2}_group${groupIdx}`}
+                                    targetY = this.paddingH + this.groupLabelHeight + (timeIdx + 1) * this.timeStepHeight
+                                transitions.push(<path key={`time_${timeIdx}to${timeIdx + 1}_trans_${partition1}_${partition2}_group${groupIdx}`}
                                     d={linkGene({
                                         source: [sourceX, sourceY], target: [targetX, targetY]
                                     })!}
@@ -233,13 +234,19 @@ class TransitionOverview extends React.Component<Props, State> {
         let groupLabelOffsetX: number[] = []
 
         let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
-            let offsetX = Object.values(layoutDict[groupIdx][0])[1].x
-            let transform = `translate(${offsetX}, ${this.paddingH})`
-            let isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
+            let offsetX = 0
+            // states at the first timepoint inside this group
+            const states = Object.keys(layoutDict[groupIdx][0]).filter(d=>d!='shiftX')
+            if (states.length>0){
+                offsetX = layoutDict[groupIdx][0][states[0]].x
+            }
+
+            const transform = `translate(${offsetX}, ${this.paddingH})`
+            const isSelected = uiStore.selectedPatientGroupIdx.includes(groupIdx)
             let labelWidth = getTextWidth(`group${groupIdx}`, this.fontSize)
             let groupLabel = `group${groupIdx + 1}`
             if (labelWidth > this.partitionGap + layoutDict[groupIdx]['width']!) {
-                groupLabel = `..${groupIdx}`
+                groupLabel = `..${groupIdx+1}`
                 labelWidth = getTextWidth(groupLabel, this.fontSize)
             }
 
@@ -256,11 +263,11 @@ class TransitionOverview extends React.Component<Props, State> {
                     cursor="pointer" xlinkTitle={`group_${groupIdx}`}>
                     {groupLabel}
                 </text>
-                {/* <rect width={getTextWidth(`group_${groupIdx}`, 14)} height={this.groupLabelHeight/2 + this.paddingH} fill='none' stroke='gray'/> */}
             </g>
         })
 
         this.groupLabelOffsetX = groupLabelOffsetX
+        this.rectWidthScale = rectWidthScale
 
         return [
             <g key="groupLabels" className="groupLabels">{groupLables}</g>,
@@ -278,13 +285,13 @@ class TransitionOverview extends React.Component<Props, State> {
             { i: 'overview', x: 0, y: 0, w: 12, h: 3, minW: 12, maxW: 12 },
             { i: 'table', x: 0, y: 3, w: 12, h: 2, minW: 12, maxW: 12 },
         ];
-        const dataIntro1 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
-        The y-axis presents the timeline and the colored rectangle indicates patients of the same state.\
-        You can group patients based on their state transitions by changing the number in the top left input box.'
+        const dataIntro1 = `<h4>Step 2: analyze the state transition among all patients.</h4> 
+        The y-axis presents the timeline and the colored rectangle indicates patients of the same state.
+        You can group patients based on their state transitions by changing the number in the top left input box.`
 
-        const dataIntro2 = '<h4>Step 2: analyze the state transition among all patients.</h4> \
-        This table summarizes the frequent state transition patterns.\
-        You can sort the rows or search frequent patterns by clicking the icons in the table header.'
+        const dataIntro2 = `<h4>Step 2: analyze the state transition among all patients.</h4> 
+        This table summarizes the frequent state transition patterns.
+        You can sort the rows or search frequent patterns by clicking the icons in the table header.`
 
         const patternHeader = <span>Frequent Patterns {' '}
             <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyTooltipOnHide>
@@ -306,8 +313,6 @@ class TransitionOverview extends React.Component<Props, State> {
                 <svg
                     width="100%"
                     className="stateTransition overview"
-                    // height="100%"
-                    // width={this.props.rootStore.visStore.svgWidth}
                     height={overviewHeight}
                 >
                     <g className="transitionOverview" key="transitionOverview">
@@ -329,7 +334,7 @@ class TransitionOverview extends React.Component<Props, State> {
                         tab={ patientHeader }
                         key="patient"
                     >
-                        <PatientTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} />
+                        <PatientTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} groupOffsetX={this.groupLabelOffsetX} xScale={this.rectWidthScale}/>
                     </TabPane>
                 </Tabs>,
                 
