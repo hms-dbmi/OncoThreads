@@ -23,6 +23,7 @@ type RowRecordType = { key:string, attr: string, [key: string]: any }
 class PatientTable extends React.Component<Props, {}> {
     
     getPatientTable(){
+        const cellHeight =  35, textHeight = 12
         const {groupOffsetX, xScale} = this.props
         const {patientMappers} = this.props.rootStore!
         const {patientGroups} = this.props.rootStore!.dataStore
@@ -50,16 +51,18 @@ class PatientTable extends React.Component<Props, {}> {
                     }else{
                         text = domains.join(',')
                     }
-                    const cellHeight =  15
+                    
                     let valueGroup: {value:string|number|boolean, counts: number}[] = []
                     values.forEach((v:any)=>{
                         const idx = valueGroup.map(v=>v.value).indexOf(v)
                         if (idx>-1) valueGroup[idx]['counts'] +=1;
                         else valueGroup.push({value:v, counts: 1})
                     })
-                    return <svg width={cellWidth} height={cellHeight}>
-                        <CellGlyph xScale={xScale} cellHeight={cellHeight} type={typeof values[0]} values={valueGroup} featureDomain={domain}/>
-                        <text x={cellWidth/2} y={12} textAnchor="middle" >{text}</text>
+                    return <svg width={cellWidth} height={cellHeight }>
+                        <g transform={`translate(${ (cellWidth - xScale(values.length))/2}, 0)`}>
+                            <CellGlyph xScale={xScale} cellHeight={cellHeight} type={typeof values[0]} values={valueGroup} featureDomain={domain}/>
+                        </g>
+                        <text x={cellWidth/2} y={ (cellHeight+textHeight)/2} textAnchor="middle" >{text}</text>
                     </svg>
                 },
                 width: cellWidth

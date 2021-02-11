@@ -5,6 +5,7 @@ import * as d3 from "d3"
 import { IPoint, TPointGroups } from 'modules/Type'
 import { getColorByName, getTextWidth, cropText, summarizeDomain } from 'modules/UtilityClasses'
 import { computed } from 'mobx';
+import CellGlyph from 'modules/components/CellGlyph'
 
 import { IImportantScore } from './index'
 
@@ -229,78 +230,6 @@ class StateBlock extends React.Component<Props> {
 
     }
 
-    drawCellDistContinues(values: (string | boolean | number)[], stateColor: string, rowIdx: number, getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number) {
-        let domain = this.props.sampleFeatureDomains[rowIdx]
-        let maxHeight = 0
-
-        let keyList: (boolean | string | number)[] = []
-        let valueGroups: { key: boolean | string | number, patientNum: number }[] = []
-        this.reorderRowValues(values).forEach(value => {
-            let idx = keyList.indexOf(value)
-            if (idx > -1) {
-                valueGroups[idx]['patientNum'] += 1
-            } else {
-                keyList.push(value)
-                valueGroups.push({
-                    key: value,
-                    patientNum: 1
-                })
-            }
-        })
-
-        let pathString = `M 0, ${this.cellHeight}`, currentPos = [0, 0]
-
-        valueGroups.forEach(d => {
-            const { key, patientNum } = d
-            const binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key)
-            maxHeight = Math.max(maxHeight, binHeight)
-            pathString += `l${0},${-binHeight - currentPos[1]} l ${binWidth}, ${0}`
-            currentPos = [binWidth + currentPos[0], -1 * binHeight]
-        })
-        pathString += `l 0 ${-1 * currentPos[1]} z`
-
-        let row = <path d={pathString} fill='lightgray' />
-
-        return { row, maxHeight }
-    }
-
-    drawCellDistCate(values: (string | boolean | number)[], stateColor: string, rowIdx: number, getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number) {
-        let domain = this.props.sampleFeatureDomains[rowIdx]
-        let maxHeight = 0
-
-        let keyList: (boolean | string | number)[] = []
-        let valueGroups: { key: boolean | string | number, patientNum: number }[] = []
-        this.reorderRowValues(values).forEach(value => {
-            let idx = keyList.indexOf(value)
-            if (idx > -1) {
-                valueGroups[idx]['patientNum'] += 1
-            } else {
-                keyList.push(value)
-                valueGroups.push({
-                    key: value,
-                    patientNum: 1
-                })
-            }
-        })
-
-        let rowBars: JSX.Element[] = [], currentX = 0
-
-        valueGroups.forEach(d => {
-            const { key, patientNum } = d
-            const binWidth = this.cellWidth * patientNum, binHeight = getRectHeight(domain, key), offsetY = getRectY(domain, key)
-            maxHeight = Math.max(maxHeight, binHeight)
-
-            const oneCate = <rect className={`${key}`} key={`${key}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
-            rowBars.push(oneCate)
-            currentX += binWidth
-        })
-
-        const row = <g className="rowBars">{rowBars}</g>
-
-        return { row, maxHeight }
-    }
-
-
 
     drawBlock(points: IPoint[], stateKey: string) {
         let stateColor = getColorByName(stateKey)
@@ -309,7 +238,7 @@ class StateBlock extends React.Component<Props> {
         if (points.length === 0) return <g key="block" className="block" />
         let rows = sampleFeatureDomains.map((domain, rowIdx) => {
             let values = points.map(p => p.value[rowIdx])
-            let getRectHeight: (domain: any[], value: any) => number, getRectY: (domain: any[], value: any) => number,
+            let getRectHeight: ( value: any) => number, getRectY: ( value: any) => number,
                 domainTextArr = summarizeDomain(values.filter(v => v !== undefined) as number[] | string[] | boolean[]),
                 cellText: string, cellTextFull: string
 
@@ -318,37 +247,54 @@ class StateBlock extends React.Component<Props> {
                 .map(d => cropText(
                     d, this.fontHeight, 700,
                     (this.cellWidth * points.length - getTextWidth('~', this.fontHeight) * (domainTextArr.length - 1)) / domainTextArr.length
-                )),
-                row: JSX.Element, maxHeight = this.cellHeight
+                ))
+            let valueGroups: { value: boolean | string | number, counts: number }[] = []
+            this.reorderRowValues(values).forEach(value => {
+                let idx = valueGroups.map(d=>d.value).indexOf(value)
+                if (idx > -1) {
+                    valueGroups[idx]['counts'] += 1
+                } else {
+                    valueGroups.push({
+                        value,
+                        counts: 1
+                    })
+                }
+            })
 
             if (typeof (domain[0]) === 'number') {
-                getRectHeight = (domain: any[], value: any): number => {
+                getRectHeight = (value: any): number => {
                     if (domain[0] === domain[1]) {
                         return this.cellHeight
-                    } else return (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
+                    } else {
+                        let [d0, d1] = domain as number[]
+                        return (value - d0) / (d1-d0) * this.cellHeight
+                    }
                 }
 
-                getRectY = (domain: any[], value: any): number => {
+                getRectY = (value: any): number => {
                     if (domain[0] === domain[1]) {
                         return 0
-                    } else return this.cellHeight - (value - domain[0]) / (domain[1] - domain[0]) * this.cellHeight
+                    } else {
+                        let [d0, d1] = domain as number[]
+                        return (d1-value ) / (d1-d0) * this.cellHeight
+                    }
                 }
                 cellText = domainTextArrCroped.join('~')
                 cellTextFull = domainTextArr.join('~')
 
-                let r = this.drawCellDistContinues(values, stateColor, rowIdx, getRectHeight, getRectY)
-                row = r['row']
-                maxHeight = r['maxHeight']
+                // let r = this.drawCellDistContinues(values, stateColor, rowIdx, getRectHeight, getRectY)
+                // row = r['row']
+                // maxHeight = r['maxHeight']
 
             } else {
-                getRectHeight = (domain: any[], value: any): number => {
+                getRectHeight = ( value: any): number => {
                     if (domain.length === 0) {
                         console.error('domain length cannot be 0')
                         return this.cellHeight
                     }
                     return 1 / domain.length * this.cellHeight
                 }
-                getRectY = (domain: any[], value: any): number => {
+                getRectY = ( value: any): number => {
                     if (domain.indexOf(value) === -1) {
                         console.error(`value ${value} is not in domain ${domain}`)
                         return 0
@@ -356,8 +302,9 @@ class StateBlock extends React.Component<Props> {
                 }
                 cellText = domainTextArrCroped.join(', ')
                 cellTextFull = domainTextArr.join(',')
-                row = this.drawCellDistCate(values, stateColor, rowIdx, getRectHeight, getRectY)['row']
             }
+            const row = <CellGlyph  xScale={ (v:number)=>this.cellWidth*v} values={valueGroups} type={typeof domain[0]} featureDomain={domain} cellHeight={this.cellHeight} />
+            const maxHeight = Math.max(...values.map(v=>getRectHeight(v)))
 
             if (getTextWidth(cellText, this.fontHeight) > this.cellWidth * points.length) {
                 cellText = '..'

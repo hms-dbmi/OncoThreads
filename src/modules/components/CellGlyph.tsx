@@ -1,7 +1,7 @@
 import React from 'react'
 
 export interface GlyphProps {
-    xScale: d3.ScaleLinear<number, number>, 
+    xScale: d3.ScaleLinear<number, number> | ((n:number)=>number), 
     values: {value:string|number|boolean, counts: number}[], 
     featureDomain: (string|number|boolean)[], 
     cellHeight: number,
@@ -58,7 +58,7 @@ function CellNumGlyph(props: DetailGlyphProps){
     })
     pathString += `l 0 ${-1 * currentPos[1]} z`
 
-    return <path d={pathString} fill='lightgray' />
+    return <path d={pathString} fill='lightgray' stroke='lightgray' strokeWidth={1}/>
 }
 
 export default CellGlyph
