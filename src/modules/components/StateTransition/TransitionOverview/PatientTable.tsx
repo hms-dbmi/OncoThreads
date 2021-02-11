@@ -43,7 +43,10 @@ class PatientTable extends React.Component<Props, {}> {
 
                     const {key} = fulldata
                     const {domain} = this.props.rootStore!.dataStore.variableStores.sample.referencedVariables[key]
-                    values = values.sort()
+                    if (typeof values[0]=='number'){
+                        values.sort((a:number,b:number)=>a-b)
+                    } else values.sort()
+                    
 
                     let text='', domains = summarizeDomain(values)
                     if (typeof values[0] === 'number'){
