@@ -55,7 +55,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     }
                     const transform = `translate(${shiftOffset},${previousYposition})`;
 
-                    totalH += height
+                    totalH += height + this.props.uiStore.horizontalGap
 
                     // create different types of rows depending on the variables datatype
                     if (this.props.currentVariables[i].datatype === 'NUMBER') {
@@ -121,7 +121,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                         }
 
                     }
-                    previousYposition += height;
+                    previousYposition += height + this.props.uiStore.horizontalGap;
                 }
             });
 

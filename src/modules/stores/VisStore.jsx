@@ -258,7 +258,7 @@ class VisStore {
                 const timepointPositions = { timepoint: [], connection: [] };
                 let prevY = 0;
                 this.rootStore.dataStore.timepoints.forEach((timepoint, i) => {
-                    const tpHeight = this.getNewTPHeight(timepoint);
+                    const tpHeight = this.getTPHeight(timepoint);
                     timepointPositions.timepoint.push(prevY);
                     
                     timepointPositions.connection.push(prevY + tpHeight);
@@ -334,7 +334,8 @@ class VisStore {
                 if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
                     || variableId === timepoint.primaryVariableId) {
                     varCount += 1;
-                    if (variableId === timepoint.primaryVariableId) {
+                    if (variableId === timepoint.primaryVariableId && this.rootStore.uiStore.selectedTab==='block') {
+                        // only have primary variable at block view V1
                         height += this.primaryHeight;
                     } else {
                         height += this.secondaryHeight;
@@ -342,27 +343,6 @@ class VisStore {
                 }
             });
     
-        return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
-    }
-
-    /**
-     * gets height of a timepoint
-     * @param timepoint
-     * @returns {number}
-     */
-    getNewTPHeight(timepoint) {
-        let height = 0;
-        let varCount = 0;
-        this.rootStore.dataStore.variableStores[timepoint.type].currentVariables
-        .forEach((variableId, i) => {
-            if (!timepoint.heatmap[i].isUndef || this.rootStore.uiStore.showUndefined
-                || variableId === timepoint.primaryVariableId) {
-                
-                varCount += 1;
-                height += this.secondaryHeight;            
-            }
-        });
-
         return height + (varCount - 1) * this.rootStore.uiStore.horizontalGap;
     }
 

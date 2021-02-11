@@ -190,12 +190,21 @@ const Proxies = inject('visStore', 'uiStore')(observer(class Proxies extends Rea
             } else {
                 bandProxy = [rawProxy, bandOutlines];
             }
-            proxies.push(
-                <g key={String(partition.key)}>
-                    {bandProxy}
-                    {variableProxy}
-                </g>,
-            );
+
+            if (this.props.uiStore.selectedTab !=='block'){
+                proxies.push(
+                    <g key={String(partition.key)}>
+                        {bandProxy}
+                    </g>,
+                );
+            }else {
+                proxies.push(
+                    <g key={String(partition.key)}>
+                        {bandProxy}
+                        {variableProxy}
+                    </g>,
+                );
+            }
         });
         return <g>{proxies}</g>;
     }
