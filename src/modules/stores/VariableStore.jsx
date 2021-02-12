@@ -48,7 +48,8 @@ class VariableStore {
                                     if (clinicalFeatures.includes(row.variable)) return
 
                                     let v = row.data[patientIdx].value
-                                    if (v === undefined) {
+                                    if (v === undefined ) {
+                                        if (rowIdx===8) console.info(v, this.findNearestReplace(patient, timeIdx, rowIdx))
                                         v = this.findNearestReplace(patient, timeIdx, rowIdx)
                                     }
                                     value.push(v)
@@ -201,7 +202,7 @@ class VariableStore {
                 .find(d => d.patient === patient)
                 .value
 
-        while (v === undefined) {
+        while (v === undefined ) {
             let beforeV, afterV
 
             if (afterTime < timepoints.length) {
@@ -226,9 +227,21 @@ class VariableStore {
         }
 
         // cannot find a non missing value of the same attribute in the same patient
-        if (v === undefined) {
-            let otherValues = timepoints[timeIdx].heatmap[rowIdx].data.map(d => d.value)
-            v = otherValues.filter(v => v !== undefined).reduce((a, b) => a + b, 0) / otherValues.length
+        if (v === undefined  ) {
+            let otherValues = timepoints[timeIdx].heatmap[rowIdx].data.map(d => d.value).filter(v => v !== undefined )
+            if (otherValues.length===0) {
+                timepoints.forEach((tp)=>{
+                    const moreValues = tp.heatmap[rowIdx].data.map(d => d.value).filter(v => v !== undefined )
+                    otherValues = otherValues.concat(moreValues)
+                })
+            }
+
+            if (typeof otherValues[0] === 'number'){
+                v = otherValues.reduce((a, b) => a + b, 0) / otherValues.length
+            }else {
+                v = otherValues[0]
+            }
+            
         }
         return v
     }

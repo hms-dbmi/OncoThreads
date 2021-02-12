@@ -10,7 +10,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
     strokeW = 4;
     drawRowDist() {
 
-        let { variableDomain, height, row, variable } = this.props
+        let { variableDomain, height, row, variable, stateColor } = this.props
         let getBinHeight = (value) => (value - variableDomain[0]) / (variableDomain[1] - variableDomain[0]) * (height - this.strokeW)
 
 
@@ -28,9 +28,10 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
         let tooltipTitle = `${variable}: ${Math.min(...row.map(d => d.key))}~${Math.max(...row.map(d => d.key))}`
         return <Tooltip title={tooltipTitle} destroyTooltipOnHide>
             <g className="continupusRow">
-                <rect className="background" key="background" width={currentPos[0]} height={height} fill="white" />
-                <path d={pathString} fill='lightgray' />
-                <line x1={0} x2={currentPos[0]} strokeWidth={this.strokeW} stroke={this.props.stateColor} y1={height - 0.5 * this.strokeW} y2={height - 0.5 * this.strokeW} />
+                <rect className="background" key="background" width={currentPos[0]} height={height-this.strokeW} fill={stateColor} opacity={0.1} y={this.strokeW}/>
+                <path d={pathString} fill='#999' />
+                <rect className="outline" key="outline" width={currentPos[0]} height={height-this.strokeW} fill="none" stroke={'black'} strokeWidth={1} y={this.strokeW} />
+                {/* <line x1={0} x2={currentPos[0]} strokeWidth={this.strokeW} stroke={this.props.stateColor} y1={height - 0.5 * this.strokeW} y2={height - 0.5 * this.strokeW} /> */}
             </g>
         </Tooltip>
     }

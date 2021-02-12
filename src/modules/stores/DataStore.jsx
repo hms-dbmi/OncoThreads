@@ -1,4 +1,4 @@
-import { action, extendObservable, observe } from 'mobx';
+import { action, extendObservable, observe, toJS } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
 import { UMAP } from 'umap-js';
@@ -156,6 +156,7 @@ class DataStore {
             // return number[][]
             get normValues() {
                 let { points, referencedVariables, currentNonPatientVariables } = this
+                console.info(toJS(points))
                 if (points.length === 0) return []
                 let normValues = points.map(point => {
                     let normValue = point.value.map((value, i) => {
@@ -277,14 +278,11 @@ class DataStore {
                 points.sort((a, b) => a.timeIdx - b.timeIdx)
                 points.forEach(point => {
                     let { idx, patient } = point
-                    let stateKey = Object.values(pointGroups).find(pointGroup => pointGroup.pointIdx.includes(idx)).stateKey
-                    // if (!patients[patient]){
-                    //     patients[patient] = [...new Array(maxTimeIdx+1).keys()].map(d=>'')
-                    // }
-                    // patients[patient][timeIdx] = stateKey
+                    let stateKey = Object.values(pointGroups).find(pointGroup => pointGroup.pointIdx.includes(idx))?.stateKey
                     if (!patientStates[patient]) {
                         patientStates[patient] = []
                     }
+                    if (! stateKey) return 
                     patientStates[patient].push(stateKey)
 
                 })
@@ -601,7 +599,6 @@ class DataStore {
             }),
             autoGroup: action(() => {
                 let normPoints = this.normPoints
-
 
                 if (normPoints.length === 0) return
                 let { numofStates } = this
