@@ -117,9 +117,6 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
                                 
                                 <TransitionComparison width={this.comparisonWidth} height={this.height} tooltipFunctions={this.props.tooltipFunctions} hasBackground={this.hasBackground} />
-                            <div className="event legend" style={{position:"absolute", right:'20px', bottom:'10px'}}>
-                                <EventLegend />
-                            </div>
                         </div>
 
                     </Card>
