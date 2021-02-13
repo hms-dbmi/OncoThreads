@@ -276,37 +276,34 @@ class CustomGrouping extends React.Component<Props> {
                     ref={this.ref}
                 >
                    
-
-                    <svg className='customGrouping' width="100%" height={`${scatterHeight + summaryHeight - 35}px`}>
-                        <Scatter
-                            width={width}
-                            height={scatterHeight}
-                            hasLink={hasLink}
-                            hoverPointID={this.hoverPointID}
-                            setHoverID={this.setHoverID}
-                            resetHoverID={this.resetHoverID}
-                            updateSelected={this.updateSelected}
-                            showGlyph={this.showGlyph}
-                        />
-                        <g className='stateBlock' transform={`translate(${0}, ${pcpMargin + scatterHeight})`} 
-                            // data-intro="each point is .."
-                         >
-                            <StateBlock
-                                stateLabels={dataStore.stateLabels}
-                                importanceScores={dataStore.importanceScores}
-                                width={width}
-                                height={summaryHeight - 2 * pcpMargin}
-                                points={points}
-                                pointGroups={dataStore.pointGroups}
-                                colorScales={dataStore.colorScales}
-                                sampleFeatureDomains={dataStore.sampleFeatureDomains}
-                                hoverPointID={this.hoverPointID}
-                                setHoverID={this.setHoverID}
-                                resetHoverID={this.resetHoverID}
-                                removeVariable = {this.removeVariable}
-                            />
-                        </g>
-                    </svg>
+                <div>
+                    <Scatter
+                        width={width}
+                        height={scatterHeight}
+                        hasLink={hasLink}
+                        hoverPointID={this.hoverPointID}
+                        setHoverID={this.setHoverID}
+                        resetHoverID={this.resetHoverID}
+                        updateSelected={this.updateSelected}
+                        showGlyph={this.showGlyph}
+                    />
+                </div>
+                <div style={{height: summaryHeight, overflowY: "scroll"}}>
+                    <StateBlock
+                        stateLabels={dataStore.stateLabels}
+                        importanceScores={dataStore.importanceScores}
+                        width={width}
+                        height={summaryHeight - 2 * pcpMargin}
+                        points={points}
+                        pointGroups={dataStore.pointGroups}
+                        colorScales={dataStore.colorScales}
+                        sampleFeatureDomains={dataStore.sampleFeatureDomains}
+                        hoverPointID={this.hoverPointID}
+                        setHoverID={this.setHoverID}
+                        resetHoverID={this.resetHoverID}
+                        removeVariable = {this.removeVariable}
+                    />
+                </div>
                 </div>
             </Card>
             /* </div> */

@@ -494,10 +494,13 @@ class StateBlock extends React.Component<Props> {
     }
 
     render() {
-        return <g className='stateSummary' key='stateSummary'>
+        let svgHeight = (this.cellHeight + this.strokeW + this.rowVerticalGap ) * this.attrNum + this.timeStepHeight * (this.maxTimeIdx + 1) + this.fontHeight + this.topMargin
+        return <svg className='stateSummary' width="100%" height={`${svgHeight}px`}> 
+        <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
             {this.drawYAxis()}
         </g>
+        </svg>
     }
 }
 
