@@ -112,7 +112,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
                             data-intro="<h4>Step 3: Detailed Analysis</h4> You can select interested patient groups and observe the state transition details."
                             data-step='5'
-                            
+                            bodyStyle={{padding:'0px'}}
                         >
                             <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
                                 <svg

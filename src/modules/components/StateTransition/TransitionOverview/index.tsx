@@ -236,7 +236,7 @@ class TransitionOverview extends React.Component<Props, State> {
         let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
             let offsetX = 0
             // states at the first timepoint inside this group
-            const states = Object.keys(layoutDict[groupIdx][0]).filter(d=>d!='shiftX')
+            const states = Object.keys(layoutDict[groupIdx][0]).filter(d=>d!=='shiftX')
             if (states.length>0){
                 offsetX = layoutDict[groupIdx][0][states[0]].x
             }

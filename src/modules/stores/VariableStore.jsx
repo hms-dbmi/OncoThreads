@@ -49,7 +49,6 @@ class VariableStore {
 
                                     let v = row.data[patientIdx].value
                                     if (v === undefined ) {
-                                        if (rowIdx===8) console.info(v, this.findNearestReplace(patient, timeIdx, rowIdx))
                                         v = this.findNearestReplace(patient, timeIdx, rowIdx)
                                     }
                                     value.push(v)

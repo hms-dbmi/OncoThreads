@@ -156,7 +156,6 @@ class DataStore {
             // return number[][]
             get normValues() {
                 let { points, referencedVariables, currentNonPatientVariables } = this
-                console.info(toJS(points))
                 if (points.length === 0) return []
                 let normValues = points.map(point => {
                     let normValue = point.value.map((value, i) => {

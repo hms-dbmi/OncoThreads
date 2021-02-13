@@ -3,6 +3,7 @@ import { observer, inject, Provider } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import GroupPartition from '../../Timepoints/GroupTimepointCustom/GroupPartition';
 import SankeyTransition from '../../Transitions/SankeyTransition/SankeyTransition';
+import Variable from "modules/stores/Variable";
 
 
 interface Props {
@@ -22,7 +23,7 @@ class TransitionComparison extends React.Component<Props> {
 
     plotRatio: number = 0.9
     paddingH: number = 6
-    paddingW: number = 6
+    paddingW: number = 10
     groupLabelHeight: number = 40
 
     get annotationWidth(){
@@ -78,7 +79,7 @@ class TransitionComparison extends React.Component<Props> {
 
     getTransitionComparison() {
 
-        let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [], groupLabels: Array<JSX.Element> = [], groups: Array<JSX.Element> = []
+        let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], groupLabels: Array<JSX.Element> = [], groups: Array<JSX.Element> = []
         let { dataStore, uiStore, visStore } = this.props.rootStore!
 
         let { selectedPatientGroupIdx } = uiStore
@@ -206,16 +207,33 @@ class TransitionComparison extends React.Component<Props> {
 
         });
 
+        const annotations = this.getAnnotations()
 
 
-
-
+        if (groups.length>0){
+            return [
+                annotations,
+                ...groups
+            ];
+        }else{
+            return [
+                annotations,
+                <text transform={`translate( ${this.props.width/2}, ${this.props.height/2})`} textAnchor="middle" style={{fontSize:'20px', fill:'gray'}}>
+                    please select patient groups in the overview panel
+                </text>
+            ];
+        }
+        
+    }
+    getAnnotations(){
         // draw timepoint icon
         const iconR = 10
+        let {dataStore, visStore} = this.props.rootStore!
+        let annotations: Array<JSX.Element> = []
 
         annotations.push(
             <line key="timeline"
-                x1={this.paddingW + this.annotationWidth/2 } x2={this.paddingW + this.annotationWidth/2 }
+                x1={this.paddingW + iconR} x2={this.paddingW + iconR}
                 y1={this.paddingH + this.groupLabelHeight} y2={this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[dataStore.timepoints.length - 1]}
                 stroke="gray"
             />)
@@ -224,7 +242,7 @@ class TransitionComparison extends React.Component<Props> {
             if (d.type === 'between') return
 
             const transformTP = `translate(
-                    ${this.paddingW+ this.annotationWidth/2 -iconR},
+                    ${this.paddingW },
                     ${ this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[i] 
                         - visStore.secondaryHeight * dataStore.variableStores['sample'].currentNonPatientVariables.length
                     } 
@@ -238,20 +256,28 @@ class TransitionComparison extends React.Component<Props> {
             )
         });
 
-        if (groups.length>0){
-            return [
-                <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>,
-                ...groups
-            ];
-        }else{
-            return [
-                <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>,
-                <text transform={`translate( ${this.props.width/2}, ${this.props.height/2})`} textAnchor="middle" style={{fontSize:'20px', fill:'gray'}}>
-                    please select patient groups in the overview panel
-                </text>
-            ];
-        }
+        const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v:Variable, i:number)=>{
+            return <text x={this.paddingW+2*iconR} y={visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7} key={v.id}>{v.name}</text>
+        })
+
+        const eventNames = dataStore.variableStores.between.fullCurrentVariables.map((v:Variable, i:number)=>{
+            return <text x={this.paddingW+2*iconR} y={visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7} key={v.id}>{v.name}</text>
+        })
         
+        
+        const featureNameRows = dataStore.timepoints.map((tp,timeIdx)=>{
+            
+            const transform = `translate(
+                ${visStore.strokeW},
+                ${visStore.newTimepointPositions.timepoint[timeIdx] + this.paddingH + this.groupLabelHeight}
+                )`;
+            return <g key={timeIdx} transform={transform}>{tp.type=='sample'? featureNames: eventNames}</g>
+
+        })
+        return <g>
+            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>
+            <g key="featureNameRows" className="featureNameRows">{featureNameRows}</g>
+        </g>
     }
     render() {
         return <g className="transitionComparison">
