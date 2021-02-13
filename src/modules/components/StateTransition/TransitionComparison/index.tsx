@@ -4,6 +4,7 @@ import { IRootStore } from "modules/Type";
 import GroupPartition from '../../Timepoints/GroupTimepointCustom/GroupPartition';
 import SankeyTransition from '../../Transitions/SankeyTransition/SankeyTransition';
 import Variable from "modules/stores/Variable";
+import { getTextWidth } from "modules/UtilityClasses";
 
 
 interface Props {
@@ -230,6 +231,8 @@ class TransitionComparison extends React.Component<Props> {
         const iconR = 10
         let {dataStore, visStore} = this.props.rootStore!
         let annotations: Array<JSX.Element> = []
+        const svgHeight = this.props.rootStore!.visStore.svgHeight
+        const annotationMaxWidth = Math.max(...dataStore.currentVariables.map(d=>getTextWidth(d, 14)))
 
         annotations.push(
             <line key="timeline"
@@ -257,11 +260,17 @@ class TransitionComparison extends React.Component<Props> {
         });
 
         const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v:Variable, i:number)=>{
-            return <text x={this.paddingW+2*iconR} y={visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7} key={v.id}>{v.name}</text>
+            return <g key={v.id} transform={`translate(0, ${visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7})`}>
+                <text >{v.name}</text>
+                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)}>X</text>
+                </g>
         })
 
         const eventNames = dataStore.variableStores.between.fullCurrentVariables.map((v:Variable, i:number)=>{
-            return <text x={this.paddingW+2*iconR} y={visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7} key={v.id}>{v.name}</text>
+            return <g key={v.id} transform={`translate(0, ${visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7})`}>
+                <text y={visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7} >{v.name}</text>
+                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)}>X</text>
+            </g>
         })
         
         
@@ -274,16 +283,30 @@ class TransitionComparison extends React.Component<Props> {
             return <g key={timeIdx} transform={transform}>{tp.type=='sample'? featureNames: eventNames}</g>
 
         })
+        
         return <g>
             <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>
-            <g key="featureNameRows" className="featureNameRows">{featureNameRows}</g>
+            <foreignObject className="featureNameRows"  width={this.annotationWidth - this.paddingW - 2*iconR} height={svgHeight} x={this.paddingW+2*iconR} y={0} overflow="hidden">
+                <div style={{width: this.annotationWidth - this.paddingW - 2*iconR, overflow: "scroll"}}>
+                    <svg width={annotationMaxWidth} height={svgHeight}>
+                        {featureNameRows}
+                    </svg>
+                </div>
+            </foreignObject>
         </g>
     }
     render() {
-        return <g className="transitionComparison">
-            {this.getTransitionComparison()}
-           
-        </g>
+        return <svg
+            width="100%"
+            className="stateTransition details"
+            // height="100%"
+            // width={this.props.rootStore.visStore.svgWidth}
+            height={this.props.rootStore!.visStore.svgHeight}
+        
+        > <g className="transitionComparison">
+                {this.getTransitionComparison()}
+            </g>
+        </svg>
     }
 }
 

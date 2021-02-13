@@ -115,25 +115,17 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             bodyStyle={{padding:'0px'}}
                         >
                             <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
-                                <svg
-                                    width="100%"
-                                    className="stateTransition details"
-                                    // height="100%"
-                                    // width={this.props.rootStore.visStore.svgWidth}
-                                    height={this.props.rootStore.visStore.svgHeight}
-                                   
-                                >
-                                    <TransitionComparison width={this.comparisonWidth} height={this.height} tooltipFunctions={this.props.tooltipFunctions} hasBackground={this.hasBackground} />
-                                </svg>
-                                <div className="event legend" style={{position:"absolute", right:'20px', bottom:'10px'}}>
-                                    <EventLegend />
-                                </div>
+                                
+                                <TransitionComparison width={this.comparisonWidth} height={this.height} tooltipFunctions={this.props.tooltipFunctions} hasBackground={this.hasBackground} />
+                            <div className="event legend" style={{position:"absolute", right:'20px', bottom:'10px'}}>
+                                <EventLegend />
                             </div>
+                        </div>
 
-                        </Card>
-                    </Col>
-                </Row>
-            </div>
+                    </Card>
+                </Col>
+            </Row>
+        </div>
         );
     }
 }));
