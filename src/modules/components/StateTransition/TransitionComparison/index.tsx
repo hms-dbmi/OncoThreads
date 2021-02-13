@@ -5,6 +5,8 @@ import GroupPartition from '../../Timepoints/GroupTimepointCustom/GroupPartition
 import SankeyTransition from '../../Transitions/SankeyTransition/SankeyTransition';
 import Variable from "modules/stores/Variable";
 import { getTextWidth } from "modules/UtilityClasses";
+import { Pane} from 'react-sortable-pane';
+import { observable } from "mobx";
 
 
 interface Props {
@@ -22,22 +24,24 @@ interface Props {
 @observer
 class TransitionComparison extends React.Component<Props> {
 
-    plotRatio: number = 0.9
     paddingH: number = 6
     paddingW: number = 10
     groupLabelHeight: number = 40
+    @observable annotationWidth = 250
 
-    get annotationWidth(){
-        return this.props.width * (1 - this.plotRatio)
+    get plotWidth(){
+        return this.props.width - this.annotationWidth
     }
 
     updateDimension() {
         let { visStore } = this.props.rootStore!
-        visStore.setPlotWidth(this.props.width * this.plotRatio - 10)
-
+        visStore.setPlotWidth(this.plotWidth)
     }
 
     componentDidMount() {
+        this.updateDimension()
+    }
+    componentDidUpdate(){
         this.updateDimension()
     }
 
@@ -284,16 +288,19 @@ class TransitionComparison extends React.Component<Props> {
 
         })
         
-        return <g>
+        return <>
             <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>
-            <foreignObject className="featureNameRows"  width={this.annotationWidth - this.paddingW - 2*iconR} height={svgHeight} x={this.paddingW+2*iconR} y={0} overflow="hidden">
-                <div style={{width: this.annotationWidth - this.paddingW - 2*iconR, overflow: "scroll"}}>
+            <foreignObject className="featureNameRows" key="featureNameRows"  width={this.annotationWidth - this.paddingW - 2*iconR} height={svgHeight} x={this.paddingW+2*iconR} y={0} overflow="hidden" >
+                <Pane direction="horizontal" onResize={(e: MouseEvent)=>{this.annotationWidth += e.movementX}}
+                    size={{width: this.annotationWidth - 2*this.paddingW - 2*iconR}}
+                    style={{width: this.annotationWidth - 2* this.paddingW - 2*iconR, overflowX: "scroll", overflowY:"hidden", borderRight: "1px solid lightgray"}}
+                >
                     <svg width={annotationMaxWidth} height={svgHeight}>
                         {featureNameRows}
                     </svg>
-                </div>
+                </Pane>
             </foreignObject>
-        </g>
+        </>
     }
     render() {
         return <svg
