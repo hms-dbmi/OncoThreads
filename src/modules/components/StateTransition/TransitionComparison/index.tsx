@@ -5,7 +5,7 @@ import GroupPartition from '../../Timepoints/GroupTimepointCustom/GroupPartition
 import SankeyTransition from '../../Transitions/SankeyTransition/SankeyTransition';
 import Variable from "modules/stores/Variable";
 import { getTextWidth } from "modules/UtilityClasses";
-import { Pane} from 'react-sortable-pane';
+import { Resizable} from 're-resizable';
 import { observable } from "mobx";
 
 
@@ -23,14 +23,19 @@ interface Props {
 @inject('rootStore')
 @observer
 class TransitionComparison extends React.Component<Props> {
-
+    @observable annotationWidth = 250
     paddingH: number = 6
     paddingW: number = 10
     groupLabelHeight: number = 40
-    @observable annotationWidth = 250
-
+    constructor(props:Props){
+        super(props)
+        this.updateAnnotationWidth = this.updateAnnotationWidth.bind(this)
+    }
     get plotWidth(){
         return this.props.width - this.annotationWidth
+    }
+    updateAnnotationWidth(width:number){
+        this.annotationWidth = width
     }
 
     updateDimension() {
@@ -40,6 +45,8 @@ class TransitionComparison extends React.Component<Props> {
 
     componentDidMount() {
         this.updateDimension()
+        const annotationWidth = Math.max(...this.props.rootStore!.dataStore.currentVariables.map(d=>getTextWidth(d, 14)))
+        this.updateAnnotationWidth(annotationWidth)
     }
     componentDidUpdate(){
         this.updateDimension()
@@ -118,9 +125,6 @@ class TransitionComparison extends React.Component<Props> {
                     const firstGrouped = firstTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g => g.patients.length > 0);
                     const secondTP = dataStore.timepoints[timeIdx + 1];
                     const secondGrouped = secondTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g => g.patients.length > 0);
-                    // if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
-                    //     secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
-                    // }
                     if (firstTP.customPartitions.length > 0) {
                         if (secondTP.customPartitions.length > 0) {
                             transitions.push(
@@ -266,14 +270,14 @@ class TransitionComparison extends React.Component<Props> {
         const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v:Variable, i:number)=>{
             return <g key={v.id} transform={`translate(0, ${visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7})`}>
                 <text >{v.name}</text>
-                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)}>X</text>
+                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
                 </g>
         })
 
         const eventNames = dataStore.variableStores.between.fullCurrentVariables.map((v:Variable, i:number)=>{
             return <g key={v.id} transform={`translate(0, ${visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7})`}>
                 <text y={visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7} >{v.name}</text>
-                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)}>X</text>
+                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
             </g>
         })
         
@@ -291,14 +295,15 @@ class TransitionComparison extends React.Component<Props> {
         return <>
             <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>
             <foreignObject className="featureNameRows" key="featureNameRows"  width={this.annotationWidth - this.paddingW - 2*iconR} height={svgHeight} x={this.paddingW+2*iconR} y={0} overflow="hidden" >
-                <Pane direction="horizontal" onResize={(e: MouseEvent)=>{this.annotationWidth += e.movementX}}
-                    size={{width: this.annotationWidth - 2*this.paddingW - 2*iconR}}
-                    style={{width: this.annotationWidth - 2* this.paddingW - 2*iconR, overflowX: "scroll", overflowY:"hidden", borderRight: "1px solid lightgray"}}
-                >
+                <Resizable 
+                size={{width: this.annotationWidth - 2* this.paddingW - 2*iconR, height: svgHeight}}
+                style={{ overflowX: "scroll", overflowY:"hidden", borderRight: "1px solid lightgray", zIndex:  100}}
+                onResizeStop={(e, dir, ref, d)=>this.updateAnnotationWidth(this.annotationWidth+d.width)}
+                    >
                     <svg width={annotationMaxWidth} height={svgHeight}>
                         {featureNameRows}
                     </svg>
-                </Pane>
+                </Resizable>
             </foreignObject>
         </>
     }
