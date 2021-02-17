@@ -19,6 +19,7 @@ import GridLayout from 'react-grid-layout';
  * Component for the Block view
  */
 const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class StateTransition extends React.Component {
+    widthRatios = [7, 6, 11]
     constructor(props) {
         super(props);
 
@@ -27,7 +28,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             highlightedVariable: '', // variableId of currently highlighted variable
             order: ['labels', 'operators', 'view', 'legend'],
             height: window.innerHeight - 360,
-            width: window.innerWidth - 10,
+            width: window.innerWidth - 40,
             hasBackground: true,
             ref: React.createRef(),
 
@@ -51,17 +52,17 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
     }
 
     updateDimensions() {
-        this.height = window.innerHeight - 300
-        this.width = window.innerWidth - 10
+        this.height = window.innerHeight - 360
+        this.width = window.innerWidth - 40
 
     }
 
     get overviewWidth() {
-        return this.width / 4 * 0.98
+        return this.width / 24 * this.widthRatios[1] * 0.98
     }
 
     get comparisonWidth() {
-        return this.width / 2 * 0.95
+        return this.width / 24 * this.widthRatios[2] * 0.98
     }
 
 
@@ -86,11 +87,11 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             <div className="stateTransition" ref={this.ref}>
 
                 <Row>
-                    <Col className="customGrouping" md={7} sm={7}>
+                    <Col className="customGrouping" md={this.widthRatios[0]} sm={this.widthRatios[0]}>
                         <CustomGrouping />
                     </Col>
 
-                    <Col md={6} sm={6}>
+                    <Col md={this.widthRatios[1]} sm={this.widthRatios[1]}>
                         <Card title={<span style={{ fontSize: "17px" }}>Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
                             extra={controller}
                             style={{ width: "98%" }}
@@ -105,7 +106,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                         </Card>
                     </Col>
 
-                    <Col md={11} sm={11} >
+                    <Col md={this.widthRatios[2]} sm={this.widthRatios[2]}>
                         <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined translate='' /></Tooltip></span>}
                             extra={bgController}
                             style={{ width: "98%"}}

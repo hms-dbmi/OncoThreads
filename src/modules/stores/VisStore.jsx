@@ -290,21 +290,12 @@ class VisStore {
              */
             get groupScale() {
                 let {dataStore, uiStore} = this.rootStore
-                
-                if (this.rootStore.uiStore.selectedTab==='stateTransition'){
-                    
-                    return d3.scaleLinear()
-                    .domain([0, dataStore.numberOfPatients])
-                    .range([0, this.plotWidth - dataStore.maxTPPartitionWithGroup 
-                    * this.partitionGap - (dataStore.patientGroupNum-1) * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
+                console.info('max partitions', dataStore.maxPartitions)
+                console.info('plot width', this.plotWidth)
 
-                }else{
-                    return d3.scaleLinear()
-                    .domain([0, dataStore.numberOfPatients])
-                    .range([0, this.plotWidth - (dataStore.maxPartitions - 1)
-                    * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
-                }
-                
+                return d3.scaleLinear()
+                .domain([0, dataStore.numberOfPatients])
+                .range([0, this.plotWidth - dataStore.maxPartitions * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
             },
             /**
              * gets scale for placement of events and samples on time axis in global timeline

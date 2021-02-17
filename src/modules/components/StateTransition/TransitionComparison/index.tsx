@@ -36,6 +36,7 @@ class TransitionComparison extends React.Component<Props> {
     }
     updateAnnotationWidth(width:number){
         this.annotationWidth = width
+        this.updateDimension()
     }
 
     updateDimension() {
@@ -44,9 +45,9 @@ class TransitionComparison extends React.Component<Props> {
     }
 
     componentDidMount() {
-        this.updateDimension()
         const annotationWidth = Math.max(...this.props.rootStore!.dataStore.currentVariables.map(d=>getTextWidth(d, 14)))
         this.updateAnnotationWidth(annotationWidth)
+        this.updateDimension()
     }
     componentDidUpdate(){
         this.updateDimension()

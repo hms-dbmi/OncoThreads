@@ -39,35 +39,29 @@ class DataStore {
              */
             get maxPartitions() {
                 let maxPartitions = 0;
+                const {patientGroups} = this
                 const groupedTP = this.timepoints.filter(d => d.isGrouped);
                 if (this.rootStore.uiStore.selectedTab === 'block') {
                     maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);
                 } else {
-                    maxPartitions = Math.max(...groupedTP.map(d => d.customGrouped.length), 0);
+                    patientGroups.forEach((patientGroup) => {
+                        let partitions = []
+                        groupedTP.forEach(tp => {
+                            let count = 0
+                            tp.customGrouped.forEach((customGroup, i) => {
+                                const numPatients = customGroup.patients.filter(p => patientGroup.includes(p))
+                                if (numPatients.length > 0) count += 1
+                            })
+                            partitions.push(count)
+                        })
+                        maxPartitions += ( Math.max(...partitions, 0) + 1 );
+                    })
                 }
                 return maxPartitions;
 
             },
             get patientGroupNum() {
                 return this.patientGroups.length
-            },
-            get maxTPPartitionWithGroup() {
-                let { patientGroups } = this
-                const groupedTP = this.timepoints.filter(d => d.isGrouped).filter(d => d.type === "sample");
-
-                let partitions = groupedTP.map(d => {
-                    let count = 0
-                    d.customGrouped.forEach((customGroup, i) => {
-
-                        patientGroups.forEach((patientGroup) => {
-                            if (customGroup.patients.filter(p => patientGroup.includes(p)).length > 0) count += 1
-                        })
-                    })
-                    return count
-                })
-
-                return Math.max(...partitions)
-
             },
             /**
              * are variables of type "between" displayed
