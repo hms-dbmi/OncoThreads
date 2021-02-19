@@ -10,6 +10,8 @@ import PatientTable from './PatientTable'
 
 import { InfoCircleOutlined } from '@ant-design/icons';
 
+import './index.css'
+
 const { TabPane } = Tabs;
 interface Props {
     rootStore?: IRootStore,

@@ -303,7 +303,7 @@ class StateBlock extends React.Component<Props> {
                 cellText = domainTextArrCroped.join(', ')
                 cellTextFull = domainTextArr.join(',')
             }
-            const row = <CellGlyph  xScale={ (v:number)=>this.cellWidth*v} values={valueGroups} type={typeof domain[0]} featureDomain={domain} cellHeight={this.cellHeight} />
+            const row = <CellGlyph  xScale={ (v:number)=>this.cellWidth*v} values={valueGroups} type={typeof values[0]} featureDomain={domain} cellHeight={this.cellHeight} showLabel/>
             const maxHeight = Math.max(...values.map(v=>getRectHeight(v)))
 
             if (getTextWidth(cellText, this.fontHeight) > this.cellWidth * points.length) {
@@ -323,8 +323,8 @@ class StateBlock extends React.Component<Props> {
 
 
             return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} overlayStyle={{ width: "auto", maxWidth: "none" }}>
-                <g className={`row_${rowIdx}`} cursor="pointer">
-                    <g transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.rowVerticalGap)})`}>
+                <g className={`row_${rowIdx}`} cursor="pointer" transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.rowVerticalGap)})`}>
+                    <g >
                         {row}
                     </g>
                     <line className='rowBG'
@@ -332,13 +332,13 @@ class StateBlock extends React.Component<Props> {
                         // stroke='gray'
                         stroke={stateColor}
                         strokeWidth={this.strokeW}
-                        y1={(this.cellHeight + this.rowVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
-                        y2={(this.cellHeight + this.rowVerticalGap) * rowIdx + this.cellHeight + this.strokeW / 2}
+                        y1={ this.cellHeight + this.strokeW / 2}
+                        y2={ this.cellHeight + this.strokeW / 2}
                         x1={0}
                         x2={this.cellWidth * points.length}
                     />
-                    <text y={(this.cellHeight + this.rowVerticalGap) * rowIdx + this.cellHeight + this.strokeW + this.fontHeight}>
-                        {cellText}
+                    <text y={ (this.cellHeight + this.strokeW + this.fontHeight)/2} x={this.cellWidth*points.length/2} textAnchor="middle">
+                        {(typeof values[0]=='number')?cellText:''}
                     </text>
                 </g>
             </Tooltip>

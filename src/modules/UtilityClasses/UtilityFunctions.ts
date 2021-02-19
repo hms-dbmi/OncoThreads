@@ -115,6 +115,8 @@ const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
         
         let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
 
+        if (v.length==1){range=[v[0].toPrecision(4)]}
+
         // remove unnecessary 0, e.g., 2.000 => 2
         // range=range.map(text => text.replace(/(?<=\.([1-9]*))(0*$)/, ''))
         // but safari doesn't support lookbehind regex, below is a workaround

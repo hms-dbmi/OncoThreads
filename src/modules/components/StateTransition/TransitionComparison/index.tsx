@@ -104,6 +104,7 @@ class TransitionComparison extends React.Component<Props> {
         selectedPatientGroupIdx.forEach((groupIdx: number) => {
             let groupWidth = 0
             let patientGroup = dataStore.patientGroups[groupIdx]
+            if (!patientGroup) return
 
             dataStore.timepoints.forEach((d, timeIdx) => {
 

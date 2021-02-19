@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
 import { ColumnsType } from 'antd/lib/table'
 import { Table } from 'antd';
-import {summarizeDomain} from 'modules/UtilityClasses'
+import {getTextWidth, summarizeDomain} from 'modules/UtilityClasses'
 import CellGlyph, {GlyphProps} from 'modules/components/CellGlyph'
 
 interface Props {
@@ -23,17 +23,20 @@ type RowRecordType = { key:string, attr: string, [key: string]: any }
 class PatientTable extends React.Component<Props, {}> {
     
     getPatientTable(){
-        const cellHeight =  35, textHeight = 12
+        const cellHeight =  35, textHeight = 14
         const {groupOffsetX, xScale} = this.props
         const {patientMappers} = this.props.rootStore!
         const {patientGroups} = this.props.rootStore!.dataStore
         const {currentVariables} = this.props.rootStore!.dataStore.variableStores.sample
         const patientVars = Object.keys(patientMappers).filter(id=>currentVariables.includes(id))
 
-        let columns : ColumnsType<RowRecordType> = patientGroups.map((_, groupIdx)=>{
-            const cellWidth = groupIdx>0?groupOffsetX[groupIdx] - groupOffsetX[groupIdx-1] : groupOffsetX[groupIdx]
+        let columns : ColumnsType<RowRecordType> = patientGroups.map((patients, groupIdx)=>{
+            // const cellWidth = groupIdx>0?groupOffsetX[groupIdx] - groupOffsetX[groupIdx-1] : groupOffsetX[groupIdx]
+            const cellWidth = xScale(patients.length)
+            const title = getTextWidth(`group_${groupIdx+1}`, 12) > cellWidth ? groupIdx+1:`group_${groupIdx+1}`
+            
             return {
-                title: `group_${groupIdx+1}`,
+                title,
                 dataIndex: `group_${groupIdx}`,
                 key: `group_${groupIdx}`,
                 align: 'center',
@@ -42,7 +45,7 @@ class PatientTable extends React.Component<Props, {}> {
                     if (values.length==0) return ''
 
                     const {key} = fulldata
-                    const {domain} = this.props.rootStore!.dataStore.variableStores.sample.referencedVariables[key]
+                    const {domain, name} = this.props.rootStore!.dataStore.variableStores.sample.referencedVariables[key]
                     if (typeof values[0]=='number'){
                         values.sort((a:number,b:number)=>a-b)
                     } else values.sort()
@@ -61,24 +64,20 @@ class PatientTable extends React.Component<Props, {}> {
                         if (idx>-1) valueGroup[idx]['counts'] +=1;
                         else valueGroup.push({value:v, counts: 1})
                     })
-                    return <svg width={cellWidth} height={cellHeight }>
+                    return <svg width={cellWidth} height={cellHeight + textHeight*2 }>
                         <g transform={`translate(${ (cellWidth - xScale(values.length))/2}, 0)`}>
-                            <CellGlyph xScale={xScale} cellHeight={cellHeight} type={typeof values[0]} values={valueGroup} featureDomain={domain}/>
+                            <CellGlyph xScale={xScale} cellHeight={cellHeight} type={typeof values[0]} values={valueGroup} featureDomain={domain} showLabel={true}/>
                         </g>
-                        <text x={cellWidth/2} y={ (cellHeight+textHeight)/2} textAnchor="middle" >{text}</text>
+                        {typeof values[0] === "number"? <text x={cellWidth/2} y={ (cellHeight+textHeight)/2} textAnchor="middle" >{text}</text>:<></>}
+                        {getTextWidth(name, 12)<=cellWidth?
+                            <text x={cellWidth/2} y={ cellHeight+textHeight} textAnchor="middle" >{name}</text>
+                            :<></>
+                        }
                     </svg>
                 },
                 width: cellWidth
             }
         })
-
-        columns.unshift({
-            title: '',
-            dataIndex: 'attr',
-            key: 'attr',
-            width: this.props.annotationWidth + this.props.paddingW
-        })
-
         let tableData = patientVars.map((attr)=>{
             let row:any = {}
             patientGroups.forEach((patients, groupIdx)=>{
@@ -86,12 +85,11 @@ class PatientTable extends React.Component<Props, {}> {
             })
             return {
                 key: attr,
-                attr: attr,
                 ...row
             }
         })
 
-        return <Table columns={columns} dataSource={tableData} pagination={false} scroll={{ y: this.props.height }} />
+        return <Table bordered columns={columns} dataSource={tableData} pagination={false} scroll={{ y: this.props.height }} className="patientTable"/>
         
     }
     render(){

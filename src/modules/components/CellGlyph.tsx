@@ -1,3 +1,4 @@
+import { getTextWidth } from 'modules/UtilityClasses'
 import React from 'react'
 
 export interface GlyphProps {
@@ -5,8 +6,10 @@ export interface GlyphProps {
     values: {value:string|number|boolean, counts: number}[], 
     featureDomain: (string|number|boolean)[], 
     cellHeight: number,
-    type: string
+    type: string,
+    showLabel?: boolean
 }
+
 
 interface DetailGlyphProps extends GlyphProps {
     getRectHeight: (value: any)=>number,
@@ -31,14 +34,23 @@ function CellGlyph(props:GlyphProps){
 }
 
 function CellCateGlyph(props: DetailGlyphProps){
-    const {values, xScale, getRectHeight, getRectY} = props
+    const maxFontSize = 12, MinFontSize = 7
+    const {values, xScale, getRectHeight, getRectY, showLabel} = props
     let rowBars: JSX.Element[] = [], currentX = 0
 
     values.forEach(d => {
         const { value, counts } = d
         const binWidth = xScale(counts), binHeight = getRectHeight(value), offsetY = getRectY(value)
+        const labelFontSize = Math.min( maxFontSize, Math.max(binHeight, MinFontSize))
 
-        const oneCate = <rect className={`${value}`} key={`${value}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
+        const oneCate = <g className={`${value}`} key={`${value}`}>
+            <rect className={`${value}`} key={`${value}`} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="lightgray" />
+            {
+                showLabel && getTextWidth(`${value}`, labelFontSize) < binWidth ? 
+                <text fontSize={labelFontSize} y={offsetY + (binHeight+labelFontSize)/2} x={currentX}>{value}</text>
+                :<></>
+            }
+            </g>
         rowBars.push(oneCate)
         currentX += binWidth
     })
