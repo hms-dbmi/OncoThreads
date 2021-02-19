@@ -1,4 +1,4 @@
-# OncoThreads [![Build Status](https://travis-ci.org/hms-dbmi/OncoThreads.svg?branch=master)](https://travis-ci.org/hms-dbmi/OncoThreads)
+# OncoThreads [![Build Status](https://travis-ci.org/hms-dbmi/OncoThreads.svg?branch=version2)](https://travis-ci.org/hms-dbmi/OncoThreads)
 OncoThreads longitudinal cancer genomics visualization project.
 
 ##### Development Environment
