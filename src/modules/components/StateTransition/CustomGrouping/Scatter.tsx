@@ -245,7 +245,7 @@ class Scatter extends React.Component<Props> {
         let { pointGroups } = this.props.rootStore!.dataStore
         // lasso draw
         d3.selectAll('g.lasso').remove()
-        var svg = d3.select('svg.customGrouping')
+        var svg = d3.select('svg.scatter')
         // var lasso_area = svg.append("rect")
         //     .attr('class', 'lasso area')
         //     .attr("width", width)
