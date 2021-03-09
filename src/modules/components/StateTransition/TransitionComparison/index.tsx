@@ -27,6 +27,7 @@ class TransitionComparison extends React.Component<Props> {
     paddingH: number = 6
     paddingW: number = 10
     groupLabelHeight: number = 40
+    iconR = 10
     constructor(props:Props){
         super(props)
         this.updateAnnotationWidth = this.updateAnnotationWidth.bind(this)
@@ -45,9 +46,9 @@ class TransitionComparison extends React.Component<Props> {
     }
 
     componentDidMount() {
-        const annotationWidth = Math.max(...this.props.rootStore!.dataStore.currentVariables.map(d=>getTextWidth(d, 14)))
+        const annotationWidth = Math.max(...this.props.rootStore!.dataStore.currentVariables.map(d=>getTextWidth(d+' XX', 14))) 
+        console.info(this.props.rootStore!.dataStore.currentVariables, annotationWidth)
         this.updateAnnotationWidth(annotationWidth)
-        this.updateDimension()
     }
     componentDidUpdate(){
         this.updateDimension()
@@ -206,7 +207,7 @@ class TransitionComparison extends React.Component<Props> {
                 )
             })
 
-            groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.annotationWidth}, ${0})`}>
+            groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.annotationWidth + 2* this.paddingW + 2*this.iconR}, ${0})`}>
                 <text y={this.groupLabelHeight-12} fontWeight="bold" fill="#1890ff">group{groupIdx+1} </text>
                 {transitions}
                 {timepoints}
@@ -238,15 +239,14 @@ class TransitionComparison extends React.Component<Props> {
     }
     getAnnotations(){
         // draw timepoint icon
-        const iconR = 10
         let {dataStore, visStore} = this.props.rootStore!
         let annotations: Array<JSX.Element> = []
         const svgHeight = this.props.rootStore!.visStore.svgHeight
-        const annotationMaxWidth = Math.max(...dataStore.currentVariables.map(d=>getTextWidth(d, 14)))
+        const annotationMaxWidth = Math.max(...dataStore.currentVariables.map(d=>getTextWidth(d+' XX', 14)))
 
         annotations.push(
             <line key="timeline"
-                x1={this.paddingW + iconR} x2={this.paddingW + iconR}
+                x1={this.paddingW + this.iconR} x2={this.paddingW + this.iconR}
                 y1={this.paddingH + this.groupLabelHeight} y2={this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[dataStore.timepoints.length - 1]}
                 stroke="gray"
             />)
@@ -263,8 +263,8 @@ class TransitionComparison extends React.Component<Props> {
 
             annotations.push(
                 <g key={d.globalIndex} transform={transformTP}>
-                    <circle cx={iconR} cy={iconR} r={iconR} fill="white" stroke="gray" />
-                    <text x={iconR} y={iconR * 1.4} textAnchor="middle">{annotations.length }</text>
+                    <circle cx={this.iconR} cy={this.iconR} r={this.iconR} fill="white" stroke="gray" />
+                    <text x={this.iconR} y={this.iconR * 1.4} textAnchor="middle">{annotations.length }</text>
                 </g>,
             )
         });
@@ -272,7 +272,7 @@ class TransitionComparison extends React.Component<Props> {
         const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v:Variable, i:number)=>{
             return <g key={v.id} transform={`translate(0, ${visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7})`}>
                 <text >{v.name}</text>
-                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
+                <text x= {annotationMaxWidth  - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
                 </g>
         })
 
@@ -296,13 +296,13 @@ class TransitionComparison extends React.Component<Props> {
         
         return <>
             <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>
-            <foreignObject className="featureNameRows" key="featureNameRows"  width={this.annotationWidth - this.paddingW - 2*iconR} height={svgHeight} x={this.paddingW+2*iconR} y={0} overflow="hidden" >
+            <foreignObject className="featureNameRows" key="featureNameRows"  width={this.annotationWidth } height={svgHeight} x={this.paddingW+2*this.iconR} y={0} overflow="hidden" >
                 <Resizable 
-                size={{width: this.annotationWidth - 2* this.paddingW - 2*iconR, height: svgHeight}}
+                size={{width: this.annotationWidth , height: svgHeight}}
                 style={{ overflowX: "scroll", overflowY:"hidden", borderRight: "1px solid lightgray", zIndex:  100}}
                 onResizeStop={(e, dir, ref, d)=>this.updateAnnotationWidth(this.annotationWidth+d.width)}
                     >
-                    <svg width={annotationMaxWidth} height={svgHeight}>
+                    <svg width={annotationMaxWidth } height={svgHeight}>
                         {featureNameRows}
                     </svg>
                 </Resizable>
