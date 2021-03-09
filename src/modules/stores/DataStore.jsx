@@ -157,7 +157,7 @@ class DataStore {
                         
                         if (typeof (value) === "number") {
                             let domain = ref.domain
-                            return (value - domain[0]) / (domain[1] - domain[0])
+                            return domain[1] === domain[0]? 0 : (value - domain[0]) / (domain[1] - domain[0])
                         } else if (ref.domain.length === 1) {
                             return 0
                         } else {
@@ -227,8 +227,6 @@ class DataStore {
                         pos: norm2dValues[i]
                     }
                 })
-
-                console.info('normpoints', normPoints)
 
                 return normPoints
             },
