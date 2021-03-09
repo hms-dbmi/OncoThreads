@@ -228,6 +228,8 @@ class DataStore {
                     }
                 })
 
+                console.info('normpoints', normPoints)
+
                 return normPoints
             },
 

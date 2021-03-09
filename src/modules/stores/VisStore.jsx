@@ -290,8 +290,6 @@ class VisStore {
              */
             get groupScale() {
                 let {dataStore, uiStore} = this.rootStore
-                console.info('max partitions', dataStore.maxPartitions)
-                console.info('plot width', this.plotWidth)
 
                 return d3.scaleLinear()
                 .domain([0, dataStore.numberOfPatients])

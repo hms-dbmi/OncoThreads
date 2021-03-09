@@ -55,8 +55,6 @@ class StateBlock extends React.Component<Props> {
             d => getTextWidth(d['name'], this.fontHeight)
         ))
         nameWidth = Math.min(nameWidth, this.maxNameColWidth)
-        // console.info('colwidth', scoreWidth, nameWidth)
-        // console.info(Object.keys(this.props.importanceScores))
         return scoreWidth + nameWidth + this.strokeW * 2
     }
     @computed
