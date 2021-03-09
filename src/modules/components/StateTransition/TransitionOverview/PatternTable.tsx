@@ -127,7 +127,7 @@ class PatternTable extends React.Component <Props, State> {
 
         let columns: ColumnsType<RowRecordType> = patientGroups.map((_, groupIdx) => {
             return {
-                title: `group_${groupIdx}`,
+                title: `group_${groupIdx+1}`,
                 dataIndex: `group_${groupIdx}`,
                 key: `group_${groupIdx}`,
                 sorter: (a, b) => parseInt(a[`group_${groupIdx}`].replace('%', '')) - parseInt(b[`group_${groupIdx}`].replace('%', '')),

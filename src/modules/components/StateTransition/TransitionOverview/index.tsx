@@ -292,7 +292,7 @@ class TransitionOverview extends React.Component<Props, State> {
         You can group patients based on their state transitions by changing the number in the top left input box.`
 
         const dataIntro2 = `<h4>Step 2: analyze the state transition among all patients.</h4> 
-        This table summarizes the frequent state transition patterns.
+        The frequent-pattern table summarizes the frequent state transition patterns and the pattern-featuers table summarizes the patient feature at each group.
         You can sort the rows or search frequent patterns by clicking the icons in the table header.`
 
         const patternHeader = <span>Frequent Patterns {' '}
