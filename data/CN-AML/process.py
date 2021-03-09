@@ -51,7 +51,9 @@ timeline and samples
 mutation_df = pd.read_excel(
     'Somatic variants.xlsx', index_col=None)
 
-mutations = ['DNMT3A', 'FLT3', 'NPM1', 'IDH2', 'IDH1']
+# mutations = ['DNMT3A', 'FLT3', 'IDH2', 'IDH1']
+mutation_freq = mutation_df.Gene.value_counts()
+mutations = mutation_freq[mutation_freq >= 8].index.tolist()
 timepoints = ['% VAF* Dx', '% VAF* Rem', '% VAF* Rel']
 
 sample_df = pd.DataFrame(
@@ -87,7 +89,7 @@ for patient_id in patients_df['UPN']:
 
 
 # %%
-timeline_df.to_csv('processed_data/AML_timeline.txt',
+timeline_df.to_csv('processed_data/AML_timeline_full.txt',
                    index=False, sep='\t')
 
 sample_header = [
@@ -100,7 +102,7 @@ sample_header = [
     "#" + '\t'.join(['1' for _ in range(2 + len(mutations))])+'\n',
 ]
 
-with open('processed_data/AML_obs.txt', 'w') as txt_file:
+with open('processed_data/AML_obs_full.txt', 'w') as txt_file:
     for line in sample_header:
         txt_file.write(line)
     sample_df.to_csv(txt_file, index=False, sep='\t', na_rep=' ')
