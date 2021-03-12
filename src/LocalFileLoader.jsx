@@ -939,8 +939,7 @@ class LocalFileLoader {
      * @returns {boolean} valid or not valid
      */
     static checkMutationFileHeader(fields, fileName) {
-        // const requiredFields = ['Hugo_Symbol', 'Variant_Classification', 'Tumor_Sample_Barcode', 'HGVSp_Short'];
-        const requiredFields = ['Hugo_Symbol', 'Tumor_Sample_Barcode', 'HGVSp_Short']; // remove the requirement for variant classification for the AN-CML dataset
+        const requiredFields = ['Hugo_Symbol', 'Variant_Classification', 'Tumor_Sample_Barcode', 'HGVSp_Short'];
         const missingFields = requiredFields.filter(field => !fields.includes(field));
         if (missingFields.length > 0) {
             alert(`ERROR: Column headers do not match. Columns ${missingFields} are missing in file ${fileName}`);

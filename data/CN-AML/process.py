@@ -171,5 +171,5 @@ for row_idx, row in variant_df.iterrows():
         if row[tp] != '-':
             VAF_df.loc[gene, sample_id] = row[tp]
 
-VAF_df.to_csv('processed_data/AML_CNV.txt', sep='\t')
+VAF_df.to_csv('processed_data/AML_CNV.txt', sep='\t', na_rep='NA')
 # %%
