@@ -15,7 +15,7 @@ class SingleTimepoint {
             heatmapOrder: order,
             groupSortDir: 1,
             heatmap: [],
-            isGrouped: true,
+            isGrouped: false,
             primaryVariableId: undefined,
             name: localIndex,
             customPartitions: [],
