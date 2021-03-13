@@ -301,7 +301,7 @@ class StateBlock extends React.Component<Props> {
                     } else return domain.indexOf(value) / domain.length * this.cellHeight
                 }
                 cellText = domainTextArrCroped.join(', ')
-                cellTextFull = domainTextArr.join(',')
+                cellTextFull = domainTextArr.join(', ')
             }
             const row = <CellGlyph  xScale={ (v:number)=>this.cellWidth*v} values={valueGroups} type={typeof values[0]} featureDomain={domain} cellHeight={this.cellHeight} showLabel/>
             const maxHeight = Math.max(...values.map(v=>getRectHeight(v)))
@@ -312,7 +312,7 @@ class StateBlock extends React.Component<Props> {
 
             let cellTooltip: JSX.Element = <div> {cellTextFull}</div>
 
-            if (maxHeight < 0.2 * this.cellHeight) {
+            if (maxHeight < 0.2 * this.cellHeight && typeof domain[0]==='number') {
                 cellTooltip = <svg width={this.cellWidth * points.length} height={this.cellHeight + 15}>
                     <g className="scaledChart" transform={`scale(${1}, ${this.cellHeight / maxHeight}) translate(${0}, ${-1 * (this.cellHeight - maxHeight)})`}>
                         {row}
@@ -455,7 +455,7 @@ class StateBlock extends React.Component<Props> {
                 const axisLabel = domain.map((d, i) => {
                     return <g key={`${d}_${i}`} transform={`translate(${0}, ${i * tickGap})`}>
                         <line x1={0} y1={0} x2={tickWidth} y2={0} className="tick" stroke="black" />
-                        <text x={tickWidth * 2} y={(labelHeight + tickGap) / 2} fontSize={labelHeight} >{d}</text>
+                        <text x={tickWidth * 2} y={(labelHeight + tickGap) / 2} fontSize={labelHeight} >{d.toString()}</text>
                     </g>
                 })
                 return <g key={featurenIdx} className="y_axis" transform={`translate(0, ${featurenIdx * (this.cellHeight + this.rowVerticalGap)})`}>
