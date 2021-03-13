@@ -47,7 +47,6 @@ class TransitionComparison extends React.Component<Props> {
 
     componentDidMount() {
         const annotationWidth = Math.max(...this.props.rootStore!.dataStore.currentVariables.map(d=>getTextWidth(d+' XX', 14))) 
-        console.info(this.props.rootStore!.dataStore.currentVariables, annotationWidth)
         this.updateAnnotationWidth(annotationWidth)
     }
     componentDidUpdate(){
@@ -239,7 +238,7 @@ class TransitionComparison extends React.Component<Props> {
     }
     getAnnotations(){
         // draw timepoint icon
-        let {dataStore, visStore} = this.props.rootStore!
+        let {dataStore, visStore, uiStore} = this.props.rootStore!
         let annotations: Array<JSX.Element> = []
         const svgHeight = this.props.rootStore!.visStore.svgHeight
         const annotationMaxWidth = Math.max(...dataStore.currentVariables.map(d=>getTextWidth(d+' XX', 14)))
@@ -270,7 +269,7 @@ class TransitionComparison extends React.Component<Props> {
         });
 
         const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v:Variable, i:number)=>{
-            return <g key={v.id} transform={`translate(0, ${visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7})`}>
+            return <g key={v.id} transform={`translate(0, ${ (visStore.secondaryHeight + uiStore.horizontalGap) * i+ visStore.secondaryHeight/2 + 7})`}>
                 <text >{v.name}</text>
                 <text x= {annotationMaxWidth  - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
                 </g>
