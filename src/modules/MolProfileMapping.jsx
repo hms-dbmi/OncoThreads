@@ -314,13 +314,16 @@ class MolProfileMapping {
                 return 'wild type';
             };
         } else {
+            // mappingType === 'Variant Allele Frequency'
             mappingFunction = (entry) => {
-                let vaf;
+                console.info('test', entry)
+                let vaf = 0;
                 if (entry !== undefined && 'tumorRefCount' in entry && 'tumorAltCount' in entry) {
                     if (entry.tumorAltCount !== -1 && entry.tumorRefCount !== -1) {
                         vaf = entry.tumorAltCount / (entry.tumorAltCount + entry.tumorRefCount);
                     }
                 }
+                if (entry !== undefined && 'VAF' in entry){vaf = entry.VAF}
                 return vaf;
             };
         }

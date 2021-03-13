@@ -123,6 +123,7 @@ mutation_header = [
     'Position',
     'Ref',
     'Transcript',
+    'VAF',
     'Tumor_Sample_Barcode'  # sample id
 ]
 
@@ -145,31 +146,33 @@ for row_idx, row in variant_df.iterrows():
         ]
         sample_id = '{}_{}'.format(patient_id, tp_idx)
         if row[tp] != '-':
+            mutation_row.append(round(row[tp]/100, 3))
             mutation_row.append(sample_id)
             mutation_df = mutation_df.append(
                 pd.Series(mutation_row, index=mutation_header), ignore_index=True
             )
 mutation_df.to_csv('processed_data/AML_mutation.txt',
                    index=False, sep='\t', na_rep=' ')
-# %%
+# # %%
 
-VAF_df = pd.DataFrame(
-    columns=['Hugo_Symbol', 'Entrez_Gene_Id']+sample_ids
-)
+# CNV_df = pd.DataFrame(
+#     columns=['Hugo_Symbol', 'Entrez_Gene_Id']+sample_ids
+# )
 
-unique_genes = variant_df.Gene.unique().tolist()
-for gene in unique_genes:
-    VAF_df = VAF_df.append({'Hugo_Symbol': gene}, ignore_index=True)
+# unique_genes = variant_df.Gene.unique().tolist()
+# for gene in unique_genes:
+#     CNV_df = CNV_df.append(
+#         {'Hugo_Symbol': gene, 'Entrez_Gene_Id': gene}, ignore_index=True)
 
 
-VAF_df = VAF_df.set_index('Hugo_Symbol')
-for row_idx, row in variant_df.iterrows():
-    gene = row['Gene']
-    patient_id = row['UPN']
-    for tp_idx, tp in enumerate(timepoints):
-        sample_id = '{}_{}'.format(patient_id, tp_idx)
-        if row[tp] != '-':
-            VAF_df.loc[gene, sample_id] = row[tp]
+# CNV_df = CNV_df.set_index('Hugo_Symbol')
+# for row_idx, row in variant_df.iterrows():
+#     gene = row['Gene']
+#     patient_id = row['UPN']
+#     for tp_idx, tp in enumerate(timepoints):
+#         sample_id = '{}_{}'.format(patient_id, tp_idx)
+#         if row[tp] != '-':
+#             CNV_df.loc[gene, sample_id] = round(row[tp]/100, 3)
 
-VAF_df.to_csv('processed_data/AML_CNV.txt', sep='\t', na_rep='NA')
-# %%
+# CNV_df.to_csv('processed_data/AML_CNV.txt', sep='\t', na_rep='NA')
+# # %%

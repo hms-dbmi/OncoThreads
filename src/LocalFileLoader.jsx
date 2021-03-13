@@ -211,7 +211,8 @@ class LocalFileLoader {
                                     file.name)) {
                                     if ('t_ref_count' in row.data && 't_alt_count' in row.data) {
                                         hasVaf = true;
-                                    }
+                                    }  
+                                    if ('VAF' in row.data) {hasVaf = true}
                                     firstRow = false;
                                 } else {
                                     this.parsingStatus.mutations = 'error';
@@ -231,8 +232,12 @@ class LocalFileLoader {
                                     mutationType: row.data.Variant_Classification,
                                 };
                                 if (hasVaf) {
-                                    mutation.tumorAltCount = row.data.t_alt_count;
-                                    mutation.tumorRefCount = row.data.t_ref_count;
+                                    if (row.data.VAF){
+                                        mutation.VAF = row.data.VAF
+                                    }else{
+                                        mutation.tumorAltCount = row.data.t_alt_count;
+                                        mutation.tumorRefCount = row.data.t_ref_count;
+                                    }
                                 } else {
                                     mutation.tumorAltCount = -1;
                                     mutation.tumorRefCount = -1;
