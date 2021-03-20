@@ -22,9 +22,9 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     <h4>About</h4>
                     <p>
 
-                        OncoThreads is a tool for the visualization of longitudinal cancer genomics data in patient cohorts. 
+                        ThreadStates is a tool for the visualization of longitudinal cancer genomics data in patient cohorts. 
                         The tool visualizes patient cohorts as temporal heatmaps that can be iteratively transformed into Sankey diagrams. 
-                        OncoThreads supports the interactive exploration and ranking of a wide range of clinical and genomic features. 
+                        ThreadStates supports the interactive exploration and ranking of a wide range of clinical and genomic features. 
                     </p>    
 
                         
@@ -65,7 +65,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
                     <h4>Funding</h4>
                     <p>
                     
-                    OncoThreads is supported by the grant 'Drug Discovery & Translational Research Program' from Novartis/DFCI and the US National Institutes of Health (R00 HG007583).
+                    ThreadStates is supported by the grant 'Drug Discovery & Translational Research Program' from Novartis/DFCI and the US National Institutes of Health (R00 HG007583).
                    
                     </p>
 
@@ -74,7 +74,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
 
 
                    <h4>Software and Download</h4>
-                    <a href="https://github.com/hms-dbmi/OncoThreads" //target="_blank"
+                    <a href="https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates" //target="_blank"
                     > Github</a>
                   
 

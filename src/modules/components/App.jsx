@@ -104,7 +104,10 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
             ]
             );
         }
-        return (<NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>);
+        return ([
+            <NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>,
+            <NavItem key="code" onClick={() => window.open('https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates')}>About</NavItem>,
+        ]);
     }
 
     /**
@@ -151,7 +154,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <Navbar fluid style={{ marginBottom: 10 }}>
                     <Navbar.Header>
                         <Navbar.Brand>
-                            OncoThreads
+                            ThreadStates
                         </Navbar.Brand>
                         <Navbar.Toggle />
                     </Navbar.Header>

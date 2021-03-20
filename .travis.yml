@@ -58,10 +58,10 @@ jobs:
         provider: s3
         access_key_id: $AWS_ACCESS_KEY_ID
         secret_access_key: $AWS_SECRET_ACCESS_KEY
-        bucket: oncothreads-v2.gehlenborglab.org
+        bucket: threadstates.gehlenborglab.org
         local_dir: build
         skip_cleanup: true
         region: us-east-2
         acl: public_read
         on:
-          branch: version2
+          branch: ThreadStates
