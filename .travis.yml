@@ -51,9 +51,9 @@ jobs:
     #     on:
     #       branch: master
     
-    - stage: Deploy website version 2
+    - stage: Deploy website threadstates
       script:
-        - CI=false npm run build-v2
+        - CI=false npm run build-v3
       deploy:
         provider: s3
         access_key_id: $AWS_ACCESS_KEY_ID
