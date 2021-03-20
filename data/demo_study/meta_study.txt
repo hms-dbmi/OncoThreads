@@ -1,7 +1,7 @@
 type_of_cancer: difg
 cancer_study_identifier: demo_study
-name: OncoThreads Demo Data
+name: Demo Data
 description: Fake data pulled from 3 studies on cBioPortal: Low-Grade Gliomas (UCSF, Johnson BE et al, Science 2014), Brain Lower Grade Glioma (TCGA, Provisional) and MSK-IMPACT Clinical Sequencing Cohort (MSKCC, Zehir et al. Nat Med 2017)
 add_global_case_list: true
 groups: PUBLIC
-short_name: OncoThreads Demo Data
+short_name: Demo Data

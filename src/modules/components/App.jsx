@@ -15,10 +15,11 @@ import SettingsModal from './Modals/SettingsModal';
 import AboutModal from './Modals/AboutModal';
 import StudySummary from './StudySummary';
 
-import { QuestionCircleOutlined, HomeOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined, HomeOutlined, GithubOutlined } from '@ant-design/icons';
+
 
 import './App.css'
-import { Tooltip } from 'antd';
+import { Tooltip} from 'antd';
 /**
  * Base Component
  */
@@ -106,7 +107,9 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         }
         return ([
             <NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>,
-            <NavItem key="code" onClick={() => window.open('https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates')}>About</NavItem>,
+            <NavItem key="code" onClick={() => window.open('https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates')}>
+               Source Code <GithubOutlined size="large"/>
+            </NavItem>,
         ]);
     }
 

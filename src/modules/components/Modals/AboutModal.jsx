@@ -15,7 +15,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
                 onHide={this.props.close}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>OncoThreads</Modal.Title>
+                    <Modal.Title>ThreadStates</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ maxHeight: '600px', overflowY: 'auto' }}>
                     

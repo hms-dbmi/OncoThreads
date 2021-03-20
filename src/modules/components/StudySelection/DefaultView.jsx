@@ -251,7 +251,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                                             onChange={this.handleInstanceChange}
                                             inline
                                         >
-                                            cBioPortal for OncoThreads
+                                            cBioPortal for ThreadStates
                                         </Radio>
                                         {' '}
                                         <Radio
