@@ -12,7 +12,7 @@ class UIStore {
             cBioInstance: 'hack', // hack, portal, own
             continuousRepresentation: 'gradient', // gradient, boxplot, medium
             realTime: false, // show realtime lines in block view
-            selectedTab: 'block', // show global timeline
+            selectedTab: 'stateTransition', // show global timeline
             advancedSelection: true, // advanced selection enables
             showUndefined: true, // show rows with only undefined values
             slantedLines: 'none', // altWithin, altAcross, none, random

@@ -144,7 +144,7 @@ class RootStore {
                 this.hasClinical = false;
                 this.dataParsed = false;
                 this.timelineParsed = false;
-                this.uiStore.selectedTab = 'block';
+                // this.uiStore.selectedTab = 'stateTransition';
                 this.api.getPatients((patients) => {
                     this.patients = patients;
                     this.api.getEvents(patients, (events) => {

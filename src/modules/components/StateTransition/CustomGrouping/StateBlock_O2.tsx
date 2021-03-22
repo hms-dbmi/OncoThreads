@@ -518,9 +518,10 @@ class StateBlock extends React.Component<Props> {
     render() {
         // let legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
         // let legendLabelWidth = getTextWidth('legend V', this.fontHeight)+20, legendLabelHeight = this.fontHeight * 1.3
-        return <g className='stateSummary' key='stateSummary'>
+        return <svg className='stateSummary' width="100%" height={`${this.props.height}px`}> <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
         </g>
+        </svg>
     }
 }
 
