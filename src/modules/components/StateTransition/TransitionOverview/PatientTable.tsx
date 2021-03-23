@@ -23,7 +23,7 @@ type RowRecordType = { key:string, attr: string, [key: string]: any }
 class PatientTable extends React.Component<Props, {}> {
     
     getPatientTable(){
-        const cellHeight =  35, textHeight = 14
+        const cellHeight =  45, textHeight = 14
         const {groupOffsetX, xScale} = this.props
         const {patientMappers} = this.props.rootStore!
         const {patientGroups} = this.props.rootStore!.dataStore
@@ -40,7 +40,7 @@ class PatientTable extends React.Component<Props, {}> {
                 dataIndex: `group_${groupIdx}`,
                 key: `group_${groupIdx}`,
                 align: 'center',
-                width: cellWidth *0.5,
+                width: cellWidth,
                 render: (values, fulldata)=>{
                     if (!values) return ''
                     if (values.length==0) return ''
@@ -65,7 +65,7 @@ class PatientTable extends React.Component<Props, {}> {
                         if (idx>-1) valueGroup[idx]['counts'] +=1;
                         else valueGroup.push({value:v, counts: 1})
                     })
-                    return <svg width={cellWidth} height={cellHeight + textHeight*2 }>
+                    return <svg width={cellWidth} height={cellHeight + textHeight}>
                         <g transform={`translate(${ (cellWidth - xScale(values.length))/2}, 0)`}>
                             <CellGlyph xScale={xScale} cellHeight={cellHeight} type={typeof values[0]} values={valueGroup} featureDomain={domain} showLabel={true}/>
                         </g>
