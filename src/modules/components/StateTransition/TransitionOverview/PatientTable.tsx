@@ -40,6 +40,7 @@ class PatientTable extends React.Component<Props, {}> {
                 dataIndex: `group_${groupIdx}`,
                 key: `group_${groupIdx}`,
                 align: 'center',
+                width: cellWidth *0.5,
                 render: (values, fulldata)=>{
                     if (!values) return ''
                     if (values.length==0) return ''
@@ -75,7 +76,6 @@ class PatientTable extends React.Component<Props, {}> {
                         }
                     </svg>
                 },
-                width: cellWidth
             }
         })
         let tableData = patientVars.map((attr)=>{
@@ -89,7 +89,9 @@ class PatientTable extends React.Component<Props, {}> {
             }
         })
 
-        return <Table bordered columns={columns} dataSource={tableData} pagination={false} scroll={{ y: this.props.height }} className="patientTable"/>
+        return <Table bordered columns={columns} dataSource={tableData} pagination={false} 
+        // scroll={{ y: this.props.height }} 
+        className="patientTable"/>
         
     }
     render(){
