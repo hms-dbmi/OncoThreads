@@ -303,7 +303,7 @@ class StateBlock extends React.Component<Props> {
                 cellText = domainTextArrCroped.join(', ')
                 cellTextFull = domainTextArr.join(', ')
             }
-            const row = <CellGlyph  xScale={ (v:number)=>this.cellWidth*v} values={valueGroups} type={typeof values[0]} featureDomain={domain} cellHeight={this.cellHeight} showLabel/>
+            const row = <CellGlyph  xScale={ (v:number)=>this.cellWidth*v} values={valueGroups} type={typeof domain[0]} featureDomain={domain} cellHeight={this.cellHeight} showLabel/>
             const maxHeight = Math.max(...values.map(v=>getRectHeight(v)))
 
             if (getTextWidth(cellText, this.fontHeight) > this.cellWidth * points.length) {
