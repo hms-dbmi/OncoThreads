@@ -143,6 +143,8 @@ class Scatter extends React.Component<Props> {
             let tooltipTitle = <div>
                 <span>patient: <b>{normPoint.patient}</b></span>
                 <br />
+                <span>state: <b>{Object.keys(pointGroups)[groupIdx]}</b></span>
+                <br />
                 <span>timepoint: {normPoint.timeIdx}</span>
                 <br />
                 {normPoint.value.map((v, i) => {
@@ -165,10 +167,7 @@ class Scatter extends React.Component<Props> {
                     onClick={() => this.toggleSelectID(id)}
                     cursor='pointer'
                 >
-                    {showGlyph ? glyph :
-                        hoverPointID === id ?
-                            glyph
-                            : circle}
+                    {showGlyph ? glyph : circle}
                 </g>
             </Tooltip>
 
