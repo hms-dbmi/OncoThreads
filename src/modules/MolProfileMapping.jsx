@@ -316,7 +316,6 @@ class MolProfileMapping {
         } else {
             // mappingType === 'Variant Allele Frequency'
             mappingFunction = (entry) => {
-                console.info('test', entry)
                 let vaf = 0;
                 if (entry !== undefined && 'tumorRefCount' in entry && 'tumorAltCount' in entry) {
                     if (entry.tumorAltCount !== -1 && entry.tumorRefCount !== -1) {

@@ -409,7 +409,6 @@ HierarchicalClustering.prototype = {
          }
          // merge small clusters first when dist are the same
          if (dist === min){
-            // console.info(this.clusters)
             
             if(getMergeSize(minKey) > getMergeSize(key)){
                minKey = key

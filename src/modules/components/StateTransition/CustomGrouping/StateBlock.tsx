@@ -71,7 +71,6 @@ class StateBlock extends React.Component<Props> {
     get cellWidth(): number {
         let { width, points } = this.props
         let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin) / points.length
-        // console.info(width, this.wholeHorizonGap, points.length, cellWidth)
         return cellWidth
     }
 

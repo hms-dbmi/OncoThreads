@@ -46,7 +46,7 @@ class DataStore {
                 } else {
                     patientGroups.forEach((patientGroup) => {
                         let partitions = []
-                        groupedTP.forEach(tp => {
+                        this.timepoints.forEach(tp => {
                             let count = 0
                             tp.customGrouped.forEach((customGroup, i) => {
                                 const numPatients = customGroup.patients.filter(p => patientGroup.includes(p))
@@ -596,7 +596,6 @@ class DataStore {
                 if (normPoints.length === 0) return
                 let { numofStates } = this
                 var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "average", Infinity, numofStates);
-                // console.info(tree)
                 let pointGroups = {}
                 clusters.forEach((d, i) => {
                     let stateKey = getUniqueKeyName(i, [])

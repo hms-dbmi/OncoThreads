@@ -33,7 +33,7 @@ class TransitionComparison extends React.Component<Props> {
         this.updateAnnotationWidth = this.updateAnnotationWidth.bind(this)
     }
     get plotWidth(){
-        return this.props.width - this.annotationWidth
+        return this.props.width - this.annotationWidth - 2* this.paddingW - 2*this.iconR
     }
     updateAnnotationWidth(width:number){
         this.annotationWidth = width
