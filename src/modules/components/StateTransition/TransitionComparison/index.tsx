@@ -269,15 +269,15 @@ class TransitionComparison extends React.Component<Props> {
         });
 
         const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v:Variable, i:number)=>{
-            return <g key={v.id} transform={`translate(0, ${ (visStore.secondaryHeight + uiStore.horizontalGap) * i+ visStore.secondaryHeight/2 + 7})`}>
+            return <g key={v.id} transform={`translate(0, ${ (visStore.secondaryHeight + uiStore.horizontalGap) * i + visStore.secondaryHeight/2 + 7})`}>
                 <text >{v.name}</text>
                 <text x= {annotationMaxWidth  - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
                 </g>
         })
 
         const eventNames = dataStore.variableStores.between.fullCurrentVariables.map((v:Variable, i:number)=>{
-            return <g key={v.id} transform={`translate(0, ${visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7})`}>
-                <text y={visStore.secondaryHeight*i+ visStore.secondaryHeight/2 + 7} >{v.name}</text>
+            return <g key={v.id} transform={`translate(0, ${(visStore.secondaryHeight + uiStore.horizontalGap) * i + visStore.secondaryHeight/2 + 7})`}>
+                <text >{v.name}</text>
                 <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
             </g>
         })
