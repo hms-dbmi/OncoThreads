@@ -310,7 +310,7 @@ class TransitionOverview extends React.Component<Props, State> {
         return <GridLayout className="stateTransition overview" rowHeight={this.props.height / 5} layout={layout} width={this.props.width}>
             <div style={{ height: this.props.height * 0.7, overflowY: "auto", width: this.props.width }} key='overview'
                 data-intro={dataIntro1}
-                data-step="3"
+                data-step="4"
             >
                 <svg
                     width="100%"
@@ -324,7 +324,7 @@ class TransitionOverview extends React.Component<Props, State> {
             </div>
             <div key='table'
                 data-intro={dataIntro2}
-                data-step='4'>
+                data-step='5'>
                 <Tabs defaultActiveKey="pattern">
                     <TabPane
                         tab={ patternHeader }

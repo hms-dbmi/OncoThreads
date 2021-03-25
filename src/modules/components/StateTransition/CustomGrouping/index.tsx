@@ -249,9 +249,17 @@ class CustomGrouping extends React.Component<Props> {
 
         </div>
 
-        let dataIntro = `<h4>Step 1: State Identification </h4> 
+        const dataIntroScatter = `<h4>Step 1: State Identification </h4> 
         In the <b>Scatter Plot</b>, each point indicates the feature values of one patient at one timepoint. Different color indicates different states.
+        <br/>
+        <img src="legend/scatter_legend.png" width="160px"/>
+        <br/>
         You can draw a lasso to modify the identified states or directly change the number of states in the top left input box.`
+
+        const dataIntroMatrix = `<h4>Step 1: State Identification </h4> 
+        The <b>Feature Matrix</b> explain each state based on their value distribution on a set of features.
+        <br/>
+        <img src="legend/cellGlyph_legend.png" width="160px"/>`
 
         return (
             // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
@@ -266,8 +274,6 @@ class CustomGrouping extends React.Component<Props> {
                 extra={controllerView} 
                 style={{width:"98%"}}
                 bodyStyle={{padding: "5px"}}
-                data-intro={dataIntro}
-                data-step='2'
             >
       
                 <div
@@ -276,7 +282,8 @@ class CustomGrouping extends React.Component<Props> {
                     ref={this.ref}
                 >
                    
-                <div>
+                <div data-intro={dataIntroScatter} 
+                data-step='2'>
                     <Scatter
                         width={width}
                         height={scatterHeight}
@@ -288,7 +295,10 @@ class CustomGrouping extends React.Component<Props> {
                         showGlyph={this.showGlyph}
                     />
                 </div>
-                <div style={{height: summaryHeight, overflowY: "scroll"}}>
+                <div 
+                style={{height: summaryHeight, overflowY: "scroll"}} 
+                data-intro={dataIntroMatrix} 
+                data-step='3'>
                     <StateBlock
                         stateLabels={dataStore.stateLabels}
                         importanceScores={dataStore.importanceScores}

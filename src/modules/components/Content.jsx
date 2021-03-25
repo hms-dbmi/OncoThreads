@@ -283,7 +283,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                     <h4>{studyName}</h4>
                     <Row className='controlPane'
                         data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Having Fun with your exploration!</h4> '
-                        data-step='6'
+                        data-step='7'
                     >
                         <Col smOffset={0} xsOffset={0} md={7} xs={7}>
                             <QuickAddVariable />
