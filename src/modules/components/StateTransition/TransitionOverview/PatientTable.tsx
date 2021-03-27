@@ -5,6 +5,7 @@ import { ColumnsType } from 'antd/lib/table'
 import { Table } from 'antd';
 import {getTextWidth, summarizeDomain} from 'modules/UtilityClasses'
 import CellGlyph, {GlyphProps} from 'modules/components/CellGlyph'
+import { keys, toJS } from "mobx";
 
 interface Props {
     rootStore?: IRootStore,
@@ -25,10 +26,13 @@ class PatientTable extends React.Component<Props, {}> {
     getPatientTable(){
         const cellHeight =  45, textHeight = 14
         const {groupOffsetX, xScale} = this.props
-        const {patientMappers} = this.props.rootStore!
-        const {patientGroups} = this.props.rootStore!.dataStore
-        const {currentVariables} = this.props.rootStore!.dataStore.variableStores.sample
-        const patientVars = Object.keys(patientMappers).filter(id=>currentVariables.includes(id))
+        const {dataStore} = this.props.rootStore!
+        const {patientGroups} = dataStore
+        const {currentVariables, referencedVariables} = dataStore.variableStores.sample
+        const patientVars = this.props.rootStore!.clinicalPatientCategories.map((d:any)=>d.id)
+        const patientRelatedVars = currentVariables.filter(
+            (id:string)=> ( patientVars.includes(id) || referencedVariables[id].originalIds.every((d:string)=>patientVars.includes(d)) )
+        )
 
         let columns : ColumnsType<RowRecordType> = patientGroups.map((patients, groupIdx)=>{
             // const cellWidth = groupIdx>0?groupOffsetX[groupIdx] - groupOffsetX[groupIdx-1] : groupOffsetX[groupIdx]
@@ -78,10 +82,18 @@ class PatientTable extends React.Component<Props, {}> {
                 },
             }
         })
-        let tableData = patientVars.map((attr)=>{
+        const tableData = patientRelatedVars.map((attr:string)=>{
             let row:any = {}
+            const attrMapper = referencedVariables[attr].mapper
             patientGroups.forEach((patients, groupIdx)=>{
-                row[`group_${groupIdx}`] = patients.map(p=>patientMappers[attr][p])
+                row[`group_${groupIdx}`] = patients.map(p=>{
+                    let v:any = 0
+                    Object.keys(attrMapper).forEach(k=>{
+                        if (k.includes(p)) {v = attrMapper[k]}
+                        return
+                    })
+                    return v
+                })
             })
             return {
                 key: attr,
