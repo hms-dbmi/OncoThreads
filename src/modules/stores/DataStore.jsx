@@ -134,7 +134,7 @@ class DataStore {
             get currentNonPatientVariables (){
                 const patientVars = this.rootStore.clinicalPatientCategories.map(d=>d.id)
                 return this.currentVariables.filter(
-                    id=>!patientVars.includes(id)
+                    id=> ! ( patientVars.includes(id) || this.referencedVariables[id].originalIds.every(d=>patientVars.includes(d)) )
                 )
             },
             get referencedVariables() {

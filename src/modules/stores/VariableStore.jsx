@@ -21,9 +21,9 @@ class VariableStore {
                 return this.currentVariables.map(d => this.referencedVariables[d]);
             },
             get currentNonPatientVariables() {
-                let patientVars = this.rootStore.clinicalPatientCategories.map(d => d.id)
+                const patientVars = this.rootStore.clinicalPatientCategories.map(d => d.id)
                 return this.currentVariables.filter(
-                    id => !patientVars.includes(id)
+                    id => ! ( patientVars.includes(id) || this.referencedVariables[id].originalIds.every(d=>patientVars.includes(d)) )
                 )
             },
             get fullNonPatientCurrentVariables() {
@@ -35,7 +35,7 @@ class VariableStore {
             get points() {
                 let { timepoints } = this.childStore
 
-                let points = [], clinicalFeatures = this.rootStore.clinicalPatientCategories.map(d => d.id)
+                let points = []
                 timepoints
                     .forEach((timepoint, timeIdx) => {
                         var heatmap = timepoint.heatmap
@@ -45,7 +45,7 @@ class VariableStore {
                                 const { patient } = d
                                 let value = []
                                 heatmap.forEach((row, rowIdx) => {
-                                    if (clinicalFeatures.includes(row.variable)) return
+                                    if (!this.currentNonPatientVariables.includes(row.variable)) return
 
                                     let v = row.data[patientIdx].value
                                     if (v === undefined ) {
