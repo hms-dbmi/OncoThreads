@@ -148,8 +148,10 @@ class Scatter extends React.Component<Props> {
                 <span>timepoint: {normPoint.timeIdx}</span>
                 <br />
                 {normPoint.value.map((v, i) => {
+                    const variableID = this.props.rootStore!.dataStore.currentNonPatientVariables[i]
+                    const variableName = this.props.rootStore!.dataStore.referencedVariables[variableID]
                     return <span key={i}>
-                        {this.props.rootStore!.dataStore.currentNonPatientVariables[i]}: <b>{v}</b>
+                        {variableName}: <b>{v}</b>
                         <br />
                     </span>
                 })}
