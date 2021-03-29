@@ -20,42 +20,24 @@ const AboutModal = observer(class AboutModal extends React.Component {
                 <Modal.Body style={{ maxHeight: '600px', overflowY: 'auto' }}>
                     
                     <h4>About</h4>
-                    <p>
-
-                        ThreadStates is a tool for the visualization of longitudinal cancer genomics data in patient cohorts. 
-                        The tool visualizes patient cohorts as temporal heatmaps that can be iteratively transformed into Sankey diagrams. 
-                        ThreadStates supports the interactive exploration and ranking of a wide range of clinical and genomic features. 
-                    </p>    
-
-                        
-                    <a href="http://gehlenborglab.org/research/projects/oncothreads/" //target="_blank"
-                    > Learn more</a>
-                  
-
-
-
-                    <br></br>
+                    <p> ThreadStates is an interactive visual analytics tool for the exploration of longitudinal patient cohort data. 
+                        The focus of ThreadStates is the identification of the states of disease progression by learning from repeated observation data in a human-in-the-loop manner. 
+                        The disease progression patterns are then revealed in terms of state transitions.
+                    </p>
+                    <br/>
 
 
                     <h4>Team</h4>
                     <p>
                     Qianwen Wang, Harvard Medical School
                     <br/>
-                    Theresa Harbig, Harvard Medical School
-                    <br/>
-                    Sabrina Nusrat, Harvard Medical School
-                    <br/>
-                    Nils Gehlenborg, Harvard Medical School
-                    <br/>
                     Tali Mazor, Dana-Farber Cancer Institute
+                    <br/>
+                    Theresa Harbig, Harvard Medical School
                     <br/>
                     Ethan Cerami, Dana-Farber Cancer Institute
                     <br/>
-                    Alexander Thomson, Novartis Institutes for BioMedical Research 
-                    <br/>
-                    Hans Bitter, Novartis Institutes for BioMedical Research
-                    <br/>
-                    Audrey Kauffmann, Novartis Institutes for BioMedical Research
+                    Nils Gehlenborg, Harvard Medical School
                     </p>
 
                     
@@ -74,8 +56,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
 
 
                    <h4>Software and Download</h4>
-                    <a href="https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates" //target="_blank"
-                    > Github</a>
+                    <a href="https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates" target="_blank"> Github</a>
                   
 
 
