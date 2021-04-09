@@ -83,6 +83,10 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                 }} />
         </span>
 
+        const dataIntroTransitionOverview = `<h4>Step 2: analyze the state transition among all patients.</h4> 
+        The y-axis presents the timeline and the colored rectangle indicates patients of the same state.
+        You can group patients based on their state transitions by changing the number in the top left input box.`
+
         return (
             <div className="stateTransition" ref={this.ref}>
 
@@ -95,9 +99,9 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                         <Card title={<span style={{ fontSize: "17px" }}>Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
                             extra={controller}
                             style={{ width: "98%" }}
-                            // style={{ width: (this.overviewWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", float: "left" }}
-                            // data-intro="state transition overview"
                             bodyStyle={{padding:'0px'}}
+                            data-intro={dataIntroTransitionOverview}
+                            data-step="4"
                         >
 
                             <TransitionOverview width={this.overviewWidth} height={this.height}/>

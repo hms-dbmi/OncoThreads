@@ -287,9 +287,7 @@ class TransitionOverview extends React.Component<Props, State> {
             { i: 'overview', x: 0, y: 0, w: 12, h: 3, minW: 12, maxW: 12 },
             { i: 'table', x: 0, y: 3, w: 12, h: 2, minW: 12, maxW: 12 },
         ];
-        const dataIntro1 = `<h4>Step 2: analyze the state transition among all patients.</h4> 
-        The y-axis presents the timeline and the colored rectangle indicates patients of the same state.
-        You can group patients based on their state transitions by changing the number in the top left input box.`
+        
 
         const dataIntro2 = `<h4>Step 2: analyze the state transition among all patients.</h4> 
         The frequent-pattern table summarizes the frequent state transition patterns and the pattern-featuers table summarizes the patient feature at each group.
@@ -309,8 +307,8 @@ class TransitionOverview extends React.Component<Props, State> {
 
         return <GridLayout className="stateTransition overview" rowHeight={this.props.height / 5} layout={layout} width={this.props.width}>
             <div style={{ height: this.props.height * 0.7, overflowY: "auto", width: this.props.width }} key='overview'
-                data-intro={dataIntro1}
-                data-step="4"
+                // data-intro={dataIntro1}
+                // data-step="4"
             >
                 <svg
                     width="100%"

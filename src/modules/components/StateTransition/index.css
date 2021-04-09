@@ -21,6 +21,7 @@
     padding-bottom: 4px;
 }
 
-.ant-tooltip{
+.ant-tooltip, .ant-dropdown, .modal{
+    /* show in front of the user onboarding guides */
     z-index: 100000007;
 }
