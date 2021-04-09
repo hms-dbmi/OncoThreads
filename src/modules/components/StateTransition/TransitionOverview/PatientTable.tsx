@@ -6,6 +6,7 @@ import { Table } from 'antd';
 import {getTextWidth, summarizeDomain} from 'modules/UtilityClasses'
 import CellGlyph, {GlyphProps} from 'modules/components/CellGlyph'
 import { keys, toJS } from "mobx";
+import RootStore from "modules/stores/RootStore";
 
 interface Props {
     rootStore?: IRootStore,
@@ -84,15 +85,11 @@ class PatientTable extends React.Component<Props, {}> {
         })
         const tableData = patientRelatedVars.map((attr:string)=>{
             let row:any = {}
-            const attrMapper = referencedVariables[attr].mapper
+            const attrMapper = referencedVariables[attr].mapper // attrMapper: sample id => attribute value
+            const {sampleStructure} = this.props.rootStore! //sample structure maps patient id to patient samples
             patientGroups.forEach((patients, groupIdx)=>{
                 row[`group_${groupIdx}`] = patients.map(p=>{
-                    let v:any = 0
-                    Object.keys(attrMapper).forEach(k=>{
-                        if (k.includes(p)) {v = attrMapper[k]}
-                        return
-                    })
-                    return v
+                    return attrMapper[sampleStructure[p][0]]
                 })
             })
             return {
@@ -102,7 +99,6 @@ class PatientTable extends React.Component<Props, {}> {
         })
 
         return <Table bordered columns={columns} dataSource={tableData} pagination={false} 
-        // scroll={{ y: this.props.height }} 
         className="patientTable"/>
         
     }
