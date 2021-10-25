@@ -12,7 +12,7 @@ OncoThreads can be run in the browser by
 npm run react-start
 ```
 
-###citation 
+### citation 
 ```bib
 @article{wang2021threadstates,
   title={ThreadStates: State-based Visual Analysis of Disease Progression},
