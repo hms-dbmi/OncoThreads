@@ -1,7 +1,7 @@
 import React from 'react';
 import { PropTypes } from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import { v4 as uuidv4 } from 'uuid';
 import { makeObservable, observable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
@@ -52,15 +52,15 @@ const ModifyBinary = inject('variableManagerStore', 'rootStore')(observer(class 
             .map(d => d.molecularProfileId).indexOf(this.props.variable.profile);
         if (profileIndex !== -1 || this.props.variable.profile === 'Binary') {
             checkbox = (
-                <Checkbox
+                <Form.Check
+                    type="checkbox"
                     checked={this.applyToAll}
                     value={this.applyToAll}
                     onChange={() => {
                         this.applyToAll = !this.applyToAll;
                     }}
-                >
-                    {'Apply action to all variables of this type'}
-                </Checkbox>
+                    label="Apply action to all variables of this type"
+                />
             );
         }
         return checkbox;
@@ -166,8 +166,8 @@ const ModifyBinary = inject('variableManagerStore', 'rootStore')(observer(class 
                 </Modal.Header>
                 <Modal.Body style={{ minHeight: '400px' }}>
                     <form>
-                        <ControlLabel>Variable name</ControlLabel>
-                        <FormControl
+                        <Form.Label>Variable name</Form.Label>
+                        <Form.Control
                             type="text"
                             value={this.name}
                             onChange={this.handleNameChange}
@@ -181,7 +181,7 @@ const ModifyBinary = inject('variableManagerStore', 'rootStore')(observer(class 
                         invert={this.invert}
                         setColors={this.setColors}
                     />
-                    <Checkbox onChange={this.toggleInvert} checked={this.invert}>Invert</Checkbox>
+                    <Form.Check type="checkbox" onChange={this.toggleInvert} checked={this.invert} label="Invert" />
                 </Modal.Body>
                 <Modal.Footer>
                     {this.getApplyToAll()}

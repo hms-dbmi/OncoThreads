@@ -3,13 +3,10 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
     Button,
-    Checkbox,
+    Badge,
     Col,
-    ControlLabel,
+    Container,
     Form,
-    FormGroup,
-    Grid,
-    Label,
     Modal,
     OverlayTrigger,
     Popover,
@@ -485,31 +482,31 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                     <Modal.Title>
                         {'Feature Explorer '}
                         <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={popoverRight}>
-                            <Label bsStyle="info">i</Label>
+                            <Badge bg="info">i</Badge>
                         </OverlayTrigger>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Grid fluid>
+                    <Container fluid>
                         <Row>
                             <Form horizontal>
-                                <FormGroup>
+                                <Form.Group>
                                     {this.props.rootStore.hasProfileData
                                         ? ([
                                             <Col sm={3} key="geneAdd">
-                                                <ControlLabel>Add Gene Feature</ControlLabel>
+                                                <Form.Label>Add Gene Feature</Form.Label>
                                             </Col>,
                                             <Col sm={3} style={{ paddingLeft: 0 }} key="datatypeAdd">
-                                                <ControlLabel>Select Data Type</ControlLabel>
+                                                <Form.Label>Select Data Type</Form.Label>
                                             </Col>,
                                         ])
                                         : null}
                                     <Col sm={6}>
-                                        <ControlLabel>Add Score</ControlLabel>
+                                        <Form.Label>Add Score</Form.Label>
 
                                     </Col>
-                                </FormGroup>
-                                <FormGroup>
+                                </Form.Group>
+                                <Form.Group>
                                     {this.props.rootStore.hasProfileData
                                         ? (
                                             <Col sm={6}>
@@ -531,15 +528,17 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                             Add
                                         </Button>
                                     </Col>
-                                </FormGroup>
-                                <FormGroup>
+                                </Form.Group>
+                                <Form.Group>
                                     <Col sm={6} smOffset={this.props.rootStore.hasProfileData ? 6 : 0}>
-                                        <Checkbox onChange={this.toggleDesciptionColumn}
-                                                  checked={this.addedColumns.includes('description')}>
-                                            Show feature description column
-                                        </Checkbox>
+                                        <Form.Check
+                                            type="checkbox"
+                                            onChange={this.toggleDesciptionColumn}
+                                            checked={this.addedColumns.includes('description')}
+                                            label="Show feature description column"
+                                        />
                                     </Col>
-                                </FormGroup>
+                                </Form.Group>
                             </Form>
                         </Row>
                         <Row>
@@ -553,7 +552,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                 visibleColumns={visibleColumns}
                             />
                         </Row>
-                    </Grid>
+                    </Container>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.close}>Cancel</Button>

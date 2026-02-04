@@ -309,7 +309,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                             {this.getLegend()}
 
                             <Button
-                                bsSize="xsmall"
+                                size="sm"
                                 onClick={() => this.props.rootStore.visStore.toggleSpreadAll()}
                                 key="spreadAll"
                             >

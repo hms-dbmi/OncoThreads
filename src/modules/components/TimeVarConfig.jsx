@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Radio } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 
 /**
  * Legend Component
@@ -24,10 +24,10 @@ const TimeVarConfig = inject('rootStore', 'uiStore')(observer(class TimeVarConfi
             
             <div
             className="menu">
-            <Radio name="groupOptions" onClick={e => this.handleClick("1", "Days")}>Days</Radio>
-            <Radio name="groupOptions" onClick={e => this.handleClick("7", "Weeks")}>Weeks</Radio>
-            <Radio name="groupOptions" onClick={e => this.handleClick("30", "Months")}>Months</Radio>
-            <Radio name="groupOptions" onClick={e => this.handleClick("365", "Years")}>Years</Radio>
+            <Form.Check type="radio" name="groupOptions" onClick={e => this.handleClick("1", "Days")} label="Days" />
+            <Form.Check type="radio" name="groupOptions" onClick={e => this.handleClick("7", "Weeks")} label="Weeks" />
+            <Form.Check type="radio" name="groupOptions" onClick={e => this.handleClick("30", "Months")} label="Months" />
+            <Form.Check type="radio" name="groupOptions" onClick={e => this.handleClick("365", "Years")} label="Years" />
         </div>
         );
     }

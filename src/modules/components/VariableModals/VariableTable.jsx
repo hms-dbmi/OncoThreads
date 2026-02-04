@@ -2,8 +2,9 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import {
-    Button, DropdownButton, Glyphicon, Label, MenuItem, OverlayTrigger, Table, Tooltip,
+    Button, Dropdown, DropdownButton, Badge, OverlayTrigger, Table, Tooltip,
 } from 'react-bootstrap';
+import { UpOutlined, DownOutlined } from '@ant-design/icons';
 import FontAwesome from 'react-fontawesome';
 import { makeObservable, observable } from 'mobx';
 import ModifyCategorical from './ModifySingleVariable/ModifyCategorical';
@@ -188,14 +189,14 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
             let label = null;
             if (fullVariable.derived) {
                 label = (
-                    <Label bsStyle="info">
+                    <Badge bg="info">
                         Modified
-                    </Label>
+                    </Badge>
                 );
             }
             let newLabel = null;
             if (d.isNew) {
-                newLabel = <Label bsStyle="info">New</Label>;
+                newLabel = <Badge bg="info">New</Badge>;
             }
             let bgColor = null;
             if (d.isSelected) {
@@ -213,15 +214,11 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                 >
                     <td>
                         {i + 1}
-                        <Button bsSize="xsmall" onClick={() => this.moveSingle(true, false, i)}>
-                            <Glyphicon
-                                glyph="chevron-up"
-                            />
+                        <Button size="sm" onClick={() => this.moveSingle(true, false, i)}>
+                            <UpOutlined />
                         </Button>
-                        <Button bsSize="xsmall" onClick={() => this.moveSingle(false, false, i)}>
-                            <Glyphicon
-                                glyph="chevron-down"
-                            />
+                        <Button size="sm" onClick={() => this.moveSingle(false, false, i)}>
+                            <DownOutlined />
                         </Button>
                     </td>
                     <OverlayTrigger placement="top" overlay={tooltip}>
@@ -255,21 +252,21 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
             );
         });
         return (
-            <Table condensed hover>
+            <Table hover size="sm">
                 <thead>
                     <tr>
                         <th>Position</th>
                         <th>
                         Variable
                             {this.sortVarAsc ? (
-                                <Glyphicon
+                                <DownOutlined
                                     onClick={() => this.handleSort('alphabet')}
-                                    glyph="chevron-down"
+                                    style={{ marginLeft: 8, cursor: 'pointer' }}
                                 />
                             ) : (
-                                <Glyphicon
+                                <UpOutlined
                                     onClick={() => this.handleSort('alphabet')}
-                                    glyph="chevron-up"
+                                    style={{ marginLeft: 8, cursor: 'pointer' }}
                                 />
                             )}
                         </th>
@@ -277,28 +274,28 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                         <th>
                         Datatype
                             {this.sortTypeAsc ? (
-                                <Glyphicon
+                                <DownOutlined
                                     onClick={() => this.handleSort('datatype')}
-                                    glyph="chevron-down"
+                                    style={{ marginLeft: 8, cursor: 'pointer' }}
                                 />
                             ) : (
-                                <Glyphicon
+                                <UpOutlined
                                     onClick={() => this.handleSort('datatype')}
-                                    glyph="chevron-up"
+                                    style={{ marginLeft: 8, cursor: 'pointer' }}
                                 />
                             )}
                         </th>
                         <th>
                         Source
                             {this.sortSourceAsc ? (
-                                <Glyphicon
+                                <DownOutlined
                                     onClick={() => this.handleSort('source')}
-                                    glyph="chevron-down"
+                                    style={{ marginLeft: 8, cursor: 'pointer' }}
                                 />
                             ) : (
-                                <Glyphicon
+                                <UpOutlined
                                     onClick={() => this.handleSort('source')}
-                                    glyph="chevron-up"
+                                    style={{ marginLeft: 8, cursor: 'pointer' }}
                                 />
                             )}
                         </th>
@@ -373,11 +370,11 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                     title="Move Selected..."
                     id="MoveSelected"
                 >
-                    <MenuItem onClick={() => this.moveSelected(true, false)} eventKey="1">Up</MenuItem>
-                    <MenuItem onClick={() => this.moveSelected(false, false)} eventKey="2">Down</MenuItem>
-                    <MenuItem divider />
-                    <MenuItem onClick={() => this.moveSelected(true, true)} eventKey="3">to top</MenuItem>
-                    <MenuItem onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</MenuItem>
+                    <Dropdown.Item onClick={() => this.moveSelected(true, false)} eventKey="1">Up</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.moveSelected(false, false)} eventKey="2">Down</Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item onClick={() => this.moveSelected(true, true)} eventKey="3">to top</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</Dropdown.Item>
                 </DropdownButton>
                 <Button onClick={this.combineSelected}>Combine Selected</Button>
                 {this.getModal()}

@@ -4,14 +4,12 @@ import Select from 'react-select';
 import {
     Alert,
     Button,
+    Card,
     Col,
-    ControlLabel,
-    FormControl,
-    FormGroup,
-    Grid,
+    Container,
+    Form,
     InputGroup,
-    Panel,
-    Radio,
+    Nav,
     Row,
     Tab,
     Tabs,
@@ -77,16 +75,14 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
             && (!this.props.rootStore.isOwnData || this.props.rootStore.localFileLoader.eventsParsed === 'finished')) {
             info = (
                 <div>
-                    <Panel>
-                        <Panel.Heading>
-                            <Panel.Title>
-                                Study information
-                            </Panel.Title>
-                        </Panel.Heading>
-                        <Panel.Body>
+                    <Card>
+                        <Card.Header>
+                            Study information
+                        </Card.Header>
+                        <Card.Body>
                             <StudySummary />
-                        </Panel.Body>
-                    </Panel>
+                        </Card.Body>
+                    </Card>
                 </div>
             );
         } else if ((this.selectedStudy !== null && !this.props.rootStore.isOwnData)
@@ -143,14 +139,14 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
         if (this.props.uiStore.cBioInstance === 'own') {
             placeHoplderText= "Connect to a cBioPortal instance to load study list";
             instanceTextfield = (
-                <FormGroup>
-                    <ControlLabel>
+                <Form.Group>
+                    <Form.Label>
 
                     Enter URL for cBioPortal (e.g. 'http://www.cbioportal.org')
-                    </ControlLabel>
+                    </Form.Label>
                     
                     <InputGroup>
-                        <FormControl componentClass="textarea" rows='1' cols='50' 
+                        <Form.Control as="textarea" rows={1}
                             value={this.ownInstanceURL}
                             onChange={(e) => {
                                 this.ownInstanceURL = e.target.value;
@@ -161,15 +157,15 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                     </InputGroup>
 
                       <br></br>      
-                    <ControlLabel>
+                    <Form.Label>
                             
                         Enter access token for password-protected instances of cBioPortal  <a href="https://docs.cbioportal.org/2.2-authorization-and-authentication/authenticating-users-via-tokens#using-data-access-tokens" >(instructions to find token)</a>
-                    </ControlLabel>
+                    </Form.Label>
 
                     <InputGroup>
 
                         
-                        <FormControl componentClass="textarea" rows='1' cols='50' 
+                        <Form.Control as="textarea" rows={1} 
                             
                             onChange={(e) => {
                                 console.log("new token:" + e.target.value);
@@ -186,12 +182,12 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                         Connect
                     </Button>   
 
-                </FormGroup>
+                </Form.Group>
             );
         }
 
         if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'failed') {
-            connected = <Alert bsStyle="warning">Connection failed: {this.props.rootStore.studyAPI.errorMsg}</Alert>;
+            connected = <Alert variant="warning">Connection failed: {this.props.rootStore.studyAPI.errorMsg}</Alert>;
         } else if (this.props.rootStore.studyAPI.connectionStatus[this.props.uiStore.cBioInstance] === 'success') {
             placeHoplderText="Select Study";
             connected = <Alert>Successfully connected</Alert>;
@@ -201,9 +197,9 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
             <div style={{ marginTop: '10px', marginBottom: '10px' }}>
                 {instanceTextfield}
                 {connected}
-                <ControlLabel>
+                <Form.Label>
                     Select study
-                </ControlLabel>
+                </Form.Label>
                 <Select
                     type="text"
                     searchable
@@ -235,39 +231,38 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
             launchDisabled = !this.props.rootStore.timelineParsed;
         }
         return (
-            <Grid>
+            <Container>
                 <Row>
-                    <Col xs={8} xsOffset={2}>
+                    <Col xs={8} md={{ span: 8, offset: 2 }}>
                         <Tabs
                             activeKey={this.selectedTab}
                             id="controlled-tab"
-                            animation={false}
                             onSelect={this.handleSelectTab}
                         >
                             <Tab eventKey="cBio" title="Load data from cBioPortal">
                                 <form>
-                                    <FormGroup>
-                                        <Radio
+                                    <Form.Group>
+                                        <Form.Check
+                                            type="radio"
                                             name="linkSelect"
                                             value="hack"
                                             checked={this.props.uiStore.cBioInstance === 'hack'}
                                             onChange={this.handleInstanceChange}
                                             inline
-                                        >
-                                            cBioPortal for ThreadStates
-                                        </Radio>
+                                            label="cBioPortal for ThreadStates"
+                                        />
                                         {' '}
-                                        <Radio
+                                        <Form.Check
+                                            type="radio"
                                             name="linkSelect"
                                             value="own"
                                             checked={this.props.uiStore.cBioInstance === 'own'}
                                             onChange={this.handleInstanceChange}
                                             inline
-                                        >
-                                            Custom cBioPortal
-                                        </Radio>
+                                            label="Custom cBioPortal"
+                                        />
                                         {' '}
-                                    </FormGroup>
+                                    </Form.Group>
                                 </form>
                                 {this.getDefaultViewContent()}
                             </Tab>
@@ -284,7 +279,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                         </Button>
                     </Col>
                 </Row>
-            </Grid>
+            </Container>
         );
     }
 }));

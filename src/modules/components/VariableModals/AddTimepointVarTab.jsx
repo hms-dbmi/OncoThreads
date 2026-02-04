@@ -1,7 +1,8 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { makeObservable, observable, action } from 'mobx';
-import { Button, Glyphicon } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+import { PlusOutlined } from '@ant-design/icons';
 import VariableTable from './VariableTable';
 import VariableExplorer from '../Modals/VariableExplorer';
 
@@ -31,12 +32,12 @@ const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extend
                     Current Features
                     <Button
                         style={{ marginLeft: 10 }}
-                        bsStyle="primary"
+                        variant="primary"
                         onClick={() => {
                             this.variableExplorerIsOpen = true;
                         }}
                     >
-                        <Glyphicon glyph="plus" />
+                        <PlusOutlined />
                         Add Features
                     </Button>
                 </h4>

@@ -4,7 +4,7 @@
 import React from 'react';
 import { inject, observer, Provider } from 'mobx-react';
 import {
-    Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row,
+    Button, ButtonGroup, ButtonToolbar, Col, Container, Dropdown, DropdownButton, Row,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { makeObservable, observable } from 'mobx';
@@ -292,7 +292,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
         return (
             <div>
-                <Grid fluid style={{ paddingLeft: 20 }}>
+                <Container fluid style={{ paddingLeft: 20 }}>
                     <h4>{studyName}</h4>
                     <Row className='controlPane'
                         data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Having Fun with your exploration!</h4> '
@@ -365,17 +365,17 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                         key="ResetButton"
                                         id="ResetButton"
                                     >
-                                        <MenuItem eventKey="1" onClick={this.handleResetAlignment}>
+                                        <Dropdown.Item eventKey="1" onClick={this.handleResetAlignment}>
                                             timepoint
                                             alignment
-                                        </MenuItem>
-                                        <MenuItem
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
                                             eventKey="2"
                                             onClick={this.handleResetSelection}
                                         >
                                             selection
-                                        </MenuItem>
-                                        <MenuItem eventKey="3" onClick={this.handleResetAll}>all</MenuItem>
+                                        </Dropdown.Item>
+                                        <Dropdown.Item eventKey="3" onClick={this.handleResetAll}>all</Dropdown.Item>
                                     </DropdownButton>
                                     <Button onClick={this.props.undoRedoStore.undo}>
                                         <FontAwesome
@@ -403,7 +403,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                             showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
                         />
                     </Row>
-                </Grid>
+                </Container>
                 {this.getBinner()}
                 {this.getSaveModal()}
                 {this.getVariableManager()}

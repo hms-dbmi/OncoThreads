@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import { Checkbox, Form } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import Histogram from './Histogram';
 import Slider from './Slider';
 import BinNames from './BinNames';
@@ -31,13 +31,12 @@ const Binner = inject('binningStore')(observer(class Binner extends React.Compon
         let checkbox = null;
         if (this.props.binningStore.x.length === 1) {
             checkbox = (
-                <Checkbox
+                <Form.Check
+                    type="checkbox"
                     onChange={this.props.binningStore.toggleIsBinary}
                     checked={this.props.binningStore.isBinary}
-                >
-                    {' '}
-                    make binary
-                </Checkbox>
+                    label="make binary"
+                />
             );
         }
         return checkbox;

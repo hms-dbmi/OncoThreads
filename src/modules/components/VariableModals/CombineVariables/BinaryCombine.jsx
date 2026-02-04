@@ -1,7 +1,7 @@
 import React from 'react';
 import { PropTypes } from 'prop-types';
 import { inject, observer, PropTypes as MobxPropTypes, Provider } from 'mobx-react';
-import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import { v4 as uuidv4 } from 'uuid';
 import { makeObservable, observable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
@@ -43,7 +43,7 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
         // depending on the datatype of the combined variable display
         // either the table for binary categories or the table showing categorical categories
         if (this.modification.datatype === 'BINARY') {
-            return [<ControlLabel key="label">Result</ControlLabel>,
+            return [<Form.Label key="label">Result</Form.Label>,
                 <BinaryTable
                     key="table"
                     mapper={DerivedMapperFunctions.createBinaryCombinedMapper(this.props.variables
@@ -54,7 +54,7 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
                 />];
         }
 
-        return [<ControlLabel key="label">Result</ControlLabel>,
+        return [<Form.Label key="label">Result</Form.Label>,
             <Provider categoryStore={this.categoryStore} key="table"><CategoricalTable/></Provider>];
     }
 
@@ -235,51 +235,51 @@ const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombin
                     <Modal.Title>Combine Variables</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ minHeight: '400px' }}>
-                    <ControlLabel>Variable name</ControlLabel>
-                    <FormControl
+                    <Form.Label>Variable name</Form.Label>
+                    <Form.Control
                         type="text"
                         value={this.name}
                         onChange={this.handleNameChange}
                     />
-                    <FormGroup>
+                    <Form.Group>
                         Select binary operator
-                        <Radio
+                        <Form.Check
+                            type="radio"
                             onChange={() => this.setModification({ operator: 'or', datatype: 'BINARY' })}
                             checked={this.modification.operator === 'or' && this.modification.datatype === 'BINARY'}
                             name="binaryCombine"
-                        >
-                            OR (binary)
-                        </Radio>
-                        <Radio
+                            label="OR (binary)"
+                        />
+                        <Form.Check
+                            type="radio"
                             onChange={() => this.setModification({ operator: 'and', datatype: 'BINARY' })}
                             checked={this.modification.operator === 'and' && this.modification.datatype === 'BINARY'}
                             name="binaryCombine"
-                        >
-                            AND (binary)
-                        </Radio>
-                        <Radio
+                            label="AND (binary)"
+                        />
+                        <Form.Check
+                            type="radio"
                             onChange={() => this.setModification({
                                 operator: 'or',
                                 datatype: 'STRING',
                             })}
                             checked={this.modification.operator === 'or' && this.modification.datatype === 'STRING'}
                             name="binaryCombine"
-                        >
-                            Create combined categories
-                        </Radio>
-                    </FormGroup>
+                            label="Create combined categories"
+                        />
+                    </Form.Group>
                     {this.getModificationPanel()}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Checkbox
+                    <Form.Check
+                        type="checkbox"
                         disabled={this.props.derivedVariable !== null}
                         onChange={() => {
                             this.keep = !this.keep;
                         }}
                         checked={!this.keep}
-                    >
-                        Discard original variables
-                    </Checkbox>
+                        label="Discard original variables"
+                    />
                     <Button onClick={this.props.closeModal}>
                         Cancel
                     </Button>

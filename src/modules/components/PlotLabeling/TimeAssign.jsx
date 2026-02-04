@@ -1,6 +1,6 @@
 import React from "react";
 import {observer,inject} from "mobx-react";
-import {ButtonToolbar, DropdownButton, MenuItem} from 'react-bootstrap';
+import {ButtonToolbar, Dropdown, DropdownButton} from 'react-bootstrap';
 
 
 /*
@@ -166,22 +166,22 @@ const TimeAssign = inject("rootStore")(observer(class TimeAssign extends React.C
 
                     <DropdownButton
 
-                        bsSize="xsmall"
+                        size="sm"
 
                         title={"Show Time As"}
                         key={"ShowTime"}
                         id={"ShowTime"}
                     >
 
-                        <MenuItem eventKey="1" onClick={e => this.handleClick2("1", "Days")}>
+                        <Dropdown.Item eventKey="1" onClick={e => this.handleClick2("1", "Days")}>
                             <small> Days</small>
-                        </MenuItem>
-                        <MenuItem eventKey="2" onClick={e => this.handleClick2("30", "Months")}>
+                        </Dropdown.Item>
+                        <Dropdown.Item eventKey="2" onClick={e => this.handleClick2("30", "Months")}>
                             <small> Months</small>
-                        </MenuItem>
-                        <MenuItem eventKey="3" onClick={e => this.handleClick2("365", "Years")}>
+                        </Dropdown.Item>
+                        <Dropdown.Item eventKey="3" onClick={e => this.handleClick2("365", "Years")}>
                             <small> Years</small>
-                        </MenuItem>
+                        </Dropdown.Item>
                     </DropdownButton>
                 </ButtonToolbar>
 

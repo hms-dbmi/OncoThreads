@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer, Provider } from 'mobx-react';
-import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import { v4 as uuidv4 } from 'uuid';
 import { makeObservable, observable } from 'mobx';
 import { PropTypes } from 'prop-types';
@@ -83,15 +83,15 @@ const ModifyCategorical = inject('variableManagerStore', 'rootStore')(observer(c
             .map(d => d.molecularProfileId).indexOf(this.props.variable.profile);
         if (this.props.variable.profile === 'Mutation type' || profileIndex !== -1) {
             checkbox = (
-                <Checkbox
+                <Form.Check
+                    type="checkbox"
                     checked={this.applyToAll}
                     value={this.applyToAll}
                     onChange={() => {
                         this.applyToAll = !this.applyToAll;
                     }}
-                >
-                    {'Apply action to all variables of this type'}
-                </Checkbox>
+                    label={'Apply action to all variables of this type'}
+                />
             );
         }
         return checkbox;
@@ -320,8 +320,8 @@ const ModifyCategorical = inject('variableManagerStore', 'rootStore')(observer(c
                 </Modal.Header>
                 <Modal.Body style={{ minHeight: '400px' }}>
                     <form>
-                        <ControlLabel>Variable name</ControlLabel>
-                        <FormControl
+                        <Form.Label>Variable name</Form.Label>
+                        <Form.Control
                             type="text"
                             value={this.name}
                             onChange={this.handleNameChange}
@@ -329,20 +329,24 @@ const ModifyCategorical = inject('variableManagerStore', 'rootStore')(observer(c
                     </form>
                     <h5>Description</h5>
                     <p>{this.props.variable.description}</p>
-                    <FormGroup>
-                        <Radio
+                    <Form.Group>
+                        <Form.Check
+                            type="radio"
                             onChange={this.toggleConvertBinary}
                             name="radioGroup"
                             checked={!this.convertBinary}
-                        >
-                            Customize categories
-                        </Radio>
+                            label="Customize categories"
+                        />
                         {' '}
-                        <Radio onChange={this.toggleConvertBinary} name="radioGroup" checked={this.convertBinary}>
-                            Convert to binary
-                        </Radio>
+                        <Form.Check
+                            type="radio"
+                            onChange={this.toggleConvertBinary}
+                            name="radioGroup"
+                            checked={this.convertBinary}
+                            label="Convert to binary"
+                        />
                         {' '}
-                    </FormGroup>
+                    </Form.Group>
                     {this.getTable()}
                 </Modal.Body>
                 <Modal.Footer>

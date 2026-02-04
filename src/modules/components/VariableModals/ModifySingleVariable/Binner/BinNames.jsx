@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
 import {
-    Button, ButtonGroup, Col, ControlLabel, Form, FormControl, FormGroup,
+    Button, ButtonGroup, Col, Form,
 } from 'react-bootstrap';
 
 /**
@@ -14,25 +14,25 @@ const BinNames = inject('binningStore')(observer(class BinNames extends React.Co
         if (!this.props.binningStore.isBinary) {
             for (let i = 0; i < this.props.binningStore.binNames.length; i += 1) {
                 binNameFields.push([
-                    <FormGroup key={`Bin${i + 1}`}>
-                        <Col componentClass={ControlLabel} sm={2}>
+                    <Form.Group key={`Bin${i + 1}`}>
+                        <Col as={Form.Label} sm={2}>
                             {`Bin${i + 1}:`}
                         </Col>
                         <Col sm={10}>
-                            <FormControl
+                            <Form.Control
                                 onChange={e => this.props.binningStore.handleBinNameChange(e, i)}
                                 type="text"
                                 value={this.props.binningStore.binNames[i].name}
                             />
                         </Col>
-                    </FormGroup>]);
+                    </Form.Group>]);
             }
             // case: binary binning
         } else {
             for (let i = 0; i < this.props.binningStore.binNames.length; i += 1) {
                 binNameFields.push(
-                    <FormGroup key={`Bin${i + 1}`}>
-                        <Col componentClass={ControlLabel} sm={2}>
+                    <Form.Group key={`Bin${i + 1}`}>
+                        <Col as={Form.Label} sm={2}>
                             {`Bin${(i + 1)}:`}
                         </Col>
                         <Col sm={10}>
@@ -53,7 +53,7 @@ const BinNames = inject('binningStore')(observer(class BinNames extends React.Co
                                 </Button>
                             </ButtonGroup>
                         </Col>
-                    </FormGroup>,
+                    </Form.Group>,
                 );
             }
         }

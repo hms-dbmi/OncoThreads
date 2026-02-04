@@ -37,9 +37,6 @@ class UndoRedoStore {
             saveRealignToHistory: action,
             saveTPMovement: action,
         });
-        
-        this.undo = this.undo.bind(this);
-        this.redo = this.redo.bind(this);
     }
 
     /**

@@ -2,17 +2,14 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
     Alert,
+    Badge,
     Button,
-    ControlLabel,
-    FormControl,
-    FormGroup,
-    Glyphicon,
-    Label,
+    Form,
     OverlayTrigger,
     Popover,
-    Radio,
     Table,
 } from 'react-bootstrap';
+import { UpOutlined, DownOutlined } from '@ant-design/icons';
 import { SketchPicker } from 'react-color';
 import FontAwesome from 'react-fontawesome';
 import * as d3 from 'd3';
@@ -197,7 +194,7 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
             let label;
             if (d.categories.length === 1 && d.name !== d.categories[0]) {
                 label = (
-                    <Label bsStyle="info">
+                    <Badge bg="info">
                         Renamed
                         {' '}
                         <FontAwesome
@@ -206,11 +203,11 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                                 .renameCategory(i, d.categories[0])}
                             name="times"
                         />
-                    </Label>
+                    </Badge>
                 );
             } else if (d.categories.length > 1) {
                 label = (
-                    <Label bsStyle="info">
+                    <Badge bg="info">
                         Merged
                         {' '}
                         <FontAwesome
@@ -218,7 +215,7 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                             onClick={() => this.props.categoryStore.unMergeIndex(i)}
                             name="times"
                         />
-                    </Label>
+                    </Badge>
                 );
             }
             tableContent.push(
@@ -231,21 +228,17 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                 >
                     <td>
                         {i + 1}
-                        <Button bsSize="xsmall" onClick={() => this.props.categoryStore.move(i, true)}>
-                            <Glyphicon
-                                glyph="chevron-up"
-                            />
+                        <Button size="sm" onClick={() => this.props.categoryStore.move(i, true)}>
+                            <UpOutlined />
                         </Button>
-                        <Button bsSize="xsmall" onClick={() => this.props.categoryStore.move(i, false)}>
-                            <Glyphicon
-                                glyph="chevron-down"
-                            />
+                        <Button size="sm" onClick={() => this.props.categoryStore.move(i, false)}>
+                            <DownOutlined />
                         </Button>
                     </td>
                     <td>
                         <form>
-                            <FormControl
-                                bsSize="small"
+                            <Form.Control
+                                size="sm"
                                 type="text"
                                 value={d.name}
                                 onChange={e => this.props.categoryStore
@@ -276,39 +269,45 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
         const numRect = 5;
         return (
             <form>
-                <FormGroup>
-                    <ControlLabel>Categorical Scales</ControlLabel>
+                <Form.Group>
+                    <Form.Label>Categorical Scales</Form.Label>
                     {ColorScales.categoricalColors.map((d, i) => (
-                        <Radio
+                        <Form.Check
                             key={i}
+                            type="radio"
                             onChange={() => this.handleColorScaleChange(d, false)}
                             name="ColorScaleGroup"
-                        >
-                            <svg
-                                width={rectDim * numRect}
-                                height={rectDim}
-                            >
-                                {CategoricalTable.getCategoricalRects(d, rectDim, numRect)}
-                            </svg>
-                            {`  Colors: ${d.length}`}
-                        </Radio>
+                            label={
+                                <>
+                                    <svg
+                                        width={rectDim * numRect}
+                                        height={rectDim}
+                                    >
+                                        {CategoricalTable.getCategoricalRects(d, rectDim, numRect)}
+                                    </svg>
+                                    {`  Colors: ${d.length}`}
+                                </>
+                            }
+                        />
                     ))}
-                    <ControlLabel>Ordinal Scales</ControlLabel>
+                    <Form.Label>Ordinal Scales</Form.Label>
                     {ColorScales.continuousTwoColorRanges.map((d, i) => (
-                        <Radio
+                        <Form.Check
                             key={i}
+                            type="radio"
                             onChange={() => this.handleColorScaleChange(d, true)}
                             name="ColorScaleGroup"
-                        >
-                            <svg
-                                width={rectDim * numRect}
-                                height={rectDim}
-                            >
-                                {CategoricalTable.getOrdinalRects(d, rectDim, numRect)}
-                            </svg>
-                        </Radio>
+                            label={
+                                <svg
+                                    width={rectDim * numRect}
+                                    height={rectDim}
+                                >
+                                    {CategoricalTable.getOrdinalRects(d, rectDim, numRect)}
+                                </svg>
+                            }
+                        />
                     ))}
-                </FormGroup>
+                </Form.Group>
             </form>
         );
     }

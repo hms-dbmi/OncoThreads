@@ -29,7 +29,7 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
                             onClick={() => this.handleBinaryChange(d, true)}
                             active={this.props.binaryMapping[d] === true}
                             value
-                            bsSize="xsmall"
+                            size="sm"
                         >
                             true
                         </Button>
@@ -37,7 +37,7 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
                             onClick={() => this.handleBinaryChange(d, false)}
                             active={this.props.binaryMapping[d] === false}
                             value={false}
-                            bsSize="xsmall"
+                            size="sm"
                         >
                             false
                         </Button>
@@ -45,7 +45,7 @@ const ConvertBinaryTable = observer(class ConvertBinaryTable extends React.Compo
                             onClick={() => this.handleBinaryChange(d, undefined)}
                             active={this.props.binaryMapping[d] === undefined}
                             value={undefined}
-                            bsSize="xsmall"
+                            size="sm"
                         >
                             undefined
                         </Button>

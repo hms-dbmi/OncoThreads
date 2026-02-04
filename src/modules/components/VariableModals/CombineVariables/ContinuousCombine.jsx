@@ -2,14 +2,10 @@ import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import {
     Button,
-    Checkbox,
-    ControlLabel,
-    FormControl,
-    FormGroup,
+    Form,
     Modal,
     OverlayTrigger,
     Popover,
-    Radio,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
@@ -101,19 +97,19 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
         }
         return (
             <form>
-                <FormGroup>
+                <Form.Group>
                     {linearColorRange.map((d, i) => (
-                        <Radio
+                        <Form.Check
                             key={i}
+                            type="radio"
                             onChange={() => {
                                 this.colorRange = d;
                             }}
                             name="ColorScaleGroup"
-                        >
-                            {ModifyContinuous.getGradient(d, width, height)}
-                        </Radio>
+                            label={ModifyContinuous.getGradient(d, width, height)}
+                        />
                     ))}
-                </FormGroup>
+                </Form.Group>
             </form>
         );
     }
@@ -214,13 +210,13 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
                 </Modal.Header>
                 <Modal.Body style={{ minHeight: '400px' }}>
                     <form>
-                        <ControlLabel>Variable name</ControlLabel>
-                        <FormControl
+                        <Form.Label>Variable name</Form.Label>
+                        <Form.Control
                             type="text"
                             value={this.name}
                             onChange={this.handleNameChange}
                         />
-                        <ControlLabel>
+                        <Form.Label>
                             Color Scale
                             <OverlayTrigger
                                 rootClose
@@ -232,15 +228,15 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
                                     name="paint-brush"
                                 />
                             </OverlayTrigger>
-                        </ControlLabel>
+                        </Form.Label>
                         <p>{ModifyContinuous.getGradient(this.colorRange, 100, 20)}</p>
-                        <FormGroup controlId="formControlsSelect">
-                            <ControlLabel>Select Operation</ControlLabel>
-                            <FormControl
+                        <Form.Group controlId="formControlsSelect">
+                            <Form.Label>Select Operation</Form.Label>
+                            <Form.Control
                                 onChange={(e) => {
                                     this.operation = e.target.value;
                                 }}
-                                componentClass="select"
+                                as="select"
                                 defaultValue={this.operation}
                             >
                                 <option value="average">Mean</option>
@@ -249,22 +245,21 @@ const ContinuousCombine = inject('variableManagerStore')(observer(class Continuo
                                 <option value="delta">Difference</option>
                                 <option value="min">Minimum</option>
                                 <option value="max">Maximum</option>
-                            </FormControl>
-                        </FormGroup>
+                            </Form.Control>
+                        </Form.Group>
                     </form>
                     {this.getHistogram()}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Checkbox
+                    <Form.Check
+                        type="checkbox"
                         disabled={this.props.derivedVariable !== null}
                         onChange={() => {
                             this.keep = !this.keep;
                         }}
                         checked={!this.keep}
-                    >
-                        Discard
-                        original variables
-                    </Checkbox>
+                        label="Discard original variables"
+                    />
                     <Button onClick={this.props.closeModal}>
                         Cancel
                     </Button>

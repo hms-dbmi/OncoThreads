@@ -104,7 +104,7 @@ const GroupBinningModal = observer(class GroupBinningModal extends React.Compone
                     <Modal.Title>{`Bin ${this.props.variable.name}`}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Alert bsStyle="info">
+                    <Alert variant="info">
                         <strong>Please bin the continuous variable before grouping</strong>
                     </Alert>
                     <Provider binningStore={this.binningStore}>

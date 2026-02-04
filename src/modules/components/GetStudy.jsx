@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { MenuItem, NavDropdown } from 'react-bootstrap';
+import { NavDropdown } from 'react-bootstrap';
 
 
 const GetStudy = inject('rootStore', 'undoRedoStore')(observer(class GetStudy extends React.Component {
@@ -32,13 +32,13 @@ const GetStudy = inject('rootStore', 'undoRedoStore')(observer(class GetStudy ex
         const options = [];
         this.props.studies.forEach((d, i) => {
             options.push(
-                <MenuItem
+                <NavDropdown.Item
                     eventKey={i}
                     onClick={e => this.getStudy(e, d)}
                     key={d.studyId}
                 >
                     {d.name}
-                </MenuItem>,
+                </NavDropdown.Item>,
             );
         });
         return options;

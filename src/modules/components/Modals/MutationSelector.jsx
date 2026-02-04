@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { inject, observer } from 'mobx-react';
-import { Button, Col, FormControl } from 'react-bootstrap';
+import { Button, Col, Form } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { makeObservable, observable, computed } from 'mobx';
 import SelectAll from '../../SelectAllSelector/react-select-all';
@@ -63,9 +63,9 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
      */
     getGeneTextField() {
         return (
-            <FormControl
+            <Form.Control
+                as="textarea"
                 style={{ height: 38 }}
-                type="textarea"
                 placeholder="Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"
                 onChange={this.updateSearchValue}
                 value={this.geneListString}

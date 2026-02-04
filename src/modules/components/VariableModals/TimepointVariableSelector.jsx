@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Alert, Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup } from 'react-bootstrap';
+import { Alert, Button, Col, Form } from 'react-bootstrap';
 import { makeObservable, observable } from 'mobx';
 import Select from 'react-select';
 import OriginalVariable from '../../stores/OriginalVariable';
@@ -253,18 +253,18 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         if (this.mutationOptions.length > 0) {
             const available = [];
             this.mutationOptions.forEach((d, i) => available.push(
-                <Checkbox
+                <Form.Check
+                    type="checkbox"
                     onChange={() => this.toggleSelect(i, true)}
                     checked={d.selected}
                     key={d.id}
                     value={d.id}
-                >
-                    {d.id}
-                </Checkbox>,
+                    label={d.id}
+                />,
             ));
             checkBoxes.push(
                 <Col key="Mutations" sm={6}>
-                    <ControlLabel>Mutations</ControlLabel>
+                    <Form.Label>Mutations</Form.Label>
                     {available}
                 </Col>,
             );
@@ -272,18 +272,18 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         if (this.molecularOptions.length > 0) {
             const available = [];
             this.molecularOptions.forEach((d, i) => available.push(
-                <Checkbox
+                <Form.Check
+                    type="checkbox"
                     onChange={() => this.toggleSelect(i, false)}
                     checked={d.selected}
                     key={d.id}
                     value={d.id}
-                >
-                    {d.name}
-                </Checkbox>,
+                    label={d.name}
+                />,
             ));
             checkBoxes.push(
                 <Col key="Molecular" sm={6}>
-                    <ControlLabel>Molecular Profiles</ControlLabel>
+                    <Form.Label>Molecular Profiles</Form.Label>
                     {available}
                 </Col>,
             );
@@ -291,7 +291,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         return (
             <Col sm={10} smOffset={2}>
                 <Alert>
-                    <FormGroup onKeyDown={this.addEnter}>{checkBoxes}</FormGroup>
+                    <Form.Group onKeyDown={this.addEnter}>{checkBoxes}</Form.Group>
                 </Alert>
             </Col>
         );
@@ -346,8 +346,8 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
         if (this.props.rootStore.clinicalSampleCategories.length > 0
             || this.props.rootStore.clinicalPatientCategories.length > 0) {
             formGroups.push(
-                <FormGroup key="clinical">
-                    <Col componentClass={ControlLabel} sm={2}>
+                <Form.Group key="clinical">
+                    <Col as={Form.Label} sm={2}>
                         Variables
                     </Col>
                     <Col sm={10}>
@@ -366,19 +366,19 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                     </Col>
 
 
-                </FormGroup>,
+                </Form.Group>,
             );
         }
         if (this.props.rootStore.hasProfileData) {
             formGroups.push(
-                <FormGroup key="genetic">
-                    <Col componentClass={ControlLabel} sm={2}>
+                <Form.Group key="genetic">
+                    <Col as={Form.Label} sm={2}>
                         Find gene
                     </Col>
                     <Col sm={8} style={{ paddingRight: 0 }}>
-                        <FormControl
+                        <Form.Control
                             style={{ height: 38 }}
-                            type="textarea"
+                            as="textarea"
                             placeholder="Enter one or multiple HUGO Gene Symbols (e.g. TP53 IDH1)"
                             onChange={this.updateSearchValue}
                             onKeyDown={this.geneSearchEnter}
@@ -390,7 +390,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                             Search
                         </Button>
                     </Col>
-                </FormGroup>,
+                </Form.Group>,
             );
         }
         return (
@@ -398,7 +398,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                 <h4>
                     Select Variable
                     <Button
-                        bsSize="xsmall"
+                        size="sm"
                         className="pull-right"
                         onClick={() => {
                             this.modalIsOpen = true;
@@ -411,7 +411,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                 <Form horizontal>
                     {formGroups}
                     {this.showAvailableData ? this.getAvailableCheckBoxes() : null}
-                    <FormGroup>
+                    <Form.Group>
                         <Col smOffset={11} sm={1}>
                             <Button
                                 className="pull-right"
@@ -421,7 +421,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                                 Add
                             </Button>
                         </Col>
-                    </FormGroup>
+                    </Form.Group>
                 </Form>
             </div>
         );

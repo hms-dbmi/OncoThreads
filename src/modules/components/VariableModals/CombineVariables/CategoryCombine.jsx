@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes, Provider } from 'mobx-react';
-import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import { v4 as uuidv4 } from 'uuid';
 import { makeObservable, observable } from 'mobx';
 import { PropTypes } from 'prop-types';
@@ -162,28 +162,27 @@ const CategoryCombine = inject('variableManagerStore')(observer(class CategoryCo
                     <Modal.Title>Combine Variables</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ minHeight: '400px' }}>
-                    <ControlLabel>Variable name</ControlLabel>
-                    <FormControl
+                    <Form.Label>Variable name</Form.Label>
+                    <Form.Control
                         type="text"
                         value={this.name}
                         onChange={this.handleNameChange}
                     />
-                    <ControlLabel key="label">Result</ControlLabel>
+                    <Form.Label key="label">Result</Form.Label>
                     ,
                     {' '}
                     <Provider categoryStore={this.categoryStore} key="table"><CategoricalTable/></Provider>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Checkbox
+                    <Form.Check
+                        type="checkbox"
                         disabled={this.props.derivedVariable !== null}
                         onChange={() => {
                             this.keep = !this.keep;
                         }}
                         checked={!this.keep}
-                    >
-                        Discard
-                        original variables
-                    </Checkbox>
+                        label="Discard original variables"
+                    />
                     <Button onClick={this.props.closeModal}>
                         Cancel
                     </Button>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
-    Button, Col, Form, FormControl, FormGroup,
+    Button, Col, Form, Row,
 } from 'react-bootstrap';
 import Select from 'react-select';
 import { makeObservable, observable } from 'mobx';
@@ -308,14 +308,12 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
         }
 
         return (
-            <Form horizontal >
-                <FormGroup style={{ margin: 0 }}>
+            <Form>
+                <Form.Group style={{ margin: 0 }} as={Row}>
                     <Col sm={2} style={{ paddingRight: '0', paddingLeft: '0' }}>
-                        <FormControl
+                        <Form.Select
                             style={{ height: 38 }}
-                            componentClass="select"
                             onChange={this.handleSelect}
-                            placeholder="Select Category"
                         >
                             <optgroup label="Timepoint Features">
                                 {options}
@@ -331,10 +329,10 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
                                 ))}
                                 <option value="computed" key="computed">Computed features</option>
                             </optgroup>
-                        </FormControl>
+                        </Form.Select>
                     </Col>
                     {this.getSearchField()}
-                </FormGroup>
+                </Form.Group>
             </Form>
         );
     }

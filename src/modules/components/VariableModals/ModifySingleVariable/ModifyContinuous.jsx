@@ -3,14 +3,10 @@ import { inject, observer, Provider } from 'mobx-react';
 import * as d3 from 'd3';
 import {
     Button,
-    Checkbox,
-    ControlLabel,
-    FormControl,
-    FormGroup,
+    Form,
     Modal,
     OverlayTrigger,
     Popover,
-    Radio,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
@@ -183,30 +179,30 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
             disabled = true;
         }
         return (
-            <FormGroup>
-                <Radio
+            <Form.Group>
+                <Form.Check
+                    type="radio"
                     onChange={this.changeTransformation}
                     checked={!this.isXLog}
                     disabled={disabled}
                     value="linear"
                     name="XradioGroup"
                     inline
-                >
-                    None
-                </Radio>
+                    label="None"
+                />
                 {' '}
-                <Radio
+                <Form.Check
+                    type="radio"
                     onChange={this.changeTransformation}
                     value="log"
                     checked={this.isXLog}
                     disabled={disabled}
                     name="XradioGroup"
                     inline
-                >
-                    Log
-                </Radio>
+                    label="Log"
+                />
                 {' '}
-            </FormGroup>
+            </Form.Group>
         );
     }
 
@@ -311,19 +307,19 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
         }
         return (
             <form>
-                <FormGroup>
+                <Form.Group>
                     {linearColorRange.map((d, i) => (
-                        <Radio
+                        <Form.Check
                             key={i}
+                            type="radio"
                             onChange={() => {
                                 this.colorRange = d;
                             }}
                             name="ColorScaleGroup"
-                        >
-                            {ModifyContinuous.getGradient(d, width, height)}
-                        </Radio>
+                            label={ModifyContinuous.getGradient(d, width, height)}
+                        />
                     ))}
-                </FormGroup>
+                </Form.Group>
             </form>
         );
     }
@@ -340,15 +336,15 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
             .map(d => d.molecularProfileId).indexOf(this.props.variable.profile);
         if (profileIndex !== -1 || this.props.variable.profile === 'Variant allele frequency') {
             checkbox = (
-                <Checkbox
+                <Form.Check
+                    type="checkbox"
                     checked={this.applyToAll}
                     value={this.applyToAll}
                     onChange={() => {
                         this.applyToAll = !this.applyToAll;
                     }}
-                >
-                    {'Apply action to all variables of this type'}
-                </Checkbox>
+                    label="Apply action to all variables of this type"
+                />
             );
         }
         return checkbox;
@@ -523,17 +519,17 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
                 </Modal.Header>
                 <Modal.Body>
                     <form>
-                        <ControlLabel>Variable name</ControlLabel>
-                        <FormControl
+                        <Form.Label>Variable name</Form.Label>
+                        <Form.Control
                             type="text"
                             value={this.name}
                             onChange={(e) => {
                                 this.name = e.target.value;
                             }}
                         />
-                        <ControlLabel>Description</ControlLabel>
+                        <Form.Label>Description</Form.Label>
                         <p>{this.props.variable.description}</p>
-                        <ControlLabel>
+                        <Form.Label>
                             Color Scale
                             <OverlayTrigger
                                 rootClose
@@ -545,9 +541,9 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
                                     name="paint-brush"
                                 />
                             </OverlayTrigger>
-                        </ControlLabel>
+                        </Form.Label>
                         <p>{ModifyContinuous.getGradient(this.colorRange, 100, 20)}</p>
-                        <ControlLabel>Transform data</ControlLabel>
+                        <Form.Label>Transform data</Form.Label>
                         {this.getRadio()}
                     </form>
                     {this.getBinning()}
@@ -561,7 +557,7 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
                         onClick={() => {
                             this.bin = !this.bin;
                         }}
-                        bsStyle="primary"
+                        variant="primary"
                     >
                         {this.bin ? '<< Cancel Binning' : 'Bin >>'}
                     </Button>

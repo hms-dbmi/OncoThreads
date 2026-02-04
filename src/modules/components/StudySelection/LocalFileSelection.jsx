@@ -1,7 +1,7 @@
 import React from 'react';
 import {inject, observer} from 'mobx-react';
 import {
-    Col, Form, FormControl, FormGroup, HelpBlock, Alert,
+    Col, Form, Alert,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
@@ -80,14 +80,14 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
             return (
                 <Form horizontal>
                     <h4>Required files</h4>
-                    <FormGroup>
+                    <Form.Group>
                         <Col sm={5}>
                             Timeline
                             {' '}
                             {LocalFileSelection.getStateIcon(parsingStatus.events)}
                         </Col>
                         <Col sm={6}>
-                            <FormControl
+                            <Form.Control
                                 type="file"
                                 key={this.keys.events}
                                 label="File"
@@ -105,16 +105,16 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 />
                             </div>
                         </Col>
-                    </FormGroup>
+                    </Form.Group>
                     <h4>At least one required</h4>
-                    <FormGroup>
+                    <Form.Group>
                         <Col sm={5}>
                             Clinical Sample Data
                             {' '}
                             {LocalFileSelection.getStateIcon(parsingStatus.clinicalSample)}
                         </Col>
                         <Col sm={6}>
-                            <FormControl
+                            <Form.Control
                                 type="file"
                                 key={this.keys.clinicalSample}
                                 label="File"
@@ -131,15 +131,15 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 />
                             </div>
                         </Col>
-                    </FormGroup>
-                    <FormGroup>
+                    </Form.Group>
+                    <Form.Group>
                         <Col sm={5}>
                             Clinical Patient Data
                             {' '}
                             {LocalFileSelection.getStateIcon(parsingStatus.clinicalPatient)}
                         </Col>
                         <Col sm={6}>
-                            <FormControl
+                            <Form.Control
                                 type="file"
                                 key={this.keys.clinicalPatient}
                                 label="File"
@@ -156,15 +156,15 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 />
                             </div>
                         </Col>
-                    </FormGroup>
-                    <FormGroup>
+                    </Form.Group>
+                    <Form.Group>
                         <Col sm={5}>
                             Mutations
                             {' '}
                             {LocalFileSelection.getStateIcon(parsingStatus.mutations)}
                         </Col>
                         <Col sm={6}>
-                            <FormControl
+                            <Form.Control
                                 type="file"
                                 key={this.keys.mutations}
                                 label="File"
@@ -181,25 +181,25 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 />
                             </div>
                         </Col>
-                    </FormGroup>
-                    <FormGroup>
+                    </Form.Group>
+                    <Form.Group>
                         <Col sm={5}>
                             Other files
                             {' '}
                             {LocalFileSelection.getStateIcon(parsingStatus.molecular)}
                         </Col>
                         <Col sm={6}>
-                            <FormControl
+                            <Form.Control
                                 type="file"
                                 key={this.keys.molecular}
                                 label="File"
                                 multiple
                                 onChange={this.handleMolecularLoad}
                             />
-                            <HelpBlock>
+                            <Form.Text muted>
                                 expression data, CNV data,
                                 protein levels, methylation data
-                            </HelpBlock>
+                            </Form.Text>
                         </Col>
                         <Col sm={1}>
                             <div
@@ -211,16 +211,16 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 />
                             </div>
                         </Col>
-                    </FormGroup>
+                    </Form.Group>
                     <h4>Optional files</h4>
-                    <FormGroup>
+                    <Form.Group>
                         <Col sm={5}>
                             Gene Panel Matrix
                             {' '}
                             {LocalFileSelection.getStateIcon(parsingStatus.panelMatrix)}
                         </Col>
                         <Col sm={6}>
-                            <FormControl
+                            <Form.Control
                                 type="file"
                                 key={this.keys.panelMatrix}
                                 label="File"
@@ -237,15 +237,15 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 />
                             </div>
                         </Col>
-                    </FormGroup>
-                    <FormGroup>
+                    </Form.Group>
+                    <Form.Group>
                         <Col sm={5}>
                             Gene Panels
                             {' '}
                             {LocalFileSelection.getStateIcon(parsingStatus.genePanels)}
                         </Col>
                         <Col sm={6}>
-                            <FormControl
+                            <Form.Control
                                 type="file"
                                 key={this.keys.genePanels}
                                 label="File"
@@ -263,7 +263,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                                 />
                             </div>
                         </Col>
-                    </FormGroup>
+                    </Form.Group>
                 </Form>
             );
         }

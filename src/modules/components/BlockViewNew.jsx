@@ -297,7 +297,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                 <div className="view" id="block-view" style={{height:this.height, overflowY:"scroll"}}>
                     <Row style={{marginLeft: '0'}}>
                         <Button
-                            bsSize="xsmall"
+                            size="sm"
                             onClick={this.handleTimeClick}
                             disabled={this.props.uiStore.selectedTab==='line'
                             || this.props.rootStore.dataStore.variableStores

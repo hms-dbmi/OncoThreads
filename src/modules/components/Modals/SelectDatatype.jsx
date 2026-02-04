@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { Button, ControlLabel, FormControl, FormGroup, Modal } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
 /**
@@ -19,19 +19,17 @@ const SelectDatatype = observer(class SelectDatatype extends React.Component {
      */
     getSelect() {
         return this.props.fileNames.map((fileName, i) => (
-            <FormGroup key={fileName}>
-                <ControlLabel>{`${fileName} datatype`}</ControlLabel>
-                <FormControl
+            <Form.Group key={fileName}>
+                <Form.Label>{`${fileName} datatype`}</Form.Label>
+                <Form.Select
                     onChange={e => this.handleChange(fileName, e.target.value, i)}
-                    componentClass="select"
-                    placeholder="select"
                     value={this.props.selectedTypes[i]}
                 >
                     <option value="CNVDisc">Discrete CNV data</option>
                     <option value="CNVCont">Continuous CNV data</option>
                     <option value="UnspecCont">Non-CNV continuous</option>
-                </FormControl>
-            </FormGroup>
+                </Form.Select>
+            </Form.Group>
         ));
     }
 

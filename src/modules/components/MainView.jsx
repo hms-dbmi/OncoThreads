@@ -76,7 +76,6 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 style={{ width: "100%" }}
                 mountOnEnter
                 unmountOnExit
-                animation={false}
                 activeKey={this.props.uiStore.selectedTab}
                 onSelect={
                     this.handleSwitchView

@@ -61,8 +61,6 @@ class VisStore {
             setColorRectHeight: action,
         });
 
-        this.fitToScreenWidth = this.fitToScreenWidth.bind(this);
-        this.fitToScreenHeight = this.fitToScreenHeight.bind(this);
         reaction(() => this.plotHeight,
             () => this.fitToScreenHeight());
     }

@@ -4,7 +4,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
-    Button, Modal, Nav, Navbar, NavDropdown, NavItem,
+    Button, Modal, Nav, Navbar, NavDropdown,
 } from 'react-bootstrap';
 
 import GetStudy from './GetStudy';
@@ -67,30 +67,30 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
             return ([
                 <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
                 <NavDropdown key="export" eventKey="dropdown" title="Export View" id="basic-nav-dropdown">
-                    <NavItem onClick={this.props.rootStore.svgExport.exportSVG}>
+                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportSVG}>
                         SVG
-                    </NavItem>
-                    <NavItem onClick={this.props.rootStore.svgExport.exportSVGandData}>
+                    </NavDropdown.Item>
+                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportSVGandData}>
                         SVG with metadata
-                    </NavItem>
-                    <NavItem onClick={this.props.rootStore.svgExport.exportPNG}>
+                    </NavDropdown.Item>
+                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportPNG}>
                         PNG
-                    </NavItem>
-                    <NavItem onClick={this.props.rootStore.svgExport.exportPDF}>
+                    </NavDropdown.Item>
+                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportPDF}>
                         PDF
-                    </NavItem>
+                    </NavDropdown.Item>
                 </NavDropdown>,
-                <NavItem key="settings" onClick={() => this.openModal('settings')}>Settings</NavItem>,
-                <NavItem key="showLogs" onClick={() => this.openModal('log')}>Show Logs</NavItem>,
-                <NavItem key="info" onClick={() => this.openModal('info')}>Study Info</NavItem>,
-                <NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>,
+                <Nav.Link key="settings" onClick={() => this.openModal('settings')}>Settings</Nav.Link>,
+                <Nav.Link key="showLogs" onClick={() => this.openModal('log')}>Show Logs</Nav.Link>,
+                <Nav.Link key="info" onClick={() => this.openModal('info')}>Study Info</Nav.Link>,
+                <Nav.Link key="about" onClick={() => this.openModal('about')}>About</Nav.Link>,
 
-                <NavItem key="home" onClick={() => this.props.rootStore.firstLoad = true}>
+                <Nav.Link key="home" onClick={() => this.props.rootStore.firstLoad = true}>
                     <HomeOutlined />
                     {/* <img alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMTYiIGhlaWdodD0iMTYiCnZpZXdCb3g9IjAgMCAxNiAxNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDggMS4zMjAzMTMgTCAwLjY2MDE1NiA4LjEzMjgxMyBMIDEuMzM5ODQ0IDguODY3MTg4IEwgMiA4LjI1MzkwNiBMIDIgMTQgTCA3IDE0IEwgNyA5IEwgOSA5IEwgOSAxNCBMIDE0IDE0IEwgMTQgOC4yNTM5MDYgTCAxNC42NjAxNTYgOC44NjcxODggTCAxNS4zMzk4NDQgOC4xMzI4MTMgWiBNIDggMi42Nzk2ODggTCAxMyA3LjMyODEyNSBMIDEzIDEzIEwgMTAgMTMgTCAxMCA4IEwgNiA4IEwgNiAxMyBMIDMgMTMgTCAzIDcuMzI4MTI1IFoiPjwvcGF0aD48L3N2Zz4="></img>  */}
-                </NavItem>,
+                </Nav.Link>,
 
-                <NavItem key="tutorial" onClick={
+                <Nav.Link key="tutorial" onClick={
                     () => {
                         this.props.uiStore.setTutorialMode(true)
                     }
@@ -99,17 +99,17 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                         title={<span>Click me to start a walk-through tutorial </span>}>
                     Intro <QuestionCircleOutlined style={{color:"green"}} />
                     </Tooltip>
-                </NavItem>,
+                </Nav.Link>,
 
 
             ]
             );
         }
         return ([
-            <NavItem key="about" onClick={() => this.openModal('about')}>About</NavItem>,
-            <NavItem key="code" onClick={() => window.open('https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates')}>
+            <Nav.Link key="about" onClick={() => this.openModal('about')}>About</Nav.Link>,
+            <Nav.Link key="code" onClick={() => window.open('https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates')}>
                Source Code <GithubOutlined size="large"/>
-            </NavItem>,
+            </Nav.Link>,
         ]);
     }
 
@@ -154,16 +154,16 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         
         return (
             <div>
-                <Navbar fluid style={{ marginBottom: 10 }}>
-                    <Navbar.Header>
-                        <Navbar.Brand>
-                            ThreadStates
-                        </Navbar.Brand>
-                        <Navbar.Toggle />
-                    </Navbar.Header>
-                    <Nav>
-                        {navBarContent}
-                    </Nav>
+                <Navbar expand="lg" style={{ marginBottom: 10 }}>
+                    <Navbar.Brand>
+                        ThreadStates
+                    </Navbar.Brand>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                    <Navbar.Collapse id="basic-navbar-nav">
+                        <Nav>
+                            {navBarContent}
+                        </Nav>
+                    </Navbar.Collapse>
                 </Navbar>
                 {this.getMainContent()}
                 <LogModal
@@ -180,7 +180,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                     show={this.state.studyInfoModalIsOpen}
                     onHide={this.closeModal}
                 >
-                    <Modal.Header>
+                    <Modal.Header closeButton>
                         Study Information
                     </Modal.Header>
                     <Modal.Body>

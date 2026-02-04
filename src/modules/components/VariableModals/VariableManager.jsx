@@ -62,7 +62,7 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
     render() {
         return (
             <Modal
-                bsSize="large"
+                size="lg"
                 backdrop="static"
                 show={this.props.variableManagerOpen}
                 onHide={this.props.closeVariableManager}

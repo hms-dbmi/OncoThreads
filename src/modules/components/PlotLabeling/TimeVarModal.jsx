@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react';
-import { Modal, Radio } from 'react-bootstrap';
+import { Modal, Form } from 'react-bootstrap';
 //import TimeAssign from './TimeAssign';
 
 const TimeVarModal = observer(class TimeVarModal extends React.Component {
@@ -32,7 +32,7 @@ const TimeVarModal = observer(class TimeVarModal extends React.Component {
        
         return (
             <Modal
-                bsSize="small"
+                size="sm"
                
                 show={this.props.modalIsOpen}
                 onHide={this.close}
@@ -45,9 +45,24 @@ const TimeVarModal = observer(class TimeVarModal extends React.Component {
 
                     <div
                     className="menu">
-                    <Radio name="groupOptions" onClick={e => this.handleClick("1", "Days")}>Days</Radio>
-                    <Radio name="groupOptions" onClick={e => this.handleClick("30", "Months")}>Months</Radio>
-                    <Radio name="groupOptions" onClick={e => this.handleClick("365", "Years")}>Years</Radio>
+                    <Form.Check 
+                        type="radio" 
+                        name="groupOptions" 
+                        label="Days"
+                        onClick={e => this.handleClick("1", "Days")} 
+                    />
+                    <Form.Check 
+                        type="radio" 
+                        name="groupOptions" 
+                        label="Months"
+                        onClick={e => this.handleClick("30", "Months")} 
+                    />
+                    <Form.Check 
+                        type="radio" 
+                        name="groupOptions" 
+                        label="Years"
+                        onClick={e => this.handleClick("365", "Years")} 
+                    />
                 </div>
                 </Modal.Body>
                 
