@@ -16,13 +16,17 @@ import {
 import { SketchPicker } from 'react-color';
 import FontAwesome from 'react-fontawesome';
 import * as d3 from 'd3';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import ColorScales from '../../../UtilityClasses/ColorScales';
 
 /**
  * Component for displaying and editing categories of a categorical or ordinal variable
  */
 const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable extends React.Component {
+    sortCatAsc = true;
+    sortOccAsc = true;
+    dragging = false;
+
     /**
      * gets the rects representing an isOrdinal scale
      * @param {string[]} colors
@@ -71,10 +75,10 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
 
     constructor() {
         super();
-        extendObservable(this, {
-            sortCatAsc: true,
-            sortOccAsc: true,
-            dragging: false,
+        makeObservable(this, {
+            sortCatAsc: observable,
+            sortOccAsc: observable,
+            dragging: observable,
         });
         this.merge = this.merge.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);

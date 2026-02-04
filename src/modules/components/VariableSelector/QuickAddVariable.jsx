@@ -4,7 +4,7 @@ import {
     Button, Col, Form, FormControl, FormGroup,
 } from 'react-bootstrap';
 import Select from 'react-select';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import OriginalVariable from '../../stores/OriginalVariable';
 import {toTitleCase} from '../../UtilityClasses/UtilityFunctions';
 import MutationSelector from '../Modals/MutationSelector';
@@ -13,6 +13,9 @@ import MutationSelector from '../Modals/MutationSelector';
  * Component for fast selection of variables
  */
 const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class QuickAddVariable extends React.Component {
+    category;
+    selectedValues = [];
+
     /**
      * checks if the pressed key is the enter key
      * @param {event} event
@@ -28,7 +31,13 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
 
     constructor(props) {
         super(props);
-        extendObservable(this, this.getObservableFields(props));
+        
+        this.category = props.rootStore.hasClinical ? 'clinical' : 'genes';
+        
+        makeObservable(this, {
+            category: observable,
+            selectedValues: observable,
+        });
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleOptionSelect = this.handleOptionSelect.bind(this);

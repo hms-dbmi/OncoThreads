@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import * as Papa from 'papaparse';
-import {action, extendObservable, reaction} from 'mobx';
-import uuidv4 from 'uuid/v4';
+import {action, makeObservable, observable, computed, reaction} from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Signals that a file has finished loading
@@ -25,807 +25,56 @@ import uuidv4 from 'uuid/v4';
  * Loads local files provided by the user
  */
 class LocalFileLoader {
+    patients = []; // all patients contained in the timeline SPECIMEN file
+    samples = []; // all samples contained in the timeline SPECIMEN file
+    samplePatientMap = {};
+    mutations = []; // array of mutation objects
+    mutationCounts = []; // array of mutation counts
+    eventFiles = new Map(); // map of event files
+    profileData = new Map(); // map of molecular data
+    clinicalSampleFile = null; // file containing clinical sample data
+    clinicalPatientFile = null; // file containing clinical patient data
+    molecularProfiles = []; // all available molecular profiles
+    panelMatrix = {};
+    genePanels = new Map();
+    
+    // states reflecting the load status of the different types of files:
+    // empty, loading, finished, or error
+    parsingStatus = {
+        events: 'empty',
+        mutations: 'empty',
+        molecular: 'empty',
+        clinicalPatient: 'empty',
+        clinicalSample: 'empty',
+        panelMatrix: 'empty',
+        genePanels: 'empty',
+    };
+
     constructor() {
-        this.patients = []; // all patients contained in the timeline SPECIMEN file
-        this.samples = []; // all samples contained in the timeline SPECIMEN file
-        this.samplePatientMap = {};
-        this.mutations = []; // array of mutation objects
-        this.mutationCounts = []; // array of mutation counts
-        this.eventFiles = new Map(); // map of event files
-        this.profileData = new Map(); // map of molecular data
-        this.clinicalSampleFile = null; // file containing clinical sample data
-        this.clinicalPatientFile = null; // file containing clinical patient data
-        this.molecularProfiles = []; // all available molecular profiles
-        this.panelMatrix = {};
-        this.genePanels = new Map();
-        extendObservable(this, {
-            // states reflecting the load status of the different types of files:
-            // empty, loading, finished, or error
-            parsingStatus: {
-                events: 'empty',
-                mutations: 'empty',
-                molecular: 'empty',
-                clinicalPatient: 'empty',
-                clinicalSample: 'empty',
-                panelMatrix: 'empty',
-                genePanels: 'empty',
-            },
-            /**
-             * is any of the files currently loading
-             * @returns {boolean}
-             */
-            get dataLoading() {
-                return Object.values(this.parsingStatus).some(value => value === 'loading');
-            },
-            /**
-             * were there errors during the file parsing
-             * @returns {boolean}
-             */
-            get dataHasErrors() {
-                return Object.values(this.parsingStatus).some(value => value === 'error');
-            },
-            /**
-             * is data ready to be displayed
-             * @returns {boolean}
-             */
-            get dataReady() {
-                return !this.dataLoading
-                    && !this.dataHasErrors
-                    && this.parsingStatus.events === 'finished'
-                    && (this.parsingStatus.mutations === 'finished'
-                        || this.parsingStatus.clinicalSample === 'finished'
-                        || this.parsingStatus.clinicalPatient === 'finished'
-                        || this.parsingStatus.molecular === 'finished')
-                    && this.parsingStatus.genePanels === this.parsingStatus.panelMatrix;
-            },
-            setEventsParsed: action((loadingState) => {
-                this.parsingStatus.events = loadingState;
-            }),
-            setMutationsParsed: action((loadingState) => {
-                this.parsingStatus.mutations = loadingState;
-            }),
-            setMolecularParsed: action((loadingState) => {
-                this.parsingStatus.molecular = loadingState;
-            }),
-            setClinicalPatientParsed: action((loadingState) => {
-                this.parsingStatus.clinicalPatient = loadingState;
-            }),
-            setClinicalSampleParsed: action((loadingState) => {
-                this.parsingStatus.clinicalSample = loadingState;
-            }),
-            setPanelMatrixParsed: action((loadingState) => {
-                this.parsingStatus.panelMatrix = loadingState;
-            }),
-            setGenePanelsParsed: action((loadingState) => {
-                this.parsingStatus.genePanels = loadingState;
-            }),
-            /**
-             * sets current event files if headers are correct
-             * and file of type SPECIMEN is contained
-             * @param {FileList} files: all event files
-             * @param {loadFinishedCallback} callback
-             */
-            setEventFiles: action((files, callback) => {
-                const eventFiles = new Map();
-                this.parsingStatus.events = 'loading';
-                Array.from(files).forEach((d) => {
-                    Papa.parse(d, {
-                        delimiter: '\t',
-                        header: true,
-                        worker: true,
-                        skipEmptyLines: true,
-                        step: (row, parser) => {
-                            // check header
-                            if (LocalFileLoader.checkTimelineFileHeader(row.data.EVENT_TYPE,
-                                row.meta.fields, d.name)) {
-                                eventFiles.set(row.data.EVENT_TYPE, d);
-                            } else {
-                                this.parsingStatus.events = 'error';
-                                parser.abort();
-                            }
-                        },
-                        complete: () => {
-                            // all file headers have been checked and are valid
-                            if (eventFiles.size === files.length) {
-                                // one of the files has to be of eventType SPECIMEN
-                                if (eventFiles.has('SPECIMEN')) {
-                                    this.setPatientsAndSamples(eventFiles.get('SPECIMEN'), () => {
-                                        this.eventFiles = eventFiles;
-                                        this.parsingStatus.events = 'finished';
-                                        callback();
-                                    });
-                                } else {
-                                    this.parsingStatus.events = 'error';
-                                    alert('ERROR: Required timeline file with EVENT_TYPE SPECIMEN missing');
-                                }
-                            }
-                        },
-                    });
-                });
-            }),
-
-            /**
-             * sets patients and samples
-             * @param {File} file
-             * @param {loadFinishedCallback} callback
-             */
-            setPatientsAndSamples: action((file, callback) => {
-                let dateCorrect = true;
-                const patients = [];
-                const samples = [];
-                Papa.parse(file, {
-                    delimiter: '\t',
-                    header: true,
-                    worker: true,
-                    skipEmptyLines: true,
-                    step: (row, parser) => {
-                        if (!patients.includes(row.data.PATIENT_ID)) {
-                            patients.push(row.data.PATIENT_ID);
-                        }
-                        if (!samples.includes(row.data.SAMPLE_ID)) {
-                            samples.push(row.data.SAMPLE_ID);
-                            this.samplePatientMap[row.data.SAMPLE_ID] = row.data.PATIENT_ID;
-                        }
-                        const date = parseInt(row.data.START_DATE, 10);
-                        if (Number.isNaN(date)) {
-                            alert('ERROR: START_DATE is not a number');
-                            this.parsingStatus.events = 'error';
-                            dateCorrect = false;
-                            parser.abort();
-                        }
-                    },
-                    complete: () => {
-                        if (dateCorrect) {
-                            this.patients = patients;
-                            this.samples = samples;
-                            callback();
-                        }
-                    },
-                });
-            }),
-
-            /**
-             * creates array containing all mutations
-             * @param {File} file
-             */
-            setMutations: action((file) => {
-                const skipMutations = ['Silent', 'Intron', "3'UTR", "3'Flank", "5'UTR", "5'Flank", 'IGR', 'RNA']; // mutations to be skipped according to cBio docs
-                // are columns for variant allele frequency contained in the files
-                let hasVaf = false;
-                let firstRow = true;
-                let aborted = false;
-                let inconsistentLinebreaks = false;
-                const mutations = []; // data array for mutations
-                const counts = {}; // object for storing mutation counts
-                this.parsingStatus.mutations = 'loading';
-                Papa.parse(file, {
-                    delimiter: '\t',
-                    header: true,
-                    worker: true,
-                    skipEmptyLines: true,
-                    step: (row, parser) => {
-                        if (row.errors.length === 0) {
-                            if (firstRow) {
-                                // check header when parsing first row
-                                if (LocalFileLoader.checkMutationFileHeader(row.meta.fields,
-                                    file.name)) {
-                                    if ('t_ref_count' in row.data && 't_alt_count' in row.data) {
-                                        hasVaf = true;
-                                    }  
-                                    if ('VAF' in row.data) {hasVaf = true}
-                                    firstRow = false;
-                                } else {
-                                    this.parsingStatus.mutations = 'error';
-                                    aborted = true;
-                                    parser.abort();
-                                }
-                            }
-                            // add mutation if it's not in the list of excluded mutations
-                            if (!aborted && !skipMutations
-                                .includes(row.data.Variant_Classification)) {
-                                const mutation = {
-                                    sampleId: row.data.Tumor_Sample_Barcode,
-                                    proteinChange: row.data.HGVSp_Short.substring(2),
-                                    gene: {
-                                        hugoGeneSymbol: row.data.Hugo_Symbol,
-                                    },
-                                    mutationType: row.data.Variant_Classification,
-                                };
-                                if (hasVaf) {
-                                    if (row.data.VAF){
-                                        mutation.VAF = row.data.VAF
-                                    }else{
-                                        mutation.tumorAltCount = row.data.t_alt_count;
-                                        mutation.tumorRefCount = row.data.t_ref_count;
-                                    }
-                                } else {
-                                    mutation.tumorAltCount = -1;
-                                    mutation.tumorRefCount = -1;
-                                }
-                                mutations.push(mutation);
-                                if (!(row.data.Tumor_Sample_Barcode in counts)) {
-                                    counts[row.data.Tumor_Sample_Barcode] = 0;
-                                }
-                                counts[row.data.Tumor_Sample_Barcode] += 1;
-                            }
-                        } else {
-                            inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                row.data, file.name);
-                            aborted = true;
-                            parser.abort();
-                        }
-                    },
-                    complete: () => {
-                        if (!aborted) {
-                            this.molecularProfiles.push({
-                                molecularAlterationType: 'MUTATION_EXTENDED',
-                                name: 'Mutations',
-                                molecularProfileId: uuidv4(),
-                            });
-                            this.mutationCounts = this.samples.map((sample) => {
-                                let count = 0;
-                                if (sample in counts) {
-                                    count = counts[sample];
-                                }
-                                return {
-                                    clinicalAttribute: {
-                                        displayName: 'Mutation Count',
-                                        description: 'Mutation Count',
-                                        datatype: 'NUMBER',
-                                    },
-                                    sampleId: sample,
-                                    patientId: this.samplePatientMap[sample],
-                                    clinicalAttributeId: 'MUTATION_COUNT',
-                                    value: count,
-                                };
-                            });
-                            this.mutations = mutations;
-                            this.parsingStatus.mutations = 'finished';
-                            // if linebreaks are inconsistent replace them and retry
-                        } else if (inconsistentLinebreaks) {
-                            LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-                                this.setMutations(newFile);
-                            });
-                        } else {
-                            this.parsingStatus.mutations = 'error';
-                        }
-                    },
-                });
-            }),
-
-
-            /**
-             * loads an event file
-             * @param {File} file
-             * @param {loadFinishedCallback} callback
-             */
-            loadEventFile: action((file, callback) => {
-                let aborted = false;
-                let inconsistentLinebreak = false;
-                let firstRow = true;
-                let hasEndDate = false;
-                const events = {};
-                Papa.parse(file, {
-                    delimiter: '\t',
-                    header: true,
-                    worker: true,
-                    skipEmptyLines: true,
-                    step: (row, parser) => {
-                        if (row.errors.length === 0) {
-                            if (firstRow) {
-                                if ('STOP_DATE' in row.data) {
-                                    hasEndDate = true;
-                                }
-                                firstRow = false;
-                            }
-                            if (!(row.data.PATIENT_ID in events)) {
-                                events[row.data.PATIENT_ID] = [];
-                            }
-                            const validStartDate = !Number
-                                .isNaN(parseInt(row.data.START_DATE, 10));
-                            const validEndDate = !hasEndDate || row.data.STOP_DATE === ''
-                                || (hasEndDate && !Number
-                                    .isNaN(parseInt(row.data.STOP_DATE, 10)));
-                            if (validStartDate && validEndDate) {
-                                const attributes = [];
-                                Object.keys(row.data).forEach((key) => {
-                                    if (key !== 'START_DATE' && key !== 'STOP_DATE' && key !== 'EVENT_TYPE' && key !== 'PATIENT_ID') {
-                                        if (row.data[key].length > 0) {
-                                            attributes.push({key, value: row.data[key]});
-                                        }
-                                    }
-                                });
-                                const currRow = {
-                                    attributes,
-                                    eventType: row.data.EVENT_TYPE,
-                                    patientId: row.data.PATIENT_ID,
-                                    startNumberOfDaysSinceDiagnosis:
-                                        parseInt(row.data.START_DATE, 10),
-                                };
-                                if (hasEndDate) {
-                                    currRow.endNumberOfDaysSinceDiagnosis = parseInt(row.data
-                                        .STOP_DATE, 10);
-                                }
-                                events[row.data.PATIENT_ID].push(currRow);
-                            } else {
-                                aborted = true;
-                                if (!validStartDate) {
-                                    alert(`ERROR: START_DATE is not a number in file ${file.name}`);
-                                } else {
-                                    alert(`ERROR: STOP_DATE is not a number in file ${file.name}`);
-                                }
-                                parser.abort();
-                            }
-                        } else {
-                            inconsistentLinebreak = LocalFileLoader.checkErrors(row.errors,
-                                row.data, file.name);
-                            aborted = true;
-                            parser.abort();
-                        }
-                    },
-                    complete: () => {
-                        if (!aborted) {
-                            Object.keys(events).forEach((patient) => {
-                                events[patient].sort((a, b) => a.startNumberOfDaysSinceDiagnosis
-                                    - b.startNumberOfDaysSinceDiagnosis);
-                            });
-                            callback(events);
-                        } else if (inconsistentLinebreak) {
-                            LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-                                this.loadEventFile(newFile, callback);
-                            });
-                        } else {
-                            this.parsingStatus.events = 'error';
-                        }
-                    },
-                });
-            }),
-
-            /**
-             * loads all events
-             * @param {returnDataCallback} callback
-             */
-            loadEvents: action((callback) => {
-                const events = {};
-                let filesVisited = 0;
-                this.eventFiles.forEach((d) => {
-                    this.loadEventFile(d, (fileEvents) => {
-                        filesVisited += 1;
-                        Object.keys(fileEvents).forEach((patient) => {
-                            if (!(patient in events)) {
-                                events[patient] = fileEvents[patient];
-                            } else {
-                                events[patient].push(...fileEvents[patient]);
-                            }
-                        });
-                        if (filesVisited === this.eventFiles.size) {
-                            callback(events);
-                        }
-                    });
-                });
-            }),
-
-            /**
-             * sets the clinical file if the header is in the right format
-             * @param {File} file
-             * @param {boolean} isSample - sample related of patient related clinical data
-             */
-            setClinicalFile: action((file, isSample) => {
-                if (isSample) {
-                    this.parsingStatus.clinicalSample = 'loading';
-                } else {
-                    this.parsingStatus.clinicalPatient = 'loading';
-                }
-
-                let correctHeader = true;
-                const errorMessages = [];
-                let rowCounter = 0;
-                Papa.parse(file, {
-                    delimiter: '\t',
-                    header: false,
-                    worker: true,
-                    skipEmptyLines: true,
-                    step: (row, parser) => {
-                        if (rowCounter === 0 && !row.data[0].startsWith('#')) {
-                            errorMessages.push('ERROR: wrong header format, first row has to start with #');
-                            correctHeader = false;
-                        } else if (rowCounter === 1 && !row.data[0].startsWith('#')) {
-                            errorMessages.push('ERROR: wrong header format, second row has to start with #');
-                            correctHeader = false;
-                        } else if (rowCounter === 2 && !row.data[0].startsWith('#')) {
-                            errorMessages.push('ERROR: wrong header format, third row has to start with #');
-                            correctHeader = false;
-                        } else if (rowCounter === 3 && !row.data[0].startsWith('#')) {
-                            errorMessages.push('ERROR: wrong header format, fourth row has to start with #');
-                            correctHeader = false;
-                        } else if (rowCounter === 4) {
-                            if (row.data[0].startsWith('#')) {
-                                errorMessages.push('ERROR: wrong header format, fifth row should not start with #');
-                                correctHeader = false;
-                            } else if (row.data.includes('PATIENT_ID')) {
-                                if (isSample && !row.data.includes('SAMPLE_ID')) {
-                                    errorMessages.push('ERROR: no SAMPLE_ID column found');
-                                    correctHeader = false;
-                                } else if (!isSample && row.data.includes('SAMPLE_ID')) {
-                                    errorMessages.push('ERROR: SAMPLE_ID provided for non-sample specific clinical data');
-                                    correctHeader = false;
-                                }
-                            } else {
-                                errorMessages.push('ERROR: No PATIENT_ID data column found');
-                                correctHeader = false;
-                            }
-                        } else if (rowCounter > 4) {
-                            if (errorMessages.length > 0){
-                                alert(errorMessages);
-                            }
-                            parser.abort();
-                        }
-                        rowCounter += 1;
-                    },
-                    complete: () => {
-                        if (correctHeader) {
-                            if (isSample) {
-                                this.clinicalSampleFile = file;
-                                this.parsingStatus.clinicalSample = 'finished';
-                            } else {
-                                this.clinicalPatientFile = file;
-                                this.parsingStatus.clinicalPatient = 'finished';
-                            }
-                        } else if (isSample) {
-                            this.parsingStatus.clinicalSample = 'error';
-                        } else {
-                            this.parsingStatus.clinicalPatient = 'error';
-                        }
-                    },
-                });
-            }),
-
-            /**
-             * Parse clinical data file
-             * @param {boolean} isSample - sample related or patient related clinical data
-             * @param {function} callback
-             */
-            loadClinicalFile: action((isSample, callback) => {
-                let file;
-                if (isSample) {
-                    file = this.clinicalSampleFile;
-                } else {
-                    file = this.clinicalPatientFile;
-                }
-                const clinicalAttributes = {};
-                const intermediateAttributes = [];
-                let abort = false;
-                let inconsistentLinebreaks = false;
-                let rowCounter = 0;
-                // parse header
-                if (file !== null) {
-                    Papa.parse(file, {
-                        delimiter: '\t',
-                        worker: true,
-                        skipEmptyLines: true,
-                        step: (row, parser) => {
-                            if (row.errors.length === 0) {
-                                if (rowCounter === 0) {
-                                    row.data.forEach((d, i) => {
-                                        intermediateAttributes.push({
-                                            displayName: LocalFileLoader.getSpliced(i, d),
-                                        });
-                                    });
-                                } else if (rowCounter === 1) {
-                                    row.data.forEach((d, i) => {
-                                        intermediateAttributes[i]
-                                            .description = LocalFileLoader.getSpliced(i, d);
-                                    });
-                                } else if (rowCounter === 2) {
-                                    row.data.forEach((d, i) => {
-                                        intermediateAttributes[i]
-                                            .datatype = LocalFileLoader.getSpliced(i, d);
-                                    });
-                                } else if (rowCounter === 4) {
-                                    row.data.forEach((d, i) => {
-                                        intermediateAttributes[i]
-                                            .clinicalAttributeId = LocalFileLoader.getSpliced(i, d);
-                                        clinicalAttributes[d] = intermediateAttributes[i];
-                                    });
-                                    parser.abort();
-                                }
-                                rowCounter += 1;
-                            } else {
-                                inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                    row.data, file.name);
-                                abort = true;
-                                parser.abort();
-                            }
-                        },
-                        complete: () => {
-                            // parse data
-                            if (!abort) {
-                                this.loadClinicalBody(file, isSample, clinicalAttributes, callback);
-                            } else if (inconsistentLinebreaks) {
-                                if (isSample) {
-                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-                                        this.clinicalSampleFile = newFile;
-                                        this.loadClinicalFile(isSample, callback);
-                                    });
-                                } else {
-                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-                                        this.clinicalPatientFile = newFile;
-                                        this.loadClinicalFile(isSample, callback);
-                                    });
-                                }
-                            } else if (isSample) {
-                                this.parsingStatus.clinicalSample = 'error';
-                            } else {
-                                this.parsingStatus.clinicalPatient = 'error';
-                            }
-                        },
-                    });
-                } else callback([]);
-            }),
-
-            /**
-             * parses data rows of the clinical data file into an array of objects
-             * @param {File} file
-             * @param {boolean} isSample - sample related of patient related clinical data
-             * @param {object} clinicalAttributes - information about
-             * the column headers that is included in the resulting data array
-             * @param {returnDataCallback} callback
-             */
-            loadClinicalBody: action((file, isSample, clinicalAttributes, callback) => {
-                const rows = [];
-                let abort = false;
-                let inconsistentLinebreaks = false;
-                Papa.parse(file, {
-                    delimiter: '\t',
-                    header: true,
-                    worker: true,
-                    skipEmptyLines: true,
-                    comments: '#',
-                    step: (row, parser) => {
-                        if (row.errors.length === 0) {
-                            const patientId = row.data.PATIENT_ID;
-                            const sampleId = row.data.SAMPLE_ID;
-                            Object.keys(row.data).forEach((key) => {
-                                if (!(key === 'PATIENT_ID' || key === 'SAMPLE_ID') && row.data[key].trim() !== '') {
-                                    if (clinicalAttributes[key].datatype === 'NUMBER') {
-                                        if (Number.isNaN(parseFloat(row.data[key]))) {
-                                            abort = true;
-                                            alert(`ERROR: File ${file.name}- non numeric value of numeric variable ${key}`);
-                                            parser.abort();
-                                        }
-                                    }
-                                    const currRow = {
-                                        clinicalAttribute: clinicalAttributes[key],
-                                        clinicalAttributeId: clinicalAttributes[key]
-                                            .clinicalAttributeId,
-                                        patientId,
-                                        value: row.data[key],
-                                    };
-                                    if (isSample) {
-                                        currRow.sampleId = sampleId;
-                                    }
-                                    rows.push(currRow);
-                                }
-                            });
-                        } else {
-                            inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                row.data, file.name);
-                            abort = true;
-                            parser.abort();
-                        }
-                    },
-                    complete: () => {
-                        // only callback if there are no errors
-                        if (abort) {
-                            if (inconsistentLinebreaks) {
-                                if (isSample) {
-                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-                                        this.clinicalSampleFile = newFile;
-                                        this.loadClinicalFile(isSample, callback);
-                                    });
-                                } else {
-                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-                                        this.clinicalPatientFile = newFile;
-                                        this.loadClinicalFile(isSample, callback);
-                                    });
-                                }
-                            } else if (isSample) {
-                                this.parsingStatus.clinicalSample = 'error';
-                                this.clinicalSampleFile = null;
-                            } else {
-                                this.parsingStatus.clinicalPatient = 'error';
-                                this.clinicalPatientFile = null;
-                            }
-                        } else {
-                            callback(rows);
-                        }
-                    },
-                });
-            }),
-
-            /**
-             * parse cnv data files
-             * @param {FileList} files - all cnv data files
-             * @param {string[]} metaData - datatypes and molecularAlteration types
-             */
-            setMolecularFiles: action((files, metaData) => {
-                let filesParsed = 0;
-                this.parsingStatus.molecular = 'loading';
-                Array.from(files).forEach((file, i) => {
-                    this.setMolecular(file, metaData[i], () => {
-                        filesParsed += 1;
-                        if (filesParsed === files.length) {
-                            this.parsingStatus.molecular = 'finished';
-                        }
-                    });
-                });
-            }),
-
-            /**
-             * parses an molecular data file into an array of objects
-             * @param {File} file
-             * @param {loadFinishedCallback} callback
-             */
-            setMolecular: action((file, metaData, callback) => {
-                let firstRow = true;
-                let hasEntrezId;
-                let hasHugoSymbol;
-                let aborted = false;
-                let inconsistentLinebreaks = false;
-                const data = new Map();
-                Papa.parse(file, {
-                    delimiter: '\t',
-                    header: true,
-                    worker: true,
-                    skipEmptyLines: true,
-                    step: (row, parser) => {
-                        if (row.errors.length === 0) {
-                            if (firstRow) {
-                                hasEntrezId = 'Entrez_Gene_Id' in row.data;
-                                hasHugoSymbol = 'Hugo_Symbol' in row.data;
-                                if (!hasEntrezId) {
-                                    alert(`ERROR: file ${file.name} missing Entrez_Gene_Id column`);
-                                    aborted = true;
-                                    parser.abort();
-                                }
-                                firstRow = false;
-                            } else {
-                                const dataRow = [];
-                                if (row.data.Entrz_Gene_Id !== 'NA') {
-                                    const entrezId = parseInt(row.data.Entrez_Gene_Id, 10);
-                                    Object.keys(row.data).forEach((key) => {
-                                        const dataPoint = {
-                                            gene: {entrezGeneId: entrezId, hugoGeneSymbol: ''},
-                                            entrezGeneId: entrezId,
-                                        };
-                                        if (hasHugoSymbol) {
-                                            dataPoint.gene.hugoGeneSymbol = row.data.Hugo_Symbol;
-                                        }
-                                        if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
-                                            let value = row.data[key];
-                                            if (value !== 'NA' && metaData.datatype === 'CONTINUOUS') {
-                                                value = parseFloat(row.data[key]);
-                                                if (Number.isNaN(value)) {
-                                                    aborted = true;
-                                                    alert(`ERROR: file ${file.name} value is not a number`);
-                                                    parser.abort();
-                                                }
-                                            }
-                                            dataPoint.sampleId = key;
-                                            dataPoint.value = value;
-                                            dataRow.push(dataPoint);
-                                        }
-                                    });
-                                    data.set(entrezId, dataRow);
-                                } else {
-                                    inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
-                                        row.data, file.name);
-                                    aborted = true;
-                                    parser.abort();
-                                }
-                            }
-                        }
-                    },
-                    complete: () => {
-                        if (!aborted) {
-                            const id = uuidv4();
-                            this.molecularProfiles.push({
-                                molecularAlterationType: metaData.alterationType,
-                                name: file.name,
-                                datatype: metaData.datatype,
-                                molecularProfileId: id,
-                            });
-                            this.profileData.set(id, data);
-                            callback();
-                        } else if (inconsistentLinebreaks) {
-                            LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-                                this.setMolecular(newFile, metaData, callback);
-                            });
-                        } else {
-                            this.parsingStatus.molecular = 'error';
-                        }
-                    },
-                });
-            }),
-            setGenePanelMatrix: action((file) => {
-                this.parsingStatus.panelMatrix = 'loading';
-                this.panelMatrix = {};
-                Papa.parse(file, {
-                    delimiter: '\t',
-                    header: true,
-                    worker: true,
-                    skipEmptyLines: true,
-                    complete: (response) => {
-                        const hasSampleID = response.meta.fields.includes('SAMPLE_ID');
-                        const hasMutations = response.meta.fields.includes('mutations');
-                        const hasCNA = response.meta.fields.includes('cna');
-                        if (hasSampleID && (hasMutations || hasCNA)) {
-                            response.data.forEach((row) => {
-                                this.panelMatrix[row.SAMPLE_ID] = {};
-                                if (hasMutations) {
-                                    this.panelMatrix[row.SAMPLE_ID].mutations = row.mutations;
-                                }
-                                if (hasCNA) {
-                                    this.panelMatrix[row.SAMPLE_ID].cna = row.cna;
-                                }
-                            });
-                            this.parsingStatus.panelMatrix = 'finished';
-                        } else {
-                            const missingColumns = [];
-                            if (hasSampleID) {
-                                missingColumns.push('mutations or cna');
-                            } else {
-                                missingColumns.push('SAMPLE_ID');
-                                if (!hasCNA && !hasMutations) {
-                                    missingColumns.push('mutations or cna');
-                                } else {
-                                    if (!hasMutations) {
-                                        missingColumns.push('mutations');
-                                    }
-                                    if (!hasCNA) {
-                                        missingColumns.push('cna');
-                                    }
-                                }
-                            }
-                            alert(`The following columns are missing ${missingColumns}`);
-                            this.parsingStatus.panelMatrix = 'error';
-                        }
-                    },
-                });
-            }),
-            setGenePanels: action((files) => {
-                this.parsingStatus.genePanels = 'loading';
-                this.genePanels.clear();
-                Array.from(files).forEach((file) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        const lines = reader.result.split(/[\r\n]+/g).filter(line => line.trim() !== ''); // tolerate both Windows and Unix linebreaks
-                        if (lines.length === 4) {
-                            const nameLineEntries = lines[1].split(':');
-                            if (nameLineEntries.length === 2) {
-                                const panelId = nameLineEntries[1].trim();
-                                const geneLineEntries = lines[3].split(':');
-                                if (geneLineEntries.length === 2) {
-                                    this.genePanels.set(panelId, geneLineEntries[1].split('\t').filter(d => d.trim() !== ''));
-                                } else {
-                                    alert(`Line 4 of file ${file.name} incorrect`);
-                                    this.parsingStatus.genePanels = 'error';
-                                }
-                            } else {
-                                alert(`Line 1 of file ${file.name} incorrect`);
-                                this.parsingStatus.genePanels = 'error';
-                            }
-                        } else {
-                            alert('Incorrect number of lines');
-                            this.parsingStatus.genePanels = 'error';
-                        }
-                        if (this.genePanels.size === files.length) {
-                            this.parsingStatus.genePanels = 'finished';
-                        }
-                    };
-                    reader.readAsText(file);
-                });
-            }),
+        makeObservable(this, {
+            parsingStatus: observable,
+            dataLoading: computed,
+            dataHasErrors: computed,
+            dataReady: computed,
+            setEventsParsed: action,
+            setMutationsParsed: action,
+            setMolecularParsed: action,
+            setClinicalPatientParsed: action,
+            setClinicalSampleParsed: action,
+            setPanelMatrixParsed: action,
+            setGenePanelsParsed: action,
+            setEventFiles: action,
+            setPatientsAndSamples: action,
+            setMutations: action,
+            loadEventFile: action,
+            loadEvents: action,
+            setClinicalFile: action,
+            loadClinicalFile: action,
+            loadClinicalBody: action,
+            setMolecularFiles: action,
+            setMolecular: action,
+            setGenePanelMatrix: action,
+            setGenePanels: action,
         });
 
         // reactions to errors or removal of files:
@@ -913,6 +162,795 @@ class LocalFileLoader {
             }
         });
     }
+
+    /**
+     * is any of the files currently loading
+     * @returns {boolean}
+     */
+    get dataLoading() {
+        return Object.values(this.parsingStatus).some(value => value === 'loading');
+    }
+
+    /**
+     * were there errors during the file parsing
+     * @returns {boolean}
+     */
+    get dataHasErrors() {
+        return Object.values(this.parsingStatus).some(value => value === 'error');
+    }
+
+    /**
+     * is data ready to be displayed
+     * @returns {boolean}
+     */
+    get dataReady() {
+        return !this.dataLoading
+            && !this.dataHasErrors
+            && this.parsingStatus.events === 'finished'
+            && (this.parsingStatus.mutations === 'finished'
+                || this.parsingStatus.clinicalSample === 'finished'
+                || this.parsingStatus.clinicalPatient === 'finished'
+                || this.parsingStatus.molecular === 'finished')
+            && this.parsingStatus.genePanels === this.parsingStatus.panelMatrix;
+    }
+
+    setEventsParsed = (loadingState) => {
+        this.parsingStatus.events = loadingState;
+    };
+
+    setMutationsParsed = (loadingState) => {
+        this.parsingStatus.mutations = loadingState;
+    };
+
+    setMolecularParsed = (loadingState) => {
+        this.parsingStatus.molecular = loadingState;
+    };
+
+    setClinicalPatientParsed = (loadingState) => {
+        this.parsingStatus.clinicalPatient = loadingState;
+    };
+
+    setClinicalSampleParsed = (loadingState) => {
+        this.parsingStatus.clinicalSample = loadingState;
+    };
+
+    setPanelMatrixParsed = (loadingState) => {
+        this.parsingStatus.panelMatrix = loadingState;
+    };
+
+    setGenePanelsParsed = (loadingState) => {
+        this.parsingStatus.genePanels = loadingState;
+    };
+
+    /**
+     * sets current event files if headers are correct
+     * and file of type SPECIMEN is contained
+     * @param {FileList} files: all event files
+     * @param {loadFinishedCallback} callback
+     */
+    setEventFiles = (files, callback) => {
+        const eventFiles = new Map();
+        this.parsingStatus.events = 'loading';
+        Array.from(files).forEach((d) => {
+            Papa.parse(d, {
+                delimiter: '\t',
+                header: true,
+                worker: true,
+                skipEmptyLines: true,
+                step: (row, parser) => {
+                    // check header
+                    if (LocalFileLoader.checkTimelineFileHeader(row.data.EVENT_TYPE,
+                        row.meta.fields, d.name)) {
+                        eventFiles.set(row.data.EVENT_TYPE, d);
+                    } else {
+                        this.parsingStatus.events = 'error';
+                        parser.abort();
+                    }
+                },
+                complete: () => {
+                    // all file headers have been checked and are valid
+                    if (eventFiles.size === files.length) {
+                        // one of the files has to be of eventType SPECIMEN
+                        if (eventFiles.has('SPECIMEN')) {
+                            this.setPatientsAndSamples(eventFiles.get('SPECIMEN'), () => {
+                                this.eventFiles = eventFiles;
+                                this.parsingStatus.events = 'finished';
+                                callback();
+                            });
+                        } else {
+                            this.parsingStatus.events = 'error';
+                            alert('ERROR: Required timeline file with EVENT_TYPE SPECIMEN missing');
+                        }
+                    }
+                },
+            });
+        });
+    };
+
+    /**
+     * sets patients and samples
+     * @param {File} file
+     * @param {loadFinishedCallback} callback
+     */
+    setPatientsAndSamples = (file, callback) => {
+        let dateCorrect = true;
+        const patients = [];
+        const samples = [];
+        Papa.parse(file, {
+            delimiter: '\t',
+            header: true,
+            worker: true,
+            skipEmptyLines: true,
+            step: (row, parser) => {
+                if (!patients.includes(row.data.PATIENT_ID)) {
+                    patients.push(row.data.PATIENT_ID);
+                }
+                if (!samples.includes(row.data.SAMPLE_ID)) {
+                    samples.push(row.data.SAMPLE_ID);
+                    this.samplePatientMap[row.data.SAMPLE_ID] = row.data.PATIENT_ID;
+                }
+                const date = parseInt(row.data.START_DATE, 10);
+                if (Number.isNaN(date)) {
+                    alert('ERROR: START_DATE is not a number');
+                    this.parsingStatus.events = 'error';
+                    dateCorrect = false;
+                    parser.abort();
+                }
+            },
+            complete: () => {
+                if (dateCorrect) {
+                    this.patients = patients;
+                    this.samples = samples;
+                    callback();
+                }
+            },
+        });
+    };
+
+    /**
+     * creates array containing all mutations
+     * @param {File} file
+     */
+    setMutations = (file) => {
+        const skipMutations = ['Silent', 'Intron', "3'UTR", "3'Flank", "5'UTR", "5'Flank", 'IGR', 'RNA']; // mutations to be skipped according to cBio docs
+        // are columns for variant allele frequency contained in the files
+        let hasVaf = false;
+        let firstRow = true;
+        let aborted = false;
+        let inconsistentLinebreaks = false;
+        const mutations = []; // data array for mutations
+        const counts = {}; // object for storing mutation counts
+        this.parsingStatus.mutations = 'loading';
+        Papa.parse(file, {
+            delimiter: '\t',
+            header: true,
+            worker: true,
+            skipEmptyLines: true,
+            step: (row, parser) => {
+                if (row.errors.length === 0) {
+                    if (firstRow) {
+                        // check header when parsing first row
+                        if (LocalFileLoader.checkMutationFileHeader(row.meta.fields,
+                            file.name)) {
+                            if ('t_ref_count' in row.data && 't_alt_count' in row.data) {
+                                hasVaf = true;
+                            }  
+                            if ('VAF' in row.data) {hasVaf = true}
+                            firstRow = false;
+                        } else {
+                            this.parsingStatus.mutations = 'error';
+                            aborted = true;
+                            parser.abort();
+                        }
+                    }
+                    // add mutation if it's not in the list of excluded mutations
+                    if (!aborted && !skipMutations
+                        .includes(row.data.Variant_Classification)) {
+                        const mutation = {
+                            sampleId: row.data.Tumor_Sample_Barcode,
+                            proteinChange: row.data.HGVSp_Short.substring(2),
+                            gene: {
+                                hugoGeneSymbol: row.data.Hugo_Symbol,
+                            },
+                            mutationType: row.data.Variant_Classification,
+                        };
+                        if (hasVaf) {
+                            if (row.data.VAF){
+                                mutation.VAF = row.data.VAF
+                            }else{
+                                mutation.tumorAltCount = row.data.t_alt_count;
+                                mutation.tumorRefCount = row.data.t_ref_count;
+                            }
+                        } else {
+                            mutation.tumorAltCount = -1;
+                            mutation.tumorRefCount = -1;
+                        }
+                        mutations.push(mutation);
+                        if (!(row.data.Tumor_Sample_Barcode in counts)) {
+                            counts[row.data.Tumor_Sample_Barcode] = 0;
+                        }
+                        counts[row.data.Tumor_Sample_Barcode] += 1;
+                    }
+                } else {
+                    inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
+                        row.data, file.name);
+                    aborted = true;
+                    parser.abort();
+                }
+            },
+            complete: () => {
+                if (!aborted) {
+                    this.molecularProfiles.push({
+                        molecularAlterationType: 'MUTATION_EXTENDED',
+                        name: 'Mutations',
+                        molecularProfileId: uuidv4(),
+                    });
+                    this.mutationCounts = this.samples.map((sample) => {
+                        let count = 0;
+                        if (sample in counts) {
+                            count = counts[sample];
+                        }
+                        return {
+                            clinicalAttribute: {
+                                displayName: 'Mutation Count',
+                                description: 'Mutation Count',
+                                datatype: 'NUMBER',
+                            },
+                            sampleId: sample,
+                            patientId: this.samplePatientMap[sample],
+                            clinicalAttributeId: 'MUTATION_COUNT',
+                            value: count,
+                        };
+                    });
+                    this.mutations = mutations;
+                    this.parsingStatus.mutations = 'finished';
+                    // if linebreaks are inconsistent replace them and retry
+                } else if (inconsistentLinebreaks) {
+                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+                        this.setMutations(newFile);
+                    });
+                } else {
+                    this.parsingStatus.mutations = 'error';
+                }
+            },
+        });
+    };
+
+
+    /**
+     * loads an event file
+     * @param {File} file
+     * @param {loadFinishedCallback} callback
+     */
+    loadEventFile = (file, callback) => {
+        let aborted = false;
+        let inconsistentLinebreak = false;
+        let firstRow = true;
+        let hasEndDate = false;
+        const events = {};
+                Papa.parse(file, {
+                    delimiter: '\t',
+                    header: true,
+                    worker: true,
+                    skipEmptyLines: true,
+                    step: (row, parser) => {
+                        if (row.errors.length === 0) {
+                            if (firstRow) {
+                                if ('STOP_DATE' in row.data) {
+                                    hasEndDate = true;
+                                }
+                                firstRow = false;
+                            }
+                            if (!(row.data.PATIENT_ID in events)) {
+                                events[row.data.PATIENT_ID] = [];
+                            }
+                            const validStartDate = !Number
+                                .isNaN(parseInt(row.data.START_DATE, 10));
+                            const validEndDate = !hasEndDate || row.data.STOP_DATE === ''
+                                || (hasEndDate && !Number
+                                    .isNaN(parseInt(row.data.STOP_DATE, 10)));
+                            if (validStartDate && validEndDate) {
+                                const attributes = [];
+                                Object.keys(row.data).forEach((key) => {
+                                    if (key !== 'START_DATE' && key !== 'STOP_DATE' && key !== 'EVENT_TYPE' && key !== 'PATIENT_ID') {
+                                        if (row.data[key].length > 0) {
+                                            attributes.push({key, value: row.data[key]});
+                                        }
+                                    }
+                                });
+                                const currRow = {
+                                    attributes,
+                                    eventType: row.data.EVENT_TYPE,
+                                    patientId: row.data.PATIENT_ID,
+                                    startNumberOfDaysSinceDiagnosis:
+                                        parseInt(row.data.START_DATE, 10),
+                                };
+                                if (hasEndDate) {
+                                    currRow.endNumberOfDaysSinceDiagnosis = parseInt(row.data
+                                        .STOP_DATE, 10);
+                                }
+                                events[row.data.PATIENT_ID].push(currRow);
+                            } else {
+                                aborted = true;
+                                if (!validStartDate) {
+                                    alert(`ERROR: START_DATE is not a number in file ${file.name}`);
+                                } else {
+                                    alert(`ERROR: STOP_DATE is not a number in file ${file.name}`);
+                                }
+                                parser.abort();
+                            }
+                        } else {
+                            inconsistentLinebreak = LocalFileLoader.checkErrors(row.errors,
+                                row.data, file.name);
+                            aborted = true;
+                            parser.abort();
+                        }
+                    },
+                    complete: () => {
+                        if (!aborted) {
+                            Object.keys(events).forEach((patient) => {
+                                events[patient].sort((a, b) => a.startNumberOfDaysSinceDiagnosis
+                                    - b.startNumberOfDaysSinceDiagnosis);
+                            });
+                            callback(events);
+                        } else if (inconsistentLinebreak) {
+                            LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+                                this.loadEventFile(newFile, callback);
+                            });
+                        } else {
+                            this.parsingStatus.events = 'error';
+                        }
+                },
+            });
+    };
+
+    /**
+     * loads all events
+     * @param {returnDataCallback} callback
+     */
+    loadEvents = (callback) => {
+        const events = {};
+        let filesVisited = 0;
+        this.eventFiles.forEach((d) => {
+            this.loadEventFile(d, (fileEvents) => {
+                filesVisited += 1;
+                Object.keys(fileEvents).forEach((patient) => {
+                    if (!(patient in events)) {
+                        events[patient] = fileEvents[patient];
+                    } else {
+                        events[patient].push(...fileEvents[patient]);
+                    }
+                });
+                if (filesVisited === this.eventFiles.size) {
+                    callback(events);
+                }
+            });
+        });
+    };
+
+    /**
+     * sets the clinical file if the header is in the right format
+     * @param {File} file
+     * @param {boolean} isSample - sample related of patient related clinical data
+     */
+    setClinicalFile = (file, isSample) => {
+                if (isSample) {
+                    this.parsingStatus.clinicalSample = 'loading';
+                } else {
+                    this.parsingStatus.clinicalPatient = 'loading';
+                }
+
+                let correctHeader = true;
+                const errorMessages = [];
+                let rowCounter = 0;
+                Papa.parse(file, {
+                    delimiter: '\t',
+                    header: false,
+                    worker: true,
+                    skipEmptyLines: true,
+                    step: (row, parser) => {
+                        if (rowCounter === 0 && !row.data[0].startsWith('#')) {
+                            errorMessages.push('ERROR: wrong header format, first row has to start with #');
+                            correctHeader = false;
+                        } else if (rowCounter === 1 && !row.data[0].startsWith('#')) {
+                            errorMessages.push('ERROR: wrong header format, second row has to start with #');
+                            correctHeader = false;
+                        } else if (rowCounter === 2 && !row.data[0].startsWith('#')) {
+                            errorMessages.push('ERROR: wrong header format, third row has to start with #');
+                            correctHeader = false;
+                        } else if (rowCounter === 3 && !row.data[0].startsWith('#')) {
+                            errorMessages.push('ERROR: wrong header format, fourth row has to start with #');
+                            correctHeader = false;
+                        } else if (rowCounter === 4) {
+                            if (row.data[0].startsWith('#')) {
+                                errorMessages.push('ERROR: wrong header format, fifth row should not start with #');
+                                correctHeader = false;
+                            } else if (row.data.includes('PATIENT_ID')) {
+                                if (isSample && !row.data.includes('SAMPLE_ID')) {
+                                    errorMessages.push('ERROR: no SAMPLE_ID column found');
+                                    correctHeader = false;
+                                } else if (!isSample && row.data.includes('SAMPLE_ID')) {
+                                    errorMessages.push('ERROR: SAMPLE_ID provided for non-sample specific clinical data');
+                                    correctHeader = false;
+                                }
+                            } else {
+                                errorMessages.push('ERROR: No PATIENT_ID data column found');
+                                correctHeader = false;
+                            }
+                        } else if (rowCounter > 4) {
+                            if (errorMessages.length > 0){
+                                alert(errorMessages);
+                            }
+                            parser.abort();
+                        }
+                        rowCounter += 1;
+                    },
+                    complete: () => {
+                        if (correctHeader) {
+                            if (isSample) {
+                                this.clinicalSampleFile = file;
+                                this.parsingStatus.clinicalSample = 'finished';
+                            } else {
+                                this.clinicalPatientFile = file;
+                                this.parsingStatus.clinicalPatient = 'finished';
+                            }
+                        } else if (isSample) {
+                            this.parsingStatus.clinicalSample = 'error';
+                        } else {
+                            this.parsingStatus.clinicalPatient = 'error';
+                        }
+                    },
+                });
+    };
+
+    /**
+     * Parse clinical data file
+     * @param {boolean} isSample - sample related or patient related clinical data
+     * @param {function} callback
+     */
+    loadClinicalFile = (isSample, callback) => {
+        let file;
+        if (isSample) {
+            file = this.clinicalSampleFile;
+        } else {
+            file = this.clinicalPatientFile;
+        }
+        const clinicalAttributes = {};
+        const intermediateAttributes = [];
+        let abort = false;
+        let inconsistentLinebreaks = false;
+        let rowCounter = 0;
+        // parse header
+        if (file !== null) {
+                    Papa.parse(file, {
+                        delimiter: '\t',
+                        worker: true,
+                        skipEmptyLines: true,
+                        step: (row, parser) => {
+                            if (row.errors.length === 0) {
+                                if (rowCounter === 0) {
+                                    row.data.forEach((d, i) => {
+                                        intermediateAttributes.push({
+                                            displayName: LocalFileLoader.getSpliced(i, d),
+                                        });
+                                    });
+                                } else if (rowCounter === 1) {
+                                    row.data.forEach((d, i) => {
+                                        intermediateAttributes[i]
+                                            .description = LocalFileLoader.getSpliced(i, d);
+                                    });
+                                } else if (rowCounter === 2) {
+                                    row.data.forEach((d, i) => {
+                                        intermediateAttributes[i]
+                                            .datatype = LocalFileLoader.getSpliced(i, d);
+                                    });
+                                } else if (rowCounter === 4) {
+                                    row.data.forEach((d, i) => {
+                                        intermediateAttributes[i]
+                                            .clinicalAttributeId = LocalFileLoader.getSpliced(i, d);
+                                        clinicalAttributes[d] = intermediateAttributes[i];
+                                    });
+                                    parser.abort();
+                                }
+                                rowCounter += 1;
+                            } else {
+                                inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
+                                    row.data, file.name);
+                                abort = true;
+                                parser.abort();
+                            }
+                        },
+                        complete: () => {
+                            // parse data
+                            if (!abort) {
+                                this.loadClinicalBody(file, isSample, clinicalAttributes, callback);
+                            } else if (inconsistentLinebreaks) {
+                                if (isSample) {
+                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+                                        this.clinicalSampleFile = newFile;
+                                        this.loadClinicalFile(isSample, callback);
+                                    });
+                                } else {
+                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+                                        this.clinicalPatientFile = newFile;
+                                        this.loadClinicalFile(isSample, callback);
+                                    });
+                                }
+                            } else if (isSample) {
+                                this.parsingStatus.clinicalSample = 'error';
+                            } else {
+                                this.parsingStatus.clinicalPatient = 'error';
+                            }
+                        },
+                    });
+                } else callback([]);
+    };
+
+    /**
+     * parses data rows of the clinical data file into an array of objects
+     * @param {File} file
+     * @param {boolean} isSample - sample related of patient related clinical data
+     * @param {object} clinicalAttributes - information about
+     * the column headers that is included in the resulting data array
+     * @param {returnDataCallback} callback
+     */
+    loadClinicalBody = (file, isSample, clinicalAttributes, callback) => {
+        const rows = [];
+        let abort = false;
+        let inconsistentLinebreaks = false;
+                Papa.parse(file, {
+                    delimiter: '\t',
+                    header: true,
+                    worker: true,
+                    skipEmptyLines: true,
+                    comments: '#',
+                    step: (row, parser) => {
+                        if (row.errors.length === 0) {
+                            const patientId = row.data.PATIENT_ID;
+                            const sampleId = row.data.SAMPLE_ID;
+                            Object.keys(row.data).forEach((key) => {
+                                if (!(key === 'PATIENT_ID' || key === 'SAMPLE_ID') && row.data[key].trim() !== '') {
+                                    if (clinicalAttributes[key].datatype === 'NUMBER') {
+                                        if (Number.isNaN(parseFloat(row.data[key]))) {
+                                            abort = true;
+                                            alert(`ERROR: File ${file.name}- non numeric value of numeric variable ${key}`);
+                                            parser.abort();
+                                        }
+                                    }
+                                    const currRow = {
+                                        clinicalAttribute: clinicalAttributes[key],
+                                        clinicalAttributeId: clinicalAttributes[key]
+                                            .clinicalAttributeId,
+                                        patientId,
+                                        value: row.data[key],
+                                    };
+                                    if (isSample) {
+                                        currRow.sampleId = sampleId;
+                                    }
+                                    rows.push(currRow);
+                                }
+                            });
+                        } else {
+                            inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
+                                row.data, file.name);
+                            abort = true;
+                            parser.abort();
+                        }
+                    },
+                    complete: () => {
+                        // only callback if there are no errors
+                        if (abort) {
+                            if (inconsistentLinebreaks) {
+                                if (isSample) {
+                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+                                        this.clinicalSampleFile = newFile;
+                                        this.loadClinicalFile(isSample, callback);
+                                    });
+                                } else {
+                                    LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+                                        this.clinicalPatientFile = newFile;
+                                        this.loadClinicalFile(isSample, callback);
+                                    });
+                                }
+                            } else if (isSample) {
+                                this.parsingStatus.clinicalSample = 'error';
+                                this.clinicalSampleFile = null;
+                            } else {
+                                this.parsingStatus.clinicalPatient = 'error';
+                                this.clinicalPatientFile = null;
+                            }
+                        } else {
+                            callback(rows);
+                        }
+                    },
+                });
+    };
+
+    /**
+     * parse cnv data files
+     * @param {FileList} files - all cnv data files
+     * @param {string[]} metaData - datatypes and molecularAlteration types
+     */
+    setMolecularFiles = (files, metaData) => {
+        let filesParsed = 0;
+        this.parsingStatus.molecular = 'loading';
+        Array.from(files).forEach((file, i) => {
+            this.setMolecular(file, metaData[i], () => {
+                filesParsed += 1;
+                if (filesParsed === files.length) {
+                    this.parsingStatus.molecular = 'finished';
+                }
+            });
+        });
+    };
+
+    /**
+     * parses an molecular data file into an array of objects
+     * @param {File} file
+     * @param {loadFinishedCallback} callback
+     */
+    setMolecular = (file, metaData, callback) => {
+                let firstRow = true;
+                let hasEntrezId;
+                let hasHugoSymbol;
+                let aborted = false;
+                let inconsistentLinebreaks = false;
+                const data = new Map();
+                Papa.parse(file, {
+                    delimiter: '\t',
+                    header: true,
+                    worker: true,
+                    skipEmptyLines: true,
+                    step: (row, parser) => {
+                        if (row.errors.length === 0) {
+                            if (firstRow) {
+                                hasEntrezId = 'Entrez_Gene_Id' in row.data;
+                                hasHugoSymbol = 'Hugo_Symbol' in row.data;
+                                if (!hasEntrezId) {
+                                    alert(`ERROR: file ${file.name} missing Entrez_Gene_Id column`);
+                                    aborted = true;
+                                    parser.abort();
+                                }
+                                firstRow = false;
+                            } else {
+                                const dataRow = [];
+                                if (row.data.Entrz_Gene_Id !== 'NA') {
+                                    const entrezId = parseInt(row.data.Entrez_Gene_Id, 10);
+                                    Object.keys(row.data).forEach((key) => {
+                                        const dataPoint = {
+                                            gene: {entrezGeneId: entrezId, hugoGeneSymbol: ''},
+                                            entrezGeneId: entrezId,
+                                        };
+                                        if (hasHugoSymbol) {
+                                            dataPoint.gene.hugoGeneSymbol = row.data.Hugo_Symbol;
+                                        }
+                                        if (key !== 'Entrez_Gene_Id' && key !== 'Hugo_Symbol') {
+                                            let value = row.data[key];
+                                            if (value !== 'NA' && metaData.datatype === 'CONTINUOUS') {
+                                                value = parseFloat(row.data[key]);
+                                                if (Number.isNaN(value)) {
+                                                    aborted = true;
+                                                    alert(`ERROR: file ${file.name} value is not a number`);
+                                                    parser.abort();
+                                                }
+                                            }
+                                            dataPoint.sampleId = key;
+                                            dataPoint.value = value;
+                                            dataRow.push(dataPoint);
+                                        }
+                                    });
+                                    data.set(entrezId, dataRow);
+                                } else {
+                                    inconsistentLinebreaks = LocalFileLoader.checkErrors(row.errors,
+                                        row.data, file.name);
+                                    aborted = true;
+                                    parser.abort();
+                                }
+                            }
+                        }
+                    },
+                    complete: () => {
+                        if (!aborted) {
+                            const id = uuidv4();
+                            this.molecularProfiles.push({
+                                molecularAlterationType: metaData.alterationType,
+                                name: file.name,
+                                datatype: metaData.datatype,
+                                molecularProfileId: id,
+                            });
+                            this.profileData.set(id, data);
+                            callback();
+                        } else if (inconsistentLinebreaks) {
+                            LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+                                this.setMolecular(newFile, metaData, callback);
+                            });
+                        } else {
+                            this.parsingStatus.molecular = 'error';
+                        }
+                    },
+                });
+            };
+
+    setGenePanelMatrix = (file) => {
+                this.parsingStatus.panelMatrix = 'loading';
+                this.panelMatrix = {};
+                Papa.parse(file, {
+                    delimiter: '\t',
+                    header: true,
+                    worker: true,
+                    skipEmptyLines: true,
+                    complete: (response) => {
+                        const hasSampleID = response.meta.fields.includes('SAMPLE_ID');
+                        const hasMutations = response.meta.fields.includes('mutations');
+                        const hasCNA = response.meta.fields.includes('cna');
+                        if (hasSampleID && (hasMutations || hasCNA)) {
+                            response.data.forEach((row) => {
+                                this.panelMatrix[row.SAMPLE_ID] = {};
+                                if (hasMutations) {
+                                    this.panelMatrix[row.SAMPLE_ID].mutations = row.mutations;
+                                }
+                                if (hasCNA) {
+                                    this.panelMatrix[row.SAMPLE_ID].cna = row.cna;
+                                }
+                            });
+                            this.parsingStatus.panelMatrix = 'finished';
+                        } else {
+                            const missingColumns = [];
+                            if (hasSampleID) {
+                                missingColumns.push('mutations or cna');
+                            } else {
+                                missingColumns.push('SAMPLE_ID');
+                                if (!hasCNA && !hasMutations) {
+                                    missingColumns.push('mutations or cna');
+                                } else {
+                                    if (!hasMutations) {
+                                        missingColumns.push('mutations');
+                                    }
+                                    if (!hasCNA) {
+                                        missingColumns.push('cna');
+                                    }
+                                }
+                            }
+                            alert(`The following columns are missing ${missingColumns}`);
+                            this.parsingStatus.panelMatrix = 'error';
+                        }
+                    },
+                });
+            };
+
+    setGenePanels = (files) => {
+                this.parsingStatus.genePanels = 'loading';
+                this.genePanels.clear();
+                Array.from(files).forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const lines = reader.result.split(/[\r\n]+/g).filter(line => line.trim() !== ''); // tolerate both Windows and Unix linebreaks
+                        if (lines.length === 4) {
+                            const nameLineEntries = lines[1].split(':');
+                            if (nameLineEntries.length === 2) {
+                                const panelId = nameLineEntries[1].trim();
+                                const geneLineEntries = lines[3].split(':');
+                                if (geneLineEntries.length === 2) {
+                                    this.genePanels.set(panelId, geneLineEntries[1].split('\t').filter(d => d.trim() !== ''));
+                                } else {
+                                    alert(`Line 4 of file ${file.name} incorrect`);
+                                    this.parsingStatus.genePanels = 'error';
+                                }
+                            } else {
+                                alert(`Line 1 of file ${file.name} incorrect`);
+                                this.parsingStatus.genePanels = 'error';
+                            }
+                        } else {
+                            alert('Incorrect number of lines');
+                            this.parsingStatus.genePanels = 'error';
+                        }
+                        if (this.genePanels.size === files.length) {
+                            this.parsingStatus.genePanels = 'finished';
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            };
 
     /**
      * checks the header of a timeline file

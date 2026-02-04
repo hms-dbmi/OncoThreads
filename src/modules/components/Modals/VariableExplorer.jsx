@@ -16,7 +16,7 @@ import {
     Row,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import { extendObservable, toJS } from 'mobx';
+import { makeObservable, observable, computed, toJS } from 'mobx';
 import Select from 'react-select';
 import LineUpView from './LineUpView';
 import OriginalVariable from '../../stores/OriginalVariable';
@@ -27,24 +27,25 @@ import MutationSelector from './MutationSelector';
  * Modal for exploring timepoint variables with lineUp
  */
 const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(class VariableExplorer extends React.Component {
+    selected = [];
+    modalIsOpen = false;
+    onDemandVariables = [];
+    selectedScores = [];
+    addedScores = [];
+    addedColumns = [];
+
     constructor(props) {
         super(props);
-        extendObservable(this, {
-            selected: [],
-            modalIsOpen: false,
-            onDemandVariables: [],
-            selectedScores: [],
-            addedScores: [],
-            addedColumns: [],
-            get variables() {
-                return this.getInitialVariables().concat(...this.onDemandVariables);
-            },
-            get profileDomains() {
-                return this.updateVariableRanges();
-            },
-            get data() {
-                return this.createData();
-            },
+        makeObservable(this, {
+            selected: observable,
+            modalIsOpen: observable,
+            onDemandVariables: observable,
+            selectedScores: observable,
+            addedScores: observable,
+            addedColumns: observable,
+            variables: computed,
+            profileDomains: computed,
+            data: computed,
         });
         /**
          * Definition of score columns.
@@ -119,6 +120,18 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.toggleDesciptionColumn = this.toggleDesciptionColumn.bind(this);
+    }
+
+    get variables() {
+        return this.getInitialVariables().concat(...this.onDemandVariables);
+    }
+
+    get profileDomains() {
+        return this.updateVariableRanges();
+    }
+
+    get data() {
+        return this.createData();
     }
 
     /**

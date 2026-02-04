@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import FontAwesome from 'react-fontawesome';
-import { extendObservable, reaction } from 'mobx';
+import { makeObservable, observable, reaction } from 'mobx';
 import { Button, Col, Row } from 'antd';
 import { Pane, SortablePane } from 'react-sortable-pane';
 import {Switch} from 'antd'
@@ -20,36 +20,48 @@ import CustomGrouping from './StateTransition/CustomGrouping';
  * Component for the Block view
  */
 const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class BlockView extends React.Component {
+    highlightedVariable = '';
+    order = ['labels', 'operators', 'view', 'legend'];
+    width = window.innerWidth;
+    height = window.innerHeight - 250;
+    hasBackground = true;
+    panes;
+    ref = React.createRef();
+    active = {
+        labels: false,
+        operators: false,
+        view: false,
+        legend: false,
+    };
+
     constructor(props) {
         super(props);
         this.padding = 20;
-        this.blockWidthRatio = 0.75
+        this.blockWidthRatio = 0.75;
         this.blockView = React.createRef();
+
+        this.panes = {
+            labels: { width: (window.innerWidth - 40) * this.blockWidthRatio / 10 * 0.7, active: false },
+            operators: { width: ((window.innerWidth - 40) * this.blockWidthRatio / 10) * 1.3, active: false },
+            view: { width: ((window.innerWidth - 40) * this.blockWidthRatio / 10) * 6.5, active: false },
+            legend: { width: (window.innerWidth - 40) * this.blockWidthRatio / 10 * 1.3, active: false },
+        };
+
+        makeObservable(this, {
+            highlightedVariable: observable,
+            order: observable,
+            width: observable,
+            height: observable,
+            hasBackground: observable,
+            panes: observable,
+            active: observable,
+        });
 
         this.handleTimeClick = this.handleTimeClick.bind(this);
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.updateDimensions = this.updateDimensions.bind(this);
-        extendObservable(this, {
-            highlightedVariable: '', // variableId of currently highlighted variable
-            order: ['labels', 'operators', 'view', 'legend'],
-            width:window.innerWidth,
-            height: window.innerHeight-250,
-            hasBackground:true,
-            panes: {
-                labels: { width: (window.innerWidth - 40) * this.blockWidthRatio / 10 * 0.7, active: false },
-                operators: { width: ((window.innerWidth - 40) *this.blockWidthRatio / 10) * 1.3, active: false },
-                view: { width: ((window.innerWidth - 40) * this.blockWidthRatio / 10) * 6.5, active: false },
-                legend: { width: (window.innerWidth - 40) * this.blockWidthRatio / 10 * 1.3, active: false },
-            },
-            ref: React.createRef(),
-            active: {
-                labels: false,
-                operators: false,
-                view: false,
-                legend: false,
-            },
-        });
+        
         reaction(() => this.panes.view.width, (width) => {
             this.props.rootStore.visStore.setPlotWidth(width - 10);
         });

@@ -1,5 +1,5 @@
-import axios from 'axios/index';
-import {action, extendObservable} from 'mobx';
+import axios from 'axios';
+import { makeObservable, observable, action, computed } from 'mobx';
 import CBioAPI from './CBioAPI';
 
 /**
@@ -7,82 +7,99 @@ import CBioAPI from './CBioAPI';
  */
 
 class StudyAPI {
+    allLinks = {hack: 'http://www.cbioportal.org', portal: 'https://www.cbioportal.org'};
+    allStudies = {hack: [], portal: [], own: []};
+    connectionStatus = {hack: 'none', portal: 'none', own: 'none'};
+    loadComplete = false;
+    accessTokenFromUser = null;
+    errorMsg = null;
+
     constructor(uiStore) {
         this.uiStore = uiStore;
         this.source = axios.CancelToken.source();
-        extendObservable(this, {
-            allLinks: {hack: 'http://www.cbioportal.org', portal: 'https://www.cbioportal.org'},
-            allStudies: {hack: [], portal: [], own: []},
-            connectionStatus: {hack: 'none', portal: 'none', own: 'none'},
-            loadComplete: false,
-            accessTokenFromUser: null,
-            errorMsg: null,
-            get studies() {
-                return this.allStudies[this.uiStore.cBioInstance];
-            },
-            /**
-             * gets available studies
-             */
-            loadStudies: action((link, callback, setStatus, setError, token) => {
-                StudyAPI.callGetAPI(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
-                    .then((response) => {
-                        setStatus('success');
-                        response.data.forEach((study) => {
-                            this.includeStudy(link, study, callback, token);
-                        });
-                    }).catch((thrown) => {
-                    setStatus('failed');
-                    // setError(thrown.message);
-                    if (CBioAPI.verbose) {
-                        console.log(thrown);
-                    } else {
-                        console.log('could not load studies');
-                    }
-                });
-            }),
-
-
-            /**
-             * adds a study to the corresponding array if it contains temporal data
-             */
-            includeStudy: action((link, study, callback, token) => {
-                this.getEvents(study.studyId, link, (events) => {
-                    const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
-                    if (specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'))) {
-                        callback(study);
-                    }
-                }, token);
-            }),
-            /**
-             * loads default studies from cbioportal
-             */
-            loadDefaultStudies: action(() => {
-                this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
-                    (status) => {
-                        this.connectionStatus.hack = status;
-                    }, null);
-            }),
-            /**
-             * loads studies from own instance
-             */
-            loadOwnInstanceStudies: action((link) => {
-                this.allLinks.own = link;
-                this.allStudies.own.clear();
-                this.connectionStatus.own = 'none';
-                this.source.cancel();
-                this.source = axios.CancelToken.source();
-
-                this.loadStudies(this.allLinks.own,
-                    (study) => this.allStudies.own.push(study),
-                    (status) => {
-                        this.connectionStatus.own = status;
-                    },
-                    (error) => {
-                        this.errorMsg = error;
-                    }, this.accessTokenFromUser);
-            }),
+        
+        makeObservable(this, {
+            allLinks: observable,
+            allStudies: observable,
+            connectionStatus: observable,
+            loadComplete: observable,
+            accessTokenFromUser: observable,
+            errorMsg: observable,
+            studies: computed,
+            loadStudies: action,
+            includeStudy: action,
+            loadDefaultStudies: action,
+            loadOwnInstanceStudies: action,
         });
     }
+
+    get studies() {
+        return this.allStudies[this.uiStore.cBioInstance];
+    }
+
+    /**
+     * gets available studies
+     */
+    loadStudies = (link, callback, setStatus, setError, token) => {
+        StudyAPI.callGetAPI(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
+            .then((response) => {
+                setStatus('success');
+                response.data.forEach((study) => {
+                    this.includeStudy(link, study, callback, token);
+                });
+            }).catch((thrown) => {
+            setStatus('failed');
+            // setError(thrown.message);
+            if (CBioAPI.verbose) {
+                console.log(thrown);
+            } else {
+                console.log('could not load studies');
+            }
+        });
+    };
+
+
+    /**
+     * adds a study to the corresponding array if it contains temporal data
+     */
+    includeStudy = (link, study, callback, token) => {
+        this.getEvents(study.studyId, link, (events) => {
+            const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
+            if (specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'))) {
+                callback(study);
+            }
+        }, token);
+    };
+
+    /**
+     * loads default studies from cbioportal
+     */
+    loadDefaultStudies = () => {
+        this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
+            (status) => {
+                this.connectionStatus.hack = status;
+            }, null);
+    };
+
+    /**
+     * loads studies from own instance
+     */
+    loadOwnInstanceStudies = (link) => {
+        this.allLinks.own = link;
+        this.allStudies.own.clear();
+        this.connectionStatus.own = 'none';
+        this.source.cancel();
+        this.source = axios.CancelToken.source();
+
+        this.loadStudies(this.allLinks.own,
+            (study) => this.allStudies.own.push(study),
+            (status) => {
+                this.connectionStatus.own = status;
+            },
+            (error) => {
+                this.errorMsg = error;
+            }, this.accessTokenFromUser);
+    };
 
 
     /**

@@ -1,4 +1,4 @@
-import { action, extendObservable, toJS } from 'mobx';
+import { makeObservable, observable, action, toJS } from 'mobx';
 import * as mobxUtils from 'mobx-utils';
 import OriginalVariable from './OriginalVariable';
 import DerivedVariable from './DerivedVariable';
@@ -18,136 +18,153 @@ class UndoRedoStore {
         this.uiStore = uiStore;
         this.undoRedoMode = false;
         this.stateStack = []; // array to save states
-        extendObservable(this, {
-            logs: [], // current logs
-            currentPointer: -1, // currently displayed state in stateStack
-            /**
-             * undo the last action, add undo log
-             */
-            undo: action(() => {
-                if (this.currentPointer !== 0) {
-                    this.logs.push(`UNDO: ${this.logs[this.currentPointer]}`);
-                    this.deserialize(this.currentPointer - 1);
-                    this.currentPointer -= 1;
-                    // localStorage.setItem(this.rootStore.study.studyId,
-                    // JSON.stringify(this.stateStack[this.currentPointer].state));
-                    this.undoRedoMode = true;
-                }
-            }),
-
-            /**
-             * redo the undone action, add redo log
-             */
-            redo: action(() => {
-                if (this.currentPointer !== this.stateStack.length - 1) {
-                    this.logs.push(`REDO: ${this.logs[this.currentPointer + 1]}`);
-                    this.deserialize(this.currentPointer + 1);
-                    this.currentPointer += 1;
-                    // localStorage.setItem(this.rootStore.study.studyId,
-                    // JSON.stringify(this.stateStack[this.currentPointer].state));
-                    this.undoRedoMode = true;
-                }
-            }),
-            /**
-             * resets undoRedo parameters
-             */
-            reset: action(() => {
-                this.stateStack = [];
-                this.logs.clear();
-                this.currentPointer = -1;
-            }),
-            /**
-             * saves state when loading a new dataset
-             * @param {string} studyName - name of displayed study/dataset
-             */
-            saveLoadHistory: action((studyName) => {
-                this.logs.push(`LOAD STUDY: ${studyName}`);
-                this.saveHistory('load');
-            }),
-            /**
-             * saves the history of a timepoint (in logs and in stateStack)
-             * @param {string} operation
-             * @param {string} variableId
-             * @param {string} timepointType
-             * @param {number} timepointIndex
-             */
-            saveTimepointHistory: action((operation, variableId, timepointType, timepointIndex) => {
-                const variableName = this.rootStore.dataStore.variableStores[timepointType]
-                    .getById(variableId).name;
-                let type = 'Timepoint';
-                if (timepointType === 'between') {
-                    type = 'Transition';
-                }
-                this.logs.push(`${operation}: ${variableName} at ${type} ${timepointIndex}`);
-                this.saveHistory('timepoint');
-            }),
-
-            /**
-             * saves the history of a variale (in logs and in stateStack)
-             * @param {string} operation
-             * @param {string} variable
-             */
-            saveVariableHistory: action((operation, variable) => {
-                this.logs.push(`${operation}: ${variable}`);
-                this.saveHistory('variable');
-            }),
-
-            /**
-             * Saves when the view has been switched
-             * @param {boolean} globalTL
-             */
-            saveSwitchHistory: action((globalTL) => {
-                if (globalTL) {
-                    this.logs.push('SWITCH TO: global timeline');
-                } else {
-                    this.logs.push('SWITCH TO: block view');
-                }
-                this.saveHistory('switch');
-            }),
-            /**
-             * Saves when realTime has been turned on/off
-             * @param {boolean} realTime
-             */
-            saveRealTimeHistory: action((realTime) => {
-                if (realTime) {
-                    this.logs.push('REAL TIME TURNED ON');
-                } else {
-                    this.logs.push('REAL TIME TURNED OFF');
-                }
-                this.saveHistory('real time');
-            }),
-
-            /**
-             * saves actions happening in the timeline view
-             * @param {string} actionType
-             */
-            saveGlobalHistory: action((actionType) => {
-                this.logs.push(`${actionType}: in timeline view`);
-                this.saveHistory('timeline');
-            }),
-
-            /**
-             * saves realigning to the history
-             * @param {string} timepointType
-             * @param {number} timepointIndex
-             */
-            saveRealignToHistory: action((timepointIndex) => {
-                this.logs.push(`REALIGN PATIENTS: based on block${timepointIndex}`);
-                this.saveHistory('timepoint');
-            }),
-
-            /**
-             * saves moving patients up/down
-             * @param {string} direction
-             * @param {string} patient
-             */
-            saveTPMovement: action((direction, patient) => {
-                this.logs.push(`MOVE PATIENT: ${patient} ${direction}`);
-                this.saveHistory('structure');
-            }),
+        
+        this.logs = []; // current logs
+        this.currentPointer = -1; // currently displayed state in stateStack
+        
+        makeObservable(this, {
+            logs: observable,
+            currentPointer: observable,
+            undo: action,
+            redo: action,
+            reset: action,
+            saveLoadHistory: action,
+            saveTimepointHistory: action,
+            saveVariableHistory: action,
+            saveSwitchHistory: action,
+            saveRealTimeHistory: action,
+            saveGlobalHistory: action,
+            saveRealignToHistory: action,
+            saveTPMovement: action,
         });
+        
         this.undo = this.undo.bind(this);
         this.redo = this.redo.bind(this);
+    }
+
+    /**
+     * undo the last action, add undo log
+     */
+    undo = () => {
+        if (this.currentPointer !== 0) {
+            this.logs.push(`UNDO: ${this.logs[this.currentPointer]}`);
+            this.deserialize(this.currentPointer - 1);
+            this.currentPointer -= 1;
+            this.undoRedoMode = true;
+        }
+    }
+
+    /**
+     * redo the undone action, add redo log
+     */
+    redo = () => {
+        if (this.currentPointer !== this.stateStack.length - 1) {
+            this.logs.push(`REDO: ${this.logs[this.currentPointer + 1]}`);
+            this.deserialize(this.currentPointer + 1);
+            this.currentPointer += 1;
+            this.undoRedoMode = true;
+        }
+    }
+
+    /**
+     * resets undoRedo parameters
+     */
+    reset = () => {
+        this.stateStack = [];
+        this.logs.clear();
+        this.currentPointer = -1;
+    }
+
+    /**
+     * saves state when loading a new dataset
+     * @param {string} studyName - name of displayed study/dataset
+     */
+    saveLoadHistory = (studyName) => {
+        this.logs.push(`LOAD STUDY: ${studyName}`);
+        this.saveHistory('load');
+    }
+
+    /**
+     * saves the history of a timepoint (in logs and in stateStack)
+     * @param {string} operation
+     * @param {string} variableId
+     * @param {string} timepointType
+     * @param {number} timepointIndex
+     */
+    saveTimepointHistory = (operation, variableId, timepointType, timepointIndex) => {
+        const variableName = this.rootStore.dataStore.variableStores[timepointType]
+            .getById(variableId).name;
+        let type = 'Timepoint';
+        if (timepointType === 'between') {
+            type = 'Transition';
+        }
+        this.logs.push(`${operation}: ${variableName} at ${type} ${timepointIndex}`);
+        this.saveHistory('timepoint');
+    }
+
+    /**
+     * saves the history of a variale (in logs and in stateStack)
+     * @param {string} operation
+     * @param {string} variable
+     */
+    saveVariableHistory = (operation, variable) => {
+        this.logs.push(`${operation}: ${variable}`);
+        this.saveHistory('variable');
+    }
+
+    /**
+     * Saves when the view has been switched
+     * @param {boolean} globalTL
+     */
+    saveSwitchHistory = (globalTL) => {
+        if (globalTL) {
+            this.logs.push('SWITCH TO: global timeline');
+        } else {
+            this.logs.push('SWITCH TO: block view');
+        }
+        this.saveHistory('switch');
+    }
+
+    /**
+     * Saves when realTime has been turned on/off
+     * @param {boolean} realTime
+     */
+    saveRealTimeHistory = (realTime) => {
+        if (realTime) {
+            this.logs.push('REAL TIME TURNED ON');
+        } else {
+            this.logs.push('REAL TIME TURNED OFF');
+        }
+        this.saveHistory('real time');
+    }
+
+    /**
+     * saves actions happening in the timeline view
+     * @param {string} actionType
+     */
+    saveGlobalHistory = (actionType) => {
+        this.logs.push(`${actionType}: in timeline view`);
+        this.saveHistory('timeline');
+    }
+
+    /**
+     * saves realigning to the history
+     * @param {string} timepointType
+     * @param {number} timepointIndex
+     */
+    saveRealignToHistory = (timepointIndex) => {
+        this.logs.push(`REALIGN PATIENTS: based on block${timepointIndex}`);
+        this.saveHistory('timepoint');
+    }
+
+    /**
+     * saves moving patients up/down
+     * @param {string} direction
+     * @param {string} patient
+     */
+    saveTPMovement = (direction, patient) => {
+        this.logs.push(`MOVE PATIENT: ${patient} ${direction}`);
+        this.saveHistory('structure');
     }
 
 

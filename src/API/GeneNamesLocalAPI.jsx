@@ -1,4 +1,4 @@
-import {action, extendObservable} from "mobx";
+import { makeObservable, observable, action } from "mobx";
 import data from "./HgncEntrez.txt";
 
 import * as d3 from "d3";
@@ -7,20 +7,25 @@ import * as d3 from "d3";
  * Component for getting the mapping of hugoSymbols to entrezIDs for every possible gene (used before local files are loaded)
  */
 class GeneNamesLocalAPI {
+    geneListLoaded = false;
+
     constructor() {
         this.geneList = {};
-        extendObservable(this, {
-            geneListLoaded: false,
-            getAllGeneSymbols: action(() => {
-                d3.tsv(data).then(data=>{
-                    data.forEach(d=>{
-                        this.geneList[d["Approved symbol"]]=parseInt(d["NCBI Gene ID(supplied by NCBI)"],10);
-                    });
-                    this.geneListLoaded=true;
-                });
-            })
+        
+        makeObservable(this, {
+            geneListLoaded: observable,
+            getAllGeneSymbols: action,
         });
     }
+
+    getAllGeneSymbols = () => {
+        d3.tsv(data).then(data=>{
+            data.forEach(d=>{
+                this.geneList[d["Approved symbol"]]=parseInt(d["NCBI Gene ID(supplied by NCBI)"],10);
+            });
+            this.geneListLoaded=true;
+        });
+    };
 
     /**
      * gets entrez gene ids for hgnc symbols

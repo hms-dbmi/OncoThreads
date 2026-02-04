@@ -7,7 +7,7 @@ import {
     Button, ButtonGroup, ButtonToolbar, Col, DropdownButton, Grid, MenuItem, Row,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import MainView from './MainView';
 import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
 import Tooltip from './Tooltip';
@@ -24,21 +24,34 @@ import SaveVariableDialog from './Modals/SaveVariableDialog';
  * Component containing the view and controls
  */
 const Content = inject('rootStore', 'undoRedoStore')(observer(class Content extends React.Component {
+    binningModalIsOpen = false;
+    saveModalIsOpen = false;
+    callback = null;
+    clickedVariable = '';
+    clickedTimepoint = -1;
+    clickedPatient = '';
+    x = 0;
+    y = 0;
+    tooltipVisibility = 'hidden';
+    contextMenuType = '';
+    moveMenuVisibility = false;
+    variableManagerOpen = false;
+
     constructor() {
         super();
-        extendObservable(this, {
-            binningModalIsOpen: false,
-            saveModalIsOpen: false,
-            callback: null,
-            clickedVariable: '',
-            clickedTimepoint: -1,
-            clickedPatient: '',
-            x: 0,
-            y: 0,
-            tooltipVisibility: 'hidden',
-            contextMenuType: '',
-            moveMenuVisibility: false,
-            variableManagerOpen: false,
+        makeObservable(this, {
+            binningModalIsOpen: observable,
+            saveModalIsOpen: observable,
+            callback: observable,
+            clickedVariable: observable,
+            clickedTimepoint: observable,
+            clickedPatient: observable,
+            x: observable,
+            y: observable,
+            tooltipVisibility: observable,
+            contextMenuType: observable,
+            moveMenuVisibility: observable,
+            variableManagerOpen: observable,
         });
         this.openBinningModal = this.openBinningModal.bind(this);
         this.openSaveVarModal = this.openSaveVarModal.bind(this);

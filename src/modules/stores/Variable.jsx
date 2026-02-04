@@ -1,4 +1,4 @@
-import { action, extendObservable } from 'mobx';
+import { makeObservable, observable, action, computed } from 'mobx';
 import ColorScales from '../UtilityClasses/ColorScales';
 
 /**
@@ -28,51 +28,65 @@ class Variable {
         this.type = type;
         this.profile = profile;
         this.referenced = 0; // number of variables that reference this variable
-        extendObservable(this,
-            this.initializeObservable(name, domain, range));
+        
+        const currDomain = this.createDomain(domain);
+        const currRange = ColorScales.createRange(currDomain, range, this.datatype);
+        
+        this.domain = currDomain;
+        this.range = currRange;
+        this.name = name;
+        
+        makeObservable(this, {
+            domain: observable,
+            range: observable,
+            name: observable,
+            colorScale: computed,
+            changeRange: action,
+            changeDomain: action,
+            changeName: action,
+        });
     }
 
     /**
-     * initializes observable values
-     * @param {string} name
-     * @param {(number[]|string[]|boolean[])} domain
-     * @param {string[]} range
-     * @returns {Object}
+     * changes range
      */
-    initializeObservable(name, domain, range) {
-        const currDomain = this.createDomain(domain);
-        const currRange = ColorScales.createRange(currDomain, range, this.datatype);
-        return {
-            domain: currDomain,
-            range: currRange,
-            name,
-            changeRange: action((newRange) => {
-                this.range = newRange;
-            }),
-            changeDomain: action((newDomain) => {
-                this.domain = newDomain;
-            }),
-            changeName: action((newName) => {
-                this.name = newName;
-            }),
-            get colorScale() {
-                let scale;
-                if (this.datatype === 'STRING' || this.datatype === 'BINARY') {
-                    scale = ColorScales.getCategoricalScale(this.range, this.domain);
-                } else if (this.datatype === 'ORDINAL') {
-                    if (this.derived && this.modification.type === 'continuousTransform') {
-                        scale = ColorScales.getCategoricalScale(ColorScales
-                            .getBinnedRange(this.range, this.modification.binning.bins),
-                        this.domain);
-                    } else {
-                        scale = ColorScales.getOrdinalScale(this.range, this.domain);
-                    }
-                } else if (this.datatype === 'NUMBER') {
-                    scale = ColorScales.getContinousColorScale(this.range, this.domain);
-                }
-                return scale;
-            },
-        };
+    changeRange = (newRange) => {
+        this.range = newRange;
+    }
+
+    /**
+     * changes domain
+     */
+    changeDomain = (newDomain) => {
+        this.domain = newDomain;
+    }
+
+    /**
+     * changes name
+     */
+    changeName = (newName) => {
+        this.name = newName;
+    }
+
+    /**
+     * gets color scale
+     */
+    get colorScale() {
+        let scale;
+        if (this.datatype === 'STRING' || this.datatype === 'BINARY') {
+            scale = ColorScales.getCategoricalScale(this.range, this.domain);
+        } else if (this.datatype === 'ORDINAL') {
+            if (this.derived && this.modification.type === 'continuousTransform') {
+                scale = ColorScales.getCategoricalScale(ColorScales
+                    .getBinnedRange(this.range, this.modification.binning.bins),
+                this.domain);
+            } else {
+                scale = ColorScales.getOrdinalScale(this.range, this.domain);
+            }
+        } else if (this.datatype === 'NUMBER') {
+            scale = ColorScales.getContinousColorScale(this.range, this.domain);
+        }
+        return scale;
     }
 
     /**

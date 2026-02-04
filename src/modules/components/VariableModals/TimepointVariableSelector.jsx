@@ -1,7 +1,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Alert, Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup } from 'react-bootstrap';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import Select from 'react-select';
 import OriginalVariable from '../../stores/OriginalVariable';
 
@@ -9,6 +9,14 @@ import OriginalVariable from '../../stores/OriginalVariable';
  * Component for selecting timepoint variables in variable manager
  */
 const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(observer(class TimepointVariableSelector extends React.Component {
+    geneListString = '';
+    selectionType = 'clinical';
+    mutationOptions = [];
+    molecularOptions = [];
+    clinicalOptions = [];
+    showAvailableData = false;
+    modalIsOpen = false;
+
     /**
      * checks if the pressed key was the enter key
      * @param {event} event
@@ -24,14 +32,14 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
 
     constructor(props) {
         super(props);
-        extendObservable(this, {
-            geneListString: '',
-            selectionType: 'clinical',
-            mutationOptions: [],
-            molecularOptions: [],
-            clinicalOptions: [],
-            showAvailableData: false,
-            modalIsOpen: false,
+        makeObservable(this, {
+            geneListString: observable,
+            selectionType: observable,
+            mutationOptions: observable,
+            molecularOptions: observable,
+            clinicalOptions: observable,
+            showAvailableData: observable,
+            modalIsOpen: observable,
         });
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);

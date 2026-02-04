@@ -1,4 +1,4 @@
-import { action, extendObservable, observe, toJS } from 'mobx';
+import { makeObservable, observable, action, computed, observe, toJS } from 'mobx';
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
 import { UMAP } from 'umap-js';
@@ -12,26 +12,40 @@ import NGram from '../UtilityClasses/ngram';
  stores information about timepoints. Combines betweenTimepoints and sampleTimepoints
  */
 class DataStore {
+    rootStore;
+    numberOfPatients = 300; // default number of patients
+    encodingMetric = 'ngram'; // ngram or prefix
+    ngram = new NGram([], [], 1);
+    variableStores;
+    
+    DRMethod = 'pca'; // 'pca', 'umap', 'tsne'
+    timepoints = []; // all timepoints
+    selectedPatients = []; // currently selected patients
+    globalPrimary = ''; // global primary for sample timepoints of global timeline
+    hasEvent = false; // whether event attributes are included in custom grouping
+    stateLabels = {}; // key & label pairs
+    pointGroups = {}; // the group of this.points: pointIdx[][]
+    numofStates = 3; // the initial threshold to group points
+    patientGroups = [];
+
     constructor(rootStore) {
         this.rootStore = rootStore;
-        this.numberOfPatients = 300; // default number of patients
-        this.encodingMetric = 'ngram' // ngram or prefix
-        this.ngram = new NGram([], [], 1)
         this.variableStores = { // one store for the two different type of blocks (sample/between)
             sample: new VariableStore(rootStore, 'sample'),
             between: new VariableStore(rootStore, 'between'),
         };
-        extendObservable(this, {
-
-            DRMethod: 'pca', // 'pca', 'umap', 'tsne'
-            timepoints: [], // all timepoints
-            selectedPatients: [], // currently selected patients
-            globalPrimary: '', // global primary for sample timepoints of global timeline
-            hasEvent: false, // whether event attributes are included in custom grouping
-            stateLabels: {}, // key & label pairs
-            pointGroups: {}, // the group of this.points: pointIdx[][]
-            numofStates: 3, // the initial threshold to group points
-            patientGroups: [[...rootStore.patients]],
+        this.patientGroups = [[...rootStore.patients]];
+        
+        makeObservable(this, {
+            DRMethod: observable,
+            timepoints: observable,
+            selectedPatients: observable,
+            globalPrimary: observable,
+            hasEvent: observable,
+            stateLabels: observable,
+            pointGroups: observable,
+            numofStates: observable,
+            patientGroups: observable,
 
             /**
              * get the maximum number of currently displayed partitions

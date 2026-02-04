@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
-import { extendObservable, } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
 import { InputNumber, Card, Tooltip, Row, Col, Switch } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -19,20 +19,26 @@ import GridLayout from 'react-grid-layout';
  * Component for the Block view
  */
 const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class StateTransition extends React.Component {
-    widthRatios = [7, 6, 11]
+    widthRatios = [7, 6, 11];
+    highlightedVariable = '';
+    order = ['labels', 'operators', 'view', 'legend'];
+    height = window.innerHeight - 360;
+    width = window.innerWidth - 40;
+    hasBackground = true;
+    ref = React.createRef();
+
     constructor(props) {
         super(props);
 
-        this.updateDimensions = this.updateDimensions.bind(this);
-        extendObservable(this, {
-            highlightedVariable: '', // variableId of currently highlighted variable
-            order: ['labels', 'operators', 'view', 'legend'],
-            height: window.innerHeight - 360,
-            width: window.innerWidth - 40,
-            hasBackground: true,
-            ref: React.createRef(),
-
+        makeObservable(this, {
+            highlightedVariable: observable,
+            order: observable,
+            height: observable,
+            width: observable,
+            hasBackground: observable,
         });
+
+        this.updateDimensions = this.updateDimensions.bind(this);
     }
 
     /**

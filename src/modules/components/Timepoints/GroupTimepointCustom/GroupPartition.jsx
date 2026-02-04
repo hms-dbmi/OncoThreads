@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import { Input } from 'antd'
 
 import PropTypes from 'prop-types';
@@ -19,13 +19,14 @@ import './GroupPartition.css'
  * Component for a partition in a grouped timepiint
  */
 const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class GroupPartition extends React.Component {
+    hasBackground = true;
+
     constructor(props) {
         super(props)
+        makeObservable(this, {
+            hasBackground: observable,
+        });
         this.changeLabel = this.changeLabel.bind(this)
-        extendObservable(this, {
-            hasBackground: true
-        })
-
     }
     createPartition() {
         let previousYposition = 0;

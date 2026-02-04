@@ -13,8 +13,8 @@ import {
     Radio,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import uuidv4 from 'uuid/v4';
-import { extendObservable } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
+import { makeObservable, observable } from 'mobx';
 import { PropTypes } from 'prop-types';
 import Binner from './Binner/Binner';
 import Histogram from './Binner/Histogram';
@@ -34,7 +34,21 @@ const ModifyContinuous = inject('variableManagerStore', 'rootStore')(observer(cl
         this.width = 350;
         this.height = 200;
         this.allValues = this.getAllInitialValues();
-        extendObservable(this, this.initializeObservable());
+        
+        const initValues = this.initializeObservable();
+        this.name = initValues.name;
+        this.bin = initValues.bin;
+        this.log = initValues.log;
+        this.colorRange = initValues.colorRange;
+        this.applyToAll = initValues.applyToAll;
+        
+        makeObservable(this, {
+            name: observable,
+            bin: observable,
+            log: observable,
+            colorRange: observable,
+            applyToAll: observable,
+        });
         this.binningStore = this.createBinningStore();
         this.changeTransformation = this.changeTransformation.bind(this);
         this.handleApply = this.handleApply.bind(this);

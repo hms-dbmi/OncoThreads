@@ -2,8 +2,8 @@ import React from 'react';
 import { PropTypes } from 'prop-types';
 import { inject, observer, PropTypes as MobxPropTypes, Provider } from 'mobx-react';
 import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } from 'react-bootstrap';
-import uuidv4 from 'uuid/v4';
-import { extendObservable } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
+import { makeObservable, observable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import ColorScales from '../../../UtilityClasses/ColorScales';
@@ -17,7 +17,17 @@ import BinaryTable from '../VariableTables/BinaryTable';
 const BinaryCombine = inject('variableManagerStore')(observer(class BinaryCombine extends React.Component {
     constructor(props) {
         super(props);
-        extendObservable(this, this.initializeObservable());
+        
+        const initValues = this.initializeObservable();
+        this.name = initValues.name;
+        this.modification = initValues.modification;
+        this.binaryColors = initValues.binaryColors;
+        
+        makeObservable(this, {
+            name: observable,
+            modification: observable,
+            binaryColors: observable,
+        });
         this.categoryStore = this.createCategoryStore();
         this.setModification = this.setModification.bind(this);
         this.setBinaryColors = this.setBinaryColors.bind(this);

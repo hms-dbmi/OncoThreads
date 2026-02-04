@@ -1,9 +1,9 @@
-/* eslint-disable import/extensions,react/jsx-filename-extension */
+/* eslint-disable react/jsx-filename-extension */
 /**
  * Created by theresa on 30.01.18.
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'mobx-react';
 import 'antd/dist/antd.css';
 import 'intro.js/minified/introjs.min.css';
@@ -24,12 +24,14 @@ const studyAPI = new StudyAPI(uiStore);
 const rootStore = new RootStore(uiStore, studyAPI);
 const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
 studyAPI.loadDefaultStudies();
-ReactDOM.render(
+
+const root = createRoot(document.getElementById('app'));
+root.render(
     <Provider
         rootStore={rootStore}
         uiStore={uiStore}
         undoRedoStore={undoRedoStore}
     >
         <App />
-    </Provider>, document.getElementById('app'),
+    </Provider>
 );

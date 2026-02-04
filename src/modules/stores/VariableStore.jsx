@@ -1,4 +1,4 @@
-import { action, extendObservable, observe } from 'mobx';
+import { makeObservable, observable, action, computed, observe } from 'mobx';
 import MultipleTimepointsStore from './MultipleTimepointsStore';
 
 /*
@@ -11,150 +11,32 @@ class VariableStore {
         this.type = type;
         // Derived variables that are not displayed but should be saved for later use
         this.savedReferences = [];
-        extendObservable(this, {
-            // List of ids of currently displayed variables
-            currentVariables: [],
-            // Variables that are referenced (displayed or used to create a derived variable)
-            referencedVariables: {},
+        
+        // List of ids of currently displayed variables
+        this.currentVariables = [];
+        // Variables that are referenced (displayed or used to create a derived variable)
+        this.referencedVariables = {};
 
-            get fullCurrentVariables() {
-                return this.currentVariables.map(d => this.referencedVariables[d]);
-            },
-            get currentNonPatientVariables() {
-                const patientVars = this.rootStore.clinicalPatientCategories.map(d => d.id)
-                return this.currentVariables.filter(
-                    id => ! ( patientVars.includes(id) || this.referencedVariables[id].originalIds.every(d=>patientVars.includes(d)) )
-                )
-            },
-            get fullNonPatientCurrentVariables() {
-                return this.currentNonPatientVariables.map(d => this.referencedVariables[d]);
-            },
-            /**
-             * each point is one patient at one time point
-             */
-            get points() {
-                let { timepoints } = this.childStore
-
-                let points = []
-                timepoints
-                    .forEach((timepoint, timeIdx) => {
-                        var heatmap = timepoint.heatmap
-
-                        if (heatmap[0]) {
-                            heatmap[0].data.forEach((d, patientIdx) => {
-                                const { patient } = d
-                                let value = []
-                                heatmap.forEach((row, rowIdx) => {
-                                    if (!this.currentNonPatientVariables.includes(row.variable)) return
-
-                                    let v = row.data[patientIdx].value
-                                    if (v === undefined ) {
-                                        v = this.findNearestReplace(patient, timeIdx, rowIdx)
-                                    }
-                                    value.push(v)
-                                })
-                                var point = {
-                                    idx: points.length,
-                                    patient,
-                                    value,
-                                    timeIdx
-                                }
-                                points.push(point)
-                            })
-                        }
-                    })
-
-                return points
-            },
-
-
-            resetVariables: action(() => {
-                this.referencedVariables = {};
-                this.currentVariables.clear();
-            }),
-            /**
-             * removes a variable from view
-             */
-            removeCurrentVariable: action((id) => {
-                this.currentVariables.remove(id);
-            }),
-            /**
-             * adds a variable to the view
-             */
-            addCurrentVariable: action((id) => {
-                this.currentVariables.push(id);
-            }),
-            /**
-             * replaces a current variable
-             */
-            replaceCurrentVariable: action((oldId, id) => {
-                this.currentVariables[this.currentVariables.indexOf(oldId)] = id;
-            }),
-            /**
-             * replaces all current variables
-             */
-            replaceAllCurrentVariables: action((newIds) => {
-                this.currentVariables.replace(newIds);
-            }),
-            /**
-             * adds a variable to be displayed
-             */
-            addVariableToBeDisplayed: action((variable) => {
-                if (!(variable.id in this.referencedVariables)) {
-                    this.referencedVariables[variable.id] = variable;
-                }
-                if (!this.currentVariables.includes(variable.id)) {
-                    this.addCurrentVariable(variable.id);
-                }
-            }),
-            /**
-             * adds variables to be displayed
-             */
-            addVariablesToBeDisplayed: action((variables) => {
-                variables.forEach((d) => {
-                    this.addVariableToBeDisplayed(d);
-                });
-            }),
-            /**
-             * replaces a displayed variable
-             */
-            replaceDisplayedVariable: action((oldId, newVariable) => {
-                if (!(newVariable.id in this.referencedVariables)) {
-                    this.referencedVariables[newVariable.id] = newVariable;
-                }
-                this.replaceCurrentVariable(oldId, newVariable.id);
-            }),
-            /**
-             * replaces referenced, current and primary variables
-             */
-            replaceAll: action((referencedVariables, currentVariables, primaryVariables) => {
-                this.replaceVariables(referencedVariables, currentVariables);
-                this.childStore.timepoints.forEach((d, i) => {
-                    if (primaryVariables[i] !== undefined) {
-                        if (this.rootStore.uiStore.selectedTab === 'block' && referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
-                            d.setIsGrouped(false);
-                        }
-                    }
-                    d.setPrimaryVariable(primaryVariables[i]);
-                });
-            }),
-            /**
-             * replaces referenced and current variables
-             */
-            replaceVariables: action((referencedVariables, currentVariables) => {
-                this.referencedVariables = referencedVariables;
-                this.replaceAllCurrentVariables(currentVariables);
-            }),
-
-            /**
-             * removes a variable from current variables
-             * @param variableId
-             */
-            removeVariable: action((variableId) => {
-                this.removeCurrentVariable(variableId);
-            }),
-
+        makeObservable(this, {
+            currentVariables: observable,
+            referencedVariables: observable,
+            fullCurrentVariables: computed,
+            currentNonPatientVariables: computed,
+            fullNonPatientCurrentVariables: computed,
+            points: computed,
+            resetVariables: action,
+            removeCurrentVariable: action,
+            addCurrentVariable: action,
+            replaceCurrentVariable: action,
+            replaceAllCurrentVariables: action,
+            addVariableToBeDisplayed: action,
+            addVariablesToBeDisplayed: action,
+            replaceDisplayedVariable: action,
+            replaceAll: action,
+            replaceVariables: action,
+            removeVariable: action,
         });
+
         // Observe the change and update timepoints accordingly
         observe(this.currentVariables, (change) => {
 
@@ -192,6 +74,157 @@ class VariableStore {
             this.updateReferences();
             this.updateVariableRanges();
         });
+    }
+
+    get fullCurrentVariables() {
+        return this.currentVariables.map(d => this.referencedVariables[d]);
+    }
+
+    get currentNonPatientVariables() {
+        const patientVars = this.rootStore.clinicalPatientCategories.map(d => d.id)
+        return this.currentVariables.filter(
+            id => ! ( patientVars.includes(id) || this.referencedVariables[id].originalIds.every(d=>patientVars.includes(d)) )
+        )
+    }
+
+    get fullNonPatientCurrentVariables() {
+        return this.currentNonPatientVariables.map(d => this.referencedVariables[d]);
+    }
+
+    /**
+     * each point is one patient at one time point
+     */
+    get points() {
+                let { timepoints } = this.childStore
+
+                let points = []
+                timepoints
+                    .forEach((timepoint, timeIdx) => {
+                        var heatmap = timepoint.heatmap
+
+                        if (heatmap[0]) {
+                            heatmap[0].data.forEach((d, patientIdx) => {
+                                const { patient } = d
+                                let value = []
+                                heatmap.forEach((row, rowIdx) => {
+                                    if (!this.currentNonPatientVariables.includes(row.variable)) return
+
+                                    let v = row.data[patientIdx].value
+                                    if (v === undefined ) {
+                                        v = this.findNearestReplace(patient, timeIdx, rowIdx)
+                                    }
+                                    value.push(v)
+                                })
+                                var point = {
+                                    idx: points.length,
+                                    patient,
+                                    value,
+                                    timeIdx
+                                }
+                                points.push(point)
+                            })
+                        }
+                    })
+
+        return points
+    }
+
+    /**
+     * resets variables
+     */
+    resetVariables = () => {
+        this.referencedVariables = {};
+        this.currentVariables.clear();
+    }
+
+    /**
+     * removes a variable from view
+     */
+    removeCurrentVariable = (id) => {
+        this.currentVariables.remove(id);
+    }
+
+    /**
+     * adds a variable to the view
+     */
+    addCurrentVariable = (id) => {
+        this.currentVariables.push(id);
+    }
+
+    /**
+     * replaces a current variable
+     */
+    replaceCurrentVariable = (oldId, id) => {
+        this.currentVariables[this.currentVariables.indexOf(oldId)] = id;
+    }
+
+    /**
+     * replaces all current variables
+     */
+    replaceAllCurrentVariables = (newIds) => {
+        this.currentVariables.replace(newIds);
+    }
+
+    /**
+     * adds a variable to be displayed
+     */
+    addVariableToBeDisplayed = (variable) => {
+        if (!(variable.id in this.referencedVariables)) {
+            this.referencedVariables[variable.id] = variable;
+        }
+        if (!this.currentVariables.includes(variable.id)) {
+            this.addCurrentVariable(variable.id);
+        }
+    }
+
+    /**
+     * adds variables to be displayed
+     */
+    addVariablesToBeDisplayed = (variables) => {
+        variables.forEach((d) => {
+            this.addVariableToBeDisplayed(d);
+        });
+    }
+
+    /**
+     * replaces a displayed variable
+     */
+    replaceDisplayedVariable = (oldId, newVariable) => {
+        if (!(newVariable.id in this.referencedVariables)) {
+            this.referencedVariables[newVariable.id] = newVariable;
+        }
+        this.replaceCurrentVariable(oldId, newVariable.id);
+    }
+
+    /**
+     * replaces referenced, current and primary variables
+     */
+    replaceAll = (referencedVariables, currentVariables, primaryVariables) => {
+        this.replaceVariables(referencedVariables, currentVariables);
+        this.childStore.timepoints.forEach((d, i) => {
+            if (primaryVariables[i] !== undefined) {
+                if (this.rootStore.uiStore.selectedTab === 'block' && referencedVariables[primaryVariables[i]].datatype === 'NUMBER') {
+                    d.setIsGrouped(false);
+                }
+            }
+            d.setPrimaryVariable(primaryVariables[i]);
+        });
+    }
+
+    /**
+     * replaces referenced and current variables
+     */
+    replaceVariables = (referencedVariables, currentVariables) => {
+        this.referencedVariables = referencedVariables;
+        this.replaceAllCurrentVariables(currentVariables);
+    }
+
+    /**
+     * removes a variable from current variables
+     * @param variableId
+     */
+    removeVariable = (variableId) => {
+        this.removeCurrentVariable(variableId);
     }
 
     findNearestReplace(patient, timeIdx, rowIdx) {

@@ -4,8 +4,8 @@ import {
     Col, Form, FormControl, FormGroup, HelpBlock, Alert,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import uuidv4 from 'uuid/v4';
-import {extendObservable, observe} from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
+import {makeObservable, observable, observe} from 'mobx';
 import SelectDatatype from '../Modals/SelectDatatype';
 
 
@@ -14,6 +14,11 @@ import SelectDatatype from '../Modals/SelectDatatype';
  * used for selection of studies from cBio or own data sets
  */
 const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class LocalFileSelection extends React.Component {
+    callback = null;
+    modalIsOpen = false;
+    fileNames = [];
+    datatypes = [];
+
     /**
      * gets the icon corresponding to the current loading state
      * @param {string} value - loading, error, finished or empty
@@ -33,11 +38,11 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
 
     constructor(props) {
         super(props);
-        extendObservable(this, {
-            callback: null,
-            modalIsOpen: false,
-            fileNames: [],
-            datatypes: [],
+        makeObservable(this, {
+            callback: observable,
+            modalIsOpen: observable,
+            fileNames: observable,
+            datatypes: observable,
         });
         // random keys for file inputs used for reset (inputs are reset if key changes to 'empty')
         this.keys = {

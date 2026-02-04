@@ -2,8 +2,8 @@ import React from 'react';
 import { PropTypes } from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootstrap';
-import uuidv4 from 'uuid/v4';
-import { extendObservable } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
+import { makeObservable, observable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import BinaryTable from '../VariableTables/BinaryTable';
@@ -13,15 +13,25 @@ import OriginalVariable from '../../../stores/OriginalVariable';
  * Modification of a binary variable
  */
 const ModifyBinary = inject('variableManagerStore', 'rootStore')(observer(class ModifyBinary extends React.Component {
+    name;
+    binaryColors;
+    invert;
+    applyToAll = false;
+
     constructor(props) {
         super(props);
-        extendObservable(this, {
-            name: props.derivedVariable !== null
-                ? props.derivedVariable.name : props.variable.name, // name of variable
-            binaryColors: props.derivedVariable !== null
-                ? props.derivedVariable.range : props.variable.range, // color range of variable
-            invert: props.derivedVariable !== null, // invert binary categories
-            applyToAll: false, // apply modification to all variables of the same profile
+        
+        this.name = props.derivedVariable !== null
+            ? props.derivedVariable.name : props.variable.name;
+        this.binaryColors = props.derivedVariable !== null
+            ? props.derivedVariable.range : props.variable.range;
+        this.invert = props.derivedVariable !== null;
+        
+        makeObservable(this, {
+            name: observable,
+            binaryColors: observable,
+            invert: observable,
+            applyToAll: observable,
         });
         this.toggleInvert = this.toggleInvert.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);

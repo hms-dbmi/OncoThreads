@@ -1,8 +1,8 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes, Provider } from 'mobx-react';
 import { Button, Checkbox, ControlLabel, FormControl, Modal } from 'react-bootstrap';
-import uuidv4 from 'uuid/v4';
-import { extendObservable } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
+import { makeObservable, observable } from 'mobx';
 import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
@@ -16,7 +16,13 @@ import CategoricalTable from '../VariableTables/CategoricalTable';
 const CategoryCombine = inject('variableManagerStore')(observer(class CategoryCombine extends React.Component {
     constructor(props) {
         super(props);
-        extendObservable(this, this.initializeObservable());
+        
+        const initValues = this.initializeObservable();
+        this.name = initValues.name;
+        
+        makeObservable(this, {
+            name: observable,
+        });
         this.categoryStore = this.createCategoryStore();
         this.handleApply = this.handleApply.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);

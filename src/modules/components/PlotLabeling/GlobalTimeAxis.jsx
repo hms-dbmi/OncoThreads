@@ -2,7 +2,7 @@ import React from "react";
 import {observer,inject} from "mobx-react";
 import * as d3 from "d3";
 //import ReactDOM from 'react-dom';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 
 
 import TimeVarModal from './TimeVarModal';
@@ -12,12 +12,15 @@ import TimeVarModal from './TimeVarModal';
  */
 const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends React.Component {
 
+    timeVarModalOpen = false;
     
     constructor(){
         super();
-        extendObservable(this, {
-            
-            timeVarModalOpen: false,
+        
+        makeObservable(this, {
+            timeVarModalOpen: observable,
+            openTimeVarModal: action,
+            closeModal: action,
         });
 
         this.openTimeVarModal = this.openTimeVarModal.bind(this);
@@ -41,14 +44,14 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
     }
 
 
-    openTimeVarModal(){
+    openTimeVarModal = () => {
         this.timeVarModalOpen = true;      
-    }
+    };
 
 
-    closeModal(){
+    closeModal = () => {
         this.timeVarModalOpen = false;
-    }
+    };
 
     /**
      * gets binning modal

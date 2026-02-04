@@ -5,7 +5,7 @@ import {
     Button, DropdownButton, Glyphicon, Label, MenuItem, OverlayTrigger, Table, Tooltip,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import ModifyCategorical from './ModifySingleVariable/ModifyCategorical';
 import ModifyContinuous from './ModifySingleVariable/ModifyContinuous';
 import ModifyBinary from './ModifySingleVariable/ModifyBinary';
@@ -15,21 +15,32 @@ import CombineModal from './CombineVariables/CombineModal';
  * Component for displaying and modifying current variables in a table
  */
 const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class VariableTable extends React.Component {
+    modifyCategoricalIsOpen = false;
+    modifyContinuousIsOpen = false;
+    modifyBinaryIsOpen = false;
+    combineVariablesIsOpen = false;
+    currentVariable = '';
+    derivedVariable = '';
+    combineVariables = [];
+    callback = '';
+    sortVarAsc = true;
+    sortSourceAsc = true;
+    sortTypeAsc = true;
+
     constructor() {
         super();
-        extendObservable(this, {
-            // current state of data and data parsing
-            modifyCategoricalIsOpen: false,
-            modifyContinuousIsOpen: false,
-            modifyBinaryIsOpen: false,
-            combineVariablesIsOpen: false,
-            currentVariable: '', // non-modified variable selected for modification
-            derivedVariable: '', // modified variable selected for modification
-            combineVariables: [], // variables selected for combination
-            callback: '', // callback for saving a variable
-            sortVarAsc: true,
-            sortSourceAsc: true,
-            sortTypeAsc: true,
+        makeObservable(this, {
+            modifyCategoricalIsOpen: observable,
+            modifyContinuousIsOpen: observable,
+            modifyBinaryIsOpen: observable,
+            combineVariablesIsOpen: observable,
+            currentVariable: observable,
+            derivedVariable: observable,
+            combineVariables: observable,
+            callback: observable,
+            sortVarAsc: observable,
+            sortSourceAsc: observable,
+            sortTypeAsc: observable,
         });
 
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);

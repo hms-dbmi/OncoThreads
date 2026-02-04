@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import { Button, Glyphicon } from 'react-bootstrap';
 import VariableTable from './VariableTable';
 import VariableExplorer from '../Modals/VariableExplorer';
@@ -9,10 +9,12 @@ import VariableExplorer from '../Modals/VariableExplorer';
  * Component for management of timepoint variables
  */
 const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extends React.Component {
+    variableExplorerIsOpen = false;
+
     constructor() {
         super();
-        extendObservable(this, {
-            variableExplorerIsOpen: false,
+        makeObservable(this, {
+            variableExplorerIsOpen: observable,
         });
     }
 

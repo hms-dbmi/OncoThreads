@@ -1,9 +1,9 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import {getScientificNotation} from 'modules/UtilityClasses/UtilityFunctions';
 import ColorScales from 'modules/UtilityClasses/ColorScales';
 
@@ -11,6 +11,9 @@ import ColorScales from 'modules/UtilityClasses/ColorScales';
  * Component representing a row of a categorical variable in a grouped partition of a timepoint
  */
 const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class ContinuousRow extends React.Component {
+    dragging = false;
+    dragSelectedPatients = [];
+
     static getTooltipContent(value, numPatients) {
         let content = '';
         if (numPatients === 1) {
@@ -37,11 +40,9 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
 
     constructor() {
         super();
-        extendObservable(this, {
-            // is mouse currently dragged for selection
-            dragging: false,
-            // patients selected during dragging
-            dragSelectedPatients: [],
+        makeObservable(this, {
+            dragging: observable,
+            dragSelectedPatients: observable,
         });
         this.stopDragging = this.stopDragging.bind(this);
     }

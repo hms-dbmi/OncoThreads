@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import uuidv4 from 'uuid/v4';
-import { extendObservable } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
+import { makeObservable, observable, action } from 'mobx';
 import {getTextWidth, getScientificNotation} from 'modules/UtilityClasses/UtilityFunctions';
 import ColorScales from 'modules/UtilityClasses/ColorScales';
 
@@ -10,15 +10,21 @@ import ColorScales from 'modules/UtilityClasses/ColorScales';
  * Legend Component
  */
 const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends React.Component {
+    dragging = false;
+    activeIndex = -1;
+    prevPos = 0;
+    dragVisibility = 'hidden';
+
     constructor() {
         super();
-        extendObservable(this, {
-            // is mouse currently dragged for selection
-            dragging: false,
-            activeIndex: -1,
-            prevPos: 0,
-            dragVisibility: 'hidden',
+        
+        makeObservable(this, {
+            dragging: observable,
+            activeIndex: observable,
+            prevPos: observable,
+            dragVisibility: observable,
         });
+        
         this.maxWidth = 100;
         this.defaultWidth = 100;
         this.minCatWidth = 30;

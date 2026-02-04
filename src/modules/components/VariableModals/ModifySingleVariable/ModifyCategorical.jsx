@@ -1,8 +1,8 @@
 import React from 'react';
 import { inject, observer, Provider } from 'mobx-react';
 import { Button, Checkbox, ControlLabel, FormControl, FormGroup, Modal, Radio } from 'react-bootstrap';
-import uuidv4 from 'uuid/v4';
-import { extendObservable } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
+import { makeObservable, observable } from 'mobx';
 import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
@@ -23,7 +23,21 @@ const ModifyCategorical = inject('variableManagerStore', 'rootStore')(observer(c
             Object.values(this.props.variable.mapper),
             this.props.derivedVariable === null
                 ? this.props.variable.range : this.props.derivedVariable.range);
-        extendObservable(this, this.initializeObservable());
+        
+        const initValues = this.initializeObservable();
+        this.name = initValues.name;
+        this.convertBinary = initValues.convertBinary;
+        this.binaryColors = initValues.binaryColors;
+        this.binaryMapping = initValues.binaryMapping;
+        this.applyToAll = initValues.applyToAll;
+        
+        makeObservable(this, {
+            name: observable,
+            convertBinary: observable,
+            binaryColors: observable,
+            binaryMapping: observable,
+            applyToAll: observable,
+        });
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.toggleConvertBinary = this.toggleConvertBinary.bind(this);

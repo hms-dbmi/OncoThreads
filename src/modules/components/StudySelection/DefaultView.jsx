@@ -16,7 +16,7 @@ import {
     Tab,
     Tabs,
 } from 'react-bootstrap';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import StudySummary from '../StudySummary';
 import LocalFileSelection from './LocalFileSelection';
 
@@ -26,13 +26,16 @@ import LocalFileSelection from './LocalFileSelection';
  * used for selection of studies from cBio or own data sets
  */
 const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(class DefaultView extends React.Component {
+    selectedStudy = null;
+    selectedTab = 'cBio';
+    ownInstanceURL = '';
+
     constructor(props) {
         super(props);
-        this.getStudy = this.getStudy.bind(this);
-        extendObservable(this, {
-            selectedStudy: null,
-            selectedTab: 'cBio',
-            ownInstanceURL: '',
+        makeObservable(this, {
+            selectedStudy: observable,
+            selectedTab: observable,
+            ownInstanceURL: observable,
         });
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);

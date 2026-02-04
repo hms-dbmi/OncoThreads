@@ -3,7 +3,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Col, FormControl } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable, computed } from 'mobx';
 import SelectAll from '../../SelectAllSelector/react-select-all';
 
 
@@ -11,6 +11,11 @@ import SelectAll from '../../SelectAllSelector/react-select-all';
  * Modal for exploring variables with lineUp
  */
 const MutationSelector = inject('rootStore')(observer(class MutationSelector extends React.Component {
+    geneListString = '';
+    mutationOptions = [];
+    molecularOptions = [];
+    selectedOptions = [];
+
     static checkEnterPressed(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -21,25 +26,14 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
 
     constructor(props) {
         super(props);
-        extendObservable(this, {
-            geneListString: '',
-            mutationOptions: [],
-            molecularOptions: [],
-            selectedOptions: [],
-            get geneList() {
-                if (this.geneListString.length > 0) {
-                    const geneList = this.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, '').toUpperCase().split(' ');
-                    geneList.forEach((d, i) => {
-                        if (d.includes('ORF')) {
-                            geneList[i] = d.replace('ORF', 'orf');
-                        }
-                    });
-                    return geneList;
-                }
-                return [];
-            },
+        makeObservable(this, {
+            geneListString: observable,
+            mutationOptions: observable,
+            molecularOptions: observable,
+            selectedOptions: observable,
+            geneList: computed,
         });
-        // stores if user is actively typing in the search field
+        
         this.typing = false;
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.addGeneVariables = this.addGeneVariables.bind(this);
@@ -48,6 +42,19 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
         this.handleEnterExplore = this.handleEnterExplore.bind(this);
         this.updateMutationOptions = this.updateMutationOptions.bind(this);
         this.updateMolecularOptions = this.updateMolecularOptions.bind(this);
+    }
+
+    get geneList() {
+        if (this.geneListString.length > 0) {
+            const geneList = this.geneListString.replace(/(\r\n\t|\n|\r\t)/gm, '').toUpperCase().split(' ');
+            geneList.forEach((d, i) => {
+                if (d.includes('ORF')) {
+                    geneList[i] = d.replace('ORF', 'orf');
+                }
+            });
+            return geneList;
+        }
+        return [];
     }
 
     /**

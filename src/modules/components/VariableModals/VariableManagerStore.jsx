@@ -1,5 +1,5 @@
-import { action, extendObservable, observe } from 'mobx';
-import uuidv4 from 'uuid/v4';
+import { action, makeObservable, observable, observe } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
 import UndoRedoStore from '../../stores/UndoRedoStore';
 import DerivedVariable from '../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../UtilityClasses/DeriveMapperFunctions';
@@ -8,6 +8,9 @@ import DerivedMapperFunctions from '../../UtilityClasses/DeriveMapperFunctions';
  * store containing variables in variable manager
  */
 class VariableManagerStore {
+    currentVariables;
+    addOrder;
+
     /**
      * constructs the store. Variables are deserialized to recreate variable Objects
      * @param {{}} referencedVariables
@@ -22,257 +25,30 @@ class VariableManagerStore {
         this.primaryVariables = primaryVariables;
         this.savedReferences = savedReferences;
         this.log = [];
-        extendObservable(this, {
-            // List of ids of currently displayed variables and if they are new and/or selected
-            currentVariables: currentVariables
-                .map(d => ({ id: d, isNew: false, isSelected: false })),
-            addOrder: [],
-            /**
-             * removes a variable and updates primary variables
-             * @param {string} variableId
-             */
-            removeVariable: action((variableId) => {
-                this.currentVariables.remove(this.currentVariables
-                    .filter(d => d.id === variableId)[0]);
-                this.addOrder.splice(this.addOrder.indexOf(variableId), 1);
-                if (this.primaryVariables.includes(variableId)) {
-                    this.primaryVariables.forEach((d, i) => {
-                        if (d === variableId) {
-                            if (this.currentVariables.length > 0){
-                                this.primaryVariables[i] = this.currentVariables[0].id;
-                            } else {
-                                this.primaryVariables[i] = undefined;
-                            }
-                        }
-                    });
-                }
-            }),
+        
+        // List of ids of currently displayed variables and if they are new and/or selected
+        this.currentVariables = currentVariables
+            .map(d => ({ id: d, isNew: false, isSelected: false }));
+        this.addOrder = [];
 
-            /**
-             * adds a variable to the table
-             * @param {(OriginalVariable|DerivedVariable)} variable
-             */
-            addVariablesToBeDisplayed: action((variables) => {
-                variables.forEach(variable => this.addVariableToBeDisplayed(variable));
-            }),
-            /**
-             * adds a variable to the table
-             * @param {(OriginalVariable|DerivedVariable)} variable
-             */
-            addVariableToBeDisplayed: action((variable) => {
-                this.addVariableToBeReferenced(variable);
-                if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
-                    this.currentVariables.push({ id: variable.id, isNew: true, isSelected: false });
-                    this.addOrder.push(variable.id);
-                }
-                this.primaryVariables = this.primaryVariables.map(variableId => variableId === undefined ? variable.id : variableId);
-            }),
-            /**
-             * replaces a variable in the table
-             * @param {string} oldId - id of variable to be displayed
-             * @param {(OriginalVariable|DerivedVariable)} new variable
-             */
-            replaceDisplayedVariable: action((oldId, newVariable) => {
-                this.referencedVariables[newVariable.id] = newVariable;
-                const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
-                this.currentVariables[replaceIndex] = {
-                    id: newVariable.id,
-                    isNew: this.currentVariables[replaceIndex].isNew,
-                    isSelected: this.currentVariables[replaceIndex].isSelected,
-                };
-                this.addOrder[this.addOrder.indexOf(oldId)] = newVariable.id;
-                if (this.primaryVariables.includes(oldId)) {
-                    for (let i = 0; i < this.primaryVariables.length; i += 1) {
-                        if (this.primaryVariables[this.primaryVariables.indexOf(oldId)] === oldId) {
-                            this.primaryVariables[i] = newVariable.id;
-                        }
-                    }
-                }
-            }),
-            /**
-             * applies a modification of a single variable (no combinations)
-             * to all variables in that profile
-             * @param {DerivedVariable} newVariable - modified variable,
-             * which modification should be applied to profile
-             * @param {string} oldProfile - id of old Profile;
-             */
-            applyToEntireProfile: action((newVariable, oldProfile, nameEnding) => {
-                this.currentVariables.forEach((variable) => {
-                    const variableReference = this.getById(variable.id);
-                    if (variableReference.profile === oldProfile) {
-                        let derivedVariable;
-                        if (variableReference.derived) {
-                            const originalVariable = this.getById(variableReference.originalIds[0]);
-                            derivedVariable = new DerivedVariable(uuidv4(),
-                                originalVariable.name + nameEnding, newVariable.datatype,
-                                originalVariable.description, [originalVariable.id],
-                                newVariable.modification, newVariable.range, newVariable.domain,
-                                DerivedMapperFunctions.getModificationMapper(
-                                    newVariable.modification, [originalVariable.mapper],
-                                ),
-                                newVariable.profile, originalVariable.type);
-                        } else {
-                            derivedVariable = new DerivedVariable(uuidv4(),
-                                variableReference.name + nameEnding,
-                                newVariable.datatype, variableReference.description,
-                                [variableReference.id], newVariable.modification, newVariable.range,
-                                newVariable.domain,
-                                DerivedMapperFunctions.getModificationMapper(
-                                    newVariable.modification, [variableReference.mapper],
-                                ), newVariable.profile, variableReference.type);
-                        }
-                        this.replaceDisplayedVariable(variable.id, derivedVariable);
-                    }
-                });
-            }),
-            /**
-             * selects/unselect variable
-             * @param {string} id
-             */
-            toggleSelected: action((id) => {
-                this.currentVariables[this.currentVariables.map(d => d.id)
-                    .indexOf(id)].isSelected = !this.currentVariables[this.currentVariables
-                    .map(d => d.id).indexOf(id)].isSelected;
-            }),
-            /**
-             * sorts variables by data source
-             * @param {string[]} sourceOrder
-             * @param {boolean} asc - sort ascending/descending
-             */
-            sortBySource: action((sourceOrder, asc) => {
-                let factor = 1;
-                if (!asc) {
-                    factor = -1;
-                }
-                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                    if (sourceOrder.indexOf(this.referencedVariables[a.id].profile)
-                        < sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
-                        return -factor;
-                    }
-                    if (sourceOrder.indexOf(this.referencedVariables[a.id].profile)
-                        > sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
-                        return factor;
-                    }
-                    return 0;
-                }));
-            }),
-            /**
-             * sort variables by add order
-             */
-            sortByAddOrder: action(() => {
-                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                    if (this.addOrder.indexOf(a.id) < this.addOrder.indexOf(b.id)) {
-                        return -1;
-                    }
-                    if (this.addOrder.indexOf(a.id) > this.addOrder.indexOf(b.id)) {
-                        return 1;
-                    }
-                    return 0;
-                }));
-            }),
-            /**
-             * sort variables alphabetically
-             * @param {boolean} asc - sort ascending/descending
-             */
-            sortAlphabetically: action((asc) => {
-                let factor = 1;
-                if (!asc) {
-                    factor = -1;
-                }
-                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                    if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
-                        return -factor;
-                    }
-                    if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
-                        return factor;
-                    }
-                    return 0;
-                }));
-            }),
-            /**
-             * sort variables by datatype (alphabetically)
-             */
-            sortByDatatype: action((asc) => {
-                let factor = 1;
-                if (!asc) {
-                    factor = -1;
-                }
-                this.currentVariables.replace(this.currentVariables.sort((a, b) => {
-                    if (this.referencedVariables[a.id].datatype
-                        < this.referencedVariables[b.id].datatype) {
-                        return -factor;
-                    }
-                    if (this.referencedVariables[a.id].datatype
-                        > this.referencedVariables[b.id].datatype) {
-                        return factor;
-                    }
-                    return 0;
-                }));
-            }),
-
-            /**
-             * moves variables up or down
-             * @param {boolean} isUp - if true move up, if false move down
-             * @param {boolean} toExtreme - if true move to top/bottom,
-             * if false move only by one row
-             * @param {number[]} indices: move these indices
-             */
-            move: action((isUp, toExtreme, indices) => {
-                if (toExtreme) {
-                    this.moveToExtreme(isUp, indices);
-                } else {
-                    this.moveByOneRow(isUp, indices);
-                }
-            }),
-
-            /**
-             * move a group of variables at indices to the top or the bottom
-             * @param {boolean} isUp
-             * @param {number[]} indices
-             */
-            moveToExtreme: action((isUp, indices) => {
-                let currentVariablesCopy = this.currentVariables.slice();
-                const selectedVariables = currentVariablesCopy
-                    .filter((d, i) => indices.includes(i));
-                const notSelectedVariables = currentVariablesCopy
-                    .filter((d, i) => !indices.includes(i));
-                if (isUp) {
-                    currentVariablesCopy = [...selectedVariables, ...notSelectedVariables];
-                } else {
-                    currentVariablesCopy = [...notSelectedVariables, ...selectedVariables];
-                }
-                this.currentVariables.replace(currentVariablesCopy);
-            }),
-
-            /**
-             * move variable(s) up or down by one row
-             * @param {boolean} isUp
-             * @param {number[]} indices
-             */
-            moveByOneRow: action((isUp, indices) => {
-                const currentVariablesCopy = this.currentVariables.slice();
-                let extreme; let
-                    getNextIndex;
-                if (isUp) {
-                    extreme = 0;
-                    getNextIndex = index => index - 1;
-                } else {
-                    extreme = currentVariablesCopy.length - 1;
-                    indices.reverse();
-                    getNextIndex = index => index + 1;
-                }
-                indices.forEach((d) => {
-                    if ((d !== extreme)) {
-                        if (!(indices.includes(extreme) && VariableManagerStore.isBlock(indices))) {
-                            const save = currentVariablesCopy[getNextIndex(d)];
-                            currentVariablesCopy[getNextIndex(d)] = currentVariablesCopy[d];
-                            currentVariablesCopy[d] = save;
-                        }
-                    }
-                });
-                this.currentVariables.replace(currentVariablesCopy);
-            }),
+        makeObservable(this, {
+            currentVariables: observable,
+            addOrder: observable,
+            removeVariable: action,
+            addVariablesToBeDisplayed: action,
+            addVariableToBeDisplayed: action,
+            replaceDisplayedVariable: action,
+            applyToEntireProfile: action,
+            toggleSelected: action,
+            sortBySource: action,
+            sortByAddOrder: action,
+            sortAlphabetically: action,
+            sortByDatatype: action,
+            move: action,
+            moveToExtreme: action,
+            moveByOneRow: action,
         });
+
         /**
          * removes a variable from current variables
          * @param {string} variableId
@@ -281,6 +57,260 @@ class VariableManagerStore {
             this.updateReferences();
         });
     }
+
+    /**
+     * removes a variable and updates primary variables
+     * @param {string} variableId
+     */
+    removeVariable = (variableId) => {
+        this.currentVariables.remove(this.currentVariables
+            .filter(d => d.id === variableId)[0]);
+        this.addOrder.splice(this.addOrder.indexOf(variableId), 1);
+        if (this.primaryVariables.includes(variableId)) {
+            this.primaryVariables.forEach((d, i) => {
+                if (d === variableId) {
+                    if (this.currentVariables.length > 0){
+                        this.primaryVariables[i] = this.currentVariables[0].id;
+                    } else {
+                        this.primaryVariables[i] = undefined;
+                    }
+                }
+            });
+        }
+    };
+
+    /**
+     * adds a variable to the table
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     */
+    addVariablesToBeDisplayed = (variables) => {
+        variables.forEach(variable => this.addVariableToBeDisplayed(variable));
+    };
+
+    /**
+     * adds a variable to the table
+     * @param {(OriginalVariable|DerivedVariable)} variable
+     */
+    addVariableToBeDisplayed = (variable) => {
+        this.addVariableToBeReferenced(variable);
+        if (!this.currentVariables.map(d => d.id).includes(variable.id)) {
+            this.currentVariables.push({ id: variable.id, isNew: true, isSelected: false });
+            this.addOrder.push(variable.id);
+        }
+        this.primaryVariables = this.primaryVariables.map(variableId => variableId === undefined ? variable.id : variableId);
+    };
+
+    /**
+     * replaces a variable in the table
+     * @param {string} oldId - id of variable to be displayed
+     * @param {(OriginalVariable|DerivedVariable)} new variable
+     */
+    replaceDisplayedVariable = (oldId, newVariable) => {
+        this.referencedVariables[newVariable.id] = newVariable;
+        const replaceIndex = this.currentVariables.map(d => d.id).indexOf(oldId);
+        this.currentVariables[replaceIndex] = {
+            id: newVariable.id,
+            isNew: this.currentVariables[replaceIndex].isNew,
+            isSelected: this.currentVariables[replaceIndex].isSelected,
+        };
+        this.addOrder[this.addOrder.indexOf(oldId)] = newVariable.id;
+        if (this.primaryVariables.includes(oldId)) {
+            for (let i = 0; i < this.primaryVariables.length; i += 1) {
+                if (this.primaryVariables[this.primaryVariables.indexOf(oldId)] === oldId) {
+                    this.primaryVariables[i] = newVariable.id;
+                }
+            }
+        }
+    };
+
+    /**
+     * applies a modification of a single variable (no combinations)
+     * to all variables in that profile
+     * @param {DerivedVariable} newVariable - modified variable,
+     * which modification should be applied to profile
+     * @param {string} oldProfile - id of old Profile;
+     */
+    applyToEntireProfile = (newVariable, oldProfile, nameEnding) => {
+        this.currentVariables.forEach((variable) => {
+            const variableReference = this.getById(variable.id);
+            if (variableReference.profile === oldProfile) {
+                let derivedVariable;
+                if (variableReference.derived) {
+                    const originalVariable = this.getById(variableReference.originalIds[0]);
+                    derivedVariable = new DerivedVariable(uuidv4(),
+                        originalVariable.name + nameEnding, newVariable.datatype,
+                        originalVariable.description, [originalVariable.id],
+                        newVariable.modification, newVariable.range, newVariable.domain,
+                        DerivedMapperFunctions.getModificationMapper(
+                            newVariable.modification, [originalVariable.mapper],
+                        ),
+                        newVariable.profile, originalVariable.type);
+                } else {
+                    derivedVariable = new DerivedVariable(uuidv4(),
+                        variableReference.name + nameEnding,
+                        newVariable.datatype, variableReference.description,
+                        [variableReference.id], newVariable.modification, newVariable.range,
+                        newVariable.domain,
+                        DerivedMapperFunctions.getModificationMapper(
+                            newVariable.modification, [variableReference.mapper],
+                        ), newVariable.profile, variableReference.type);
+                }
+                this.replaceDisplayedVariable(variable.id, derivedVariable);
+            }
+        });
+    };
+
+    /**
+     * selects/unselect variable
+     * @param {string} id
+     */
+    toggleSelected = (id) => {
+        this.currentVariables[this.currentVariables.map(d => d.id)
+            .indexOf(id)].isSelected = !this.currentVariables[this.currentVariables
+            .map(d => d.id).indexOf(id)].isSelected;
+    };
+
+    /**
+     * sorts variables by data source
+     * @param {string[]} sourceOrder
+     * @param {boolean} asc - sort ascending/descending
+     */
+    sortBySource = (sourceOrder, asc) => {
+        let factor = 1;
+        if (!asc) {
+            factor = -1;
+        }
+        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+            if (sourceOrder.indexOf(this.referencedVariables[a.id].profile)
+                < sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
+                return -factor;
+            }
+            if (sourceOrder.indexOf(this.referencedVariables[a.id].profile)
+                > sourceOrder.indexOf(this.referencedVariables[b.id].profile)) {
+                return factor;
+            }
+            return 0;
+        }));
+    };
+
+    /**
+     * sort variables by add order
+     */
+    sortByAddOrder = () => {
+        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+            if (this.addOrder.indexOf(a.id) < this.addOrder.indexOf(b.id)) {
+                return -1;
+            }
+            if (this.addOrder.indexOf(a.id) > this.addOrder.indexOf(b.id)) {
+                return 1;
+            }
+            return 0;
+        }));
+    };
+
+    /**
+     * sort variables alphabetically
+     * @param {boolean} asc - sort ascending/descending
+     */
+    sortAlphabetically = (asc) => {
+        let factor = 1;
+        if (!asc) {
+            factor = -1;
+        }
+        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+            if (this.referencedVariables[a.id].name < this.referencedVariables[b.id].name) {
+                return -factor;
+            }
+            if (this.referencedVariables[a.id].name > this.referencedVariables[b.id].name) {
+                return factor;
+            }
+            return 0;
+        }));
+    };
+
+    /**
+     * sort variables by datatype (alphabetically)
+     */
+    sortByDatatype = (asc) => {
+        let factor = 1;
+        if (!asc) {
+            factor = -1;
+        }
+        this.currentVariables.replace(this.currentVariables.sort((a, b) => {
+            if (this.referencedVariables[a.id].datatype
+                < this.referencedVariables[b.id].datatype) {
+                return -factor;
+            }
+            if (this.referencedVariables[a.id].datatype
+                > this.referencedVariables[b.id].datatype) {
+                return factor;
+            }
+            return 0;
+        }));
+    };
+
+    /**
+     * moves variables up or down
+     * @param {boolean} isUp - if true move up, if false move down
+     * @param {boolean} toExtreme - if true move to top/bottom,
+     * if false move only by one row
+     * @param {number[]} indices: move these indices
+     */
+    move = (isUp, toExtreme, indices) => {
+        if (toExtreme) {
+            this.moveToExtreme(isUp, indices);
+        } else {
+            this.moveByOneRow(isUp, indices);
+        }
+    };
+
+    /**
+     * move a group of variables at indices to the top or the bottom
+     * @param {boolean} isUp
+     * @param {number[]} indices
+     */
+    moveToExtreme = (isUp, indices) => {
+        let currentVariablesCopy = this.currentVariables.slice();
+        const selectedVariables = currentVariablesCopy
+            .filter((d, i) => indices.includes(i));
+        const notSelectedVariables = currentVariablesCopy
+            .filter((d, i) => !indices.includes(i));
+        if (isUp) {
+            currentVariablesCopy = [...selectedVariables, ...notSelectedVariables];
+        } else {
+            currentVariablesCopy = [...notSelectedVariables, ...selectedVariables];
+        }
+        this.currentVariables.replace(currentVariablesCopy);
+    };
+
+    /**
+     * move variable(s) up or down by one row
+     * @param {boolean} isUp
+     * @param {number[]} indices
+     */
+    moveByOneRow = (isUp, indices) => {
+        const currentVariablesCopy = this.currentVariables.slice();
+        let extreme; let
+            getNextIndex;
+        if (isUp) {
+            extreme = 0;
+            getNextIndex = index => index - 1;
+        } else {
+            extreme = currentVariablesCopy.length - 1;
+            indices.reverse();
+            getNextIndex = index => index + 1;
+        }
+        indices.forEach((d) => {
+            if ((d !== extreme)) {
+                if (!(indices.includes(extreme) && VariableManagerStore.isBlock(indices))) {
+                    const save = currentVariablesCopy[getNextIndex(d)];
+                    currentVariablesCopy[getNextIndex(d)] = currentVariablesCopy[d];
+                    currentVariablesCopy[d] = save;
+                }
+            }
+        });
+        this.currentVariables.replace(currentVariablesCopy);
+    };
 
     /**
      * saves a variable in saved references

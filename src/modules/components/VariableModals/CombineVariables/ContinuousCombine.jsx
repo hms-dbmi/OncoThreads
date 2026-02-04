@@ -12,9 +12,9 @@ import {
     Radio,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import * as d3 from 'd3';
-import { extendObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
@@ -28,7 +28,17 @@ import Histogram from '../ModifySingleVariable/Binner/Histogram';
 const ContinuousCombine = inject('variableManagerStore')(observer(class ContinuousCombine extends React.Component {
     constructor(props) {
         super(props);
-        extendObservable(this, this.initializeObservable());
+        
+        const initValues = this.initializeObservable();
+        this.name = initValues.name;
+        this.allValues = initValues.allValues;
+        this.colorRange = initValues.colorRange;
+        
+        makeObservable(this, {
+            name: observable,
+            allValues: observable,
+            colorRange: observable,
+        });
         this.width = 350;
         this.height = 200;
         this.handleApply = this.handleApply.bind(this);
