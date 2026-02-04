@@ -96,7 +96,7 @@ class UIStore {
     };
 
     selectPatientGroup = (groupIdx) => {
-        let idx = this.selectedPatientGroupIdx.indexOf(groupIdx)
+        const idx = this.selectedPatientGroupIdx.indexOf(groupIdx)
         if (idx === -1) {
             this.selectedPatientGroupIdx.push(groupIdx)
         } else {

@@ -19,7 +19,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
     getRow() {
         let rects = [];
 
-        let circles = [];
+        const circles = [];
 
         const j = 0;
 
@@ -29,8 +29,8 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
         if (this.props.timepointType === 'between') {
             this.props.events.forEach((ev, i) => {
-                let opc1 = this.props.opacity;
-                let height = this.props.rootStore
+                const opc1 = this.props.opacity;
+                const height = this.props.rootStore
                     .visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
 
                 //let currEventNum= self.props.rootStore.dataStore.variableStores.between.getRelatedVariables('event').length;  

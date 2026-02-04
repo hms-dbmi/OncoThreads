@@ -10,22 +10,22 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
     strokeW = 4;
     drawRowDist() {
 
-        let { variableDomain, height, row, variable, stateColor } = this.props
-        let getBinHeight = (value) => (value - variableDomain[0]) / (variableDomain[1] - variableDomain[0]) * (height - this.strokeW)
+        const { variableDomain, height, row, variable, stateColor } = this.props
+        const getBinHeight = (value) => (value - variableDomain[0]) / (variableDomain[1] - variableDomain[0]) * (height - this.strokeW)
 
 
         let pathString = `M 0, ${height}`, currentPos = [0, 0]
         row.sort((a, b) => a.key - b.key).forEach(d => {
-            let { key, patients } = d
+            const { key, patients } = d
 
-            let binWidth = this.props.visStore.groupScale(patients.length), binHeight = key === undefined ? 0 : getBinHeight(key)
+            const binWidth = this.props.visStore.groupScale(patients.length), binHeight = key === undefined ? 0 : getBinHeight(key)
             
             pathString += `l${0},${-binHeight - currentPos[1]} l ${binWidth}, ${0}`
             currentPos = [binWidth + currentPos[0], -1 * binHeight]
         })
         pathString += `l 0 ${-1 * currentPos[1]} z`
 
-        let tooltipTitle = `${variable}: ${Math.min(...row.map(d => d.key))}~${Math.max(...row.map(d => d.key))}`
+        const tooltipTitle = `${variable}: ${Math.min(...row.map(d => d.key))}~${Math.max(...row.map(d => d.key))}`
         return <Tooltip title={tooltipTitle} destroyTooltipOnHide>
             <g className="continupusRow">
                 <rect className="background" key="background" width={currentPos[0]} height={height-this.strokeW} fill={stateColor} opacity={0.1} y={this.strokeW}/>

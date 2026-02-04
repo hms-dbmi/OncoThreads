@@ -13,7 +13,7 @@ const GroupTimepoint = inject('dataStore', 'uiStore', 'visStore')(observer(class
         const partitions = [];
         let previousXPosition = 0;
 
-        let stateLabels = this.props.dataStore.stateLabels
+        const stateLabels = this.props.dataStore.stateLabels
 
         this.props.group.forEach((d, i) => {
             const transform = `translate(${previousXPosition},0)`;

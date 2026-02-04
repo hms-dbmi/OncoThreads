@@ -24,12 +24,12 @@ class PrefixSpan {
         }
         if (patt.length > this.maxLen) return
 
-        let occurs: TOccur = {}
+        const occurs: TOccur = {}
         for (let idx = 0; idx < mdb.length; idx++) {
-            let [seqIdx, pos] = mdb[idx]
-            let seq = this.db[seqIdx]
+            const [seqIdx, pos] = mdb[idx]
+            const seq = this.db[seqIdx]
             for (let newPos = pos + 1; newPos < seq.length; newPos++) {
-                let l = occurs[seq[newPos]]
+                const l = occurs[seq[newPos]]
                 if (l === undefined) {
                     occurs[seq[newPos]] = [[seqIdx, newPos]]
                 } else if (l[l.length - 1][0] !== seqIdx) {
@@ -40,7 +40,7 @@ class PrefixSpan {
 
 
         Object.keys(occurs).forEach(item => {
-            let newmdb = occurs[item]
+            const newmdb = occurs[item]
             if (newmdb.length >= this.minSupport) {
                 this.recurrentFind(patt.concat(item), newmdb)
             }
@@ -52,7 +52,7 @@ class PrefixSpan {
         this.minSupport = minSupport || Math.ceil(db.length * 0.2) // if not given, defined based on db dimension
         this.minLen = minLen || Math.ceil(db[0].length * 0.2)
         this.maxLen = maxLen || Infinity
-        let startMDB = [...Array(this.db.length).keys()].map(d => [d, -1]) as TMDB
+        const startMDB = [...Array(this.db.length).keys()].map(d => [d, -1]) as TMDB
 
         this.recurrentFind([], startMDB)
 

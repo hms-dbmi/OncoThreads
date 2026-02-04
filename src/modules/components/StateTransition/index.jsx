@@ -74,14 +74,14 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
 
 
     render() {
-        let { dataStore } = this.props.rootStore
+        const { dataStore } = this.props.rootStore
 
-        let controller = <span>
+        const controller = <span>
             Num of Sequence Groups
             <InputNumber min={1} step={1} value={dataStore.patientGroupNum} size="small" onChange={dataStore.changePatientGroupNum} />
         </span>
 
-        let bgController = <span>
+        const bgController = <span>
             <Switch size="small"
                 checkedChildren="detailed" unCheckedChildren="only state"
                 onChange={() => {

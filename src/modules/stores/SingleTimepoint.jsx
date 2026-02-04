@@ -104,20 +104,20 @@ class SingleTimepoint {
      * @returns {object[]}
      */
     get customGrouped() {
-                let heatmap = this.heatmap
+                const heatmap = this.heatmap
 
-                let result = this.customPartitions.map(partition => {
+                const result = this.customPartitions.map(partition => {
 
-                    let { patients } = partition
+                    const { patients } = partition
 
-                    let rows = heatmap.map(row => {
-                        let counts = []
-                        let { variable } = row
+                    const rows = heatmap.map(row => {
+                        const counts = []
+                        const { variable } = row
 
                         row.data.filter(d => patients.includes(d.patient))
                             .forEach(d => {
-                                let { value: key, patient } = d
-                                let keyIdx = counts.map(d => d.key).indexOf(key)
+                                const { value: key, patient } = d
+                                const keyIdx = counts.map(d => d.key).indexOf(key)
 
                                 if (keyIdx === -1) {
                                     counts.push({
@@ -135,7 +135,7 @@ class SingleTimepoint {
                         }
                     })
 
-                    let partitionRows = { ...partition, rows }
+                    const partitionRows = { ...partition, rows }
 
                     // partitionRows.rows = currentVariables.map((variable, variableIdx) => {
                     //     let counts = []

@@ -41,7 +41,7 @@ class TransitionComparison extends React.Component<Props> {
     }
 
     updateDimension() {
-        let { visStore } = this.props.rootStore!
+        const { visStore } = this.props.rootStore!
         visStore.setPlotWidth(this.plotWidth)
     }
 
@@ -55,9 +55,9 @@ class TransitionComparison extends React.Component<Props> {
 
     getGroupedPartition(group: any, patientGroup: string[]) {
         // filter the partition at each timepoint with the user selected groups
-        let { dataStore } = this.props.rootStore!
+        const { dataStore } = this.props.rootStore!
 
-        let filteredPatients = group.patients.filter((p: string) => patientGroup.includes(p))
+        const filteredPatients = group.patients.filter((p: string) => patientGroup.includes(p))
         group.patients.filter((p: string) => patientGroup.includes(p))
 
         if (group.points) return {
@@ -93,7 +93,7 @@ class TransitionComparison extends React.Component<Props> {
     getTransitionComparison() {
 
         let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], groupLabels: Array<JSX.Element> = [], groups: Array<JSX.Element> = []
-        let { dataStore, uiStore, visStore } = this.props.rootStore!
+        const { dataStore, uiStore, visStore } = this.props.rootStore!
 
         let { selectedPatientGroupIdx } = uiStore
 
@@ -103,7 +103,7 @@ class TransitionComparison extends React.Component<Props> {
 
         selectedPatientGroupIdx.forEach((groupIdx: number) => {
             let groupWidth = 0
-            let patientGroup = dataStore.patientGroups[groupIdx]
+            const patientGroup = dataStore.patientGroups[groupIdx]
             if (!patientGroup) return
 
             dataStore.timepoints.forEach((d, timeIdx) => {
@@ -114,7 +114,7 @@ class TransitionComparison extends React.Component<Props> {
                     )`;
 
                 let offsetX = 0;
-                let timepoint: Array<JSX.Element> = []
+                const timepoint: Array<JSX.Element> = []
 
 
 
@@ -158,12 +158,12 @@ class TransitionComparison extends React.Component<Props> {
                 // draw time points
                 d.customGrouped.forEach((group, partitionIdx) => {
 
-                    let transform = `translate(${offsetX}, ${0})`
-                    let heatmap = d.heatmap.map(v => {
+                    const transform = `translate(${offsetX}, ${0})`
+                    const heatmap = d.heatmap.map(v => {
                         return { ...v, data: v.data.filter(p => patientGroup.includes(p.patient)) }
                     })
 
-                    let partition = this.getGroupedPartition(group, patientGroup)
+                    const partition = this.getGroupedPartition(group, patientGroup)
 
                     if (partition.patients.length === 0) return
                    
@@ -238,8 +238,8 @@ class TransitionComparison extends React.Component<Props> {
     }
     getAnnotations(){
         // draw timepoint icon
-        let {dataStore, visStore, uiStore} = this.props.rootStore!
-        let annotations: Array<JSX.Element> = []
+        const {dataStore, visStore, uiStore} = this.props.rootStore!
+        const annotations: Array<JSX.Element> = []
         const svgHeight = this.props.rootStore!.visStore.svgHeight
         const annotationMaxWidth = Math.max(...dataStore.currentVariables.map(d=>getTextWidth(d+' XX', 14)))
 

@@ -40,7 +40,7 @@ class DataStore {
             maxPartitions = Math.max(...groupedTP.map(d => d.grouped.length), 0);
         } else {
             patientGroups.forEach((patientGroup) => {
-                let partitions = []
+                const partitions = []
                 this.timepoints.forEach(tp => {
                     let count = 0
                     tp.customGrouped.forEach((customGroup, i) => {
@@ -72,13 +72,13 @@ class DataStore {
     }
 
     get points() {
-        let samplePoints = this.variableStores.sample.points,
+        const samplePoints = this.variableStores.sample.points,
             eventPoints = this.variableStores.between.points
         if (this.hasEvent === false || eventPoints.length === 0) {
             return samplePoints
         } else {
             return this.variableStores.sample.points.map((p, i) => {
-                let newPoint = { ...p }
+                const newPoint = { ...p }
                 newPoint.value = newPoint.value.concat(eventPoints[i].value)
                 return newPoint
             })
@@ -86,7 +86,7 @@ class DataStore {
     }
 
     get colorScales() {
-        let sampleScales = this.variableStores.sample.fullCurrentVariables.map(d => d.colorScale),
+        const sampleScales = this.variableStores.sample.fullCurrentVariables.map(d => d.colorScale),
             eventScales = this.variableStores.between.fullCurrentVariables.map(d => d.colorScale)
 
         if (this.hasEvent === false) {
@@ -97,7 +97,7 @@ class DataStore {
     }
 
     get sampleFeatureDomains() {
-        let sampleDomains = this.currentNonPatientVariables
+        const sampleDomains = this.currentNonPatientVariables
             .map(id=>{
                 return this.variableStores.sample.referencedVariables[id].domain
             }),
@@ -152,19 +152,19 @@ class DataStore {
 
     // return number[][]
     get normValues() {
-        let { points, referencedVariables, currentNonPatientVariables } = this
+        const { points, referencedVariables, currentNonPatientVariables } = this
         if (points.length === 0) return []
-        let normValues = points.map(point => {
-            let normValue = point.value.map((value, i) => {
-                let ref = referencedVariables[currentNonPatientVariables[i]]
+        const normValues = points.map(point => {
+            const normValue = point.value.map((value, i) => {
+                const ref = referencedVariables[currentNonPatientVariables[i]]
                 
                 if (typeof (value) === "number") {
-                    let domain = ref.domain
+                    const domain = ref.domain
                     return domain[1] === domain[0]? 0 : (value - domain[0]) / (domain[1] - domain[0])
                 } else if (ref.domain.length === 1) {
                     return 0
                 } else {
-                    let domain = ref.domain
+                    const domain = ref.domain
                     return domain.findIndex((d) => d === value) / (domain.length - 1)
                 }
             })
@@ -175,7 +175,7 @@ class DataStore {
 
     // points with normalized values and dimension redication pos
     get normPoints() {
-        let { normValues } = this
+        const { normValues } = this
         if (normValues.length === 0) return []
         let norm2dValues = []
 
@@ -183,10 +183,10 @@ class DataStore {
             // only calculate pca when dimension is larger than 2
 
             if (this.DRMethod === 'pca') {
-                let pca = new PCA(normValues)
+                const pca = new PCA(normValues)
                 norm2dValues = pca.predict(normValues, { nComponents: 2 }).to2DArray()
             } else if (this.DRMethod === 'umap') {
-                let umap = new UMAP({
+                const umap = new UMAP({
                     nComponents: 2,
                     nEpochs: 400,
                     nNeighbors: 15,
@@ -194,7 +194,7 @@ class DataStore {
 
                 norm2dValues = umap.fit(normValues);
             } else if (this.DRMethod === "tsne") {
-                let tsne = new TSNE({
+                const tsne = new TSNE({
                     dim: 2,
                     perplexity: 10,
                     earlyExaggeration: 4.0,
@@ -234,13 +234,13 @@ class DataStore {
     // // the importance score of each feature
     get importancePCAScores() {
         if (this.normValues.length === 0 || this.normValues[0].length <= 1) return []
-        let { currentNonPatientVariables } = this
-        let pca = new PCA(this.normValues)
-        let egiVector = pca.getEigenvectors()
-        let importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
+        const { currentNonPatientVariables } = this
+        const pca = new PCA(this.normValues)
+        const egiVector = pca.getEigenvectors()
+        const importanceScores = egiVector.getColumn(0).map((d, i) => Math.abs(d) + Math.abs(egiVector.getColumn(1)[i]))
         return importanceScores.map((score, i) => {
-            let id = currentNonPatientVariables[i]
-            let {name} = this.referencedVariables[id]
+            const id = currentNonPatientVariables[i]
+            const {name} = this.referencedVariables[id]
             return {
                 id,
                 name,
@@ -252,10 +252,10 @@ class DataStore {
     get importanceScores() {
         if (this.DRMethod === 'pca') return this.importancePCAScores
 
-        let { currentNonPatientVariables } = this
+        const { currentNonPatientVariables } = this
         return currentNonPatientVariables
         .map(id => {
-            let {name} = this.referencedVariables[id]
+            const {name} = this.referencedVariables[id]
             return { name, score: 0.5, id }
         })
     }
@@ -265,13 +265,13 @@ class DataStore {
     * @return {[patient:string]: string[]}
     */
     get patientStates() {
-        let { points, pointGroups } = this
-        let patientStates = {}
+        const { points, pointGroups } = this
+        const patientStates = {}
 
         points.sort((a, b) => a.timeIdx - b.timeIdx)
         points.forEach(point => {
-            let { idx, patient } = point
-            let stateKey = Object.values(pointGroups).find(pointGroup => pointGroup.pointIdx.includes(idx))?.stateKey
+            const { idx, patient } = point
+            const stateKey = Object.values(pointGroups).find(pointGroup => pointGroup.pointIdx.includes(idx))?.stateKey
             if (!patientStates[patient]) {
                 patientStates[patient] = []
             }
@@ -283,14 +283,14 @@ class DataStore {
     }
 
     get maxTime() {
-        let { points } = this
-        let maxTimeIdx = Math.max(...points.map(d => d.timeIdx))
+        const { points } = this
+        const maxTimeIdx = Math.max(...points.map(d => d.timeIdx))
         return maxTimeIdx + 1
     }
 
     get medTime() {
-        let { points } = this
-        let midIdx = Math.floor(points.length / 2)
+        const { points } = this
+        const midIdx = Math.floor(points.length / 2)
         return points.map(d => d.timeIdx + 1).sort()[midIdx]
     }
 
@@ -299,15 +299,15 @@ class DataStore {
      * @return {Array<[patientName[], stateKey[]]>}
      */
     get frequentPatterns() {
-        let { patientStates } = this
+        const { patientStates } = this
 
-        let sequences = Object.values(patientStates)
-        let patients = Object.keys(patientStates)
+        const sequences = Object.values(patientStates)
+        const patients = Object.keys(patientStates)
         const minSupport = Math.max(patients.length * 0.2, 2),
             // minLen = Math.max(this.maxTime*0.3, 2),
             // maxLen = Math.min(this.medTime, 3)
             maxLen = 2, minLen = 2
-        let prefixSpan = new PrefixSpan()
+        const prefixSpan = new PrefixSpan()
         let results = prefixSpan.frequentPatterns(sequences, minSupport, minLen, maxLen)
         results = results.map(d => [d[0].map(i => patients[i]), d[1]])
 
@@ -315,9 +315,9 @@ class DataStore {
     }
 
     get ngramResults() {
-        let { patientStates } = this
-        let { patients } = this.rootStore
-        let ngram = new NGram(
+        const { patientStates } = this
+        const { patients } = this.rootStore
+        const ngram = new NGram(
             patients.map(p => patientStates[p]),
             [2, 3],
             patients.length * 0.03
@@ -328,7 +328,7 @@ class DataStore {
     }
 
     get patientEncodings() {
-        let { patients } = this.rootStore
+        const { patients } = this.rootStore
         let patientEncodings
 
         // *** 
@@ -338,16 +338,16 @@ class DataStore {
             patientEncodings = patients.map(p => {
                 return { patient: p, encoding: [] }
             })
-            let { frequentPatterns } = this
+            const { frequentPatterns } = this
             // don't group without frequent patterns
             if (frequentPatterns.length === 0) {
                 message.error('Cannot group patients without frequent patterns!');
             }
 
             frequentPatterns.forEach(d => {
-                let [patients] = d
+                const [patients] = d
                 patientEncodings.forEach(d => {
-                    let { patient, encoding } = d
+                    const { patient, encoding } = d
                     if (patients.includes(patient)) {
                         encoding.push(1)
                     } else {
@@ -372,8 +372,8 @@ class DataStore {
         // })
 
         if (this.encodingMetric === "ngram") {
-            let { patientStates } = this
-            let ngram = new NGram(
+            const { patientStates } = this
+            const ngram = new NGram(
                 patients.map(p => patientStates[p]),
                 [2, 3],
                 patients.length * 0.03
@@ -398,9 +398,9 @@ class DataStore {
             return
         }
 
-        let { patientEncodings } = this
+        const { patientEncodings } = this
 
-        let patientClusters = clusterfck.hcluster(patientEncodings.map(d => d.encoding), "euclidean", "complete", Infinity, num)
+        const patientClusters = clusterfck.hcluster(patientEncodings.map(d => d.encoding), "euclidean", "complete", Infinity, num)
 
         if (patientClusters.length < num) {
             message.error('Cannot further divide patients!')
@@ -526,7 +526,7 @@ class DataStore {
         timepoints.forEach((timepoint, i) => {
             timepoints[i].globalIndex = i;
             // default grouped
-            let variableId = this.variableStores[timepoint.type].currentVariables[0]
+            const variableId = this.variableStores[timepoint.type].currentVariables[0]
             timepoints[i].setPrimaryVariable(variableId)
             // timepoints[i].setIsGrouped(true)
         });
@@ -586,14 +586,14 @@ class DataStore {
     }
 
     autoGroup = () => {
-        let normPoints = this.normPoints
+        const normPoints = this.normPoints
 
         if (normPoints.length === 0) return
-        let { numofStates } = this
+        const { numofStates } = this
         var clusters = clusterfck.hcluster(normPoints.map(d => d.pos), "euclidean", "average", Infinity, numofStates);
-        let pointGroups = {}
+        const pointGroups = {}
         clusters.forEach((d, i) => {
-            let stateKey = getUniqueKeyName(i, [])
+            const stateKey = getUniqueKeyName(i, [])
             pointGroups[stateKey] = {
                 stateKey,
                 pointIdx: d.itemIdx
@@ -614,7 +614,7 @@ class DataStore {
             this.pointGroups[NONAME] = { ...this.pointGroups[stateKey], stateKey: NONAME }
 
         } else {
-            let pointIdx1 = this.pointGroups[stateKey].pointIdx, pointIdx2 = this.pointGroups[NONAME].pointIdx
+            const pointIdx1 = this.pointGroups[stateKey].pointIdx, pointIdx2 = this.pointGroups[NONAME].pointIdx
             this.pointGroups[NONAME] = {
                 pointIdx: pointIdx1.concat(pointIdx2),
                 stateKey: NONAME
@@ -626,15 +626,15 @@ class DataStore {
     }
 
     applyCustomGroups = () => {
-        let { points, pointGroups } = this
+        const { points, pointGroups } = this
 
         // check whether has unselected nodes
-        let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
+        const allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
         if (allSelected.length < points.length) {
-            let leftNodes = points.map((_, i) => i)
+            const leftNodes = points.map((_, i) => i)
                 .filter(i => !allSelected.includes(i))
 
-            let newStateKey = getUniqueKeyName(Object.keys(pointGroups).length, Object.keys(pointGroups))
+            const newStateKey = getUniqueKeyName(Object.keys(pointGroups).length, Object.keys(pointGroups))
 
             pointGroups[newStateKey] = {
                 stateKey: newStateKey,
@@ -643,8 +643,8 @@ class DataStore {
             // message.info('All unselected nodes are grouped as one state')
         }
 
-        let timeStates = []
-        let uniqueTimeIds = [...new Set(points.map(p => p.timeIdx))]
+        const timeStates = []
+        const uniqueTimeIds = [...new Set(points.map(p => p.timeIdx))]
 
         uniqueTimeIds.forEach(timeIdx => {
             timeStates.push({
@@ -656,18 +656,18 @@ class DataStore {
         // push points to corresponding time state
         Object.values(pointGroups).forEach((state) => {
 
-            let stateKey = state.stateKey
+            const stateKey = state.stateKey
 
             state.pointIdx.forEach(id => {
-                let { patient, timeIdx } = points[id]
+                const { patient, timeIdx } = points[id]
                 // get the timestate is stored
-                let timeState = timeStates[timeIdx]
+                const timeState = timeStates[timeIdx]
 
                 // check whether the partition in the timestate
-                let partitionIdx = timeState.partitions.map(d => d.partition).indexOf(stateKey)
+                const partitionIdx = timeState.partitions.map(d => d.partition).indexOf(stateKey)
                 if (partitionIdx > -1) {
 
-                    let partition = timeState.partitions[partitionIdx],
+                    const partition = timeState.partitions[partitionIdx],
                         { patients } = partition
                     // points.push(id)
                     patients.push(patient)
@@ -683,13 +683,13 @@ class DataStore {
         })
 
         // creat event states
-        let eventStates = [timeStates[0]] // the first event have the same partition as the first timepoint
+        const eventStates = [timeStates[0]] // the first event have the same partition as the first timepoint
         for (let i = 0; i < timeStates.length - 1; i++) {
-            let eventState = { timeIdx: i + 1, partitions: [] }
-            let curr = timeStates[i], next = timeStates[i + 1]
+            const eventState = { timeIdx: i + 1, partitions: [] }
+            const curr = timeStates[i], next = timeStates[i + 1]
 
             curr.partitions.forEach((currPartition) => {
-                let {
+                const {
                     partition: currName,
                     patients: currPatients
                 } = currPartition
@@ -697,12 +697,12 @@ class DataStore {
                 let remainPatients = currPatients
 
                 next.partitions.forEach(nextPartition => {
-                    let {
+                    const {
                         partition: nextName,
                         patients: nextPatients
                     } = nextPartition
 
-                    let intersection = currPatients.filter(d => nextPatients.includes(d))
+                    const intersection = currPatients.filter(d => nextPatients.includes(d))
                     remainPatients = remainPatients.filter(d => !intersection.includes(d))
                     if (intersection.length > 0) {
                         eventState.partitions.push({
@@ -736,7 +736,7 @@ class DataStore {
             }
         )
 
-        let sampleTimepoints = this.variableStores.sample.childStore.timepoints,
+        const sampleTimepoints = this.variableStores.sample.childStore.timepoints,
             eventTimepoints = this.variableStores.between.childStore.timepoints
 
         sampleTimepoints.forEach((TP, i) => {
@@ -853,7 +853,7 @@ class DataStore {
     }
 
     removeVariable(variableID) {
-        let sampleVariables = this.variableStores.sample.currentVariables
+        const sampleVariables = this.variableStores.sample.currentVariables
         if (sampleVariables.includes(variableID)) {
             this.variableStores['sample'].removeVariable(variableID);
         } else {

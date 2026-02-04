@@ -58,7 +58,7 @@ class StateBlock extends React.Component<Props> {
     get nameColWidth(): number {
 
         // let scoreWidth = getTextWidth((0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
-        let scoreWidth = getTextWidth('  X', this.fontHeight)
+        const scoreWidth = getTextWidth('  X', this.fontHeight)
         let nameWidth = Math.max(...this.props.importanceScores.map(
             d => getTextWidth(d['name'], this.fontHeight)
         ))
@@ -69,12 +69,12 @@ class StateBlock extends React.Component<Props> {
 
     @computed
     get wholeHorizonGap(): number {
-        let { pointGroups, points } = this.props
-        let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
+        const { pointGroups, points } = this.props
+        const allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
 
-        let hasLeftPoints = allSelected.length < points.length
+        const hasLeftPoints = allSelected.length < points.length
         // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.cellVerticalGap)  + 2*this.cellVerticalGap
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.cellVerticalGap
+        const wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.cellVerticalGap
         return wholeHorizonGap
     }
     // @computed
@@ -86,37 +86,37 @@ class StateBlock extends React.Component<Props> {
 
     @computed
     get blockWidth(): number {
-        let { width, pointGroups } = this.props
-        let blockWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin) / Object.keys(pointGroups).length
+        const { width, pointGroups } = this.props
+        const blockWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin) / Object.keys(pointGroups).length
         return blockWidth
     }
 
     @computed
     get attrNum(): number {
-        let { points } = this.props
-        let attrNum = points[0].value.length
+        const { points } = this.props
+        const attrNum = points[0].value.length
         return attrNum
     }
 
     @computed
     get cellHeight(): number {
-        let { height } = this.props
-        let attrNum = this.attrNum
-        let cellHeight = (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum - this.strokeW - this.cellVerticalGap
+        const { height } = this.props
+        const attrNum = this.attrNum
+        const cellHeight = (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum - this.strokeW - this.cellVerticalGap
 
         return cellHeight
     }
 
     @computed
     get maxTimeIdx(): number {
-        let { points, height } = this.props
-        let maxTimeIdx = Math.max(...points.map(p => p.timeIdx))
+        const { points, height } = this.props
+        const maxTimeIdx = Math.max(...points.map(p => p.timeIdx))
         return maxTimeIdx
     }
 
     @computed
     get timeStepHeight(): number {
-        let { points, height } = this.props
+        const { points, height } = this.props
 
         const timeStepHeight = (height - this.fontHeight - this.verticalGap) * (1 - this.blockHeightRatio) / (this.maxTimeIdx + 1)
 
@@ -125,22 +125,22 @@ class StateBlock extends React.Component<Props> {
 
     @computed
     get cellYScale(){
-        let {sampleFeatureDomains, points, pointGroups} = this.props
+        const {sampleFeatureDomains, points, pointGroups} = this.props
 
-        let scales:d3.ScaleLinear<number, number>[] = []
+        const scales:d3.ScaleLinear<number, number>[] = []
         sampleFeatureDomains.forEach((featureDomain, rowIdx)=>{
-            let scale = d3.scaleLinear()
-            let values = points.map(p=>p.value[rowIdx])
+            const scale = d3.scaleLinear()
+            const values = points.map(p=>p.value[rowIdx])
             let valueMax = -Infinity,valueMin = Infinity
             if (typeof(values[0]) == 'number'){
-                 let valueGap = ((featureDomain[1] as number) - (featureDomain[0] as number))/this.binNum
+                 const valueGap = ((featureDomain[1] as number) - (featureDomain[0] as number))/this.binNum
 
                  for (let i=0;i<this.binNum;i++){
                      
 
                     Object.keys(pointGroups).forEach(statekey=>{
-                        let {pointIdx} = pointGroups[statekey]
-                        let binValue = pointIdx.map(idx=>points[idx].value[rowIdx])
+                        const {pointIdx} = pointGroups[statekey]
+                        const binValue = pointIdx.map(idx=>points[idx].value[rowIdx])
                         .filter(d=>{
                             if (i==this.binNum-1){
                                 return (featureDomain[0] as number +valueGap*i)<=d && d<=(featureDomain[0] as number + valueGap*(i+1) )
@@ -160,8 +160,8 @@ class StateBlock extends React.Component<Props> {
 
                 for (let i=0;i<featureDomain.length;i++){
                     Object.keys(pointGroups).forEach(statekey=>{
-                        let {pointIdx} = pointGroups[statekey]
-                        let binValue =pointIdx
+                        const {pointIdx} = pointGroups[statekey]
+                        const binValue =pointIdx
                             .map(idx=>points[idx].value[rowIdx])
                             .filter(d=>d==featureDomain[i])
                             .length
@@ -190,24 +190,24 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawAllStates() {
-        let { points, pointGroups, stateLabels, height } = this.props
+        const { points, pointGroups, stateLabels, height } = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
 
-        let stateBlocks: JSX.Element[] = []
-        let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
-        let hasLeftPoints = allSelected.length < points.length
+        const stateBlocks: JSX.Element[] = []
+        const allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
+        const hasLeftPoints = allSelected.length < points.length
 
-        let fontHeight = this.fontHeight
+        const fontHeight = this.fontHeight
 
         if (Object.keys(pointGroups).length > 0) {
 
 
             Object.values(pointGroups).forEach(g => {
-                let { stateKey, pointIdx } = g
-                let stateColor = getColorByName(stateKey)
-                let stateName = stateLabels[stateKey] || stateKey
+                const { stateKey, pointIdx } = g
+                const stateColor = getColorByName(stateKey)
+                const stateName = stateLabels[stateKey] || stateKey
 
                 stateBlocks.push(
                     <g key={stateKey} className={`state${stateKey}`} transform={`translate(${offsetX}, 0)`}>
@@ -232,7 +232,7 @@ class StateBlock extends React.Component<Props> {
 
 
             if (hasLeftPoints) {
-                let leftNodes = points.map((_, i) => i)
+                const leftNodes = points.map((_, i) => i)
                     .filter(i => !allSelected.includes(i))
 
                 stateBlocks.push(
@@ -256,14 +256,14 @@ class StateBlock extends React.Component<Props> {
             )
         }
 
-        let allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth + this.nameChartGap}, 0)`}>
+        const allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth + this.nameChartGap}, 0)`}>
             {stateBlocks}
         </g>
 
-        let featureNameRows = this.featureNameRows()
-        let timeDistLabelWidth = getTextWidth('Distribution', this.fontHeight) + 10
+        const featureNameRows = this.featureNameRows()
+        const timeDistLabelWidth = getTextWidth('Distribution', this.fontHeight) + 10
 
-        let timeDistLabel = <g
+        const timeDistLabel = <g
             className="timeDistLable labelButton"
             key="timeDistLable"
             transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * (this.cellHeight + this.cellVerticalGap) + this.fontHeight + this.verticalGap + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
@@ -292,22 +292,22 @@ class StateBlock extends React.Component<Props> {
         }
 
 
-        let block = this.drawBlock(points, stateKey)
+        const block = this.drawBlock(points, stateKey)
 
-        let timeDist = this.drawTimeDist(points, stateKey)
+        const timeDist = this.drawTimeDist(points, stateKey)
 
         return [block, timeDist]
 
     }
 
     drawCellDist(values: string[]|number[]|boolean[], rowIdx:number, color:string){
-        let {sampleFeatureDomains} = this.props
-        let featureDomain = sampleFeatureDomains[rowIdx], yScale = this.cellYScale[rowIdx]
+        const {sampleFeatureDomains} = this.props
+        const featureDomain = sampleFeatureDomains[rowIdx], yScale = this.cellYScale[rowIdx]
         if (typeof (values[0])=='number'){
-            let valueGap = ((featureDomain[1] as number) - (featureDomain[0] as number))/this.binNum
-            let binHeights:number[] = []
+            const valueGap = ((featureDomain[1] as number) - (featureDomain[0] as number))/this.binNum
+            const binHeights:number[] = []
             for (let i=0;i<this.binNum;i++){
-                let binValue =(values as number[]).filter(d=>{
+                const binValue =(values as number[]).filter(d=>{
                     return (featureDomain[0] as number +valueGap*i)<=d && d<(featureDomain[0] as number+valueGap* (i+1))
                 }).length
                 if (binValue==0){
@@ -316,7 +316,7 @@ class StateBlock extends React.Component<Props> {
                     binHeights.push(yScale(binValue))
                 }
             }
-            let binWidth=this.blockWidth/this.binNum
+            const binWidth=this.blockWidth/this.binNum
 
             return binHeights.map((binHeight, binIdx)=>{
 
@@ -330,16 +330,16 @@ class StateBlock extends React.Component<Props> {
                 />
             })
         }else{
-            let barCounts = featureDomain.map(_=>0)
+            const barCounts = featureDomain.map(_=>0)
             values.forEach((v:string|boolean|number)=>{
-                let idx = featureDomain.indexOf(v)
+                const idx = featureDomain.indexOf(v)
                 barCounts[idx] += 1
             })
-            let binWidth = this.blockWidth/featureDomain.length
+            const binWidth = this.blockWidth/featureDomain.length
 
             return barCounts.map((barCount, binIdx)=>{
                 let binHeight = yScale(barCount)
-                if (barCount=0) {
+                if (barCount===0) {
                     binHeight = 0
                 }
                 return <rect 
@@ -355,18 +355,18 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawBlock(points: IPoint[], stateKey: string) {
-        let stateColor = getColorByName(stateKey)
+        const stateColor = getColorByName(stateKey)
         points = this.reorderPoints(points)
-        let { setHoverID, resetHoverID, sampleFeatureDomains } = this.props
+        const { setHoverID, resetHoverID, sampleFeatureDomains } = this.props
         if (points.length==0) return <g key="block" className="block" />
-        let rows = sampleFeatureDomains.map((domain,rowIdx)=>{
-            let values = points.map(p=>p.value[rowIdx])
+        const rows = sampleFeatureDomains.map((domain,rowIdx)=>{
+            const values = points.map(p=>p.value[rowIdx])
             let getRectHeight : (domain:any[], value:any)=>number, getRectY : (domain:any[], value:any)=>number, 
                 domainTextArr = summarizeDomain(values.filter(v=>v!==undefined) as number[]|string[]|boolean[]),
                 cellText:string, cellTextFull:string
 
             //crop domain text
-            let domainTextArrCroped = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.blockWidth/domainTextArr.length))
+            const domainTextArrCroped = domainTextArr.map(d=>cropText(d, this.fontHeight, 700, this.blockWidth/domainTextArr.length))
 
             if (typeof (domain[0]) ==='number' ){
                 getRectHeight = (domain:any[], value:any):number=>(value-domain[0])/(domain[1]-domain[0])*this.cellHeight 
@@ -382,7 +382,7 @@ class StateBlock extends React.Component<Props> {
             }
             
 
-            let row = this.drawCellDist(
+            const row = this.drawCellDist(
                 points.map(d=>d.value[rowIdx]) as number[]|string[]|boolean[], 
                 rowIdx, 
                 stateColor
@@ -416,9 +416,9 @@ class StateBlock extends React.Component<Props> {
     // draw the time dist of one identified state
     drawTimeDist(points: IPoint[], stateKey: string) {
 
-        let dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
+        const dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
         points.forEach(point => {
-            let timeIdx = point.timeIdx
+            const timeIdx = point.timeIdx
             dist[timeIdx] += 1
         })
 
@@ -441,7 +441,7 @@ class StateBlock extends React.Component<Props> {
         )
 
         pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
-        let color = getColorByName(stateKey)
+        const color = getColorByName(stateKey)
         return <g className='timeDist' key="timeDist" transform={`translate(0, ${ (this.cellHeight + this.cellVerticalGap) * this.attrNum + this.verticalGap})`}>
             <path
                 d={pathString as string}
@@ -454,11 +454,11 @@ class StateBlock extends React.Component<Props> {
     }
     
     featureNameRows() {
-        let { importanceScores, width } = this.props
-        let rows = importanceScores.map((d, i) => {
-            let { score, name } = d
-            let cropName = cropText(name, 12, 400, this.maxNameColWidth)
-            let featureNameComponent = cropName.length === name.length ?
+        const { importanceScores, width } = this.props
+        const rows = importanceScores.map((d, i) => {
+            const { score, name } = d
+            const cropName = cropText(name, 12, 400, this.maxNameColWidth)
+            const featureNameComponent = cropName.length === name.length ?
                 <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
                     <text >
                         {cropName} 
@@ -486,7 +486,7 @@ class StateBlock extends React.Component<Props> {
             </g>
         })
 
-        let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
+        const impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
         return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.cellVerticalGap})`} key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}

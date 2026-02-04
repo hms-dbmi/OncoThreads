@@ -349,7 +349,7 @@ class VisStore {
      * @return {d3.scaleLinear}
      */
     get groupScale() {
-        let {dataStore, uiStore} = this.rootStore
+        const {dataStore, uiStore} = this.rootStore
 
         return d3.scaleLinear()
         .domain([0, dataStore.numberOfPatients])

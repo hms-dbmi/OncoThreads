@@ -14,20 +14,20 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
     }
 
     drawRowDist(){
-        let {variableDomain, height, row, stateColor} = this.props
+        const {variableDomain, height, row, stateColor} = this.props
 
-        let getRectY = (value)=>variableDomain.indexOf(value)/variableDomain.length*(height-this.strokeW)
+        const getRectY = (value)=>variableDomain.indexOf(value)/variableDomain.length*(height-this.strokeW)
         
 
         let currentX = 0
-        let rowDist= [] 
+        const rowDist= [] 
         row.sort((a,b)=>a.key-b.key).forEach((d,i)=>{
-            let {key, patients} = d
-            let binWidth = this.props.visStore.groupScale(patients.length), 
+            const {key, patients} = d
+            const binWidth = this.props.visStore.groupScale(patients.length), 
                 binHeight = key===undefined? 0: 1/variableDomain.length*(height-this.strokeW), 
                 offsetY = key===undefined? 0: getRectY(key)
 
-            let oneCate = <rect className={key} key={i} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="#999"/>
+            const oneCate = <rect className={key} key={i} x={currentX} width={binWidth} height={binHeight} y={offsetY} fill="#999"/>
             rowDist.push(oneCate)
             currentX += binWidth
         })
@@ -40,7 +40,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
     }
 
     render() {
-        let tooltipTitle = this.props.row.map((d)=><span key={d.key}>{`${d.key}: ${d.patients.length} patients`} <br/> </span>)
+        const tooltipTitle = this.props.row.map((d)=><span key={d.key}>{`${d.key}: ${d.patients.length} patients`} <br/> </span>)
         const {name} = this.props.dataStore.referencedVariables[this.props.variable]
         tooltipTitle.unshift(<span key="title">{name} <br/></span>)
         return <Tooltip title={tooltipTitle} destroyTooltipOnHide>

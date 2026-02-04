@@ -397,9 +397,9 @@ class ScoreStore {
              var u_vals=[];
 
              for(var x=0; x<uniq.length; x++){
-             let q=uniq[x];
+             const q=uniq[x];
 
-             let t_num=temp.filter(d=>d===q).length;
+             const t_num=temp.filter(d=>d===q).length;
 
              u_vals.push(t_num);
 

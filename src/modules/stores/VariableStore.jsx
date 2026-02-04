@@ -95,9 +95,9 @@ class VariableStore {
      * each point is one patient at one time point
      */
     get points() {
-                let { timepoints } = this.childStore
+                const { timepoints } = this.childStore
 
-                let points = []
+                const points = []
                 timepoints
                     .forEach((timepoint, timeIdx) => {
                         var heatmap = timepoint.heatmap
@@ -105,7 +105,7 @@ class VariableStore {
                         if (heatmap[0]) {
                             heatmap[0].data.forEach((d, patientIdx) => {
                                 const { patient } = d
-                                let value = []
+                                const value = []
                                 heatmap.forEach((row, rowIdx) => {
                                     if (!this.currentNonPatientVariables.includes(row.variable)) return
 
@@ -228,7 +228,7 @@ class VariableStore {
     }
 
     findNearestReplace(patient, timeIdx, rowIdx) {
-        let { timepoints } = this.childStore
+        const { timepoints } = this.childStore
         let beforeTime = timeIdx - 1, afterTime = timeIdx + 1,
             v = timepoints[timeIdx].heatmap[rowIdx].data
                 .find(d => d.patient === patient)
@@ -238,7 +238,7 @@ class VariableStore {
             let beforeV, afterV
 
             if (afterTime < timepoints.length) {
-                let afterSample = timepoints[afterTime].heatmap[rowIdx].data
+                const afterSample = timepoints[afterTime].heatmap[rowIdx].data
                     .find(d => d.patient === patient)
 
                 afterV = afterSample ? afterSample.value : undefined
@@ -246,7 +246,7 @@ class VariableStore {
             }
 
             if (beforeTime >= 0) {
-                let beforeSample = timepoints[beforeTime].heatmap[rowIdx].data
+                const beforeSample = timepoints[beforeTime].heatmap[rowIdx].data
                     .find(d => d.patient === patient)
 
                 beforeV = beforeSample ? beforeSample.value : undefined

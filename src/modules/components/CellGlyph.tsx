@@ -1,5 +1,6 @@
 import { getTextWidth } from 'modules/UtilityClasses'
 import React from 'react'
+import * as d3 from 'd3'
 
 export interface GlyphProps {
     xScale: d3.ScaleLinear<number, number> | ((n:number)=>number), 

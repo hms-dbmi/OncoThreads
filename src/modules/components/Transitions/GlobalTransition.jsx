@@ -89,13 +89,13 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
     
             }
             else{
-                let x1=this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4;
-                let x2=x1+this.props.visStore.timelineRectSize/2;
-                let y1=this.props.visStore.timeScale(this.props.minMax[d].end);
-                let y2=y1;
-                let x3=(x1+x2)/2;
-                let y3=y1+4;
-                let points = [];
+                const x1=this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4;
+                const x2=x1+this.props.visStore.timelineRectSize/2;
+                const y1=this.props.visStore.timeScale(this.props.minMax[d].end);
+                const y2=y1;
+                const x3=(x1+x2)/2;
+                const y3=y1+4;
+                const points = [];
                 points.push(
                     `${x1},${y1}`
                 );

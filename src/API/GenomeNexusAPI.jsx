@@ -21,7 +21,7 @@ class GenomeNexusAPI {
      */
     getHugoSymbols(entrezIds, callback) {
         axios.post("https://www.genomenexus.org/ensembl/canonical-gene/entrez", entrezIds).then(function (response) {
-            let mapper = {};
+            const mapper = {};
             response.data.forEach(d => {
                 mapper[d.entrezGeneId] = d.hugoSymbol;
             });
@@ -47,7 +47,7 @@ class GenomeNexusAPI {
                 alert("No valid symbols found")
             }
             else {
-                let invalidSymbols = [];
+                const invalidSymbols = [];
                 hgncSymbols.forEach(function (d, i) {
                     if (!(response.data.map(entry => entry.hugoSymbol).includes(d))) {
                         invalidSymbols.push(d);
@@ -57,7 +57,7 @@ class GenomeNexusAPI {
                     alert('WARNING the following symbols are not valid: ' + invalidSymbols);
                 }
             }
-            let hasEntrez = response.data.every(d => d.hasOwnProperty("entrezGeneId"));
+            const hasEntrez = response.data.every(d => "entrezGeneId" in d);
             if (hasEntrez) {
                 callback(response.data.map(d => ({
                     hgncSymbol: d.hugoSymbol,

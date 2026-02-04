@@ -26,12 +26,12 @@ type IDataRow = {
 const StateInfo = observer(class StateInfo extends React.Component<Props, {}> {
    
     render(){
-        let {states} = this.props
+        const {states} = this.props
 
-        let content = states.map((state,i)=>{
-            let {domains, stateKey} = state
-            let values = Object.keys(domains).map(key=>{
-                let range = domains[key]
+        const content = states.map((state,i)=>{
+            const {domains, stateKey} = state
+            const values = Object.keys(domains).map(key=>{
+                const range = domains[key]
                 return <span style={{marginRight:'2px'}} key={key}>{
                     range.length===0?'':`[${range.join()}]`
                     }</span>

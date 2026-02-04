@@ -23,7 +23,7 @@ class NGram {
         this.ns.forEach(n => this.count_arrays(n))
     }
     count_arrays = (n: number) => {
-        let arrs = this.arrs, minSupport = this.minSupport, debug = this.debug
+        const arrs = this.arrs, minSupport = this.minSupport, debug = this.debug
 
         const counts: TCounts = {};
         if (debug) console.log("arr:", arrs);
@@ -31,12 +31,12 @@ class NGram {
             for (let i = n; i <= arr.length; i++) {
                 const ngram = arr.slice(i - n, i);
                 if (debug) console.log("ngram:", ngram);
-                let gramKey = ngram.join()
-                if (counts.hasOwnProperty(gramKey)) {
+                const gramKey = ngram.join()
+                if (gramKey in counts) {
                     counts[gramKey].totalCount++;
                     counts[gramKey]['seqCounts'][arrIdx] += 1
                 } else {
-                    let seqCounts = arrs.map(_ => 0)
+                    const seqCounts = arrs.map(_ => 0)
                     seqCounts[arrIdx] = 1
                     counts[gramKey] = { ngram, totalCount: 1, seqCounts };
                 }
@@ -44,7 +44,7 @@ class NGram {
         })
 
         if (debug) console.log("counts:", counts);
-        let results = Object.values(counts)
+        const results = Object.values(counts)
             .filter(d => d.totalCount >= minSupport)
             .sort((a, b) => Math.sign(b.totalCount - a.totalCount))
 

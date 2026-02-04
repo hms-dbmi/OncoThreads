@@ -193,7 +193,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             value: score.column,
             name: score.label,
         }));
-        let options = [
+        const options = [
             {
                 label: "Across Time",
                 options: transformToOption(this.scores.filter(score => score.type === 'across')),

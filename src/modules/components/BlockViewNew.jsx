@@ -150,7 +150,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         const transitions = [];
         this.props.rootStore.dataStore.timepoints
         .forEach((d, i) => {
-            let rectWidth = this.props.rootStore.visStore.sampleRectWidth;
+            const rectWidth = this.props.rootStore.visStore.sampleRectWidth;
             // check the type of the timepoint to get the correct width of the heatmap rectangles
             
                
@@ -189,7 +189,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             if (i !== this.props.rootStore.dataStore.timepoints.length - 1) {
                 const transformTR = `translate(0,${this.props.rootStore.visStore.newTimepointPositions.connection[i]})`;
                 const firstTP = d;
-                let secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
+                const secondTP = this.props.rootStore.dataStore.timepoints[i + 1];
                 // if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
                 //     secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
                 // }

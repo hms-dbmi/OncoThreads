@@ -97,28 +97,28 @@ const CategoricalTable = inject('categoryStore')(observer(class CategoricalTable
                 <th>
                     Category
                     {this.sortCatAsc ? (
-                        <Glyphicon
+                        <DownOutlined
                             onClick={() => this.handleSort('name')}
-                            glyph="chevron-down"
+                            style={{ marginLeft: 8, cursor: 'pointer' }}
                         />
                     ) : (
-                        <Glyphicon
+                        <UpOutlined
                             onClick={() => this.handleSort('name')}
-                            glyph="chevron-up"
+                            style={{ marginLeft: 8, cursor: 'pointer' }}
                         />
                     )}
                 </th>
                 <th>
                     % Occurence
                     {this.sortOccAsc ? (
-                        <Glyphicon
+                        <DownOutlined
                             onClick={() => this.handleSort('occurence')}
-                            glyph="chevron-down"
+                            style={{ marginLeft: 8, cursor: 'pointer' }}
                         />
                     ) : (
-                        <Glyphicon
+                        <UpOutlined
                             onClick={() => this.handleSort('occurence')}
-                            glyph="chevron-up"
+                            style={{ marginLeft: 8, cursor: 'pointer' }}
                         />
                     )}
                 </th>

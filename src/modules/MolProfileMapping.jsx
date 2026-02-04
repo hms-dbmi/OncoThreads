@@ -115,7 +115,7 @@ class MolProfileMapping {
         };
         this.loadIds(HUGOsymbols, () => {
             this.rootStore.availableProfiles.forEach((profile, i) => {
-                let callback = (profileDict) => {
+                const callback = (profileDict) => {
                     if (profile.molecularAlterationType === 'MUTATION_EXTENDED') {
                         if (Object.keys(profileDict).join().length > 0) {
                             this.loadMutations(profile.molecularProfileId, () => {

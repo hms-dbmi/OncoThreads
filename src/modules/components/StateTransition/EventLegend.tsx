@@ -134,19 +134,19 @@ class FeatureLegend extends React.Component<Props> {
     }
 
     getLegend() {
-        let { dataStore } = this.props.rootStore!
-        let lineheight: number = this.props.rootStore!.visStore.secondaryHeight;
-        let adaptedFontSize = 12;
-        let opacity = 0.5;
+        const { dataStore } = this.props.rootStore!
+        const lineheight: number = this.props.rootStore!.visStore.secondaryHeight;
+        const adaptedFontSize = 12;
+        const opacity = 0.5;
 
         const maxVarWidth = Math.max(...dataStore.variableStores.between.currentVariables
             .map((varID: string) => getTextWidth(dataStore.variableStores.between.referencedVariables[varID].name, adaptedFontSize)))
 
         return dataStore.variableStores.between.currentVariables
             .map((variableID: string, variableIdx: number) => {
-                let variable = dataStore.variableStores.between.referencedVariables[variableID]
+                const variable = dataStore.variableStores.between.referencedVariables[variableID]
 
-                let colorScale = variable.colorScale
+                const colorScale = variable.colorScale
                 let legendEntries: JSX.Element[] = [];
 
                 if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
@@ -154,7 +154,7 @@ class FeatureLegend extends React.Component<Props> {
                 } else if (variable.datatype === 'BINARY') {
                     legendEntries = [this.getBinaryLegend(variable, opacity, adaptedFontSize, lineheight, colorScale)];
                 } 
-                let leTransform = `translate(0,${variableIdx * lineheight})`;
+                const leTransform = `translate(0,${variableIdx * lineheight})`;
 
 
                 return <g className="eventLegend" transform={leTransform} key={`${variableID}_${variableIdx}`}>
@@ -184,11 +184,11 @@ class FeatureLegend extends React.Component<Props> {
     }
 
     render() {
-        let { dataStore } = this.props.rootStore!
+        const { dataStore } = this.props.rootStore!
         
         // let height = this.props.cellHeight * dataStore.currentVariables.length, width = this.maxWidth
-        let content = this.getLegend()
-        let lineheight: number = this.props.rootStore!.visStore.secondaryHeight,
+        const content = this.getLegend()
+        const lineheight: number = this.props.rootStore!.visStore.secondaryHeight,
             height = lineheight * dataStore.variableStores.between.currentVariables.length,
             width = this.svgWidth
 

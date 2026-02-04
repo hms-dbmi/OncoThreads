@@ -464,7 +464,7 @@ HierarchicalClustering.prototype = {
                    + this.dists[c2.key][ci.key] * c2.size) / (c1.size + c2.size);
          }
          else {
-            let clusteri = ci.itemIdx.map(idx=>this.items[idx]),
+            const clusteri = ci.itemIdx.map(idx=>this.items[idx]),
             cluster1 = c1.itemIdx.map(idx=>this.items[idx])
             dist = this.distance(clusteri, cluster1);            
          }

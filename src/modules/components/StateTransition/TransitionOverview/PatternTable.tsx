@@ -31,13 +31,13 @@ class PatternTable extends React.Component <Props, State> {
         }
     }
     frequentPatternTable() {
-        let { dataStore } = this.props.rootStore!
+        const { dataStore } = this.props.rootStore!
 
         let { ngramResults, frequentPatterns, patientGroups, encodingMetric } = dataStore
         if (encodingMetric === "ngram") {
             frequentPatterns = ngramResults
         }
-        let rectW = 10
+        const rectW = 10
 
         const handleSearch = (selectedKeys: string[], confirm: () => void, dataIndex: string) => {
             confirm();
@@ -49,8 +49,8 @@ class PatternTable extends React.Component <Props, State> {
         };
 
         const changePatternLength = (len: number) => {
-            let { searchedPatternLengths } = this.state
-            let idx = searchedPatternLengths.indexOf(len)
+            const { searchedPatternLengths } = this.state
+            const idx = searchedPatternLengths.indexOf(len)
             if (idx > -1) {
                 searchedPatternLengths.splice(idx, 1)
             } else {
@@ -108,24 +108,24 @@ class PatternTable extends React.Component <Props, State> {
         });
 
 
-        let data = frequentPatterns.map((pattern, patternIdx) => {
-            let [supportIdxs, subseq] = pattern
+        const data = frequentPatterns.map((pattern, patternIdx) => {
+            const [supportIdxs, subseq] = pattern
 
-            let rowData: RowRecordType = {
+            const rowData: RowRecordType = {
                 key: `${patternIdx + 1}`,
                 pattern: subseq,
             }
 
             patientGroups.forEach((patientGroup, groupIdx) => {
-                let groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
-                let percentage = groupSupportIdxs.length === 0 ? '0%' : Math.floor(groupSupportIdxs.length / patientGroup.length * 100).toString() + '%'
+                const groupSupportIdxs = supportIdxs.filter(p => patientGroup.includes(p))
+                const percentage = groupSupportIdxs.length === 0 ? '0%' : Math.floor(groupSupportIdxs.length / patientGroup.length * 100).toString() + '%'
                 rowData[`group_${groupIdx}`] = percentage
             })
 
             return rowData
         })
 
-        let columns: ColumnsType<RowRecordType> = patientGroups.map((_, groupIdx) => {
+        const columns: ColumnsType<RowRecordType> = patientGroups.map((_, groupIdx) => {
             return {
                 title: `group_${groupIdx+1}`,
                 dataIndex: `group_${groupIdx}`,

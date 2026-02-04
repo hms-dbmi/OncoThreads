@@ -18,7 +18,7 @@ n_neighbors : int, default=3
  */
 
 const estimateMI =(X:number[][], y:number[], XDiscrete: boolean[], yDiscrete:boolean, numNeighbors:number):number[]=>{
-    let mi = X.map((x,i)=>{
+    const mi = X.map((x,i)=>{
         return computeMI(x, y, XDiscrete[i], yDiscrete, numNeighbors)
     })
     return mi

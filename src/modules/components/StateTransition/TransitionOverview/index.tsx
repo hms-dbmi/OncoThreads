@@ -63,22 +63,22 @@ class TransitionOverview extends React.Component<Props, State> {
     }
 
     stateOverview() {
-        let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
-        let { dataStore, uiStore } = this.props.rootStore!
+        const timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], annotations: Array<JSX.Element> = [];
+        const { dataStore, uiStore } = this.props.rootStore!
 
 
 
-        let samplePoints = dataStore.timepoints
+        const samplePoints = dataStore.timepoints
             .filter(d => d.type === "sample")
-        let layoutDict: TypeLayoutDict = [...Array(dataStore.patientGroupNum)]
+        const layoutDict: TypeLayoutDict = [...Array(dataStore.patientGroupNum)]
             .map(_ => { return {} })
 
         let partitionGap = 0
         dataStore.patientGroups.forEach(patientGroup => {
-            let groupMaxGap = Math.max(...samplePoints.map(TP => {
+            const groupMaxGap = Math.max(...samplePoints.map(TP => {
                 let gap = 0
                 TP.customGrouped.forEach(d => {
-                    let patients = d.patients.filter(p => patientGroup.includes(p))
+                    const patients = d.patients.filter(p => patientGroup.includes(p))
                     if (patients.length > 0) {
                         gap += this.partitionGap
                     }
@@ -89,7 +89,7 @@ class TransitionOverview extends React.Component<Props, State> {
             partitionGap += groupMaxGap + this.partitionGap
         })
 
-        let rectWidthScale = d3.scaleLinear()
+        const rectWidthScale = d3.scaleLinear()
             .domain([0, dataStore.numberOfPatients])
             .range([0, this.props.width - partitionGap - 2 * this.paddingW - this.annotationWidth]);
 
@@ -99,11 +99,11 @@ class TransitionOverview extends React.Component<Props, State> {
         dataStore.patientGroups.forEach((patientGroup: string[], groupIdx: number) => {
 
             //calculate groupwidth 
-            let groupTimeWidths: number[] = []
+            const groupTimeWidths: number[] = []
             samplePoints.forEach((TP, timeIdx) => {
                 let groupTimeWidth = 0
                 TP.customGrouped.forEach(d => {
-                    let patients = d.patients.filter(p => patientGroup.includes(p))
+                    const patients = d.patients.filter(p => patientGroup.includes(p))
                     if (patients.length > 0) {
                         groupTimeWidth += rectWidthScale(patients.length) + this.partitionGap
                     }
@@ -113,7 +113,7 @@ class TransitionOverview extends React.Component<Props, State> {
                 groupTimeWidths.push(groupTimeWidth)
 
             })
-            let groupWidth = Math.max(...groupTimeWidths)
+            const groupWidth = Math.max(...groupTimeWidths)
 
             layoutDict[groupIdx]['width'] = groupWidth
             groupTimeWidths.forEach((groupTimeWidth, timeIdx) => {
@@ -124,12 +124,12 @@ class TransitionOverview extends React.Component<Props, State> {
 
             samplePoints.forEach((TP, timeIdx) => {
                 let offsetX = 0
-                let timepoint: Array<JSX.Element> = []
+                const timepoint: Array<JSX.Element> = []
 
                 TP.customGrouped.forEach(d => {
-                    let stateKey = d.partition || ''
+                    const stateKey = d.partition || ''
 
-                    let patients = d.patients.filter(p => patientGroup.includes(p))
+                    const patients = d.patients.filter(p => patientGroup.includes(p))
                     if (patients.length === 0) return
                     const rectWidth = Math.max(rectWidthScale(patients.length), 5)
                     const stateName = cropText(dataStore.stateLabels[stateKey]||stateKey, this.fontSize, 700, rectWidth)
@@ -171,24 +171,24 @@ class TransitionOverview extends React.Component<Props, State> {
 
 
         // draw transitions
-        let linkGene = d3.linkVertical().x(d => d[0]).y(d => d[1])
-        let linkWidthScale = d3.scaleLinear().domain([0, dataStore.numberOfPatients]).range([2, this.linkMaxWidth])
+        const linkGene = d3.linkVertical().x(d => d[0]).y(d => d[1])
+        const linkWidthScale = d3.scaleLinear().domain([0, dataStore.numberOfPatients]).range([2, this.linkMaxWidth])
 
         samplePoints.forEach((d, timeIdx) => {
             if (timeIdx !== samplePoints.length - 1) {
-                let firstTP = d,
+                const firstTP = d,
                     secondTP = samplePoints[timeIdx + 1];
-                let firstGrouped = firstTP.customGrouped,
+                const firstGrouped = firstTP.customGrouped,
                     secondGrouped = secondTP.customGrouped
                 firstGrouped.forEach((group1) => {
                     secondGrouped.forEach((group2) => {
                         dataStore.patientGroups.forEach((patientGroup: string[], groupIdx: number) => {
                             let { patients: patients1, partition: partition1 } = group1, { patients: patients2, partition: partition2 } = group2
-                            let transPatients = patients1.filter(d => patients2.includes(d)).filter(p => patientGroup.includes(p))
+                            const transPatients = patients1.filter(d => patients2.includes(d)).filter(p => patientGroup.includes(p))
                             if (transPatients.length > 0) {
 
-                                let layoutDict1 = layoutDict[groupIdx][timeIdx][partition1], layoutDict2 = layoutDict[groupIdx][timeIdx + 1][partition2]
-                                let sourceX = layoutDict1.x + layoutDict1.width / 2,
+                                const layoutDict1 = layoutDict[groupIdx][timeIdx][partition1], layoutDict2 = layoutDict[groupIdx][timeIdx + 1][partition2]
+                                const sourceX = layoutDict1.x + layoutDict1.width / 2,
                                     sourceY = this.paddingH + this.groupLabelHeight + timeIdx * this.timeStepHeight + this.rectHeight,
                                     targetX = layoutDict2.x + layoutDict2.width / 2,
                                     targetY = this.paddingH + this.groupLabelHeight + (timeIdx + 1) * this.timeStepHeight
@@ -233,9 +233,9 @@ class TransitionOverview extends React.Component<Props, State> {
             )
         });
 
-        let groupLabelOffsetX: number[] = []
+        const groupLabelOffsetX: number[] = []
 
-        let groupLables = dataStore.patientGroups.map((group, groupIdx) => {
+        const groupLables = dataStore.patientGroups.map((group, groupIdx) => {
             let offsetX = 0
             // states at the first timepoint inside this group
             const states = Object.keys(layoutDict[groupIdx][0]).filter(d=>d!=='shiftX')
@@ -282,7 +282,7 @@ class TransitionOverview extends React.Component<Props, State> {
 
 
     render() {
-        let overviewHeight = this.paddingH + this.groupLabelHeight + this.props.rootStore!.dataStore.timepoints.filter(d => d.type === "sample").length * this.timeStepHeight + this.rectHeight
+        const overviewHeight = this.paddingH + this.groupLabelHeight + this.props.rootStore!.dataStore.timepoints.filter(d => d.type === "sample").length * this.timeStepHeight + this.rectHeight
         const layout = [
             { i: 'overview', x: 0, y: 0, w: 12, h: 3, minW: 12, maxW: 12 },
             { i: 'table', x: 0, y: 3, w: 12, h: 2, minW: 12, maxW: 12 },

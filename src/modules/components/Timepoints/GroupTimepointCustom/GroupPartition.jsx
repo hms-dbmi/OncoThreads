@@ -30,7 +30,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
     }
     createPartition() {
         let previousYposition = 0;
-        let stateKey = this.props.partition.partition || ''
+        const stateKey = this.props.partition.partition || ''
         const rows = [];
         let totalH = 0
 
@@ -47,9 +47,9 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                     const color = this.props.currentVariables[i].colorScale;
                     // let height = 0;
                     // let opacity = 1;
-                    let height = this.props.visStore.secondaryHeight;
-                    let opacity = 0.5;
-                    let stroke = 'none';
+                    const height = this.props.visStore.secondaryHeight;
+                    const opacity = 0.5;
+                    const stroke = 'none';
                     let shiftOffset = 0;
                     if (i % 2 !== 0) {
                         shiftOffset = this.props.uiStore.rowOffset;
@@ -126,7 +126,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 }
             });
 
-        let totalW = this.props.visStore.groupScale(this.props.partition.patients.length)
+        const totalW = this.props.visStore.groupScale(this.props.partition.patients.length)
         return { totalH, totalW, rows };
     }
 
@@ -140,7 +140,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
         let stateInputLabel, stateKey = this.props.partition.partition || '',
             stateBackground, strokeW = 5
 
-        let { rows, totalH, totalW } = this.createPartition()
+        const { rows, totalH, totalW } = this.createPartition()
 
         // add changable state label if this is a sample timepoint
         if (this.props.type === 'sample') {

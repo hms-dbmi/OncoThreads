@@ -102,7 +102,7 @@ const cropText = (text:string, fontSize:number, fontWeight:number, maxWidth:numb
 }
 
 const getUniqueKeyName = (num: number, existingNames: string[]): string => {
-    let name = num2letter(num)
+    const name = num2letter(num)
     if (existingNames.includes(name)) {
         return getUniqueKeyName(num + 1, existingNames)
     } else return name
@@ -111,7 +111,7 @@ const getUniqueKeyName = (num: number, existingNames: string[]): string => {
 const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
 
     if (typeof (values[0]) === "number") {
-        let v = values as number[] // stupid typescropt
+        const v = values as number[] // stupid typescropt
         
         let range = [Math.min(...v).toPrecision(4), Math.max(...v).toPrecision(4)]
 
@@ -130,10 +130,10 @@ const  summarizeDomain = (values: string[] | number[] | boolean[]):string[] => {
         })
         return range
     } else if (typeof (values[0])=== "string") {
-        let v = values as string[]
+        const v = values as string[]
         return [...new Set(v)]
     } else if (typeof (values[0])=== "boolean") {
-        let v = values as boolean[]
+        const v = values as boolean[]
         return [...new Set(v)].map(d=>d.toString())
     } else return []
 }

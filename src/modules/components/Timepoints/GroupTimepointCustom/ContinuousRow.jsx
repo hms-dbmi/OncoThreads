@@ -410,7 +410,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
          * a very stupid workaround due to some designs in oncoThread v1
          * will improve it later
          */
-        let values = []
+        const values = []
         this.props.row.filter(d => d.key !== undefined)
             .forEach(element=>{
                 element.patients.forEach(p=>{

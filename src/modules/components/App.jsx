@@ -107,7 +107,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         }
         return ([
             <Nav.Link key="about" onClick={() => this.openModal('about')}>About</Nav.Link>,
-            <Nav.Link key="code" onClick={() => window.open('https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates')}>
+            <Nav.Link key="code" referrerPolicy="no-referrer" href="https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates" target="_blank" >
                Source Code <GithubOutlined size="large"/>
             </Nav.Link>,
         ]);
@@ -150,17 +150,17 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
     }
 
     render() {
-        let navBarContent = this.getNavbarContent()
+        const navBarContent = this.getNavbarContent()
         
         return (
             <div>
-                <Navbar expand="lg" style={{ marginBottom: 10 }}>
-                    <Navbar.Brand>
+                <Navbar expand="lg" className="bg-body-tertiary">
+                    <Navbar.Brand href="/">
                         ThreadStates
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav>
+                        <Nav className="ms-auto">
                             {navBarContent}
                         </Nav>
                     </Navbar.Collapse>

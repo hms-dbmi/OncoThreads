@@ -97,7 +97,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     resetGroup() {
-        let {dataStore} = this.props.rootStore!
+        const {dataStore} = this.props.rootStore!
         dataStore.updatePointGroups({})
         dataStore.resetStateLabel()
 
@@ -110,7 +110,7 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     deleteGroup(stateKey: string) {
-        let {dataStore} = this.props.rootStore!
+        const {dataStore} = this.props.rootStore!
         dataStore.deletePointGroup(stateKey)
 
         d3.selectAll(`circle.group_${stateKey}`)
@@ -133,12 +133,12 @@ class CustomGrouping extends React.Component<Props> {
 
     @action
     updateSelected(stateKeys: string[], groups: number[][]) {
-        let {dataStore} = this.props.rootStore!
+        const {dataStore} = this.props.rootStore!
 
-        let {pointGroups} = dataStore
+        const {pointGroups} = dataStore
 
         for (let i = 0; i < groups.length; i++) {
-            let stateKey = stateKeys[i], group = groups[i]
+            const stateKey = stateKeys[i], group = groups[i]
 
             if (group.length === 0) {
                 delete pointGroups[stateKey]
@@ -156,16 +156,16 @@ class CustomGrouping extends React.Component<Props> {
     @action
     resetSelected(stateKeys: string[], groups: number[][]) {
 
-        let newSelected:TPointGroups = {}
+        const newSelected:TPointGroups = {}
         for (let i = 0; i < stateKeys.length; i++) {
-            let stateKey = stateKeys[i], group = groups[i]
+            const stateKey = stateKeys[i], group = groups[i]
             newSelected[stateKey] = {
                 stateKey,
                 pointIdx: group
             }
         }
 
-        let {dataStore} = this.props.rootStore!
+        const {dataStore} = this.props.rootStore!
 
         dataStore.updatePointGroups(newSelected)
 
@@ -198,14 +198,14 @@ class CustomGrouping extends React.Component<Props> {
     }
 
     render() {
-        let {dataStore} = this.props.rootStore!
-        let { points, toggleHasEvent} = dataStore
-        let { width, height, hasLink } = this
-        let pcpMargin = 15
-        let scatterHeight = height * 0.35, summaryHeight = height * 0.65, infoHeight = height * 0.2
+        const {dataStore} = this.props.rootStore!
+        const { points, toggleHasEvent} = dataStore
+        const { width, height, hasLink } = this
+        const pcpMargin = 15
+        const scatterHeight = height * 0.35, summaryHeight = height * 0.65, infoHeight = height * 0.2
         
 
-        let controllerView =  <div className="controller">
+        const controllerView =  <div className="controller">
 
         <Switch size="small"
             checkedChildren="links" unCheckedChildren="links"

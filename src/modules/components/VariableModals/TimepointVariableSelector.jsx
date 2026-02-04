@@ -170,7 +170,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
             }
         });
         // check for which profiles data is available for the entered HUGOSymbols
-        let callback = (dataProfiles) => {
+        const callback = (dataProfiles) => {
             this.props.rootStore.availableProfiles.forEach((d) => {
                 if (d.molecularAlterationType === 'MUTATION_EXTENDED') {
                     this.updateMutationCheckBoxOptions(dataProfiles

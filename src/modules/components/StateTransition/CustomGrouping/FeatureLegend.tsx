@@ -128,7 +128,7 @@ class FeatureLegend extends React.Component<Props> {
     getCategoricalLegend(variable: TVariable, row: TRow, opacity: number, fontSize: number, lineheight: number) {
         let currX = 0;
         const legendEntries: JSX.Element[] = [];
-        let legend_y = lineheight;
+        const legend_y = lineheight;
 
         variable.domain.forEach((d:string, i:number) => {
             if (variable.datatype === 'ORDINAL' || row.includes(d)) {
@@ -209,19 +209,19 @@ class FeatureLegend extends React.Component<Props> {
     }
 
     getLegend() {
-        let { dataStore } = this.props.rootStore!
-        let lineheight:number = this.props.rootStore!.visStore.secondaryHeight;
-        let adaptedFontSize = 10;
-        let opacity = 0.5;
+        const { dataStore } = this.props.rootStore!
+        const lineheight:number = this.props.rootStore!.visStore.secondaryHeight;
+        const adaptedFontSize = 10;
+        const opacity = 0.5;
 
-        let varWidth = Math.max(...dataStore.variableStores.sample.currentVariables
+        const varWidth = Math.max(...dataStore.variableStores.sample.currentVariables
             .map((varName:string)=>getTextWidth(varName, adaptedFontSize)))
 
         // return dataStore.currentVariables
         return dataStore.variableStores.sample.currentVariables
             .map((variableName:string, variableIdx:number) => {
-                let variable = dataStore.referencedVariables[variableName]
-                let colorScale = dataStore.colorScales[variableIdx]
+                const variable = dataStore.referencedVariables[variableName]
+                const colorScale = dataStore.colorScales[variableIdx]
                 let legendEntries: JSX.Element[] = [];
 
                 if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
@@ -233,7 +233,7 @@ class FeatureLegend extends React.Component<Props> {
                     legendEntries = [this.getContinuousLegend(variableName, opacity, adaptedFontSize,
                         lineheight, colorScale)];
                 }
-                let leTransform = `translate(0,${variableIdx*this.props.cellHeight})`
+                const leTransform = `translate(0,${variableIdx*this.props.cellHeight})`
 
                 return <g className="featureLegend" transform={leTransform} key={`${variableName}_${variableIdx}`}>
                     <text className="feature name" fontSize={adaptedFontSize} y={adaptedFontSize}>{variableName}</text>
@@ -247,9 +247,9 @@ class FeatureLegend extends React.Component<Props> {
     }
 
     render(){
-        let { dataStore } = this.props.rootStore!
-        let height = this.props.cellHeight * dataStore.currentVariables.length
-        let content = this.getLegend()
+        const { dataStore } = this.props.rootStore!
+        const height = this.props.cellHeight * dataStore.currentVariables.length
+        const content = this.getLegend()
         return <svg width={this.maxWidth} height={height} className="featureLegend">
             {content}
         </svg>

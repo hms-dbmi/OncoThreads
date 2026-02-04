@@ -531,7 +531,7 @@ class RootStore {
     
     addInitialVariable() {
 
-        let sampleOptions = this.clinicalSampleCategories
+        const sampleOptions = this.clinicalSampleCategories
             .filter(category => !this.dataStore
                 .variableStores.sample.fullCurrentVariables
                 .map(d => d.id).includes(category.id))

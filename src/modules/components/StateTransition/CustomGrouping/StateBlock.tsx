@@ -49,8 +49,8 @@ class StateBlock extends React.Component<Props> {
     }
     @computed
     get nameColWidth(): number {
-        let { width } = this.props
-        let scoreWidth = getTextWidth((0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
+        const { width } = this.props
+        const scoreWidth = getTextWidth((0.000).toFixed(this.scoreDigits) + '  X', this.fontHeight)
         let nameWidth = Math.max(...this.props.importanceScores.map(
             d => getTextWidth(d['name'], this.fontHeight)
         ))
@@ -59,33 +59,33 @@ class StateBlock extends React.Component<Props> {
     }
     @computed
     get wholeHorizonGap(): number {
-        let { pointGroups, points } = this.props
-        let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
+        const { pointGroups, points } = this.props
+        const allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
 
-        let hasLeftPoints = allSelected.length < points.length
+        const hasLeftPoints = allSelected.length < points.length
         // let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * (this.horizonGap+2*this.strokeW)  + 2*this.strokeW
-        let wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.strokeW
+        const wholeHorizonGap = (hasLeftPoints ? Object.keys(pointGroups).length : Object.keys(pointGroups).length - 1) * this.horizonGap + 2 * this.strokeW
         return wholeHorizonGap
     }
     @computed
     get cellWidth(): number {
-        let { width, points } = this.props
-        let cellWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin) / points.length
+        const { width, points } = this.props
+        const cellWidth = (width - this.nameColWidth - this.wholeHorizonGap - this.rightMargin) / points.length
         return cellWidth
     }
 
     @computed
     get attrNum(): number {
-        let { points } = this.props
-        let attrNum = points[0].value.length
+        const { points } = this.props
+        const attrNum = points[0].value.length
         return attrNum
     }
 
     @computed
     get cellHeight(): number {
-        let { height } = this.props
-        let attrNum = this.attrNum
-        let cellHeight = Math.min(
+        const { height } = this.props
+        const attrNum = this.attrNum
+        const cellHeight = Math.min(
             (height - this.fontHeight - this.verticalGap) * this.blockHeightRatio / attrNum,
             this.maxCellHeight
         )
@@ -94,14 +94,14 @@ class StateBlock extends React.Component<Props> {
 
     @computed
     get maxTimeIdx(): number {
-        let { points, height } = this.props
-        let maxTimeIdx = Math.max(...points.map(p => p.timeIdx))
+        const { points, height } = this.props
+        const maxTimeIdx = Math.max(...points.map(p => p.timeIdx))
         return maxTimeIdx
     }
 
     @computed
     get timeStepHeight(): number {
-        let { points, height } = this.props
+        const { points, height } = this.props
 
         const timeStepHeight = (height - this.fontHeight - this.verticalGap) * (1 - this.blockHeightRatio) / (this.maxTimeIdx + 1)
 
@@ -109,24 +109,24 @@ class StateBlock extends React.Component<Props> {
     }
 
     drawAllStates() {
-        let { points, pointGroups, stateLabels, height } = this.props
+        const { points, pointGroups, stateLabels, height } = this.props
         if (points.length === 0) return <g />
 
         let offsetX = 0
 
-        let stateBlocks: JSX.Element[] = []
-        let allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
-        let hasLeftPoints = allSelected.length < points.length
+        const stateBlocks: JSX.Element[] = []
+        const allSelected = Object.values(pointGroups).map(d => d.pointIdx).flat()
+        const hasLeftPoints = allSelected.length < points.length
 
-        let fontHeight = this.fontHeight
+        const fontHeight = this.fontHeight
 
         if (Object.keys(pointGroups).length > 0) {
 
 
             Object.values(pointGroups).forEach(g => {
-                let { stateKey, pointIdx } = g
-                let stateColor = getColorByName(stateKey)
-                let stateName = stateLabels[stateKey] || stateKey
+                const { stateKey, pointIdx } = g
+                const stateColor = getColorByName(stateKey)
+                const stateName = stateLabels[stateKey] || stateKey
 
                 stateBlocks.push(
                     <g key={stateKey} className={`state${stateKey}`} transform={`translate(${offsetX}, 0)`}>
@@ -160,7 +160,7 @@ class StateBlock extends React.Component<Props> {
 
 
             if (hasLeftPoints) {
-                let leftNodes = points.map((_, i) => i)
+                const leftNodes = points.map((_, i) => i)
                     .filter(i => !allSelected.includes(i))
 
                 stateBlocks.push(
@@ -184,14 +184,14 @@ class StateBlock extends React.Component<Props> {
             )
         }
 
-        let allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth}, 0)`}>
+        const allStates = <g className='state' key='allStates' transform={`translate(${this.nameColWidth}, 0)`}>
             {stateBlocks}
         </g>
 
-        let featureNameRows = this.featureNameRows()
-        let timeDistLabelWidth = getTextWidth('Distribution', this.fontHeight) + 10
+        const featureNameRows = this.featureNameRows()
+        const timeDistLabelWidth = getTextWidth('Distribution', this.fontHeight) + 10
 
-        let timeDistLabel = <g
+        const timeDistLabel = <g
             className="timeDistLable labelButton"
             key="timeDistLable"
             transform={`translate(${this.nameColWidth / 2}, ${this.attrNum * this.cellHeight + this.fontHeight + this.verticalGap + this.maxTimeIdx * this.timeStepHeight}) rotate(-90 0 0)`}
@@ -220,9 +220,9 @@ class StateBlock extends React.Component<Props> {
         }
 
 
-        let block = this.drawBlock(points)
+        const block = this.drawBlock(points)
 
-        let timeDist = this.drawTimeDist(points, stateKey)
+        const timeDist = this.drawTimeDist(points, stateKey)
 
         return [block, timeDist]
 
@@ -230,11 +230,11 @@ class StateBlock extends React.Component<Props> {
 
     drawBlock(points: IPoint[]) {
         points = this.reorderPoints(points)
-        let { setHoverID, resetHoverID } = this.props
-        let block = points.map((point, i) => {
+        const { setHoverID, resetHoverID } = this.props
+        const block = points.map((point, i) => {
 
-            let pointCol = point.value.map((v, rowIdx) => {
-                let fill = this.props.colorScales[rowIdx](v) || 'gray'
+            const pointCol = point.value.map((v, rowIdx) => {
+                const fill = this.props.colorScales[rowIdx](v) || 'gray'
                 return <rect key={rowIdx}
                     width={this.cellWidth} height={this.cellHeight}
                     x={this.cellWidth * i} y={rowIdx * this.cellHeight}
@@ -242,7 +242,7 @@ class StateBlock extends React.Component<Props> {
                 />
             })
 
-            let opacity = (this.props.hoverPointID === point.idx) ? 1 : 0.5
+            const opacity = (this.props.hoverPointID === point.idx) ? 1 : 0.5
 
             return <g
                 key={`point_${point.idx}`} className={`point_${point.idx}`} opacity={opacity}
@@ -259,9 +259,9 @@ class StateBlock extends React.Component<Props> {
     // draw the time dist of one identified state
     drawTimeDist(points: IPoint[], stateKey: string) {
 
-        let dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
+        const dist = [...Array(this.maxTimeIdx + 1)].map(d => 0)
         points.forEach(point => {
-            let timeIdx = point.timeIdx
+            const timeIdx = point.timeIdx
             dist[timeIdx] += 1
         })
 
@@ -284,7 +284,7 @@ class StateBlock extends React.Component<Props> {
         )
 
         pathString = `${pathString} L ${0} ${this.maxTimeIdx * this.timeStepHeight} L ${0} ${0} z`
-        let color = getColorByName(stateKey)
+        const color = getColorByName(stateKey)
         return <g className='timeDist' key="timeDist" transform={`translate(0, ${this.cellHeight * this.attrNum + this.verticalGap})`}>
             <path
                 d={pathString as string}
@@ -297,11 +297,11 @@ class StateBlock extends React.Component<Props> {
     }
 
     featureNameRows() {
-        let { importanceScores, width } = this.props
-        let rows = importanceScores.map((d, i) => {
-            let { score, name } = d
-            let cropName = cropText(name, this.fontHeight, 400, this.maxNameColWidth)
-            let featureNameComponent = cropName.length === name.length ?
+        const { importanceScores, width } = this.props
+        const rows = importanceScores.map((d, i) => {
+            const { score, name } = d
+            const cropName = cropText(name, this.fontHeight, 400, this.maxNameColWidth)
+            const featureNameComponent = cropName.length === name.length ?
                 <text opacity={Math.max(0.3, score)} cursor="pointer">
                     {cropName} {' '} {score.toFixed(this.scoreDigits)}
                 </text>
@@ -323,7 +323,7 @@ class StateBlock extends React.Component<Props> {
             </g>
         })
 
-        let impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
+        const impLable = 'scores', impLableWidth = getTextWidth(impLable, this.fontHeight) + 10
         return <g className='importanceScores labelButton' transform={`translate(${0}, ${this.fontHeight - this.strokeW})`} key='importanceScores'>
 
             <rect width={impLableWidth} height={this.fontHeight * 1.2} rx={3}
@@ -352,8 +352,8 @@ class StateBlock extends React.Component<Props> {
     }
 
     render() {
-        let legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
-        let legendLabelWidth = getTextWidth('legend V', this.fontHeight)+20, legendLabelHeight = this.fontHeight * 1.3
+        const legendLabelTransform = `translate(${this.props.width - this.rightMargin * 0.5}, ${this.cellHeight * this.attrNum / 2 + this.fontHeight}) rotate(-90, 0, 0) `
+        const legendLabelWidth = getTextWidth('legend V', this.fontHeight)+20, legendLabelHeight = this.fontHeight * 1.3
         return <g className='stateSummary' key='stateSummary'>
             {this.drawAllStates()}
             <g className="featureLegend labelButton" transform={legendLabelTransform} >

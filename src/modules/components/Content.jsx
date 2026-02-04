@@ -287,8 +287,8 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
 
 
     render() {
-        let { study } = this.props.rootStore
-        let studyName = study ? study.name : 'user uploaded data'
+        const { study } = this.props.rootStore
+        const studyName = study ? study.name : 'user uploaded data'
 
         return (
             <div>

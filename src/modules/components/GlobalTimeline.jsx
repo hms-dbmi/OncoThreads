@@ -164,7 +164,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                 }
                 eventsMapByPatient[eventId][event.patientId] = eventsMapByPatient[eventId][event.patientId].concat(event);
             })
-            if (!!eventsList.find(event => event.eventEndDate > event.eventStartDate)) {
+            if (eventsList.find(event => event.eventEndDate > event.eventStartDate)) {
                 sortedEventIds = [eventId].concat(sortedEventIds);
             } else {
                 sortedEventIds = sortedEventIds.concat([eventId]);
@@ -266,12 +266,12 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
 
     getLegend(){
         if(this.props.rootStore.dataStore.variableStores.sample.currentVariables.length>0){
-            let globalPrimaryName = this.props.rootStore.dataStore
+            const globalPrimaryName = this.props.rootStore.dataStore
                 .variableStores.sample.fullCurrentVariables
                 .filter(d1 => d1.id === this.props.rootStore.dataStore.globalPrimary)[0].name;
 
-            let fontSize=10;
-            let fontWeight = 'bold';
+            const fontSize=10;
+            const fontWeight = 'bold';
             return  <div>
                 <h5>{`${cropText(globalPrimaryName, fontSize,
                 fontWeight, this.state.rowOperatorsWidth-fontSize)} Legend`}</h5>
@@ -283,8 +283,8 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
 
 
     render() {
-        let transitions = this.getGlobalTransitions();
-        let timepoints = this.getGlobalTimepoints();
+        const transitions = this.getGlobalTransitions();
+        const timepoints = this.getGlobalTimepoints();
 
         
         

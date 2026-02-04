@@ -92,7 +92,7 @@ const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React
 
 
 
-           let timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
+           const timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
         const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.rootStore.visStore.svgHeight - 35]).nice();
 
 

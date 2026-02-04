@@ -7,6 +7,7 @@ import {getTextWidth, summarizeDomain} from 'modules/UtilityClasses'
 import CellGlyph, {GlyphProps} from 'modules/components/CellGlyph'
 import { keys, toJS } from "mobx";
 import RootStore from "modules/stores/RootStore";
+import * as d3 from 'd3';
 
 interface Props {
     rootStore?: IRootStore,
@@ -35,7 +36,7 @@ class PatientTable extends React.Component<Props, {}> {
             (id:string)=> ( patientVars.includes(id) || referencedVariables[id].originalIds.every((d:string)=>patientVars.includes(d)) )
         )
 
-        let columns : ColumnsType<RowRecordType> = patientGroups.map((patients, groupIdx)=>{
+        const columns : ColumnsType<RowRecordType> = patientGroups.map((patients, groupIdx)=>{
             // const cellWidth = groupIdx>0?groupOffsetX[groupIdx] - groupOffsetX[groupIdx-1] : groupOffsetX[groupIdx]
             const cellWidth = xScale(patients.length)
             const title = getTextWidth(`group_${groupIdx+1}`, 12) > cellWidth ? groupIdx+1:`group_${groupIdx+1}`
@@ -64,7 +65,7 @@ class PatientTable extends React.Component<Props, {}> {
                         text = domains.join(',')
                     }
                     
-                    let valueGroup: {value:string|number|boolean, counts: number}[] = []
+                    const valueGroup: {value:string|number|boolean, counts: number}[] = []
                     values.forEach((v:any)=>{
                         const idx = valueGroup.map(v=>v.value).indexOf(v)
                         if (idx>-1) valueGroup[idx]['counts'] +=1;
@@ -84,7 +85,7 @@ class PatientTable extends React.Component<Props, {}> {
             }
         })
         const tableData = patientRelatedVars.map((attr:string)=>{
-            let row:any = {}
+            const row:any = {}
             const attrMapper = referencedVariables[attr].mapper // attrMapper: sample id => attribute value
             const {sampleStructure} = this.props.rootStore! //sample structure maps patient id to patient samples
             patientGroups.forEach((patients, groupIdx)=>{

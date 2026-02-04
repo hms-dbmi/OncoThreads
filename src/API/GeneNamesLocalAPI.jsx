@@ -33,8 +33,8 @@ class GeneNamesLocalAPI {
      * @param {returnDataCallback} callback
      */
     getGeneIDs(hgncSymbols, callback) {
-        let returnArray = [];
-        let invalidSymbols = [];
+        const returnArray = [];
+        const invalidSymbols = [];
         hgncSymbols.forEach(d => {
             if (d in this.geneList) {
                 returnArray.push({

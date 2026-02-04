@@ -405,7 +405,7 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
 
 
     render() {
-        let msg = <Alert>Data uploaded on this page will not leave your computer.</Alert>;
+        const msg = <Alert>Data uploaded on this page will not leave your computer.</Alert>;
         return (
             <div>
                 <br></br>

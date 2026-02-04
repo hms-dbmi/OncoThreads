@@ -32,11 +32,11 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
     getTabbedPanel() {
         // create  views
 
-        let stateTransition = <StateTransition
+        const stateTransition = <StateTransition
             openSaveVarModal={this.props.openSaveVarModal}
             tooltipFunctions={this.props.tooltipFunctions}
         />
-        let myblockView = (
+        const myblockView = (
             <MyBlockView
                 showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                 tooltipFunctions={this.props.tooltipFunctions}
@@ -45,7 +45,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 openSaveVarModal={this.props.openSaveVarModal}
             />
         );
-        let timelineView = (
+        const timelineView = (
             <GlobalTimeline
                 showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                 tooltipFunctions={this.props.tooltipFunctions}
@@ -54,7 +54,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 openSaveVarModal={this.props.openSaveVarModal}
             />
         );
-        let blockView = (
+        const blockView = (
             <BlockView
                 showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
                 tooltipFunctions={this.props.tooltipFunctions}
@@ -64,7 +64,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
             />
         );
 
-        let dataIntro = `<h4>To start with, select different views to analyze the clinical sequences from different aspects.</h4>
+        const dataIntro = `<h4>To start with, select different views to analyze the clinical sequences from different aspects.</h4>
         <b>Block View</b> groups patients at each tiempoint based on their values of one selected feature.<br/><br/>
         <b>State Transition</b>  provides a more advanced analysis and enables state identification using timepoint features.<br/><br/> 
         <b>Timeline View</b> shows the individual clinical sequence of each patient.`
@@ -107,7 +107,7 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
     }
 
     componentDidUpdate() {
-        let { uiStore } = this.props
+        const { uiStore } = this.props
 
         if (uiStore.selectedTab === 'stateTransition' && uiStore.introTutorial !== undefined) {
 

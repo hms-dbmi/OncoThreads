@@ -1,16 +1,29 @@
-/* eslint-disable react/jsx-filename-extension */
+ 
 /**
  * Created by theresa on 30.01.18.
  */
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'mobx-react';
+
+// Bootstrap CSS for react-bootstrap components
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Intro.js styles
 import 'intro.js/minified/introjs.min.css';
 import 'intro.js/themes/introjs-modern.css';
 import './introjs-custom.css'
 
+// Grid layout styles
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
+
+// Font Awesome for react-fontawesome
+import 'font-awesome/css/font-awesome.min.css';
+
+// Application styles (from public folder - Vite will handle these)
+import '/public/style.css';
+import '/public/lineUp.css';
 
 import App from './modules/components/App.jsx';
 import RootStore from './modules/stores/RootStore';

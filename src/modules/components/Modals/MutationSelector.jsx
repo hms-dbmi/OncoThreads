@@ -139,7 +139,7 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
         // only do this if the user was actively in the searchfield before
         // to prevent searching for gene multiple times
         if (this.geneList.length > 0 && this.typing === true) {
-            let callback = (dataProfiles) => {
+            const callback = (dataProfiles) => {
                 const hasMutations = this.props.rootStore
                     .availableProfiles.filter(d => dataProfiles.includes(d.molecularProfileId))
                     .map(d => d.molecularAlterationType).includes('MUTATION_EXTENDED');

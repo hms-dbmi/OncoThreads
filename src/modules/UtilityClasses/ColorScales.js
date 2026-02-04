@@ -160,13 +160,13 @@ ColorScales.categoricalColors = [
 export default ColorScales;
 
 
-let colorDict = {}
+const colorDict = {}
 export const getColorByName = (name)=>{
     if (name in colorDict){
         return colorDict[name]
     }else{
-        let colors =  ['#1f78b4', '#b2df8a', '#fb9a99',  '#cab2d6', '#33a02c','#fdbf6f',  '#ff7f00', '#6a3d9a']
-        let color = colors[Object.keys(colorDict).length % colors.length]
+        const colors =  ['#1f78b4', '#b2df8a', '#fb9a99',  '#cab2d6', '#33a02c','#fdbf6f',  '#ff7f00', '#6a3d9a']
+        const color = colors[Object.keys(colorDict).length % colors.length]
         colorDict[name]=color
         return color
     }

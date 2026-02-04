@@ -345,7 +345,7 @@ class SvgExport {
                     str = str + '</tspan> <tspan x="150" dy="1.2em" > --------------------------------------------------------------------------------- </tspan>';
                     var srcVars=_self.rootStore.dataStore.variableStores.sample.referencedVariables[el].originalIds;
                     for(var k=0; k<srcVars.length; k++){
-                        let retVal = _self.getSampleVarTree(srcVars[k]);
+                        const retVal = _self.getSampleVarTree(srcVars[k]);
                         str = str + retVal.string;
                         num = num + retVal.count;
                     }
@@ -422,7 +422,7 @@ class SvgExport {
                     str = str + ': ' + _self.rootStore.dataStore.variableStores.between.referencedVariables[el].description + '</tspan>';
                     var srcVars=_self.rootStore.dataStore.variableStores.between.referencedVariables[el].originalIds;
                     for(var l=0; l<srcVars.length; l++){
-                        let retVal = _self.getEventVarTree(srcVars[l]);
+                        const retVal = _self.getEventVarTree(srcVars[l]);
                         str = str + retVal.string;
                         num = num + retVal.count;
                     }
@@ -565,14 +565,14 @@ class SvgExport {
 
         this.rootStore.dataStore.variableStores.sample.currentVariables.forEach(function(el)
         {
-            let retVal = _self.getSampleVarTree(el);
+            const retVal = _self.getSampleVarTree(el);
             str= str + retVal.string;
             count = count + retVal.count;
         })
 
         this.rootStore.dataStore.variableStores.between.currentVariables.forEach(function(el)
         {
-            let retVal = _self.getEventVarTree(el);
+            const retVal = _self.getEventVarTree(el);
             str= str + retVal.string;
             count = count + retVal.count;
         })

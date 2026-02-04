@@ -202,8 +202,8 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                 if (!this.props.timepoint.heatmap[i].isUndef
                 || this.props.uiStore.showUndefined
                 || d.id === this.props.timepoint.primaryVariableId) {
-                    let lineHeight = this.props.rootStore.visStore.secondaryHeight;
-                    let fontWeight = 'normal';
+                    const lineHeight = this.props.rootStore.visStore.secondaryHeight;
+                    const fontWeight = 'normal';
                     // if (d.id === this.props.timepoint.primaryVariableId) {
                     //     lineHeight = this.props.rootStore.visStore.primaryHeight;
                     //     fontWeight = 'bold';
