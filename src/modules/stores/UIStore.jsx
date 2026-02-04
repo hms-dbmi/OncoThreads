@@ -1,5 +1,5 @@
 import { makeObservable, observable, action } from 'mobx';
-import * as introJs from 'intro.js'
+import introJs from 'intro.js'
 
 /**
  * store for storing the UI state

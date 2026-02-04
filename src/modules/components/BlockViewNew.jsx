@@ -4,7 +4,7 @@ import { inject, observer, Provider } from 'mobx-react';
 import FontAwesome from 'react-fontawesome';
 import { makeObservable, observable, reaction } from 'mobx';
 import { Button, Col, Row } from 'antd';
-import { Pane, SortablePane } from 'react-sortable-pane';
+import { Pane, SortablePane } from '@jonnyopenear/react-sortable-pane';
 import {Switch} from 'antd'
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';

@@ -4,7 +4,7 @@ import { inject, observer, Provider } from 'mobx-react';
 import FontAwesome from 'react-fontawesome';
 import { makeObservable, observable, reaction } from 'mobx';
 import { Button, Row } from 'react-bootstrap';
-import { Pane, SortablePane } from 'react-sortable-pane';
+import { Pane, SortablePane } from '@jonnyopenear/react-sortable-pane';
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';

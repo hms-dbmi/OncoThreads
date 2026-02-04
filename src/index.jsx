@@ -5,7 +5,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'mobx-react';
-import 'antd/dist/antd.css';
 import 'intro.js/minified/introjs.min.css';
 import 'intro.js/themes/introjs-modern.css';
 import './introjs-custom.css'
@@ -23,7 +22,8 @@ const uiStore = new UIStore();
 const studyAPI = new StudyAPI(uiStore);
 const rootStore = new RootStore(uiStore, studyAPI);
 const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
-studyAPI.loadDefaultStudies();
+// Don't load studies on app initialization - defer until user opens study selection
+// studyAPI.loadDefaultStudies();
 
 const root = createRoot(document.getElementById('app'));
 root.render(

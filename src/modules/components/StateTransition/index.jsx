@@ -102,7 +102,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                     </Col>
 
                     <Col md={this.widthRatios[1]} sm={this.widthRatios[1]}>
-                        <Card title={<span style={{ fontSize: "17px" }}>Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}
+                        <Card title={<span style={{ fontSize: "17px" }}>Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined /></Tooltip></span>}
                             extra={controller}
                             style={{ width: "98%" }}
                             bodyStyle={{padding:'0px'}}
@@ -117,7 +117,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                     </Col>
 
                     <Col md={this.widthRatios[2]} sm={this.widthRatios[2]}>
-                        <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined translate='' /></Tooltip></span>}
+                        <Card title={<span style={{ fontSize: "17px" }}>Details <Tooltip title="detailed analysis of the cause of different state transitions"><InfoCircleOutlined /></Tooltip></span>}
                             extra={bgController}
                             style={{ width: "98%"}}
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}

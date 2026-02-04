@@ -51,7 +51,7 @@ class TransitionOverview extends React.Component<Props, State> {
     groupLabelHeight = 40;
     groupLabelOffsetX: number[] = [];
     rectWidthScale: d3.ScaleLinear<number, number> = d3.scaleLinear()
-    searchInput: Input | null = null;
+    searchInput: typeof Input | null = null;
 
     fontSize = 14;
 
@@ -295,17 +295,17 @@ class TransitionOverview extends React.Component<Props, State> {
 
         const patternHeader = <span>Frequent Patterns {' '}
             <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyTooltipOnHide>
-                <InfoCircleOutlined translate='' />
+                <InfoCircleOutlined />
             </Tooltip>
         </span>
 
         const patientHeader = <span>Patient Features {' '}
             <Tooltip title="summarize patient attributes of each patient group" destroyTooltipOnHide>
-                <InfoCircleOutlined translate='' />
+                <InfoCircleOutlined />
             </Tooltip>
         </span>
 
-        return <GridLayout className="stateTransition overview" rowHeight={this.props.height / 5} layout={layout} width={this.props.width}>
+        return <GridLayout className="stateTransition overview" layout={layout} width={this.props.width} {...{ rowHeight: this.props.height / 5 } as any}>
             <div style={{ height: this.props.height * 0.7, overflowY: "auto", width: this.props.width }} key='overview'
                 // data-intro={dataIntro1}
                 // data-step="4"

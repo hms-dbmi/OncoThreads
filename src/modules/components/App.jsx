@@ -95,7 +95,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                         this.props.uiStore.setTutorialMode(true)
                     }
                 }>
-                    <Tooltip defaultVisible={true} trigger='hover' 
+                    <Tooltip defaultOpen={true} trigger='hover' 
                         title={<span>Click me to start a walk-through tutorial </span>}>
                     Intro <QuestionCircleOutlined style={{color:"green"}} />
                     </Tooltip>

@@ -25,7 +25,9 @@ export default defineConfig(({ mode }) => {
       alias: {
         // Allow absolute imports from src/ (matching CRA behavior)
         'modules': path.resolve(__dirname, './src/modules'),
-        'API': path.resolve(__dirname, './src/API')
+        'API': path.resolve(__dirname, './src/API'),
+        // Use the UMD build of lineupjs to avoid ES module export issues
+        'lineupjs': path.resolve(__dirname, './node_modules/lineupjs/build/LineUpJS.js')
       },
       extensions: ['.mjs', '.js', '.jsx', '.json', '.ts', '.tsx']
     },
@@ -36,7 +38,20 @@ export default defineConfig(({ mode }) => {
       sourcemap: true,
       // Increase chunk size warning limit (current bundle is ~947 kB)
       chunkSizeWarningLimit: 1000,
+      commonjsOptions: {
+        include: [/lineupjs/, /node_modules/],
+        transformMixedEsModules: true,
+        // Ignore these warnings for lineupjs
+        ignoreDynamicRequires: true
+      },
       rollupOptions: {
+        onwarn(warning, warn) {
+          // Suppress lineupjs export warnings
+          if (warning.code === 'MISSING_EXPORT' && warning.exporter && warning.exporter.includes('lineupjs')) {
+            return;
+          }
+          warn(warning);
+        },
         output: {
           // Manual chunking for better caching
           manualChunks: {
@@ -64,8 +79,13 @@ export default defineConfig(({ mode }) => {
         'mobx',
         'mobx-react',
         'd3',
-        'antd'
-      ]
+        'antd',
+        'lineupjs',
+        'lineupjsx'
+      ],
+      exclude: [],
+      // Force pre-bundle lineupjs to avoid internal module resolution issues
+      force: true
     },
     
     // CSS configuration

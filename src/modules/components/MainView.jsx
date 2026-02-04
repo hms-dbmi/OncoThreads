@@ -86,19 +86,19 @@ const MainView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class 
                 data-step='1'
                 data-position='right'
             >
-                <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="Patients are grouped at each timepoint by their attribute values"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                <Tab eventKey='block' style={{ paddingTop: 10 }} title={<span>Block View <Tooltip title="Patients are grouped at each timepoint by their attribute values"><InfoCircleOutlined /></Tooltip></span>}>
                     {blockView}
                 </Tab>
 
-                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="Patients are grouped at each timepoint by the identified states"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                <Tab eventKey='myblock' style={{ paddingTop: 10 }} title={<span>Block V2 <Tooltip title="Patients are grouped at each timepoint by the identified states"><InfoCircleOutlined /></Tooltip></span>}>
                     {myblockView}
                 </Tab>
                 <Tab eventKey='stateTransition' style={{ paddingTop: 10 }}
-                    title={<span>State Transitions <Tooltip title="States are identified and the transition among states are presented"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                    title={<span>State Transitions <Tooltip title="States are identified and the transition among states are presented"><InfoCircleOutlined /></Tooltip></span>}>
                     {stateTransition}
                 </Tab>
 
-                <Tab eventKey='line' style={{ paddingTop: 10 }} title={<span>Timeline <Tooltip title="The timelines of individual patients"><InfoCircleOutlined translate='' /></Tooltip></span>}>
+                <Tab eventKey='line' style={{ paddingTop: 10 }} title={<span>Timeline <Tooltip title="The timelines of individual patients"><InfoCircleOutlined /></Tooltip></span>}>
                     {timelineView}
                 </Tab>
             </Tabs>

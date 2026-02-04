@@ -268,7 +268,7 @@ class CustomGrouping extends React.Component<Props> {
                     <span style={{fontSize:"17px"}}>
                         State Identification 
                         <Tooltip title="identify state based on pointGroups timepoint features">
-                            <InfoCircleOutlined translate=''/>
+                            <InfoCircleOutlined />
                         </Tooltip>
                     </span>} 
                 extra={controllerView} 

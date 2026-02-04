@@ -4,7 +4,7 @@ import { IRootStore } from "modules/Type";
 import { Table, Input, Button, Space, Checkbox, Tooltip } from 'antd';
 import { getColorByName } from 'modules/UtilityClasses'
 import { SearchOutlined } from '@ant-design/icons';
-import { ColumnsType } from 'antd/lib/table'
+import type { ColumnsType } from 'antd/es/table'
 import { TPattern } from "modules/UtilityClasses/prefixSpan";
 
 type RowRecordType = { key: string, pattern: TPattern, [key: string]: any }
@@ -81,7 +81,7 @@ class PatternTable extends React.Component <Props, State> {
                         <Button
                             type="primary"
                             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                            icon={<SearchOutlined translate='(0,0)' />}
+                            icon={<SearchOutlined />}
                             size="small"
                             style={{ width: 90 }}
                         >
@@ -93,7 +93,7 @@ class PatternTable extends React.Component <Props, State> {
                     </Space>
                 </div>
             ),
-            filterIcon: (filtered: boolean) => <SearchOutlined translate='(0,0)' style={{ color: filtered ? '#1890ff' : undefined }} />,
+            filterIcon: (filtered: boolean) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
             onFilter: (value: string | number | boolean, record: RowRecordType): boolean =>
                 record[dataIndex]
                     ? record[dataIndex].join('').toLowerCase().includes(value.toString().replace(/\s|,/g, '').toLowerCase())

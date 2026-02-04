@@ -1,5 +1,4 @@
-import * as selection from "d3-selection";
-import * as drag from "d3-drag";
+import * as d3 from "d3";
 import classifyPoint from "robust-point-in-polygon";
 
 export default function() {
@@ -44,7 +43,7 @@ export default function() {
         var drawnCoords;
 
          // Apply drag behaviors
-        var dragAction = drag.drag()
+        var dragAction = d3.drag()
             .on("start",dragstart)
             .on("drag",dragmove)
             .on("end",dragend);

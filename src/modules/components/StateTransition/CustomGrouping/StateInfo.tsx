@@ -3,7 +3,7 @@ import { observer  } from 'mobx-react';
 import {Button, Table, Space} from 'antd';
 import { getColorByName, getTextWidth } from 'modules/UtilityClasses'
 import {TState} from './index'
-import { ColumnsType } from 'antd/lib/table'
+import type { ColumnsType } from 'antd/es/table'
 
 
 interface Props {

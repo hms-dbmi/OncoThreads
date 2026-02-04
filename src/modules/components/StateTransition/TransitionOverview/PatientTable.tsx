@@ -1,8 +1,8 @@
 import React from "react"
 import { observer, inject } from 'mobx-react';
 import { IRootStore } from "modules/Type";
-import { ColumnsType } from 'antd/lib/table'
 import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table'
 import {getTextWidth, summarizeDomain} from 'modules/UtilityClasses'
 import CellGlyph, {GlyphProps} from 'modules/components/CellGlyph'
 import { keys, toJS } from "mobx";

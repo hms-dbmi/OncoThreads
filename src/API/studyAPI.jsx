@@ -13,6 +13,7 @@ class StudyAPI {
     loadComplete = false;
     accessTokenFromUser = null;
     errorMsg = null;
+    studiesLoaded = {hack: false, portal: false, own: false};
 
     constructor(uiStore) {
         this.uiStore = uiStore;
@@ -25,6 +26,7 @@ class StudyAPI {
             loadComplete: observable,
             accessTokenFromUser: observable,
             errorMsg: observable,
+            studiesLoaded: observable,
             studies: computed,
             loadStudies: action,
             includeStudy: action,
@@ -34,7 +36,12 @@ class StudyAPI {
     }
 
     get studies() {
-        return this.allStudies[this.uiStore.cBioInstance];
+        const instance = this.uiStore.cBioInstance;
+        // Lazy load studies when first accessed
+        if (!this.studiesLoaded[instance] && instance === 'hack') {
+            this.loadDefaultStudies();
+        }
+        return this.allStudies[instance];
     }
 
     /**
@@ -75,6 +82,8 @@ class StudyAPI {
      * loads default studies from cbioportal
      */
     loadDefaultStudies = () => {
+        if (this.studiesLoaded.hack) return; // Prevent duplicate loading
+        this.studiesLoaded.hack = true;
         this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
             (status) => {
                 this.connectionStatus.hack = status;
@@ -88,9 +97,11 @@ class StudyAPI {
         this.allLinks.own = link;
         this.allStudies.own.clear();
         this.connectionStatus.own = 'none';
+        this.studiesLoaded.own = false;
         this.source.cancel();
         this.source = axios.CancelToken.source();
 
+        this.studiesLoaded.own = true;
         this.loadStudies(this.allLinks.own,
             (study) => this.allStudies.own.push(study),
             (status) => {
