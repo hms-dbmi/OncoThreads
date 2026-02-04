@@ -14,6 +14,7 @@ class StudyAPI {
     accessTokenFromUser = null;
     errorMsg = null;
     studiesLoaded = {hack: false, portal: false, own: false};
+    eventsCache = new Map(); // Cache for study event checks
 
     constructor(uiStore) {
         this.uiStore = uiStore;
@@ -70,9 +71,25 @@ class StudyAPI {
      * adds a study to the corresponding array if it contains temporal data
      */
     includeStudy = (link, study, callback, token) => {
+        const cacheKey = `${link}|${study.studyId}`;
+        
+        // Check cache first
+        if (this.eventsCache.has(cacheKey)) {
+            const hasTemporal = this.eventsCache.get(cacheKey);
+            if (hasTemporal) {
+                callback(study);
+            }
+            return;
+        }
+        
         this.getEvents(study.studyId, link, (events) => {
             const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
-            if (specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'))) {
+            const hasTemporal = specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'));
+            
+            // Cache the result
+            this.eventsCache.set(cacheKey, hasTemporal);
+            
+            if (hasTemporal) {
                 callback(study);
             }
         }, token);

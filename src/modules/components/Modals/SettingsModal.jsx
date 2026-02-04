@@ -21,6 +21,7 @@ const SettingsModal = inject('uiStore')(observer(class SettingsModal extends Rea
             <Modal
                 show={this.props.modalIsOpen}
                 onHide={this.props.close}
+                animation={false}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Settings</Modal.Title>

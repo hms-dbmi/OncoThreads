@@ -4,7 +4,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import {
-    Button, Modal, Nav, Navbar, NavDropdown,
+    Button, Container, Modal, Nav, Navbar, NavDropdown,
 } from 'react-bootstrap';
 
 import GetStudy from './GetStudy';
@@ -155,15 +155,17 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
         return (
             <div>
                 <Navbar expand="lg" className="bg-body-tertiary">
-                    <Navbar.Brand href="/">
-                        ThreadStates
-                    </Navbar.Brand>
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="ms-auto">
-                            {navBarContent}
-                        </Nav>
-                    </Navbar.Collapse>
+                    <Container>
+                        <Navbar.Brand href="/">
+                            ThreadStates
+                        </Navbar.Brand>
+                        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                        <Navbar.Collapse id="basic-navbar-nav">
+                            <Nav className="ms-auto">
+                                {navBarContent}
+                            </Nav>
+                        </Navbar.Collapse>
+                    </Container>
                 </Navbar>
                 {this.getMainContent()}
                 <LogModal
@@ -179,6 +181,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <Modal
                     show={this.state.studyInfoModalIsOpen}
                     onHide={this.closeModal}
+                    animation={false}
                 >
                     <Modal.Header closeButton>
                         Study Information

@@ -20,6 +20,7 @@ const LogModal = observer(class LogModal extends React.Component {
             <Modal
                 show={this.props.modalIsOpen}
                 onHide={this.props.close}
+                animation={false}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Logs</Modal.Title>

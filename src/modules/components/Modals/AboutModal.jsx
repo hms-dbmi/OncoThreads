@@ -13,6 +13,7 @@ const AboutModal = observer(class AboutModal extends React.Component {
             <Modal
                 show={this.props.modalIsOpen}
                 onHide={this.props.close}
+                animation={false}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>ThreadStates</Modal.Title>
