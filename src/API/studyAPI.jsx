@@ -11,7 +11,7 @@ class StudyAPI {
         this.uiStore = uiStore;
         this.source = axios.CancelToken.source();
         extendObservable(this, {
-            allLinks: {hack: 'http://www.cbiohack.org', portal: 'https://www.cbioportal.org'},
+            allLinks: {hack: 'http://www.cbioportal.org', portal: 'https://www.cbioportal.org'},
             allStudies: {hack: [], portal: [], own: []},
             connectionStatus: {hack: 'none', portal: 'none', own: 'none'},
             loadComplete: false,
@@ -54,7 +54,7 @@ class StudyAPI {
                 }, token);
             }),
             /**
-             * loads default studies from cbiohack
+             * loads default studies from cbioportal
              */
             loadDefaultStudies: action(() => {
                 this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),

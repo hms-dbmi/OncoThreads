@@ -143,7 +143,7 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
                 <FormGroup>
                     <ControlLabel>
 
-                    Enter URL for cBioPortal (e.g. 'http://www.cbiohack.org')
+                    Enter URL for cBioPortal (e.g. 'http://www.cbioportal.org')
                     </ControlLabel>
                     
                     <InputGroup>
