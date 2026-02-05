@@ -123,7 +123,7 @@ const EventVariableSelector = inject('variableManagerStore', 'rootStore')(observ
                     <Col sm={4} style={{ paddingRight: '0' }}>
                         <FormControl
                             style={{ height: 38 }}
-                            componentClass="select"
+                            as="select"
                             onChange={this.handleCategorySelect}
                             placeholder="Select Category"
                         >

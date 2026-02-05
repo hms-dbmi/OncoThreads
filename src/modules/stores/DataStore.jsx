@@ -2,7 +2,7 @@ import { makeObservable, observable, action, computed, observe, toJS } from 'mob
 import VariableStore from './VariableStore';
 import { PCA } from 'ml-pca';
 import { UMAP } from 'umap-js';
-import TSNE from '@keckelt/tsne';
+import { TSNE } from '@keckelt/tsne';
 
 import { getUniqueKeyName, PrefixSpan, clusterfck } from 'modules/UtilityClasses'
 import { message } from 'antd';
@@ -197,23 +197,21 @@ class DataStore {
                 const tsne = new TSNE({
                     dim: 2,
                     perplexity: 10,
-                    earlyExaggeration: 4.0,
-                    learningRate: 100.0,
-                    nIter: 500,
-                    metric: 'euclidean'
+                    epsilon: 100.0, // learning rate
+                    iter: 500
                 });
 
-                // inputData is a nested array which can be converted into an ndarray
-                // alternatively, it can be an array of coordinates (second argument should be specified as 'sparse')
-                tsne.init({
-                    data: normValues,
-                    type: 'dense'
-                });
+                // Initialize with the data
+                tsne.initDataRaw(normValues);
+                tsne.initSolution();
 
-                tsne.run();
+                // Run the algorithm for the specified number of iterations
+                for (let i = 0; i < 500; i++) {
+                    tsne.step();
+                }
 
-                // `outputScaled` is `output` scaled to a range of [-1, 1]
-                norm2dValues = tsne.getOutputScaled();
+                // Get the solution
+                norm2dValues = tsne.getSolution();
             }
 
         } else {
@@ -495,6 +493,22 @@ class DataStore {
      */
     resetSelection = () => {
         this.selectedPatients.clear();
+    }
+
+    /**
+     * resets the DataStore to initial state
+     */
+    reset = () => {
+        this.timepoints.replace([]);
+        this.selectedPatients.clear();
+        this.globalPrimary = '';
+        this.hasEvent = false;
+        this.stateLabels = {};
+        this.pointGroups = {};
+        this.numofStates = 3;
+        this.patientGroups = [];
+        this.variableStores.sample.resetVariables();
+        this.variableStores.between.resetVariables();
     }
 
     /**
@@ -798,6 +812,7 @@ class DataStore {
             handlePatientSelection: action,
             handlePartitionSelection: action,
             resetSelection: action,
+            reset: action,
             combineTimepoints: action,
             initialize: action,
             update: action,

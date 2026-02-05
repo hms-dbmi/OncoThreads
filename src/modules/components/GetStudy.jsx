@@ -46,7 +46,7 @@ const GetStudy = inject('rootStore', 'undoRedoStore')(observer(class GetStudy ex
 
     render() {
         return (
-            <NavDropdown eventKey="dropdown" title="Select Study" id="basic-nav-dropdown">
+            <NavDropdown title="Select Study" id="basic-nav-dropdown">
                 {this.setOptions()}
             </NavDropdown>
         );

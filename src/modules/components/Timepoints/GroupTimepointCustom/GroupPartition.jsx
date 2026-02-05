@@ -126,7 +126,7 @@ const GroupPartition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                 }
             });
 
-        const totalW = this.props.visStore.groupScale(this.props.partition.patients.length)
+        const totalW = this.props.visStore.groupScale(this.props.partition.patients.length) || 0
         return { totalH, totalW, rows };
     }
 

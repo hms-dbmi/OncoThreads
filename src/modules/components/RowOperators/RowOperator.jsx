@@ -11,7 +11,7 @@ import {cropText} from '../../UtilityClasses/UtilityFunctions';
 const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class RowOperator extends React.Component {
     constructor(props) {
         super(props);
-        this.iconScale = (props.rootStore.visStore.secondaryHeight) / 24;
+        this.iconScale = (props.rootStore.visStore.secondaryHeight || 24) / 24;
         this.iconDimensions = 24;
         this.sortTimepoint = this.sortTimepoint.bind(this);
         this.group = this.group.bind(this);
@@ -187,7 +187,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      * @return {rect}
      */
     getHighlightRect(height) {
-        return <rect height={height} width={this.props.width} fill="#e8e8e8" />;
+        return <rect height={height} width={this.props.width || 0} fill="#e8e8e8" />;
     }
 
     /**
@@ -195,7 +195,7 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
      */
     getRowOperator() {
         let pos = 0;
-        const iconWidth = this.iconScale * this.iconDimensions;
+        const iconWidth = (this.iconScale || 1) * this.iconDimensions;
         const rowOperators = [];
         this.props.rootStore.dataStore.variableStores[this.props.timepoint.type]
             .fullCurrentVariables.forEach((d, i) => {
@@ -208,22 +208,23 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                         lineHeight = this.props.rootStore.visStore.primaryHeight;
                         fontWeight = 'bold';
                     }
-                    const transform = `translate(${this.iconDimensions},${pos})`;
+                    const transform = `translate(0,${pos})`;
                     pos += lineHeight + this.props.rootStore.uiStore.horizontalGap;
                     let fontSize = 12;
                     if (lineHeight < fontSize) {
                         fontSize = Math.round(lineHeight);
                     }
                     const yPos = -(iconWidth - lineHeight) / 2;
-                    const currentX = this.props.width - this.iconDimensions;
+                    const currentX = this.props.width || 150;
+                    const iconGap = 5; // gap between icons
                     let groupUngroup;
                     if (!this.props.timepoint.isGrouped) {
                         groupUngroup = this.getGroupIcon(
-                            this.props.timepoint, d, currentX - 2 * iconWidth, yPos,
+                            this.props.timepoint, d, currentX - 2 * (iconWidth + iconGap), yPos,
                         );
                     } else {
                         groupUngroup = this.getUnGroupIcon(
-                            this.props.timepoint, d, currentX - 2 * iconWidth, yPos,
+                            this.props.timepoint, d, currentX - 2 * (iconWidth + iconGap), yPos,
                         );
                     }
                     let highlightRect = null;
@@ -240,15 +241,15 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
                         >
                             {highlightRect}
                             {this.getRowLabel(
-                                this.props.timepoint, d, 0, (lineHeight + fontSize / 2) / 2,
-                                currentX - 3 * iconWidth, fontWeight, fontSize,
+                                this.props.timepoint, d, 5, (lineHeight + fontSize / 2) / 2,
+                                currentX - 3 * (iconWidth + iconGap) - 10, fontWeight, fontSize,
                             )}
                             {this.getSortIcon(
-                                this.props.timepoint, d, (currentX - 3 * iconWidth), yPos,
+                                this.props.timepoint, d, (currentX - 3 * (iconWidth + iconGap)), yPos,
                             )}
                             {groupUngroup}
                             {this.getDeleteIcon(
-                                this.props.timepoint, d, (currentX - iconWidth), yPos,
+                                this.props.timepoint, d, (currentX - (iconWidth + iconGap)), yPos,
                             )}
                         </g>,
                     );
@@ -261,9 +262,10 @@ const RowOperator = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(cla
     getRaelign() {
         const pos = (this.props.rootStore.visStore.getTPHeight(this.props.timepoint)
             - this.iconDimensions) / 2;
+        const xOffset = -this.iconDimensions - 5; // position to the left of row operators
         return (
             <g
-                transform={`translate(0,${pos})`}
+                transform={`translate(${xOffset},${pos})`}
                 onClick={() => this.realignPatients(this.props.timepoint.globalIndex)}
                 className="not_exported"
                 onMouseEnter={e => this.props.showTooltip(e, 'Realign patients')}

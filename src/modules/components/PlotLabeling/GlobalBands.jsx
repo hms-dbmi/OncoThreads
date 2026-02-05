@@ -110,7 +110,7 @@ const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React
             .attr("class", "grid")
             .call(//this.make_y_gridlines(yAxis)
                 yAxis
-                    .tickSize(-this.props.rootStore.visStore.plotWidth)
+                    .tickSize(-this.props.rootStore.visStore.svgWidth)
                     .tickFormat("")
             )
             .style("stroke-width", 0)
@@ -137,7 +137,7 @@ const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React
          });*/
 
 
-        var ht = (this.props.rootStore.visStore.svgHeight - 35) / yval.length, wd = this.props.rootStore.visStore.plotWidth;
+        var ht = (this.props.rootStore.visStore.svgHeight - 35) / yval.length, wd = this.props.rootStore.visStore.svgWidth;
 
         //d3.selectAll('g').selectAll('intBands').remove();
 
@@ -171,7 +171,7 @@ const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React
 
         return (
             <div className="overlaid">
-                <svg height={this.props.rootStore.visStore.svgHeight} width={this.props.rootStore.visStore.plotWidth}>
+                <svg height={this.props.rootStore.visStore.svgHeight} width={this.props.rootStore.visStore.svgWidth || 700}>
 
 
                     <g className="axisGlobal2" transform={"translate(0,"+this.props.rootStore.visStore.timelineRectSize/2+")"}>

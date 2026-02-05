@@ -828,6 +828,7 @@ class LocalFileLoader {
                                     alert(`ERROR: file ${file.name} missing Entrez_Gene_Id column`);
                                     aborted = true;
                                     parser.abort();
+                                    return;
                                 }
                                 firstRow = false;
                             } else {
@@ -850,6 +851,7 @@ class LocalFileLoader {
                                                     aborted = true;
                                                     alert(`ERROR: file ${file.name} value is not a number`);
                                                     parser.abort();
+                                                    return;
                                                 }
                                             }
                                             dataPoint.sampleId = key;
@@ -863,6 +865,7 @@ class LocalFileLoader {
                                         row.data, file.name);
                                     aborted = true;
                                     parser.abort();
+                                    return;
                                 }
                             }
                         }

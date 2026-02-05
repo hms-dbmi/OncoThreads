@@ -22,9 +22,6 @@ const GlobalTimeAxis = inject("rootStore")(observer(class GlobalTimeAxis extends
             openTimeVarModal: action,
             closeModal: action,
         });
-
-        this.openTimeVarModal = this.openTimeVarModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
     }
 
 

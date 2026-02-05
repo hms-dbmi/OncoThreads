@@ -23,7 +23,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
         const rowDist= [] 
         row.sort((a,b)=>a.key-b.key).forEach((d,i)=>{
             const {key, patients} = d
-            const binWidth = this.props.visStore.groupScale(patients.length), 
+            const binWidth = this.props.visStore.groupScale(patients.length) || 0, 
                 binHeight = key===undefined? 0: 1/variableDomain.length*(height-this.strokeW), 
                 offsetY = key===undefined? 0: getRectY(key)
 
@@ -32,9 +32,9 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
             currentX += binWidth
         })
 
-        rowDist.unshift(<rect key="background" className="background" width={currentX} height={height-this.strokeW} fill={stateColor} opacity={0.1} />)
+        rowDist.unshift(<rect key="background" className="background" width={currentX || 0} height={height-this.strokeW} fill={stateColor} opacity={0.1} />)
         rowDist.push(
-            <rect key="outline" className="outline" fill="none" width={currentX} height={height-this.strokeW} strokeWidth={1} stroke='black' />
+            <rect key="outline" className="outline" fill="none" width={currentX || 0} height={height-this.strokeW} strokeWidth={1} stroke='black' />
         )
         return <g className="categoricalRow" transform={`translate(0, ${this.strokeW})`}>  {rowDist} </g>
     }

@@ -58,8 +58,8 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
                 onContextMenu={e => this.handleRightClick(e, d.patient, this.props.timepointIndex)}
                 key={d.patient}
                 height={this.props.height}
-                width={this.props.rectWidth}
-                x={this.props.heatmapScale(d.patient) + this.props.xOffset}
+                width={this.props.rectWidth || 0}
+                x={(this.props.heatmapScale(d.patient) || 0) + (this.props.xOffset || 0)}
                 fill={fill}
                 opacity={this.props.opacity}
             />);
@@ -69,10 +69,10 @@ const HeatmapRow = inject('dataStore')(observer(class HeatmapRow extends React.C
                     stroke={stroke}
                     key={`${d.patient}UNDEFINED`}
                     height={this.props.height}
-                    width={this.props.rectWidth}
-                    x1={this.props.heatmapScale(d.patient) + this.props.xOffset}
-                    x2={this.props.heatmapScale(d.patient) + this.props.xOffset
-                    + this.props.rectWidth}
+                    width={this.props.rectWidth || 0}
+                    x1={(this.props.heatmapScale(d.patient) || 0) + (this.props.xOffset || 0)}
+                    x2={(this.props.heatmapScale(d.patient) || 0) + (this.props.xOffset || 0)
+                    + (this.props.rectWidth || 0)}
                     y1={0}
                     y2={this.props.height}
                     opacity={this.props.opacity}

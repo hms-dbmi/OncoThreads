@@ -335,7 +335,7 @@ const GlobalTimeline = inject('rootStore')(observer(class GlobalTimeline extends
                             <GlobalBands timeValue={this.props.rootStore.timeValue}/>
                             <div ref={this.selectedTab} className="scrollableX">
                                 <svg
-                                    width={this.props.rootStore.visStore.svgWidth}
+                                    width="100%"
                                     height={this.props.rootStore.visStore.svgHeight}
                                 >
                                     <g transform={`translate(${this.props.rootStore.visStore.timelineRectSize},${this.props.rootStore.visStore.timelineRectSize / 2})`}>

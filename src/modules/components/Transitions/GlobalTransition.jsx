@@ -50,9 +50,9 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
             }
             lines.push(<rect
                 key={`${d}startpoint`}
-                x={this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4}
-                y={this.props.visStore.timeScale(this.props.minMax[d].start)}
-                width={this.props.visStore.timelineRectSize/2}
+                x={(this.props.heatmapScale(d) || 0) + (this.props.visStore.timelineRectSize || 0)/4}
+                y={this.props.visStore.timeScale(this.props.minMax[d].start) || 0}
+                width={(this.props.visStore.timelineRectSize || 0)/2}
                 height={1}
                 fill={strokeColor}
             />);
@@ -79,9 +79,9 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
             if (this.props.minMax[d].status === 'DECEASED'){
                 lines.push(<rect
                     key={`${d}endpoint`}
-                    x={this.props.heatmapScale(d) + this.props.visStore.timelineRectSize/4}
-                    y={this.props.visStore.timeScale(this.props.minMax[d].end)}
-                    width={this.props.visStore.timelineRectSize/2}
+                    x={(this.props.heatmapScale(d) || 0) + (this.props.visStore.timelineRectSize || 0)/4}
+                    y={this.props.visStore.timeScale(this.props.minMax[d].end) || 0}
+                    width={(this.props.visStore.timelineRectSize || 0)/2}
                     height={endHeight}
                     fill={finalValueColor}
                     {...mouseProperties}
@@ -106,6 +106,7 @@ const GlobalTransition = inject('dataStore', 'visStore')(observer(class GlobalTr
                     `${x3},${y3}`
                 );
                 lines.push(<polygon 
+                    key={`${d}endpoint`}
                     points={points}
                     fill={finalValueColor}
                     {...mouseProperties}

@@ -40,7 +40,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                 const xOffset = this.props.rootStore.visStore.spreadAll || this.props.rootStore.dataStore.selectedPatients
                     .includes(ev.patientId)? this.getXOffset(ev, sampleRadius, eventRadius): 0;
                 if (height === 0) {
-                    rects.push(<g>                    
+                    rects.push(<g key={ev.patientId + i}>                    
                     <circle 
                        
                        onMouseEnter={e => this.handleMouseEnter(
@@ -53,9 +53,9 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                        onClick={() => this.handleClick(ev.patientId)}
                        key={ev.patientId + i}
                        
-                       cx={this.props.rootStore.visStore.heatmapScales[0](ev.patientId) + translation + xOffset}
-                       cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
-                       r = {eventRadius}
+                       cx={(this.props.rootStore.visStore.heatmapScales[0](ev.patientId) || 0) + (translation || 0) + (xOffset || 0)}
+                       cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate) || 0}
+                       r = {eventRadius || 0}
 
                        //fill={"white"}
 
@@ -117,7 +117,7 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
 
                 circles.push(
                     
-                    <g>
+                    <g key={d.patient + i + j}>
                     
 
                     <defs>
@@ -158,12 +158,12 @@ const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React
                     onClick={() => this.handleClick(d.patient)}
                     key={d.patient + i + j}
                     
-                    cx={this.props.rootStore.visStore.heatmapScales[0](d.patient) + translation}
+                    cx={(this.props.rootStore.visStore.heatmapScales[0](d.patient) || 0) + (translation || 0)}
                     
                     cy={this.props.rootStore.visStore
-                        .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])}
+                        .timeScale(this.props.rootStore.sampleTimelineMap[d.sample]) || 0}
 
-                    r = {sampleRadius}
+                    r = {sampleRadius || 0}
 
                     fill={fill}
                     //opacity={this.props.opacity}  

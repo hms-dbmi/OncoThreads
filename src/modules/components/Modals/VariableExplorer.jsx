@@ -40,10 +40,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             selectedScores: observable,
             addedScores: observable,
             addedColumns: observable,
-            variables: computed,
             profileDomains: computed,
-            data: computed,
-            resetSelections: action,
         });
         /**
          * Definition of score columns.

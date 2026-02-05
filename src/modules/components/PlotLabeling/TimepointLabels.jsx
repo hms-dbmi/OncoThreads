@@ -27,6 +27,7 @@ const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(clas
     render() {
         // console.info("time lables render")
         // create textfields for sample timepoints, but not for between timepoints
+        const svgWidth = Math.max(50, this.props.width || 100);
         const labels = this.props.dataStore.timepoints.map((d, i) => {
             let pos = this.props.padding + this.props.visStore.timepointPositions.timepoint[i]
                 + (this.props.visStore.getTPHeight(d) - this.textFieldHeight) / 2;
@@ -38,7 +39,7 @@ const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(clas
             if (d.type === 'sample') {
                 textfield = (
                     <BlockTextField
-                        width={this.props.width > 0 ? this.props.width : 2}
+                        width={svgWidth}
                         height={this.textFieldHeight}
                         timepoint={d}
                     />
@@ -70,26 +71,26 @@ const TimepointLabels = inject('dataStore', 'visStore', 'uiStore')(observer(clas
         return (
             <div>
                 <svg
-                    width={this.props.width > 0 ? this.props.width : 0}
+                    width={svgWidth}
                     height={this.props.visStore.svgHeight}
                 >
                     <line
-                        x1={this.props.width / 2 - 10}
-                        x2={this.props.width / 2}
+                        x1={svgWidth / 2 - 10}
+                        x2={svgWidth / 2}
                         y1={firstPos}
                         y2={firstPos}
                         stroke="lightgray"
                     />
                     <line
-                        x1={this.props.width / 2}
-                        x2={this.props.width / 2}
+                        x1={svgWidth / 2}
+                        x2={svgWidth / 2}
                         y1={firstPos}
                         y2={lastPos}
                         stroke="lightgray"
                     />
                     <line
-                        x1={this.props.width / 2 - 10}
-                        x2={this.props.width / 2}
+                        x1={svgWidth / 2 - 10}
+                        x2={svgWidth / 2}
                         y1={lastPos}
                         y2={lastPos}
                         stroke="lightgray"

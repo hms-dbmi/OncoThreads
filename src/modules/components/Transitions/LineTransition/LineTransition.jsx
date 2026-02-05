@@ -110,7 +110,7 @@ const LineTransition = inject('dataStore', 'visStore', 'uiStore')(observer(class
                             + this.props.visStore.sampleRectWidth / 4}
                             y={this.props.visStore.transitionSpaces[this.props.index] * frac}
                             width={this.props.visStore.sampleRectWidth / 2}
-                            height={this.props.visStore.sampleRectWidth / 6}
+                            height={(this.props.visStore.sampleRectWidth || 0) / 6}
                             fill={color}
                             onMouseOver={e => this.props.tooltipFunctions.showTooltip(e, 'Sample taken after '+this.props.timeGapMapper[d.sample]+ ' days from the previous sample')}
                             onMouseOut={this.props.tooltipFunctions.hideTooltip}

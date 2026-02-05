@@ -18,7 +18,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
         row.sort((a, b) => a.key - b.key).forEach(d => {
             const { key, patients } = d
 
-            const binWidth = this.props.visStore.groupScale(patients.length), binHeight = key === undefined ? 0 : getBinHeight(key)
+            const binWidth = this.props.visStore.groupScale(patients.length) || 0, binHeight = key === undefined ? 0 : getBinHeight(key)
             
             pathString += `l${0},${-binHeight - currentPos[1]} l ${binWidth}, ${0}`
             currentPos = [binWidth + currentPos[0], -1 * binHeight]
@@ -28,9 +28,9 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
         const tooltipTitle = `${variable}: ${Math.min(...row.map(d => d.key))}~${Math.max(...row.map(d => d.key))}`
         return <Tooltip title={tooltipTitle} destroyOnHidden>
             <g className="continupusRow">
-                <rect className="background" key="background" width={currentPos[0]} height={height-this.strokeW} fill={stateColor} opacity={0.1} y={this.strokeW}/>
+                <rect className="background" key="background" width={currentPos[0] || 0} height={height-this.strokeW} fill={stateColor} opacity={0.1} y={this.strokeW}/>
                 <path d={pathString} fill='#999' />
-                <rect className="outline" key="outline" width={currentPos[0]} height={height-this.strokeW} fill="none" stroke={'black'} strokeWidth={1} y={this.strokeW} />
+                <rect className="outline" key="outline" width={currentPos[0] || 0} height={height-this.strokeW} fill="none" stroke={'black'} strokeWidth={1} y={this.strokeW} />
                 {/* <line x1={0} x2={currentPos[0]} strokeWidth={this.strokeW} stroke={this.props.stateColor} y1={height - 0.5 * this.strokeW} y2={height - 0.5 * this.strokeW} /> */}
             </g>
         </Tooltip>

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { v4 as uuidv4 } from 'uuid';
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import {getTextWidth, getScientificNotation} from '../UtilityClasses/UtilityFunctions';
 import ColorScales from '../UtilityClasses/ColorScales';
 
@@ -22,12 +22,17 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             activeIndex: observable,
             prevPos: observable,
             dragVisibility: observable,
+            startLineDrag: action,
+            dragLine: action,
+            stopLineDrag: action,
         });
         this.maxWidth = 100;
         this.defaultWidth = 100;
         this.minCatWidth = 30;
         this.dragLine = this.dragLine.bind(this);
         this.stopLineDrag = this.stopLineDrag.bind(this);
+        this.startLineDrag = this.startLineDrag.bind(this);
+        this.setDragVisibility = this.setDragVisibility.bind(this);
     }
 
     /**
@@ -414,6 +419,14 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
         this.dragging = false;
     }
 
+    /**
+     * set drag visibility
+     * @param {string} visibility
+     */
+    setDragVisibility = action((visibility) => {
+        this.dragVisibility = visibility;
+    });
+
 
     render() {
         const textHeight = 12;
@@ -473,8 +486,8 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
                         height={this.props.rootStore.visStore.svgHeight}
                         onMouseMove={this.dragLine}
                         onMouseUp={this.stopLineDrag}
-                        onMouseEnter={() => { this.dragVisibility = 'visible'; }}
-                        onMouseLeave={() => { this.dragVisibility = 'hidden'; }}
+                        onMouseEnter={() => this.setDragVisibility('visible')}
+                        onMouseLeave={() => this.setDragVisibility('hidden')}
                     >
                         {legends}
                         {lines}

@@ -309,7 +309,7 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                 <Container fluid style={{ paddingLeft: 20 }}>
                     <h4>{studyName}</h4>
                     <Row className='controlPane'
-                        data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Having Fun with your exploration!</h4> '
+                        data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Have fun exploring!</h4> '
                         data-step='7'
                     >
                         <Col xs={{
@@ -358,12 +358,13 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                                             {' '}
                                             <input
                                                 type="range"
-                                                value={Math.max(...this.props.rootStore
-                                                    .visStore.transitionSpaces)}
-                                                onChange={e => this.props.rootStore
-                                                    .visStore.setAllTransitionSpaces(parseInt(
-                                                        e.target.value, 10,
-                                                    ))}
+                                                value={this.props.rootStore.visStore.transitionSpaces.length > 0 
+                                                    ? Math.max(...this.props.rootStore.visStore.transitionSpaces)
+                                                    : this.props.rootStore.visStore.minTransHeight}
+                                                onChange={e => {
+                                                    const value = parseInt(e.target.value, 10);
+                                                    this.props.rootStore.visStore.setAllTransitionSpaces(value);
+                                                }}
                                                 step={1}
                                                 min={this.props.rootStore.visStore.minTransHeight}
                                                 max={this.props.rootStore.visStore.plotHeight}

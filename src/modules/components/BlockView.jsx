@@ -48,6 +48,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             panes: observable,
             active: observable,
             updateDimensions: action,
+            updatePaneWidth: action,
             setHighlightedVariable: action,
             removeHighlightedVariable: action,
             handleTimeClick: action,
@@ -57,6 +58,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         this.setHighlightedVariable = this.setHighlightedVariable.bind(this);
         this.removeHighlightedVariable = this.removeHighlightedVariable.bind(this);
         this.updateDimensions = this.updateDimensions.bind(this);
+        this.updatePaneWidth = this.updatePaneWidth.bind(this);
         
         reaction(() => this.panes.view.width, (width) => {
             this.props.rootStore.visStore.setPlotWidth(width - 10);
@@ -108,6 +110,15 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
         this.props.rootStore.visStore
             .setPlotHeight(window.innerHeight - this.blockView
                 .current.getBoundingClientRect().top);
+    }
+
+    /**
+     * updates a single pane width
+     * @param {string} paneName
+     * @param {number} width
+     */
+    updatePaneWidth(paneName, width) {
+        this.panes[paneName].width = width;
     }
 
     /**
@@ -327,7 +338,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 onResize={(size) => {
                                     const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
                                     const actualWidth = (containerWidth - 40) * (size / 100);
-                                    this.panes.labels.width = actualWidth;
+                                    this.updatePaneWidth('labels', actualWidth);
                                 }}
                             >
                                 <Provider
@@ -335,7 +346,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                     visStore={this.props.rootStore.visStore}
                                 >
                                     <TimepointLabels
-                                        width={this.panes.labels.width - 10}
+                                        width={Math.max(50, this.panes.labels.width - 10)}
                                         padding={this.padding}
                                     />
                                 </Provider>
@@ -351,7 +362,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 onResize={(size) => {
                                     const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
                                     const actualWidth = (containerWidth - 40) * (size / 100);
-                                    this.panes.operators.width = actualWidth;
+                                    this.updatePaneWidth('operators', actualWidth);
                                 }}
                             >
                                 <RowOperators
@@ -376,7 +387,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 onResize={(size) => {
                                     const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
                                     const actualWidth = (containerWidth - 40) * (size / 100);
-                                    this.panes.view.width = actualWidth;
+                                    this.updatePaneWidth('view', actualWidth);
                                 }}
                             >
                                 <div ref={this.blockView} className="scrollableX">
@@ -399,7 +410,7 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                 onResize={(size) => {
                                     const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
                                     const actualWidth = (containerWidth - 40) * (size / 100);
-                                    this.panes.legend.width = actualWidth;
+                                    this.updatePaneWidth('legend', actualWidth);
                                 }}
                             >
                                 <Legend

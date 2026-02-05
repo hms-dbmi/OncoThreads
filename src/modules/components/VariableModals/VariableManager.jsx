@@ -88,11 +88,11 @@ const VariableManager = inject('rootStore', 'undoRedoStore')(observer(class Vari
                         </Tab>
                     </Tabs>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.props.closeVariableManager}>
+                <Modal.Footer style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, alignItems: 'center' }}>
+                    <Button variant="secondary" style={{ marginBottom: 0 }} onClick={this.props.closeVariableManager}>
                         Close
                     </Button>
-                    <Button onClick={this.handleAddButton}>
+                    <Button variant="primary" onClick={this.handleAddButton}>
                         Apply changes
                     </Button>
                 </Modal.Footer>

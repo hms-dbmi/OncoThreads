@@ -41,8 +41,6 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
             handleOptionSelect: action,
         });
         this.addGeneVariables = this.addGeneVariables.bind(this);
-        this.handleSelect = this.handleSelect.bind(this);
-        this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.addVariablesEnter = this.addVariablesEnter.bind(this);
     }
@@ -281,7 +279,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * handles selecting a category
      * @param {Object} e
      */
-    handleSelect(e) {
+    handleSelect = (e) => {
         this.category = e.target.value;
         this.selectedValues.clear();
     }
@@ -290,7 +288,7 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
      * handles selecting an option
      * @param {Object[]} selectedOptions
      */
-    handleOptionSelect(selectedOptions) {
+    handleOptionSelect = (selectedOptions) => {
         if (selectedOptions !== null) {
             this.selectedValues.replace(selectedOptions);
         } else {

@@ -158,7 +158,8 @@ class VisStore {
      * resets the transition spaces to the number of timepoints -1
      */
     resetTransitionSpaces = () => {
-        this.transitionSpaces.replace(Array(this.rootStore.dataStore.timepoints.length - 1)
+        const length = Math.max(0, this.rootStore.dataStore.timepoints.length - 1);
+        this.transitionSpaces.replace(Array(length)
             .fill(this.minTransHeight));
         this.fitToScreenHeight();
     };
@@ -237,7 +238,10 @@ class VisStore {
      * @returns {number}
      */
     get sampleRectWidth() {
-        return this.plotWidth / (300 - this.horizontalZoom) - this.verticalGap;
+        const plotWidth = this.plotWidth || 700;
+        const denominator = Math.max(1, 300 - this.horizontalZoom); // Prevent division by zero
+        const verticalGap = this.verticalGap || 1;
+        return plotWidth / denominator - verticalGap;
     }
 
     /**
@@ -277,8 +281,10 @@ class VisStore {
      * @returns {number}
      */
     get heatmapWidth() {
-        return this.rootStore.dataStore.numberOfPatients
-            * (this.sampleRectWidth + this.verticalGap) - this.verticalGap;
+        const numberOfPatients = this.rootStore.dataStore.numberOfPatients || 0;
+        const sampleRectWidth = this.sampleRectWidth || 0;
+        const verticalGap = this.verticalGap || 0;
+        return numberOfPatients * (sampleRectWidth + verticalGap) - verticalGap;
     }
 
     /**
@@ -286,11 +292,16 @@ class VisStore {
      * @returns {number}
      */
     get svgWidth() {
-        if (this.heatmapWidth > this.plotWidth) {
-            return this.heatmapWidth + this.rootStore.dataStore.maxPartitions
-                * this.partitionGap + this.sampleRectWidth;
+        const heatmapWidth = this.heatmapWidth || 0;
+        const plotWidth = this.plotWidth || 700;
+        const maxPartitions = this.rootStore.dataStore.maxPartitions || 0;
+        const partitionGap = this.partitionGap || 0;
+        const sampleRectWidth = this.sampleRectWidth || 0;
+        
+        if (heatmapWidth > plotWidth) {
+            return heatmapWidth + maxPartitions * partitionGap + sampleRectWidth;
         }
-        return this.plotWidth;
+        return plotWidth;
     }
 
     /**
@@ -339,9 +350,12 @@ class VisStore {
      * @return {d3.scalePoint[]}
      */
     get heatmapScales() {
+        const heatmapWidth = this.heatmapWidth || 0;
+        const sampleRectWidth = this.sampleRectWidth || 0;
+        const rangeEnd = Math.max(0, heatmapWidth - sampleRectWidth);
         return this.rootStore.dataStore.timepoints.map(d => d3.scalePoint()
-            .domain(d.heatmapOrder)
-            .range([0, this.heatmapWidth - this.sampleRectWidth]));
+            .domain(d.heatmapOrder || [])
+            .range([0, rangeEnd]));
     }
 
     /**
@@ -350,10 +364,16 @@ class VisStore {
      */
     get groupScale() {
         const {dataStore, uiStore} = this.rootStore
+        const numberOfPatients = dataStore.numberOfPatients || 0;
+        const plotWidth = this.plotWidth || 700;
+        const maxPartitions = dataStore.maxPartitions || 0;
+        const partitionGap = this.partitionGap || 0;
+        const rowOffset = uiStore.rowOffset || 0;
+        const strokeW = this.strokeW || 0;
 
         return d3.scaleLinear()
-        .domain([0, dataStore.numberOfPatients])
-        .range([0, this.plotWidth - dataStore.maxPartitions * this.partitionGap - uiStore.rowOffset * 2 - this.strokeW*2] );
+        .domain([0, numberOfPatients])
+        .range([0, plotWidth - maxPartitions * partitionGap - rowOffset * 2 - strokeW * 2]);
     }
 
     /**

@@ -28,7 +28,7 @@ const RowOperators = inject('rootStore')(observer(class RowOperators extends Rea
         });
         return (
             <div>
-                <svg width={this.props.width} height={this.props.rootStore.visStore.svgHeight}>
+                <svg width={this.props.width || 150} height={this.props.rootStore.visStore.svgHeight}>
                     {rowHeader}
                 </svg>
             </div>

@@ -204,7 +204,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
             }
             let bgColor = null;
             if (d.isSelected) {
-                bgColor = 'lightgray';
+                bgColor = '#cce5ff';
             }
             elements.push(
                 <tr
@@ -216,14 +216,16 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                         }
                     }}
                 >
-                    <td>
-                        {i + 1}
-                        <Button size="sm" onClick={() => this.moveSingle(true, false, i)}>
-                            <UpOutlined />
-                        </Button>
-                        <Button size="sm" onClick={() => this.moveSingle(false, false, i)}>
-                            <DownOutlined />
-                        </Button>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ minWidth: 20 }}>{i + 1}</span>
+                            <Button size="sm" onClick={() => this.moveSingle(true, false, i)}>
+                                <UpOutlined />
+                            </Button>
+                            <Button size="sm" onClick={() => this.moveSingle(false, false, i)}>
+                                <DownOutlined />
+                            </Button>
+                        </div>
                     </td>
                     <OverlayTrigger placement="top" overlay={tooltip}>
                         <td>
@@ -259,8 +261,8 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
             <Table hover size="sm">
                 <thead>
                     <tr>
-                        <th>Position</th>
-                        <th>
+                        <th style={{ whiteSpace: 'nowrap' }}>Position</th>
+                        <th style={{ whiteSpace: 'nowrap' }}>
                         Variable
                             {this.sortVarAsc ? (
                                 <DownOutlined
@@ -274,8 +276,8 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                                 />
                             )}
                         </th>
-                        <th />
-                        <th>
+                        <th style={{ whiteSpace: 'nowrap' }} />
+                        <th style={{ whiteSpace: 'nowrap' }}>
                         Datatype
                             {this.sortTypeAsc ? (
                                 <DownOutlined
@@ -289,7 +291,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                                 />
                             )}
                         </th>
-                        <th>
+                        <th style={{ whiteSpace: 'nowrap' }}>
                         Source
                             {this.sortSourceAsc ? (
                                 <DownOutlined
@@ -303,7 +305,7 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
                                 />
                             )}
                         </th>
-                        <th>Actions</th>
+                        <th style={{ whiteSpace: 'nowrap' }}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -367,20 +369,22 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
     render() {
         return (
             <div>
-                <div style={{ maxHeight: 400, overflowY: 'scroll' }}>
+                <div style={{ maxHeight: 400, overflowY: 'scroll', marginBottom: 15 }}>
                     {this.showCurrentVariables()}
                 </div>
-                <DropdownButton
-                    title="Move Selected..."
-                    id="MoveSelected"
-                >
-                    <Dropdown.Item onClick={() => this.moveSelected(true, false)} eventKey="1">Up</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.moveSelected(false, false)} eventKey="2">Down</Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item onClick={() => this.moveSelected(true, true)} eventKey="3">to top</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</Dropdown.Item>
-                </DropdownButton>
-                <Button onClick={this.combineSelected}>Combine Selected</Button>
+                <div style={{ display: 'flex', gap: 10 }}>
+                    <DropdownButton
+                        title="Move Selected..."
+                        id="MoveSelected"
+                    >
+                        <Dropdown.Item onClick={() => this.moveSelected(true, false)} eventKey="1">Up</Dropdown.Item>
+                        <Dropdown.Item onClick={() => this.moveSelected(false, false)} eventKey="2">Down</Dropdown.Item>
+                        <Dropdown.Divider />
+                        <Dropdown.Item onClick={() => this.moveSelected(true, true)} eventKey="3">to top</Dropdown.Item>
+                        <Dropdown.Item onClick={() => this.moveSelected(false, true)} eventKey="4">to bottom</Dropdown.Item>
+                    </DropdownButton>
+                    <Button onClick={this.combineSelected}>Combine Selected</Button>
+                </div>
                 {this.getModal()}
             </div>
 
