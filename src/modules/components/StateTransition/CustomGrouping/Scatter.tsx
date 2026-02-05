@@ -157,7 +157,7 @@ class Scatter extends React.Component<Props> {
                 })}
             </div>
 
-            return <Tooltip title={tooltipTitle} trigger='click' destroyTooltipOnHide key={id} style={{zIndex: 100000000001}}>
+            return <Tooltip title={tooltipTitle} trigger='click' destroyOnHidden key={id} style={{zIndex: 100000000001}}>
                 <g
                     transform={`translate(
                         ${xScale(normPoint.pos[0]) - this.cellWidth / 2}, 

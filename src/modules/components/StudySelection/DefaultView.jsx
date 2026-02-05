@@ -14,7 +14,7 @@ import {
     Tab,
     Tabs,
 } from 'react-bootstrap';
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import StudySummary from '../StudySummary';
 import LocalFileSelection from './LocalFileSelection';
 
@@ -34,11 +34,17 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
             selectedStudy: observable,
             selectedTab: observable,
             ownInstanceURL: observable,
+            getStudy: action,
+            handleSelectTab: action,
+            displayStudy: action,
+            handleInstanceChange: action,
+            selectInstance: action,
         });
         this.handleSelectTab = this.handleSelectTab.bind(this);
         this.displayStudy = this.displayStudy.bind(this);
         this.selectInstance = this.selectInstance.bind(this);
         this.handleInstanceChange = this.handleInstanceChange.bind(this);
+        this.getStudy = this.getStudy.bind(this);
     }
 
     /**
@@ -47,8 +53,25 @@ const DefaultView = inject('rootStore', 'undoRedoStore', 'uiStore')(observer(cla
      */
     getStudy(selectedOption) {
         this.selectedStudy = selectedOption;
-        this.props.rootStore.parseTimeline(this.props.rootStore.studyAPI.studies
-            .filter((d) => d.studyId === selectedOption.value)[0], () => {
+        const study = this.props.rootStore.studyAPI.studies
+            .filter((d) => d.studyId === selectedOption.value)[0];
+        
+        // Clear previous study data before loading new one
+        this.props.rootStore.clearStudyData();
+        
+        // Check if study has temporal data before parsing timeline
+        this.props.rootStore.studyAPI.checkStudyHasTemporalData(
+            this.props.rootStore.cBioLink,
+            study,
+            this.props.rootStore.studyAPI.accessTokenFromUser
+        ).then((hasTemporal) => {
+            if (hasTemporal) {
+                // Only parse timeline if study has temporal data
+                this.props.rootStore.parseTimeline(study, () => {
+                });
+            } else {
+                console.log('Study does not have temporal data:', study.studyId);
+            }
         });
     }
 

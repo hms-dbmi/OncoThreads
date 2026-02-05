@@ -122,8 +122,10 @@ class LocalFileLoader {
                 Object.keys(this.panelMatrix).every((sample) => {
                     Object.keys(this.panelMatrix[sample]).every((key) => {
                         if (!this.genePanels.has(this.panelMatrix[sample][key]) && this.panelMatrix[sample][key] !== 'NA') {
-                            this.parsingStatus.genePanels = 'error';
-                            this.parsingStatus.panelMatrix = 'error';
+                            action(() => {
+                                this.parsingStatus.genePanels = 'error';
+                                this.parsingStatus.panelMatrix = 'error';
+                            })();
                             alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
                             broke = true;
                             return false;
@@ -133,7 +135,9 @@ class LocalFileLoader {
                     return !broke;
                 });
                 if (!broke) {
-                    this.parsingStatus.genePanels = 'finished';
+                    action(() => {
+                        this.parsingStatus.genePanels = 'finished';
+                    })();
                 }
             }
         });
@@ -146,8 +150,10 @@ class LocalFileLoader {
                 Object.keys(this.panelMatrix).every((sample) => {
                     Object.keys(this.panelMatrix[sample]).every((key) => {
                         if (!this.genePanels.has(this.panelMatrix[sample][key]) && this.panelMatrix[sample][key] !== 'NA') {
-                            this.parsingStatus.genePanels = 'error';
-                            this.parsingStatus.panelMatrix = 'error';
+                            action(() => {
+                                this.parsingStatus.genePanels = 'error';
+                                this.parsingStatus.panelMatrix = 'error';
+                            })();
                             alert("ERROR: Gene panel Ids don't mach panel ids in panel matrix");
                             broke = true;
                             return false;
@@ -157,7 +163,9 @@ class LocalFileLoader {
                     return !broke;
                 });
                 if (!broke) {
-                    this.parsingStatus.panelMatrix = 'finished';
+                    action(() => {
+                        this.parsingStatus.panelMatrix = 'finished';
+                    })();
                 }
             }
         });
@@ -243,7 +251,9 @@ class LocalFileLoader {
                         row.meta.fields, d.name)) {
                         eventFiles.set(row.data.EVENT_TYPE, d);
                     } else {
-                        this.parsingStatus.events = 'error';
+                        action(() => {
+                            this.parsingStatus.events = 'error';
+                        })();
                         parser.abort();
                     }
                 },
@@ -254,11 +264,15 @@ class LocalFileLoader {
                         if (eventFiles.has('SPECIMEN')) {
                             this.setPatientsAndSamples(eventFiles.get('SPECIMEN'), () => {
                                 this.eventFiles = eventFiles;
-                                this.parsingStatus.events = 'finished';
+                                action(() => {
+                                    this.parsingStatus.events = 'finished';
+                                })();
                                 callback();
                             });
                         } else {
-                            this.parsingStatus.events = 'error';
+                            action(() => {
+                                this.parsingStatus.events = 'error';
+                            })();
                             alert('ERROR: Required timeline file with EVENT_TYPE SPECIMEN missing');
                         }
                     }
@@ -292,7 +306,9 @@ class LocalFileLoader {
                 const date = parseInt(row.data.START_DATE, 10);
                 if (Number.isNaN(date)) {
                     alert('ERROR: START_DATE is not a number');
-                    this.parsingStatus.events = 'error';
+                    action(() => {
+                        this.parsingStatus.events = 'error';
+                    })();
                     dateCorrect = false;
                     parser.abort();
                 }
@@ -338,7 +354,9 @@ class LocalFileLoader {
                             if ('VAF' in row.data) {hasVaf = true}
                             firstRow = false;
                         } else {
-                            this.parsingStatus.mutations = 'error';
+                            action(() => {
+                                this.parsingStatus.mutations = 'error';
+                            })();
                             aborted = true;
                             parser.abort();
                         }
@@ -378,7 +396,7 @@ class LocalFileLoader {
                     parser.abort();
                 }
             },
-            complete: () => {
+            complete: action(() => {
                 if (!aborted) {
                     this.molecularProfiles.push({
                         molecularAlterationType: 'MUTATION_EXTENDED',
@@ -412,7 +430,7 @@ class LocalFileLoader {
                 } else {
                     this.parsingStatus.mutations = 'error';
                 }
-            },
+            }),
         });
     };
 
@@ -486,10 +504,10 @@ class LocalFileLoader {
                             parser.abort();
                         }
                     },
-                    complete: () => {
+                    complete: action(() => {
                         if (!aborted) {
                             Object.keys(events).forEach((patient) => {
-                                events[patient].sort((a, b) => a.startNumberOfDaysSinceDiagnosis
+                                events[patient] = events[patient].slice().sort((a, b) => a.startNumberOfDaysSinceDiagnosis
                                     - b.startNumberOfDaysSinceDiagnosis);
                             });
                             callback(events);
@@ -500,7 +518,7 @@ class LocalFileLoader {
                         } else {
                             this.parsingStatus.events = 'error';
                         }
-                },
+                }),
             });
     };
 
@@ -585,7 +603,7 @@ class LocalFileLoader {
                         }
                         rowCounter += 1;
                     },
-                    complete: () => {
+                    complete: action(() => {
                         if (correctHeader) {
                             if (isSample) {
                                 this.clinicalSampleFile = file;
@@ -599,7 +617,7 @@ class LocalFileLoader {
                         } else {
                             this.parsingStatus.clinicalPatient = 'error';
                         }
-                    },
+                    }),
                 });
     };
 
@@ -660,7 +678,7 @@ class LocalFileLoader {
                                 parser.abort();
                             }
                         },
-                        complete: () => {
+                        complete: action(() => {
                             // parse data
                             if (!abort) {
                                 this.loadClinicalBody(file, isSample, clinicalAttributes, callback);
@@ -681,7 +699,7 @@ class LocalFileLoader {
                             } else {
                                 this.parsingStatus.clinicalPatient = 'error';
                             }
-                        },
+                        }),
                     });
                 } else callback([]);
     };
@@ -737,7 +755,7 @@ class LocalFileLoader {
                             parser.abort();
                         }
                     },
-                    complete: () => {
+                    complete: action(() => {
                         // only callback if there are no errors
                         if (abort) {
                             if (inconsistentLinebreaks) {
@@ -762,7 +780,7 @@ class LocalFileLoader {
                         } else {
                             callback(rows);
                         }
-                    },
+                    }),
                 });
     };
 
@@ -775,12 +793,12 @@ class LocalFileLoader {
         let filesParsed = 0;
         this.parsingStatus.molecular = 'loading';
         Array.from(files).forEach((file, i) => {
-            this.setMolecular(file, metaData[i], () => {
+            this.setMolecular(file, metaData[i], action(() => {
                 filesParsed += 1;
                 if (filesParsed === files.length) {
                     this.parsingStatus.molecular = 'finished';
                 }
-            });
+            }));
         });
     };
 
@@ -849,7 +867,7 @@ class LocalFileLoader {
                             }
                         }
                     },
-                    complete: () => {
+                    complete: action(() => {
                         if (!aborted) {
                             const id = uuidv4();
                             this.molecularProfiles.push({
@@ -867,7 +885,7 @@ class LocalFileLoader {
                         } else {
                             this.parsingStatus.molecular = 'error';
                         }
-                    },
+                    }),
                 });
             };
 
@@ -879,7 +897,7 @@ class LocalFileLoader {
                     header: true,
                     worker: true,
                     skipEmptyLines: true,
-                    complete: (response) => {
+                    complete: action((response) => {
                         const hasSampleID = response.meta.fields.includes('SAMPLE_ID');
                         const hasMutations = response.meta.fields.includes('mutations');
                         const hasCNA = response.meta.fields.includes('cna');
@@ -914,7 +932,7 @@ class LocalFileLoader {
                             alert(`The following columns are missing ${missingColumns}`);
                             this.parsingStatus.panelMatrix = 'error';
                         }
-                    },
+                    }),
                 });
             };
 
@@ -923,7 +941,7 @@ class LocalFileLoader {
                 this.genePanels.clear();
                 Array.from(files).forEach((file) => {
                     const reader = new FileReader();
-                    reader.onload = () => {
+                    reader.onload = action(() => {
                         const lines = reader.result.split(/[\r\n]+/g).filter(line => line.trim() !== ''); // tolerate both Windows and Unix linebreaks
                         if (lines.length === 4) {
                             const nameLineEntries = lines[1].split(':');
@@ -947,7 +965,7 @@ class LocalFileLoader {
                         if (this.genePanels.size === files.length) {
                             this.parsingStatus.genePanels = 'finished';
                         }
-                    };
+                    });
                     reader.readAsText(file);
                 });
             };

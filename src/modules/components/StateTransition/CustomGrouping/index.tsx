@@ -273,7 +273,7 @@ class CustomGrouping extends React.Component<Props> {
                     </span>} 
                 extra={controllerView} 
                 style={{width:"98%"}}
-                bodyStyle={{padding: "5px"}}
+                styles={{body: {padding: "5px"}}}
             >
       
                 <div

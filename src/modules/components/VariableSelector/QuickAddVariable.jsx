@@ -4,7 +4,7 @@ import {
     Button, Col, Form, Row,
 } from 'react-bootstrap';
 import Select from 'react-select';
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import OriginalVariable from '../../stores/OriginalVariable';
 import {toTitleCase} from '../../UtilityClasses/UtilityFunctions';
 import MutationSelector from '../Modals/MutationSelector';
@@ -37,6 +37,8 @@ const QuickAddVariable = inject('rootStore', 'undoRedoStore')(observer(class Qui
         makeObservable(this, {
             category: observable,
             selectedValues: observable,
+            handleSelect: action,
+            handleOptionSelect: action,
         });
         this.addGeneVariables = this.addGeneVariables.bind(this);
         this.handleSelect = this.handleSelect.bind(this);

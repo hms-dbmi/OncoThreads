@@ -5,7 +5,7 @@ import {
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
-import {makeObservable, observable, observe} from 'mobx';
+import {makeObservable, observable, observe, action} from 'mobx';
 import SelectDatatype from '../Modals/SelectDatatype';
 
 
@@ -43,6 +43,8 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
             modalIsOpen: observable,
             fileNames: observable,
             datatypes: observable,
+            openModal: action,
+            setDatatype: action,
         });
         // random keys for file inputs used for reset (inputs are reset if key changes to 'empty')
         this.keys = {
@@ -78,9 +80,11 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
         const parsingStatus = this.props.rootStore.localFileLoader.parsingStatus;
         if (this.props.rootStore.geneNamesAPI.geneListLoaded) {
             return (
-                <Form horizontal>
-                    <h4>Required files</h4>
+                <Form>
                     <Form.Group>
+                        <Col sm={12}>
+                            <h4>Required files</h4>
+                        </Col>
                         <Col sm={5}>
                             Timeline
                             {' '}
@@ -106,8 +110,11 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                             </div>
                         </Col>
                     </Form.Group>
-                    <h4>At least one required</h4>
                     <Form.Group>
+                        <Col sm={12}>
+                            <h4>At least one required</h4>
+                        </Col>
+
                         <Col sm={5}>
                             Clinical Sample Data
                             {' '}
@@ -212,8 +219,8 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                             </div>
                         </Col>
                     </Form.Group>
-                    <h4>Optional files</h4>
                     <Form.Group>
+                        <Col sm={12}><h4>Optional files</h4></Col>
                         <Col sm={5}>
                             Gene Panel Matrix
                             {' '}
@@ -283,9 +290,9 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
                     setDatatype={this.setDatatype}
                     selectedTypes={this.datatypes.map(d => d.key)}
                     callback={this.callback}
-                    closeModal={() => {
+                    closeModal={action(() => {
                         this.modalIsOpen = false;
-                    }}
+                    })}
                 />
             );
         }
@@ -360,12 +367,12 @@ const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class L
      * @param {FileList} files
      * @param {Function} callback
      */
-    openModal(files, callback) {
+    openModal = action((files, callback) => {
         this.modalIsOpen = true;
         this.datatypes = Array.from(files).map(() => ({key: 'UnspecCont', alterationType: 'ANY', datatype: 'CONTINUOUS'}));
         this.fileNames = Array.from(files).map(d => d.name);
         this.callback = callback;
-    }
+    });
 
     /**
      * handles selection of CNV files

@@ -7,7 +7,7 @@ import {
     Button, ButtonGroup, ButtonToolbar, Col, Container, Dropdown, DropdownButton, Row,
 } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import MainView from './MainView';
 import GroupBinningModal from './VariableModals/ModifySingleVariable/Binner/GroupBinningModal';
 import Tooltip from './Tooltip';
@@ -52,6 +52,20 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
             contextMenuType: observable,
             moveMenuVisibility: observable,
             variableManagerOpen: observable,
+            openBinningModal: action,
+            closeBinningModal: action,
+            openSaveVarModal: action,
+            closeSaveModal: action,
+            openVariableManager: action,
+            closeVariableManager: action,
+            showTooltip: action,
+            hideTooltip: action,
+            showContextMenu: action,
+            hideContextMenu: action,
+            showContextMenuHeatmapRow: action,
+            handleResetAll: action,
+            handleResetAlignment: action,
+            handleResetSelection: action,
         });
         this.openBinningModal = this.openBinningModal.bind(this);
         this.openSaveVarModal = this.openSaveVarModal.bind(this);
@@ -298,7 +312,10 @@ const Content = inject('rootStore', 'undoRedoStore')(observer(class Content exte
                         data-intro='Add more features through the drop down menu and the Feature Manager.<br/> <br/>  <h4>(ง •_•)ง Having Fun with your exploration!</h4> '
                         data-step='7'
                     >
-                        <Col smOffset={0} xsOffset={0} md={7} xs={7}>
+                        <Col xs={{
+                            span: 7,
+                            offset: 0,
+                        }}>
                             <QuickAddVariable />
                         </Col>
                         <Col sm={4} xs={4}>

@@ -23,6 +23,8 @@ const Legend = inject('rootStore', 'uiStore')(observer(class Legend extends Reac
             activeIndex: observable,
             prevPos: observable,
             dragVisibility: observable,
+            dragLine: action,
+            stopLineDrag: action,
         });
         
         this.maxWidth = 100;

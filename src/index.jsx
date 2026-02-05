@@ -21,9 +21,9 @@ import "react-resizable/css/styles.css"
 // Font Awesome for react-fontawesome
 import 'font-awesome/css/font-awesome.min.css';
 
-// Application styles (from public folder - Vite will handle these)
-import '/public/style.css';
-import '/public/lineUp.css';
+// Application styles
+import './style.css';
+import './lineUp.css';
 
 import App from './modules/components/App.jsx';
 import RootStore from './modules/stores/RootStore';

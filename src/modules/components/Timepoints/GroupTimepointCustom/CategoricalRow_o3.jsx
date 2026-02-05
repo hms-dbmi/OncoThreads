@@ -43,7 +43,7 @@ const CategoricalRow = inject('dataStore', 'uiStore', 'visStore')(observer(class
         const tooltipTitle = this.props.row.map((d)=><span key={d.key}>{`${d.key}: ${d.patients.length} patients`} <br/> </span>)
         const {name} = this.props.dataStore.referencedVariables[this.props.variable]
         tooltipTitle.unshift(<span key="title">{name} <br/></span>)
-        return <Tooltip title={tooltipTitle} destroyTooltipOnHide>
+        return <Tooltip title={tooltipTitle} destroyOnHidden>
             {this.drawRowDist()}
         </Tooltip>
     }

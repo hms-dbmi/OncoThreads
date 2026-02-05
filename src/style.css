@@ -1,0 +1,126 @@
+/**
+scrollable div
+ */
+div.scrollableX {
+  overflow-x: scroll;
+  z-index: 1;
+}
+
+/**
+overlaid div
+ */
+div.overlaid {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+}
+
+/**
+enables linebreaks within words
+ */
+.wordBreak {
+  white-space: pre-wrap;
+}
+
+.centeredText {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+}
+
+/**
+properties of drag lines (lines to change height of transitions
+ */
+line.dragLine {
+  stroke: lightgray;
+  stroke-width: 3px;
+  cursor: row-resize;
+}
+
+/**
+changes cursor of clickable elements
+ */
+.clickable:hover {
+  cursor: pointer;
+}
+
+/**
+properties of an inactive pane
+ */
+.pane-inactive {
+  border-right: 1px solid #f0f0f0;
+}
+
+/**
+properties of an active (dragged) pane
+ */
+.pane-active {
+  background-color: rgba(150, 150, 150, 0.1);
+}
+
+/**
+big spinning study loader
+ */
+.bigLoader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  margin: -60px 0 0 -60px;
+  animation: spin 2s linear infinite;
+}
+
+/**
+small spinning study loader
+ */
+.smallLoader {
+  margin: 20px auto 0;
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fullSizeModal {
+  min-width: 95vw;
+  height: 90vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin: 1em 0;
+  padding: 0;
+}
+
+/* Set base font size - React-Bootstrap sets it to 10px */
+html {
+  font-size: 16px;
+}
+
+.show {
+  opacity: 100%;
+}

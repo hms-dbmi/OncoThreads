@@ -3,7 +3,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Col, Form } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import { makeObservable, observable, computed } from 'mobx';
+import { makeObservable, observable, computed, action } from 'mobx';
 import SelectAll from '../../SelectAllSelector/react-select-all';
 
 
@@ -32,6 +32,10 @@ const MutationSelector = inject('rootStore')(observer(class MutationSelector ext
             molecularOptions: observable,
             selectedOptions: observable,
             geneList: computed,
+            handleOptionSelect: action,
+            addGeneVariables: action,
+            searchGenes: action,
+            updateSearchValue: action,
         });
         
         this.typing = false;

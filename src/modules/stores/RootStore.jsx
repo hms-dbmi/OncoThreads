@@ -186,6 +186,20 @@ class RootStore {
      * @param {Object} study
      * @param {loadFinishedCallback} callback
      */
+    /**
+     * Clears study data when switching between studies
+     */
+    clearStudyData = action(() => {
+        this.timelineParsed = false;
+        this.patients = [];
+        this.sampleStructure = {};
+        this.timepointStructure.clear();
+        this.staticMappers = {};
+        this.eventMappers = {};
+        this.clinicalPatientCategories.clear();
+        this.clinicalSampleCategories.clear();
+    });
+
     parseTimeline = (study, callback) => {
         this.study = study;
         if (this.isOwnData) {
@@ -206,13 +220,12 @@ class RootStore {
         // this.uiStore.selectedTab = 'stateTransition';
         this.api.getPatients((patients) => {
             this.patients = patients;
-            this.api.getEvents(patients, (events) => {
+            this.api.getEvents(patients, action((events) => {
                 this.buildTimelineStructure(events);
                 this.createEventVariables(events);
                 this.createTimeGapMapping();
 
                 this.timelineParsed = true;
-                
                 
 
                 callback();
@@ -222,7 +235,7 @@ class RootStore {
 
                 //console.log(events);
 
-            }, this.studyAPI.accessTokenFromUser);
+            }), this.studyAPI.accessTokenFromUser);
 
         }, this.studyAPI.accessTokenFromUser);
 
@@ -242,7 +255,7 @@ class RootStore {
                     this.initialVariable = this.clinicalSampleCategories[0];
                     this.hasClinical = true;
                 }
-                this.api.getClinicalPatientData((patientData) => {
+                this.api.getClinicalPatientData(action((patientData) => {
                     this.createClinicalPatientMappers(patientData);
                     if (patientData.length !== 0) {
                         if (!this.hasClinical) {
@@ -260,7 +273,7 @@ class RootStore {
                         this.addInitialVariable()
                     }
                     callback();
-                }, this.studyAPI.accessTokenFromUser);
+                }), this.studyAPI.accessTokenFromUser);
             }, this.studyAPI.accessTokenFromUser);
         }, this.studyAPI.accessTokenFromUser);
     };
@@ -439,6 +452,12 @@ class RootStore {
      * @returns {Object[][]}
      */
     get eventBlockStructure() {
+        // Safety check: ensure timepointStructure is initialized
+        if (!this.timepointStructure || this.timepointStructure.length === 0) {
+            console.warn('eventBlockStructure accessed before timepointStructure is initialized');
+            return [];
+        }
+        
         const eventBlockStructure = [];
         eventBlockStructure.push(this.timepointStructure[0].slice());
         for (let i = 1; i < this.timepointStructure.length; i += 1) {

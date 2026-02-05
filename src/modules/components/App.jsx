@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { inject, observer } from 'mobx-react';
+import { action } from 'mobx';
 import {
     Button, Container, Modal, Nav, Navbar, NavDropdown,
 } from 'react-bootstrap';
@@ -85,7 +86,7 @@ const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App e
                 <Nav.Link key="info" onClick={() => this.openModal('info')}>Study Info</Nav.Link>,
                 <Nav.Link key="about" onClick={() => this.openModal('about')}>About</Nav.Link>,
 
-                <Nav.Link key="home" onClick={() => this.props.rootStore.firstLoad = true}>
+                <Nav.Link key="home" onClick={action(() => this.props.rootStore.firstLoad = true)}>
                     <HomeOutlined />
                     {/* <img alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMTYiIGhlaWdodD0iMTYiCnZpZXdCb3g9IjAgMCAxNiAxNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDggMS4zMjAzMTMgTCAwLjY2MDE1NiA4LjEzMjgxMyBMIDEuMzM5ODQ0IDguODY3MTg4IEwgMiA4LjI1MzkwNiBMIDIgMTQgTCA3IDE0IEwgNyA5IEwgOSA5IEwgOSAxNCBMIDE0IDE0IEwgMTQgOC4yNTM5MDYgTCAxNC42NjAxNTYgOC44NjcxODggTCAxNS4zMzk4NDQgOC4xMzI4MTMgWiBNIDggMi42Nzk2ODggTCAxMyA3LjMyODEyNSBMIDEzIDEzIEwgMTAgMTMgTCAxMCA4IEwgNiA4IEwgNiAxMyBMIDMgMTMgTCAzIDcuMzI4MTI1IFoiPjwvcGF0aD48L3N2Zz4="></img>  */}
                 </Nav.Link>,

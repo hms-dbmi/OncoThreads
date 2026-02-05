@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { makeObservable, observable, action, computed } from 'mobx';
+import { message } from 'antd';
 import CBioAPI from './CBioAPI';
 
 /**
@@ -15,6 +16,7 @@ class StudyAPI {
     errorMsg = null;
     studiesLoaded = {hack: false, portal: false, own: false};
     eventsCache = new Map(); // Cache for study event checks
+    eventsPending = new Map(); // Track in-flight requests to prevent duplicates
 
     constructor(uiStore) {
         this.uiStore = uiStore;
@@ -52,16 +54,31 @@ class StudyAPI {
         StudyAPI.callGetAPI(`${link}/api/studies?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`, token, {})
             .then((response) => {
                 setStatus('success');
+                
+                // Just add all studies without checking for events
+                // Events will be checked when user selects a study
                 response.data.forEach((study) => {
-                    this.includeStudy(link, study, callback, token);
+                    callback(study);
                 });
             }).catch((thrown) => {
             setStatus('failed');
-            // setError(thrown.message);
-            if (CBioAPI.verbose) {
-                console.log(thrown);
-            } else {
-                console.log('could not load studies');
+            const errorMsg = thrown.response?.data?.message || thrown.message || 'Unknown error';
+            this.errorMsg = `Failed to load studies: ${errorMsg}`;
+            
+            message.error({
+                content: `Failed to load studies from ${link}: ${errorMsg}`,
+                duration: 5,
+            });
+            
+            console.error('Error loading studies:', {
+                url: link,
+                error: errorMsg,
+                status: thrown.response?.status,
+                fullError: thrown
+            });
+            
+            if (setError) {
+                setError(this.errorMsg);
             }
         });
     };
@@ -79,20 +96,115 @@ class StudyAPI {
             if (hasTemporal) {
                 callback(study);
             }
-            return;
+            // For batching: resolve immediately since we have the answer
+            return Promise.resolve();
         }
         
-        this.getEvents(study.studyId, link, (events) => {
-            const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
-            const hasTemporal = specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'));
+        // Check if request is already pending
+        if (this.eventsPending.has(cacheKey)) {
+            // Add callback to pending list and return the promise
+            return new Promise((resolve) => {
+                this.eventsPending.get(cacheKey).push({ callback, resolve });
+            });
+        }
+        
+        // Mark as pending and store callback with resolver
+        return new Promise((resolve) => {
+            this.eventsPending.set(cacheKey, [{ callback, resolve }]);
             
-            // Cache the result
-            this.eventsCache.set(cacheKey, hasTemporal);
+            this.getEvents(study.studyId, link, (events) => {
+                const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
+                const hasTemporal = specimenEvents.length > 0 && specimenEvents.some((event) => event.attributes.map((d) => d.key).includes('SAMPLE_ID'));
+                
+                // Cache the result
+                this.eventsCache.set(cacheKey, hasTemporal);
+                
+                // Call all pending callbacks and resolve their promises
+                const pending = this.eventsPending.get(cacheKey) || [];
+                this.eventsPending.delete(cacheKey);
+                
+                pending.forEach(({ callback: cb, resolve: res }) => {
+                    if (hasTemporal) {
+                        cb(study);
+                    }
+                    res();
+                });
+            }, token);
+        });
+    };
+
+    /**
+     * checks if a study has temporal data (clinical events with specimen timeline)
+     * This method should be called when a user selects a study
+     * @param {string} link - The cBioPortal instance URL
+     * @param {Object} study - The study object
+     * @param {string} token - Authentication token
+     * @returns {Promise<boolean>} - Resolves to true if study has temporal data
+     */
+    checkStudyHasTemporalData = (link, study, token) => {
+        const cacheKey = `${link}|${study.studyId}`;
+        
+        // Check cache first
+        if (this.eventsCache.has(cacheKey)) {
+            return Promise.resolve(this.eventsCache.get(cacheKey));
+        }
+        
+        // Check if request is already pending
+        if (this.eventsPending.has(cacheKey)) {
+            return new Promise((resolve) => {
+                this.eventsPending.get(cacheKey).push({ 
+                    callback: () => {}, 
+                    resolve: () => resolve(this.eventsCache.get(cacheKey)) 
+                });
+            });
+        }
+        
+        // Make the request
+        return new Promise((resolve) => {
+            this.eventsPending.set(cacheKey, [{ callback: () => {}, resolve: () => resolve(true) }]);
             
-            if (hasTemporal) {
-                callback(study);
-            }
-        }, token);
+            this.getEvents(study.studyId, link, (events) => {
+                // Check if events array has any SPECIMEN events with SAMPLE_ID
+                const specimenEvents = events.filter((event) => event.eventType === 'SPECIMEN');
+                const hasTemporal = specimenEvents.length > 0 && 
+                    specimenEvents.some((event) => 
+                        event.attributes && 
+                        event.attributes.some((attr) => attr.key === 'SAMPLE_ID')
+                    );
+                
+                if (!hasTemporal && events.length > 0) {
+                    const eventTypes = [...new Set(events.map(e => e.eventType))];
+                    console.log(`Study ${study.studyId} has temporal data but no SPECIMEN events. Event types:`, eventTypes);
+                }
+                
+                // Cache the result
+                this.eventsCache.set(cacheKey, hasTemporal);
+                
+                // Resolve all pending promises
+                const pending = this.eventsPending.get(cacheKey) || [];
+                this.eventsPending.delete(cacheKey);
+                
+                pending.forEach(({ resolve: res }) => {
+                    res();
+                });
+                
+                resolve(hasTemporal);
+            }, token, (error) => {
+                // Error callback for getEvents
+                const errorMsg = error?.message || 'Unknown error';
+                console.error(`Failed to check temporal data for study ${study.studyId}:`, errorMsg);
+                
+                // Cache as false on error to prevent retry loops
+                this.eventsCache.set(cacheKey, false);
+                
+                // Resolve pending promises
+                const pending = this.eventsPending.get(cacheKey) || [];
+                this.eventsPending.delete(cacheKey);
+                pending.forEach(({ resolve: res }) => res());
+                
+                resolve(false);
+            });
+        });
     };
 
     /**
@@ -101,10 +213,11 @@ class StudyAPI {
     loadDefaultStudies = () => {
         if (this.studiesLoaded.hack) return; // Prevent duplicate loading
         this.studiesLoaded.hack = true;
-        this.loadStudies(this.allLinks.hack, (study) => this.allStudies.hack.push(study),
-            (status) => {
+        this.loadStudies(this.allLinks.hack, 
+            action((study) => this.allStudies.hack.push(study)),
+            action((status) => {
                 this.connectionStatus.hack = status;
-            }, null);
+            }), null);
     };
 
     /**
@@ -120,13 +233,13 @@ class StudyAPI {
 
         this.studiesLoaded.own = true;
         this.loadStudies(this.allLinks.own,
-            (study) => this.allStudies.own.push(study),
-            (status) => {
+            action((study) => this.allStudies.own.push(study)),
+            action((status) => {
                 this.connectionStatus.own = status;
-            },
-            (error) => {
+            }),
+            action((error) => {
                 this.errorMsg = error;
-            }, this.accessTokenFromUser);
+            }), this.accessTokenFromUser);
     };
 
 
@@ -134,10 +247,11 @@ class StudyAPI {
      * get all events for all patients in a study
      * @param {string} studyId
      * @param {string} link
-     * @param {returnDataCallback} callback
+     * @param {Function} callback - Success callback
      * @param {string} token
+     * @param {Function} errorCallback - Optional error callback
      */
-    getEvents(studyId, link, callback, token) {
+    getEvents(studyId, link, callback, token, errorCallback = null) {
         StudyAPI.callGetAPI(`${link}/api/studies/${studyId}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`, token,
             {
                 cancelToken: this.source.token,
@@ -147,10 +261,25 @@ class StudyAPI {
             }).catch((error) => {
             if (axios.isCancel(error)) {
                 console.log('Request canceled');
-            } else if (CBioAPI.verbose) {
-                console.log(error);
             } else {
-                console.log('Could not load events');
+                const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+                console.error('Error loading clinical events:', {
+                    studyId,
+                    link,
+                    error: errorMsg,
+                    status: error.response?.status,
+                    fullError: error
+                });
+                
+                if (errorCallback) {
+                    errorCallback(error);
+                } else if (!error.message?.includes('404') && error.response?.status !== 404) {
+                    // Only show message for non-404 errors (404 means no temporal data)
+                    message.warning({
+                        content: `Could not load clinical events for study ${studyId}`,
+                        duration: 3,
+                    });
+                }
             }
         });
     }

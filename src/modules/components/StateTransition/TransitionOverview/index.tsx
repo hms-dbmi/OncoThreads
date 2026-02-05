@@ -12,7 +12,6 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 
 import './index.css'
 
-const { TabPane } = Tabs;
 interface Props {
     rootStore?: IRootStore,
     width: number,
@@ -294,13 +293,13 @@ class TransitionOverview extends React.Component<Props, State> {
         You can sort the rows or search frequent patterns by clicking the icons in the table header.`
 
         const patternHeader = <span>Frequent Patterns {' '}
-            <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyTooltipOnHide>
+            <Tooltip title="frequent state transition patterns and their distribution of each patient group" destroyOnHidden>
                 <InfoCircleOutlined />
             </Tooltip>
         </span>
 
         const patientHeader = <span>Patient Features {' '}
-            <Tooltip title="summarize patient attributes of each patient group" destroyTooltipOnHide>
+            <Tooltip title="summarize patient attributes of each patient group" destroyOnHidden>
                 <InfoCircleOutlined />
             </Tooltip>
         </span>
@@ -323,20 +322,18 @@ class TransitionOverview extends React.Component<Props, State> {
             <div key='table'
                 data-intro={dataIntro2}
                 data-step='5'>
-                <Tabs defaultActiveKey="pattern">
-                    <TabPane
-                        tab={ patternHeader }
-                        key="pattern"
-                    >
-                        <PatternTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} />
-                    </TabPane>
-                    <TabPane
-                        tab={ patientHeader }
-                        key="patient"
-                    >
-                        <PatientTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} groupOffsetX={this.groupLabelOffsetX} xScale={this.rectWidthScale}/>
-                    </TabPane>
-                </Tabs>,
+                <Tabs defaultActiveKey="pattern" items={[
+                    {
+                        key: "pattern",
+                        label: patternHeader,
+                        children: <PatternTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} />
+                    },
+                    {
+                        key: "patient",
+                        label: patientHeader,
+                        children: <PatientTable annotationWidth={this.annotationWidth} paddingW={this.paddingW} height={this.props.height * 0.3} groupOffsetX={this.groupLabelOffsetX} xScale={this.rectWidthScale}/>
+                    }
+                ]} />,
                 
             </div>
         </GridLayout>

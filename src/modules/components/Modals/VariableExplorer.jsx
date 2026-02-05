@@ -13,7 +13,7 @@ import {
     Row,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import { makeObservable, observable, computed, toJS } from 'mobx';
+import { makeObservable, observable, computed, toJS, action } from 'mobx';
 import Select from 'react-select';
 import LineUpView from './LineUpView';
 import OriginalVariable from '../../stores/OriginalVariable';
@@ -43,6 +43,7 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
             variables: computed,
             profileDomains: computed,
             data: computed,
+            resetSelections: action,
         });
         /**
          * Definition of score columns.
@@ -530,7 +531,10 @@ const VariableExplorer = inject('rootStore', 'variableManagerStore')(observer(cl
                                     </Col>
                                 </Form.Group>
                                 <Form.Group>
-                                    <Col sm={6} smOffset={this.props.rootStore.hasProfileData ? 6 : 0}>
+                                    <Col sm={{
+                                        span: 6,
+                                        offset: this.props.rootStore.hasProfileData ? 6 : 0,
+                                    }}>
                                         <Form.Check
                                             type="checkbox"
                                             onChange={this.toggleDesciptionColumn}

@@ -7,17 +7,23 @@ import { inject, observer } from 'mobx-react';
  */
 const StudySummary = inject('rootStore')(observer(class StudySummary extends React.Component {
     render() {
-        let numberOfTimepoints;
-        const minTP = Math.min(...Object.keys(this.props.rootStore.sampleStructure)
-            .map(key => this.props.rootStore.sampleStructure[key].length));
-        const maxTP = Math.max(...Object.keys(this.props.rootStore.sampleStructure)
-            .map(key => this.props.rootStore.sampleStructure[key].length));
+        let numberOfTimepoints = 0;
+        const sampleStructureKeys = Object.keys(this.props.rootStore.sampleStructure);
+        
+        // Safety check: ensure sampleStructure has data
+        if (sampleStructureKeys.length > 0) {
+            const minTP = Math.min(...sampleStructureKeys
+                .map(key => this.props.rootStore.sampleStructure[key].length));
+            const maxTP = Math.max(...sampleStructureKeys
+                .map(key => this.props.rootStore.sampleStructure[key].length));
 
-        if (minTP === maxTP) {
-            numberOfTimepoints = minTP;
-        } else {
-            numberOfTimepoints = `${minTP}-${maxTP}`;
+            if (minTP === maxTP) {
+                numberOfTimepoints = minTP;
+            } else {
+                numberOfTimepoints = `${minTP}-${maxTP}`;
+            }
         }
+        
         if (!this.props.rootStore.isOwnData) {
             return (
                 <div>

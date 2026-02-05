@@ -15,7 +15,7 @@ const AddTimepointVarTab = inject('rootStore')(observer(class AddVarModal extend
     constructor() {
         super();
         makeObservable(this, {
-            variableExplorerIsOpen: observable,
+            variableExplorerIsOpen: observable.ref,
         });
     }
 

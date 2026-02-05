@@ -97,7 +97,7 @@ class TransitionComparison extends React.Component<Props> {
 
         let { selectedPatientGroupIdx } = uiStore
 
-        selectedPatientGroupIdx = selectedPatientGroupIdx.sort()
+        selectedPatientGroupIdx = selectedPatientGroupIdx.slice().sort()
 
         let groupOffsetX = 0
 
@@ -223,13 +223,13 @@ class TransitionComparison extends React.Component<Props> {
 
         if (groups.length>0){
             return [
-                annotations,
+                <g key="annotations">{annotations}</g>,
                 ...groups
             ];
         }else{
             return [
-                annotations,
-                <text transform={`translate( ${this.props.width/2}, ${this.props.height/2})`} textAnchor="middle" style={{fontSize:'20px', fill:'gray'}}>
+                <g key="annotations">{annotations}</g>,
+                <text key="empty-message" transform={`translate( ${this.props.width/2}, ${this.props.height/2})`} textAnchor="middle" style={{fontSize:'20px', fill:'gray'}}>
                     please select patient groups in the overview panel
                 </text>
             ];

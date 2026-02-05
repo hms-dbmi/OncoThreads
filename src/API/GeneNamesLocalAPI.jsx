@@ -19,12 +19,12 @@ class GeneNamesLocalAPI {
     }
 
     getAllGeneSymbols = () => {
-        d3.tsv(data).then(data=>{
+        d3.tsv(data).then(action((data) => {
             data.forEach(d=>{
                 this.geneList[d["Approved symbol"]]=parseInt(d["NCBI Gene ID(supplied by NCBI)"],10);
             });
             this.geneListLoaded=true;
-        });
+        }));
     };
 
     /**

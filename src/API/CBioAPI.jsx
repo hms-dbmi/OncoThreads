@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import axios from 'axios';
+import { message } from 'antd';
 import GenomeNexusAPI from './GenomeNexusAPI';
 import StudyAPI from './studyAPI';
 
@@ -23,11 +24,17 @@ class CBioAPI {
             .then((response) => {
                 callback(response.data.map(patient => patient.patientId));
             }).catch((error) => {
-                if (CBioAPI.verbose) {
-                    console.log(error);
-                } else {
-                    console.log('Could not load patients');
-                }
+                const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+                console.error('Error loading patients:', {
+                    studyId: this.studyId,
+                    error: errorMsg,
+                    status: error.response?.status
+                });
+                
+                message.error({
+                    content: `Failed to load patients: ${errorMsg}`,
+                    duration: 5,
+                });
             });
     }
 
@@ -48,13 +55,33 @@ class CBioAPI {
                 //console.log(events);
                 
                 this.allEvents=events;
-                callback(events);
-            }).catch((error) => {
-                if (CBioAPI.verbose) {
-                    console.log(error);
-                } else {
-                    console.log('Could not load events');
+                
+                try {
+                    callback(events);
+                } catch (callbackError) {
+                    console.error('Error in getEvents callback:', {
+                        studyId: this.studyId,
+                        error: callbackError.message,
+                        stack: callbackError.stack
+                    });
+                    message.error({
+                        content: `Error processing clinical events: ${callbackError.message}`,
+                        duration: 5,
+                    });
                 }
+            }).catch((error) => {
+                const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+                console.error('Error loading clinical events:', {
+                    studyId: this.studyId,
+                    patientCount: patients.length,
+                    error: errorMsg,
+                    status: error.response?.status
+                });
+                
+                message.error({
+                    content: `Failed to load clinical events: ${errorMsg}`,
+                    duration: 5,
+                });
             });
     }
 
@@ -84,11 +111,17 @@ class CBioAPI {
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
-                if (CBioAPI.verbose) {
-                    console.log(error);
-                } else {
-                    console.log('Could not available molecular profiles');
-                }
+                const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+                console.error('Error loading molecular profiles:', {
+                    studyId: this.studyId,
+                    error: errorMsg,
+                    status: error.response?.status
+                });
+                
+                message.error({
+                    content: `Failed to load molecular profiles: ${errorMsg}`,
+                    duration: 5,
+                });
             });
     }
 
@@ -101,11 +134,17 @@ class CBioAPI {
             .then((response) => {
                 callback(response.data);
             }).catch((error) => {
-                if (CBioAPI.verbose) {
-                    console.log(error);
-                } else {
-                    console.log('Could not load sample data');
-                }
+                const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+                console.error('Error loading clinical sample data:', {
+                    studyId: this.studyId,
+                    error: errorMsg,
+                    status: error.response?.status
+                });
+                
+                message.error({
+                    content: `Failed to load clinical sample data: ${errorMsg}`,
+                    duration: 5,
+                });
             });
     }
 

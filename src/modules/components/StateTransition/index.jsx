@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 
 import { InputNumber, Card, Tooltip, Row, Col, Switch } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -36,6 +36,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
             height: observable,
             width: observable,
             hasBackground: observable,
+            updateDimensions: action,
         });
 
         this.updateDimensions = this.updateDimensions.bind(this);
@@ -105,7 +106,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                         <Card title={<span style={{ fontSize: "17px" }}>Overview <Tooltip title="transition among the identified states"><InfoCircleOutlined /></Tooltip></span>}
                             extra={controller}
                             style={{ width: "98%" }}
-                            bodyStyle={{padding:'0px'}}
+                            styles={{body: {padding:'0px'}}}
                             data-intro={dataIntroTransitionOverview}
                             data-step="4"
                         >
@@ -123,7 +124,7 @@ const StateTransition = inject('rootStore', 'uiStore', 'undoRedoStore')(observer
                             // style={{ width: (this.detailedWidthRatio * 100).toFixed(2) + '%', marginTop: "5px", marginLeft: "1%", float: "left" }}
                             data-intro="<h4>Step 3: Detailed Analysis</h4> You can select interested patient groups and observe the state transition details."
                             data-step='6'
-                            bodyStyle={{padding:'0px'}}
+                            styles={{body: {padding:'0px'}}}
                         >
                             <div className="stateTransition details" style={{ height: this.height, overflowY: "auto" }}>
                                 

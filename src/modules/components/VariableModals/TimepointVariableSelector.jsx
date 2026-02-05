@@ -1,7 +1,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Alert, Button, Col, Form } from 'react-bootstrap';
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import Select from 'react-select';
 import OriginalVariable from '../../stores/OriginalVariable';
 
@@ -40,6 +40,11 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
             clinicalOptions: observable,
             showAvailableData: observable,
             modalIsOpen: observable,
+            handleOptionSelect: action,
+            searchGenes: action,
+            updateSearchValue: action,
+            addGenes: action,
+            addClinicalVariables: action,
         });
         this.handleOptionSelect = this.handleOptionSelect.bind(this);
         this.searchGenes = this.searchGenes.bind(this);
@@ -289,7 +294,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
             );
         }
         return (
-            <Col sm={10} smOffset={2}>
+            <Col sm={{span: 10, offset: 2}}>
                 <Alert>
                     <Form.Group onKeyDown={this.addEnter}>{checkBoxes}</Form.Group>
                 </Alert>
@@ -412,7 +417,7 @@ const TimepointVariableSelector = inject('variableManagerStore', 'rootStore')(ob
                     {formGroups}
                     {this.showAvailableData ? this.getAvailableCheckBoxes() : null}
                     <Form.Group>
-                        <Col smOffset={11} sm={1}>
+                        <Col sm={{span: 1, offset: 11}}>
                             <Button
                                 className="pull-right"
                                 onClick={this.addVariables}

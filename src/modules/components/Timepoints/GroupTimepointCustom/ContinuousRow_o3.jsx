@@ -26,7 +26,7 @@ const ContinuousRow = inject('dataStore', 'uiStore', 'visStore')(observer(class 
         pathString += `l 0 ${-1 * currentPos[1]} z`
 
         const tooltipTitle = `${variable}: ${Math.min(...row.map(d => d.key))}~${Math.max(...row.map(d => d.key))}`
-        return <Tooltip title={tooltipTitle} destroyTooltipOnHide>
+        return <Tooltip title={tooltipTitle} destroyOnHidden>
             <g className="continupusRow">
                 <rect className="background" key="background" width={currentPos[0]} height={height-this.strokeW} fill={stateColor} opacity={0.1} y={this.strokeW}/>
                 <path d={pathString} fill='#999' />

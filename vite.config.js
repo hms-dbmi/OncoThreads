@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
       // Increase chunk size warning limit (current bundle is ~947 kB)
       chunkSizeWarningLimit: 1000,
       commonjsOptions: {
-        include: [/lineupjs/, /node_modules/],
+        include: [/lineupjs/, /react-resizable-panels/, /node_modules/],
         transformMixedEsModules: true,
         // Ignore these warnings for lineupjs
         ignoreDynamicRequires: true

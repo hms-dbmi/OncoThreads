@@ -322,7 +322,7 @@ class StateBlock extends React.Component<Props> {
             }
 
 
-            return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyTooltipOnHide mouseEnterDelay={0.8} overlayStyle={{ width: "auto", maxWidth: "none" }}>
+            return <Tooltip title={cellTooltip} key={`row_${rowIdx}`} destroyOnHidden mouseEnterDelay={0.8} styles={{ root: { width: "auto", maxWidth: "none" } }}>
                 <g className={`row_${rowIdx}`} cursor="pointer" transform={`translate(${0}, ${rowIdx * (this.cellHeight + this.rowVerticalGap)})`}>
                     <g >
                         {row}
@@ -401,7 +401,7 @@ class StateBlock extends React.Component<Props> {
                     </text>
                     <text y={12}>{score.toFixed(this.scoreDigits)}</text>
                 </g>
-                : <Tooltip title={name} destroyTooltipOnHide>
+                : <Tooltip title={name} destroyOnHidden>
                     <g opacity={Math.max(0.3, score)} cursor="pointer" className="feature name">
                         <text >
                             {cropName}

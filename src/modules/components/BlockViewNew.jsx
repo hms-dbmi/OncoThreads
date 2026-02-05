@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import FontAwesome from 'react-fontawesome';
-import { makeObservable, observable, reaction } from 'mobx';
+import { makeObservable, observable, reaction, action } from 'mobx';
 import { Button, Col, Row } from 'antd';
-import { Pane, SortablePane } from '@jonnyopenear/react-sortable-pane';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import {Switch} from 'antd'
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
@@ -55,6 +55,10 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
             hasBackground: observable,
             panes: observable,
             active: observable,
+            updateDimensions: action,
+            setHighlightedVariable: action,
+            removeHighlightedVariable: action,
+            handleTimeClick: action,
         });
 
         this.handleTimeClick = this.handleTimeClick.bind(this);
@@ -316,37 +320,16 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                             <CustomGrouping/>
                         </Col>
                         <Col span={18}>
-                        <SortablePane
-                            direction="horizontal"
-                            margin={10}
-                            order={this.order}
-                            disableEffect
-                            onOrderChange={(order) => {
-                                this.order = order;
-                            }}
-                            onResizeStop={(e, key, dir, ref, d) => {
-                                this.panes = {
-                                    ...this.panes,
-                                    [key]: { width: this.panes[key].width + d.width },
-                                    [this.order[this.order.length - 1]]: {
-                                        width: this.panes[this.order[this.order.length - 1]].width
-                                            - d.width,
-                                    },
-                                };
-                            }}
-                            onDragStart={(e, key) => {
-                                if (e.target.tagName === 'svg') {
-                                    this.active[key] = true;
-                                }
-                            }}
-                            onDragStop={(e, key) => {
-                                this.active[key] = false;
-                            }}
-                        >
-                            <Pane
-                                className={`${this.active.labels ? 'pane-active' : 'pane-inactive'} timepointLabel`}
-                                key="labels"
-                                size={{ width: this.panes.labels.width }}
+                        <PanelGroup direction="horizontal">
+                            <Panel
+                                defaultSize={7}
+                                minSize={5}
+                                className="pane-inactive timepointLabel"
+                                onResize={(size) => {
+                                    const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
+                                    const actualWidth = (containerWidth - 40) * this.blockWidthRatio * (size / 100);
+                                    this.panes.labels.width = actualWidth;
+                                }}
                             >
                                 <Provider
                                     dataStore={this.props.rootStore.dataStore}
@@ -358,12 +341,20 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                         padding={this.padding}
                                     />
                                 </Provider>
-                            </Pane>
-                            <Pane
-                                className={`${this.active.operators ? 'pane-active' : 'pane-inactive'} variableOperator`}
-                                key="operators"
-                                size={{ width: this.panes.operators.width }}
+                            </Panel>
+                            
+                            <PanelResizeHandle className="resize-handle" />
+                            
+                            <Panel
+                                defaultSize={13}
+                                minSize={10}
+                                className="pane-inactive variableOperator"
                                 style={{ paddingTop: this.padding }}
+                                onResize={(size) => {
+                                    const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
+                                    const actualWidth = (containerWidth - 40) * this.blockWidthRatio * (size / 100);
+                                    this.panes.operators.width = actualWidth;
+                                }}
                             >
                                 <RowOperators
                                     highlightedVariable={this.highlightedVariable}
@@ -375,12 +366,20 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                     openBinningModal={this.props.openBinningModal}
                                     openSaveVarModal={this.props.openSaveVarModal}
                                 />
-                            </Pane>
-                            <Pane
-                                className={this.active.view ? 'pane-active' : 'pane-inactive'}
-                                key="view"
-                                size={{ width: this.panes.view.width }}
+                            </Panel>
+                            
+                            <PanelResizeHandle className="resize-handle" />
+                            
+                            <Panel
+                                defaultSize={65}
+                                minSize={30}
+                                className="pane-inactive"
                                 style={{ paddingTop: this.padding }}
+                                onResize={(size) => {
+                                    const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
+                                    const actualWidth = (containerWidth - 40) * this.blockWidthRatio * (size / 100);
+                                    this.panes.view.width = actualWidth;
+                                }}
                             >
                                 <div ref={this.blockView} className="scrollableX">
                                     <Switch size="small" 
@@ -396,12 +395,20 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                     </g>
                                     </svg>
                                 </div>
-                            </Pane>
-                            <Pane
-                                className={this.active.legend ? 'pane-active' : 'pane-inactive'}
-                                key="legend"
-                                size={{ width: this.panes.legend.width }}
+                            </Panel>
+                            
+                            <PanelResizeHandle className="resize-handle" />
+                            
+                            <Panel
+                                defaultSize={13}
+                                minSize={10}
+                                className="pane-inactive"
                                 style={{ paddingTop: this.padding }}
+                                onResize={(size) => {
+                                    const containerWidth = this.ref.current?.getBoundingClientRect().width || this.width;
+                                    const actualWidth = (containerWidth - 40) * this.blockWidthRatio * (size / 100);
+                                    this.panes.legend.width = actualWidth;
+                                }}
                             >
                                 <Legend
                                     highlightedVariable={this.highlightedVariable}
@@ -409,8 +416,8 @@ const BlockView = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class
                                     removeHighlightedVariable={this.removeHighlightedVariable}
                                     {...this.props.tooltipFunctions}
                                 />
-                            </Pane>
-                        </SortablePane>
+                            </Panel>
+                        </PanelGroup>
                         </Col>
                     </Row>
                 </div>

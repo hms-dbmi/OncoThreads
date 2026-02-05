@@ -388,7 +388,7 @@ class StateBlock extends React.Component<Props> {
                 stateColor
             )
 
-            return <Tooltip title={cellTextFull} key={`row_${rowIdx}`} destroyTooltipOnHide>
+            return <Tooltip title={cellTextFull} key={`row_${rowIdx}`} destroyOnHidden>
                 <g key={`row_${rowIdx}`} className={`row_${rowIdx}`} transform={`translate(${0}, ${(this.cellHeight + this.cellVerticalGap)* rowIdx })`}>
                  <line className='rowBG'
                     fill='none'

@@ -6,7 +6,7 @@ import {
 } from 'react-bootstrap';
 import { UpOutlined, DownOutlined } from '@ant-design/icons';
 import FontAwesome from 'react-fontawesome';
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import ModifyCategorical from './ModifySingleVariable/ModifyCategorical';
 import ModifyContinuous from './ModifySingleVariable/ModifyContinuous';
 import ModifyBinary from './ModifySingleVariable/ModifyBinary';
@@ -42,6 +42,10 @@ const VariableTable = inject('variableManagerStore', 'rootStore')(observer(class
             sortVarAsc: observable,
             sortSourceAsc: observable,
             sortTypeAsc: observable,
+            closeModal: action,
+            handleCogWheelClick: action,
+            handleSort: action,
+            combineSelected: action,
         });
 
         this.handleCogWheelClick = this.handleCogWheelClick.bind(this);
