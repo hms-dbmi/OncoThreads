@@ -80,7 +80,7 @@ const DemoStudyLoader = inject('rootStore')(
 			 */
 			async fetchDemoFile(filename) {
 				try {
-					const response = await fetch(`/data/demo_study/${filename}`);
+					const response = await fetch(`${import.meta.env.BASE_URL}demo_study/${filename}`);
 					if (!response.ok) {
 						throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
 					}
