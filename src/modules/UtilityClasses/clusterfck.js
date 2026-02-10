@@ -167,7 +167,7 @@ var Object_keys = Object.keys || function (obj) {
     return res;
 };
 
-if (typeof process === 'undefined') process = {};
+var process = (typeof process !== 'undefined') ? process : {};
 
 if (!process.nextTick) process.nextTick = function (fn) {
     setTimeout(fn, 0);
