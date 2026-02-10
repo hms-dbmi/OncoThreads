@@ -1,12 +1,6 @@
 import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
-import {
-    Button,
-    Form,
-    Modal,
-    OverlayTrigger,
-    Popover,
-} from 'react-bootstrap';
+import { Button, Form, Modal, OverlayTrigger, Popover } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
 import * as d3 from 'd3';
@@ -21,263 +15,271 @@ import Histogram from '../ModifySingleVariable/Binner/Histogram';
 /**
  * Component for combining variables
  */
-const ContinuousCombine = inject('variableManagerStore')(observer(class ContinuousCombine extends React.Component {
-    constructor(props) {
-        super(props);
-        
-        const initValues = this.initializeObservable();
-        this.name = initValues.name;
-        this.allValues = initValues.allValues;
-        this.colorRange = initValues.colorRange;
-        
-        makeObservable(this, {
-            name: observable,
-            allValues: observable,
-            colorRange: observable,
-        });
-        this.width = 350;
-        this.height = 200;
-        this.handleApply = this.handleApply.bind(this);
-        this.handleNameChange = this.handleNameChange.bind(this);
-    }
+const ContinuousCombine = inject('variableManagerStore')(
+	observer(
+		class ContinuousCombine extends React.Component {
+			constructor(props) {
+				super(props);
 
-    /**
-     * gets a histogram or a Binner if in binning mode
-     * @returns {(Provider|svg)}
-     */
-    getHistogram() {
-        const min = Math.min(...this.allValues);
-        const max = Math.max(...this.allValues);
-        const xScale = d3.scaleLinear().domain([min, max]).range([0, this.width]);
-        const bins = d3.histogram()
-            .domain([min, max])
-            .thresholds(xScale.ticks(30))(this.allValues);
-        const yScale = d3.scaleLinear()
-            .domain([0, d3.max(bins, d => d.length)]).range([this.height, 0]);
-        const margin = {
-            top: 20, right: 20, bottom: 90, left: 50,
-        };
+				const initValues = this.initializeObservable();
+				this.name = initValues.name;
+				this.allValues = initValues.allValues;
+				this.colorRange = initValues.colorRange;
 
+				makeObservable(this, {
+					name: observable,
+					allValues: observable,
+					colorRange: observable,
+				});
+				this.width = 350;
+				this.height = 200;
+				this.handleApply = this.handleApply.bind(this);
+				this.handleNameChange = this.handleNameChange.bind(this);
+			}
 
-        const w = this.width + (margin.left + margin.right);
+			/**
+			 * gets a histogram or a Binner if in binning mode
+			 * @returns {(Provider|svg)}
+			 */
+			getHistogram() {
+				const min = Math.min(...this.allValues);
+				const max = Math.max(...this.allValues);
+				const xScale = d3.scaleLinear().domain([min, max]).range([0, this.width]);
+				const bins = d3.histogram().domain([min, max]).thresholds(xScale.ticks(30))(this.allValues);
+				const yScale = d3
+					.scaleLinear()
+					.domain([0, d3.max(bins, (d) => d.length)])
+					.range([this.height, 0]);
+				const margin = {
+					top: 20,
+					right: 20,
+					bottom: 90,
+					left: 50,
+				};
 
+				const w = this.width + (margin.left + margin.right);
 
-        const h = this.height + (margin.top + margin.bottom);
-        const transform = `translate(${margin.left},${margin.top})`;
-        return (
-            <svg width={w} height={h}>
-                <g transform={transform}>
-                    <Histogram
-                        bins={bins}
-                        xScale={xScale}
-                        yScale={yScale}
-                        h={this.height}
-                        w={this.width}
-                        xLabel={this.name}
-                        numValues={this.allValues.length}
-                    />
-                </g>
-            </svg>
-        );
-    }
+				const h = this.height + (margin.top + margin.bottom);
+				const transform = `translate(${margin.left},${margin.top})`;
+				return (
+					<svg width={w} height={h}>
+						<g transform={transform}>
+							<Histogram
+								bins={bins}
+								xScale={xScale}
+								yScale={yScale}
+								h={this.height}
+								w={this.width}
+								xLabel={this.name}
+								numValues={this.allValues.length}
+							/>
+						</g>
+					</svg>
+				);
+			}
 
+			/**
+			 * gets the popover for the selection of a color scale
+			 * @returns {form}
+			 */
+			getColorScalePopover() {
+				const width = 100;
+				const height = 20;
+				let linearColorRange = [];
+				if (Math.min(...Object.values(this.mapper)) < 0) {
+					linearColorRange = ColorScales.continuousThreeColorRanges;
+				} else {
+					linearColorRange = ColorScales.continuousTwoColorRanges;
+				}
+				return (
+					<form>
+						<Form.Group>
+							{linearColorRange.map((d, i) => (
+								<Form.Check
+									key={i}
+									type="radio"
+									onChange={() => {
+										this.colorRange = d;
+									}}
+									name="ColorScaleGroup"
+									label={ModifyContinuous.getGradient(d, width, height)}
+								/>
+							))}
+						</Form.Group>
+					</form>
+				);
+			}
 
-    /**
-     * gets the popover for the selection of a color scale
-     * @returns {form}
-     */
-    getColorScalePopover() {
-        const width = 100;
-        const height = 20;
-        let linearColorRange = [];
-        if (Math.min(...Object.values(this.mapper)) < 0) {
-            linearColorRange = ColorScales.continuousThreeColorRanges;
-        } else {
-            linearColorRange = ColorScales.continuousTwoColorRanges;
-        }
-        return (
-            <form>
-                <Form.Group>
-                    {linearColorRange.map((d, i) => (
-                        <Form.Check
-                            key={i}
-                            type="radio"
-                            onChange={() => {
-                                this.colorRange = d;
-                            }}
-                            name="ColorScaleGroup"
-                            label={ModifyContinuous.getGradient(d, width, height)}
-                        />
-                    ))}
-                </Form.Group>
-            </form>
-        );
-    }
+			/**
+			 * applies combination of variables
+			 */
+			handleApply() {
+				const description = `Numerical combination of ${this.props.variables.map((d) => d.name)}`;
+				const newVariable = new DerivedVariable(
+					uuidv4(),
+					this.name,
+					'NUMBER',
+					description,
+					this.props.variables.map((d) => d.id),
+					{
+						type: 'continuousCombine',
+						operation: this.operation,
+					},
+					this.colorRange,
+					[],
+					this.mapper,
+					uuidv4(),
+					'combined'
+				);
+				if (this.props.derivedVariable === null) {
+					this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.keep);
+				} else if (
+					this.props.variableManagerStore.variableChanged(this.props.derivedVariable.id, newVariable)
+				) {
+					this.props.variableManagerStore.replaceDisplayedVariable(
+						this.props.derivedVariable.id,
+						newVariable
+					);
+				} else {
+					this.props.variableManagerStore.changeVariableRange(
+						this.props.derivedVariable.id,
+						newVariable.range,
+						false
+					);
+					this.props.variableManagerStore.changeVariableName(this.props.derivedVariable.id, this.name);
+				}
+				if (!this.keep) {
+					this.props.variables.forEach((d) => {
+						this.props.variableManagerStore.removeVariable(d.id);
+					});
+				}
+				this.props.closeModal();
+			}
 
-    /**
-     * applies combination of variables
-     */
-    handleApply() {
-        const description = `Numerical combination of ${this.props.variables.map(d => d.name)}`;
-        const newVariable = new DerivedVariable(uuidv4(), this.name, 'NUMBER', description, this.props.variables.map(d => d.id), {
-            type: 'continuousCombine',
-            operation: this.operation,
-        }, this.colorRange, [], this.mapper, uuidv4(), 'combined');
-        if (this.props.derivedVariable === null) {
-            this.props.variableManagerStore.addVariableToBeDisplayed(newVariable, this.keep);
-        } else if (this.props.variableManagerStore
-            .variableChanged(this.props.derivedVariable.id, newVariable)) {
-            this.props.variableManagerStore
-                .replaceDisplayedVariable(this.props.derivedVariable.id, newVariable);
-        } else {
-            this.props.variableManagerStore
-                .changeVariableRange(this.props.derivedVariable.id, newVariable.range, false);
-            this.props.variableManagerStore
-                .changeVariableName(this.props.derivedVariable.id, this.name);
-        }
-        if (!this.keep) {
-            this.props.variables.forEach((d) => {
-                this.props.variableManagerStore.removeVariable(d.id);
-            });
-        }
-        this.props.closeModal();
-    }
+			/**
+			 * handles the name change
+			 * @param {Object} event
+			 */
+			handleNameChange(event) {
+				this.name = event.target.value;
+			}
 
-    /**
-     * handles the name change
-     * @param {Object} event
-     */
-    handleNameChange(event) {
-        this.name = event.target.value;
-    }
+			/**
+			 * gets the initial state
+			 * @return {{name: string, modification:
+			 * {operator: string, datatype: string},
+			 * variableRange: string[],
+			 * keep: boolean, isOrdinal: boolean,
+			 * currentVarCategories: Object[]}}
+			 */
+			initializeObservable() {
+				let name;
+				let colorRange;
+				let operation; // name of combined variable
+				if (this.props.derivedVariable === null) {
+					if (this.props.variables.every((d) => d.domain[0] >= 0)) {
+						colorRange = ColorScales.defaultContinuousTwoColors;
+					} else {
+						colorRange = ColorScales.defaultContinuousThreeColors;
+					}
+					operation = 'average';
+					name = `CONTINUOUS COMBINE: ${this.props.variables.map((d) => d.name)}`;
+					// if the variable is already combined base parameters on this variable
+				} else {
+					name = this.props.derivedVariable.name;
+					colorRange = this.props.derivedVariable.range;
+					operation = this.props.derivedVariable.modification.operation;
+				}
+				return {
+					name,
+					keep: true,
+					colorRange,
+					operation,
+					get mapper() {
+						return DerivedMapperFunctions.createContinuousCombinedMapper(
+							this.props.variables.map((d) => d.mapper),
+							this.operation
+						);
+					},
+					get allValues() {
+						return Object.values(this.mapper).filter((d) => d !== undefined);
+					},
+				};
+			}
 
-
-    /**
-     * gets the initial state
-     * @return {{name: string, modification:
-     * {operator: string, datatype: string},
-     * variableRange: string[],
-     * keep: boolean, isOrdinal: boolean,
-     * currentVarCategories: Object[]}}
-     */
-    initializeObservable() {
-        let name;
-        let colorRange;
-        let operation; // name of combined variable
-        if (this.props.derivedVariable === null) {
-            if (this.props.variables.every(d => d.domain[0] >= 0)) {
-                colorRange = ColorScales.defaultContinuousTwoColors;
-            } else {
-                colorRange = ColorScales.defaultContinuousThreeColors;
-            }
-            operation = 'average';
-            name = `CONTINUOUS COMBINE: ${this.props.variables.map(d => d.name)}`;
-            // if the variable is already combined base parameters on this variable
-        } else {
-            name = this.props.derivedVariable.name;
-            colorRange = this.props.derivedVariable.range;
-            operation = this.props.derivedVariable.modification.operation;
-        }
-        return {
-            name,
-            keep: true,
-            colorRange,
-            operation,
-            get mapper() {
-                return DerivedMapperFunctions.createContinuousCombinedMapper(
-                    this.props.variables.map(d => d.mapper), this.operation,
-                );
-            },
-            get allValues() {
-                return Object.values(this.mapper).filter(d => d !== undefined);
-            },
-        };
-    }
-
-    render() {
-        const colorScalePopOver = (
-            <Popover id="popover-positioned-right" title="Choose color scale">
-                {this.getColorScalePopover()}
-            </Popover>
-        );
-        return (
-            <Modal
-                show={this.props.modalIsOpen}
-                onHide={this.props.closeModal}
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title>Combine Variables</Modal.Title>
-                </Modal.Header>
-                <Modal.Body style={{ minHeight: '400px' }}>
-                    <form>
-                        <Form.Label>Variable name</Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={this.name}
-                            onChange={this.handleNameChange}
-                        />
-                        <Form.Label>
-                            Color Scale
-                            <OverlayTrigger
-                                rootClose
-                                trigger="click"
-                                placement="right"
-                                overlay={colorScalePopOver}
-                            >
-                                <FontAwesome
-                                    name="paint-brush"
-                                />
-                            </OverlayTrigger>
-                        </Form.Label>
-                        <p>{ModifyContinuous.getGradient(this.colorRange, 100, 20)}</p>
-                        <Form.Group controlId="formControlsSelect">
-                            <Form.Label>Select Operation</Form.Label>
-                            <Form.Control
-                                onChange={(e) => {
-                                    this.operation = e.target.value;
-                                }}
-                                as="select"
-                                defaultValue={this.operation}
-                            >
-                                <option value="average">Mean</option>
-                                <option value="median">Median</option>
-                                <option value="sum">Sum</option>
-                                <option value="delta">Difference</option>
-                                <option value="min">Minimum</option>
-                                <option value="max">Maximum</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </form>
-                    {this.getHistogram()}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Form.Check
-                        type="checkbox"
-                        disabled={this.props.derivedVariable !== null}
-                        onChange={() => {
-                            this.keep = !this.keep;
-                        }}
-                        checked={!this.keep}
-                        label="Discard original variables"
-                    />
-                    <Button onClick={this.props.closeModal}>
-                        Cancel
-                    </Button>
-                    <Button onClick={this.handleApply}>
-                        Apply
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        );
-    }
-}));
+			render() {
+				const colorScalePopOver = (
+					<Popover id="popover-positioned-right" title="Choose color scale">
+						{this.getColorScalePopover()}
+					</Popover>
+				);
+				return (
+					<Modal show={this.props.modalIsOpen} onHide={this.props.closeModal}>
+						<Modal.Header closeButton>
+							<Modal.Title>Combine Variables</Modal.Title>
+						</Modal.Header>
+						<Modal.Body style={{ minHeight: '400px' }}>
+							<form>
+								<Form.Label>Variable name</Form.Label>
+								<Form.Control type="text" value={this.name} onChange={this.handleNameChange} />
+								<Form.Label>
+									Color Scale
+									<OverlayTrigger
+										rootClose
+										trigger="click"
+										placement="right"
+										overlay={colorScalePopOver}
+									>
+										<FontAwesome name="paint-brush" />
+									</OverlayTrigger>
+								</Form.Label>
+								<p>{ModifyContinuous.getGradient(this.colorRange, 100, 20)}</p>
+								<Form.Group controlId="formControlsSelect">
+									<Form.Label>Select Operation</Form.Label>
+									<Form.Control
+										onChange={(e) => {
+											this.operation = e.target.value;
+										}}
+										as="select"
+										defaultValue={this.operation}
+									>
+										<option value="average">Mean</option>
+										<option value="median">Median</option>
+										<option value="sum">Sum</option>
+										<option value="delta">Difference</option>
+										<option value="min">Minimum</option>
+										<option value="max">Maximum</option>
+									</Form.Control>
+								</Form.Group>
+							</form>
+							{this.getHistogram()}
+						</Modal.Body>
+						<Modal.Footer>
+							<Form.Check
+								type="checkbox"
+								disabled={this.props.derivedVariable !== null}
+								onChange={() => {
+									this.keep = !this.keep;
+								}}
+								checked={!this.keep}
+								label="Discard original variables"
+							/>
+							<Button onClick={this.props.closeModal}>Cancel</Button>
+							<Button onClick={this.handleApply}>Apply</Button>
+						</Modal.Footer>
+					</Modal>
+				);
+			}
+		}
+	)
+);
 ContinuousCombine.propTypes = {
-    variables: MobxPropTypes.observableArray.isRequired,
-    derivedVariable: PropTypes.instanceOf(DerivedVariable),
-    modalIsOpen: PropTypes.bool.isRequired,
-    closeModal: PropTypes.func.isRequired,
+	variables: MobxPropTypes.observableArray.isRequired,
+	derivedVariable: PropTypes.instanceOf(DerivedVariable),
+	modalIsOpen: PropTypes.bool.isRequired,
+	closeModal: PropTypes.func.isRequired,
 };
 ContinuousCombine.defaultProps = {
-    derivedVariable: null,
+	derivedVariable: null,
 };
 export default ContinuousCombine;

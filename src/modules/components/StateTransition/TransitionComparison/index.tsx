@@ -1,326 +1,414 @@
-import React from "react"
+import React from 'react';
 import { observer, inject, Provider } from 'mobx-react';
-import { IRootStore } from "modules/Type";
+import { IRootStore } from 'modules/Type';
 import GroupPartition from '../../Timepoints/GroupTimepointCustom/GroupPartition';
 import SankeyTransition from '../../Transitions/SankeyTransition/SankeyTransition';
-import Variable from "modules/stores/Variable";
-import { getTextWidth } from "modules/UtilityClasses";
-import { Resizable} from 're-resizable';
-import { observable } from "mobx";
-
+import Variable from 'modules/stores/Variable';
+import { getTextWidth } from 'modules/UtilityClasses';
+import { Resizable } from 're-resizable';
+import { observable } from 'mobx';
 
 interface Props {
-    rootStore?: IRootStore,
-    height:number,
-    width: number,
-    hasBackground:boolean,
-    tooltipFunctions: {
-        showTooltip: (event: any, line1: string, line2: string) => void,
-        hideTooltip: () => void
-    }
+	rootStore?: IRootStore;
+	height: number;
+	width: number;
+	hasBackground: boolean;
+	tooltipFunctions: {
+		showTooltip: (event: any, line1: string, line2: string) => void;
+		hideTooltip: () => void;
+	};
 }
 
 @inject('rootStore')
 @observer
 class TransitionComparison extends React.Component<Props> {
-    @observable annotationWidth = 250
-    paddingH: number = 6
-    paddingW: number = 10
-    groupLabelHeight: number = 40
-    iconR = 10
-    constructor(props:Props){
-        super(props)
-        this.updateAnnotationWidth = this.updateAnnotationWidth.bind(this)
-    }
-    get plotWidth(){
-        return this.props.width - this.annotationWidth - 2* this.paddingW - 2*this.iconR
-    }
-    updateAnnotationWidth(width:number){
-        this.annotationWidth = width
-        this.updateDimension()
-    }
+	@observable annotationWidth = 250;
+	paddingH: number = 6;
+	paddingW: number = 10;
+	groupLabelHeight: number = 40;
+	iconR = 10;
+	constructor(props: Props) {
+		super(props);
+		this.updateAnnotationWidth = this.updateAnnotationWidth.bind(this);
+	}
+	get plotWidth() {
+		return this.props.width - this.annotationWidth - 2 * this.paddingW - 2 * this.iconR;
+	}
+	updateAnnotationWidth(width: number) {
+		this.annotationWidth = width;
+		this.updateDimension();
+	}
 
-    updateDimension() {
-        const { visStore } = this.props.rootStore!
-        visStore.setPlotWidth(this.plotWidth)
-    }
+	updateDimension() {
+		const { visStore } = this.props.rootStore!;
+		visStore.setPlotWidth(this.plotWidth);
+	}
 
-    componentDidMount() {
-        const annotationWidth = Math.max(...this.props.rootStore!.dataStore.currentVariables.map(d=>getTextWidth(d+' XX', 14))) 
-        this.updateAnnotationWidth(annotationWidth)
-    }
-    componentDidUpdate(){
-        this.updateDimension()
-    }
+	componentDidMount() {
+		const annotationWidth = Math.max(
+			...this.props.rootStore!.dataStore.currentVariables.map((d) => getTextWidth(d + ' XX', 14))
+		);
+		this.updateAnnotationWidth(annotationWidth);
+	}
+	componentDidUpdate() {
+		this.updateDimension();
+	}
 
-    getGroupedPartition(group: any, patientGroup: string[]) {
-        // filter the partition at each timepoint with the user selected groups
-        const { dataStore } = this.props.rootStore!
+	getGroupedPartition(group: any, patientGroup: string[]) {
+		// filter the partition at each timepoint with the user selected groups
+		const { dataStore } = this.props.rootStore!;
 
-        const filteredPatients = group.patients.filter((p: string) => patientGroup.includes(p))
-        group.patients.filter((p: string) => patientGroup.includes(p))
+		const filteredPatients = group.patients.filter((p: string) => patientGroup.includes(p));
+		group.patients.filter((p: string) => patientGroup.includes(p));
 
-        if (group.points) return {
-            ...group,
-            patients: filteredPatients,
-            points: group.points.filter((id: number) => patientGroup.includes(dataStore.points[id].patient)),
-            rows: group.rows
-            .map((row: any) => {
-                return {
-                    ...row,
-                    counts: row.counts.map((count: any) => {
-                        return { key: count.key, patients: count.patients.filter((p: string) => filteredPatients.includes(p)) }
-                    }).filter((count: any) => count.patients.length > 0)
-                }
-            })
-        }
-        else return {
-            ...group,
-            patients: filteredPatients,
-            rows: group.rows
-            .map((row: any) => {
-                return {
-                    ...row,
-                    counts: row.counts.map((count: any) => {
-                        return { key: count.key, patients: count.patients.filter((p: string) => filteredPatients.includes(p)) }
-                    }).filter((count: any) => count.patients.length > 0)
-                }
-            })
-        }
-    }
+		if (group.points)
+			return {
+				...group,
+				patients: filteredPatients,
+				points: group.points.filter((id: number) => patientGroup.includes(dataStore.points[id].patient)),
+				rows: group.rows.map((row: any) => {
+					return {
+						...row,
+						counts: row.counts
+							.map((count: any) => {
+								return {
+									key: count.key,
+									patients: count.patients.filter((p: string) => filteredPatients.includes(p)),
+								};
+							})
+							.filter((count: any) => count.patients.length > 0),
+					};
+				}),
+			};
+		else
+			return {
+				...group,
+				patients: filteredPatients,
+				rows: group.rows.map((row: any) => {
+					return {
+						...row,
+						counts: row.counts
+							.map((count: any) => {
+								return {
+									key: count.key,
+									patients: count.patients.filter((p: string) => filteredPatients.includes(p)),
+								};
+							})
+							.filter((count: any) => count.patients.length > 0),
+					};
+				}),
+			};
+	}
 
+	getTransitionComparison() {
+		let timepoints: Array<JSX.Element> = [],
+			transitions: Array<JSX.Element> = [],
+			groupLabels: Array<JSX.Element> = [],
+			groups: Array<JSX.Element> = [];
+		const { dataStore, uiStore, visStore } = this.props.rootStore!;
 
-    getTransitionComparison() {
+		let { selectedPatientGroupIdx } = uiStore;
 
-        let timepoints: Array<JSX.Element> = [], transitions: Array<JSX.Element> = [], groupLabels: Array<JSX.Element> = [], groups: Array<JSX.Element> = []
-        const { dataStore, uiStore, visStore } = this.props.rootStore!
+		selectedPatientGroupIdx = selectedPatientGroupIdx.slice().sort();
 
-        let { selectedPatientGroupIdx } = uiStore
+		let groupOffsetX = 0;
 
-        selectedPatientGroupIdx = selectedPatientGroupIdx.slice().sort()
+		selectedPatientGroupIdx.forEach((groupIdx: number) => {
+			let groupWidth = 0;
+			const patientGroup = dataStore.patientGroups[groupIdx];
+			if (!patientGroup) return;
 
-        let groupOffsetX = 0
-
-        selectedPatientGroupIdx.forEach((groupIdx: number) => {
-            let groupWidth = 0
-            const patientGroup = dataStore.patientGroups[groupIdx]
-            if (!patientGroup) return
-
-            dataStore.timepoints.forEach((d, timeIdx) => {
-
-                const transformTP = `translate(
+			dataStore.timepoints.forEach((d, timeIdx) => {
+				const transformTP = `translate(
                     ${visStore.strokeW},
                     ${visStore.newTimepointPositions.timepoint[timeIdx] + visStore.strokeW + this.groupLabelHeight}
                     )`;
 
-                let offsetX = 0;
-                const timepoint: Array<JSX.Element> = []
+				let offsetX = 0;
+				const timepoint: Array<JSX.Element> = [];
 
+				// draw transitions
+				if (timeIdx !== dataStore.timepoints.length - 1) {
+					const transformTR = `translate(${visStore.strokeW + offsetX},${visStore.newTimepointPositions.connection[timeIdx] + visStore.strokeW + this.groupLabelHeight})`;
 
+					const firstTP = d;
+					const firstGrouped = firstTP.customGrouped
+						.map((g) => this.getGroupedPartition(g, patientGroup))
+						.filter((g) => g.patients.length > 0);
+					const secondTP = dataStore.timepoints[timeIdx + 1];
+					const secondGrouped = secondTP.customGrouped
+						.map((g) => this.getGroupedPartition(g, patientGroup))
+						.filter((g) => g.patients.length > 0);
+					if (firstTP.customPartitions.length > 0) {
+						if (secondTP.customPartitions.length > 0) {
+							transitions.push(
+								<g
+									className={`time${timeIdx}_group${groupIdx + 1} transitions`}
+									key={`time${timeIdx}_group${groupIdx + 1}`}
+									transform={transformTR}
+								>
+									<Provider dataStore={dataStore} visStore={visStore}>
+										<SankeyTransition
+											index={timeIdx}
+											firstGrouped={firstGrouped}
+											secondGrouped={secondGrouped}
+											firstPrimary={dataStore.variableStores[firstTP.type].getById(
+												firstTP.primaryVariableId
+											)}
+											secondPrimary={dataStore.variableStores[secondTP.type].getById(
+												secondTP.primaryVariableId
+											)}
+											tooltipFunctions={this.props.tooltipFunctions}
+										/>
+									</Provider>
+								</g>
+							);
+						}
+					}
+				}
 
-                // draw transitions
-                if (timeIdx !== dataStore.timepoints.length - 1) {
-                    const transformTR = `translate(${visStore.strokeW + offsetX},${visStore.newTimepointPositions.connection[timeIdx] + visStore.strokeW + this.groupLabelHeight})`
+				// draw time points
+				d.customGrouped.forEach((group, partitionIdx) => {
+					const transform = `translate(${offsetX}, ${0})`;
+					const heatmap = d.heatmap.map((v) => {
+						return { ...v, data: v.data.filter((p) => patientGroup.includes(p.patient)) };
+					});
 
+					const partition = this.getGroupedPartition(group, patientGroup);
 
-                    const firstTP = d
-                    const firstGrouped = firstTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g => g.patients.length > 0);
-                    const secondTP = dataStore.timepoints[timeIdx + 1];
-                    const secondGrouped = secondTP.customGrouped.map(g => this.getGroupedPartition(g, patientGroup)).filter(g => g.patients.length > 0);
-                    if (firstTP.customPartitions.length > 0) {
-                        if (secondTP.customPartitions.length > 0) {
-                            transitions.push(
-                                <g className={`time${timeIdx}_group${groupIdx+1} transitions`} key={`time${timeIdx}_group${groupIdx+1}`} transform={transformTR}>
-                                    <Provider
-                                        dataStore={dataStore}
-                                        visStore={visStore}
-                                    >
-                                        <SankeyTransition
-                                            index={timeIdx}
-                                            firstGrouped={firstGrouped}
-                                            secondGrouped={secondGrouped}
-                                            firstPrimary={dataStore
-                                                .variableStores[firstTP.type]
-                                                .getById(firstTP.primaryVariableId)}
-                                            secondPrimary={dataStore
-                                                .variableStores[secondTP.type]
-                                                .getById(secondTP.primaryVariableId)}
-                                            tooltipFunctions={this.props.tooltipFunctions}
-                                        />
-                                    </Provider>
-                                </g>
-                            );
-                        }
-                    }
-                }
+					if (partition.patients.length === 0) return;
 
+					timepoint.push(
+						<g
+							key={`group${groupIdx + 1}_state${group.partition}`}
+							className={`group${groupIdx + 1}_state${group.partition} timepoint`}
+							style={{ backgroundColor: 'darkgray' }}
+							transform={transform}
+						>
+							<Provider dataStore={dataStore} visStore={visStore}>
+								<GroupPartition
+									type={d.type}
+									heatmap={heatmap}
+									currentVariables={dataStore.variableStores[d.type].fullCurrentVariables}
+									partition={partition}
+									partitionIndex={partitionIdx}
+									stroke="none"
+									stateLabels={dataStore.stateLabels}
+									hasBackground={this.props.hasBackground}
+									tooltipFunctions={this.props.tooltipFunctions}
+								/>
+							</Provider>
+						</g>
+					);
 
-                // draw time points
-                d.customGrouped.forEach((group, partitionIdx) => {
+					offsetX += visStore.groupScale(partition.patients.length) + visStore.partitionGap;
+				});
 
-                    const transform = `translate(${offsetX}, ${0})`
-                    const heatmap = d.heatmap.map(v => {
-                        return { ...v, data: v.data.filter(p => patientGroup.includes(p.patient)) }
-                    })
+				groupWidth = Math.max(groupWidth, offsetX);
 
-                    const partition = this.getGroupedPartition(group, patientGroup)
+				timepoints.push(
+					<g key={d.globalIndex} transform={transformTP} className={`time_${timeIdx}`}>
+						{timepoint}
+					</g>
+				);
+			});
 
-                    if (partition.patients.length === 0) return
-                   
-                    timepoint.push(<g
-                        key={`group${groupIdx+1}_state${group.partition}`}
-                        className={`group${groupIdx+1}_state${group.partition} timepoint`}
-                        style={{ backgroundColor: 'darkgray' }}
-                        transform={transform}
-                    >
-                        <Provider
-                            dataStore={dataStore}
-                            visStore={visStore}
-                        >
-                            <GroupPartition
-                                type={d.type}
-                                heatmap={heatmap}
-                                currentVariables={dataStore
-                                    .variableStores[d.type].fullCurrentVariables}
-                                partition={partition}
-                                partitionIndex={partitionIdx}
-                                stroke='none'
-                                stateLabels={dataStore.stateLabels}
-                                hasBackground={this.props.hasBackground}
-                                tooltipFunctions={this.props.tooltipFunctions}
-                            />
-                        </Provider>
-                    </g>)
+			groups.push(
+				<g
+					className={`group_${groupIdx}`}
+					key={`group_${groupIdx}`}
+					transform={`translate(${groupOffsetX + this.annotationWidth + 2 * this.paddingW + 2 * this.iconR}, ${0})`}
+				>
+					<text y={this.groupLabelHeight - 12} fontWeight="bold" fill="#1890ff">
+						group{groupIdx + 1}{' '}
+					</text>
+					{transitions}
+					{timepoints}
+				</g>
+			);
+			timepoints = [];
+			transitions = [];
 
+			groupOffsetX += groupWidth + visStore.partitionGap;
+		});
 
+		const annotations = this.getAnnotations();
 
-                    offsetX += visStore.groupScale(partition.patients.length) + visStore.partitionGap;
-                })
+		if (groups.length > 0) {
+			return [<g key="annotations">{annotations}</g>, ...groups];
+		} else {
+			return [
+				<g key="annotations">{annotations}</g>,
+				<text
+					key="empty-message"
+					transform={`translate( ${this.props.width / 2}, ${this.props.height / 2})`}
+					textAnchor="middle"
+					style={{ fontSize: '20px', fill: 'gray' }}
+				>
+					please select patient groups in the overview panel
+				</text>,
+			];
+		}
+	}
+	getAnnotations() {
+		// draw timepoint icon
+		const { dataStore, visStore, uiStore } = this.props.rootStore!;
+		const annotations: Array<JSX.Element> = [];
+		const svgHeight = this.props.rootStore!.visStore.svgHeight;
+		const annotationMaxWidth = Math.max(...dataStore.currentVariables.map((d) => getTextWidth(d + ' XX', 14)));
 
-                groupWidth = Math.max(groupWidth, offsetX )
+		annotations.push(
+			<line
+				key="timeline"
+				x1={this.paddingW + this.iconR}
+				x2={this.paddingW + this.iconR}
+				y1={this.paddingH + this.groupLabelHeight}
+				y2={
+					this.paddingH +
+					this.groupLabelHeight +
+					visStore.newTimepointPositions.connection[dataStore.timepoints.length - 1]
+				}
+				stroke="gray"
+			/>
+		);
 
-                timepoints.push(
-                    <g key={d.globalIndex} transform={transformTP} className={`time_${timeIdx}`}>
-                        {timepoint}
-                    </g>,
-                )
-            })
+		dataStore.timepoints.forEach((d, i) => {
+			if (d.type === 'between') return;
 
-            groups.push(<g className={`group_${groupIdx}`} key={`group_${groupIdx}`} transform={`translate(${groupOffsetX + this.annotationWidth + 2* this.paddingW + 2*this.iconR}, ${0})`}>
-                <text y={this.groupLabelHeight-12} fontWeight="bold" fill="#1890ff">group{groupIdx+1} </text>
-                {transitions}
-                {timepoints}
-            </g>)
-            timepoints = []
-            transitions = []
-
-            groupOffsetX += groupWidth + visStore.partitionGap
-
-        });
-
-        const annotations = this.getAnnotations()
-
-
-        if (groups.length>0){
-            return [
-                <g key="annotations">{annotations}</g>,
-                ...groups
-            ];
-        }else{
-            return [
-                <g key="annotations">{annotations}</g>,
-                <text key="empty-message" transform={`translate( ${this.props.width/2}, ${this.props.height/2})`} textAnchor="middle" style={{fontSize:'20px', fill:'gray'}}>
-                    please select patient groups in the overview panel
-                </text>
-            ];
-        }
-        
-    }
-    getAnnotations(){
-        // draw timepoint icon
-        const {dataStore, visStore, uiStore} = this.props.rootStore!
-        const annotations: Array<JSX.Element> = []
-        const svgHeight = this.props.rootStore!.visStore.svgHeight
-        const annotationMaxWidth = Math.max(...dataStore.currentVariables.map(d=>getTextWidth(d+' XX', 14)))
-
-        annotations.push(
-            <line key="timeline"
-                x1={this.paddingW + this.iconR} x2={this.paddingW + this.iconR}
-                y1={this.paddingH + this.groupLabelHeight} y2={this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[dataStore.timepoints.length - 1]}
-                stroke="gray"
-            />)
-
-        dataStore.timepoints.forEach((d, i) => {
-            if (d.type === 'between') return
-
-            const transformTP = `translate(
-                    ${this.paddingW },
-                    ${ this.paddingH + this.groupLabelHeight + visStore.newTimepointPositions.connection[i] 
-                        - visStore.secondaryHeight * dataStore.variableStores['sample'].currentNonPatientVariables.length
-                    } 
+			const transformTP = `translate(
+                    ${this.paddingW},
+                    ${
+						this.paddingH +
+						this.groupLabelHeight +
+						visStore.newTimepointPositions.connection[i] -
+						visStore.secondaryHeight * dataStore.variableStores['sample'].currentNonPatientVariables.length
+					} 
                     )`;
 
-            annotations.push(
-                <g key={d.globalIndex} transform={transformTP}>
-                    <circle cx={this.iconR} cy={this.iconR} r={this.iconR} fill="white" stroke="gray" />
-                    <text x={this.iconR} y={this.iconR * 1.4} textAnchor="middle">{annotations.length }</text>
-                </g>,
-            )
-        });
+			annotations.push(
+				<g key={d.globalIndex} transform={transformTP}>
+					<circle cx={this.iconR} cy={this.iconR} r={this.iconR} fill="white" stroke="gray" />
+					<text x={this.iconR} y={this.iconR * 1.4} textAnchor="middle">
+						{annotations.length}
+					</text>
+				</g>
+			);
+		});
 
-        const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v:Variable, i:number)=>{
-            return <g key={v.id} transform={`translate(0, ${ (visStore.secondaryHeight + uiStore.horizontalGap) * i + visStore.secondaryHeight/2 + 7})`}>
-                <text >{v.name}</text>
-                <text x= {annotationMaxWidth  - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
-                </g>
-        })
+		const featureNames = dataStore.variableStores.sample.fullCurrentVariables.map((v: Variable, i: number) => {
+			return (
+				<g
+					key={v.id}
+					transform={`translate(0, ${(visStore.secondaryHeight + uiStore.horizontalGap) * i + visStore.secondaryHeight / 2 + 7})`}
+				>
+					<text>{v.name}</text>
+					<text
+						x={annotationMaxWidth - 14}
+						onClick={() => dataStore.removeVariable(v.id)}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								dataStore.removeVariable(v.id);
+							}
+						}}
+						role="button"
+						aria-label={`Remove variable ${v.name}`}
+						tabIndex={0}
+						cursor="pointer"
+						style={{ userSelect: 'none' }}
+					>
+						X
+					</text>
+				</g>
+			);
+		});
 
-        const eventNames = dataStore.variableStores.between.fullCurrentVariables.map((v:Variable, i:number)=>{
-            return <g key={v.id} transform={`translate(0, ${(visStore.secondaryHeight + uiStore.horizontalGap) * i + visStore.secondaryHeight/2 + 7})`}>
-                <text >{v.name}</text>
-                <text x= {annotationMaxWidth - 14} onClick={()=>dataStore.removeVariable(v.id)} cursor="default">X</text>
-            </g>
-        })
-        
-        
-        const featureNameRows = dataStore.timepoints.map((tp,timeIdx)=>{
-            
-            const transform = `translate(
+		const eventNames = dataStore.variableStores.between.fullCurrentVariables.map((v: Variable, i: number) => {
+			return (
+				<g
+					key={v.id}
+					transform={`translate(0, ${(visStore.secondaryHeight + uiStore.horizontalGap) * i + visStore.secondaryHeight / 2 + 7})`}
+				>
+					<text>{v.name}</text>
+					<text
+						x={annotationMaxWidth - 14}
+						onClick={() => dataStore.removeVariable(v.id)}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								dataStore.removeVariable(v.id);
+							}
+						}}
+						role="button"
+						aria-label={`Remove variable ${v.name}`}
+						tabIndex={0}
+						cursor="pointer"
+						style={{ userSelect: 'none' }}
+					>
+						X
+					</text>
+				</g>
+			);
+		});
+
+		const featureNameRows = dataStore.timepoints.map((tp, timeIdx) => {
+			const transform = `translate(
                 ${visStore.strokeW},
                 ${visStore.newTimepointPositions.timepoint[timeIdx] + this.paddingH + this.groupLabelHeight}
                 )`;
-            return <g key={timeIdx} transform={transform}>{tp.type=='sample'? featureNames: eventNames}</g>
+			return (
+				<g key={timeIdx} transform={transform}>
+					{tp.type == 'sample' ? featureNames : eventNames}
+				</g>
+			);
+		});
 
-        })
-        
-        return <>
-            <g key="timeAnnotation" className="timeAnnotation">{annotations}</g>
-            <foreignObject className="featureNameRows" key="featureNameRows"  width={this.annotationWidth } height={svgHeight} x={this.paddingW+2*this.iconR} y={0} overflow="hidden" >
-                <Resizable 
-                size={{width: this.annotationWidth , height: svgHeight}}
-                style={{ overflowX: "scroll", overflowY:"hidden", borderRight: "1px solid lightgray", zIndex:  100}}
-                onResizeStop={(e, dir, ref, d)=>this.updateAnnotationWidth(this.annotationWidth+d.width)}
-                    >
-                    <svg width={annotationMaxWidth } height={svgHeight}>
-                        {featureNameRows}
-                    </svg>
-                </Resizable>
-            </foreignObject>
-        </>
-    }
-    render() {
-        return <svg
-            width="100%"
-            className="stateTransition details"
-            // height="100%"
-            // width={this.props.rootStore.visStore.svgWidth}
-            height={this.props.rootStore!.visStore.svgHeight}
-        
-        > <g className="transitionComparison">
-                {this.getTransitionComparison()}
-            </g>
-        </svg>
-    }
+		return (
+			<>
+				<g key="timeAnnotation" className="timeAnnotation">
+					{annotations}
+				</g>
+				<foreignObject
+					className="featureNameRows"
+					key="featureNameRows"
+					width={this.annotationWidth}
+					height={svgHeight}
+					x={this.paddingW + 2 * this.iconR}
+					y={0}
+					overflow="hidden"
+				>
+					<Resizable
+						size={{ width: this.annotationWidth, height: svgHeight }}
+						style={{
+							overflowX: 'scroll',
+							overflowY: 'hidden',
+							borderRight: '1px solid lightgray',
+							zIndex: 100,
+						}}
+						onResizeStop={(e, dir, ref, d) => this.updateAnnotationWidth(this.annotationWidth + d.width)}
+					>
+						<svg width={annotationMaxWidth} height={svgHeight}>
+							{featureNameRows}
+						</svg>
+					</Resizable>
+				</foreignObject>
+			</>
+		);
+	}
+	render() {
+		return (
+			<svg
+				width="100%"
+				className="stateTransition details"
+				// height="100%"
+				// width={this.props.rootStore.visStore.svgWidth}
+				height={this.props.rootStore!.visStore.svgHeight}
+			>
+				{' '}
+				<g className="transitionComparison">{this.getTransitionComparison()}</g>
+			</svg>
+		);
+	}
 }
 
-export default TransitionComparison
+export default TransitionComparison;

@@ -1,433 +1,495 @@
 import React from 'react';
-import {inject, observer} from 'mobx-react';
-import {
-    Col, Form, Alert,
-} from 'react-bootstrap';
+import { inject, observer } from 'mobx-react';
+import { Col, Form, Alert } from 'react-bootstrap';
+import { Progress } from 'antd';
 import FontAwesome from 'react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
-import {makeObservable, observable, observe, action} from 'mobx';
+import { makeObservable, observable, observe, action } from 'mobx';
 import SelectDatatype from '../Modals/SelectDatatype';
-
 
 /*
  * Component for view if no study has been loaded
  * used for selection of studies from cBio or own data sets
  */
-const LocalFileSelection = inject('rootStore', 'undoRedoStore')(observer(class LocalFileSelection extends React.Component {
-    callback = null;
-    modalIsOpen = false;
-    fileNames = [];
-    datatypes = [];
+const LocalFileSelection = inject(
+	'rootStore',
+	'undoRedoStore'
+)(
+	observer(
+		class LocalFileSelection extends React.Component {
+			callback = null;
+			modalIsOpen = false;
+			fileNames = [];
+			datatypes = [];
 
-    /**
-     * gets the icon corresponding to the current loading state
-     * @param {string} value - loading, error, finished or empty
-     * @returns {FontAwesome}
-     */
-    static getStateIcon(value) {
-        let icon = null;
-        if (value === 'finished') {
-            icon = <FontAwesome name="check" style={{color: 'green'}}/>;
-        } else if (value === 'loading') {
-            icon = <FontAwesome name="spinner" spin style={{color: 'gray'}}/>;
-        } else if (value === 'error') {
-            icon = <FontAwesome name="times" style={{color: 'red'}}/>;
-        }
-        return icon;
-    }
+			/**
+			 * gets the icon corresponding to the current loading state
+			 * @param {string} value - loading, error, finished or empty
+			 * @returns {FontAwesome}
+			 */
+			static getStateIcon(value) {
+				let icon = null;
+				if (value === 'finished') {
+					icon = <FontAwesome name="check" style={{ color: 'green' }} />;
+				} else if (value === 'loading') {
+					icon = <FontAwesome name="spinner" spin style={{ color: 'gray' }} />;
+				} else if (value === 'error') {
+					icon = <FontAwesome name="times" style={{ color: 'red' }} />;
+				}
+				return icon;
+			}
 
-    constructor(props) {
-        super(props);
-        makeObservable(this, {
-            callback: observable,
-            modalIsOpen: observable,
-            fileNames: observable,
-            datatypes: observable,
-            openModal: action,
-            setDatatype: action,
-        });
-        // random keys for file inputs used for reset (inputs are reset if key changes to 'empty')
-        this.keys = {
-            events: uuidv4(),
-            mutations: uuidv4(),
-            molecular: uuidv4(),
-            clinicalPatient: uuidv4(),
-            clinicalSample: uuidv4(),
-            panelMatrix: uuidv4(),
-            genePanels: uuidv4(),
-        };
-        this.handleEventsLoad = this.handleEventsLoad.bind(this);
-        this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
-        this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
-        this.handleMutationsLoad = this.handleMutationsLoad.bind(this);
-        this.handleMolecularLoad = this.handleMolecularLoad.bind(this);
-        this.setDatatype = this.setDatatype.bind(this);
-        this.handleGeneMatrixLoad = this.handleGeneMatrixLoad.bind(this);
-        this.handleGenePanelsLoad = this.handleGenePanelsLoad.bind(this);
+			/**
+			 * Renders progress bar and error message for a file type
+			 * @param {string} fileType - The file type (events, mutations, etc.)
+			 * @returns {JSX.Element|null} - Progress bar or error message
+			 */
+			getFileStatus(fileType) {
+				const loader = this.props.rootStore.localFileLoader;
+				const status = loader.parsingStatus[fileType];
+				const progress = loader.getParseProgress(fileType);
+				const errorMsg = loader.getErrorMessage(fileType);
 
-        observe(props.rootStore.localFileLoader.parsingStatus, (change) => {
-            if (change.oldValue !== 'empty' && change.newValue === 'empty') {
-                this.keys[change.name] = uuidv4();
-            }
-        });
-    }
+				if (status === 'loading') {
+					return (
+						<Col sm={11} style={{ marginTop: 8, marginLeft: 0 }}>
+							<Progress
+								percent={Math.round(progress)}
+								size="small"
+								status="active"
+								showInfo={progress > 0}
+							/>
+						</Col>
+					);
+				}
 
-    /**
-     * gets form for local file loading
-     * @return {Form|div}
-     */
-    getForm() {
-        const parsingStatus = this.props.rootStore.localFileLoader.parsingStatus;
-        if (this.props.rootStore.geneNamesAPI.geneListLoaded) {
-            return (
-                <Form>
-                    <Form.Group>
-                        <Col sm={12}>
-                            <h4>Required files</h4>
-                        </Col>
-                        <Col sm={5}>
-                            Timeline
-                            {' '}
-                            {LocalFileSelection.getStateIcon(parsingStatus.events)}
-                        </Col>
-                        <Col sm={6}>
-                            <Form.Control
-                                type="file"
-                                key={this.keys.events}
-                                label="File"
-                                multiple
-                                onChange={this.handleEventsLoad}
-                            />
-                        </Col>
-                        <Col sm={1}>
-                            <div
-                                style={{visibility: parsingStatus.events === 'empty' ? 'hidden' : 'visible'}}
-                            >
-                                <FontAwesome
-                                    name="times"
-                                    onClick={() => this.props.rootStore.localFileLoader.setEventsParsed('empty')}
-                                />
-                            </div>
-                        </Col>
-                    </Form.Group>
-                    <Form.Group>
-                        <Col sm={12}>
-                            <h4>At least one required</h4>
-                        </Col>
+				if (status === 'error' && errorMsg) {
+					return (
+						<Col sm={11} style={{ marginTop: 8, marginLeft: 0 }}>
+							<Alert variant="danger" style={{ padding: '8px', fontSize: '12px' }}>
+								<strong>Error:</strong> {errorMsg}
+							</Alert>
+						</Col>
+					);
+				}
 
-                        <Col sm={5}>
-                            Clinical Sample Data
-                            {' '}
-                            {LocalFileSelection.getStateIcon(parsingStatus.clinicalSample)}
-                        </Col>
-                        <Col sm={6}>
-                            <Form.Control
-                                type="file"
-                                key={this.keys.clinicalSample}
-                                label="File"
-                                onChange={this.handleClinicalSampleLoad}
-                            />
-                        </Col>
-                        <Col sm={1}>
-                            <div
-                                style={{visibility: parsingStatus.clinicalSample === 'empty' ? 'hidden' : 'visible'}}
-                            >
-                                <FontAwesome
-                                    name="times"
-                                    onClick={() => this.props.rootStore.localFileLoader.setClinicalSampleParsed('empty')}
-                                />
-                            </div>
-                        </Col>
-                    </Form.Group>
-                    <Form.Group>
-                        <Col sm={5}>
-                            Clinical Patient Data
-                            {' '}
-                            {LocalFileSelection.getStateIcon(parsingStatus.clinicalPatient)}
-                        </Col>
-                        <Col sm={6}>
-                            <Form.Control
-                                type="file"
-                                key={this.keys.clinicalPatient}
-                                label="File"
-                                onChange={this.handleClinicalPatientLoad}
-                            />
-                        </Col>
-                        <Col sm={1}>
-                            <div
-                                style={{visibility: parsingStatus.clinicalPatient === 'empty' ? 'hidden' : 'visible'}}
-                            >
-                                <FontAwesome
-                                    name="times"
-                                    onClick={() => this.props.rootStore.localFileLoader.setClinicalPatientParsed('empty')}
-                                />
-                            </div>
-                        </Col>
-                    </Form.Group>
-                    <Form.Group>
-                        <Col sm={5}>
-                            Mutations
-                            {' '}
-                            {LocalFileSelection.getStateIcon(parsingStatus.mutations)}
-                        </Col>
-                        <Col sm={6}>
-                            <Form.Control
-                                type="file"
-                                key={this.keys.mutations}
-                                label="File"
-                                onChange={this.handleMutationsLoad}
-                            />
-                        </Col>
-                        <Col sm={1}>
-                            <div
-                                style={{visibility: parsingStatus.mutations === 'empty' ? 'hidden' : 'visible'}}
-                            >
-                                <FontAwesome
-                                    name="times"
-                                    onClick={() => this.props.rootStore.localFileLoader.setMutationsParsed('empty')}
-                                />
-                            </div>
-                        </Col>
-                    </Form.Group>
-                    <Form.Group>
-                        <Col sm={5}>
-                            Other files
-                            {' '}
-                            {LocalFileSelection.getStateIcon(parsingStatus.molecular)}
-                        </Col>
-                        <Col sm={6}>
-                            <Form.Control
-                                type="file"
-                                key={this.keys.molecular}
-                                label="File"
-                                multiple
-                                onChange={this.handleMolecularLoad}
-                            />
-                            <Form.Text muted>
-                                expression data, CNV data,
-                                protein levels, methylation data
-                            </Form.Text>
-                        </Col>
-                        <Col sm={1}>
-                            <div
-                                style={{visibility: parsingStatus.molecular === 'empty' ? 'hidden' : 'visible'}}
-                            >
-                                <FontAwesome
-                                    name="times"
-                                    onClick={() => this.props.rootStore.localFileLoader.setMolecularParsed('empty')}
-                                />
-                            </div>
-                        </Col>
-                    </Form.Group>
-                    <Form.Group>
-                        <Col sm={12}><h4>Optional files</h4></Col>
-                        <Col sm={5}>
-                            Gene Panel Matrix
-                            {' '}
-                            {LocalFileSelection.getStateIcon(parsingStatus.panelMatrix)}
-                        </Col>
-                        <Col sm={6}>
-                            <Form.Control
-                                type="file"
-                                key={this.keys.panelMatrix}
-                                label="File"
-                                onChange={this.handleGeneMatrixLoad}
-                            />
-                        </Col>
-                        <Col sm={1}>
-                            <div
-                                style={{visibility: parsingStatus.panelMatrix === 'empty' ? 'hidden' : 'visible'}}
-                            >
-                                <FontAwesome
-                                    name="times"
-                                    onClick={() => this.props.rootStore.localFileLoader.setPanelMatrixParsed('empty')}
-                                />
-                            </div>
-                        </Col>
-                    </Form.Group>
-                    <Form.Group>
-                        <Col sm={5}>
-                            Gene Panels
-                            {' '}
-                            {LocalFileSelection.getStateIcon(parsingStatus.genePanels)}
-                        </Col>
-                        <Col sm={6}>
-                            <Form.Control
-                                type="file"
-                                key={this.keys.genePanels}
-                                label="File"
-                                multiple
-                                onChange={this.handleGenePanelsLoad}
-                            />
-                        </Col>
-                        <Col sm={1}>
-                            <div
-                                style={{visibility: parsingStatus.genePanels === 'empty' ? 'hidden' : 'visible'}}
-                            >
-                                <FontAwesome
-                                    name="times"
-                                    onClick={() => this.props.rootStore.localFileLoader.setGenePanelsParsed('empty')}
-                                />
-                            </div>
-                        </Col>
-                    </Form.Group>
-                </Form>
-            );
-        }
-        return (<div><FontAwesome name="spinner" spin style={{color: 'gray'}}/></div>);
-    }
+				return null;
+			}
 
-    /**
-     * gets the modal for selecting CNV data types
-     * @return {SelectDatatype|null}
-     */
-    getModal() {
-        if (this.modalIsOpen) {
-            return (
-                <SelectDatatype
-                    modalIsOpen={this.modalIsOpen}
-                    fileNames={this.fileNames.slice()}
-                    setDatatype={this.setDatatype}
-                    selectedTypes={this.datatypes.map(d => d.key)}
-                    callback={this.callback}
-                    closeModal={action(() => {
-                        this.modalIsOpen = false;
-                    })}
-                />
-            );
-        }
-        return null;
-    }
+			constructor(props) {
+				super(props);
+				makeObservable(this, {
+					callback: observable,
+					modalIsOpen: observable,
+					fileNames: observable,
+					datatypes: observable,
+					openModal: action,
+					setDatatype: action,
+				});
+				// random keys for file inputs used for reset (inputs are reset if key changes to 'empty')
+				this.keys = {
+					events: uuidv4(),
+					mutations: uuidv4(),
+					molecular: uuidv4(),
+					clinicalPatient: uuidv4(),
+					clinicalSample: uuidv4(),
+					panelMatrix: uuidv4(),
+					genePanels: uuidv4(),
+				};
+				this.handleEventsLoad = this.handleEventsLoad.bind(this);
+				this.handleClinicalSampleLoad = this.handleClinicalSampleLoad.bind(this);
+				this.handleClinicalPatientLoad = this.handleClinicalPatientLoad.bind(this);
+				this.handleMutationsLoad = this.handleMutationsLoad.bind(this);
+				this.handleMolecularLoad = this.handleMolecularLoad.bind(this);
+				this.setDatatype = this.setDatatype.bind(this);
+				this.handleGeneMatrixLoad = this.handleGeneMatrixLoad.bind(this);
+				this.handleGenePanelsLoad = this.handleGenePanelsLoad.bind(this);
 
-    /**
-     * sets datatypes of currently selected files
-     * @param {number} index
-     * @param {string} key
-     * @param {string} alterationType
-     * @param {string} datatype
-     */
-    setDatatype(index, key, datatype, alterationType) {
-        this.datatypes[index] = {key, alterationType, datatype}
-    }
+				observe(props.rootStore.localFileLoader.parsingStatus, (change) => {
+					if (change.oldValue !== 'empty' && change.newValue === 'empty') {
+						this.keys[change.name] = uuidv4();
+					}
+				});
+			}
 
+			/**
+			 * gets form for local file loading
+			 * @return {Form|div}
+			 */
+			getForm() {
+				const parsingStatus = this.props.rootStore.localFileLoader.parsingStatus;
+				if (this.props.rootStore.geneNamesAPI.geneListLoaded) {
+					return (
+						<Form>
+							<Form.Group>
+								<Col sm={12}>
+									<h4>Required files</h4>
+								</Col>
+								<Col sm={5}>Timeline {LocalFileSelection.getStateIcon(parsingStatus.events)}</Col>
+								<Col sm={6}>
+									<Form.Control
+										type="file"
+										key={this.keys.events}
+										label="File"
+										multiple
+										onChange={this.handleEventsLoad}
+									/>
+								</Col>
+								<Col sm={1}>
+									<div
+										style={{ visibility: parsingStatus.events === 'empty' ? 'hidden' : 'visible' }}
+									>
+										<FontAwesome
+											name="times"
+											onClick={() =>
+												this.props.rootStore.localFileLoader.setEventsParsed('empty')
+											}
+										/>
+									</div>
+								</Col>
+								{this.getFileStatus('events')}
+							</Form.Group>
+							<Form.Group>
+								<Col sm={12}>
+									<h4>At least one required</h4>
+								</Col>
 
-    /**
-     * handles selection of event files
-     * @param {event} e
-     */
-    handleEventsLoad(e) {
-        if (e.target.files.length > 0) {
-            this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
-                this.props.rootStore.parseTimeline(null, () => {
-                });
-            });
-        } else {
-            this.props.rootStore.localFileLoader.setEventsParsed('empty');
-        }
-    }
+								<Col sm={5}>
+									Clinical Sample Data {LocalFileSelection.getStateIcon(parsingStatus.clinicalSample)}
+								</Col>
+								<Col sm={6}>
+									<Form.Control
+										type="file"
+										key={this.keys.clinicalSample}
+										label="File"
+										onChange={this.handleClinicalSampleLoad}
+									/>
+								</Col>
+								<Col sm={1}>
+									<div
+										style={{
+											visibility: parsingStatus.clinicalSample === 'empty' ? 'hidden' : 'visible',
+										}}
+									>
+										<FontAwesome
+											name="times"
+											onClick={() =>
+												this.props.rootStore.localFileLoader.setClinicalSampleParsed('empty')
+											}
+										/>
+									</div>
+								</Col>
+								{this.getFileStatus('clinicalSample')}
+							</Form.Group>
+							<Form.Group>
+								<Col sm={5}>
+									Clinical Patient Data{' '}
+									{LocalFileSelection.getStateIcon(parsingStatus.clinicalPatient)}
+								</Col>
+								<Col sm={6}>
+									<Form.Control
+										type="file"
+										key={this.keys.clinicalPatient}
+										label="File"
+										onChange={this.handleClinicalPatientLoad}
+									/>
+								</Col>
+								<Col sm={1}>
+									<div
+										style={{
+											visibility:
+												parsingStatus.clinicalPatient === 'empty' ? 'hidden' : 'visible',
+										}}
+									>
+										<FontAwesome
+											name="times"
+											onClick={() =>
+												this.props.rootStore.localFileLoader.setClinicalPatientParsed('empty')
+											}
+										/>
+									</div>
+								</Col>
+								{this.getFileStatus('clinicalPatient')}
+							</Form.Group>
+							<Form.Group>
+								<Col sm={5}>Mutations {LocalFileSelection.getStateIcon(parsingStatus.mutations)}</Col>
+								<Col sm={6}>
+									<Form.Control
+										type="file"
+										key={this.keys.mutations}
+										label="File"
+										onChange={this.handleMutationsLoad}
+									/>
+								</Col>
+								<Col sm={1}>
+									<div
+										style={{
+											visibility: parsingStatus.mutations === 'empty' ? 'hidden' : 'visible',
+										}}
+									>
+										<FontAwesome
+											name="times"
+											onClick={() =>
+												this.props.rootStore.localFileLoader.setMutationsParsed('empty')
+											}
+										/>
+									</div>
+								</Col>
+								{this.getFileStatus('mutations')}
+							</Form.Group>
+							<Form.Group>
+								<Col sm={5}>Other files {LocalFileSelection.getStateIcon(parsingStatus.molecular)}</Col>
+								<Col sm={6}>
+									<Form.Control
+										type="file"
+										key={this.keys.molecular}
+										label="File"
+										multiple
+										onChange={this.handleMolecularLoad}
+									/>
+									<Form.Text muted>
+										expression data, CNV data, protein levels, methylation data
+									</Form.Text>
+								</Col>
+								<Col sm={1}>
+									<div
+										style={{
+											visibility: parsingStatus.molecular === 'empty' ? 'hidden' : 'visible',
+										}}
+									>
+										<FontAwesome
+											name="times"
+											onClick={() =>
+												this.props.rootStore.localFileLoader.setMolecularParsed('empty')
+											}
+										/>
+									</div>
+								</Col>
+								{this.getFileStatus('molecular')}
+							</Form.Group>
+							<Form.Group>
+								<Col sm={12}>
+									<h4>Optional files</h4>
+								</Col>
+								<Col sm={5}>
+									Gene Panel Matrix {LocalFileSelection.getStateIcon(parsingStatus.panelMatrix)}
+								</Col>
+								<Col sm={6}>
+									<Form.Control
+										type="file"
+										key={this.keys.panelMatrix}
+										label="File"
+										onChange={this.handleGeneMatrixLoad}
+									/>
+								</Col>
+								<Col sm={1}>
+									<div
+										style={{
+											visibility: parsingStatus.panelMatrix === 'empty' ? 'hidden' : 'visible',
+										}}
+									>
+										<FontAwesome
+											name="times"
+											onClick={() =>
+												this.props.rootStore.localFileLoader.setPanelMatrixParsed('empty')
+											}
+										/>
+									</div>
+								</Col>
+								{this.getFileStatus('panelMatrix')}
+							</Form.Group>
+							<Form.Group>
+								<Col sm={5}>
+									Gene Panels {LocalFileSelection.getStateIcon(parsingStatus.genePanels)}
+								</Col>
+								<Col sm={6}>
+									<Form.Control
+										type="file"
+										key={this.keys.genePanels}
+										label="File"
+										multiple
+										onChange={this.handleGenePanelsLoad}
+									/>
+								</Col>
+								<Col sm={1}>
+									<div
+										style={{
+											visibility: parsingStatus.genePanels === 'empty' ? 'hidden' : 'visible',
+										}}
+									>
+										<FontAwesome
+											name="times"
+											onClick={() =>
+												this.props.rootStore.localFileLoader.setGenePanelsParsed('empty')
+											}
+										/>
+									</div>
+								</Col>
+								{this.getFileStatus('genePanels')}
+							</Form.Group>
+						</Form>
+					);
+				}
+				return (
+					<div>
+						<FontAwesome name="spinner" spin style={{ color: 'gray' }} />
+					</div>
+				);
+			}
 
-    /**
-     * handles selection of clinical sample specific file
-     * @param {event} e
-     */
-    handleClinicalSampleLoad(e) {
-        if (e.target.files.length > 0) {
-            this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], true);
-        } else {
-            this.props.rootStore.localFileLoader.setClinicalSampleParsed('empty');
-        }
-    }
+			/**
+			 * gets the modal for selecting CNV data types
+			 * @return {SelectDatatype|null}
+			 */
+			getModal() {
+				if (this.modalIsOpen) {
+					return (
+						<SelectDatatype
+							modalIsOpen={this.modalIsOpen}
+							fileNames={this.fileNames.slice()}
+							setDatatype={this.setDatatype}
+							selectedTypes={this.datatypes.map((d) => d.key)}
+							callback={this.callback}
+							closeModal={action(() => {
+								this.modalIsOpen = false;
+							})}
+						/>
+					);
+				}
+				return null;
+			}
 
-    /**
-     * handles selection of clinical patient specific file
-     * @param {event} e
-     */
-    handleClinicalPatientLoad(e) {
-        if (e.target.files.length > 0) {
-            this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false);
-        } else {
-            this.props.rootStore.localFileLoader.setClinicalPatientParsed('empty');
-        }
-    }
+			/**
+			 * sets datatypes of currently selected files
+			 * @param {number} index
+			 * @param {string} key
+			 * @param {string} alterationType
+			 * @param {string} datatype
+			 */
+			setDatatype(index, key, datatype, alterationType) {
+				this.datatypes[index] = { key, alterationType, datatype };
+			}
 
-    /**
-     * handles selection of mutation file
-     * @param {event} e
-     */
-    handleMutationsLoad(e) {
-        if (e.target.files.length > 0) {
-            this.props.rootStore.localFileLoader.setMutations(e.target.files[0]);
-        } else {
-            this.props.rootStore.localFileLoader.setMutationsParsed('empty');
-        }
-    }
+			/**
+			 * handles selection of event files
+			 * @param {event} e
+			 */
+			handleEventsLoad(e) {
+				if (e.target.files.length > 0) {
+					this.props.rootStore.localFileLoader.setEventFiles(e.target.files, () => {
+						this.props.rootStore.parseTimeline(null, () => {});
+					});
+				} else {
+					this.props.rootStore.localFileLoader.setEventsParsed('empty');
+				}
+			}
 
-    /**
-     * opens modal for datatype selection
-     * @param {FileList} files
-     * @param {Function} callback
-     */
-    openModal = action((files, callback) => {
-        this.modalIsOpen = true;
-        this.datatypes = Array.from(files).map(() => ({key: 'UnspecCont', alterationType: 'ANY', datatype: 'CONTINUOUS'}));
-        this.fileNames = Array.from(files).map(d => d.name);
-        this.callback = callback;
-    });
+			/**
+			 * handles selection of clinical sample specific file
+			 * @param {event} e
+			 */
+			handleClinicalSampleLoad(e) {
+				if (e.target.files.length > 0) {
+					this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], true);
+				} else {
+					this.props.rootStore.localFileLoader.setClinicalSampleParsed('empty');
+				}
+			}
 
-    /**
-     * handles selection of CNV files
-     * @param {event} e
-     */
-    handleMolecularLoad(e) {
-        e.persist();
-        if (e.target.files.length > 0) {
-            this.openModal(e.target.files, (setFiles) => {
-                if (setFiles) {
-                    this.props.rootStore.localFileLoader
-                        .setMolecularFiles(e.target.files, this.datatypes);
-                } else {
-                    e.target.value = null;
-                }
-            });
-        } else {
-            this.props.rootStore.localFileLoader.setMolecularParsed('empty');
-        }
-    }
+			/**
+			 * handles selection of clinical patient specific file
+			 * @param {event} e
+			 */
+			handleClinicalPatientLoad(e) {
+				if (e.target.files.length > 0) {
+					this.props.rootStore.localFileLoader.setClinicalFile(e.target.files[0], false);
+				} else {
+					this.props.rootStore.localFileLoader.setClinicalPatientParsed('empty');
+				}
+			}
 
-    /**
-     * handles loading gene matrix
-     * @param {event} e
-     */
-    handleGeneMatrixLoad(e) {
-        this.props.rootStore.localFileLoader.setGenePanelMatrix(e.target.files[0]);
-    }
+			/**
+			 * handles selection of mutation file
+			 * @param {event} e
+			 */
+			handleMutationsLoad(e) {
+				if (e.target.files.length > 0) {
+					this.props.rootStore.localFileLoader.setMutations(e.target.files[0]);
+				} else {
+					this.props.rootStore.localFileLoader.setMutationsParsed('empty');
+				}
+			}
 
-    /**
-     * handles loading gene panels
-     * @param {event} e
-     */
-    handleGenePanelsLoad(e) {
-        this.props.rootStore.localFileLoader.setGenePanels(e.target.files);
-    }
+			/**
+			 * opens modal for datatype selection
+			 * @param {FileList} files
+			 * @param {Function} callback
+			 */
+			openModal = action((files, callback) => {
+				this.modalIsOpen = true;
+				this.datatypes = Array.from(files).map(() => ({
+					key: 'UnspecCont',
+					alterationType: 'ANY',
+					datatype: 'CONTINUOUS',
+				}));
+				this.fileNames = Array.from(files).map((d) => d.name);
+				this.callback = callback;
+			});
 
+			/**
+			 * handles selection of CNV files
+			 * @param {event} e
+			 */
+			handleMolecularLoad(e) {
+				e.persist();
+				if (e.target.files.length > 0) {
+					this.openModal(e.target.files, (setFiles) => {
+						if (setFiles) {
+							this.props.rootStore.localFileLoader.setMolecularFiles(e.target.files, this.datatypes);
+						} else {
+							e.target.value = null;
+						}
+					});
+				} else {
+					this.props.rootStore.localFileLoader.setMolecularParsed('empty');
+				}
+			}
 
-    render() {
-        const msg = <Alert>Data uploaded on this page will not leave your computer.</Alert>;
-        return (
-            <div>
-                <br></br>
-                {msg}
-                <a
-                    href="https://github.com/hms-dbmi/OncoThreads/wiki/OncoThreads-File-Formats"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    File format documentation and example data
-                </a>
-                {this.getForm()}
-                {this.getModal()}
-            </div>
-        );
-    }
-}));
+			/**
+			 * handles loading gene matrix
+			 * @param {event} e
+			 */
+			handleGeneMatrixLoad(e) {
+				this.props.rootStore.localFileLoader.setGenePanelMatrix(e.target.files[0]);
+			}
+
+			/**
+			 * handles loading gene panels
+			 * @param {event} e
+			 */
+			handleGenePanelsLoad(e) {
+				this.props.rootStore.localFileLoader.setGenePanels(e.target.files);
+			}
+
+			render() {
+				const msg = <Alert>Data uploaded on this page will not leave your computer.</Alert>;
+				return (
+					<div>
+						<br></br>
+						{msg}
+						<a
+							href="https://github.com/hms-dbmi/OncoThreads/wiki/OncoThreads-File-Formats"
+							rel="noopener noreferrer"
+							target="_blank"
+						>
+							File format documentation and example data
+						</a>
+						{this.getForm()}
+						{this.getModal()}
+					</div>
+				);
+			}
+		}
+	)
+);
 export default LocalFileSelection;

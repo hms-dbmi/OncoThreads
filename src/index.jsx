@@ -1,4 +1,3 @@
- 
 /**
  * Created by theresa on 30.01.18.
  */
@@ -12,11 +11,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // Intro.js styles
 import 'intro.js/minified/introjs.min.css';
 import 'intro.js/themes/introjs-modern.css';
-import './introjs-custom.css'
+import './introjs-custom.css';
 
 // Grid layout styles
-import "react-grid-layout/css/styles.css"
-import "react-resizable/css/styles.css"
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 // Font Awesome for react-fontawesome
 import 'font-awesome/css/font-awesome.min.css';
@@ -40,11 +39,7 @@ const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
 
 const root = createRoot(document.getElementById('app'));
 root.render(
-    <Provider
-        rootStore={rootStore}
-        uiStore={uiStore}
-        undoRedoStore={undoRedoStore}
-    >
-        <App />
-    </Provider>
+	<Provider rootStore={rootStore} uiStore={uiStore} undoRedoStore={undoRedoStore}>
+		<App />
+	</Provider>
 );

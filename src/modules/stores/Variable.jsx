@@ -5,119 +5,124 @@ import ColorScales from '../UtilityClasses/ColorScales';
  * a derived variable is derived of one or multiple other variables
  */
 class Variable {
-    /**
-     * constructs a variable
-     * @param {string} id
-     * @param {string} name
-     * @param {string} datatype - ORDINAL, STRING, NUMBER, BINARY
-     * @param {string} description
-     * @param {string[]} originalIds - ids of variables that were used to derive the variable
-     * @param {string[]} range
-     * @param {(number[]|string[]|boolean[])} domain
-     * @param {Object} mapper - mapper mapping sampleIds to values
-     * @param {string} profile - profile (group of variables) that this variable belongs to
-     * @param {string} type  - gene, clinical, computed, event, derived
-     */
-    constructor(id, name, datatype, description, originalIds,
-        range, domain, mapper, profile, type) {
-        this.id = id;
-        this.datatype = datatype;
-        this.description = description;
-        this.originalIds = originalIds;
-        this.mapper = mapper;
-        this.type = type;
-        this.profile = profile;
-        this.referenced = 0; // number of variables that reference this variable
-        
-        const currDomain = this.createDomain(domain);
-        const currRange = ColorScales.createRange(currDomain, range, this.datatype);
-        
-        this.domain = currDomain;
-        this.range = currRange;
-        this.name = name;
-        
-        makeObservable(this, {
-            domain: observable,
-            range: observable,
-            name: observable,
-            colorScale: computed,
-            changeRange: action,
-            changeDomain: action,
-            changeName: action,
-        });
-    }
+	/**
+	 * constructs a variable
+	 * @param {string} id
+	 * @param {string} name
+	 * @param {string} datatype - ORDINAL, STRING, NUMBER, BINARY
+	 * @param {string} description
+	 * @param {string[]} originalIds - ids of variables that were used to derive the variable
+	 * @param {string[]} range
+	 * @param {(number[]|string[]|boolean[])} domain
+	 * @param {Object} mapper - mapper mapping sampleIds to values
+	 * @param {string} profile - profile (group of variables) that this variable belongs to
+	 * @param {string} type  - gene, clinical, computed, event, derived
+	 */
+	constructor(id, name, datatype, description, originalIds, range, domain, mapper, profile, type) {
+		this.id = id;
+		this.datatype = datatype;
+		this.description = description;
+		this.originalIds = originalIds;
+		this.mapper = mapper;
+		this.type = type;
+		this.profile = profile;
+		this.referenced = 0; // number of variables that reference this variable
 
-    /**
-     * changes range
-     */
-    changeRange = (newRange) => {
-        this.range = newRange;
-    }
+		const currDomain = this.createDomain(domain);
+		const currRange = ColorScales.createRange(currDomain, range, this.datatype);
 
-    /**
-     * changes domain
-     */
-    changeDomain = (newDomain) => {
-        this.domain = newDomain;
-    }
+		this.domain = currDomain;
+		this.range = currRange;
+		this.name = name;
 
-    /**
-     * changes name
-     */
-    changeName = (newName) => {
-        this.name = newName;
-    }
+		makeObservable(this, {
+			domain: observable,
+			range: observable,
+			name: observable,
+			colorScale: computed,
+			changeRange: action,
+			changeDomain: action,
+			changeName: action,
+		});
+	}
 
-    /**
-     * gets color scale
-     */
-    get colorScale() {
-        let scale;
-        if (this.datatype === 'STRING' || this.datatype === 'BINARY') {
-            scale = ColorScales.getCategoricalScale(this.range, this.domain);
-        } else if (this.datatype === 'ORDINAL') {
-            if (this.derived && this.modification.type === 'continuousTransform') {
-                scale = ColorScales.getCategoricalScale(ColorScales
-                    .getBinnedRange(this.range, this.modification.binning.bins),
-                this.domain);
-            } else {
-                scale = ColorScales.getOrdinalScale(this.range, this.domain);
-            }
-        } else if (this.datatype === 'NUMBER') {
-            scale = ColorScales.getContinousColorScale(this.range, this.domain);
-        }
-        return scale;
-    }
+	/**
+	 * changes range
+	 */
+	changeRange = (newRange) => {
+		this.range = newRange;
+	};
 
-    /**
-     * creates domain (use provided domain if given, otherwise use default domain)
-     * @param {(number[]|string[]|boolean[])} domain
-     * @returns {(number[]|string[]|boolean[])} default domain or provided domain
-     */
-    createDomain(domain) {
-        if ((this.datatype === 'NUMBER' && domain.length !== 2)
-            || (this.datatype === 'BINARY' && domain.length === 0)) {
-            return this.getDefaultDomain();
-        } if (this.datatype === 'STRING' || this.datatype === 'ORDINAL') {
-            return Array.from(new Set(domain.concat(...this.getDefaultDomain())));
-        }
-        return domain;
-    }
+	/**
+	 * changes domain
+	 */
+	changeDomain = (newDomain) => {
+		this.domain = newDomain;
+	};
 
-    /**
-     * creates default domain
-     * @returns {(number[]|string[]|boolean[])} default domain
-     */
-    getDefaultDomain() {
-        if (this.datatype === 'NUMBER') {
-            return [Math.min(...Object.values(this.mapper).filter(d => d !== undefined)),
-                Math.max(...Object.values(this.mapper).filter(d => d !== undefined))];
-        } if (this.datatype === 'BINARY') {
-            return [true, false];
-        }
-        return [...new Set(Object.values(this.mapper))]
-            .filter(d => d !== undefined).sort();
-    }
+	/**
+	 * changes name
+	 */
+	changeName = (newName) => {
+		this.name = newName;
+	};
+
+	/**
+	 * gets color scale
+	 */
+	get colorScale() {
+		let scale;
+		if (this.datatype === 'STRING' || this.datatype === 'BINARY') {
+			scale = ColorScales.getCategoricalScale(this.range, this.domain);
+		} else if (this.datatype === 'ORDINAL') {
+			if (this.derived && this.modification.type === 'continuousTransform') {
+				scale = ColorScales.getCategoricalScale(
+					ColorScales.getBinnedRange(this.range, this.modification.binning.bins),
+					this.domain
+				);
+			} else {
+				scale = ColorScales.getOrdinalScale(this.range, this.domain);
+			}
+		} else if (this.datatype === 'NUMBER') {
+			scale = ColorScales.getContinousColorScale(this.range, this.domain);
+		}
+		return scale;
+	}
+
+	/**
+	 * creates domain (use provided domain if given, otherwise use default domain)
+	 * @param {(number[]|string[]|boolean[])} domain
+	 * @returns {(number[]|string[]|boolean[])} default domain or provided domain
+	 */
+	createDomain(domain) {
+		if (
+			(this.datatype === 'NUMBER' && domain.length !== 2) ||
+			(this.datatype === 'BINARY' && domain.length === 0)
+		) {
+			return this.getDefaultDomain();
+		}
+		if (this.datatype === 'STRING' || this.datatype === 'ORDINAL') {
+			return Array.from(new Set(domain.concat(...this.getDefaultDomain())));
+		}
+		return domain;
+	}
+
+	/**
+	 * creates default domain
+	 * @returns {(number[]|string[]|boolean[])} default domain
+	 */
+	getDefaultDomain() {
+		if (this.datatype === 'NUMBER') {
+			return [
+				Math.min(...Object.values(this.mapper).filter((d) => d !== undefined)),
+				Math.max(...Object.values(this.mapper).filter((d) => d !== undefined)),
+			];
+		}
+		if (this.datatype === 'BINARY') {
+			return [true, false];
+		}
+		return [...new Set(Object.values(this.mapper))].filter((d) => d !== undefined).sort();
+	}
 }
 
 export default Variable;

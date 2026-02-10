@@ -4,15 +4,19 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import globals from 'globals';
+import prettier from 'eslint-plugin-prettier';
+import prettierConfig from 'eslint-config-prettier';
 
 export default [
   js.configs.recommended,
+  prettierConfig,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
       react,
       'react-hooks': reactHooks,
       '@typescript-eslint': tseslint,
+      prettier,
     },
     languageOptions: {
       ecmaVersion: 2022,
@@ -35,6 +39,9 @@ export default [
       },
     },
     rules: {
+      // Prettier integration
+      'prettier/prettier': 'warn',
+
       // React rules
       'react/react-in-jsx-scope': 'off', // Not needed in React 17+
       'react/prop-types': 'off', // TypeScript handles this

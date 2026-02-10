@@ -4,9 +4,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { action } from 'mobx';
-import {
-    Button, Container, Modal, Nav, Navbar, NavDropdown,
-} from 'react-bootstrap';
+import { Button, Container, Modal, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 
 import GetStudy from './GetStudy';
 import Content from './Content';
@@ -15,188 +13,187 @@ import LogModal from './Modals/LogModal';
 import SettingsModal from './Modals/SettingsModal';
 import AboutModal from './Modals/AboutModal';
 import StudySummary from './StudySummary';
+import ErrorBoundary from './ErrorBoundary';
 
 import { QuestionCircleOutlined, HomeOutlined, GithubOutlined } from '@ant-design/icons';
 
-
-import './App.css'
-import { Tooltip} from 'antd';
+import './App.css';
+import { Tooltip } from 'antd';
 /**
  * Base Component
  */
-const App = inject('rootStore', 'uiStore', 'undoRedoStore')(observer(class App extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            logModalIsOpen: false,
-            aboutModalIsOpen: false,
-            settingsModalIsOpen: false,
-            studyInfoModalIsOpen: false,
-        };
-        this.openModal = this.openModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
+const App = inject(
+	'rootStore',
+	'uiStore',
+	'undoRedoStore'
+)(
+	observer(
+		class App extends React.Component {
+			constructor() {
+				super();
+				this.state = {
+					logModalIsOpen: false,
+					aboutModalIsOpen: false,
+					settingsModalIsOpen: false,
+					studyInfoModalIsOpen: false,
+				};
+				this.openModal = this.openModal.bind(this);
+				this.closeModal = this.closeModal.bind(this);
+			}
 
-        
-    }
+			/**
+			 * get content in the main panel
+			 * @returns {(DefaultView|Content|div)}
+			 */
+			getMainContent() {
+				if (this.props.rootStore.firstLoad) {
+					return <DefaultView />;
+				}
+				// if everything is parsed show the main view
+				if (this.props.rootStore.dataParsed) {
+					return <Content />;
+				}
 
-    /**
-     * get content in the main panel
-     * @returns {(DefaultView|Content|div)}
-     */
-    getMainContent() {
-        if (this.props.rootStore.firstLoad) {
-            return (
-                <DefaultView />
-            );
-        }
-        // if everything is parsed show the main view
-        if (this.props.rootStore.dataParsed) {
-            return (
-                <Content />
-            );
-        }
+				return <div className="bigLoader" />;
+			}
 
-        return <div className="bigLoader" />;
-    }
+			/**
+			 * gets Navbar on top
+			 * @return {[]|Nav.Link}
+			 */
+			getNavbarContent() {
+				if (this.props.rootStore.dataParsed) {
+					return [
+						<GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
+						<NavDropdown key="export" eventKey="dropdown" title="Export View" id="basic-nav-dropdown">
+							<NavDropdown.Item onClick={this.props.rootStore.svgExport.exportSVG}>SVG</NavDropdown.Item>
+							<NavDropdown.Item onClick={this.props.rootStore.svgExport.exportSVGandData}>
+								SVG with metadata
+							</NavDropdown.Item>
+							<NavDropdown.Item onClick={this.props.rootStore.svgExport.exportPNG}>PNG</NavDropdown.Item>
+							<NavDropdown.Item onClick={this.props.rootStore.svgExport.exportPDF}>PDF</NavDropdown.Item>
+						</NavDropdown>,
+						<Nav.Link key="settings" onClick={() => this.openModal('settings')}>
+							Settings
+						</Nav.Link>,
+						<Nav.Link key="showLogs" onClick={() => this.openModal('log')}>
+							Show Logs
+						</Nav.Link>,
+						<Nav.Link key="info" onClick={() => this.openModal('info')}>
+							Study Info
+						</Nav.Link>,
+						<Nav.Link key="about" onClick={() => this.openModal('about')}>
+							About
+						</Nav.Link>,
 
-    /**
-     * gets Navbar on top
-     * @return {[]|NavItem}
-     */
-    getNavbarContent() {
-        if (this.props.rootStore.dataParsed) {
-            return ([
-                <GetStudy key="getStudy" studies={this.props.rootStore.studyAPI.studies} />,
-                <NavDropdown key="export" eventKey="dropdown" title="Export View" id="basic-nav-dropdown">
-                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportSVG}>
-                        SVG
-                    </NavDropdown.Item>
-                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportSVGandData}>
-                        SVG with metadata
-                    </NavDropdown.Item>
-                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportPNG}>
-                        PNG
-                    </NavDropdown.Item>
-                    <NavDropdown.Item onClick={this.props.rootStore.svgExport.exportPDF}>
-                        PDF
-                    </NavDropdown.Item>
-                </NavDropdown>,
-                <Nav.Link key="settings" onClick={() => this.openModal('settings')}>Settings</Nav.Link>,
-                <Nav.Link key="showLogs" onClick={() => this.openModal('log')}>Show Logs</Nav.Link>,
-                <Nav.Link key="info" onClick={() => this.openModal('info')}>Study Info</Nav.Link>,
-                <Nav.Link key="about" onClick={() => this.openModal('about')}>About</Nav.Link>,
+						<Nav.Link key="home" onClick={action(() => (this.props.rootStore.firstLoad = true))}>
+							<HomeOutlined />
+							{/* <img alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMTYiIGhlaWdodD0iMTYiCnZpZXdCb3g9IjAgMCAxNiAxNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDggMS4zMjAzMTMgTCAwLjY2MDE1NiA4LjEzMjgxMyBMIDEuMzM5ODQ0IDguODY3MTg4IEwgMiA4LjI1MzkwNiBMIDIgMTQgTCA3IDE0IEwgNyA5IEwgOSA5IEwgOSAxNCBMIDE0IDE0IEwgMTQgOC4yNTM5MDYgTCAxNC42NjAxNTYgOC44NjcxODggTCAxNS4zMzk4NDQgOC4xMzI4MTMgWiBNIDggMi42Nzk2ODggTCAxMyA3LjMyODEyNSBMIDEzIDEzIEwgMTAgMTMgTCAxMCA4IEwgNiA4IEwgNiAxMyBMIDMgMTMgTCAzIDcuMzI4MTI1IFoiPjwvcGF0aD48L3N2Zz4="></img>  */}
+						</Nav.Link>,
 
-                <Nav.Link key="home" onClick={action(() => this.props.rootStore.firstLoad = true)}>
-                    <HomeOutlined />
-                    {/* <img alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMTYiIGhlaWdodD0iMTYiCnZpZXdCb3g9IjAgMCAxNiAxNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDggMS4zMjAzMTMgTCAwLjY2MDE1NiA4LjEzMjgxMyBMIDEuMzM5ODQ0IDguODY3MTg4IEwgMiA4LjI1MzkwNiBMIDIgMTQgTCA3IDE0IEwgNyA5IEwgOSA5IEwgOSAxNCBMIDE0IDE0IEwgMTQgOC4yNTM5MDYgTCAxNC42NjAxNTYgOC44NjcxODggTCAxNS4zMzk4NDQgOC4xMzI4MTMgWiBNIDggMi42Nzk2ODggTCAxMyA3LjMyODEyNSBMIDEzIDEzIEwgMTAgMTMgTCAxMCA4IEwgNiA4IEwgNiAxMyBMIDMgMTMgTCAzIDcuMzI4MTI1IFoiPjwvcGF0aD48L3N2Zz4="></img>  */}
-                </Nav.Link>,
+						<Nav.Link
+							key="tutorial"
+							onClick={() => {
+								this.props.uiStore.setTutorialMode(true);
+							}}
+						>
+							<Tooltip
+								defaultOpen={true}
+								trigger="hover"
+								title={<span>Click me to start a walk-through tutorial </span>}
+							>
+								Intro <QuestionCircleOutlined style={{ color: 'green' }} />
+							</Tooltip>
+						</Nav.Link>,
+					];
+				}
+				return [
+					<Nav.Link key="about" onClick={() => this.openModal('about')}>
+						About
+					</Nav.Link>,
+					<Nav.Link
+						key="code"
+						referrerPolicy="no-referrer"
+						href="https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates"
+						target="_blank"
+					>
+						Source Code <GithubOutlined size="large" />
+					</Nav.Link>,
+				];
+			}
 
-                <Nav.Link key="tutorial" onClick={
-                    () => {
-                        this.props.uiStore.setTutorialMode(true)
-                    }
-                }>
-                    <Tooltip defaultOpen={true} trigger='hover' 
-                        title={<span>Click me to start a walk-through tutorial </span>}>
-                    Intro <QuestionCircleOutlined style={{color:"green"}} />
-                    </Tooltip>
-                </Nav.Link>,
+			/**
+			 * opens a modal of a certain type
+			 * @param {string} type
+			 */
+			openModal(type) {
+				if (type === 'about') {
+					this.setState({
+						aboutModalIsOpen: true,
+					});
+				} else if (type === 'log') {
+					this.setState({
+						logModalIsOpen: true,
+					});
+				} else if (type === 'info') {
+					this.setState({
+						studyInfoModalIsOpen: true,
+					});
+				} else {
+					this.setState({
+						settingsModalIsOpen: true,
+					});
+				}
+			}
 
+			/**
+			 * closes all modals
+			 */
+			closeModal() {
+				this.setState({
+					logModalIsOpen: false,
+					aboutModalIsOpen: false,
+					settingsModalIsOpen: false,
+					studyInfoModalIsOpen: false,
+				});
+			}
 
-            ]
-            );
-        }
-        return ([
-            <Nav.Link key="about" onClick={() => this.openModal('about')}>About</Nav.Link>,
-            <Nav.Link key="code" referrerPolicy="no-referrer" href="https://github.com/hms-dbmi/OncoThreads/tree/ThreadStates" target="_blank" >
-               Source Code <GithubOutlined size="large"/>
-            </Nav.Link>,
-        ]);
-    }
+			render() {
+				const navBarContent = this.getNavbarContent();
 
-    /**
-     * opens a modal of a certain type
-     * @param {string} type
-     */
-    openModal(type) {
-        if (type === 'about') {
-            this.setState({
-                aboutModalIsOpen: true,
-            });
-        } else if (type === 'log') {
-            this.setState({
-                logModalIsOpen: true,
-            });
-        } else if (type === 'info') {
-            this.setState({
-                studyInfoModalIsOpen: true,
-            });
-        } else {
-            this.setState({
-                settingsModalIsOpen: true,
-            });
-        }
-    }
-
-    /**
-     * closes all modals
-     */
-    closeModal() {
-        this.setState({
-            logModalIsOpen: false,
-            aboutModalIsOpen: false,
-            settingsModalIsOpen: false,
-            studyInfoModalIsOpen: false,
-        });
-    }
-
-    render() {
-        const navBarContent = this.getNavbarContent()
-        
-        return (
-            <div>
-                <Navbar expand="lg" className="bg-body-tertiary">
-                    <Container>
-                        <Navbar.Brand href="/">
-                            ThreadStates
-                        </Navbar.Brand>
-                        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                        <Navbar.Collapse id="basic-navbar-nav">
-                            <Nav className="ms-auto">
-                                {navBarContent}
-                            </Nav>
-                        </Navbar.Collapse>
-                    </Container>
-                </Navbar>
-                {this.getMainContent()}
-                <LogModal
-                    modalIsOpen={this.state.logModalIsOpen}
-                    close={this.closeModal}
-                    logs={this.props.undoRedoStore.logs}
-                />
-                <SettingsModal
-                    modalIsOpen={this.state.settingsModalIsOpen}
-                    close={this.closeModal}
-                />
-                <AboutModal modalIsOpen={this.state.aboutModalIsOpen} close={this.closeModal} />
-                <Modal
-                    show={this.state.studyInfoModalIsOpen}
-                    onHide={this.closeModal}
-                    animation={false}
-                >
-                    <Modal.Header closeButton>
-                        Study Information
-                    </Modal.Header>
-                    <Modal.Body>
-                        <StudySummary />
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={this.closeModal}>Close</Button>
-                    </Modal.Footer>
-                </Modal>
-            </div>
-        );
-    }
-}));
+				return (
+					<div>
+						<Navbar expand="lg" className="bg-body-tertiary">
+							<Container>
+								<Navbar.Brand href="/">ThreadStates</Navbar.Brand>
+								<Navbar.Toggle aria-controls="basic-navbar-nav" />
+								<Navbar.Collapse id="basic-navbar-nav">
+									<Nav className="ms-auto">{navBarContent}</Nav>
+								</Navbar.Collapse>
+							</Container>
+						</Navbar>
+						<ErrorBoundary>{this.getMainContent()}</ErrorBoundary>
+						<LogModal
+							modalIsOpen={this.state.logModalIsOpen}
+							close={this.closeModal}
+							logs={this.props.undoRedoStore.logs}
+						/>
+						<SettingsModal modalIsOpen={this.state.settingsModalIsOpen} close={this.closeModal} />
+						<AboutModal modalIsOpen={this.state.aboutModalIsOpen} close={this.closeModal} />
+						<Modal show={this.state.studyInfoModalIsOpen} onHide={this.closeModal} animation={false}>
+							<Modal.Header closeButton>Study Information</Modal.Header>
+							<Modal.Body>
+								<StudySummary />
+							</Modal.Body>
+							<Modal.Footer>
+								<Button onClick={this.closeModal}>Close</Button>
+							</Modal.Footer>
+						</Modal>
+					</div>
+				);
+			}
+		}
+	)
+);
 
 export default App;

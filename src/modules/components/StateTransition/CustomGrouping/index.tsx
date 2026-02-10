@@ -5,15 +5,14 @@ import * as d3 from 'd3';
 import { InputNumber, Select, Card, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-import { TPointGroups, IRootStore  } from 'modules/Type'
+import { TPointGroups, IRootStore } from 'modules/Type';
 
-
-import "./CustomGrouping.css"
+import './CustomGrouping.css';
 import { Switch } from 'antd';
 import StateBlock from './StateBlock_O3';
-import Scatter from './Scatter'
+import Scatter from './Scatter';
 
-const {Option} = Select
+const { Option } = Select;
 
 /*
  * BlockViewTimepoint Labels on the left side of the main view
@@ -21,304 +20,297 @@ const {Option} = Select
  */
 
 type TimeState = {
-    timeIdx: number,
-    partitions: Partition[]
-}
-type EventState = TimeState
+	timeIdx: number;
+	partitions: Partition[];
+};
+type EventState = TimeState;
 type Partition = {
-    partition: string, //state name
-    patients: string[],
-    points: number[], // point ids
-    rows: Row[]
-}
+	partition: string; //state name
+	patients: string[];
+	points: number[]; // point ids
+	rows: Row[];
+};
 type Row = {
-    variable: string, //attribute name
-    counts: Count[]
-}
+	variable: string; //attribute name
+	counts: Count[];
+};
 type Count = {
-    key: string | number | boolean, // attribute value
-    patients: string[]
-}
+	key: string | number | boolean; // attribute value
+	patients: string[];
+};
 
 export type TState = {
-    domains: {
-        [attrName: string]: string[] | number[] | boolean[]
-    },
-    points: number[],
-    stateKey: string
-}
+	domains: {
+		[attrName: string]: string[] | number[] | boolean[];
+	};
+	points: number[];
+	stateKey: string;
+};
 
 export interface IImportantScore {
-    name:string,
-    id: string,
-    score:number
+	name: string;
+	id: string;
+	score: number;
 }
 
-
-
-
 interface Props {
-    rootStore?: IRootStore,
+	rootStore?: IRootStore;
 }
 
 @inject('rootStore')
 @observer
 class CustomGrouping extends React.Component<Props> {
-    @observable width: number = window.innerWidth / 2
-    @observable height: number = window.innerHeight - 260
-    @observable hasLink: boolean = false
-    @observable hoverPointID: number = -1
-    @observable showGlyph: boolean = false
-    private ref = React.createRef<HTMLDivElement>();
+	@observable width: number = window.innerWidth / 2;
+	@observable height: number = window.innerHeight - 260;
+	@observable hasLink: boolean = false;
+	@observable hoverPointID: number = -1;
+	@observable showGlyph: boolean = false;
+	private ref = React.createRef<HTMLDivElement>();
 
-    constructor(props: Props) {
-        super(props);
-        this.ref = React.createRef()
+	constructor(props: Props) {
+		super(props);
+		this.ref = React.createRef();
 
-        this.resetGroup = this.resetGroup.bind(this)
-        this.deleteGroup = this.deleteGroup.bind(this)
-        this.setHoverID = this.setHoverID.bind(this)
-        this.resetHoverID = this.resetHoverID.bind(this)
-        this.updateSize = this.updateSize.bind(this)
-        this.updateSelected = this.updateSelected.bind(this)
-        this.onChangeThreshold = this.onChangeThreshold.bind(this)
-        this.removeVariable = this.removeVariable.bind(this)
+		this.resetGroup = this.resetGroup.bind(this);
+		this.deleteGroup = this.deleteGroup.bind(this);
+		this.setHoverID = this.setHoverID.bind(this);
+		this.resetHoverID = this.resetHoverID.bind(this);
+		this.updateSize = this.updateSize.bind(this);
+		this.updateSelected = this.updateSelected.bind(this);
+		this.onChangeThreshold = this.onChangeThreshold.bind(this);
+		this.removeVariable = this.removeVariable.bind(this);
+	}
 
-    }
+	/**
+	 * summarize the pointGroups group of points
+	 * @param {patient:string, value:number[], timeIdx: number}[] points
+	 * @param string[] pointGroups: ids of points
+	 * @param string[] currentVariables
+	 * @return {variableName: domain} group
+	 */
 
+	@action
+	resetGroup() {
+		const { dataStore } = this.props.rootStore!;
+		dataStore.updatePointGroups({});
+		dataStore.resetStateLabel();
 
-    /**
-     * summarize the pointGroups group of points
-     * @param {patient:string, value:number[], timeIdx: number}[] points 
-     * @param string[] pointGroups: ids of points
-     * @param string[] currentVariables
-     * @return {variableName: domain} group
-     */
+		d3.selectAll('circle.point').attr('fill', 'gray').attr('r', 5).attr('class', 'point');
+	}
 
-    @action
-    resetGroup() {
-        const {dataStore} = this.props.rootStore!
-        dataStore.updatePointGroups({})
-        dataStore.resetStateLabel()
+	@action
+	deleteGroup(stateKey: string) {
+		const { dataStore } = this.props.rootStore!;
+		dataStore.deletePointGroup(stateKey);
 
+		d3.selectAll(`circle.group_${stateKey}`).attr('fill', 'white').attr('r', 5).attr('class', 'point');
+	}
 
-        d3.selectAll('circle.point')
-            .attr('fill', 'gray')
-            .attr('r', 5)
-            .attr('class', 'point')
-    }
+	@action
+	setHoverID(id: number) {
+		this.hoverPointID = id;
+	}
 
-    @action
-    deleteGroup(stateKey: string) {
-        const {dataStore} = this.props.rootStore!
-        dataStore.deletePointGroup(stateKey)
+	@action
+	resetHoverID() {
+		this.hoverPointID = -1;
+	}
 
-        d3.selectAll(`circle.group_${stateKey}`)
-            .attr('fill', 'white')
-            .attr('r', 5)
-            .attr('class', 'point')
+	@action
+	updateSelected(stateKeys: string[], groups: number[][]) {
+		const { dataStore } = this.props.rootStore!;
 
-    }
+		const { pointGroups } = dataStore;
 
-    
-    @action
-    setHoverID(id: number) {
-        this.hoverPointID = id
-    }
+		for (let i = 0; i < groups.length; i++) {
+			const stateKey = stateKeys[i],
+				group = groups[i];
 
-    @action
-    resetHoverID() {
-        this.hoverPointID = -1
-    }
+			if (group.length === 0) {
+				delete pointGroups[stateKey];
+			} else {
+				pointGroups[stateKey] = {
+					stateKey,
+					pointIdx: group,
+				};
+			}
+		}
+		dataStore.updatePointGroups(pointGroups);
+	}
 
-    @action
-    updateSelected(stateKeys: string[], groups: number[][]) {
-        const {dataStore} = this.props.rootStore!
+	@action
+	resetSelected(stateKeys: string[], groups: number[][]) {
+		const newSelected: TPointGroups = {};
+		for (let i = 0; i < stateKeys.length; i++) {
+			const stateKey = stateKeys[i],
+				group = groups[i];
+			newSelected[stateKey] = {
+				stateKey,
+				pointIdx: group,
+			};
+		}
 
-        const {pointGroups} = dataStore
+		const { dataStore } = this.props.rootStore!;
 
-        for (let i = 0; i < groups.length; i++) {
-            const stateKey = stateKeys[i], group = groups[i]
+		dataStore.updatePointGroups(newSelected);
+	}
 
-            if (group.length === 0) {
-                delete pointGroups[stateKey]
-            } else {
-                pointGroups[stateKey] = {
-                    stateKey,
-                    pointIdx: group
-                }
-            }
-        }
-        dataStore.updatePointGroups(pointGroups)
+	componentDidMount() {
+		this.updateSize();
+		window.addEventListener('resize', this.updateSize);
+	}
 
-    }
+	componentWillUnmount() {
+		window.removeEventListener('resize', this.updateSize);
+	}
+	updateSize() {
+		if (this.ref.current) {
+			this.width = this.ref.current.getBoundingClientRect().width;
+		}
+		this.height = window.innerHeight - 300;
+	}
 
-    @action
-    resetSelected(stateKeys: string[], groups: number[][]) {
+	@action
+	onChangeThreshold(thr: number | string | undefined) {
+		this.props.rootStore!.dataStore.changeClusterNum(thr);
+	}
 
-        const newSelected:TPointGroups = {}
-        for (let i = 0; i < stateKeys.length; i++) {
-            const stateKey = stateKeys[i], group = groups[i]
-            newSelected[stateKey] = {
-                stateKey,
-                pointIdx: group
-            }
-        }
+	@action
+	removeVariable(variableName: string) {
+		this.props.rootStore!.dataStore.removeVariable(variableName);
+	}
 
-        const {dataStore} = this.props.rootStore!
+	render() {
+		const { dataStore } = this.props.rootStore!;
+		const { points, toggleHasEvent } = dataStore;
+		const { width, height, hasLink } = this;
+		const pcpMargin = 15;
+		const scatterHeight = height * 0.35,
+			summaryHeight = height * 0.65,
+			infoHeight = height * 0.2;
 
-        dataStore.updatePointGroups(newSelected)
+		const controllerView = (
+			<div className="controller">
+				<Switch
+					size="small"
+					checkedChildren="links"
+					unCheckedChildren="links"
+					onChange={() => {
+						this.hasLink = !this.hasLink;
+					}}
+				/>
 
-    }
+				<span className="thrController">
+					<span style={{ padding: '0px 0px 0px 5px' }}>Num of States</span>
 
-    componentDidMount() {
-        this.updateSize()
-        window.addEventListener('resize', this.updateSize);
-    }
-    
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.updateSize);
-    }
-    updateSize() {
-        if (this.ref.current) {
-            this.width = this.ref.current.getBoundingClientRect().width
-        }
-        this.height = window.innerHeight - 300
-    }
+					<InputNumber
+						size="small"
+						min={0}
+						max={8}
+						step={1}
+						value={dataStore.numofStates}
+						onChange={this.onChangeThreshold}
+						style={{ width: '70px' }}
+					/>
+				</span>
 
-    @action
-    onChangeThreshold(thr: number|string|undefined) {
-        this.props.rootStore!.dataStore.changeClusterNum(thr)
-    }
-
-    @action
-    removeVariable(variableName:string){
-
-        this.props.rootStore!.dataStore.removeVariable(variableName);
-    }
-
-    render() {
-        const {dataStore} = this.props.rootStore!
-        const { points, toggleHasEvent} = dataStore
-        const { width, height, hasLink } = this
-        const pcpMargin = 15
-        const scatterHeight = height * 0.35, summaryHeight = height * 0.65, infoHeight = height * 0.2
-        
-
-        const controllerView =  <div className="controller">
-
-        <Switch size="small"
-            checkedChildren="links" unCheckedChildren="links"
-            onChange={() => {
-                this.hasLink = !this.hasLink
-            }} />
-       
-
-        <span className="thrController">
-            <span style={{padding:"0px 0px 0px 5px"}}>
-                Num of States
-            </span>
-
-            <InputNumber size="small" 
-                min={0}
-                max={8}
-                step={1} 
-                value={dataStore.numofStates}
-                onChange={this.onChangeThreshold} 
-                style={{ width: "70px"}}
-                />
-           
-        </span>
-
-        <br/>
-        <Switch size="small"
-            style={{ marginLeft: '5px' }}
-            checkedChildren="events" unCheckedChildren="events"
-            onChange={toggleHasEvent} />
-        {/* <Switch size="small"
+				<br />
+				<Switch
+					size="small"
+					style={{ marginLeft: '5px' }}
+					checkedChildren="events"
+					unCheckedChildren="events"
+					onChange={toggleHasEvent}
+				/>
+				{/* <Switch size="small"
             style={{ marginLeft: '5px' }}
             checkedChildren="glyph" unCheckedChildren="circle"
             onChange={() => {
                 this.showGlyph = !this.showGlyph
             }} /> */}
 
-        <span> DR method:</span>
-        <Select value={dataStore.DRMethod} onChange={(value)=>dataStore.changeDRMethod(value)} size="small">
-            {['umap', 'tsne', 'pca'].map((name)=>{return <Option value={name} key={name}>{name}</Option>})}
-        </Select>
+				<span> DR method:</span>
+				<Select value={dataStore.DRMethod} onChange={(value) => dataStore.changeDRMethod(value)} size="small">
+					{['umap', 'tsne', 'pca'].map((name) => {
+						return (
+							<Option value={name} key={name}>
+								{name}
+							</Option>
+						);
+					})}
+				</Select>
+			</div>
+		);
 
-        </div>
-
-        const dataIntroScatter = `<h4>Step 1: State Identification </h4> 
+		const dataIntroScatter = `<h4>Step 1: State Identification </h4> 
         In the <b>Scatter Plot</b>, each point indicates the feature values of one patient at one timepoint. Different color indicates different states.
         <br/>
         <img src="legend/scatter_legend.png" width="160px"/>
         <br/>
-        You can draw a lasso to modify the identified states or directly change the number of states in the top left input box.`
+        You can draw a lasso to modify the identified states or directly change the number of states in the top left input box.`;
 
-        const dataIntroMatrix = `<h4>Step 1: State Identification </h4> 
+		const dataIntroMatrix = `<h4>Step 1: State Identification </h4> 
         The <b>Feature Matrix</b> explain each state based on their value distribution on a set of features.
         <br/>
-        <img src="legend/cellGlyph_legend.png" width="160px"/>`
+        <img src="legend/cellGlyph_legend.png" width="160px"/>`;
 
-        return (
-            // <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
-            <Card 
-                title={
-                    <span style={{fontSize:"17px"}}>
-                        State Identification 
-                        <Tooltip title="identify state based on pointGroups timepoint features">
-                            <InfoCircleOutlined />
-                        </Tooltip>
-                    </span>} 
-                extra={controllerView} 
-                style={{width:"98%"}}
-                styles={{body: {padding: "5px"}}}
-            >
-      
-                <div
-                    className="customGrouping"
-                    style={{ height: `${height}px`, width: "98%", margin:"1%"}}
-                    ref={this.ref}
-                >
-                   
-                <div data-intro={dataIntroScatter} 
-                data-step='2'>
-                    <Scatter
-                        width={width}
-                        height={scatterHeight}
-                        hasLink={hasLink}
-                        hoverPointID={this.hoverPointID}
-                        setHoverID={this.setHoverID}
-                        resetHoverID={this.resetHoverID}
-                        updateSelected={this.updateSelected}
-                        showGlyph={this.showGlyph}
-                    />
-                </div>
-                <div 
-                style={{height: summaryHeight, overflowY: "scroll"}} 
-                data-intro={dataIntroMatrix} 
-                data-step='3'>
-                    <StateBlock
-                        stateLabels={dataStore.stateLabels}
-                        importanceScores={dataStore.importanceScores}
-                        width={width}
-                        height={summaryHeight - 2 * pcpMargin}
-                        points={points}
-                        pointGroups={dataStore.pointGroups}
-                        colorScales={dataStore.colorScales}
-                        sampleFeatureDomains={dataStore.sampleFeatureDomains}
-                        hoverPointID={this.hoverPointID}
-                        setHoverID={this.setHoverID}
-                        resetHoverID={this.resetHoverID}
-                        removeVariable = {this.removeVariable}
-                    />
-                </div>
-                </div>
-            </Card>
-            /* </div> */
-        );
-    }
+		return (
+			// <div className="container" style={{ width: "100%" }} data-intro="<b>modify</b> state identification here">
+			<Card
+				title={
+					<span style={{ fontSize: '17px' }}>
+						State Identification
+						<Tooltip title="identify state based on pointGroups timepoint features">
+							<InfoCircleOutlined />
+						</Tooltip>
+					</span>
+				}
+				extra={controllerView}
+				style={{ width: '98%' }}
+				styles={{ body: { padding: '5px' } }}
+			>
+				<div
+					className="customGrouping"
+					style={{ height: `${height}px`, width: '98%', margin: '1%' }}
+					ref={this.ref}
+				>
+					<div data-intro={dataIntroScatter} data-step="2">
+						<Scatter
+							width={width}
+							height={scatterHeight}
+							hasLink={hasLink}
+							hoverPointID={this.hoverPointID}
+							setHoverID={this.setHoverID}
+							resetHoverID={this.resetHoverID}
+							updateSelected={this.updateSelected}
+							showGlyph={this.showGlyph}
+						/>
+					</div>
+					<div
+						style={{ height: summaryHeight, overflowY: 'scroll' }}
+						data-intro={dataIntroMatrix}
+						data-step="3"
+					>
+						<StateBlock
+							stateLabels={dataStore.stateLabels}
+							importanceScores={dataStore.importanceScores}
+							width={width}
+							height={summaryHeight - 2 * pcpMargin}
+							points={points}
+							pointGroups={dataStore.pointGroups}
+							colorScales={dataStore.colorScales}
+							sampleFeatureDomains={dataStore.sampleFeatureDomains}
+							hoverPointID={this.hoverPointID}
+							setHoverID={this.setHoverID}
+							resetHoverID={this.resetHoverID}
+							removeVariable={this.removeVariable}
+						/>
+					</div>
+				</div>
+			</Card>
+			/* </div> */
+		);
+	}
 }
 
-export default CustomGrouping
+export default CustomGrouping;
