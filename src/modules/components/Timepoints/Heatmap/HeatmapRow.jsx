@@ -54,6 +54,15 @@ const HeatmapRow = inject('dataStore')(
 					} else {
 						str = d.value;
 					}
+
+					console.log({
+						str,
+						fill,
+						value: d.value,
+						variable: variable.name,
+						patient: d.patient,
+					});
+
 					rects.push(
 						<rect
 							className={`heatmap ind ${d.patient}`}

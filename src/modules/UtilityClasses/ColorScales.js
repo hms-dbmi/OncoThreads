@@ -81,9 +81,9 @@ class ColorScales {
 	 * @returns {function}
 	 */
 	static getCategoricalScale(range, domain) {
+		const colorScale = d3.scaleOrdinal().range(range.slice()).domain(domain.slice());
 		return (value) => {
-			const colorScale = d3.scaleOrdinal().range(range.slice()).domain(domain.slice());
-			if (value === undefined) {
+			if (value === undefined || value === null || (typeof value === 'number' && Number.isNaN(value))) {
 				return '#f7f7f7';
 			}
 			return colorScale(value);
@@ -97,14 +97,14 @@ class ColorScales {
 	 * @return {Function}
 	 */
 	static getOrdinalScale(range, domain) {
+		const helper = d3
+			.scaleLinear()
+			.range(range.slice())
+			.domain(range.map((d, i) => i / (range.length - 1)));
+		const interpolatedRange = domain.map((d, i) => helper(i / (domain.length - 1)));
+		const colorScale = d3.scaleOrdinal().range(interpolatedRange).domain(domain.slice());
 		return (value) => {
-			const helper = d3
-				.scaleLinear()
-				.range(range.slice())
-				.domain(range.map((d, i) => i / (range.length - 1)));
-			const interpolatedRange = domain.map((d, i) => helper(i / (domain.length - 1)));
-			const colorScale = d3.scaleOrdinal().range(interpolatedRange).domain(domain.slice());
-			if (value === undefined) {
+			if (value === undefined || value === null || (typeof value === 'number' && Number.isNaN(value))) {
 				return '#f7f7f7';
 			}
 			return colorScale(value);

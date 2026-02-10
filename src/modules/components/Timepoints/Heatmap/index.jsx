@@ -31,7 +31,7 @@ const HeatmapTimepoint = inject(
 							opacity = 1;
 						}
 						rows.push(
-							<g key={d.variable} transform={transform} className="heatmap row">
+							<g key={d.variable} transform={transform} className="heatmap">
 								<HeatmapRow
 									showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
 									{...this.props.tooltipFunctions}
