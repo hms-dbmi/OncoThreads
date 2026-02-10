@@ -1,204 +1,264 @@
-import React from "react"
+import React from 'react';
 import { observer, inject } from 'mobx-react';
 
-import { IRootStore, IUndoRedoStore } from 'modules/Type'
-import { observable } from "mobx";
+import { IRootStore, IUndoRedoStore } from 'modules/Type';
+import { observable } from 'mobx';
 
-import { getTextWidth, getScientificNotation, ColorScales } from 'modules/UtilityClasses'
-import { TColorScale, TRow, TVariable } from "modules/Type/Store";
+import { getTextWidth, getScientificNotation, ColorScales, isOrdinal, isCategoricalLike, isBinary } from 'modules/UtilityClasses';
+import { TColorScale, TRow, TVariable } from 'modules/Type/Store';
 
 interface Props {
-    rootStore?: IRootStore,
-    undoRedoStore?: IUndoRedoStore
+	rootStore?: IRootStore;
+	undoRedoStore?: IUndoRedoStore;
 }
 
 @inject('rootStore', 'uiStore', 'undoRedoStore')
 @observer
 class FeatureLegend extends React.Component<Props> {
-    rowWidths: {[id:string]:number} = {};
-    horizontalGap: number = 5;
-    @observable defaultWidth = 100;
-    @observable minCatWidth = 30;
-    @observable svgWidth = 1
-    /**
-     * updates maximum legend wid th
-    */
-    updateRowWidths(op:'add'|'delete', id:string, width?: number) {
-        if (op==='add' && typeof width === 'number'){
-            this.rowWidths[id] = width
-        } else if (op==='delete'){
-            delete this.rowWidths[id]
-        }
-    }
+	rowWidths: { [id: string]: number } = {};
+	horizontalGap: number = 5;
+	@observable defaultWidth = 100;
+	@observable minCatWidth = 30;
+	@observable svgWidth = 1;
+	/**
+	 * updates maximum legend wid th
+	 */
+	updateRowWidths(op: 'add' | 'delete', id: string, width?: number) {
+		if (op === 'add' && typeof width === 'number') {
+			this.rowWidths[id] = width;
+		} else if (op === 'delete') {
+			delete this.rowWidths[id];
+		}
+	}
 
+	/**
+	 * gets a legend (one row) for a categorical variable
+	 * @param {(DerivedVariable|OriginalVariable)} variable
+	 * @param {Object[]} row
+	 * @param {number} opacity
+	 * @param {number} fontSize
+	 * @param {number} lineheight
+	 * @returns {g[]}
+	 */
+	getCategoricalLegend(variable: TVariable, row: TRow, opacity: number, fontSize: number, lineheight: number) {
+		let currX = 0;
+		const legendEntries: JSX.Element[] = [];
 
-    /**
-     * gets a legend (one row) for a categorical variable
-     * @param {(DerivedVariable|OriginalVariable)} variable
-     * @param {Object[]} row
-     * @param {number} opacity
-     * @param {number} fontSize
-     * @param {number} lineheight
-     * @returns {g[]}
-     */
-    getCategoricalLegend(variable: TVariable, row: TRow, opacity: number, fontSize: number, lineheight: number) {
-        let currX = 0;
-        const legendEntries: JSX.Element[] = [];
+		variable.domain.forEach((d: string, i: number) => {
+			if (isOrdinal(variable.datatype) || row.includes(d)) {
+				let tooltipText = '';
+				if (
+					variable.derived &&
+					isOrdinal(variable.datatype) &&
+					variable.modification.type === 'continuousTransform' &&
+					variable.modification.binning.binNames[i].modified
+				) {
+					tooltipText = `${d}: ${getScientificNotation(variable.modification.binning.bins[i])} to ${getScientificNotation(variable.modification.binning.bins[i + 1])}`;
+				} else {
+					tooltipText = d;
+				}
+				const rectWidth = getTextWidth(d, fontSize) + 4;
+				if (d !== undefined) {
+					legendEntries.push(
+						this.getLegendEntry(
+							d,
+							opacity,
+							rectWidth,
+							fontSize,
+							currX,
+							lineheight,
+							variable.colorScale(d),
+							ColorScales.getHighContrastColor(variable.colorScale(d))
+						)
+					);
+					currX += rectWidth + 2;
+				}
+			}
+		});
+		this.updateRowWidths('add', variable.id, currX);
+		return (
+			<g className="categoricalLegend" key="categoricalLegend">
+				{legendEntries}
+			</g>
+		);
+	}
 
-        variable.domain.forEach((d: string, i: number) => {
-            if (variable.datatype === 'ORDINAL' || row.includes(d)) {
-                let tooltipText='';
-                if (variable.derived && variable.datatype === 'ORDINAL' && variable.modification.type === 'continuousTransform' && variable.modification.binning.binNames[i].modified) {
-                    tooltipText = `${d}: ${getScientificNotation(variable.modification.binning.bins[i])} to ${getScientificNotation(variable.modification.binning.bins[i + 1])}`;
-                } else {
-                    tooltipText = d;
-                }
-                const rectWidth = getTextWidth(d, fontSize) + 4;
-                if (d !== undefined) {
+	/**
+	 * gets a legend for a binary variable
+	 * @param {number} opacity
+	 * @param {number} fontSize
+	 * @param {number} lineheight
+	 * @param {function} color
+	 * @returns {Array}
+	 */
+	getBinaryLegend(variable: TVariable, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
+		let legendEntries: any[] = [];
+		legendEntries = legendEntries.concat(
+			this.getLegendEntry(
+				'true',
+				opacity,
+				getTextWidth('true', fontSize) + 4,
+				fontSize,
+				0,
+				lineheight,
+				color(true),
+				'black'
+			)
+		);
+		legendEntries = legendEntries.concat(
+			this.getLegendEntry(
+				'false',
+				opacity,
+				getTextWidth('false', fontSize) + 4,
+				fontSize,
+				getTextWidth('true', fontSize) + 6,
+				lineheight,
+				color(false),
+				'black'
+			)
+		);
 
+		this.updateRowWidths('add', variable.id, 74 + getTextWidth(variable.name, fontSize));
 
-                    legendEntries.push(this.getLegendEntry(d, opacity, rectWidth,
-                        fontSize, currX, lineheight, variable.colorScale(d),
-                        ColorScales.getHighContrastColor(variable.colorScale(d))));
-                    currX += (rectWidth + 2);
+		return (
+			<g className="binaryLegend" key={'binaryLegend'}>
+				{legendEntries}
+			</g>
+		);
+	}
 
-                }
-            }
-        });
-        this.updateRowWidths('add', variable.id, currX);
-        return <g className='categoricalLegend' key='categoricalLegend'>{legendEntries}</g>;
-    }
+	/**
+	 * gets a single entry (i.e., a rectangle) of the legend
+	 * @param {string} value - text to display
+	 * @param {number} opacity - 1 if primary, lower for secondary
+	 * @param {number} rectWidth
+	 * @param {number} fontSize
+	 * @param {number} currX - current x position
+	 * @param {number} lineheight
+	 * @param {string} rectColor
+	 * @param {string} textColor
+	 */
 
-    /**
-     * gets a legend for a binary variable
-     * @param {number} opacity
-     * @param {number} fontSize
-     * @param {number} lineheight
-     * @param {function} color
-     * @returns {Array}
-     */
-    getBinaryLegend(variable:TVariable, opacity: number, fontSize: number, lineheight: number, color: TColorScale) {
-        let legendEntries: any[] = [];
-        legendEntries = legendEntries.concat(this.getLegendEntry('true', opacity, getTextWidth('true', fontSize) + 4, fontSize, 0, lineheight, color(true), 'black'));
-        legendEntries = legendEntries.concat(this.getLegendEntry('false', opacity, getTextWidth('false', fontSize) + 4, fontSize, getTextWidth('true', fontSize) + 6, lineheight, color(false), 'black'));
-        
-        this.updateRowWidths('add', variable.id,74 + getTextWidth(variable.name, fontSize));
-        
-        return <g className='binaryLegend' key={'binaryLegend'}>{legendEntries}</g>;
-    }
+	getLegendEntry(
+		value: string,
+		opacity: number,
+		rectWidth: number,
+		fontSize: number,
+		currX: number,
+		lineheight: number,
+		rectColor: string,
+		textColor: string
+	) {
+		return (
+			<g key={value}>
+				<rect
+					opacity={opacity}
+					width={rectWidth}
+					height={fontSize + 2}
+					x={currX}
+					y={lineheight / 2 - fontSize / 2}
+					fill={rectColor}
+				/>
+				<text fill={textColor} style={{ fontSize }} x={currX + 2} y={lineheight / 2 + fontSize / 2}>
+					{value}
+				</text>
+			</g>
+		);
+	}
 
-    /**
-    * gets a single entry (i.e., a rectangle) of the legend
-    * @param {string} value - text to display
-    * @param {number} opacity - 1 if primary, lower for secondary
-    * @param {number} rectWidth
-    * @param {number} fontSize
-    * @param {number} currX - current x position
-    * @param {number} lineheight
-    * @param {string} rectColor
-    * @param {string} textColor
-    */
+	removeVariable(id: string, name: string) {
+		const { dataStore } = this.props.rootStore!;
+		const { undoRedoStore } = this.props;
+		dataStore.variableStores['between'].removeVariable(id);
+		undoRedoStore?.saveVariableHistory('REMOVE', name, true);
+		this.updateRowWidths('delete', id);
+	}
 
-    getLegendEntry(value: string, opacity: number, rectWidth: number, fontSize: number, currX: number, lineheight: number, rectColor: string, textColor: string) {
+	getLegend() {
+		const { dataStore } = this.props.rootStore!;
+		const lineheight: number = this.props.rootStore!.visStore.secondaryHeight;
+		const adaptedFontSize = 12;
+		const opacity = 0.5;
 
-        return (<g
-            key={value}
-        >
-            <rect
-                opacity={opacity}
-                width={rectWidth}
-                height={fontSize + 2}
-                x={currX}
-                y={lineheight / 2 - fontSize / 2}
-                fill={rectColor}
-            />
-            <text
-                fill={textColor}
-                style={{ fontSize }}
-                x={currX + 2}
-                y={lineheight / 2 + fontSize / 2}
-            >
-                {value}
-            </text>
-        </g>
-        );
+		const maxVarWidth = Math.max(
+			...dataStore.variableStores.between.currentVariables.map((varID: string) =>
+				getTextWidth(dataStore.variableStores.between.referencedVariables[varID].name, adaptedFontSize)
+			)
+		);
 
-    }
+		return dataStore.variableStores.between.currentVariables.map((variableID: string, variableIdx: number) => {
+			const variable = dataStore.variableStores.between.referencedVariables[variableID];
 
-    removeVariable(id:string, name:string){
-        const { dataStore } = this.props.rootStore!;
-        const {undoRedoStore} = this.props
-        dataStore.variableStores['between'].removeVariable(id);
-        undoRedoStore?.saveVariableHistory('REMOVE', name, true);
-        this.updateRowWidths('delete', id)
-    }
+			const colorScale = variable.colorScale;
+			let legendEntries: JSX.Element[] = [];
 
-    getLegend() {
-        let { dataStore } = this.props.rootStore!
-        let lineheight: number = this.props.rootStore!.visStore.secondaryHeight;
-        let adaptedFontSize = 12;
-        let opacity = 0.5;
+			if (isCategoricalLike(variable.datatype)) {
+				legendEntries = [
+					this.getCategoricalLegend(variable, variable.domain, opacity, adaptedFontSize, lineheight),
+				];
+			} else if (isBinary(variable.datatype)) {
+				legendEntries = [this.getBinaryLegend(variable, opacity, adaptedFontSize, lineheight, colorScale)];
+			}
+			const leTransform = `translate(0,${variableIdx * lineheight})`;
 
-        const maxVarWidth = Math.max(...dataStore.variableStores.between.currentVariables
-            .map((varID: string) => getTextWidth(dataStore.variableStores.between.referencedVariables[varID].name, adaptedFontSize)))
+			return (
+				<g className="eventLegend" transform={leTransform} key={`${variableID}_${variableIdx}`}>
+					<text y={(lineheight + adaptedFontSize) / 2} fontSize={adaptedFontSize}>
+						{variable.name}
+					</text>
+					<text
+						x={maxVarWidth + this.horizontalGap}
+						y={(lineheight + adaptedFontSize) / 2}
+						fontSize={adaptedFontSize}
+						onClick={() => this.removeVariable(variable.id, variable.name)}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								this.removeVariable(variable.id, variable.name);
+							}
+						}}
+						role="button"
+						aria-label={`Remove variable ${variable.name}`}
+						tabIndex={0}
+						cursor="pointer"
+						style={{ userSelect: 'none' }}
+					>
+						X
+					</text>
+					<g
+						transform={`translate(${maxVarWidth + getTextWidth(' X ', adaptedFontSize) + 2 * this.horizontalGap}, 0)`}
+					>
+						{legendEntries}
+					</g>
+				</g>
+			);
+		});
+	}
 
-        return dataStore.variableStores.between.currentVariables
-            .map((variableID: string, variableIdx: number) => {
-                let variable = dataStore.variableStores.between.referencedVariables[variableID]
+	componentDidMount() {
+		this.svgWidth = Math.max(...Object.values(this.rowWidths), this.svgWidth);
+	}
 
-                let colorScale = variable.colorScale
-                let legendEntries: JSX.Element[] = [];
+	componentDidUpdate() {
+		this.svgWidth = Math.max(...Object.values(this.rowWidths), this.svgWidth);
+	}
 
-                if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
-                    legendEntries = [this.getCategoricalLegend(variable, variable.domain, opacity, adaptedFontSize, lineheight)];
-                } else if (variable.datatype === 'BINARY') {
-                    legendEntries = [this.getBinaryLegend(variable, opacity, adaptedFontSize, lineheight, colorScale)];
-                } 
-                let leTransform = `translate(0,${variableIdx * lineheight})`;
+	render() {
+		const { dataStore } = this.props.rootStore!;
 
+		// let height = this.props.cellHeight * dataStore.currentVariables.length, width = this.maxWidth
+		const content = this.getLegend();
+		const lineheight: number = this.props.rootStore!.visStore.secondaryHeight,
+			height = lineheight * dataStore.variableStores.between.currentVariables.length,
+			width = this.svgWidth;
 
-                return <g className="eventLegend" transform={leTransform} key={`${variableID}_${variableIdx}`}>
-                    <text y={(lineheight+ adaptedFontSize)/2} fontSize={adaptedFontSize}> 
-                        {variable.name}
-                    </text>
-                    <text x= {maxVarWidth + this.horizontalGap} y={(lineheight+ adaptedFontSize)/2} 
-                        fontSize={adaptedFontSize} onClick={()=>this.removeVariable(variable.id, variable.name)}
-                        cursor="default">
-                        X
-                    </text>
-                    <g transform={`translate(${maxVarWidth + getTextWidth(' X ', adaptedFontSize) + 2*this.horizontalGap}, 0)`}>
-                        {legendEntries}
-                    </g>
-                </g>
-            })
-
-
-    }
-
-    componentDidMount(){
-        this.svgWidth = Math.max(...Object.values(this.rowWidths), this.svgWidth)
-    }
-
-    componentDidUpdate(){
-        this.svgWidth = Math.max(...Object.values(this.rowWidths), this.svgWidth)
-    }
-
-    render() {
-        let { dataStore } = this.props.rootStore!
-        
-        // let height = this.props.cellHeight * dataStore.currentVariables.length, width = this.maxWidth
-        let content = this.getLegend()
-        let lineheight: number = this.props.rootStore!.visStore.secondaryHeight,
-            height = lineheight * dataStore.variableStores.between.currentVariables.length,
-            width = this.svgWidth
-
-        return <svg width={width} height={height}>
-            <rect width={width} height={height} fill='white'/>
-            <g className="eventLegend" >
-                {content}
-            </g>
-        </svg>
-    }
+		return (
+			<svg width={width} height={height}>
+				<rect width={width} height={height} fill="white" />
+				<g className="eventLegend">{content}</g>
+			</svg>
+		);
+	}
 }
 
-export default FeatureLegend
+export default FeatureLegend;

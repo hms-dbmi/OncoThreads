@@ -1,15 +1,15 @@
-import React from "react";
-import {observer,inject} from "mobx-react";
-import {ButtonToolbar, DropdownButton, MenuItem} from 'react-bootstrap';
-
+import React from 'react';
+import { observer, inject } from 'mobx-react';
+import { ButtonToolbar, Dropdown, DropdownButton } from 'react-bootstrap';
 
 /*
  * Select element for selecting the current time scale
  * TODO: maybe we don't need a separate class for this, integrate somewhere else?
  */
-const TimeAssign = inject("rootStore")(observer(class TimeAssign extends React.Component {
-
-    /*constructor(props){
+const TimeAssign = inject('rootStore')(
+	observer(
+		class TimeAssign extends React.Component {
+			/*constructor(props){
         super(props)
         this.state = {
           listOpen: false,
@@ -52,71 +52,54 @@ const TimeAssign = inject("rootStore")(observer(class TimeAssign extends React.C
       }
 */
 
+			constructor() {
+				super();
 
-    constructor() {
-        super();
+				this.state = {
+					showMenu: false,
+				};
 
-        this.state = {
-            showMenu: false
+				this.showMenu = this.showMenu.bind(this);
+				this.closeMenu = this.closeMenu.bind(this);
+			}
 
-        };
+			showMenu(event) {
+				event.preventDefault();
 
+				this.setState({ showMenu: true }, () => {
+					document.addEventListener('click', this.closeMenu);
+				});
+			}
 
-        /* extendObservable(this, {
-             timeVar: this.props.timeVar,
-             timeValue: this.props.timeValue
-             //timeline: []
-         });*/
+			closeMenu(event) {
+				console.log(event.target);
+				//if (!this.dropdownMenu.contains(event.target)) {
 
+				this.setState({ showMenu: false }, () => {
+					document.removeEventListener('click', this.closeMenu);
+				});
 
-        this.showMenu = this.showMenu.bind(this);
-        this.closeMenu = this.closeMenu.bind(this);
+				//}
+			}
 
-    }
-
-    showMenu(event) {
-        event.preventDefault();
-
-        this.setState({showMenu: true}, () => {
-            document.addEventListener('click', this.closeMenu);
-        });
-    }
-
-    closeMenu(event) {
-        console.log(event.target);
-        //if (!this.dropdownMenu.contains(event.target)) {
-
-        this.setState({showMenu: false}, () => {
-            document.removeEventListener('click', this.closeMenu);
-        });
-
-        //}
-    }
-
-
-    /*handleClick(e) {
+			/*handleClick(e) {
         e.preventDefault();
         //console.log(e.target.id);
         this.props.rootStore.timeVar=e.target.id;
         this.props.rootStore.timeValue=e.target.value;
       }*/
 
+			handleClick2(id, value) {
+				//e.preventDefault();
+				//console.log(e.target.id);
+				this.props.rootStore.setTimeData(id, value);
+			}
 
-    handleClick2(id, value) {
-        //e.preventDefault();
-        //console.log(e.target.id);
-        this.props.rootStore.setTimeData(id,value)
-    }
+			render() {
+				//const list = this.state.list;
+				//const{listOpen, headerTitle} = this.state;
 
-
-    render() {
-
-
-
-        //const list = this.state.list;
-        //const{listOpen, headerTitle} = this.state;       
-
-        /*return (
+				/*return (
             <div>
 
         <div>
@@ -155,41 +138,27 @@ const TimeAssign = inject("rootStore")(observer(class TimeAssign extends React.C
             </div>
         ); */
 
-
-        return (
-
-
-            <div>
-
-                <ButtonToolbar>
-
-
-                    <DropdownButton
-
-                        bsSize="xsmall"
-
-                        title={"Show Time As"}
-                        key={"ShowTime"}
-                        id={"ShowTime"}
-                    >
-
-                        <MenuItem eventKey="1" onClick={e => this.handleClick2("1", "Days")}>
-                            <small> Days</small>
-                        </MenuItem>
-                        <MenuItem eventKey="2" onClick={e => this.handleClick2("30", "Months")}>
-                            <small> Months</small>
-                        </MenuItem>
-                        <MenuItem eventKey="3" onClick={e => this.handleClick2("365", "Years")}>
-                            <small> Years</small>
-                        </MenuItem>
-                    </DropdownButton>
-                </ButtonToolbar>
-
-            </div>
-
-        );
-    }
-}));
+				return (
+					<div>
+						<ButtonToolbar>
+							<DropdownButton size="sm" title={'Show Time As'} key={'ShowTime'} id={'ShowTime'}>
+								<Dropdown.Item eventKey="1" onClick={(e) => this.handleClick2('1', 'Days')}>
+									<small> Days</small>
+								</Dropdown.Item>
+								<Dropdown.Item eventKey="2" onClick={(e) => this.handleClick2('30', 'Months')}>
+									<small> Months</small>
+								</Dropdown.Item>
+								<Dropdown.Item eventKey="3" onClick={(e) => this.handleClick2('365', 'Years')}>
+									<small> Years</small>
+								</Dropdown.Item>
+							</DropdownButton>
+						</ButtonToolbar>
+					</div>
+				);
+			}
+		}
+	)
+);
 export default TimeAssign;
 
 //<tspan x="39" dy="1em">(months)</tspan>

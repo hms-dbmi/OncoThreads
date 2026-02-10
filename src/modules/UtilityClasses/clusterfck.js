@@ -167,7 +167,7 @@ var Object_keys = Object.keys || function (obj) {
     return res;
 };
 
-if (typeof process === 'undefined') process = {};
+var process = (typeof process !== 'undefined') ? process : {};
 
 if (!process.nextTick) process.nextTick = function (fn) {
     setTimeout(fn, 0);
@@ -464,7 +464,7 @@ HierarchicalClustering.prototype = {
                    + this.dists[c2.key][ci.key] * c2.size) / (c1.size + c2.size);
          }
          else {
-            let clusteri = ci.itemIdx.map(idx=>this.items[idx]),
+            const clusteri = ci.itemIdx.map(idx=>this.items[idx]),
             cluster1 = c1.itemIdx.map(idx=>this.items[idx])
             dist = this.distance(clusteri, cluster1);            
          }

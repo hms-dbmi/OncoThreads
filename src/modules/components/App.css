@@ -1,3 +1,32 @@
-div.tab-content{
-    margin: 20px;
+/* React Resizable Panels styling */
+.resize-handle {
+  flex: 0 0 10px;
+  background: #f0f0f0;
+  cursor: col-resize;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.resize-handle:hover {
+  background: #d0d0d0;
+}
+
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 30px;
+  background: #999;
+  border-radius: 1px;
+}
+
+.pane-inactive {
+  border-right: 1px solid #f0f0f0;
+}
+
+.pane-active {
+  background-color: rgba(150, 150, 150, 0.1);
 }

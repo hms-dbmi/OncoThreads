@@ -1,75 +1,103 @@
-import {TPattern} from 'modules/UtilityClasses/prefixSpan'
-export type TPointGroups = { [stateKey: string]: { stateKey: string, pointIdx: number[] } }
+import { TPattern } from 'modules/UtilityClasses/prefixSpan';
 
+export type TPointGroups = { [stateKey: string]: { stateKey: string; pointIdx: number[] } };
 
-export interface VariableStore{
-    [key:string]:any
-}
-export interface IPoint{
-    idx:number,
-    patient: string,
-    timeIdx: number,
-    value: (number|string|boolean)[],
-    [other:string]:any
+export interface IPoint {
+	idx: number;
+	patient: string;
+	timeIdx: number;
+	value: (number | string | boolean)[];
 }
 
-
-
-export interface INormPoint extends IPoint{
-    pos: number[]
+export interface INormPoint extends IPoint {
+	normValue: number[];
+	pos: number[];
 }
 
 export interface TimePoint {
-    heatmap:HeatMap[],
-    heatmapOrder: string[],
-    type:'between'|'sample',
-    isGrouped:boolean,
-    customGrouped: Array<{patients:string[], partition: any, [key:string]:any}>,
-    [other:string]:any // **TODO**
+	heatmap: HeatMap[];
+	heatmapOrder: string[];
+	type: 'between' | 'sample';
+	isGrouped: boolean;
+	customGrouped: Array<{ patients: string[]; partition: string; [key: string]: unknown }>;
+	globalIndex: number;
+	name: string;
+	patients: string[];
+	primaryVariableId: string;
+	grouped: Array<{ patients: string[] }>;
+	setPrimaryVariable(variableId: string): void;
+	setHeatmapOrder(order: string[]): void;
+	setIsGrouped(isGrouped: boolean): void;
+	sortHeatmapLikeGroup(): void;
+	applyCustomState(partitions: Array<{ partition: string; patients: string[] }>): void;
 }
+
+export type VariableDataType = 'NUMBER' | 'STRING' | 'BINARY' | 'ORDINAL';
 
 export interface ReferencedVariables {
-    [variableName:string]:{
-        datatype:"BINARY"|"NUMBER"|"STRING",
-        domain:Domain,
-        [other:string]: any
-    }
+	[variableName: string]: {
+		name: string;
+		datatype: VariableDataType;
+		domain: Domain;
+		originalIds: string[];
+		colorScale: TColorScale;
+	};
 }
 
+export type Domain = string[] | number[] | boolean[];
 
-export type Domain = string[]|number[]|boolean[]
-
-export interface HeatMap{
-    data: {patient:string, sample:string, value:string}[],
-    variable:string, // attribute name
-    isUndef: boolean
+export interface HeatMap {
+	data: { patient: string; sample: string; value: string }[];
+	variable: string; // attribute name
+	isUndef: boolean;
 }
 
+export type TColorScale = (value: string | number) => string;
 
-export interface IDataStore{
-    [key:string]:any,
-    currentVariables: string[],
-    pointGroups: TPointGroups,
-    points: IPoint[],
-    normPoints: INormPoint[],
-    timepoints: TimePoint[],
-    frequentPatterns: Array<[string[],TPattern]>,
-    ngram: Array<[string[], string[]]>
-    colorScales: Array<TColorScale>,
-    patientGroups:string[][],
+export interface IVariableStore {
+	currentVariables: string[];
+	fullCurrentVariables: Array<{ id: string; name: string; domain: Domain; colorScale: TColorScale }>;
+	referencedVariables: ReferencedVariables;
+	points: IPoint[];
+	childStore: {
+		timepoints: TimePoint[];
+		updateNames(names: string[]): void;
+	};
+	resetVariables(): void;
+	update(structure: unknown[], order: string[]): void;
+	addVariableToBeDisplayed(variable: unknown): void;
+	removeVariable(variableId: string): void;
 }
 
-export interface IRootStore{
-    dataStore: IDataStore,
-    [key:string]:any
+export interface IDataStore {
+	currentVariables: string[];
+	pointGroups: TPointGroups;
+	points: IPoint[];
+	normPoints: INormPoint[];
+	timepoints: TimePoint[];
+	frequentPatterns: Array<[string[], TPattern]>;
+	ngramResults: Array<[string[], string[]]>;
+	colorScales: Array<TColorScale>;
+	patientGroups: string[][];
+	variableStores: {
+		sample: IVariableStore;
+		between: IVariableStore;
+	};
 }
 
-export interface IUndoRedoStore{
-    [key:string]:any
+export interface IRootStore {
+	dataStore: IDataStore;
+	patients: string[];
+	clinicalPatientCategories: Array<{ id: string }>;
+	timepointStructure: unknown[][];
+	eventBlockStructure: unknown[][];
+	[key: string]: unknown;
 }
 
-export type TColorScale =  any
+export interface IUndoRedoStore {
+	[key: string]: unknown;
+}
 
-export type TVariable = any
+export type DRMethodType = 'pca' | 'umap' | 'tsne';
 
-export type TRow = any
+export type EncodingMetricType = 'ngram' | 'prefix';

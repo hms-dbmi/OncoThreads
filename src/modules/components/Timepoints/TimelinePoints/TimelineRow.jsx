@@ -2,260 +2,267 @@ import React from 'react';
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react';
 import PropTypes from 'prop-types';
 
-
-
 /**
  * Component for a row in a timepoint in the global timeline
  = */
-const TimelineRow = inject('rootStore')(observer(class TimelineRow extends React.Component {
-    constructor(props) {
-        super(props);
-        this.handleMouseLeave = this.handleMouseLeave.bind(this);
-        this.handleDoubleClick = this.handleDoubleClick.bind(this);
-        this.handleMouseEnter = this.handleMouseEnter.bind(this);
-        this.handleClick = this.handleClick.bind(this);
-    }
+const TimelineRow = inject('rootStore')(
+	observer(
+		class TimelineRow extends React.Component {
+			constructor(props) {
+				super(props);
+				this.handleMouseLeave = this.handleMouseLeave.bind(this);
+				this.handleDoubleClick = this.handleDoubleClick.bind(this);
+				this.handleMouseEnter = this.handleMouseEnter.bind(this);
+				this.handleClick = this.handleClick.bind(this);
+			}
 
-    getRow() {
-        let rects = [];
+			getRow() {
+				let rects = [];
 
-        let circles = [];
+				const circles = [];
 
-        const j = 0;
+				const j = 0;
 
-        const sampleRadius = this.props.rootStore.visStore.sampleRadius;
-        const eventRadius = this.props.rootStore.visStore.eventRadius;
-        const translation = this.props.rootStore.visStore.sampleRectWidth / 5;
+				const sampleRadius = this.props.rootStore.visStore.sampleRadius;
+				const eventRadius = this.props.rootStore.visStore.eventRadius;
+				const translation = this.props.rootStore.visStore.sampleRectWidth / 5;
 
-        if (this.props.timepointType === 'between') {
-            this.props.events.forEach((ev, i) => {
-                let opc1 = this.props.opacity;
-                let height = this.props.rootStore
-                    .visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
+				if (this.props.timepointType === 'between') {
+					this.props.events.forEach((ev, i) => {
+						const opc1 = this.props.opacity;
+						const height = this.props.rootStore.visStore.timeScale(ev.eventEndDate - ev.eventStartDate);
 
-                //let currEventNum= self.props.rootStore.dataStore.variableStores.between.getRelatedVariables('event').length;  
+						//let currEventNum= self.props.rootStore.dataStore.variableStores.between.getRelatedVariables('event').length;
 
-                const val = this.props.rootStore
-                    .dataStore.variableStores.between.getById(this.props.row.variable).name;
-                const xOffset = this.props.rootStore.visStore.spreadAll || this.props.rootStore.dataStore.selectedPatients
-                    .includes(ev.patientId)? this.getXOffset(ev, sampleRadius, eventRadius): 0;
-                if (height === 0) {
-                    rects.push(<g>                    
-                    <circle 
-                       
-                       onMouseEnter={e => this.handleMouseEnter(
-                           e, ev.patientId, val, ev.eventStartDate,
-                           ev.eventEndDate - ev.eventStartDate
-                       )
-                       }
-                       onMouseLeave={this.handleMouseLeave}
-                       onDoubleClick={() => this.handleDoubleClick(ev.patientId)}
-                       onClick={() => this.handleClick(ev.patientId)}
-                       key={ev.patientId + i}
-                       
-                       cx={this.props.rootStore.visStore.heatmapScales[0](ev.patientId) + translation + xOffset}
-                       cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
-                       r = {eventRadius}
+						const val = this.props.rootStore.dataStore.variableStores.between.getById(
+							this.props.row.variable
+						).name;
+						const xOffset =
+							this.props.rootStore.visStore.spreadAll ||
+							this.props.rootStore.dataStore.selectedPatients.includes(ev.patientId)
+								? this.getXOffset(ev, sampleRadius, eventRadius)
+								: 0;
+						if (height === 0) {
+							rects.push(
+								<g key={ev.patientId + i}>
+									<circle
+										onMouseEnter={(e) =>
+											this.handleMouseEnter(
+												e,
+												ev.patientId,
+												val,
+												ev.eventStartDate,
+												ev.eventEndDate - ev.eventStartDate
+											)
+										}
+										onMouseLeave={this.handleMouseLeave}
+										onDoubleClick={() => this.handleDoubleClick(ev.patientId)}
+										onClick={() => this.handleClick(ev.patientId)}
+										key={ev.patientId + i}
+										cx={
+											(this.props.rootStore.visStore.heatmapScales[0](ev.patientId) || 0) +
+											(translation || 0) +
+											(xOffset || 0)
+										}
+										cy={this.props.rootStore.visStore.timeScale(ev.eventStartDate) || 0}
+										r={eventRadius || 0}
+										//fill={"white"}
 
-                       //fill={"white"}
+										fill={this.props.color(this.props.row.variable)}
+										fillOpacity={opc1}
+										strokeWidth={1}
+										stroke={this.props.color(this.props.row.variable)}
+										strokeOpacity={1}
+									/>
+								</g>
+							);
+						} else {
+							rects.push(
+								<rect
+									onMouseEnter={(e) =>
+										this.handleMouseEnter(
+											e,
+											ev.patientId,
+											val,
+											ev.eventStartDate,
+											ev.eventEndDate - ev.eventStartDate
+										)
+									}
+									onMouseLeave={this.handleMouseLeave}
+									onDoubleClick={() => this.handleDoubleClick(ev.patientId)}
+									onClick={() => this.handleClick(ev.patientId)}
+									key={ev.patientId + i}
+									height={height}
+									width={eventRadius}
+									x={
+										this.props.rootStore.visStore.heatmapScales[0](ev.patientId) +
+										translation +
+										xOffset -
+										eventRadius / 2
+									}
+									y={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
+									//fill={"white"}
 
-                       fill={this.props.color(this.props.row.variable)}
-                       fillOpacity={opc1}
+									fill={this.props.color(this.props.row.variable)}
+									fillOpacity={opc1}
+									strokeWidth={1}
+									stroke={this.props.color(this.props.row.variable)}
+									strokeOpacity={1}
+								/>
+							);
+						}
+					});
+				} else {
+					this.props.row.data.forEach((d, i) => {
+						//let stroke = 'none';
+						let fill = this.props.color(d.value);
+						if (d.value === undefined) {
+							//stroke = 'lightgray';
+							fill = 'white';
+						}
 
-                       strokeWidth={1}
+						circles.push(
+							<g key={d.patient + i + j}>
+								<defs>
+									<pattern id="Triangle" width="10" height="10" patternUnits="userSpaceOnUse">
+										<polygon points="5,0 10,10 0,10" />
+									</pattern>
+								</defs>
 
-                       stroke={this.props.color(this.props.row.variable)}
+								<defs>
+									<pattern
+										id="pattern-stripe"
+										width="4"
+										height="4"
+										patternUnits="userSpaceOnUse"
+										patternTransform="rotate(135)"
+									>
+										<rect width="1" height="4" transform="translate(0,0)" fill="grey"></rect>
+									</pattern>
 
-                       strokeOpacity={1}
-                      
-                   />
+									<mask id="mask-stripe">
+										<rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+									</mask>
+								</defs>
 
+								<circle
+									onMouseEnter={(e) =>
+										this.handleMouseEnter(
+											e,
+											d.patient,
+											d.value,
+											this.props.rootStore.sampleTimelineMap[d.sample],
+											0
+										)
+									}
+									onMouseLeave={this.handleMouseLeave}
+									onDoubleClick={() => this.handleDoubleClick(d.patient)}
+									onClick={() => this.handleClick(d.patient)}
+									key={d.patient + i + j}
+									cx={
+										(this.props.rootStore.visStore.heatmapScales[0](d.patient) || 0) +
+										(translation || 0)
+									}
+									cy={
+										this.props.rootStore.visStore.timeScale(
+											this.props.rootStore.sampleTimelineMap[d.sample]
+										) || 0
+									}
+									r={sampleRadius || 0}
+									fill={fill}
+									//opacity={this.props.opacity}
+									fillOpacity={1}
+									strokeWidth={1}
+									//stroke={this.props.color(this.props.row.variable)}
 
-                    
-                    </g>);
+									stroke={fill}
+									strokeOpacity={1}
+								/>
+							</g>
+						);
+						rects = circles;
+					});
+				}
+				return rects;
+			}
 
-                }
-                else{
-                    rects.push(<rect
-                        onMouseEnter={e => this.handleMouseEnter(
-                            e, ev.patientId, val, ev.eventStartDate,
-                            ev.eventEndDate - ev.eventStartDate
-                        )
-                        }
-                        onMouseLeave={this.handleMouseLeave}
-                        onDoubleClick={() => this.handleDoubleClick(ev.patientId)}
-                        onClick={() => this.handleClick(ev.patientId)}
-                        key={ev.patientId + i}
-                        height={height}
-                        width={eventRadius}
-                        x={this.props.rootStore.visStore.heatmapScales[0](ev.patientId) + translation + xOffset - eventRadius/2}
+			getXOffset(event, sampleRadius, eventRadius) {
+				const overlappingEvents = this.props.overlappingEventsMap[event.patientId];
+				if (!overlappingEvents || !overlappingEvents.length) {
+					return 0;
+				}
+				const length = Math.ceil(overlappingEvents.length / 2) - 1;
+				const min = sampleRadius + eventRadius;
+				const max = sampleRadius + 3 * eventRadius;
+				let xOffset = 0;
+				let index = [...overlappingEvents.keys()].find(
+					(i) => overlappingEvents[i].indexOf(this.props.row.variable) !== -1
+				);
+				index = index === null ? -1 : index - 1;
+				if (Math.floor(index / 2) === 0) {
+					xOffset = min * 2 * ((index % 2) - 0.5);
+				} else if (Math.floor(index / 2) > 0) {
+					xOffset = (min + ((max - min) / length) * Math.floor(index / 2)) * 2 * ((index % 2) - 0.5);
+				}
+				return xOffset;
+			}
 
-                        y={this.props.rootStore.visStore.timeScale(ev.eventStartDate)}
-                        //fill={"white"}
+			handleClick(patient) {
+				this.props.rootStore.dataStore.handlePatientSelection(patient);
+			}
 
-                        fill={this.props.color(this.props.row.variable)}
-                        fillOpacity={opc1}
-                       
-                        strokeWidth={1}
-                        
-                        stroke={this.props.color(this.props.row.variable)}
+			handleDoubleClick(patient) {
+				if (!this.props.rootStore.isOwnData) {
+					window.open(
+						`${this.props.rootStore.cBioLink}/patient?studyId=${this.props.rootStore.study.studyId}&caseId=${patient}`
+					);
+				}
+			}
 
-                        strokeOpacity={1}
-                    />);
-                }
-                
-            });
-        } else {
-            this.props.row.data.forEach((d, i) => {
-                //let stroke = 'none';
-                let fill = this.props.color(d.value);
-                if (d.value === undefined) {
-                    //stroke = 'lightgray';
-                    fill = 'white';
-                }
-                
+			handleMouseEnter(event, patient, value, startDay, duration) {
+				let timeVariable = 'Day';
+				let start = startDay;
+				let dur = duration;
 
-                circles.push(
-                    
-                    <g>
-                    
+				if (this.props.rootStore.timeVar === '30') {
+					start = Math.round((startDay / 30) * 100) / 100;
+					dur = Math.round((duration / 30) * 100) / 100;
+					timeVariable = 'Month';
+				} else if (this.props.rootStore.timeVar === '365') {
+					start = Math.round((startDay / 365) * 100) / 100;
+					dur = Math.round((duration / 365) * 100) / 100;
+					timeVariable = 'Year';
+				}
+				if (duration === 0) {
+					this.props.showTooltip(event, `${patient}: ${value}`, `${timeVariable}: ${start}`);
+				} else {
+					this.props.showTooltip(
+						event,
+						`${patient}: ${value}`,
+					`Event start ${timeVariable}: ${start}, Duration: ${dur} ${timeVariable}`
+					);
+				}
+			}
 
-                    <defs>
-            <pattern id="Triangle"
-                     width="10" height="10"
-                     patternUnits="userSpaceOnUse">
-                <polygon points="5,0 10,10 0,10"/>
-            </pattern>
-        </defs>
-                
+			handleMouseLeave() {
+				this.props.hideTooltip();
+			}
 
-        <defs>
-            <pattern id="pattern-stripe" 
-              width="4" height="4" 
-              patternUnits="userSpaceOnUse"
-              patternTransform="rotate(135)">
-              <rect width="1" height="4" transform="translate(0,0)" fill="grey"></rect>
-            </pattern>
-
-            
-            <mask id="mask-stripe">
-              <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
-            </mask>      
-          </defs>
-
-
-                <circle 
-                   
-                    
-
-                    onMouseEnter={e => this.handleMouseEnter(
-                        e, d.patient, d.value,
-                        this.props.rootStore.sampleTimelineMap[d.sample], 0
-                    )
-                    }
-                    onMouseLeave={this.handleMouseLeave}
-                    onDoubleClick={() => this.handleDoubleClick(d.patient)}
-                    onClick={() => this.handleClick(d.patient)}
-                    key={d.patient + i + j}
-                    
-                    cx={this.props.rootStore.visStore.heatmapScales[0](d.patient) + translation}
-                    
-                    cy={this.props.rootStore.visStore
-                        .timeScale(this.props.rootStore.sampleTimelineMap[d.sample])}
-
-                    r = {sampleRadius}
-
-                    fill={fill}
-                    //opacity={this.props.opacity}  
-                    fillOpacity={1}  
-                    
-                    strokeWidth={1}
-                        
-                    //stroke={this.props.color(this.props.row.variable)}
-
-                    stroke={fill}
-
-                    strokeOpacity={1}  
-
-                /></g>);
-                rects=circles;
-            });
-        }
-        return rects;
-    }
-
-    getXOffset(event, sampleRadius, eventRadius) {
-        const overlappingEvents = this.props.overlappingEventsMap[event.patientId];
-        if (!overlappingEvents || !overlappingEvents.length) {
-            return 0;
-        }
-        const length = Math.ceil(overlappingEvents.length/2)-1;
-        const min = sampleRadius + eventRadius;
-        const max = sampleRadius + 3 * eventRadius;
-        let xOffset = 0;
-        let index = [...overlappingEvents.keys()].find(i => overlappingEvents[i].indexOf(this.props.row.variable) !== -1);
-        index = index === null? -1: index - 1;
-        if (Math.floor(index/2) === 0) {
-            xOffset = min * 2 * (index%2-0.5);
-        } else if (Math.floor(index/2) > 0) {
-            xOffset = (min + ((max-min)/length)*Math.floor(index/2)) * 2 * (index%2-0.5);
-        }
-        return xOffset;
-    }
-
-    handleClick(patient) {
-        this.props.rootStore.dataStore.handlePatientSelection(patient);
-    }
-
-
-    handleDoubleClick(patient) {
-        if (!this.props.rootStore.isOwnData) {
-            window.open(`${this.props.rootStore.cBioLink}/patient?studyId=${this.props.rootStore.study.studyId}&caseId=${patient}`);
-        }
-    }
-
-
-    handleMouseEnter(event, patient, value, startDay, duration) {
-        let timeVariable = 'Day';
-        let start = startDay;
-        let dur = duration;
-
-        if (this.props.rootStore.timeVar === '30') {
-            start = Math.round((startDay / 30) * 100) / 100;
-            dur = Math.round((duration / 30) * 100) / 100;
-            timeVariable = 'Month';
-        } else if (this.props.rootStore.timeVar === '365') {
-            start = Math.round((startDay / 365) * 100) / 100;
-            dur = Math.round((duration / 365) * 100) / 100;
-            timeVariable = 'Year';
-        }
-        if (duration === 0) {
-            this.props.showTooltip(event, `${patient}: ${value}, ${timeVariable}: ${start}`);
-        } else {
-            this.props.showTooltip(event, `${patient}: ${value}, Event start ${timeVariable}: ${start}, Duration: ${dur} ${timeVariable}`);
-        }
-    }
-
-    handleMouseLeave() {
-        this.props.hideTooltip();
-    }
-
-
-    render() {
-        return (
-            this.getRow()
-        );
-    }
-}));
+			render() {
+				return this.getRow();
+			}
+		}
+	)
+);
 TimelineRow.propTypes = {
-    timepointType: PropTypes.string.isRequired,
-    showTooltip: PropTypes.func.isRequired,
-    hideTooltip: PropTypes.func.isRequired,
-    events: PropTypes.arrayOf(PropTypes.object),
-    row: MobxPropTypes.observableObject.isRequired,
-    color: PropTypes.func.isRequired,
+	timepointType: PropTypes.string.isRequired,
+	showTooltip: PropTypes.func.isRequired,
+	hideTooltip: PropTypes.func.isRequired,
+	events: PropTypes.arrayOf(PropTypes.object),
+	row: MobxPropTypes.observableObject.isRequired,
+	color: PropTypes.func.isRequired,
 };
 TimelineRow.defaultProps = {
-    events: [],
+	events: [],
 };
 export default TimelineRow;

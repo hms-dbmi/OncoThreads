@@ -1,15 +1,17 @@
 export type {
-    VariableStore, 
-    IDataStore, 
-    IPoint, 
-    INormPoint, 
-    TPointGroups, 
-    ReferencedVariables, 
-    TimePoint, 
-    IRootStore, 
-    IUndoRedoStore,
-    Domain
-} from './Store'
-
-
-
+	IVariableStore,
+	IDataStore,
+	IPoint,
+	INormPoint,
+	TPointGroups,
+	ReferencedVariables,
+	TimePoint,
+	IRootStore,
+	IUndoRedoStore,
+	Domain,
+	TColorScale,
+	DRMethodType,
+	EncodingMetricType,
+	HeatMap,
+	VariableDataType,
+} from './Store';

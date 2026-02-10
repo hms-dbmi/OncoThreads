@@ -1,18 +1,17 @@
-import React from "react";
-import {observer,inject} from "mobx-react";
-import * as d3 from "d3";
+import React from 'react';
+import { observer, inject } from 'mobx-react';
+import * as d3 from 'd3';
 
 /*
  * Bands for the visualization of the current time scale in the global timeline
  * TODO: make more react-like (no reason to use d3, create <rects>)
  */
-const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React.Component {
+const GlobalBands = inject('rootStore')(
+	observer(
+		class GlobalBands extends React.Component {
+			//render() {
 
-
-    //render() {
-
-
-    /* return (
+			/* return (
          <div>
 
 
@@ -71,116 +70,112 @@ const GlobalBands = inject("rootStore")(observer(class GlobalBands extends React
          </div>
      );*/
 
-    // return null;
-    // }
+			// return null;
+			// }
 
+			componentDidUpdate() {
+				this.renderAxis();
+			}
 
-    componentDidUpdate() {
-        this.renderAxis();
-    }
+			componentDidMount() {
+				this.renderAxis();
+			}
 
-    componentDidMount() {
-        this.renderAxis()
-    }
+			make_y_gridlines(yAxis) {
+				return yAxis; //d3.axisLeft().scale(y);
+			}
 
-    make_y_gridlines(yAxis) {
-        return yAxis; //d3.axisLeft().scale(y);
-    }
+			renderAxis() {
+				const timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
+				const y = d3
+					.scaleLinear()
+					.domain([0, timeV])
+					.range([0, this.props.rootStore.visStore.svgHeight - 35])
+					.nice();
 
+				const yAxis = d3.axisLeft().scale(y);
 
-    renderAxis() {
+				//d3.select(".axisGlobal2").call(yAxis);
 
+				d3.selectAll('.axisLabel2').remove();
+				d3.select('.axisGlobal2').select('.grid').remove();
 
+				d3.select('.axisGlobal2')
+					.append('g')
+					.attr('class', 'grid')
+					.call(
+						//this.make_y_gridlines(yAxis)
+						yAxis.tickSize(-this.props.rootStore.visStore.svgWidth).tickFormat('')
+					)
+					.style('stroke-width', 0)
+					.style('stroke', '#f00')
+					.style('opacity', 0.3);
 
-           let timeV = this.props.rootStore.maxTimeInDays / this.props.rootStore.timeVar;
-        const y = d3.scaleLinear().domain([0, timeV]).range([0, this.props.rootStore.visStore.svgHeight - 35]).nice();
+				//.style("fill", "blue")
+				d3.select('.axisGlobal2').select('.intBands').remove();
 
+				var rects = d3.select('.axisGlobal2').append('g').attr('class', 'intBands');
 
-        const yAxis = d3.axisLeft().scale(y);
+				var yval = yAxis.scale().ticks(yAxis.ticks()[0]); //[0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
 
+				yval.splice(-1, 1);
 
-        //d3.select(".axisGlobal2").call(yAxis);
+				//console.log(yval);
 
-        d3.selectAll(".axisLabel2").remove();
-        d3.select(".axisGlobal2").select(".grid").remove();
-
-
-        d3.select(".axisGlobal2")
-            .append("g")
-            .attr("class", "grid")
-            .call(//this.make_y_gridlines(yAxis)
-                yAxis
-                    .tickSize(-this.props.rootStore.visStore.plotWidth)
-                    .tickFormat("")
-            )
-            .style("stroke-width", 0)
-            .style("stroke", "#f00")
-            .style("opacity", 0.3);
-
-        //.style("fill", "blue")
-        d3.select(".axisGlobal2").select(".intBands").remove();
-
-        var rects = d3.select(".axisGlobal2")
-            .append('g')
-            .attr('class', 'intBands');
-
-
-        var yval = yAxis.scale().ticks(yAxis.ticks()[0]);//[0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
-
-        yval.splice(-1, 1);
-
-        //console.log(yval);
-
-        /* var yval = []
+				/* var yval = []
          d3.selectAll(vl).each(function(d) {
          yval.push(d);
          });*/
 
+				var ht = (this.props.rootStore.visStore.svgHeight - 35) / yval.length,
+					wd = this.props.rootStore.visStore.svgWidth;
 
-        var ht = (this.props.rootStore.visStore.svgHeight - 35) / yval.length, wd = this.props.rootStore.visStore.plotWidth;
+				//d3.selectAll('g').selectAll('intBands').remove();
 
-        //d3.selectAll('g').selectAll('intBands').remove();
+				rects
+					.selectAll('rect')
+					.data(yval)
+					.enter()
+					.append('rect')
+					.attr('x', 0)
+					.attr('y', function (d) {
+						return y(d);
+					})
+					.attr('height', ht)
+					.attr('width', wd)
+					//.style("fill", "#ADD8E6")
+					.style('fill', '#C2DFFF')
+					.style('fill-opacity', function (d, i) {
+						//if (i===0) {
+						//return 0;
+						//}
 
+						if (i % 2 === 0) {
+							return 0.3;
+						} else {
+							return 0;
+						}
 
-        rects.selectAll('rect').data(yval).enter().append('rect')
-            .attr('x', 0).attr('y', function (d) {
-            return y(d)
-        }).attr('height', ht).attr('width', wd)
-        //.style("fill", "#ADD8E6")
-            .style("fill", "#C2DFFF")
-            .style('fill-opacity', function (d, i) {
-                //if (i===0) {
-                //return 0;
-                //}
+						//return 0.5;
+					});
+			}
 
-                if (i % 2 === 0) {
-                    return 0.3;
-                }
-                else {
-                    return 0;
-                }
-
-                //return 0.5;
-
-            });
-
-
-    }
-
-    render() {
-
-        return (
-            <div className="overlaid">
-                <svg height={this.props.rootStore.visStore.svgHeight} width={this.props.rootStore.visStore.plotWidth}>
-
-
-                    <g className="axisGlobal2" transform={"translate(0,"+this.props.rootStore.visStore.timelineRectSize/2+")"}>
-                    </g>
-                </svg>
-
-
-            </div>
-        );
-    }
-}));
+			render() {
+				return (
+					<div className="overlaid">
+						<svg
+							height={this.props.rootStore.visStore.svgHeight}
+							width={this.props.rootStore.visStore.svgWidth || 700}
+						>
+							<g
+								className="axisGlobal2"
+								transform={'translate(0,' + this.props.rootStore.visStore.timelineRectSize / 2 + ')'}
+							></g>
+						</svg>
+					</div>
+				);
+			}
+		}
+	)
+);
 export default GlobalBands;

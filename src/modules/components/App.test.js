@@ -8,19 +8,16 @@ import UIStore from '../stores/UIStore';
 import StudyAPI from '../../API/studyAPI';
 
 it('renders without crashing', () => {
-    const uiStore = new UIStore();
-    const studyAPI = new StudyAPI(uiStore);
-    const rootStore = new RootStore(uiStore, studyAPI);
-    const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
-    const div = document.createElement('div');
-    ReactDOM.render(
-        <Provider
-            rootStore={rootStore}
-            uiStore={uiStore}
-            undoRedoStore={undoRedoStore}
-        >
-            <App />
-        </Provider>, div,
-    );
-    ReactDOM.unmountComponentAtNode(div);
+	const uiStore = new UIStore();
+	const studyAPI = new StudyAPI(uiStore);
+	const rootStore = new RootStore(uiStore, studyAPI);
+	const undoRedoStore = new UndoRedoStore(rootStore, uiStore);
+	const div = document.createElement('div');
+	ReactDOM.render(
+		<Provider rootStore={rootStore} uiStore={uiStore} undoRedoStore={undoRedoStore}>
+			<App />
+		</Provider>,
+		div
+	);
+	ReactDOM.unmountComponentAtNode(div);
 });
