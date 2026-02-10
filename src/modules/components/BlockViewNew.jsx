@@ -5,8 +5,6 @@ import { makeObservable, observable, reaction, action, runInAction } from 'mobx'
 import { Button, Col, Row } from 'antd';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { Switch } from 'antd';
-import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
-import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
 import GroupTimepoint from './Timepoints/GroupTimepoint';
 import TimepointLabels from './PlotLabeling/TimepointLabels';
@@ -212,95 +210,29 @@ const BlockView = inject(
 						// if (secondTP.type=='between' & i<this.props.rootStore.dataStore.timepoints.length - 2){
 						//     secondTP = this.props.rootStore.dataStore.timepoints[i + 2];
 						// }
-						let transition;
-						if (firstTP.customPartitions.length > 0) {
-							if (secondTP.customPartitions.length > 0) {
-								transition = (
-									<Provider
-										dataStore={this.props.rootStore.dataStore}
-										visStore={this.props.rootStore.visStore}
-									>
-										<SankeyTransition
-											index={i}
-											firstGrouped={firstTP.customGrouped}
-											secondGrouped={secondTP.customGrouped}
-											firstPrimary={this.props.rootStore.dataStore.variableStores[
-												firstTP.type
-											].getById(firstTP.primaryVariableId)}
-											secondPrimary={this.props.rootStore.dataStore.variableStores[
-												secondTP.type
-											].getById(secondTP.primaryVariableId)}
-											tooltipFunctions={this.props.tooltipFunctions}
-										/>
-									</Provider>
-								);
-							} else {
-								transition = (
-									<Provider
-										dataStore={this.props.rootStore.dataStore}
-										visStore={this.props.rootStore.visStore}
-									>
-										<HeatmapGroupTransition
-											inverse={false}
-											index={firstTP.globalIndex}
-											partitions={firstTP.grouped}
-											nonGrouped={secondTP}
-											heatmapScale={this.props.rootStore.visStore.heatmapScales[i + 1]}
-											colorScale={
-												this.props.rootStore.dataStore.variableStores[firstTP.type].getById(
-													firstTP.primaryVariableId
-												).colorScale
-											}
-										/>
-									</Provider>
-								);
-							}
-						} else if (secondTP.isGrouped) {
-							transition = (
-								<Provider
-									dataStore={this.props.rootStore.dataStore}
-									visStore={this.props.rootStore.visStore}
-								>
-									<HeatmapGroupTransition
-										inverse
-										index={secondTP.globalIndex}
-										partitions={secondTP.grouped}
-										nonGrouped={firstTP}
-										heatmapScale={this.props.rootStore.visStore.heatmapScales[i]}
-										colorScale={
-											this.props.rootStore.dataStore.variableStores[secondTP.type].getById(
-												secondTP.primaryVariableId
-											).colorScale
-										}
-									/>
-								</Provider>
-							);
-						} else {
-							transition = (
-								<Provider
-									dataStore={this.props.rootStore.dataStore}
-									visStore={this.props.rootStore.visStore}
-								>
-									<LineTransition
-										index={firstTP.globalIndex}
-										from={firstTP.patients}
-										to={secondTP.patients}
-										firstHeatmapScale={this.props.rootStore.visStore.heatmapScales[i]}
-										secondHeatmapScale={this.props.rootStore.visStore.heatmapScales[i + 1]}
-										secondTimepoint={secondTP}
-										timeGapMapper={
-											this.props.rootStore.staticMappers[this.props.rootStore.timeDistanceId]
-										}
-										colorScale={
-											this.props.rootStore.dataStore.variableStores[secondTP.type].getById(
-												secondTP.primaryVariableId
-											).colorScale
-										}
-										tooltipFunctions={this.props.tooltipFunctions}
-									/>
-								</Provider>
-							);
-						}
+						// All timepoints are always displayed as GroupTimepoint in BlockViewNew,
+						// so transitions should always use SankeyTransition (grouped-to-grouped).
+						const firstGrouped = firstTP.customPartitions.length > 0 ? firstTP.customGrouped : firstTP.grouped;
+						const secondGrouped = secondTP.customPartitions.length > 0 ? secondTP.customGrouped : secondTP.grouped;
+						const transition = (
+							<Provider
+								dataStore={this.props.rootStore.dataStore}
+								visStore={this.props.rootStore.visStore}
+							>
+								<SankeyTransition
+									index={i}
+									firstGrouped={firstGrouped}
+									secondGrouped={secondGrouped}
+									firstPrimary={this.props.rootStore.dataStore.variableStores[
+										firstTP.type
+									].getById(firstTP.primaryVariableId)}
+									secondPrimary={this.props.rootStore.dataStore.variableStores[
+										secondTP.type
+									].getById(secondTP.primaryVariableId)}
+									tooltipFunctions={this.props.tooltipFunctions}
+								/>
+							</Provider>
+						);
 						transitions.push(
 							<g key={firstTP.globalIndex} transform={transformTR}>
 								{transition}

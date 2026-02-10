@@ -332,33 +332,20 @@ const RowOperator = inject(
 			 * @param {(DerivedVariable|OriginalVariable)} variable
 			 */
 			sortTimepoint(timepoint, variable) {
-				if (timepoint.isGrouped && isNumeric(variable.datatype)) {
-					this.props.openBinningModal(variable, (derivedVariable) => {
-						this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(
-							variable.id,
-							derivedVariable
-						);
-						timepoint.group(derivedVariable.id);
-						this.props.undoRedoStore.saveTimepointHistory(
-							'SORT',
-							variable.id,
-							timepoint.type,
-							timepoint.localIndex
-						);
-					});
-				} else {
-					timepoint.sort(variable.id, this.props.rootStore.dataStore.selectedPatients);
-					// If we are in realtime mode: apply sorting to all timepoints to avoid crossing lines
-					if (this.props.uiStore.realTime) {
-						this.props.rootStore.dataStore.applyPatientOrderToAll(timepoint.globalIndex);
-					}
-					this.props.undoRedoStore.saveTimepointHistory(
-						'SORT',
-						variable.id,
-						timepoint.type,
-						timepoint.localIndex
-					);
+				// BlockViewNew always renders GroupTimepoint, so sorting should
+				// always toggle groupSortDir (which the `grouped` computed depends on)
+				// rather than calling sortHeatmap (which only changes heatmapOrder).
+				timepoint.setPrimaryVariable(variable.id);
+				timepoint.sortGroup(-timepoint.groupSortDir);
+				if (this.props.uiStore.realTime) {
+					this.props.rootStore.dataStore.applyPatientOrderToAll(timepoint.globalIndex);
 				}
+				this.props.undoRedoStore.saveTimepointHistory(
+					'SORT',
+					variable.id,
+					timepoint.type,
+					timepoint.localIndex
+				);
 			}
 
 			/**
