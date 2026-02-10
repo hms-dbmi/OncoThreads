@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { message } from 'antd';
 import StudyAPI from './studyAPI';
+import ErrorHandler from '../modules/services/ErrorHandler';
 
 class GenomeNexusAPI {
 	/**
@@ -9,7 +9,6 @@ class GenomeNexusAPI {
 	 * @returns {AxiosPromise<any>}
 	 */
 	static genomNexusMappingMultipleSymbols(hgncSymbols, token) {
-		console.log('token = ' + token);
 		return StudyAPI.callPostAPI('https://www.genomenexus.org/ensembl/canonical-gene/hgnc', token, {}, hgncSymbols);
 	}
 
@@ -29,11 +28,7 @@ class GenomeNexusAPI {
 				callback(mapper);
 			})
 			.catch(function (error) {
-				if (GenomeNexusAPI.verbose) {
-					console.log(error);
-				} else {
-					message.warning({ content: 'Invalid gene symbol provided', duration: 5 });
-				}
+				ErrorHandler.handleAPIError(error, 'Failed to resolve gene symbols');
 			});
 	}
 
@@ -46,7 +41,7 @@ class GenomeNexusAPI {
 		GenomeNexusAPI.genomNexusMappingMultipleSymbols(hgncSymbols, token)
 			.then(function (response) {
 				if (response.data.length === 0) {
-					message.warning({ content: 'No valid gene symbols found', duration: 6 });
+					ErrorHandler.showWarning('No valid gene symbols found');
 				} else {
 					const invalidSymbols = [];
 					hgncSymbols.forEach(function (d, i) {
@@ -55,10 +50,7 @@ class GenomeNexusAPI {
 						}
 					});
 					if (invalidSymbols.length !== 0) {
-						message.warning({
-							content: `The following gene symbols are not valid: ${invalidSymbols}`,
-							duration: 9,
-						});
+						ErrorHandler.showWarning(`The following gene symbols are not valid: ${invalidSymbols}`);
 					}
 				}
 				const hasEntrez = response.data.every((d) => 'entrezGeneId' in d);
@@ -70,21 +62,13 @@ class GenomeNexusAPI {
 						}))
 					);
 				} else {
-					message.error({
-						content: 'Gene symbols could not be translated. Please check your input.',
-						duration: 7,
-					});
+					ErrorHandler.showError('Gene symbols could not be translated. Please check your input.');
 				}
 			})
 			.catch(function (error) {
-				if (GenomeNexusAPI.verbose) {
-					console.log(error);
-				} else {
-					message.warning({ content: 'Invalid gene symbol provided', duration: 5 });
-				}
+				ErrorHandler.handleAPIError(error, 'Failed to look up gene IDs');
 			});
 	}
 }
 
-GenomeNexusAPI.verbose = true;
 export default GenomeNexusAPI;

@@ -2,7 +2,7 @@ import { makeObservable, observable, action } from 'mobx';
 import data from './HgncEntrez.txt';
 
 import * as d3 from 'd3';
-import { message } from 'antd';
+import ErrorHandler from '../modules/services/ErrorHandler';
 
 /**
  * Component for getting the mapping of hugoSymbols to entrezIDs for every possible gene (used before local files are loaded)
@@ -20,14 +20,18 @@ class GeneNamesLocalAPI {
 	}
 
 	getAllGeneSymbols = () => {
-		d3.tsv(data).then(
-			action((data) => {
-				data.forEach((d) => {
-					this.geneList[d['Approved symbol']] = parseInt(d['NCBI Gene ID(supplied by NCBI)'], 10);
-				});
-				this.geneListLoaded = true;
-			})
-		);
+		d3.tsv(data)
+			.then(
+				action((data) => {
+					data.forEach((d) => {
+						this.geneList[d['Approved symbol']] = parseInt(d['NCBI Gene ID(supplied by NCBI)'], 10);
+					});
+					this.geneListLoaded = true;
+				})
+			)
+			.catch((error) => {
+				ErrorHandler.handleAPIError(error, 'Failed to load local gene list');
+			});
 	};
 
 	/**
@@ -49,13 +53,10 @@ class GeneNamesLocalAPI {
 			}
 		});
 		if (invalidSymbols.length === hgncSymbols.length) {
-			message.warning({ content: 'No valid gene symbols found', duration: 6 });
+			ErrorHandler.showWarning('No valid gene symbols found');
 		} else {
 			if (invalidSymbols.length > 0) {
-				message.warning({
-					content: `The following gene symbols are not valid: ${invalidSymbols}`,
-					duration: 9,
-				});
+				ErrorHandler.showWarning(`The following gene symbols are not valid: ${invalidSymbols}`);
 			}
 			callback(returnArray);
 		}

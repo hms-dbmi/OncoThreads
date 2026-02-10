@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { makeObservable, observable, action } from 'mobx';
-import { message } from 'antd';
+import ErrorHandler from '../modules/services/ErrorHandler';
 
 /**
  * Component for getting the mapping of hugoSymbols to entrezIDs for every possible gene (used before local files are loaded)
@@ -18,10 +18,15 @@ class GeneNamesAPI {
 	}
 
 	getAllGeneSymbols = () => {
-		axios.get('http://rest.genenames.org/fetch/status/Approved').then((response) => {
-			response.data.response.docs.forEach((d) => (this.geneList[d.symbol] = parseInt(d.entrez_id, 10)));
-			this.geneListLoaded = true;
-		});
+		axios
+			.get('http://rest.genenames.org/fetch/status/Approved')
+			.then((response) => {
+				response.data.response.docs.forEach((d) => (this.geneList[d.symbol] = parseInt(d.entrez_id, 10)));
+				this.geneListLoaded = true;
+			})
+			.catch((error) => {
+				ErrorHandler.handleAPIError(error, 'Failed to load gene symbols');
+			});
 	};
 
 	/**
@@ -43,13 +48,10 @@ class GeneNamesAPI {
 			}
 		});
 		if (invalidSymbols.length === hgncSymbols.length) {
-			message.warning({ content: 'No valid gene symbols found', duration: 6 });
+			ErrorHandler.showWarning('No valid gene symbols found');
 		} else {
 			if (invalidSymbols.length > 0) {
-				message.warning({
-					content: `The following gene symbols are not valid: ${invalidSymbols}`,
-					duration: 9,
-				});
+				ErrorHandler.showWarning(`The following gene symbols are not valid: ${invalidSymbols}`);
 			}
 			callback(returnArray);
 		}

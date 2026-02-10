@@ -14,7 +14,7 @@ import QuickAddVariable from './VariableSelector/QuickAddVariable';
 import ContextMenuHeatmapRow from './ContextMenuHeatmapRow';
 
 import VariableManager from './VariableModals/VariableManager';
-import ContextMenu from './RowOperators/ContextMenu';
+import ContextMenu from './RowOperatorsNew/ContextMenu';
 import SaveVariableDialog from './Modals/SaveVariableDialog';
 
 /**

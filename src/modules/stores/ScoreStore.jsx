@@ -1,8 +1,17 @@
+import { makeObservable, observable, action } from 'mobx';
+
 class ScoreStore {
 	constructor(rootStore) {
 		this.rootStore = rootStore;
 		this.scoreStructure = {};
 		this.TimeLineVariability = {};
+
+		makeObservable(this, {
+			scoreStructure: observable,
+			TimeLineVariability: observable,
+			calculateVScoreWithinTimeLine: action,
+			calculateVScore: action,
+		});
 	}
 
 	calculateVScoreWithinTimeLine() {

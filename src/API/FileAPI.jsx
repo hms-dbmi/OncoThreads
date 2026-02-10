@@ -1,7 +1,7 @@
 /**
  * class that gets data from LocalFileLoader. Imitates CBioAPI
  */
-import { message } from 'antd';
+import ErrorHandler from '../modules/services/ErrorHandler';
 
 class FileAPI {
 	constructor(localFileLoader, geneNamesAPI) {
@@ -132,10 +132,7 @@ class FileAPI {
 		if (this.geneNamesAPI.geneListLoaded) {
 			this.geneNamesAPI.getGeneIDs(hgncSymbols, callback);
 		} else {
-			message.warning({
-				content: 'Could not load gene list yet. Please try again.',
-				duration: 6,
-			});
+			ErrorHandler.showWarning('Could not load gene list yet. Please try again.');
 		}
 	}
 }

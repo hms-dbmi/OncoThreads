@@ -105,9 +105,21 @@ const getUniqueKeyName = (num: number, existingNames: string[]): string => {
 	} else return name;
 };
 
+const isNumberArray = (arr: any[]): arr is number[] => {
+	return arr.every((item) => typeof item === 'number');
+};
+
+const isStringArray = (arr: any[]): arr is string[] => {
+	return arr.every((item) => typeof item === 'string');
+};
+
+const isBooleanArray = (arr: any[]): arr is boolean[] => {
+	return arr.every((item) => typeof item === 'boolean');
+};
+
 const summarizeDomain = (values: string[] | number[] | boolean[]): string[] => {
-	if (typeof values[0] === 'number') {
-		const v = values as number[]; // stupid typescropt
+	if (isNumberArray(values)) {
+		const v = values as number[];
 		// Filter out NaN values for proper min/max calculation
 		const validNumbers = v.filter((n) => !isNaN(n) && isFinite(n));
 
@@ -134,10 +146,10 @@ const summarizeDomain = (values: string[] | number[] | boolean[]): string[] => {
 			return text;
 		});
 		return range;
-	} else if (typeof values[0] === 'string') {
+	} else if (isStringArray(values)) {
 		const v = values as string[];
 		return [...new Set(v)];
-	} else if (typeof values[0] === 'boolean') {
+	} else if (isBooleanArray(values)) {
 		const v = values as boolean[];
 		return [...new Set(v)].map((d) => d.toString());
 	} else return [];

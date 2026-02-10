@@ -1,5 +1,6 @@
 import OriginalVariable from './stores/OriginalVariable';
 import ColorScales from './UtilityClasses/ColorScales';
+import ErrorHandler from './services/ErrorHandler';
 
 /*
  gets mutation and molecular data on demand and transforms the data to variables
@@ -12,6 +13,18 @@ class MolProfileMapping {
 		this.currentPanels = {}; // current gene panel mapping
 		this.currentMolecular = {}; // current molecular data
 		this.currentIds = []; // current entrezIds
+	}
+
+	/**
+	 * Calls an API method, automatically appending the access token when not using own data.
+	 * @param {string} method - API method name
+	 * @param {...*} args - Arguments to pass to the API method
+	 */
+	_callAPI(method, ...args) {
+		if (!this.rootStore.isOwnData) {
+			args.push(this.rootStore.studyAPI.accessTokenFromUser);
+		}
+		this.rootStore.api[method](...args);
 	}
 
 	/**
@@ -164,16 +177,7 @@ class MolProfileMapping {
 							});
 						} else setLoaded(i);
 					};
-					if (this.rootStore.isOwnData) {
-						this.rootStore.api.areProfiled(this.currentIds, profile.molecularProfileId, callback);
-					} else {
-						this.rootStore.api.areProfiled(
-							this.currentIds,
-							profile.molecularProfileId,
-							callback,
-							this.rootStore.studyAPI.accessTokenFromUser
-						);
-					}
+					this._callAPI('areProfiled', this.currentIds, profile.molecularProfileId, callback);
 				});
 			},
 			token
@@ -192,7 +196,7 @@ class MolProfileMapping {
 			(entry) => !Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId)
 		);
 		if (notInPanel.length > 0) {
-			window.alert(`Gene(s) ${notInPanel.map((d) => d.hgncSymbol)} not measured in profile ${profileName}`);
+			ErrorHandler.showWarning(`Gene(s) ${notInPanel.map((d) => d.hgncSymbol)} not measured in profile ${profileName}`);
 		}
 		const availableIds = this.currentIds.filter((entry) =>
 			Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId)
@@ -208,11 +212,7 @@ class MolProfileMapping {
 			}
 		});
 		if (noMutationsFound.length > 0) {
-			window.alert(
-				`WARNING: No data found for ${noMutationsFound.map(
-					(entry) => entry.hgncSymbol
-				)} of profile ${profileName}\n No track will be added`
-			);
+			ErrorHandler.showWarning(`No data found for ${noMutationsFound.map((entry) => entry.hgncSymbol)} of profile ${profileName}. No track will be added.`);
 		}
 		return availableIds.filter((d) => !noMutationsFound.map((f) => f.entrezGeneId).includes(d.entrezGeneId));
 	}
@@ -228,7 +228,7 @@ class MolProfileMapping {
 			(entry) => !Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId)
 		);
 		if (notInPanel.length > 0) {
-			window.alert(`Gene(s) ${notInPanel.map((d) => d.hgncSymbol)} not sequenced`);
+			ErrorHandler.showWarning(`Gene(s) ${notInPanel.map((d) => d.hgncSymbol)} not sequenced`);
 		}
 		let availableIds = this.currentIds.filter((entry) =>
 			Object.values(this.currentPanels[profileId]).join().includes(entry.entrezGeneId)
@@ -240,13 +240,10 @@ class MolProfileMapping {
 				noMutationsFound.push({ hgncSymbol: id.hgncSymbol, entrezGeneId: id.entrezGeneId });
 			}
 		});
-		let confirm = false;
 		if (noMutationsFound.length > 0) {
-			confirm = window.confirm(
-				`WARNING: No mutations found for ${noMutationsFound.map((entry) => entry.hgncSymbol)}\n Add anyway?`
-			);
+			ErrorHandler.showWarning(`No mutations found for ${noMutationsFound.map((entry) => entry.hgncSymbol)}. These genes will be skipped.`);
 		}
-		if (!confirm) {
+		if (noMutationsFound.length > 0) {
 			availableIds = availableIds.filter(
 				(d) => !noMutationsFound.map((f) => f.entrezGeneId).includes(d.entrezGeneId)
 			);
@@ -261,22 +258,10 @@ class MolProfileMapping {
 	 */
 	loadMutations(profileId, callback) {
 		if (this.currentIds.length !== 0) {
-			if (this.rootStore.isOwnData) {
-				this.rootStore.api.getMutations(this.currentIds, profileId, (mutations) => {
-					this.currentMutations = mutations;
-					callback();
-				});
-			} else {
-				this.rootStore.api.getMutations(
-					this.currentIds,
-					profileId,
-					(mutations) => {
-						this.currentMutations = mutations;
-						callback();
-					},
-					this.rootStore.studyAPI.accessTokenFromUser
-				);
-			}
+			this._callAPI('getMutations', this.currentIds, profileId, (mutations) => {
+				this.currentMutations = mutations;
+				callback();
+			});
 		}
 	}
 
@@ -287,22 +272,10 @@ class MolProfileMapping {
 	 */
 	loadMolecularData(profileId, callback) {
 		if (this.currentIds.length !== 0) {
-			if (this.rootStore.isOwnData) {
-				this.rootStore.api.getMolecularValues(profileId, this.currentIds, (response) => {
-					this.currentMolecular[profileId] = response;
-					callback();
-				});
-			} else {
-				this.rootStore.api.getMolecularValues(
-					profileId,
-					this.currentIds,
-					(response) => {
-						this.currentMolecular[profileId] = response;
-						callback();
-					},
-					this.rootStore.studyAPI.accessTokenFromUser
-				);
-			}
+			this._callAPI('getMolecularValues', profileId, this.currentIds, (response) => {
+				this.currentMolecular[profileId] = response;
+				callback();
+			});
 		}
 	}
 

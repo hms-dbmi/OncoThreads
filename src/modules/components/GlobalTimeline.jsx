@@ -4,7 +4,7 @@ import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/TimelinePoints';
 import GlobalTransition from './Transitions/GlobalTransition';
 import { Button, Col, Row } from 'react-bootstrap';
-import GlobalRowOperators from './RowOperators/GlobalRowOperators';
+import GlobalRowOperators from './RowOperatorsNew/GlobalRowOperators';
 import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
