@@ -26,7 +26,7 @@ class GeneNamesAPI implements IGeneResolver {
 
 	getAllGeneSymbols = (): void => {
 		axios
-			.get<{ response: { docs: GeneNameDoc[] } }>('http://rest.genenames.org/fetch/status/Approved')
+			.get<{ response: { docs: GeneNameDoc[] } }>('https://rest.genenames.org/fetch/status/Approved')
 			.then((response) => {
 				response.data.response.docs.forEach((d) => (this.geneList[d.symbol] = parseInt(d.entrez_id, 10)));
 				this.geneListLoaded = true;

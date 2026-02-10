@@ -166,7 +166,7 @@ const DefaultView = inject(
 					placeHoplderText = 'Connect to a cBioPortal instance to load study list';
 					instanceTextfield = (
 						<Form.Group>
-							<Form.Label>Enter URL for cBioPortal (e.g. 'http://www.cbioportal.org')</Form.Label>
+							<Form.Label>Enter URL for cBioPortal (e.g. 'https://www.cbioportal.org')</Form.Label>
 
 							<InputGroup>
 								<Form.Control

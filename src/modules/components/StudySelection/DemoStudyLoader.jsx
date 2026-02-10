@@ -229,7 +229,7 @@ const DemoStudyLoader = inject('rootStore')(
 
 					// Create axios instance with CORS configuration
 					const axiosInstance = axios.create({
-						baseURL: 'http://threadstates.gehlenborglab.org/demo_data/',
+						baseURL: 'https://threadstates.gehlenborglab.org/demo_data/',
 						withCredentials: false,
 						headers: {
 							'Access-Control-Allow-Origin': '*',
