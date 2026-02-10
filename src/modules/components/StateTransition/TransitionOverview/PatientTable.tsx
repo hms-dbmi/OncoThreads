@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { IRootStore } from 'modules/Type';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { getTextWidth, summarizeDomain } from 'modules/UtilityClasses';
+import { getTextWidth, summarizeDomain, isNumericValue } from 'modules/UtilityClasses';
 import CellGlyph, { GlyphProps } from 'modules/components/CellGlyph';
 import { keys, toJS } from 'mobx';
 import RootStore from 'modules/stores/RootStore';
@@ -62,7 +62,7 @@ class PatientTable extends React.Component<Props, {}> {
 
 					let text = '',
 						domains = summarizeDomain(values);
-					if (typeof values[0] === 'number') {
+					if (isNumericValue(values[0])) {
 						text = domains.join('~');
 					} else {
 						text = domains.join(',');
@@ -86,7 +86,7 @@ class PatientTable extends React.Component<Props, {}> {
 									showLabel={true}
 								/>
 							</g>
-							{typeof values[0] === 'number' ? (
+							{isNumericValue(values[0]) ? (
 								<text x={cellWidth / 2} y={(cellHeight + textHeight) / 2} textAnchor="middle">
 									{text}
 								</text>

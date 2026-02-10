@@ -1,6 +1,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import GlobalRowOperator from './GlobalRowOperator';
+import { withUICallbacks } from '../UICallbacksContext';
 
 /**
  * Component for the Row operators of the variables in the global timeline
@@ -40,8 +41,6 @@ const GlobalRowOperators = inject('dataStore')(
 						type="sample"
 						width={this.state.width}
 						height={this.props.dataStore.variableStores.sample.currentVariables.length * 20}
-						openSaveVarModal={this.props.openSaveVarModal}
-						{...this.props.tooltipFunctions}
 					/>
 				);
 			}
@@ -59,8 +58,6 @@ const GlobalRowOperators = inject('dataStore')(
 							height={
 								this.props.dataStore.variableStores.between.getRelatedVariables('event').length * 20
 							}
-							openSaveVarModal={this.props.openSaveVarModal}
-							{...this.props.tooltipFunctions}
 						/>
 					);
 				}
@@ -87,4 +84,4 @@ const GlobalRowOperators = inject('dataStore')(
 		}
 	)
 );
-export default GlobalRowOperators;
+export default withUICallbacks(GlobalRowOperators);

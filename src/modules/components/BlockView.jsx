@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import FontAwesome from 'react-fontawesome';
 import { makeObservable, observable, reaction, action } from 'mobx';
@@ -14,6 +13,7 @@ import TimepointLabels from './PlotLabeling/TimepointLabels';
 import VariableLabels from './VariableLabels/VariableLabels';
 import RowOperators from './RowOperators/RowOperators';
 import Legend from './Legend';
+import { withUICallbacks } from './UICallbacksContext';
 
 /**
  * Component for the Block view
@@ -195,6 +195,7 @@ const BlockView = inject(
 											rectWidth={rectWidth}
 											tooltipFunctions={this.props.tooltipFunctions}
 											primaryVariableId={d.primaryVariableId}
+										usePrimaryHeight={true}
 										/>
 									</Provider>
 								</g>
@@ -386,9 +387,7 @@ const BlockView = inject(
 											width={(this.panes.variableLabels?.width || 150) - 10}
 											setHighlightedVariable={this.setHighlightedVariable}
 											removeHighlightedVariable={this.removeHighlightedVariable}
-											tooltipFunctions={this.props.tooltipFunctions}
-											showContextMenu={this.props.showContextMenu}
-										/>
+											/>
 									</Panel>
 
 									<PanelResizeHandle className="resize-handle" />
@@ -478,8 +477,4 @@ const BlockView = inject(
 		}
 	)
 );
-BlockView.propTypes = {
-	tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
-	showContextMenuHeatmapRow: PropTypes.func.isRequired,
-};
-export default BlockView;
+export default withUICallbacks(BlockView);

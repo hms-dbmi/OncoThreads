@@ -1,6 +1,7 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { cropText } from '../../UtilityClasses/UtilityFunctions';
+import { withUICallbacks } from '../UICallbacksContext';
 
 /**
  * Component for a a row operators of a timepont type in the Global timeline
@@ -31,8 +32,8 @@ const GlobalRowOperator = inject(
 						id="delete"
 						className="not_exported"
 						transform={`translate(${xPos},0)scale(${this.iconScale})`}
-						onMouseEnter={(e) => this.props.showTooltip(e, 'Delete variable from all blocks ')}
-						onMouseLeave={this.props.hideTooltip}
+						onMouseEnter={(e) => this.props.tooltipFunctions.showTooltip(e, 'Delete variable from all blocks ')}
+						onMouseLeave={this.props.tooltipFunctions.hideTooltip}
 					>
 						<path
 							fill="gray"
@@ -107,8 +108,8 @@ const GlobalRowOperator = inject(
 				return (
 					<g
 						key={variable.id}
-						onMouseEnter={(e) => this.props.showTooltip(e, variable.name, variable.description)}
-						onMouseLeave={this.props.hideTooltip}
+						onMouseEnter={(e) => this.props.tooltipFunctions.showTooltip(e, variable.name, variable.description)}
+						onMouseLeave={this.props.tooltipFunctions.hideTooltip}
 					>
 						<text style={{ fontWeight, fontSize }} y={fontSize} onClick={promoteFunction}>
 							{cropText(
@@ -164,7 +165,7 @@ const GlobalRowOperator = inject(
 			 * @param {(OriginalVariable|DerivedVariable)} variable
 			 */
 			handleDelete(variable) {
-				this.props.hideTooltip();
+				this.props.tooltipFunctions.hideTooltip();
 				this.props.dataStore.variableStores[this.props.type].removeVariable(variable.id);
 				const variableName = variable.name;
 				if (variable.derived) {
@@ -201,4 +202,4 @@ const GlobalRowOperator = inject(
 		}
 	)
 );
-export default GlobalRowOperator;
+export default withUICallbacks(GlobalRowOperator);

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { v4 as uuidv4 } from 'uuid';
 import { makeObservable, observable, action } from 'mobx';
-import { getTextWidth, getScientificNotation } from '../UtilityClasses/UtilityFunctions';
+import { getTextWidth, getScientificNotation, isOrdinal, isCategoricalLike, isBinary } from '../UtilityClasses/UtilityFunctions';
 import ColorScales from '../UtilityClasses/ColorScales';
 
 /**
@@ -233,11 +233,11 @@ const Legend = inject(
 				let legend_y = lineheight;
 
 				variable.domain.forEach((d, i) => {
-					if (variable.datatype === 'ORDINAL' || row.includes(d)) {
+					if (isOrdinal(variable.datatype) || row.includes(d)) {
 						let tooltipText;
 						if (
 							variable.derived &&
-							variable.datatype === 'ORDINAL' &&
+							isOrdinal(variable.datatype) &&
 							variable.modification.type === 'continuousTransform' &&
 							variable.modification.binning.binNames[i].modified
 						) {
@@ -362,7 +362,7 @@ const Legend = inject(
 						if (lineheight < adaptedFontSize) {
 							adaptedFontSize = Math.round(lineheight);
 						}
-						if (d.datatype === 'STRING' || d.datatype === 'ORDINAL') {
+						if (isCategoricalLike(d.datatype)) {
 							legendEntries = this.getCategoricalLegend(
 								d,
 								data[i].data.map((element) => element.value),
@@ -370,7 +370,7 @@ const Legend = inject(
 								adaptedFontSize,
 								lineheight
 							);
-						} else if (d.datatype === 'BINARY') {
+						} else if (isBinary(d.datatype)) {
 							legendEntries = this.getBinaryLegend(opacity, adaptedFontSize, lineheight, color);
 						} else {
 							legendEntries = this.getContinuousLegend(opacity, adaptedFontSize, lineheight, color);
@@ -400,7 +400,7 @@ const Legend = inject(
 			 */
 			getGlobalLegend(fontSize, primaryVariable) {
 				let legend;
-				if (primaryVariable.datatype === 'STRING' || primaryVariable.datatype === 'ORDINAL') {
+				if (isCategoricalLike(primaryVariable.datatype)) {
 					let allValues = [];
 					this.props.rootStore.dataStore.timepoints.forEach((d) => {
 						d.heatmap.forEach((f) => {
@@ -416,7 +416,7 @@ const Legend = inject(
 						fontSize,
 						this.props.rootStore.visStore.primaryHeight
 					);
-				} else if (primaryVariable.datatype === 'BINARY') {
+				} else if (isBinary(primaryVariable.datatype)) {
 					legend = this.getBinaryLegend(
 						1,
 						fontSize,

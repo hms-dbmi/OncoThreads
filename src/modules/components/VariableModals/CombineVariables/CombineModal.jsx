@@ -6,6 +6,7 @@ import BinaryCombine from './BinaryCombine';
 import CategoryCombine from './CategoryCombine';
 import ContinuousCombine from './ContinuousCombine';
 import DerivedVariable from '../../../stores/DerivedVariable';
+import { isBinary, isNumeric } from '../../../UtilityClasses';
 
 /**
  * Component for combining variables
@@ -18,12 +19,12 @@ const CombineModal = observer(
 		 */
 		getModificationType() {
 			let modificationType;
-			if (this.props.variables.filter((d) => d.datatype === 'BINARY').length === this.props.variables.length) {
+			if (this.props.variables.filter((d) => isBinary(d.datatype)).length === this.props.variables.length) {
 				modificationType = 'binaryCombine';
-			} else if (this.props.variables.filter((d) => d.datatype === 'NUMBER').length === 0) {
+			} else if (this.props.variables.filter((d) => isNumeric(d.datatype)).length === 0) {
 				modificationType = 'categoryCombine';
 			} else if (
-				this.props.variables.filter((d) => d.datatype === 'NUMBER').length === this.props.variables.length
+				this.props.variables.filter((d) => isNumeric(d.datatype)).length === this.props.variables.length
 			) {
 				modificationType = 'continuousCombine';
 			} else {

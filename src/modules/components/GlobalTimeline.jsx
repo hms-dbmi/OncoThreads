@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import TimelineTimepoint from './Timepoints/TimelinePoints';
 import GlobalTransition from './Transitions/GlobalTransition';
@@ -9,8 +8,9 @@ import Legend from './PlotLabeling/Legend';
 import TimeVarConfig from './PlotLabeling/TimeVarConfig';
 import GlobalTimeAxis from './PlotLabeling/GlobalTimeAxis';
 import GlobalBands from './PlotLabeling/GlobalBands';
-import { cropText } from '../UtilityClasses/UtilityFunctions';
+import { cropText, isCategorical } from '../UtilityClasses/UtilityFunctions';
 import DerivedMapperFunctions from '../UtilityClasses/DeriveMapperFunctions';
+import { withUICallbacks } from './UICallbacksContext';
 
 /**
  * Component for global timeline
@@ -138,7 +138,7 @@ const GlobalTimeline = inject('rootStore')(
 				if (
 					variable.derived &&
 					variable.modification.type === 'binaryCombine' &&
-					variable.modification.datatype === 'STRING'
+					isCategorical(variable.modification.datatype)
 				) {
 					return DerivedMapperFunctions.getModificationMapper(
 						{
@@ -279,13 +279,19 @@ const GlobalTimeline = inject('rootStore')(
 			}
 
 			updateDimensions() {
+				if (!this.selectedTab.current || !this.globalRowOperators.current) {
+					return;
+				}
 				this.props.rootStore.visStore.setPlotWidth(this.selectedTab.current.getBoundingClientRect().width);
 				this.props.rootStore.visStore.setPlotHeight(
 					window.innerHeight - this.selectedTab.current.getBoundingClientRect().top
 				);
-				this.setState({
-					rowOperatorsWidth: this.globalRowOperators.current.rowOperators.current.parentNode.clientWidth,
-				});
+				const rowOps = this.globalRowOperators.current.rowOperators?.current;
+				if (rowOps) {
+					this.setState({
+						rowOperatorsWidth: rowOps.parentNode.clientWidth,
+					});
+				}
 			}
 
 			getLegend() {
@@ -326,8 +332,6 @@ const GlobalTimeline = inject('rootStore')(
 									>
 										<GlobalRowOperators
 											ref={this.globalRowOperators}
-											openSaveVarModal={this.props.openSaveVarModal}
-											tooltipFunctions={this.props.tooltipFunctions}
 										/>
 									</Provider>
 
@@ -376,10 +380,7 @@ const GlobalTimeline = inject('rootStore')(
 		}
 	)
 );
-GlobalTimeline.propTypes = {
-	tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
-};
-export default GlobalTimeline;
+export default withUICallbacks(GlobalTimeline);
 
 //<h5>{`${globalPrimaryName} Legend`}</h5>
 

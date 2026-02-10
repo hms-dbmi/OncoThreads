@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, inject, Provider } from 'mobx-react';
 import { IRootStore } from 'modules/Type';
-import GroupPartition from '../../Timepoints/GroupTimepointCustom/GroupPartition';
+import GroupPartition from '../../Timepoints/GroupTimepoint/GroupPartition';
 import SankeyTransition from '../../Transitions/SankeyTransition/SankeyTransition';
 import Variable from 'modules/stores/Variable';
 import { getTextWidth } from 'modules/UtilityClasses';

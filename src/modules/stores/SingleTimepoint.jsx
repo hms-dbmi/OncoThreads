@@ -1,4 +1,5 @@
 import { makeObservable, observable, action, computed } from 'mobx';
+import { isNumeric } from '../UtilityClasses';
 
 /*
  stores information about a single timepoint
@@ -76,7 +77,7 @@ class SingleTimepoint {
 					const counts = [];
 					const { variable } = row;
 					const isNumerical =
-						this.rootStore.dataStore.variableStores[this.type].getById(variable).datatype === 'NUMBER';
+						isNumeric(this.rootStore.dataStore.variableStores[this.type].getById(variable).datatype);
 
 					if (!isNumerical) {
 						// Use the same logic as customGrouped for categorical variables
@@ -263,7 +264,7 @@ class SingleTimepoint {
 			this.primaryVariableId = undefined;
 		} else if (this.customPartitions.length === 0 && variableId === this.primaryVariableId) {
 			const primaryIndex = this.rootStore.dataStore.variableStores[this.type].fullCurrentVariables
-				.map((d) => d.datatype === 'NUMBER')
+				.map((d) => isNumeric(d.datatype))
 				.indexOf(false);
 			if (this.isGrouped && primaryIndex !== -1) {
 				this.setPrimaryVariable(this.heatmap[primaryIndex].variable);
@@ -335,11 +336,23 @@ class SingleTimepoint {
 				value: this.heatmap[variableIndex].data[patientIndex].value,
 			};
 		});
+		// Treat undefined, null, and NaN as missing values
+		const isMissing = (v) => v === undefined || v === null || (typeof v === 'number' && Number.isNaN(v));
 		// first sort after primary variable values
 		this.heatmapOrder.replace(
 			helper
 				.sort((a, b) => {
-					if (varToSort.datatype === 'NUMBER') {
+					const aMissing = isMissing(a.value);
+					const bMissing = isMissing(b.value);
+
+					// missing values accumulate on the right
+					if (aMissing && !bMissing) return 1;
+					if (!aMissing && bMissing) return -1;
+					if (aMissing && bMissing) {
+						return previousOrder.indexOf(a.patient) - previousOrder.indexOf(b.patient);
+					}
+
+					if (isNumeric(varToSort.datatype)) {
 						if (a.value < b.value) return -newSortDir;
 						if (a.value > b.value) return newSortDir;
 					} else {
@@ -350,22 +363,8 @@ class SingleTimepoint {
 							return newSortDir;
 						}
 					}
-					// undefined values accumulate on the right
-					if (a.value === undefined && b.value !== undefined) {
-						return 1;
-					}
-					if (a.value !== undefined && b.value === undefined) {
-						return -1;
-					}
-					// if the timepoint is sorted for the first time (no previous order)
-					if (previousOrder.indexOf(a.patient) < previousOrder.indexOf(b.patient)) {
-						return -1;
-					}
-					if (previousOrder.indexOf(a.patient) > previousOrder.indexOf(b.patient)) {
-						return 1;
-					}
 
-					return 0;
+					return previousOrder.indexOf(a.patient) - previousOrder.indexOf(b.patient);
 				})
 				.map((d) => d.patient)
 		);

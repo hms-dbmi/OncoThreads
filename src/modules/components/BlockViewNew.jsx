@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import FontAwesome from 'react-fontawesome';
 import { makeObservable, observable, reaction, action, runInAction } from 'mobx';
@@ -9,11 +8,12 @@ import { Switch } from 'antd';
 import HeatmapGroupTransition from './Transitions/HeatmapGroupTransition/HeatmapGroupTransition';
 import LineTransition from './Transitions/LineTransition/LineTransition';
 import SankeyTransition from './Transitions/SankeyTransition/SankeyTransition';
-import GroupTimepoint from './Timepoints/GroupTimepointCustom';
+import GroupTimepoint from './Timepoints/GroupTimepoint';
 import TimepointLabels from './PlotLabeling/TimepointLabels';
 import RowOperators from './RowOperatorsNew';
 import Legend from './Legend';
 import CustomGrouping from './StateTransition/CustomGrouping';
+import { withUICallbacks } from './UICallbacksContext';
 
 /**
  * Component for the Block view
@@ -380,10 +380,6 @@ const BlockView = inject(
 												width={this.panes.operators.width - 10}
 												setHighlightedVariable={this.setHighlightedVariable}
 												removeHighlightedVariable={this.removeHighlightedVariable}
-												tooltipFunctions={this.props.tooltipFunctions}
-												showContextMenu={this.props.showContextMenu}
-												openBinningModal={this.props.openBinningModal}
-												openSaveVarModal={this.props.openSaveVarModal}
 											/>
 										</Panel>
 
@@ -458,8 +454,4 @@ const BlockView = inject(
 		}
 	)
 );
-BlockView.propTypes = {
-	tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
-	showContextMenuHeatmapRow: PropTypes.func.isRequired,
-};
-export default BlockView;
+export default withUICallbacks(BlockView);

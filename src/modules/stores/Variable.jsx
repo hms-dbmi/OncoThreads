@@ -1,5 +1,6 @@
 import { makeObservable, observable, action, computed } from 'mobx';
 import ColorScales from '../UtilityClasses/ColorScales';
+import { isNumeric, isCategorical, isBinary, isOrdinal, isCategoricalLike } from '../UtilityClasses';
 
 /**
  * a derived variable is derived of one or multiple other variables
@@ -72,9 +73,9 @@ class Variable {
 	 */
 	get colorScale() {
 		let scale;
-		if (this.datatype === 'STRING' || this.datatype === 'BINARY') {
+		if (isCategorical(this.datatype) || isBinary(this.datatype)) {
 			scale = ColorScales.getCategoricalScale(this.range, this.domain);
-		} else if (this.datatype === 'ORDINAL') {
+		} else if (isOrdinal(this.datatype)) {
 			if (this.derived && this.modification.type === 'continuousTransform') {
 				scale = ColorScales.getCategoricalScale(
 					ColorScales.getBinnedRange(this.range, this.modification.binning.bins),
@@ -83,7 +84,7 @@ class Variable {
 			} else {
 				scale = ColorScales.getOrdinalScale(this.range, this.domain);
 			}
-		} else if (this.datatype === 'NUMBER') {
+		} else if (isNumeric(this.datatype)) {
 			scale = ColorScales.getContinousColorScale(this.range, this.domain);
 		}
 		return scale;
@@ -96,12 +97,12 @@ class Variable {
 	 */
 	createDomain(domain) {
 		if (
-			(this.datatype === 'NUMBER' && domain.length !== 2) ||
-			(this.datatype === 'BINARY' && domain.length === 0)
+			(isNumeric(this.datatype) && domain.length !== 2) ||
+			(isBinary(this.datatype) && domain.length === 0)
 		) {
 			return this.getDefaultDomain();
 		}
-		if (this.datatype === 'STRING' || this.datatype === 'ORDINAL') {
+		if (isCategoricalLike(this.datatype)) {
 			return Array.from(new Set(domain.concat(...this.getDefaultDomain())));
 		}
 		return domain;
@@ -112,13 +113,13 @@ class Variable {
 	 * @returns {(number[]|string[]|boolean[])} default domain
 	 */
 	getDefaultDomain() {
-		if (this.datatype === 'NUMBER') {
+		if (isNumeric(this.datatype)) {
 			return [
 				Math.min(...Object.values(this.mapper).filter((d) => d !== undefined)),
 				Math.max(...Object.values(this.mapper).filter((d) => d !== undefined)),
 			];
 		}
-		if (this.datatype === 'BINARY') {
+		if (isBinary(this.datatype)) {
 			return [true, false];
 		}
 		return [...new Set(Object.values(this.mapper))].filter((d) => d !== undefined).sort();

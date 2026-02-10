@@ -1,3 +1,5 @@
+import { isBinary } from './UtilityFunctions';
+
 /**
  * class for creating derived mappers
  */
@@ -78,7 +80,7 @@ class DerivedMapperFunctions {
 		const newMapper = {};
 		Object.keys(mappers[0]).forEach((entry) => {
 			if (modification.operator === 'or') {
-				if (modification.datatype === 'BINARY') {
+				if (isBinary(modification.datatype)) {
 					let containedInOne = false;
 					for (let i = 0; i < mappers.length; i += 1) {
 						if (mappers[i][entry]) {

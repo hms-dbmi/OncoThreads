@@ -7,6 +7,7 @@ import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import ColorScales from '../../../UtilityClasses/ColorScales';
+import { isOrdinal, isBinary } from '../../../UtilityClasses';
 import CategoricalTable from '../VariableTables/CategoricalTable';
 import ConvertBinaryTable from '../VariableTables/ConvertBinaryTable';
 import CategoryStore from '../VariableTables/CategoryStore';
@@ -26,8 +27,8 @@ const ModifyCategorical = inject(
 				this.categoryStore = new CategoryStore(
 					this.createCurrentCategoryData(),
 					this.props.derivedVariable === null
-						? this.props.variable.datatype === 'ORDINAL'
-						: this.props.derivedVariable.datatype === 'ORDINAL',
+						? isOrdinal(this.props.variable.datatype)
+						: isOrdinal(this.props.derivedVariable.datatype),
 					Object.values(this.props.variable.mapper),
 					this.props.derivedVariable === null ? this.props.variable.range : this.props.derivedVariable.range
 				);
@@ -196,7 +197,7 @@ const ModifyCategorical = inject(
 			 */
 			createBinaryMapping() {
 				let binaryMapping = {};
-				if (this.props.derivedVariable !== null && this.props.derivedVariable.datatype === 'BINARY') {
+				if (this.props.derivedVariable !== null && isBinary(this.props.derivedVariable.datatype)) {
 					binaryMapping = this.props.derivedVariable.modification.mapping;
 				} else {
 					this.props.variable.domain.forEach((d) => {
@@ -215,7 +216,7 @@ const ModifyCategorical = inject(
 			 */
 			createCurrentCategoryData() {
 				const currentData = [];
-				if (this.props.derivedVariable !== null && this.props.derivedVariable.datatype !== 'BINARY') {
+				if (this.props.derivedVariable !== null && !isBinary(this.props.derivedVariable.datatype)) {
 					this.props.derivedVariable.domain.forEach((d) => {
 						Object.keys(this.props.derivedVariable.modification.mapping).forEach((key) => {
 							if (this.props.derivedVariable.modification.mapping[key] === d) {
@@ -327,11 +328,11 @@ const ModifyCategorical = inject(
 				}
 
 				return {
-					convertBinary: this.props.derivedVariable.datatype === 'BINARY', // current datatype
+					convertBinary: isBinary(this.props.derivedVariable.datatype), // current datatype
 					// mapping of categories to binary values for binary conversion
 					binaryMapping: this.createBinaryMapping(),
 					binaryColors:
-						this.props.derivedVariable.datatype === 'BINARY'
+						isBinary(this.props.derivedVariable.datatype)
 							? this.props.derivedVariable.range
 							: ColorScales.defaultBinaryRange, // colors of binary values for binary conversion
 					name: this.props.derivedVariable.name, // name of modified variable

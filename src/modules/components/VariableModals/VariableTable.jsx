@@ -6,6 +6,7 @@ import { UpOutlined, DownOutlined } from '@ant-design/icons';
 import FontAwesome from 'react-fontawesome';
 import { makeObservable, observable, action } from 'mobx';
 import { message } from 'antd';
+import { isNumeric, isCategoricalLike, isBinary } from '../../UtilityClasses';
 import ModifyCategorical from './ModifySingleVariable/ModifyCategorical';
 import ModifyContinuous from './ModifySingleVariable/ModifyContinuous';
 import ModifyBinary from './ModifySingleVariable/ModifyBinary';
@@ -122,9 +123,9 @@ const VariableTable = inject(
 			 * @param {string} datatype
 			 */
 			openModifyModal(originalVariable, derivedVariable, datatype) {
-				this.modifyContinuousIsOpen = datatype === 'NUMBER';
-				this.modifyCategoricalIsOpen = datatype === 'STRING' || datatype === 'ORDINAL';
-				this.modifyBinaryIsOpen = datatype === 'BINARY';
+				this.modifyContinuousIsOpen = isNumeric(datatype);
+				this.modifyCategoricalIsOpen = isCategoricalLike(datatype);
+				this.modifyBinaryIsOpen = isBinary(datatype);
 				this.derivedVariable = derivedVariable;
 				this.currentVariable = originalVariable;
 			}

@@ -2,7 +2,8 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import SingleTimepoint from '../../stores/SingleTimepoint';
-import { cropText } from '../../UtilityClasses/UtilityFunctions';
+import { cropText, isNumeric } from '../../UtilityClasses/UtilityFunctions';
+import { withUICallbacks } from '../UICallbacksContext';
 
 /**
  * Component for row operators of one timepoint in BlockView
@@ -40,8 +41,8 @@ const RowOperator = inject(
 						id="sort"
 						className="not_exported"
 						transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
-						onMouseOver={(e) => this.props.showTooltip(e, 'Sort timepoint by this variable')}
-						onMouseOut={this.props.hideTooltip}
+						onMouseOver={(e) => this.props.tooltipFunctions.showTooltip(e, 'Sort timepoint by this variable')}
+						onMouseOut={this.props.tooltipFunctions.hideTooltip}
 					>
 						<path fill="gray" d="M20,3.43v2.5H0V3.43ZM-.06,14.07v2.5h10v-2.5ZM0,8.75v2.5H15V8.75Z" />
 						<rect
@@ -73,8 +74,8 @@ const RowOperator = inject(
 						id="group"
 						className="not_exported"
 						transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
-						onMouseEnter={(e) => this.props.showTooltip(e, 'Group timepoint by this variable')}
-						onMouseLeave={this.props.hideTooltip}
+						onMouseEnter={(e) => this.props.tooltipFunctions.showTooltip(e, 'Group timepoint by this variable')}
+						onMouseLeave={this.props.tooltipFunctions.hideTooltip}
 					>
 						<path fill="gray" d="M20,20H0V0H20ZM7.16,1H1V19H7.16Z" />
 						<rect
@@ -105,8 +106,8 @@ const RowOperator = inject(
 						id="ungroup"
 						className="not_exported"
 						transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
-						onMouseEnter={(e) => this.props.showTooltip(e, 'Ungroup timepoint')}
-						onMouseLeave={this.props.hideTooltip}
+						onMouseEnter={(e) => this.props.tooltipFunctions.showTooltip(e, 'Ungroup timepoint')}
+						onMouseLeave={this.props.tooltipFunctions.hideTooltip}
 					>
 						<path fill="gray" d="M20,20H0V0H20ZM7.33,0h-2V20h2Zm7.33,0h-2V20h2ZM4.33,1H1V19H4.33Z" />
 						<rect
@@ -137,8 +138,8 @@ const RowOperator = inject(
 						id="delete"
 						className="not_exported"
 						transform={`translate(${xPos},${yPos})scale(${this.iconScale})`}
-						onMouseEnter={(e) => this.props.showTooltip(e, 'Delete variable from all blocks ')}
-						onMouseLeave={this.props.hideTooltip}
+						onMouseEnter={(e) => this.props.tooltipFunctions.showTooltip(e, 'Delete variable from all blocks ')}
+						onMouseLeave={this.props.tooltipFunctions.hideTooltip}
 					>
 						<path
 							fill="gray"
@@ -171,9 +172,9 @@ const RowOperator = inject(
 					<g
 						transform={`translate(${xPos},${yPos})`}
 						onMouseEnter={(e) =>
-							this.props.showTooltip(e, `Promote variable ${variable.name}`, variable.description)
+							this.props.tooltipFunctions.showTooltip(e, `Promote variable ${variable.name}`, variable.description)
 						}
-						onMouseLeave={this.props.hideTooltip}
+						onMouseLeave={this.props.tooltipFunctions.hideTooltip}
 					>
 						<text
 							style={{ fontWeight, fontSize }}
@@ -296,8 +297,8 @@ const RowOperator = inject(
 						transform={`translate(${xOffset},${pos})`}
 						onClick={() => this.realignPatients(this.props.timepoint.globalIndex)}
 						className="not_exported"
-						onMouseEnter={(e) => this.props.showTooltip(e, 'Realign patients')}
-						onMouseLeave={this.props.hideTooltip}
+						onMouseEnter={(e) => this.props.tooltipFunctions.showTooltip(e, 'Realign patients')}
+						onMouseLeave={this.props.tooltipFunctions.hideTooltip}
 					>
 						<path
 							fill="gray"
@@ -331,7 +332,7 @@ const RowOperator = inject(
 			 * @param {(DerivedVariable|OriginalVariable)} variable
 			 */
 			sortTimepoint(timepoint, variable) {
-				if (timepoint.isGrouped && variable.datatype === 'NUMBER') {
+				if (timepoint.isGrouped && isNumeric(variable.datatype)) {
 					this.props.openBinningModal(variable, (derivedVariable) => {
 						this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(
 							variable.id,
@@ -366,7 +367,7 @@ const RowOperator = inject(
 			 * @param {(DerivedVariable|OriginalVariable)} variable
 			 */
 			group(timepoint, variable) {
-				if (variable.datatype === 'NUMBER') {
+				if (isNumeric(variable.datatype)) {
 					this.props.openBinningModal(variable, (derivedVariable) => {
 						this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(
 							variable.id,
@@ -412,7 +413,7 @@ const RowOperator = inject(
 			 * @param {(DerivedVariable|OriginalVariable)} variable
 			 */
 			promote(timepoint, variable) {
-				if (timepoint.isGrouped && variable.datatype === 'NUMBER') {
+				if (timepoint.isGrouped && isNumeric(variable.datatype)) {
 					this.props.openBinningModal(variable, (derivedVariable) => {
 						this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(
 							variable.id,
@@ -478,7 +479,7 @@ const RowOperator = inject(
 			 */
 			handleDelete(variable, timepoint) {
 				this.props.unhighlightVariable();
-				this.props.hideTooltip();
+				this.props.tooltipFunctions.hideTooltip();
 				this.removeVariable(variable, timepoint.type);
 			}
 
@@ -496,13 +497,8 @@ const RowOperator = inject(
 RowOperator.propTypes = {
 	timepoint: PropTypes.instanceOf(SingleTimepoint).isRequired,
 	width: PropTypes.number.isRequired,
-	showTooltip: PropTypes.func.isRequired,
-	hideTooltip: PropTypes.func.isRequired,
-	showContextMenu: PropTypes.func.isRequired,
 	highlightVariable: PropTypes.func.isRequired,
 	unhighlightVariable: PropTypes.func.isRequired,
-	openBinningModal: PropTypes.func.isRequired,
 	transform: PropTypes.string.isRequired,
-	openSaveVarModal: PropTypes.func.isRequired,
 };
-export default RowOperator;
+export default withUICallbacks(RowOperator);

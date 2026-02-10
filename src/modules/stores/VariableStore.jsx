@@ -1,5 +1,6 @@
 import { makeObservable, observable, action, computed, observe } from 'mobx';
 import MultipleTimepointsStore from './MultipleTimepointsStore';
+import { isNumeric, isNumericValue } from '../UtilityClasses';
 
 /*
  Store containing information about variables
@@ -209,7 +210,7 @@ class VariableStore {
 			if (primaryVariables[i] !== undefined) {
 				if (
 					this.rootStore.uiStore.selectedTab === 'block' &&
-					referencedVariables[primaryVariables[i]].datatype === 'NUMBER'
+					isNumeric(referencedVariables[primaryVariables[i]].datatype)
 				) {
 					d.setIsGrouped(false);
 				}
@@ -272,7 +273,7 @@ class VariableStore {
 				});
 			}
 
-			if (typeof otherValues[0] === 'number') {
+			if (isNumericValue(otherValues[0])) {
 				v = otherValues.reduce((a, b) => a + b, 0) / otherValues.length;
 			} else {
 				v = otherValues[0];
@@ -333,7 +334,7 @@ class VariableStore {
 		const profileDomains = {};
 		// only variables that are associated with a molecular profile and have a numerical range
 		const profileVariables = this.currentVariables.filter(
-			(d) => this.referencedVariables[d].type === 'molecular' && this.referencedVariables[d].datatype === 'NUMBER'
+			(d) => this.referencedVariables[d].type === 'molecular' && isNumeric(this.referencedVariables[d].datatype)
 		);
 		profileVariables.forEach((variableId) => {
 			const variable = this.referencedVariables[variableId];

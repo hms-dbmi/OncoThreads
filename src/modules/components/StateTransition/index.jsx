@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer, Provider } from 'mobx-react';
 import { makeObservable, observable, action, runInAction } from 'mobx';
 
@@ -12,6 +11,7 @@ import TransitionOverview from './TransitionOverview';
 import TransitionComparison from './TransitionComparison';
 
 import EventLegend from './EventLegend';
+import { withUICallbacks } from '../UICallbacksContext';
 
 import GridLayout from 'react-grid-layout';
 
@@ -176,4 +176,4 @@ const StateTransition = inject(
 	)
 );
 
-export default StateTransition;
+export default withUICallbacks(StateTransition);

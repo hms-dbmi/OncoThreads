@@ -1,6 +1,7 @@
 import OriginalVariable from './stores/OriginalVariable';
 import ColorScales from './UtilityClasses/ColorScales';
 import ErrorHandler from './services/ErrorHandler';
+import { isNumeric, isOrdinal } from './UtilityClasses';
 
 /*
  gets mutation and molecular data on demand and transforms the data to variables
@@ -476,13 +477,13 @@ class MolProfileMapping {
 					mapper[element.sample] = undefined;
 				} else {
 					let value = list.filter((d) => d.sampleId === element.sample)[0].value;
-					if (datatype === 'NUMBER') {
+					if (isNumeric(datatype)) {
 						if (value !== 'NA') {
 							value = parseFloat(value);
 						} else {
 							value = undefined;
 						}
-					} else if (datatype === 'ORDINAL') {
+					} else if (isOrdinal(datatype)) {
 						value = value.toString();
 					}
 					mapper[element.sample] = value;

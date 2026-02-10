@@ -15,4 +15,11 @@ export {
 	num2letter,
 	getUniqueKeyName,
 	summarizeDomain,
+	isNumeric,
+	isCategorical,
+	isBinary,
+	isOrdinal,
+	isCategoricalLike,
+	isNumericValue,
+	isValidNumber,
 } from './UtilityFunctions';

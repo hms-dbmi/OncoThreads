@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
+import { isNumeric, isCategorical, isBinary, isOrdinal } from './UtilityFunctions';
 
 /**
  * class for retrieving and storing color scales
@@ -16,11 +17,11 @@ class ColorScales {
 		let currRange = range;
 		if (range.length < domain.length) {
 			if (range.length === 0) {
-				if (datatype === 'ORDINAL') {
+				if (isOrdinal(datatype)) {
 					currRange = ColorScales.defaultContinuousTwoColors;
-				} else if (datatype === 'BINARY') {
+				} else if (isBinary(datatype)) {
 					currRange = ColorScales.defaultBinaryRange;
-				} else if (datatype === 'NUMBER') {
+				} else if (isNumeric(datatype)) {
 					const min = Math.min(...domain);
 					if (min < 0) {
 						currRange = ColorScales.defaultContinuousThreeColors;
@@ -29,7 +30,7 @@ class ColorScales {
 					}
 				}
 			}
-			if (datatype === 'STRING') {
+			if (isCategorical(datatype)) {
 				currRange = range.concat(...ColorScales.defaultCategoricalRange.filter((d) => !range.includes(d)));
 			}
 		}

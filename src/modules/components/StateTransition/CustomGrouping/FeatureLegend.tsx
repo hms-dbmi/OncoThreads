@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { IRootStore } from 'modules/Type';
 import { observable } from 'mobx';
 
-import { getTextWidth, getScientificNotation, ColorScales } from 'modules/UtilityClasses';
+import { getTextWidth, getScientificNotation, ColorScales, isOrdinal, isCategoricalLike, isBinary } from 'modules/UtilityClasses';
 import { TColorScale, TRow, TVariable } from 'modules/Type/Store';
 
 interface Props {
@@ -142,11 +142,11 @@ class FeatureLegend extends React.Component<Props> {
 		const legend_y = lineheight;
 
 		variable.domain.forEach((d: string, i: number) => {
-			if (variable.datatype === 'ORDINAL' || row.includes(d)) {
+			if (isOrdinal(variable.datatype) || row.includes(d)) {
 				let tooltipText;
 				if (
 					variable.derived &&
-					variable.datatype === 'ORDINAL' &&
+					isOrdinal(variable.datatype) &&
 					variable.modification.type === 'continuousTransform' &&
 					variable.modification.binning.binNames[i].modified
 				) {
@@ -271,7 +271,7 @@ class FeatureLegend extends React.Component<Props> {
 			const colorScale = dataStore.colorScales[variableIdx];
 			let legendEntries: JSX.Element[] = [];
 
-			if (variable.datatype === 'STRING' || variable.datatype === 'ORDINAL') {
+			if (isCategoricalLike(variable.datatype)) {
 				legendEntries = this.getCategoricalLegend(
 					variable,
 					variable.domain,
@@ -279,7 +279,7 @@ class FeatureLegend extends React.Component<Props> {
 					adaptedFontSize,
 					lineheight
 				);
-			} else if (variable.datatype === 'BINARY') {
+			} else if (isBinary(variable.datatype)) {
 				legendEntries = this.getBinaryLegend(opacity, adaptedFontSize, lineheight, colorScale);
 			} else {
 				legendEntries = [

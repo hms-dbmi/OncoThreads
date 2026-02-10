@@ -1,14 +1,19 @@
+import axios from 'axios';
 import { makeObservable, observable, action } from 'mobx';
-import data from './HgncEntrez.txt';
-
-import * as d3 from 'd3';
 import ErrorHandler from '../modules/services/ErrorHandler';
+import type { Gene, ReturnDataCallback, IGeneResolver } from './types';
+
+interface GeneNameDoc {
+	symbol: string;
+	entrez_id: string;
+}
 
 /**
  * Component for getting the mapping of hugoSymbols to entrezIDs for every possible gene (used before local files are loaded)
  */
-class GeneNamesLocalAPI {
+class GeneNamesAPI implements IGeneResolver {
 	geneListLoaded = false;
+	geneList: Record<string, number>;
 
 	constructor() {
 		this.geneList = {};
@@ -19,29 +24,21 @@ class GeneNamesLocalAPI {
 		});
 	}
 
-	getAllGeneSymbols = () => {
-		d3.tsv(data)
-			.then(
-				action((data) => {
-					data.forEach((d) => {
-						this.geneList[d['Approved symbol']] = parseInt(d['NCBI Gene ID(supplied by NCBI)'], 10);
-					});
-					this.geneListLoaded = true;
-				})
-			)
-			.catch((error) => {
-				ErrorHandler.handleAPIError(error, 'Failed to load local gene list');
+	getAllGeneSymbols = (): void => {
+		axios
+			.get<{ response: { docs: GeneNameDoc[] } }>('http://rest.genenames.org/fetch/status/Approved')
+			.then((response) => {
+				response.data.response.docs.forEach((d) => (this.geneList[d.symbol] = parseInt(d.entrez_id, 10)));
+				this.geneListLoaded = true;
+			})
+			.catch((error: unknown) => {
+				ErrorHandler.handleAPIError(error, 'Failed to load gene symbols');
 			});
 	};
 
-	/**
-	 * gets entrez gene ids for hgnc symbols
-	 * @param {string[]} hgncSymbols
-	 * @param {returnDataCallback} callback
-	 */
-	getGeneIDs(hgncSymbols, callback) {
-		const returnArray = [];
-		const invalidSymbols = [];
+	getGeneIDs(hgncSymbols: string[], callback: ReturnDataCallback<Gene[]>): void {
+		const returnArray: Gene[] = [];
+		const invalidSymbols: string[] = [];
 		hgncSymbols.forEach((d) => {
 			if (d in this.geneList) {
 				returnArray.push({
@@ -63,4 +60,4 @@ class GeneNamesLocalAPI {
 	}
 }
 
-export default GeneNamesLocalAPI;
+export default GeneNamesAPI;

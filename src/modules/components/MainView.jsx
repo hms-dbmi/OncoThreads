@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Tab, Tabs } from 'react-bootstrap';
 import GlobalTimeline from './GlobalTimeline';
@@ -10,7 +9,9 @@ import { Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
 /**
- * Component containing the main visualization
+ * Component containing the main visualization.
+ * All UI callbacks (tooltipFunctions, openSaveVarModal, etc.)
+ * are now provided via UICallbacksContext from Content.jsx.
  */
 const MainView = inject(
 	'rootStore',
@@ -24,10 +25,6 @@ const MainView = inject(
 				this.handleSwitchView = this.handleSwitchView.bind(this);
 			}
 
-			/**
-			 * handles switching to global timeline and back
-			 * @param {boolean} key - global timeline (true) or block view (false)
-			 */
 			handleSwitchView(key) {
 				if (key !== this.props.uiStore.selectedTab) {
 					this.props.uiStore.selectTab(key);
@@ -36,50 +33,17 @@ const MainView = inject(
 			}
 
 			getTabbedPanel() {
-				// create  views
-
-				const stateTransition = (
-					<StateTransition
-						openSaveVarModal={this.props.openSaveVarModal}
-						tooltipFunctions={this.props.tooltipFunctions}
-					/>
-				);
-				const myblockView = (
-					<MyBlockView
-						showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-						tooltipFunctions={this.props.tooltipFunctions}
-						showContextMenu={this.props.showContextMenu}
-						openBinningModal={this.props.openBinningModal}
-						openSaveVarModal={this.props.openSaveVarModal}
-					/>
-				);
-				const timelineView = (
-					<GlobalTimeline
-						showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-						tooltipFunctions={this.props.tooltipFunctions}
-						showContextMenu={this.props.showContextMenu}
-						openBinningModal={this.props.openBinningModal}
-						openSaveVarModal={this.props.openSaveVarModal}
-					/>
-				);
-				const blockView = (
-					<BlockView
-						showContextMenuHeatmapRow={this.props.showContextMenuHeatmapRow}
-						tooltipFunctions={this.props.tooltipFunctions}
-						showContextMenu={this.props.showContextMenu}
-						openBinningModal={this.props.openBinningModal}
-						openSaveVarModal={this.props.openSaveVarModal}
-					/>
-				);
+				const stateTransition = <StateTransition />;
+				const myblockView = <MyBlockView />;
+				const timelineView = <GlobalTimeline />;
+				const blockView = <BlockView />;
 
 				const dataIntro = `<h4>To start with, select different views to analyze the clinical sequences from different aspects.</h4>
         <b>Block View</b> groups patients at each timepoint based on their values of one selected feature.<br/><br/>
-        <b>State Transition</b>  provides a more advanced analysis and enables state identification using timepoint features.<br/><br/> 
+        <b>State Transition</b>  provides a more advanced analysis and enables state identification using timepoint features.<br/><br/>
         <b>Timeline View</b> shows the individual clinical sequence of each patient.`;
-				// let dataIntro = 'Select different views to analyze the clinical sequences from different aspects.
 
 				return (
-					// <Grid fluid className="tabContent">
 					<Tabs
 						style={{ width: '100%' }}
 						mountOnEnter
@@ -150,7 +114,6 @@ const MainView = inject(
 							{timelineView}
 						</Tab>
 					</Tabs>
-					// </Grid>
 				);
 			}
 
@@ -158,8 +121,8 @@ const MainView = inject(
 				const { uiStore } = this.props;
 
 				if (uiStore.selectedTab === 'stateTransition' && uiStore.introTutorial !== undefined) {
-					uiStore.setTutorialMode(false); // close current tutorial
-					uiStore.setTutorialMode(true); // start a new intro to refresh the intro in the newly-opened tab panel
+					uiStore.setTutorialMode(false);
+					uiStore.setTutorialMode(true);
 				}
 			}
 
@@ -182,11 +145,4 @@ const MainView = inject(
 		}
 	)
 );
-MainView.propTypes = {
-	tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
-	showContextMenu: PropTypes.func.isRequired,
-	showContextMenuHeatmapRow: PropTypes.func.isRequired,
-	openBinningModal: PropTypes.func.isRequired,
-	openSaveVarModal: PropTypes.func.isRequired,
-};
 export default MainView;

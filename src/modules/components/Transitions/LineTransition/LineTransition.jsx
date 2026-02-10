@@ -2,6 +2,7 @@ import React from 'react';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import { withUICallbacks } from '../../UICallbacksContext';
 
 /**
  * Component for line transition between two heatmap timepoints
@@ -173,4 +174,4 @@ LineTransition.propTypes = {
 	timeGapMapper: PropTypes.objectOf(PropTypes.number).isRequired,
 	colorScale: PropTypes.func.isRequired,
 };
-export default LineTransition;
+export default withUICallbacks(LineTransition);

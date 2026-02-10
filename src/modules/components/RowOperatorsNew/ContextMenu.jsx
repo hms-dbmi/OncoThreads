@@ -2,6 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import PropTypes from 'prop-types';
+import { isNumeric } from '../../UtilityClasses';
 
 /**
  * Modal for a Context Menu that allows applying sorting,
@@ -31,7 +32,7 @@ const ContextMenu = inject(
 			 * applies action to all timepoints
 			 */
 			applyActionToAll() {
-				if (this.variable.datatype === 'NUMBER' && this.props.action !== 'UNGROUP') {
+				if (isNumeric(this.variable.datatype) && this.props.action !== 'UNGROUP') {
 					if (this.props.action === 'GROUP') {
 						this.props.openBinningModal(this.variable, (derivedVariable) => {
 							this.variableStore.replaceDisplayedVariable(this.props.clickedVariable, derivedVariable);
@@ -100,7 +101,7 @@ const ContextMenu = inject(
 			 * applies action to previous timepoint
 			 */
 			applyActionToPrevious() {
-				if (this.variable.datatype === 'NUMBER' && this.props.action !== 'UNGROUP') {
+				if (isNumeric(this.variable.datatype) && this.props.action !== 'UNGROUP') {
 					if (this.props.action === 'GROUP') {
 						this.props.openBinningModal(this.variable, (derivedVariable) => {
 							this.variableStore.replaceDisplayedVariable(this.props.clickedVariable, derivedVariable);
@@ -164,7 +165,7 @@ const ContextMenu = inject(
 			 * applies action to next timepoint
 			 */
 			applyActionToNext() {
-				if (this.variable.datatype === 'NUMBER' && this.props.action !== 'UNGROUP') {
+				if (isNumeric(this.variable.datatype) && this.props.action !== 'UNGROUP') {
 					if (this.props.action === 'GROUP') {
 						this.props.openBinningModal(this.variable, (derivedVariable) => {
 							this.variableStore.replaceDisplayedVariable(this.props.clickedVariable, derivedVariable);

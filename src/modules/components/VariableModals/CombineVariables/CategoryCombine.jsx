@@ -7,6 +7,7 @@ import { PropTypes } from 'prop-types';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import ColorScales from '../../../UtilityClasses/ColorScales';
+import { isOrdinal as isOrdinalType } from '../../../UtilityClasses';
 import CategoryStore from '../VariableTables/CategoryStore';
 import CategoricalTable from '../VariableTables/CategoricalTable';
 
@@ -79,7 +80,7 @@ const CategoryCombine = inject('variableManagerStore')(
 					colorRange = ColorScales.defaultCategoricalRange;
 				} else {
 					currentCategories = this.getCurrentDataOfDerivedVariable();
-					isOrdinal = this.props.derivedVariable.datatype === 'ORDINAL';
+					isOrdinal = isOrdinalType(this.props.derivedVariable.datatype);
 					colorRange = this.props.derivedVariable.range;
 				}
 				return new CategoryStore(currentCategories, isOrdinal, allValues, colorRange);

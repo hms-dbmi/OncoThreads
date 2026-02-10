@@ -6,6 +6,7 @@ import DerivedMapperFunctions from 'modules/UtilityClasses/DeriveMapperFunctions
 import OriginalVariable from 'modules/stores/OriginalVariable';
 import DerivedVariable from 'modules/stores/DerivedVariable';
 import SingleTimepoint from 'modules/stores/SingleTimepoint';
+import { isCategorical } from 'modules/UtilityClasses';
 
 /**
  * component for a timepoint in the global timeline
@@ -103,7 +104,7 @@ const TimelineTimepoint = inject('rootStore')(
 				if (
 					variable.derived &&
 					variable.modification.type === 'binaryCombine' &&
-					variable.modification.datatype === 'STRING'
+					isCategorical(variable.modification.datatype)
 				) {
 					filterMapper = DerivedMapperFunctions.getModificationMapper(
 						{

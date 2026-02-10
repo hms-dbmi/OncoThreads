@@ -6,6 +6,7 @@ import AddTimepointVarTab from './AddTimepointVarTab';
 import UndoRedoStore from '../../stores/UndoRedoStore';
 import AddEventVarTab from './AddEventVarTab';
 import VariableManagerStore from './VariableManagerStore';
+import { withUICallbacks } from '../UICallbacksContext';
 
 /**
  * Component for variable management
@@ -120,4 +121,4 @@ VariableManager.propTypes = {
 	variableManagerOpen: PropTypes.bool.isRequired,
 	closeVariableManager: PropTypes.func.isRequired,
 };
-export default VariableManager;
+export default withUICallbacks(VariableManager);

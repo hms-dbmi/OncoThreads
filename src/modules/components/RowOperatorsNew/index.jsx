@@ -2,6 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import RowOperator from './RowOperator';
+import { withUICallbacks } from '../UICallbacksContext';
 
 /**
  * Component for rowOperators of the timepoints
@@ -20,10 +21,6 @@ const RowOperators = inject('rootStore')(
 							transform={transform}
 							timepoint={d}
 							width={this.props.width}
-							{...this.props.tooltipFunctions}
-							showContextMenu={this.props.showContextMenu}
-							openBinningModal={this.props.openBinningModal}
-							openSaveVarModal={this.props.openSaveVarModal}
 							highlightVariable={this.props.setHighlightedVariable}
 							unhighlightVariable={this.props.removeHighlightedVariable}
 							highlightedVariable={this.props.highlightedVariable}
@@ -43,15 +40,11 @@ const RowOperators = inject('rootStore')(
 );
 RowOperators.propTypes = {
 	width: PropTypes.number.isRequired,
-	tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
-	showContextMenu: PropTypes.func.isRequired,
 	setHighlightedVariable: PropTypes.func.isRequired,
 	removeHighlightedVariable: PropTypes.func.isRequired,
-	openBinningModal: PropTypes.func.isRequired,
-	openSaveVarModal: PropTypes.func.isRequired,
 	highlightedVariable: PropTypes.string,
 };
 RowOperators.defaultProps = {
 	highlightedVariable: undefined,
 };
-export default RowOperators;
+export default withUICallbacks(RowOperators);

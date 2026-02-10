@@ -32,12 +32,13 @@ const ContinuousRow = inject(
 				});
 				pathString += `l 0 ${-1 * currentPos[1]} z`;
 
-				const tooltipTitle = `${variable}: ${Math.min(...row.map((d) => d.key))}~${Math.max(...row.map((d) => d.key))}`;
+				const tooltipTitle = `${variable}: ${variableDomain[0]}~${variableDomain[1]}`;
+
 				return (
 					<Tooltip title={tooltipTitle} destroyOnHidden>
-						<g className="continupusRow">
+						<g className="continuousRow">
 							<rect
-								className="background"
+								className="background continuousRowBackground"
 								key="background"
 								width={currentPos[0] || 0}
 								height={height - this.strokeW}

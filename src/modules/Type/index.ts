@@ -1,5 +1,5 @@
 export type {
-	VariableStore,
+	IVariableStore,
 	IDataStore,
 	IPoint,
 	INormPoint,
@@ -9,4 +9,9 @@ export type {
 	IRootStore,
 	IUndoRedoStore,
 	Domain,
+	TColorScale,
+	DRMethodType,
+	EncodingMetricType,
+	HeatMap,
+	VariableDataType,
 } from './Store';

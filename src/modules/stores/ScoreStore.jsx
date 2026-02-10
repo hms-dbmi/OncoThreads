@@ -1,4 +1,5 @@
 import { makeObservable, observable, action } from 'mobx';
+import { isNumeric } from '../UtilityClasses';
 
 class ScoreStore {
 	constructor(rootStore) {
@@ -32,7 +33,7 @@ class ScoreStore {
 
 			const dType = self.rootStore.clinicalSampleCategories.filter((d) => d.id === iK)[0].datatype;
 
-			if (dType !== 'NUMBER') {
+			if (!isNumeric(dType)) {
 				// ModVR: https://en.wikipedia.org/wiki/Qualitative_variation
 
 				var samples = Object.values(ST);
@@ -96,7 +97,7 @@ class ScoreStore {
 				});
 			}
 			// standard deviation //DO NOT DELETE THIS YET
-			else if (dType === 'NUMBER') {
+			else if (isNumeric(dType)) {
 				samples = Object.values(ST);
 
 				sample_length = samples.map((d) => d.length);
@@ -197,7 +198,7 @@ class ScoreStore {
 				total_patient_transitions = total_patient_transitions + self.rootStore.timepointStructure[h].length;
 			}
 
-			if (dType !== 'NUMBER') {
+			if (!isNumeric(dType)) {
 				var all_vals = Object.values(iV);
 				//var unique_vals = [...new Set(all_vals)];
 
@@ -240,7 +241,7 @@ class ScoreStore {
 				//m /= timeLineLength;
 
 				//m = this.getNumWithSetDec(m / numOfPatients, 2);
-			} else if (dType === 'NUMBER') {
+			} else if (isNumeric(dType)) {
 				all_vals = Object.values(iV);
 				//let unique_vals = [...new Set(all_vals)];
 
@@ -343,7 +344,7 @@ class ScoreStore {
 	}
 
 	getCoeffUnalikeability(dType, input) {
-		if (dType !== 'NUMBER') {
+		if (!isNumeric(dType)) {
 			// coefficient of unalikeability DO NOT REMOVE
 
 			const TimeLineUnalikeability = [];

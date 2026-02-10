@@ -155,6 +155,29 @@ const summarizeDomain = (values: string[] | number[] | boolean[]): string[] => {
 	} else return [];
 };
 
+// ===== Variable datatype predicates =====
+import type { VariableDataType } from '../Type/Store';
+
+/** Continuous numeric data */
+const isNumeric = (dt: VariableDataType): boolean => dt === 'NUMBER';
+/** Unordered categorical (text) data */
+const isCategorical = (dt: VariableDataType): boolean => dt === 'STRING';
+/** Boolean / two-value data */
+const isBinary = (dt: VariableDataType): boolean => dt === 'BINARY';
+/** Ordered categorical data (continuous color interpolation) */
+const isOrdinal = (dt: VariableDataType): boolean => dt === 'ORDINAL';
+/** STRING or ORDINAL — categorical-like data (domain merging, legend rendering, etc.) */
+const isCategoricalLike = (dt: VariableDataType): boolean => dt === 'STRING' || dt === 'ORDINAL';
+
+// ===== Runtime value type guards =====
+
+/** Type guard: value is a number (not NaN) */
+const isNumericValue = (value: unknown): value is number => typeof value === 'number';
+
+/** Type guard: value is a finite, non-NaN number — use for filtering data arrays */
+const isValidNumber = (value: unknown): value is number =>
+	typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value);
+
 export {
 	getScientificNotation,
 	toTitleCase,
@@ -164,4 +187,11 @@ export {
 	num2letter,
 	getUniqueKeyName,
 	summarizeDomain,
+	isNumeric,
+	isCategorical,
+	isBinary,
+	isOrdinal,
+	isCategoricalLike,
+	isNumericValue,
+	isValidNumber,
 };

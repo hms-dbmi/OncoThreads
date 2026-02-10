@@ -2,6 +2,7 @@ import React from 'react';
 import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import SingleTimepoint from '../../stores/SingleTimepoint';
+import { isNumeric } from '../../UtilityClasses';
 
 /**
  * Component for row operators of one timepoint in BlockView
@@ -277,7 +278,7 @@ const RowOperator = inject(
 			 * @param {(DerivedVariable|OriginalVariable)} variable
 			 */
 			sortTimepoint(timepoint, variable) {
-				if (timepoint.isGrouped && variable.datatype === 'NUMBER') {
+				if (timepoint.isGrouped && isNumeric(variable.datatype)) {
 					this.props.openBinningModal(variable, (derivedVariable) => {
 						this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(
 							variable.id,
@@ -312,7 +313,7 @@ const RowOperator = inject(
 			 * @param {(DerivedVariable|OriginalVariable)} variable
 			 */
 			group(timepoint, variable) {
-				if (variable.datatype === 'NUMBER') {
+				if (isNumeric(variable.datatype)) {
 					this.props.openBinningModal(variable, (derivedVariable) => {
 						this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(
 							variable.id,
@@ -358,7 +359,7 @@ const RowOperator = inject(
 			 * @param {(DerivedVariable|OriginalVariable)} variable
 			 */
 			promote(timepoint, variable) {
-				if (timepoint.isGrouped && variable.datatype === 'NUMBER') {
+				if (timepoint.isGrouped && isNumeric(variable.datatype)) {
 					this.props.openBinningModal(variable, (derivedVariable) => {
 						this.props.rootStore.dataStore.variableStores[timepoint.type].replaceDisplayedVariable(
 							variable.id,

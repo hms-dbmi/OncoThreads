@@ -8,6 +8,7 @@ import Select from 'react-select';
 import LineUpView from './LineUpView';
 import OriginalVariable from '../../stores/OriginalVariable';
 import MutationSelector from './MutationSelector';
+import { isNumeric } from '../../UtilityClasses';
 
 /**
  * Modal for exploring timepoint variables with lineUp
@@ -239,7 +240,7 @@ const VariableExplorer = inject(
 				const profileDomains = {};
 				// only variables that are associated with a molecular profile and have a numerical range
 				const profileVariables = this.variables.filter(
-					(variable) => variable.type === 'molecular' && variable.datatype === 'NUMBER'
+					(variable) => variable.type === 'molecular' && isNumeric(variable.datatype)
 				);
 				profileVariables.forEach((variable) => {
 					const domain = variable.getDefaultDomain();
@@ -275,7 +276,7 @@ const VariableExplorer = inject(
 				newEntry.source = !variable.derived
 					? this.props.availableCategories.filter((category) => category.id === variable.profile)[0].name
 					: 'Derived';
-				if (variable.datatype === 'NUMBER') {
+				if (isNumeric(variable.datatype)) {
 					newEntry.range = Math.max(...values) - Math.min(...values);
 					newEntry.categories = [];
 					newEntry.numcat = NaN;
@@ -313,7 +314,7 @@ const VariableExplorer = inject(
 
 				newEntry.AvgVarianceTimeLine = 0;
 
-				if (variable.datatype !== 'NUMBER') {
+				if (!isNumeric(variable.datatype)) {
 					// treat string, binary the same way for now
 					newEntry.modVRacross = this.props.rootStore.scoreStore.getModVRAcross(
 						variable.datatype,
@@ -350,7 +351,7 @@ const VariableExplorer = inject(
 					newEntry.AvgCoeffUnalikeability = sum / tp_length;
 
 					// console.log(newEntry.AvgCoeffUnalikeability);
-				} else if (variable.datatype === 'NUMBER') {
+				} else if (isNumeric(variable.datatype)) {
 					const covt = this.props.rootStore.scoreStore.getCoeffientOfVarTimeLine(
 						variable.datatype,
 						variable.mapper

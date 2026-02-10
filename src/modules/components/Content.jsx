@@ -16,6 +16,7 @@ import ContextMenuHeatmapRow from './ContextMenuHeatmapRow';
 import VariableManager from './VariableModals/VariableManager';
 import ContextMenu from './RowOperatorsNew/ContextMenu';
 import SaveVariableDialog from './Modals/SaveVariableDialog';
+import { UICallbacksContext } from './UICallbacksContext';
 
 /**
  * Component containing the view and controls
@@ -120,7 +121,6 @@ const Content = inject(
 						<VariableManager
 							variableManagerOpen={this.variableManagerOpen}
 							closeVariableManager={this.closeVariableManager}
-							openSaveVarModal={this.openSaveVarModal}
 						/>
 					);
 				}
@@ -301,11 +301,23 @@ const Content = inject(
 				this.props.rootStore.dataStore.resetSelection();
 			}
 
+			getUICallbacksValue() {
+				return {
+					tooltipFunctions: this.tooltipFunctions,
+					openBinningModal: this.openBinningModal,
+					openSaveVarModal: this.openSaveVarModal,
+					showContextMenu: this.showContextMenu,
+					hideContextMenu: this.hideContextMenu,
+					showContextMenuHeatmapRow: this.showContextMenuHeatmapRow,
+				};
+			}
+
 			render() {
 				const { study } = this.props.rootStore;
 				const studyName = study ? study.name : 'Local Data';
 
 				return (
+					<UICallbacksContext.Provider value={this.getUICallbacksValue()}>
 					<div>
 						<Container fluid style={{ paddingLeft: 20 }}>
 							<h4>{studyName}</h4>
@@ -397,14 +409,7 @@ const Content = inject(
 								</Col>
 							</Row>
 							<Row className="mainVIStab">
-								<MainView
-									tooltipFunctions={this.tooltipFunctions}
-									openBinningModal={this.openBinningModal}
-									openSaveVarModal={this.openSaveVarModal}
-									showContextMenu={this.showContextMenu}
-									hideContextMenu={this.hideContextMenu}
-									showContextMenuHeatmapRow={this.showContextMenuHeatmapRow}
-								/>
+								<MainView />
 							</Row>
 						</Container>
 						{this.getBinner()}
@@ -433,6 +438,7 @@ const Content = inject(
 							</Provider>
 						) : null}
 					</div>
+					</UICallbacksContext.Provider>
 				);
 			}
 		}

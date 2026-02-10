@@ -9,7 +9,7 @@ import { TPointGroups, IRootStore } from 'modules/Type';
 
 import './CustomGrouping.css';
 import { Switch } from 'antd';
-import StateBlock from './StateBlock_O3';
+import StateBlock from './StateBlock';
 import Scatter from './Scatter';
 
 const { Option } = Select;

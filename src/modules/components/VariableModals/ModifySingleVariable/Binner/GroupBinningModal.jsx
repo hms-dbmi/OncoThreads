@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Alert, Button, Modal } from 'react-bootstrap';
 import DerivedVariable from 'modules/stores/DerivedVariable';
 import DerivedMapperFunctions from 'modules/UtilityClasses/DeriveMapperFunctions';
-import { getScientificNotation } from 'modules/UtilityClasses/UtilityFunctions';
+import { getScientificNotation, isValidNumber } from 'modules/UtilityClasses/UtilityFunctions';
 import BinningStore from './BinningStore';
 import Binner from './Binner';
 import OriginalVariable from '../../../../stores/OriginalVariable';
@@ -32,7 +32,7 @@ const GroupBinningModal = observer(
 		 */
 		createBinningStore() {
 			// Filter to ensure we only have numeric values
-			const numericData = this.data.filter((d) => typeof d === 'number' && !Number.isNaN(d));
+			const numericData = this.data.filter((d) => isValidNumber(d));
 
 			// Handle case where there's no valid numeric data
 			if (numericData.length === 0) {
@@ -147,7 +147,7 @@ const GroupBinningModal = observer(
 
 		render() {
 			// Filter to ensure we only have numeric values for histogram
-			const numericData = this.data.filter((d) => typeof d === 'number' && !Number.isNaN(d));
+			const numericData = this.data.filter((d) => isValidNumber(d));
 
 			// Safety check: ensure xScale exists and has ticks method
 			const thresholds =

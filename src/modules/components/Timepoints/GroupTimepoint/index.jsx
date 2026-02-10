@@ -30,6 +30,8 @@ const GroupTimepoint = inject(
 					partitions.push(
 						<g key={String(d.partition)} style={{ backgroundColor: 'darkgray' }} transform={transform}>
 							<GroupPartition
+								usePrimaryHeight={this.props.usePrimaryHeight}
+								type={this.props.type}
 								heatmap={this.props.heatmap}
 								currentVariables={this.props.currentVariables}
 								tooltipFunctions={this.props.tooltipFunctions}
@@ -38,11 +40,12 @@ const GroupTimepoint = inject(
 								stroke={stroke}
 								primaryVariableId={this.props.primaryVariableId}
 								stateLabels={stateLabels}
+								hasBackground={this.props.hasBackground}
 							/>
 						</g>
 					);
 					previousXPosition +=
-						this.props.visStore.groupScale(d.patients.length) + this.props.visStore.partitionGap;
+						(this.props.visStore.groupScale(d.patients.length) || 0) + this.props.visStore.partitionGap;
 				});
 				return partitions;
 			}
@@ -77,5 +80,13 @@ GroupTimepoint.propTypes = {
 	).isRequired,
 	tooltipFunctions: PropTypes.objectOf(PropTypes.func).isRequired,
 	primaryVariableId: PropTypes.string.isRequired,
+	hasBackground: PropTypes.bool,
+	type: PropTypes.string,
+	usePrimaryHeight: PropTypes.bool,
+};
+GroupTimepoint.defaultProps = {
+	hasBackground: false,
+	type: undefined,
+	usePrimaryHeight: false,
 };
 export default GroupTimepoint;

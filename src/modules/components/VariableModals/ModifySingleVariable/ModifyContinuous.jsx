@@ -12,7 +12,7 @@ import Histogram from './Binner/Histogram';
 import DerivedVariable from 'modules/stores/DerivedVariable';
 import DerivedMapperFunctions from 'modules/UtilityClasses/DeriveMapperFunctions';
 import ColorScales from 'modules/UtilityClasses/ColorScales';
-import { getScientificNotation } from 'modules/UtilityClasses/UtilityFunctions';
+import { getScientificNotation, isValidNumber, isBinary as isBinaryType } from 'modules/UtilityClasses/UtilityFunctions';
 import BinningStore from './Binner/BinningStore';
 import OriginalVariable from 'modules/stores/OriginalVariable';
 
@@ -59,11 +59,11 @@ const ModifyContinuous = inject(
 			getAllInitialValues() {
 				if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.transformFunction) {
 					return Object.values(this.props.variable.mapper).filter(
-						(d) => d !== undefined && typeof d === 'number' && !Number.isNaN(d)
+						(d) => d !== undefined && isValidNumber(d)
 					);
 				}
 				return Object.values(this.props.variable.mapper)
-					.filter((d) => d !== undefined && typeof d === 'number' && !Number.isNaN(d))
+					.filter((d) => d !== undefined && isValidNumber(d))
 					.map((d) => this.props.derivedVariable.modification.transformFunction(d));
 			}
 
@@ -219,7 +219,7 @@ const ModifyContinuous = inject(
 			 */
 			getBinning() {
 				// Filter to ensure we only have numeric values
-				const numericValues = this.allValues.filter((d) => typeof d === 'number' && !Number.isNaN(d));
+				const numericValues = this.allValues.filter((d) => isValidNumber(d));
 
 				// Safety check: if no numeric values, return null
 				if (numericValues.length === 0) {
@@ -462,12 +462,12 @@ const ModifyContinuous = inject(
 				if (event.target.value === 'linear') {
 					isLog = false;
 					this.allValues = Object.values(this.props.variable.mapper).filter(
-						(d) => d !== undefined && typeof d === 'number' && !Number.isNaN(d)
+						(d) => d !== undefined && isValidNumber(d)
 					);
 				} else {
 					isLog = true;
 					this.allValues = Object.values(this.props.variable.mapper)
-						.filter((d) => d !== undefined && typeof d === 'number' && !Number.isNaN(d) && d > 0)
+						.filter((d) => d !== undefined && isValidNumber(d) && d > 0)
 						.map((d) => Math.log10(d));
 				}
 
@@ -512,7 +512,7 @@ const ModifyContinuous = inject(
 				let isBinary;
 
 				// Filter to ensure we only have numeric values
-				const numericValues = this.allValues.filter((d) => typeof d === 'number' && !Number.isNaN(d));
+				const numericValues = this.allValues.filter((d) => isValidNumber(d));
 
 				if (this.props.derivedVariable === null || !this.props.derivedVariable.modification.binning) {
 					// Handle case where there's no valid numeric data
@@ -578,7 +578,7 @@ const ModifyContinuous = inject(
 						name: d.name,
 						modified: d.modified,
 					}));
-					isBinary = this.props.derivedVariable.datatype === 'BINARY';
+					isBinary = isBinaryType(this.props.derivedVariable.datatype);
 				}
 
 				// Use numeric values for scale domain

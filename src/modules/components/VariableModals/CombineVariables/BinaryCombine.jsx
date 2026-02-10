@@ -7,6 +7,7 @@ import { makeObservable, observable } from 'mobx';
 import DerivedVariable from '../../../stores/DerivedVariable';
 import DerivedMapperFunctions from '../../../UtilityClasses/DeriveMapperFunctions';
 import ColorScales from '../../../UtilityClasses/ColorScales';
+import { isBinary, isCategorical, isOrdinal as isOrdinalType } from '../../../UtilityClasses';
 import CategoryStore from '../VariableTables/CategoryStore';
 import CategoricalTable from '../VariableTables/CategoricalTable';
 import BinaryTable from '../VariableTables/BinaryTable';
@@ -44,7 +45,7 @@ const BinaryCombine = inject('variableManagerStore')(
 			getModificationPanel() {
 				// depending on the datatype of the combined variable display
 				// either the table for binary categories or the table showing categorical categories
-				if (this.modification.datatype === 'BINARY') {
+				if (isBinary(this.modification.datatype)) {
 					return [
 						<Form.Label key="label">Result</Form.Label>,
 						<BinaryTable
@@ -132,7 +133,7 @@ const BinaryCombine = inject('variableManagerStore')(
 				if (this.props.derivedVariable !== null) {
 					modification = this.props.derivedVariable.modification;
 					name = this.props.derivedVariable.name;
-					if (this.props.derivedVariable.modification.datatype !== 'STRING') {
+					if (!isCategorical(this.props.derivedVariable.modification.datatype)) {
 						binaryColors = this.props.derivedVariable.range;
 					}
 				} else {
@@ -159,7 +160,7 @@ const BinaryCombine = inject('variableManagerStore')(
 					this.props.variables.map((d) => d.mapper),
 					this.modification
 				);
-				if (this.modification.datatype === 'BINARY') {
+				if (isBinary(this.modification.datatype)) {
 					datatype = 'BINARY';
 					range = this.binaryColors;
 					description = `Binary combination of ${this.props.variables.map((d) => d.name)}`;
@@ -227,7 +228,7 @@ const BinaryCombine = inject('variableManagerStore')(
 				let colorRange;
 				if (
 					this.props.derivedVariable === null ||
-					this.props.derivedVariable.modification.datatype !== 'STRING'
+					!isCategorical(this.props.derivedVariable.modification.datatype)
 				) {
 					const mapper = DerivedMapperFunctions.createBinaryCombinedMapper(
 						this.props.variables.map((d) => d.mapper),
@@ -247,10 +248,10 @@ const BinaryCombine = inject('variableManagerStore')(
 					colorRange = ColorScales.defaultCategoricalRange;
 				} else if (
 					this.props.derivedVariable !== null &&
-					this.props.derivedVariable.modification.datatype === 'STRING'
+					isCategorical(this.props.derivedVariable.modification.datatype)
 				) {
 					currentCategories = this.getCurrentDataOfDerivedVariable();
-					isOrdinal = this.props.derivedVariable.datatype === 'ORDINAL';
+					isOrdinal = isOrdinalType(this.props.derivedVariable.datatype);
 					allValues = Object.values(this.props.derivedVariable.mapper);
 					colorRange = this.props.derivedVariable.range;
 				}
@@ -272,7 +273,7 @@ const BinaryCombine = inject('variableManagerStore')(
 									type="radio"
 									onChange={() => this.setModification({ operator: 'or', datatype: 'BINARY' })}
 									checked={
-										this.modification.operator === 'or' && this.modification.datatype === 'BINARY'
+										this.modification.operator === 'or' && isBinary(this.modification.datatype)
 									}
 									name="binaryCombine"
 									label="OR (binary)"
@@ -281,7 +282,7 @@ const BinaryCombine = inject('variableManagerStore')(
 									type="radio"
 									onChange={() => this.setModification({ operator: 'and', datatype: 'BINARY' })}
 									checked={
-										this.modification.operator === 'and' && this.modification.datatype === 'BINARY'
+										this.modification.operator === 'and' && isBinary(this.modification.datatype)
 									}
 									name="binaryCombine"
 									label="AND (binary)"
@@ -295,7 +296,7 @@ const BinaryCombine = inject('variableManagerStore')(
 										})
 									}
 									checked={
-										this.modification.operator === 'or' && this.modification.datatype === 'STRING'
+										this.modification.operator === 'or' && isCategorical(this.modification.datatype)
 									}
 									name="binaryCombine"
 									label="Create combined categories"

@@ -1,44 +1,58 @@
 /* eslint-disable no-console */
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import GenomeNexusAPI from './GenomeNexusAPI';
 import StudyAPI from './studyAPI';
 import ErrorHandler from '../modules/services/ErrorHandler';
+import type {
+	Gene,
+	ClinicalEvent,
+	ClinicalData,
+	MolecularProfile,
+	Mutation,
+	MolecularData,
+	EventsMap,
+	ProfiledDict,
+	SamplePanel,
+	GenePanel,
+	ReturnDataCallback,
+	IStudyDataAPI,
+} from './types';
+
+interface PatientSummary {
+	patientId: string;
+}
 
 /**
  * retrieves data using the cBio API
  */
-class CBioAPI {
-	constructor(studyId, cBioLink) {
+class CBioAPI implements IStudyDataAPI {
+	cBioLink: string;
+	studyId: string;
+	genomeNexusAPI: GenomeNexusAPI;
+	allEvents: EventsMap | null;
+
+	constructor(studyId: string, cBioLink: string) {
 		this.cBioLink = cBioLink;
 		this.studyId = studyId;
 		this.genomeNexusAPI = new GenomeNexusAPI();
 		this.allEvents = null;
 	}
 
-	/**
-	 * get all patients in a study
-	 * @param {returnDataCallback} callback
-	 */
-	getPatients(callback, token) {
+	getPatients(callback: ReturnDataCallback<string[]>, token?: string): void {
 		StudyAPI.callGetAPI(
 			`${this.cBioLink}/api/studies/${this.studyId}/patients?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`,
 			token,
 			{}
 		)
-			.then((response) => {
+			.then((response: AxiosResponse<PatientSummary[]>) => {
 				callback(response.data.map((patient) => patient.patientId));
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to load patients');
 			});
 	}
 
-	/**
-	 * get all events for all patients in a study
-	 * @param {string[]} patients
-	 * @param {returnDataCallback} callback
-	 */
-	getEvents(patients, callback, token) {
+	getEvents(patients: string[], callback: ReturnDataCallback<EventsMap>, token?: string): void {
 		axios
 			.all(
 				patients.map((patient) =>
@@ -49,12 +63,11 @@ class CBioAPI {
 					)
 				)
 			)
-			.then((eventResults) => {
-				const events = {};
+			.then((eventResults: AxiosResponse<ClinicalEvent[]>[]) => {
+				const events: EventsMap = {};
 				eventResults.forEach((response, i) => {
 					events[patients[i]] = response.data;
 				});
-				//console.log(events);
 
 				this.allEvents = events;
 
@@ -62,75 +75,58 @@ class CBioAPI {
 					callback(events);
 				} catch (callbackError) {
 					console.error('Error in getEvents callback:', callbackError);
-					ErrorHandler.showError(`Error processing clinical events: ${callbackError.message}`);
+					const msg = callbackError instanceof Error ? callbackError.message : String(callbackError);
+					ErrorHandler.showError(`Error processing clinical events: ${msg}`);
 				}
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to load clinical events');
 			});
 	}
 
-	/**
-	 * get all available clinical sample data in a study
-	 * @param {returnDataCallback} callback
-	 */
-	getClinicalPatientData(callback, token) {
+	getClinicalPatientData(callback: ReturnDataCallback<ClinicalData[]>, token?: string): void {
 		StudyAPI.callGetAPI(
 			`${this.cBioLink}/api/studies/${this.studyId}/clinical-data?clinicalDataType=PATIENT&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`,
 			token,
 			{}
 		)
-			.then((response) => {
+			.then((response: AxiosResponse<ClinicalData[]>) => {
 				callback(response.data);
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to load clinical patient data');
 			});
 	}
 
-	/**
-	 * get all available molecular profiles for a study
-	 * @param {returnDataCallback} callback
-	 */
-	getAvailableMolecularProfiles(callback, token) {
+	getAvailableMolecularProfiles(callback: ReturnDataCallback<MolecularProfile[]>, token?: string): void {
 		StudyAPI.callGetAPI(
 			`${this.cBioLink}/api/studies/${this.studyId}/molecular-profiles?projection=SUMMARY&pageSize=10000000&pageNumber=0&direction=ASC`,
 			token,
 			{}
 		)
-			.then((response) => {
+			.then((response: AxiosResponse<MolecularProfile[]>) => {
 				callback(response.data);
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to load molecular profiles');
 			});
 	}
 
-	/**
-	 * get all available clinical sample data in a study
-	 * @param {returnDataCallback} callback
-	 */
-	getClinicalSampleData(callback, token) {
+	getClinicalSampleData(callback: ReturnDataCallback<ClinicalData[]>, token?: string): void {
 		StudyAPI.callGetAPI(
 			`${this.cBioLink}/api/studies/${this.studyId}/clinical-data?clinicalDataType=SAMPLE&projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`,
 			token,
 			{}
 		)
-			.then((response) => {
+			.then((response: AxiosResponse<ClinicalData[]>) => {
 				callback(response.data);
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to load clinical sample data');
 			});
 	}
 
-	/**
-	 *
-	 * @param {Object[]} entrezIDs
-	 * @param {string} profileId
-	 * @param {returnDataCallback} callback
-	 */
-	getMutations(entrezIDs, profileId, callback, token) {
+	getMutations(entrezIDs: Gene[], profileId: string, callback: ReturnDataCallback<Mutation[]>, token?: string): void {
 		StudyAPI.callPostAPI(
 			`${this.cBioLink}/api/molecular-profiles/${profileId}/mutations/fetch?projection=DETAILED&pageSize=10000000&pageNumber=0&direction=ASC`,
 			token,
@@ -140,22 +136,16 @@ class CBioAPI {
 				sampleListId: `${this.studyId}_all`,
 			}
 		)
-			.then((response) => {
+			.then((response: AxiosResponse<Mutation[]>) => {
 				callback(response.data);
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to load mutations');
 			});
 	}
 
-	/**
-	 * checks for each sample if genes have been profiled
-	 * @param {Object[]} genes
-	 * @param {string} profileId
-	 * @param {returnDataCallback} callback
-	 */
-	areProfiled(genes, profileId, callback, token) {
-		const profiledDict = {};
+	areProfiled(genes: Gene[], profileId: string, callback: ReturnDataCallback<ProfiledDict>, token?: string): void {
+		const profiledDict: ProfiledDict = {};
 		StudyAPI.callPostAPI(
 			`${this.cBioLink}/api/molecular-profiles/${profileId}/gene-panel-data/fetch`,
 			token,
@@ -164,24 +154,24 @@ class CBioAPI {
 				sampleListId: `${this.studyId}_all`,
 			}
 		)
-			.then((samplePanels) => {
+			.then((samplePanels: AxiosResponse<SamplePanel[]>) => {
 				const differentPanels = [
-					...new Set(samplePanels.data.filter((d) => 'genePanelId' in d).map((d) => d.genePanelId)),
+					...new Set(samplePanels.data.filter((d) => 'genePanelId' in d).map((d) => d.genePanelId!)),
 				];
 				if (differentPanels.length > 0) {
 					axios
-						.all(differentPanels.map((d) => axios.get(`${this.cBioLink}/api/gene-panels/${d}`)))
-						.then((panelList) => {
+						.all(differentPanels.map((d) => axios.get<GenePanel>(`${this.cBioLink}/api/gene-panels/${d}`)))
+						.then((panelList: AxiosResponse<GenePanel>[]) => {
 							samplePanels.data.forEach((samplePanel) => {
 								profiledDict[samplePanel.sampleId] = [];
 								genes.forEach((gene) => {
 									if (samplePanel.genePanelId !== undefined) {
+										const panelIndex = panelList
+											.map((panel) => panel.data.genePanelId)
+											.indexOf(samplePanel.genePanelId);
 										if (
-											panelList[
-												panelList
-													.map((panel) => panel.data.genePanelId)
-													.indexOf(samplePanel.genePanelId)
-											].data.genes
+											panelIndex >= 0 &&
+											panelList[panelIndex].data.genes
 												.map((id) => id.entrezGeneId)
 												.includes(gene.entrezGeneId)
 										) {
@@ -194,7 +184,7 @@ class CBioAPI {
 							});
 							callback(profiledDict);
 						})
-						.catch((error) => {
+						.catch((error: unknown) => {
 							ErrorHandler.handleAPIError(error, 'Failed to load gene panel data');
 						});
 				} else {
@@ -208,18 +198,17 @@ class CBioAPI {
 					callback(profiledDict);
 				}
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to check gene profiling status');
 			});
 	}
 
-	/**
-	 * gets data for an array of entrezIds in a specified profile
-	 * @param {string} profileId
-	 * @param {Object[]} entrezIDs
-	 * @param {returnDataCallback} callback
-	 */
-	getMolecularValues(profileId, entrezIDs, callback, token) {
+	getMolecularValues(
+		profileId: string,
+		entrezIDs: Gene[],
+		callback: ReturnDataCallback<MolecularData[]>,
+		token?: string
+	): void {
 		StudyAPI.callPostAPI(
 			`${this.cBioLink}/api/molecular-profiles/${profileId}/molecular-data/fetch?projection=SUMMARY`,
 			token,
@@ -229,19 +218,17 @@ class CBioAPI {
 				sampleListId: `${this.studyId}_all`,
 			}
 		)
-			.then((response) => {
+			.then((response: AxiosResponse<MolecularData[]>) => {
 				callback(response.data);
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				ErrorHandler.handleAPIError(error, 'Failed to load molecular data');
 			});
 	}
 
-	getGeneIDs(hgncSymbols, callback, token) {
+	getGeneIDs(hgncSymbols: string[], callback: ReturnDataCallback<Gene[]>, token?: string): void {
 		this.genomeNexusAPI.getGeneIDs(hgncSymbols, callback, token);
 	}
 }
-
-CBioAPI.verbose = true;
 
 export default CBioAPI;

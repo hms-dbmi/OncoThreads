@@ -2,6 +2,7 @@ import * as Papa from 'papaparse';
 import { action, makeObservable, observable, computed, reaction } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
 import { message } from 'antd';
+import { isNumeric } from 'modules/UtilityClasses';
 
 /**
  * Signals that a file has finished loading
@@ -607,11 +608,17 @@ class LocalFileLoader {
 	 * @param {returnDataCallback} callback
 	 */
 	loadEvents = (callback) => {
-		const events = {};
-		let filesVisited = 0;
+		const filePromises = [];
 		this.eventFiles.forEach((d) => {
-			this.loadEventFile(d, (fileEvents) => {
-				filesVisited += 1;
+			filePromises.push(
+				new Promise((resolve) => {
+					this.loadEventFile(d, resolve);
+				})
+			);
+		});
+		Promise.all(filePromises).then((results) => {
+			const events = {};
+			results.forEach((fileEvents) => {
 				Object.keys(fileEvents).forEach((patient) => {
 					if (!(patient in events)) {
 						events[patient] = fileEvents[patient];
@@ -619,10 +626,8 @@ class LocalFileLoader {
 						events[patient].push(...fileEvents[patient]);
 					}
 				});
-				if (filesVisited === this.eventFiles.size) {
-					callback(events);
-				}
 			});
+			callback(events);
 		});
 	};
 
@@ -705,24 +710,51 @@ class LocalFileLoader {
 	};
 
 	/**
-	 * Parse clinical data file
+	 * Parse clinical data file header, then body
 	 * @param {boolean} isSample - sample related or patient related clinical data
 	 * @param {function} callback
 	 */
 	loadClinicalFile = (isSample, callback) => {
-		let file;
-		if (isSample) {
-			file = this.clinicalSampleFile;
-		} else {
-			file = this.clinicalPatientFile;
+		const file = isSample ? this.clinicalSampleFile : this.clinicalPatientFile;
+		if (file === null) {
+			callback([]);
+			return;
 		}
-		const clinicalAttributes = {};
-		const intermediateAttributes = [];
-		let abort = false;
-		let inconsistentLinebreaks = false;
-		let rowCounter = 0;
-		// parse header
-		if (file !== null) {
+
+		this._parseClinicalHeader(file).then(
+			action((result) => {
+				if (result.success) {
+					this.loadClinicalBody(file, isSample, result.clinicalAttributes, callback);
+				} else if (result.inconsistentLinebreaks) {
+					LocalFileLoader.replaceLinebreaks(file, (newFile) => {
+						if (isSample) {
+							this.clinicalSampleFile = newFile;
+						} else {
+							this.clinicalPatientFile = newFile;
+						}
+						this.loadClinicalFile(isSample, callback);
+					});
+				} else if (isSample) {
+					this.parsingStatus.clinicalSample = 'error';
+				} else {
+					this.parsingStatus.clinicalPatient = 'error';
+				}
+			})
+		);
+	};
+
+	/**
+	 * Parse clinical file header rows into clinicalAttributes map.
+	 * Returns a Promise resolving to { success, clinicalAttributes, inconsistentLinebreaks }.
+	 */
+	_parseClinicalHeader = (file) => {
+		return new Promise((resolve) => {
+			const clinicalAttributes = {};
+			const intermediateAttributes = [];
+			let abort = false;
+			let inconsistentLinebreaks = false;
+			let rowCounter = 0;
+
 			Papa.parse(file, {
 				delimiter: '\t',
 				worker: true,
@@ -757,30 +789,11 @@ class LocalFileLoader {
 						parser.abort();
 					}
 				},
-				complete: action(() => {
-					// parse data
-					if (!abort) {
-						this.loadClinicalBody(file, isSample, clinicalAttributes, callback);
-					} else if (inconsistentLinebreaks) {
-						if (isSample) {
-							LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-								this.clinicalSampleFile = newFile;
-								this.loadClinicalFile(isSample, callback);
-							});
-						} else {
-							LocalFileLoader.replaceLinebreaks(file, (newFile) => {
-								this.clinicalPatientFile = newFile;
-								this.loadClinicalFile(isSample, callback);
-							});
-						}
-					} else if (isSample) {
-						this.parsingStatus.clinicalSample = 'error';
-					} else {
-						this.parsingStatus.clinicalPatient = 'error';
-					}
-				}),
+				complete: () => {
+					resolve({ success: !abort, clinicalAttributes, inconsistentLinebreaks });
+				},
 			});
-		} else callback([]);
+		});
 	};
 
 	/**
@@ -807,7 +820,7 @@ class LocalFileLoader {
 					const sampleId = row.data.SAMPLE_ID;
 					Object.keys(row.data).forEach((key) => {
 						if (!(key === 'PATIENT_ID' || key === 'SAMPLE_ID') && row.data[key].trim() !== '') {
-							if (clinicalAttributes[key].datatype === 'NUMBER') {
+							if (isNumeric(clinicalAttributes[key].datatype)) {
 								if (Number.isNaN(parseFloat(row.data[key]))) {
 									abort = true;
 									message.error({
@@ -870,20 +883,18 @@ class LocalFileLoader {
 	 * @param {string[]} metaData - datatypes and molecularAlteration types
 	 */
 	setMolecularFiles = (files, metaData) => {
-		let filesParsed = 0;
 		this.parsingStatus.molecular = 'loading';
-		Array.from(files).forEach((file, i) => {
-			this.setMolecular(
-				file,
-				metaData[i],
-				action(() => {
-					filesParsed += 1;
-					if (filesParsed === files.length) {
-						this.parsingStatus.molecular = 'finished';
-					}
+		const filePromises = Array.from(files).map(
+			(file, i) =>
+				new Promise((resolve) => {
+					this.setMolecular(file, metaData[i], resolve);
 				})
-			);
-		});
+		);
+		Promise.all(filePromises).then(
+			action(() => {
+				this.parsingStatus.molecular = 'finished';
+			})
+		);
 	};
 
 	/**
