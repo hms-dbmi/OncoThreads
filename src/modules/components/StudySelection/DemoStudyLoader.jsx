@@ -102,109 +102,92 @@ const DemoStudyLoader = inject('rootStore')(
 				try {
 					const loader = this.props.rootStore.localFileLoader;
 
-					// 1. Load timeline files (required)
-					try {
-						const timelineFiles = await Promise.all([
-							this.fetchDemoFile('data_timeline_specimen.txt'),
-							this.fetchDemoFile('data_timeline_status.txt'),
-							this.fetchDemoFile('data_timeline_surgery.txt'),
-							this.fetchDemoFile('data_timeline_treatment.txt'),
-						]);
+					// Fetch all files concurrently
+					const [
+						timelineSpecimen,
+						timelineStatus,
+						timelineSurgery,
+						timelineTreatment,
+						clinicalSample,
+						clinicalPatient,
+						mutations,
+						cna,
+						expression,
+						panelMatrix,
+						genePanelImpact341,
+						genePanelImpact410,
+					] = await Promise.allSettled([
+						this.fetchDemoFile('data_timeline_specimen.txt'),
+						this.fetchDemoFile('data_timeline_status.txt'),
+						this.fetchDemoFile('data_timeline_surgery.txt'),
+						this.fetchDemoFile('data_timeline_treatment.txt'),
+						this.fetchDemoFile('data_clinical_sample.txt'),
+						this.fetchDemoFile('data_clinical_patient.txt'),
+						this.fetchDemoFile('data_mutations_extended.txt'),
+						this.fetchDemoFile('data_CNA.txt'),
+						this.fetchDemoFile('data_RNA_Seq_v2_expression_median.txt'),
+						this.fetchDemoFile('data_gene_matrix.txt'),
+						this.fetchDemoFile('data_gene_panel_impact341.txt'),
+						this.fetchDemoFile('data_gene_panel_impact410.txt'),
+					]);
 
-						// Convert to FileList-like object
-						const fileList = Object.assign(timelineFiles, { item: (i) => timelineFiles[i] });
-
-						loader.setEventFiles(fileList, () => {
-							this.props.rootStore.parseTimeline(null, () => {});
-						});
-						this.setFileLoaded('timeline', true);
-						console.log('✓ Timeline files loaded');
-					} catch (error) {
-						console.error('Failed to load timeline files:', error);
+					// 1. Timeline files (required)
+					const timelineResults = [timelineSpecimen, timelineStatus, timelineSurgery, timelineTreatment];
+					if (timelineResults.some((r) => r.status === 'rejected')) {
 						throw new Error('Failed to load timeline files');
 					}
+					const timelineFiles = timelineResults.map((r) => r.value);
+					const timelineFileList = Object.assign(timelineFiles, { item: (i) => timelineFiles[i] });
+					loader.setEventFiles(timelineFileList, () => {
+						this.props.rootStore.parseTimeline(null, () => {});
+					});
+					this.setFileLoaded('timeline', true);
 
-					// 2. Load clinical sample data (required)
-					try {
-						const clinicalSampleFile = await this.fetchDemoFile('data_clinical_sample.txt');
-						loader.setClinicalFile(clinicalSampleFile, true);
-						this.setFileLoaded('clinicalSample', true);
-						console.log('✓ Clinical sample data loaded');
-					} catch (error) {
-						console.error('Failed to load clinical sample data:', error);
+					// 2. Clinical sample data (required)
+					if (clinicalSample.status === 'rejected') {
 						throw new Error('Failed to load clinical sample data');
 					}
+					loader.setClinicalFile(clinicalSample.value, true);
+					this.setFileLoaded('clinicalSample', true);
 
-					// 3. Load clinical patient data (required)
-					try {
-						const clinicalPatientFile = await this.fetchDemoFile('data_clinical_patient.txt');
-						loader.setClinicalFile(clinicalPatientFile, false);
-						this.setFileLoaded('clinicalPatient', true);
-						console.log('✓ Clinical patient data loaded');
-					} catch (error) {
-						console.error('Failed to load clinical patient data:', error);
+					// 3. Clinical patient data (required)
+					if (clinicalPatient.status === 'rejected') {
 						throw new Error('Failed to load clinical patient data');
 					}
+					loader.setClinicalFile(clinicalPatient.value, false);
+					this.setFileLoaded('clinicalPatient', true);
 
-					// 4. Load mutations (optional)
-					try {
-						const mutationsFile = await this.fetchDemoFile('data_mutations_extended.txt');
-						loader.setMutations(mutationsFile);
+					// 4. Mutations (optional)
+					if (mutations.status === 'fulfilled') {
+						loader.setMutations(mutations.value);
 						this.setFileLoaded('mutations', true);
-						console.log('✓ Mutations data loaded');
-					} catch (error) {
-						console.warn('Mutations file not loaded:', error);
 					}
 
-					// 5. Load molecular data files (optional)
-					try {
-						const molecularFiles = await Promise.all([
-							this.fetchDemoFile('data_CNA.txt'),
-							this.fetchDemoFile('data_RNA_Seq_v2_expression_median.txt'),
-						]);
-
-						// Convert to FileList-like object
+					// 5. Molecular data (optional)
+					if (cna.status === 'fulfilled' && expression.status === 'fulfilled') {
+						const molecularFiles = [cna.value, expression.value];
 						const fileList = Object.assign(molecularFiles, { item: (i) => molecularFiles[i] });
-
-						// Define metadata for each molecular file
 						const metaData = [
 							{ key: 'CNA', alterationType: 'COPY_NUMBER_ALTERATION', datatype: 'DISCRETE' },
 							{ key: 'mRNA', alterationType: 'MRNA_EXPRESSION', datatype: 'CONTINUOUS' },
 						];
-
 						loader.setMolecularFiles(fileList, metaData);
 						this.setFileLoaded('cna', true);
 						this.setFileLoaded('expression', true);
-						console.log('✓ Molecular data loaded');
-					} catch (error) {
-						console.warn('Molecular files not fully loaded:', error);
 					}
 
-					// 6. Load gene panel matrix (optional)
-					try {
-						const panelMatrixFile = await this.fetchDemoFile('data_gene_matrix.txt');
-						loader.setGenePanelMatrix(panelMatrixFile);
+					// 6. Gene panel matrix (optional)
+					if (panelMatrix.status === 'fulfilled') {
+						loader.setGenePanelMatrix(panelMatrix.value);
 						this.setFileLoaded('panelMatrix', true);
-						console.log('✓ Gene panel matrix loaded');
-					} catch (error) {
-						console.warn('Gene panel matrix not loaded:', error);
 					}
 
-					// 7. Load gene panels (optional)
-					try {
-						const genePanelFiles = await Promise.all([
-							this.fetchDemoFile('data_gene_panel_impact341.txt'),
-							this.fetchDemoFile('data_gene_panel_impact410.txt'),
-						]);
-
-						// Convert to FileList-like object
+					// 7. Gene panels (optional)
+					if (genePanelImpact341.status === 'fulfilled' && genePanelImpact410.status === 'fulfilled') {
+						const genePanelFiles = [genePanelImpact341.value, genePanelImpact410.value];
 						const fileList = Object.assign(genePanelFiles, { item: (i) => genePanelFiles[i] });
-
 						loader.setGenePanels(fileList);
 						this.setFileLoaded('genePanels', true);
-						console.log('✓ Gene panels loaded');
-					} catch (error) {
-						console.warn('Gene panels not loaded:', error);
 					}
 
 					ErrorHandler.showSuccess('Demo study loaded successfully!');
