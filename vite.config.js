@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
     ],
     
     // Base URL for deployment
-    base: mode === 'production' && !isElectron ? 'http://oncothreads.gehlenborglab.org' : './',
+    base: '/',
     
     resolve: {
       alias: {
