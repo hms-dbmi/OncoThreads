@@ -22,7 +22,7 @@ interface IUIStore {
  */
 class StudyAPI {
 	allLinks: Record<InstanceKey, string> = {
-		hack: 'http://www.cbioportal.org',
+		hack: 'https://www.cbioportal.org',
 		portal: 'https://www.cbioportal.org',
 		own: '',
 	};
@@ -259,9 +259,13 @@ class StudyAPI {
 		token?: string,
 		errorCallback: ((error: { message?: string }) => void) | null = null
 	): void {
-		StudyAPI.callGetAPI(`${link}/api/studies/${studyId}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`, token, {
-			cancelToken: this.source.token,
-		})
+		StudyAPI.callGetAPI(
+			`${link}/api/studies/${studyId}/clinical-events?projection=SUMMARY&pageSize=10000000&pageNumber=0&sortBy=startNumberOfDaysSinceDiagnosis&direction=ASC`,
+			token,
+			{
+				cancelToken: this.source.token,
+			}
+		)
 			.then((response: AxiosResponse<ClinicalEvent[]>) => {
 				callback(response.data);
 			})
@@ -280,7 +284,11 @@ class StudyAPI {
 			});
 	}
 
-	static callGetAPI<T = unknown>(link: string, token?: string, parameters: AxiosRequestConfig = {}): Promise<AxiosResponse<T>> {
+	static callGetAPI<T = unknown>(
+		link: string,
+		token?: string,
+		parameters: AxiosRequestConfig = {}
+	): Promise<AxiosResponse<T>> {
 		if (!token) {
 			return axios.get<T>(link, parameters);
 		} else {
